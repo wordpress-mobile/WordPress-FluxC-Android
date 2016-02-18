@@ -76,6 +76,28 @@ public class SiteRestClient extends BaseWPComRestClient {
         add(request);
     }
 
+    public void deleteSite(final SiteModel site) {
+        String url = WPCOM_PREFIX_V1 + "/sites/" + site.getSiteId() + "/delete";
+        final WPComGsonRequest<SiteWPComRestResponse> request = new WPComGsonRequest<>(Method.POST,
+                url, null, SiteWPComRestResponse.class,
+                new Listener<SiteWPComRestResponse>() {
+                    @Override
+                    public void onResponse(SiteWPComRestResponse response) {
+                        SiteModel site = siteResponseToSiteModel(response);
+                        mDispatcher.dispatch(SiteAction.DELETE_SITE, site);
+                    }
+                },
+                new ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        AppLog.e(T.API, "Volley error", error);
+                        // TODO: Error, dispatch network error
+                    }
+                }
+        );
+        add(request);
+    }
+
     private SiteModel siteResponseToSiteModel(SiteWPComRestResponse from) {
         SiteModel site = new SiteModel();
         site.setSiteId(from.ID);
