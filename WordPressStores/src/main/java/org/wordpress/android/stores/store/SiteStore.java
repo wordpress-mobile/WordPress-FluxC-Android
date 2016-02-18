@@ -106,7 +106,9 @@ public class SiteStore extends Store {
             }
         } else if (actionType == SiteAction.REQUEST_DELETE_SITE) {
             SiteModel site = (SiteModel) action.getPayload();
-            mSiteRestClient.deleteSite(site);
+            if (site.isWPCom()) {
+                mSiteRestClient.deleteSite(site);
+            }
         } else if (actionType == SiteAction.DELETE_SITE) {
             SiteModel site = (SiteModel) action.getPayload();
             SiteSqlUtils.deleteSite(site);
