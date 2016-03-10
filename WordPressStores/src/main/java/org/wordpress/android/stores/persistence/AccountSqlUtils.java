@@ -22,22 +22,7 @@ public class AccountSqlUtils {
             WellSql.insert(account).execute();
         } else {
             // update
-            int oldId = accountResults.get(0).getId();
-            WellSql.update(AccountModel.class).whereId(oldId)
-                    .put(account, new InsertMapper<AccountModel>() {
-                        @Override
-                        public ContentValues toCv(AccountModel item) {
-                            ContentValues cv = new ContentValues();
-                            cv.put(AccountModelTable.USER_ID, item.getUserId());
-                            cv.put(AccountModelTable.DISPLAY_NAME, item.getDisplayName());
-                            cv.put(AccountModelTable.PROFILE_URL, item.getProfileUrl());
-                            cv.put(AccountModelTable.AVATAR_URL, item.getAvatarUrl());
-                            cv.put(AccountModelTable.SITE_COUNT, item.getSiteCount());
-                            cv.put(AccountModelTable.VISIBLE_SITE_COUNT, item.getVisibleSiteCount());
-                            cv.put(AccountModelTable.EMAIL, item.getEmail());
-                            return cv;
-                        }
-                    }).execute();
+            updateAccount(accountResults.get(0).getId(), account.getAccountContent());
         }
     }
 
@@ -52,28 +37,33 @@ public class AccountSqlUtils {
             WellSql.insert(account).execute();
         } else {
             // update
-            int oldId = accountResults.get(0).getId();
-            WellSql.update(AccountModel.class).whereId(oldId)
-                    .put(account, new InsertMapper<AccountModel>() {
-                        @Override
-                        public ContentValues toCv(AccountModel item) {
-                            ContentValues cv = new ContentValues();
-                            cv.put(AccountModelTable.FIRST_NAME, item.getFirstName());
-                            cv.put(AccountModelTable.LAST_NAME, item.getLastName());
-                            cv.put(AccountModelTable.ABOUT_ME, item.getAboutMe());
-                            cv.put(AccountModelTable.DATE, item.getDate());
-                            cv.put(AccountModelTable.NEW_EMAIL, item.getNewEmail());
-                            cv.put(AccountModelTable.PENDING_EMAIL_CHANGE, item.getPendingEmailChange());
-                            cv.put(AccountModelTable.WEB_ADDRESS, item.getWebAddress());
-                            return cv;
-                        }
-                    }).execute();
+            updateAccount(accountResults.get(0).getId(), account.getSettingsContent());
         }
+    }
+
+    public static void updateAccount(long localId, final ContentValues cv) {
+        AccountModel account = getAccountByLocalId(localId);
+        if (account == null) return;
+        int oldId = account.getId();
+        WellSql.update(AccountModel.class).whereId(oldId)
+                .put(account, new InsertMapper<AccountModel>() {
+                    @Override
+                    public ContentValues toCv(AccountModel item) {
+                        return cv;
+                    }
+                }).execute();
     }
 
     public static AccountModel getAccountByLocalId(long localId) {
         List<AccountModel> accountResult = WellSql.select(AccountModel.class)
                 .where().equals(AccountModelTable.ID, localId)
+                .endWhere().getAsModel();
+        return accountResult.isEmpty() ? null : accountResult.get(0);
+    }
+
+    public static AccountModel getAccountByRemoteId(long remoteId) {
+        List<AccountModel> accountResult = WellSql.select(AccountModel.class)
+                .where().equals(AccountModelTable.USER_ID, remoteId)
                 .endWhere().getAsModel();
         return accountResult.isEmpty() ? null : accountResult.get(0);
     }
