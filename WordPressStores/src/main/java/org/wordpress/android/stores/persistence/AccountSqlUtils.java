@@ -11,19 +11,6 @@ import org.wordpress.android.stores.model.AccountModel;
 import java.util.List;
 
 public class AccountSqlUtils {
-    public static void updateAccount(long localId, final ContentValues cv) {
-        AccountModel account = getAccountByLocalId(localId);
-        if (account == null) return;
-        int oldId = account.getId();
-        WellSql.update(AccountModel.class).whereId(oldId)
-                .put(account, new InsertMapper<AccountModel>() {
-                    @Override
-                    public ContentValues toCv(AccountModel item) {
-                        return cv;
-                    }
-                }).execute();
-    }
-
     public static void insertOrUpdateAccount(AccountModel account) {
         List<AccountModel> accountResults = WellSql.select(AccountModel.class)
                 .where()
@@ -54,22 +41,17 @@ public class AccountSqlUtils {
         }
     }
 
-    public static void updateEmail(String newEmail) {
-        ContentValues cv = new ContentValues();
-        cv.put(AccountModelTable.EMAIL, newEmail);
-        updateAccount(1, cv);
-    }
-
-    public static void updatePrimaryBlog(long newPrimaryBlogId) {
-        ContentValues cv = new ContentValues();
-        cv.put(AccountModelTable.PRIMARY_BLOG_ID, newPrimaryBlogId);
-        updateAccount(1, cv);
-    }
-
-    public static void updateWebAddress(String newWebAddress) {
-        ContentValues cv = new ContentValues();
-        cv.put(AccountModelTable.WEB_ADDRESS, newWebAddress);
-        updateAccount(1, cv);
+    public static void updateAccount(long localId, final ContentValues cv) {
+        AccountModel account = getAccountByLocalId(localId);
+        if (account == null) return;
+        int oldId = account.getId();
+        WellSql.update(AccountModel.class).whereId(oldId)
+                .put(account, new InsertMapper<AccountModel>() {
+                    @Override
+                    public ContentValues toCv(AccountModel item) {
+                        return cv;
+                    }
+                }).execute();
     }
 
     public static AccountModel getAccountByLocalId(long localId) {
