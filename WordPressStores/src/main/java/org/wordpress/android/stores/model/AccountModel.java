@@ -11,6 +11,8 @@ import org.wordpress.android.stores.Payload;
 public class AccountModel implements Identifiable, Payload {
     @PrimaryKey
     @Column private int mId;
+
+    // Account attributes
     @Column private String mUserName;
     @Column private long mUserId;
     @Column private String mDisplayName;
@@ -20,6 +22,15 @@ public class AccountModel implements Identifiable, Payload {
     @Column private int mSiteCount;
     @Column private int mVisibleSiteCount;
     @Column private String mEmail;
+
+    // Account Settings attributes
+    @Column private String mFirstName;
+    @Column private String mLastName;
+    @Column private String mAboutMe;
+    @Column private String mDate;
+    @Column private String mNewEmail;
+    @Column private boolean mPendingEmailChange;
+    @Column private String mWebAddress;
 
     public AccountModel() {
         init();
@@ -45,6 +56,39 @@ public class AccountModel implements Identifiable, Payload {
         mSiteCount = 0;
         mVisibleSiteCount = 0;
         mEmail = "";
+        mFirstName = "";
+        mLastName = "";
+        mAboutMe = "";
+        mDate = "";
+        mNewEmail = "";
+        mPendingEmailChange = false;
+        mWebAddress = "";
+    }
+
+    public void copyAccountSettingsAttributes(AccountModel other) {
+        if (other == null) return;
+        setUserName(other.getUserName());
+        setPrimaryBlogId(other.getPrimaryBlogId());
+        setFirstName(other.getFirstName());
+        setLastName(other.getLastName());
+        setAboutMe(other.getAboutMe());
+        setDate(other.getDate());
+        setNewEmail(other.getNewEmail());
+        setPendingEmailChange(other.getPendingEmailChange());
+        setWebAddress(other.getWebAddress());
+    }
+
+    public void copyAccountAttributes(AccountModel other) {
+        if (other == null) return;
+        setUserName(other.getUserName());
+        setUserId(other.getUserId());
+        setDisplayName(other.getDisplayName());
+        setProfileUrl(other.getProfileUrl());
+        setAvatarUrl(other.getAvatarUrl());
+        setPrimaryBlogId(other.getPrimaryBlogId());
+        setSiteCount(other.getSiteCount());
+        setVisibleSiteCount(other.getVisibleSiteCount());
+        setEmail(other.getEmail());
     }
 
     public long getUserId() {
@@ -117,5 +161,61 @@ public class AccountModel implements Identifiable, Payload {
 
     public String getEmail() {
         return mEmail;
+    }
+
+    public void setFirstName(String firstName) {
+        mFirstName = firstName;
+    }
+
+    public String getFirstName() {
+        return mFirstName;
+    }
+
+    public void setLastName(String lastName) {
+        mLastName = lastName;
+    }
+
+    public String getLastName() {
+        return mLastName;
+    }
+
+    public void setAboutMe(String aboutMe) {
+        mAboutMe = aboutMe;
+    }
+
+    public String getAboutMe() {
+        return mAboutMe;
+    }
+
+    public void setDate(String date) {
+        mDate = date;
+    }
+
+    public String getDate() {
+        return mDate;
+    }
+
+    public void setNewEmail(String newEmail) {
+        mNewEmail = newEmail;
+    }
+
+    public String getNewEmail() {
+        return mNewEmail;
+    }
+
+    public void setPendingEmailChange(boolean pendingEmailChange) {
+        mPendingEmailChange = pendingEmailChange;
+    }
+
+    public boolean getPendingEmailChange() {
+        return mPendingEmailChange;
+    }
+
+    public void setWebAddress(String webAddress) {
+        mWebAddress = webAddress;
+    }
+
+    public String getWebAddress() {
+        return mWebAddress;
     }
 }

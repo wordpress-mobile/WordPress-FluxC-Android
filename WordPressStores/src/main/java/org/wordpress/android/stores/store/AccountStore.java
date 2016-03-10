@@ -2,7 +2,6 @@ package org.wordpress.android.stores.store;
 
 import com.android.volley.VolleyError;
 import com.squareup.otto.Subscribe;
-import com.yarolegovich.wellsql.WellSql;
 
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.Payload;
@@ -16,11 +15,9 @@ import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.Token;
-import org.wordpress.android.stores.persistence.UpdateAllExceptId;
+import org.wordpress.android.stores.persistence.AccountSqlUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
-
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -51,6 +48,8 @@ public class AccountStore extends Store {
 
     private AccountModel mAccount;
     private AccessToken mAccessToken;
+
+    private int mFetchStatus = -1;
 
     @Inject
     public AccountStore(Dispatcher dispatcher, AccountRestClient accountRestClient,
@@ -84,7 +83,20 @@ public class AccountStore extends Store {
             AuthenticatePayload payload = (AuthenticatePayload) action.getPayload();
             authenticate(payload.username, payload.password, payload);
         } else if (actionType == AccountAction.FETCH) {
-            mAccountRestClient.getMe();
+            // prevent multiple in-progress fetches
+            if (mFetchStatus < 0) {
+                mFetchStatus = 0;
+                mAccountRestClient.getMe();
+                mAccountRestClient.getMySettings();
+            }
+        } else if (actionType == AccountAction.FETCHED) {
+            mAccount.copyAccountAttributes((AccountModel) action.getPayload());
+            AccountSqlUtils.insertOrUpdateAccount((AccountModel) action.getPayload());
+            moveFetchStatus();
+        } else if (actionType == AccountAction.FETCHED_SETTINGS) {
+            mAccount.copyAccountSettingsAttributes((AccountModel) action.getPayload());
+            AccountSqlUtils.insertOrUpdateAccountSettings((AccountModel) action.getPayload());
+            moveFetchStatus();
         } else if (actionType == AccountAction.UPDATE) {
             AccountModel accountModel = (AccountModel) action.getPayload();
             update(accountModel);
@@ -105,26 +117,13 @@ public class AccountStore extends Store {
     private void update(AccountModel accountModel) {
         // Update memory instance
         mAccount = accountModel;
-        // Update DB
-        List<AccountModel> accountResults = WellSql.selectUnique(AccountModel.class).getAsModel();
-        if (accountResults.isEmpty()) {
-            // insert
-            WellSql.insert(accountModel).execute();
-        } else {
-            // update
-            int oldId = accountResults.get(0).getId();
-            WellSql.update(AccountModel.class).whereId(oldId)
-                    .put(accountModel, new UpdateAllExceptId<AccountModel>()).execute();
-        }
+
+        AccountSqlUtils.insertOrUpdateAccount(accountModel);
     }
 
     private AccountModel loadAccount() {
-        List<AccountModel> accountResults = WellSql.selectUnique(AccountModel.class).getAsModel();
-        if (accountResults.isEmpty()) {
-            return new AccountModel();
-        } else {
-            return accountResults.get(0);
-        }
+        AccountModel account = AccountSqlUtils.getAccountByLocalId(1);
+        return account == null ? new AccountModel() : account;
     }
 
     private void authenticate(String username, String password, final AuthenticatePayload payload) {
@@ -146,5 +145,15 @@ public class AccountStore extends Store {
                 emitChange(event);
             }
         });
+    }
+
+    private void moveFetchStatus() {
+        if (++mFetchStatus >= 2) {
+            mFetchStatus = -1;
+            mDispatcher.dispatch(AccountAction.UPDATE, mAccount);
+        }
+        OnAccountChanged accountChanged = new OnAccountChanged();
+        accountChanged.accountInfosChanged = true;
+        emitChange(accountChanged);
     }
 }
