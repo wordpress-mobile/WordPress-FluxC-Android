@@ -1,8 +1,5 @@
 package org.wordpress.android.stores.model;
 
-import android.content.ContentValues;
-
-import com.wellsql.generated.AccountModelTable;
 import com.yarolegovich.wellsql.core.Identifiable;
 import com.yarolegovich.wellsql.core.annotation.Column;
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey;
@@ -68,19 +65,6 @@ public class AccountModel implements Identifiable, Payload {
         mWebAddress = "";
     }
 
-    public void copyAccountSettingsAttributes(AccountModel other) {
-        if (other == null) return;
-        setUserName(other.getUserName());
-        setPrimaryBlogId(other.getPrimaryBlogId());
-        setFirstName(other.getFirstName());
-        setLastName(other.getLastName());
-        setAboutMe(other.getAboutMe());
-        setDate(other.getDate());
-        setNewEmail(other.getNewEmail());
-        setPendingEmailChange(other.getPendingEmailChange());
-        setWebAddress(other.getWebAddress());
-    }
-
     public void copyAccountAttributes(AccountModel other) {
         if (other == null) return;
         setUserName(other.getUserName());
@@ -94,28 +78,17 @@ public class AccountModel implements Identifiable, Payload {
         setEmail(other.getEmail());
     }
 
-    public ContentValues getAccountContent() {
-        ContentValues cv = new ContentValues();
-        cv.put(AccountModelTable.USER_ID, getUserId());
-        cv.put(AccountModelTable.DISPLAY_NAME, getDisplayName());
-        cv.put(AccountModelTable.PROFILE_URL, getProfileUrl());
-        cv.put(AccountModelTable.AVATAR_URL, getAvatarUrl());
-        cv.put(AccountModelTable.SITE_COUNT, getSiteCount());
-        cv.put(AccountModelTable.VISIBLE_SITE_COUNT, getVisibleSiteCount());
-        cv.put(AccountModelTable.EMAIL, getEmail());
-        return cv;
-    }
-
-    public ContentValues getSettingsContent() {
-        ContentValues cv = new ContentValues();
-        cv.put(AccountModelTable.FIRST_NAME, getFirstName());
-        cv.put(AccountModelTable.LAST_NAME, getLastName());
-        cv.put(AccountModelTable.ABOUT_ME, getAboutMe());
-        cv.put(AccountModelTable.DATE, getDate());
-        cv.put(AccountModelTable.NEW_EMAIL, getNewEmail());
-        cv.put(AccountModelTable.PENDING_EMAIL_CHANGE, getPendingEmailChange());
-        cv.put(AccountModelTable.WEB_ADDRESS, getWebAddress());
-        return cv;
+    public void copyAccountSettingsAttributes(AccountModel other) {
+        if (other == null) return;
+        setUserName(other.getUserName());
+        setPrimaryBlogId(other.getPrimaryBlogId());
+        setFirstName(other.getFirstName());
+        setLastName(other.getLastName());
+        setAboutMe(other.getAboutMe());
+        setDate(other.getDate());
+        setNewEmail(other.getNewEmail());
+        setPendingEmailChange(other.getPendingEmailChange());
+        setWebAddress(other.getWebAddress());
     }
 
     public long getUserId() {

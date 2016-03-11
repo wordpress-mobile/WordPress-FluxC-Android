@@ -11,6 +11,40 @@ import org.wordpress.android.stores.model.AccountModel;
 import java.util.List;
 
 public class AccountSqlUtils {
+    /**
+     * This convenience method is provided to gather attributes related exclusively to the Account
+     * endpoint (/me). Account Settings endpoint (/me/settings) attributes are not included.
+     */
+    public static ContentValues getOnlyAccountContent(AccountModel account) {
+        ContentValues cv = new ContentValues();
+        if (account == null) return cv;
+        cv.put(AccountModelTable.USER_ID, account.getUserId());
+        cv.put(AccountModelTable.DISPLAY_NAME, account.getDisplayName());
+        cv.put(AccountModelTable.PROFILE_URL, account.getProfileUrl());
+        cv.put(AccountModelTable.AVATAR_URL, account.getAvatarUrl());
+        cv.put(AccountModelTable.SITE_COUNT, account.getSiteCount());
+        cv.put(AccountModelTable.VISIBLE_SITE_COUNT, account.getVisibleSiteCount());
+        cv.put(AccountModelTable.EMAIL, account.getEmail());
+        return cv;
+    }
+
+    /**
+     * This convenience method is provided to gather attributes related exclusively to the Account
+     * Settings endpoint (/me/settings). Account endpoint (/me) attributes are not included.
+     */
+    public static ContentValues getOnlySettingsContent(AccountModel account) {
+        ContentValues cv = new ContentValues();
+        if (account == null) return cv;
+        cv.put(AccountModelTable.FIRST_NAME, account.getFirstName());
+        cv.put(AccountModelTable.LAST_NAME, account.getLastName());
+        cv.put(AccountModelTable.ABOUT_ME, account.getAboutMe());
+        cv.put(AccountModelTable.DATE, account.getDate());
+        cv.put(AccountModelTable.NEW_EMAIL, account.getNewEmail());
+        cv.put(AccountModelTable.PENDING_EMAIL_CHANGE, account.getPendingEmailChange());
+        cv.put(AccountModelTable.WEB_ADDRESS, account.getWebAddress());
+        return cv;
+    }
+
     public static void insertOrUpdateAccount(AccountModel account) {
         List<AccountModel> accountResults = WellSql.select(AccountModel.class)
                 .where()
@@ -18,11 +52,9 @@ public class AccountSqlUtils {
                 .equals(AccountModelTable.PRIMARY_BLOG_ID, account.getPrimaryBlogId())
                 .endWhere().getAsModel();
         if (accountResults.isEmpty()) {
-            // insert
             WellSql.insert(account).execute();
         } else {
-            // update
-            updateAccount(accountResults.get(0).getId(), account.getAccountContent());
+            updateAccount(accountResults.get(0).getId(), new UpdateAllExceptId<AccountModel>().toCv(account));
         }
     }
 
@@ -33,11 +65,9 @@ public class AccountSqlUtils {
                 .equals(AccountModelTable.PRIMARY_BLOG_ID, account.getPrimaryBlogId())
                 .endWhere().getAsModel();
         if (accountResults.isEmpty()) {
-            // insert
             WellSql.insert(account).execute();
         } else {
-            // update
-            updateAccount(accountResults.get(0).getId(), account.getSettingsContent());
+            updateAccount(accountResults.get(0).getId(), getOnlySettingsContent(account));
         }
     }
 
