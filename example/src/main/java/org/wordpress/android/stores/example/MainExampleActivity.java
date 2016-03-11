@@ -1,5 +1,6 @@
 package org.wordpress.android.stores.example;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
@@ -20,6 +21,7 @@ import org.wordpress.android.stores.example.SignInDialog.Listener;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
+import org.wordpress.android.stores.network.MemorizingTrustManager;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.stores.store.AccountStore.OnAccountChanged;
@@ -39,6 +41,7 @@ public class MainExampleActivity extends AppCompatActivity {
     @Inject AccountStore mAccountStore;
     @Inject Dispatcher mDispatcher;
     @Inject HTTPAuthManager mHTTPAuthManager;
+    @Inject MemorizingTrustManager mMemorizingTrustManager;
 
     private TextView mLogView;
     private Button mAccountInfos;
@@ -125,6 +128,10 @@ public class MainExampleActivity extends AppCompatActivity {
                 // Show a Dialog prompting for http username and password
                 showHTTPAuthDialog(mSelfhostedPayload.xmlrpcEndpoint);
             }
+            if (event.authError == AuthError.INVALID_SSL_CERTIFICATE) {
+                // Show a SSL Warning Dialog
+                showSSLWarningDialog("Pouet");
+            }
         }
     }
 
@@ -144,6 +151,24 @@ public class MainExampleActivity extends AppCompatActivity {
     private void prependToLog(String s) {
         s = s + "\n" + mLogView.getText();
         mLogView.setText(s);
+    }
+
+    private void showSSLWarningDialog(String certifString) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        SSLWarningDialog newFragment = SSLWarningDialog.newInstance(
+                new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Add the certificate to our list
+                        mMemorizingTrustManager.storeLastFailure();
+                        // Retry login action
+                        if (mSelfhostedPayload != null) {
+                            selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password,
+                                    mSelfhostedPayload.xmlrpcEndpoint);
+                        }
+                    }
+                }, certifString);
+        newFragment.show(ft, "dialog");
     }
 
     private void showSigninDialog() {
