@@ -113,6 +113,7 @@ public class XMLRPCRequest extends BaseRequest<Object> {
         // Invalid SSL Handshake
         if (error.getCause() instanceof SSLHandshakeException) {
             mOnAuthFailedListener.onAuthFailed(AuthError.INVALID_SSL_CERTIFICATE);
+            return;
         }
         // Invalid HTTP Auth
         if (error instanceof AuthFailureError) {
