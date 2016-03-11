@@ -86,16 +86,16 @@ public class AccountStore extends Store {
             // prevent multiple in-progress fetches
             if (mFetchStatus < 0) {
                 mFetchStatus = 0;
-                mAccountRestClient.getMe();
-                mAccountRestClient.getMySettings();
+                mAccountRestClient.fetchAccount();
+                mAccountRestClient.fetchAccountSettings();
             }
-        } else if (actionType == AccountAction.FETCHED) {
+        } else if (actionType == AccountAction.FETCHED_ACCOUNT) {
             mAccount.copyAccountAttributes((AccountModel) action.getPayload());
-            AccountSqlUtils.insertOrUpdateAccount((AccountModel) action.getPayload());
+            AccountSqlUtils.insertOrUpdateOnlyAccount((AccountModel) action.getPayload());
             moveFetchStatus();
         } else if (actionType == AccountAction.FETCHED_SETTINGS) {
             mAccount.copyAccountSettingsAttributes((AccountModel) action.getPayload());
-            AccountSqlUtils.insertOrUpdateAccountSettings((AccountModel) action.getPayload());
+            AccountSqlUtils.insertOrUpdateOnlyAccountSettings((AccountModel) action.getPayload());
             moveFetchStatus();
         } else if (actionType == AccountAction.UPDATE) {
             AccountModel accountModel = (AccountModel) action.getPayload();
@@ -103,6 +103,9 @@ public class AccountStore extends Store {
             OnAccountChanged accountChanged = new OnAccountChanged();
             accountChanged.accountInfosChanged = true;
             emitChange(accountChanged);
+        } else if (actionType == AccountAction.ERROR_FETCH_ACCOUNT) {
+        } else if (actionType == AccountAction.ERROR_FETCH_ACCOUNT_SETTINGS) {
+        } else if (actionType == AccountAction.ERROR_POST_ACCOUNT_SETTINGS) {
         }
     }
 
@@ -122,7 +125,7 @@ public class AccountStore extends Store {
     }
 
     private AccountModel loadAccount() {
-        AccountModel account = AccountSqlUtils.getAccountByLocalId(1);
+        AccountModel account = AccountSqlUtils.getDefaultAccount();
         return account == null ? new AccountModel() : account;
     }
 

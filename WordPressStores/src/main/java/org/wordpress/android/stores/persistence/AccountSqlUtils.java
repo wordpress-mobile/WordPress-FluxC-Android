@@ -11,6 +11,8 @@ import org.wordpress.android.stores.model.AccountModel;
 import java.util.List;
 
 public class AccountSqlUtils {
+    private static final long DEFAULT_ACCOUNT_LOCAL_ID = 1;
+
     /**
      * This convenience method is provided to gather attributes related exclusively to the Account
      * endpoint (/me). Account Settings endpoint (/me/settings) attributes are not included.
@@ -58,7 +60,20 @@ public class AccountSqlUtils {
         }
     }
 
-    public static void insertOrUpdateAccountSettings(AccountModel account) {
+    public static void insertOrUpdateOnlyAccount(AccountModel account) {
+        List<AccountModel> accountResults = WellSql.select(AccountModel.class)
+                .where()
+                .equals(AccountModelTable.USER_NAME, account.getUserName())
+                .equals(AccountModelTable.PRIMARY_BLOG_ID, account.getPrimaryBlogId())
+                .endWhere().getAsModel();
+        if (accountResults.isEmpty()) {
+            WellSql.insert(account).execute();
+        } else {
+            updateAccount(accountResults.get(0).getId(), getOnlyAccountContent(account));
+        }
+    }
+
+    public static void insertOrUpdateOnlyAccountSettings(AccountModel account) {
         List<AccountModel> accountResults = WellSql.select(AccountModel.class)
                 .where()
                 .equals(AccountModelTable.USER_NAME, account.getUserName())
@@ -82,6 +97,10 @@ public class AccountSqlUtils {
                         return cv;
                     }
                 }).execute();
+    }
+
+    public static AccountModel getDefaultAccount() {
+        return getAccountByLocalId(DEFAULT_ACCOUNT_LOCAL_ID);
     }
 
     public static AccountModel getAccountByLocalId(long localId) {
