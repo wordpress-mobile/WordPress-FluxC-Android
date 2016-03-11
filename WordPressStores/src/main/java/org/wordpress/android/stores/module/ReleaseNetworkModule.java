@@ -28,7 +28,7 @@ public class ReleaseNetworkModule {
     @Provides
     public OkHttpClient provideOkHttpClient() {
         OkHttpClient okHttpClient = new OkHttpClient();
-
+        // FIXME: okHttpClient.setSslSocketFactory()
         return new OkHttpClient();
     }
 

@@ -26,6 +26,8 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.List;
 
+import javax.net.ssl.SSLHandshakeException;
+
 // TODO: Would be great to use generics / return POJO or model direclty (see GSON code?)
 public class XMLRPCRequest extends BaseRequest<Object> {
     private static final String PROTOCOL_CHARSET = "utf-8";
@@ -96,6 +98,7 @@ public class XMLRPCRequest extends BaseRequest<Object> {
     @Override
     public void deliverError(VolleyError error) {
         super.deliverError(error);
+        // XMLRPC Error
         if (error.getCause() instanceof XMLRPCFault) {
             XMLRPCFault xmlrpcFault = (XMLRPCFault) error.getCause();
             if (xmlrpcFault.getFaultCode() == 401) {
@@ -107,6 +110,11 @@ public class XMLRPCRequest extends BaseRequest<Object> {
                 return;
             }
         }
+        // Invalid SSL Handshake
+        if (error.getCause() instanceof SSLHandshakeException) {
+            mOnAuthFailedListener.onAuthFailed(AuthError.INVALID_SSL_CERTIFICATE);
+        }
+        // Invalid HTTP Auth
         if (error instanceof AuthFailureError) {
             mOnAuthFailedListener.onAuthFailed(AuthError.HTTP_AUTH_ERROR);
             return;
