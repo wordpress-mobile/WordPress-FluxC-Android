@@ -34,7 +34,6 @@ import okhttp3.OkUrlFactory;
 
 @Module
 public class ReleaseNetworkModule {
-
     @Provides
     public OkHttpClient provideOkHttpClient(MemorizingTrustManager memorizingTrustManager) {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();

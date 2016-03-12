@@ -58,11 +58,7 @@ public class SSLWarningDialog extends DialogFragment {
                         mListener.onClick(dialog, id);
                     }
                 })
-                .setNegativeButton(android.R.string.cancel, new OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        SSLWarningDialog.this.getDialog().cancel();
-                    }
-                });
+                .setNegativeButton(android.R.string.cancel, null);
         return builder.create();
     }
 }

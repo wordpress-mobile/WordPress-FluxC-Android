@@ -143,11 +143,11 @@ public class MemorizingTrustManager implements X509TrustManager {
         try {
             mDefaultTrustManager.checkServerTrusted(chain, authType);
         } catch (CertificateException ce) {
+            mLastFailure = chain[0];
             if (isCertificateAccepted(chain[0])) {
                 // Certificate has already been accepted by the user
                 return;
             }
-            mLastFailure = chain[0];
             throw ce;
         }
     }

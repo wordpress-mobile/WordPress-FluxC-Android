@@ -8,6 +8,7 @@ import org.wordpress.android.stores.action.SiteAction;
 import org.wordpress.android.stores.example.BuildConfig;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
+import org.wordpress.android.stores.network.MemorizingTrustManager;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.stores.store.SiteStore;
@@ -29,13 +30,15 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
     @Inject HTTPAuthManager mHTTPAuthManager;
+    @Inject MemorizingTrustManager mMemorizingTrustManager;
 
     CountDownLatch mCountDownLatch;
 
     enum TEST_EVENTS {
         NONE,
+        SITE_CHANGED,
         HTTP_AUTH_ERROR,
-        SITE_CHANGED
+        INVALID_SSL_CERTIFICATE
     }
     private TEST_EVENTS mExpectedEvent;
 
@@ -104,12 +107,20 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SELFSIGNED_SSL;
         payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL;
+
+        //  We're expecting a SSL Warning event
+        mExpectedEvent = TEST_EVENTS.INVALID_SSL_CERTIFICATE;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+        // Wait for a network response / onAuthenticationChanged error event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // Add an exception for the last certificate
+        mMemorizingTrustManager.storeLastFailure();
+        // Retry
         mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
-        // TODO: should get a SSL Warning event
-
-        // Wait for a network response / onChanged event
+        // Wait for a network response
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -168,8 +179,11 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
             AppLog.i(T.TESTS, "error " + event.authError);
             if (event.authError == AuthError.HTTP_AUTH_ERROR) {
                 assertEquals(mExpectedEvent, TEST_EVENTS.HTTP_AUTH_ERROR);
-                mCountDownLatch.countDown();
+            }
+            if (event.authError == AuthError.INVALID_SSL_CERTIFICATE) {
+                assertEquals(mExpectedEvent, TEST_EVENTS.INVALID_SSL_CERTIFICATE);
             }
         }
+        mCountDownLatch.countDown();
     }
 }

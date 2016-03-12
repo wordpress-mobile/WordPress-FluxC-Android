@@ -130,7 +130,7 @@ public class MainExampleActivity extends AppCompatActivity {
             }
             if (event.authError == AuthError.INVALID_SSL_CERTIFICATE) {
                 // Show a SSL Warning Dialog
-                showSSLWarningDialog("Pouet");
+                showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
             }
         }
     }

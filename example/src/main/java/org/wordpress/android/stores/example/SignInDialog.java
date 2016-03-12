@@ -60,11 +60,7 @@ public class SignInDialog extends DialogFragment {
                                 mUrlView.getText().toString());
                     }
                 })
-                .setNegativeButton(android.R.string.cancel, new OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        SignInDialog.this.getDialog().cancel();
-                    }
-                });
+                .setNegativeButton(android.R.string.cancel, null);
         return builder.create();
     }
 }
