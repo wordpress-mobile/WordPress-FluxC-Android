@@ -47,11 +47,14 @@ public class AccountSqlUtils {
         return cv;
     }
 
+    /**
+     * Adds or overwrites all columns for a matching row in the Account Table.
+     */
     public static void insertOrUpdateAccount(AccountModel account) {
+        if (account == null) return;
         List<AccountModel> accountResults = WellSql.select(AccountModel.class)
                 .where()
-                .equals(AccountModelTable.USER_NAME, account.getUserName())
-                .equals(AccountModelTable.PRIMARY_BLOG_ID, account.getPrimaryBlogId())
+                .equals(AccountModelTable.ID, account.getId())
                 .endWhere().getAsModel();
         if (accountResults.isEmpty()) {
             WellSql.insert(account).execute();
@@ -60,7 +63,15 @@ public class AccountSqlUtils {
         }
     }
 
+    /**
+     * Adds or updates only Account column data for a row in the Account Table that matches the
+     * given {@link AccountModel}'s username and primary blog ID.
+     *
+     * Used by {@link org.wordpress.android.stores.store.AccountStore} to handle asynchronous REST
+     * endpoint responses.
+     */
     public static void insertOrUpdateOnlyAccount(AccountModel account) {
+        if (account == null) return;
         List<AccountModel> accountResults = WellSql.select(AccountModel.class)
                 .where()
                 .equals(AccountModelTable.USER_NAME, account.getUserName())
@@ -73,7 +84,15 @@ public class AccountSqlUtils {
         }
     }
 
+    /**
+     * Adds or updates only Account Settings column data for a row in the Account Table that matches
+     * the given {@link AccountModel}'s username and primary blog ID.
+     *
+     * Used by {@link org.wordpress.android.stores.store.AccountStore} to handle asynchronous REST
+     * endpoint responses.
+     */
     public static void insertOrUpdateOnlyAccountSettings(AccountModel account) {
+        if (account == null) return;
         List<AccountModel> accountResults = WellSql.select(AccountModel.class)
                 .where()
                 .equals(AccountModelTable.USER_NAME, account.getUserName())
@@ -86,9 +105,13 @@ public class AccountSqlUtils {
         }
     }
 
+    /**
+     * Updates an existing row in the Account Table that matches the given local ID. Only columns
+     * defined in the given {@link ContentValues} keys are modified.
+     */
     public static void updateAccount(long localId, final ContentValues cv) {
         AccountModel account = getAccountByLocalId(localId);
-        if (account == null) return;
+        if (account == null || cv == null) return;
         int oldId = account.getId();
         WellSql.update(AccountModel.class).whereId(oldId)
                 .put(account, new InsertMapper<AccountModel>() {
@@ -99,10 +122,18 @@ public class AccountSqlUtils {
                 }).execute();
     }
 
+    /**
+     * Passthrough to {@link #getAccountByLocalId(long)} using the default Account local ID.
+     */
     public static AccountModel getDefaultAccount() {
         return getAccountByLocalId(DEFAULT_ACCOUNT_LOCAL_ID);
     }
 
+    /**
+     * Attempts to load an Account with the given local ID from the Account Table.
+     *
+     * @return the Account row as {@link AccountModel}, null if no row matches the given ID
+     */
     public static AccountModel getAccountByLocalId(long localId) {
         List<AccountModel> accountResult = WellSql.select(AccountModel.class)
                 .where().equals(AccountModelTable.ID, localId)
@@ -110,6 +141,11 @@ public class AccountSqlUtils {
         return accountResult.isEmpty() ? null : accountResult.get(0);
     }
 
+    /**
+     * Attempts to load an Account with the given remote ID from the Account Table.
+     *
+     * @return the Account row as {@link AccountModel}, null if no row matches the given ID
+     */
     public static AccountModel getAccountByRemoteId(long remoteId) {
         List<AccountModel> accountResult = WellSql.select(AccountModel.class)
                 .where().equals(AccountModelTable.USER_ID, remoteId)

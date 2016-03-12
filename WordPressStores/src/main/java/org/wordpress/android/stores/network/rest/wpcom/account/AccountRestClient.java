@@ -54,7 +54,7 @@ public class AccountRestClient extends BaseWPComRestClient {
      * an {@link AccountError} payload.
      */
     public void fetchAccount() {
-        final String url = WPCOM_PREFIX_V1_1 + WPCOM_ACCOUNT_ENDPOINT;
+        String url = WPCOM_PREFIX_V1_1 + WPCOM_ACCOUNT_ENDPOINT;
         add(new WPComGsonRequest<>(Method.GET, url, null, AccountResponse.class,
                 new Listener<AccountResponse>() {
                     @Override
@@ -99,7 +99,18 @@ public class AccountRestClient extends BaseWPComRestClient {
         ));
     }
 
+    /**
+     * Performs an HTTP POST call to the {@link #WPCOM_ACCOUNT_SETTINGS_ENDPOINT} endpoint. If the
+     * call succeeds a {@link AccountAction#POSTED_SETTINGS} action is dispatched with the response
+     * data stored in the payload as {@link AccountModel}.
+     *
+     * If the call fails a {@link AccountAction#ERROR_POST_ACCOUNT_SETTINGS} action is dispatched
+     * with an {@link AccountError} payload.
+     *
+     * No HTTP POST call is made if the given parameter map is null or contains no entries.
+     */
     public void postAccountSettings(Map<String, String> params) {
+        if (params == null || params.isEmpty()) return;
         String url = WPCOM_PREFIX_V1_1 + WPCOM_ACCOUNT_SETTINGS_ENDPOINT;
         add(new WPComGsonRequest<>(Method.POST, url, params, AccountSettingsResponse.class,
                 new Listener<AccountSettingsResponse>() {

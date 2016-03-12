@@ -65,6 +65,9 @@ public class AccountModel implements Identifiable, Payload {
         mWebAddress = "";
     }
 
+    /**
+     * Copies Account attributes from another {@link AccountModel} to this instance.
+     */
     public void copyAccountAttributes(AccountModel other) {
         if (other == null) return;
         setUserName(other.getUserName());
@@ -78,6 +81,9 @@ public class AccountModel implements Identifiable, Payload {
         setEmail(other.getEmail());
     }
 
+    /**
+     * Copies Account Settings attributes from another {@link AccountModel} to this instance.
+     */
     public void copyAccountSettingsAttributes(AccountModel other) {
         if (other == null) return;
         setUserName(other.getUserName());
