@@ -117,6 +117,13 @@ public class AccountStore extends Store {
         return mAccessToken.exists();
     }
 
+    /**
+     * Checks if an Account is currently signed in to WordPress.com or any WordPress.org sites.
+     */
+    public boolean isSignedIn() {
+        return hasAccessToken() || mAccount.getVisibleSiteCount() > 0;
+    }
+
     private void update(AccountModel accountModel) {
         // Update memory instance
         mAccount = accountModel;
