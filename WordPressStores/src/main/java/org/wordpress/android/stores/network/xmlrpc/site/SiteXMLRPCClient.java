@@ -9,9 +9,11 @@ import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.action.SiteAction;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.model.SitesModel;
+import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.UserAgent;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
+import org.wordpress.android.stores.network.xmlrpc.XMLRPC;
 import org.wordpress.android.stores.network.xmlrpc.XMLRPCRequest;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -24,8 +26,8 @@ import java.util.Map;
 
 public class SiteXMLRPCClient extends BaseXMLRPCClient {
     public SiteXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken accessToken,
-                            UserAgent userAgent) {
-        super(dispatcher, requestQueue, accessToken, userAgent);
+                            UserAgent userAgent, HTTPAuthManager httpAuthManager) {
+        super(dispatcher, requestQueue, accessToken, userAgent, httpAuthManager);
     }
 
     public void pullSites(final String xmlrpcUrl, final String username, final String password) {
@@ -33,7 +35,7 @@ public class SiteXMLRPCClient extends BaseXMLRPCClient {
         params.add(username);
         params.add(password);
         final XMLRPCRequest request = new XMLRPCRequest(
-                xmlrpcUrl, "wp.getUsersBlogs", params,
+                xmlrpcUrl, XMLRPC.GET_USERS_BLOGS, params,
                 new Listener<Object>() {
                     @Override
                     public void onResponse(Object response) {
@@ -77,7 +79,7 @@ public class SiteXMLRPCClient extends BaseXMLRPCClient {
         params.add(site.getPassword());
         params.add(blogOptionsXMLRPCParameters);
         final XMLRPCRequest request = new XMLRPCRequest(
-                site.getXMLRpcUrl(), "wp.getOptions", params,
+                site.getXMLRpcUrl(), XMLRPC.GET_OPTIONS, params,
                 new Listener<Object>() {
                     @Override
                     public void onResponse(Object response) {

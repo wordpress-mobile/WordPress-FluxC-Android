@@ -12,6 +12,7 @@ import org.wordpress.android.stores.action.AccountAction;
 import org.wordpress.android.stores.model.AccountModel;
 import org.wordpress.android.stores.network.UserAgent;
 import org.wordpress.android.stores.network.rest.wpcom.BaseWPComRestClient;
+import org.wordpress.android.stores.network.rest.wpcom.WPCOMREST;
 import org.wordpress.android.stores.network.rest.wpcom.WPComGsonRequest;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.util.AppLog;
@@ -24,9 +25,6 @@ import javax.inject.Singleton;
 
 @Singleton
 public class AccountRestClient extends BaseWPComRestClient {
-    public static final String WPCOM_ACCOUNT_ENDPOINT = "/me";
-    public static final String WPCOM_ACCOUNT_SETTINGS_ENDPOINT = "/me/settings";
-
     public static class AccountError implements Payload {
         private VolleyError mError;
 
@@ -46,7 +44,7 @@ public class AccountRestClient extends BaseWPComRestClient {
     }
 
     /**
-     * Performs an HTTP GET call to the {@link #WPCOM_ACCOUNT_ENDPOINT} endpoint. If the call
+     * Performs an HTTP GET call to the {@link WPCOMREST#ME} endpoint (v1.1). If the call
      * succeeds a {@link AccountAction#FETCHED} action is dispatched with the response data stored
      * in the payload as {@link AccountModel}.
      *
@@ -54,7 +52,7 @@ public class AccountRestClient extends BaseWPComRestClient {
      * an {@link AccountError} payload.
      */
     public void fetchAccount() {
-        String url = WPCOM_PREFIX_V1_1 + WPCOM_ACCOUNT_ENDPOINT;
+        String url = WPCOMREST.ME.getUrlV1_1();
         add(new WPComGsonRequest<>(Method.GET, url, null, AccountResponse.class,
                 new Listener<AccountResponse>() {
                     @Override
@@ -73,7 +71,7 @@ public class AccountRestClient extends BaseWPComRestClient {
     }
 
     /**
-     * Performs an HTTP GET call to the {@link #WPCOM_ACCOUNT_SETTINGS_ENDPOINT} endpoint. If the
+     * Performs an HTTP GET call to the {@link WPCOMREST#ME_SETTINGS} endpoint (v1.1). If the
      * call succeeds a {@link AccountAction#FETCHED_SETTINGS} action is dispatched with the response
      * data stored in the payload as {@link AccountModel}.
      *
@@ -81,7 +79,7 @@ public class AccountRestClient extends BaseWPComRestClient {
      * with an {@link AccountError} payload.
      */
     public void fetchAccountSettings() {
-        String url = WPCOM_PREFIX_V1_1 + WPCOM_ACCOUNT_SETTINGS_ENDPOINT;
+        String url = WPCOMREST.ME_SETTINGS.getUrlV1_1();
         add(new WPComGsonRequest<>(Method.GET, url, null, AccountSettingsResponse.class,
                 new Listener<AccountSettingsResponse>() {
                     @Override
@@ -100,7 +98,7 @@ public class AccountRestClient extends BaseWPComRestClient {
     }
 
     /**
-     * Performs an HTTP POST call to the {@link #WPCOM_ACCOUNT_SETTINGS_ENDPOINT} endpoint. If the
+     * Performs an HTTP POST call to the {@link WPCOMREST#ME_SETTINGS} endpoint (v1.1). If the
      * call succeeds a {@link AccountAction#POSTED_SETTINGS} action is dispatched with the response
      * data stored in the payload as {@link AccountModel}.
      *
@@ -111,7 +109,7 @@ public class AccountRestClient extends BaseWPComRestClient {
      */
     public void postAccountSettings(Map<String, String> params) {
         if (params == null || params.isEmpty()) return;
-        String url = WPCOM_PREFIX_V1_1 + WPCOM_ACCOUNT_SETTINGS_ENDPOINT;
+        String url = WPCOMREST.ME_SETTINGS.getUrlV1_1();
         add(new WPComGsonRequest<>(Method.POST, url, params, AccountSettingsResponse.class,
                 new Listener<AccountSettingsResponse>() {
                     @Override
