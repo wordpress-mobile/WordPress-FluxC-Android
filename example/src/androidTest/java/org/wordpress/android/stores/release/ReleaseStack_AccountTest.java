@@ -4,8 +4,8 @@ import com.squareup.otto.Subscribe;
 
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.TestUtils;
-import org.wordpress.android.stores.action.AccountAction;
-import org.wordpress.android.stores.action.AuthenticationAction;
+import org.wordpress.android.stores.action.AccountActionBuilder;
+import org.wordpress.android.stores.action.AuthenticationActionBuilder;
 import org.wordpress.android.stores.example.BuildConfig;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
@@ -43,13 +43,13 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         payload.password = BuildConfig.TEST_WPCOM_PASSWORD_TEST1;
 
         // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationAction.AUTHENTICATE, payload);
+        mDispatcher.dispatch(AuthenticationActionBuilder.generateAuthenticateAction(payload));
         mCountDownLatch = new CountDownLatch(1);
         // Wait for a network response / onChanged event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Get user infos
-        mDispatcher.dispatch(AccountAction.FETCH);
+        mDispatcher.dispatch(AccountActionBuilder.generateFetchAction());
         mCountDownLatch = new CountDownLatch(1);
         // Wait for a network response / onChanged event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));

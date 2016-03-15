@@ -7,7 +7,7 @@ import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 
 import org.wordpress.android.stores.Dispatcher;
-import org.wordpress.android.stores.action.SiteAction;
+import org.wordpress.android.stores.action.SiteActionBuilder;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.model.SitesModel;
 import org.wordpress.android.stores.network.UserAgent;
@@ -41,7 +41,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                         for (SiteWPComRestResponse siteResponse : response.sites) {
                             sites.add(siteResponseToSiteModel(siteResponse));
                         }
-                        mDispatcher.dispatch(SiteAction.UPDATE_SITES, sites);
+                        mDispatcher.dispatch(SiteActionBuilder.generateUpdateSitesAction(sites));
                     }
                 },
                 new ErrorListener() {
@@ -63,7 +63,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                     @Override
                     public void onResponse(SiteWPComRestResponse response) {
                         SiteModel site = siteResponseToSiteModel(response);
-                        mDispatcher.dispatch(SiteAction.UPDATE_SITE, site);
+                        mDispatcher.dispatch(SiteActionBuilder.generateUpdateSiteAction(site));
                     }
                 },
                 new ErrorListener() {

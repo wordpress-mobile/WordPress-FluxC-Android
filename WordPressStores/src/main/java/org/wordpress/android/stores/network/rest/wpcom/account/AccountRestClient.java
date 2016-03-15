@@ -7,7 +7,7 @@ import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 
 import org.wordpress.android.stores.Dispatcher;
-import org.wordpress.android.stores.action.AccountAction;
+import org.wordpress.android.stores.action.AccountActionBuilder;
 import org.wordpress.android.stores.model.AccountModel;
 import org.wordpress.android.stores.network.UserAgent;
 import org.wordpress.android.stores.network.rest.wpcom.BaseWPComRestClient;
@@ -36,7 +36,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                     @Override
                     public void onResponse(AccountResponse response) {
                         AccountModel accountModel = responseToAccountModel(response);
-                        mDispatcher.dispatch(AccountAction.UPDATE, accountModel);
+                        mDispatcher.dispatch(AccountActionBuilder.generateUpdateAction(accountModel));
                     }
                 },
                 new ErrorListener() {

@@ -4,7 +4,6 @@ import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
 import org.wordpress.android.stores.action.Action;
-import org.wordpress.android.stores.action.IAction;
 import org.wordpress.android.stores.store.Store;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -34,22 +33,6 @@ public class Dispatcher {
         AppLog.d(T.API, "Dispatching action: " + action.getType().getClass().getSimpleName()
                 + "-" + action.getType().name());
         post(action);
-    }
-
-    public <T> void dispatch(final IAction actionType, final T payload) {
-        dispatch(createAction(actionType, payload));
-    }
-
-    public void dispatch(IAction actionType) {
-        dispatch(actionType, null);
-    }
-
-    public <T> Action<T> createAction(final IAction actionType, final T payload) {
-        return new Action<T>(actionType, payload);
-    }
-
-    public <T> Action<T> createAction(final IAction actionType) {
-        return createAction(actionType, null);
     }
 
     public void emitChange(final Object changeEvent) {

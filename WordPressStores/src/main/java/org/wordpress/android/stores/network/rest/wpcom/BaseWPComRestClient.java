@@ -4,7 +4,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 
 import org.wordpress.android.stores.Dispatcher;
-import org.wordpress.android.stores.action.AuthenticationAction;
+import org.wordpress.android.stores.action.AuthenticationActionBuilder;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.BaseRequest.OnAuthFailedListener;
 import org.wordpress.android.stores.network.UserAgent;
@@ -27,7 +27,7 @@ public class BaseWPComRestClient {
         mOnAuthFailedListener = new OnAuthFailedListener() {
             @Override
             public void onAuthFailed(AuthError authError) {
-                mDispatcher.dispatch(AuthenticationAction.AUTHENTICATE_ERROR, authError);
+                mDispatcher.dispatch(AuthenticationActionBuilder.generateAuthenticateErrorAction(authError));
             }
         };
     }

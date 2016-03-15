@@ -6,7 +6,7 @@ import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 
 import org.wordpress.android.stores.Dispatcher;
-import org.wordpress.android.stores.action.SiteAction;
+import org.wordpress.android.stores.action.SiteActionBuilder;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.model.SitesModel;
 import org.wordpress.android.stores.network.HTTPAuthManager;
@@ -41,7 +41,7 @@ public class SiteXMLRPCClient extends BaseXMLRPCClient {
                     public void onResponse(Object response) {
                         SitesModel sites = sitesResponseToSitesModel(response, username, password);
                         if (sites != null) {
-                            mDispatcher.dispatch(SiteAction.UPDATE_SITES, sites);
+                            mDispatcher.dispatch(SiteActionBuilder.generateUpdateSitesAction(sites));
                         } else {
                             // TODO: do nothing or dispatch error?
                         }
@@ -84,7 +84,7 @@ public class SiteXMLRPCClient extends BaseXMLRPCClient {
                     @Override
                     public void onResponse(Object response) {
                         SiteModel updatedSite = updateSiteFromOptions(response, site);
-                        mDispatcher.dispatch(SiteAction.UPDATE_SITE, updatedSite);
+                        mDispatcher.dispatch(SiteActionBuilder.generateUpdateSiteAction(updatedSite));
                     }
                 },
                 new ErrorListener() {

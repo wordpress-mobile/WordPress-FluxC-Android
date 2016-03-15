@@ -7,7 +7,7 @@ import com.squareup.otto.Subscribe;
 import com.yarolegovich.wellsql.WellSql;
 
 import org.wordpress.android.stores.Dispatcher;
-import org.wordpress.android.stores.action.AuthenticationAction;
+import org.wordpress.android.stores.action.AuthenticationActionBuilder;
 import org.wordpress.android.stores.module.AppContextModule;
 import org.wordpress.android.stores.persistence.WellSqlConfig;
 import org.wordpress.android.stores.store.AccountStore;
@@ -52,7 +52,7 @@ public class AccountStoreTest extends InstrumentationTestCase {
         payload.password = "test";
         mIsError = false;
         // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationAction.AUTHENTICATE, payload);
+        mDispatcher.dispatch(AuthenticationActionBuilder.generateAuthenticateAction(payload));
     }
 
     public void testAuthenticationKO() {
@@ -61,7 +61,7 @@ public class AccountStoreTest extends InstrumentationTestCase {
         payload.password = "error";
         mIsError = true;
         // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationAction.AUTHENTICATE, payload);
+        mDispatcher.dispatch(AuthenticationActionBuilder.generateAuthenticateAction(payload));
     }
 
     @Subscribe

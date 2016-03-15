@@ -13,9 +13,9 @@ import android.widget.TextView;
 import com.squareup.otto.Subscribe;
 
 import org.wordpress.android.stores.Dispatcher;
-import org.wordpress.android.stores.action.AccountAction;
-import org.wordpress.android.stores.action.AuthenticationAction;
-import org.wordpress.android.stores.action.SiteAction;
+import org.wordpress.android.stores.action.AccountActionBuilder;
+import org.wordpress.android.stores.action.AuthenticationActionBuilder;
+import org.wordpress.android.stores.action.SiteActionBuilder;
 import org.wordpress.android.stores.example.SignInDialog.Listener;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.AuthError;
@@ -65,14 +65,14 @@ public class MainExampleActivity extends AppCompatActivity {
         mAccountInfos.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDispatcher.dispatch(AccountAction.FETCH);
+                mDispatcher.dispatch(AccountActionBuilder.generateFetchAction());
             }
         });
         mUpdateFirstSite = (Button) findViewById(R.id.update_first_site);
         mUpdateFirstSite.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDispatcher.dispatch(SiteAction.FETCH_SITE, mSiteStore.getSites().get(0));
+                mDispatcher.dispatch(SiteActionBuilder.generateFetchSiteAction(mSiteStore.getSites().get(0)));
             }
         });
 
@@ -204,8 +204,8 @@ public class MainExampleActivity extends AppCompatActivity {
         payload.username = username;
         payload.password = password;
         // Next action will be dispatched if authentication is successful
-        payload.nextAction = mDispatcher.createAction(SiteAction.FETCH_SITES);
-        mDispatcher.dispatch(AuthenticationAction.AUTHENTICATE, payload);
+        payload.nextAction = SiteActionBuilder.generateFetchSitesAction();
+        mDispatcher.dispatch(AuthenticationActionBuilder.generateAuthenticateAction(payload));
     }
 
     private void selfHostedFetchSites(String username, String password, String xmlrpcEndpoint) {
@@ -215,6 +215,6 @@ public class MainExampleActivity extends AppCompatActivity {
         payload.xmlrpcEndpoint = xmlrpcEndpoint;
         mSelfhostedPayload = payload;
         // Self Hosted don't have any "Authentication" request, try to list sites with user/password
-        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+        mDispatcher.dispatch(SiteActionBuilder.generateFetchSitesXmlRpcAction(payload));
     }
 }
