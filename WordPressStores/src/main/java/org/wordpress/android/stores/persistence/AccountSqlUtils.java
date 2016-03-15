@@ -50,16 +50,17 @@ public class AccountSqlUtils {
     /**
      * Adds or overwrites all columns for a matching row in the Account Table.
      */
-    public static void insertOrUpdateAccount(AccountModel account) {
-        if (account == null) return;
+    public static int insertOrUpdateAccount(AccountModel account) {
+        if (account == null) return 0;
         List<AccountModel> accountResults = WellSql.select(AccountModel.class)
                 .where()
                 .equals(AccountModelTable.ID, account.getId())
                 .endWhere().getAsModel();
         if (accountResults.isEmpty()) {
             WellSql.insert(account).execute();
+            return 0;
         } else {
-            updateAccount(accountResults.get(0).getId(), new UpdateAllExceptId<AccountModel>().toCv(account));
+            return updateAccount(accountResults.get(0).getId(), new UpdateAllExceptId<AccountModel>().toCv(account));
         }
     }
 
@@ -70,8 +71,8 @@ public class AccountSqlUtils {
      * Used by {@link org.wordpress.android.stores.store.AccountStore} to handle asynchronous REST
      * endpoint responses.
      */
-    public static void insertOrUpdateOnlyAccount(AccountModel account) {
-        if (account == null) return;
+    public static int insertOrUpdateOnlyAccount(AccountModel account) {
+        if (account == null) return 0;
         List<AccountModel> accountResults = WellSql.select(AccountModel.class)
                 .where()
                 .equals(AccountModelTable.USER_NAME, account.getUserName())
@@ -79,8 +80,9 @@ public class AccountSqlUtils {
                 .endWhere().getAsModel();
         if (accountResults.isEmpty()) {
             WellSql.insert(account).execute();
+            return 0;
         } else {
-            updateAccount(accountResults.get(0).getId(), getOnlyAccountContent(account));
+            return updateAccount(accountResults.get(0).getId(), getOnlyAccountContent(account));
         }
     }
 
@@ -91,8 +93,8 @@ public class AccountSqlUtils {
      * Used by {@link org.wordpress.android.stores.store.AccountStore} to handle asynchronous REST
      * endpoint responses.
      */
-    public static void insertOrUpdateOnlyAccountSettings(AccountModel account) {
-        if (account == null) return;
+    public static int insertOrUpdateOnlyAccountSettings(AccountModel account) {
+        if (account == null) return 0;
         List<AccountModel> accountResults = WellSql.select(AccountModel.class)
                 .where()
                 .equals(AccountModelTable.USER_NAME, account.getUserName())
@@ -100,8 +102,9 @@ public class AccountSqlUtils {
                 .endWhere().getAsModel();
         if (accountResults.isEmpty()) {
             WellSql.insert(account).execute();
+            return 0;
         } else {
-            updateAccount(accountResults.get(0).getId(), getOnlySettingsContent(account));
+            return updateAccount(accountResults.get(0).getId(), getOnlySettingsContent(account));
         }
     }
 
@@ -109,11 +112,11 @@ public class AccountSqlUtils {
      * Updates an existing row in the Account Table that matches the given local ID. Only columns
      * defined in the given {@link ContentValues} keys are modified.
      */
-    public static void updateAccount(long localId, final ContentValues cv) {
+    public static int updateAccount(long localId, final ContentValues cv) {
         AccountModel account = getAccountByLocalId(localId);
-        if (account == null || cv == null) return;
+        if (account == null || cv == null) return 0;
         int oldId = account.getId();
-        WellSql.update(AccountModel.class).whereId(oldId)
+        return WellSql.update(AccountModel.class).whereId(oldId)
                 .put(account, new InsertMapper<AccountModel>() {
                     @Override
                     public ContentValues toCv(AccountModel item) {
