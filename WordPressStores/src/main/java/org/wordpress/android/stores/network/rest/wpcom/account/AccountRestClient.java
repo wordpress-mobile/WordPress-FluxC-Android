@@ -40,12 +40,10 @@ public class AccountRestClient extends BaseWPComRestClient {
     }
 
     /**
-     * Performs an HTTP GET call to the {@link WPCOMREST#ME} endpoint (v1.1). If the call
-     * succeeds a {@link AccountAction#FETCHED} action is dispatched with the response data stored
-     * in the payload as {@link AccountModel}.
-     *
-     * If the call fails a {@link AccountAction#ERROR_FETCH_ACCOUNT} action is dispatched with
-     * an {@link AccountError} payload.
+     * Performs an HTTP GET call to the v1.1 {@link WPCOMREST#ME} endpoint. Upon receiving a
+     * response (success or error) a {@link AccountAction#FETCHED_ACCOUNT} action is dispatched
+     * with a payload of type {@link AccountRestPayload}. {@link AccountRestPayload#isError()} can
+     * be used to determine the result of the request.
      */
     public void fetchAccount() {
         String url = WPCOMREST.ME.getUrlV1_1();
@@ -69,12 +67,10 @@ public class AccountRestClient extends BaseWPComRestClient {
     }
 
     /**
-     * Performs an HTTP GET call to the {@link WPCOMREST#ME_SETTINGS} endpoint (v1.1). If the
-     * call succeeds a {@link AccountAction#FETCHED_SETTINGS} action is dispatched with the response
-     * data stored in the payload as {@link AccountModel}.
-     *
-     * If the call fails a {@link AccountAction#ERROR_FETCH_ACCOUNT_SETTINGS} action is dispatched
-     * with an {@link AccountError} payload.
+     * Performs an HTTP GET call to the v1.1 {@link WPCOMREST#ME_SETTINGS} endpoint. Upon receiving
+     * a response (success or error) a {@link AccountAction#FETCHED_SETTINGS} action is dispatched
+     * with a payload of type {@link AccountRestPayload}. {@link AccountRestPayload#isError()} can
+     * be used to determine the result of the request.
      */
     public void fetchAccountSettings() {
         String url = WPCOMREST.ME_SETTINGS.getUrlV1_1();
@@ -98,12 +94,10 @@ public class AccountRestClient extends BaseWPComRestClient {
     }
 
     /**
-     * Performs an HTTP POST call to the {@link WPCOMREST#ME_SETTINGS} endpoint (v1.1). If the
-     * call succeeds a {@link AccountAction#POSTED_SETTINGS} action is dispatched with the response
-     * data stored in the payload as {@link AccountModel}.
-     *
-     * If the call fails a {@link AccountAction#ERROR_POST_ACCOUNT_SETTINGS} action is dispatched
-     * with an {@link AccountError} payload.
+     * Performs an HTTP POST call to the v1.1 {@link WPCOMREST#ME_SETTINGS} endpoint. Upon receiving
+     * a response (success or error) a {@link AccountAction#POSTED_SETTINGS} action is dispatched
+     * with a payload of type {@link AccountRestPayload}. {@link AccountRestPayload#isError()} can
+     * be used to determine the result of the request.
      *
      * No HTTP POST call is made if the given parameter map is null or contains no entries.
      */

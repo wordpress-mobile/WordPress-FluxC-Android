@@ -53,7 +53,6 @@ public class AccountStore extends Store {
 
     private AccountRestClient mAccountRestClient;
     private Authenticator mAuthenticator;
-
     private AccountModel mAccount;
     private AccessToken mAccessToken;
 
@@ -128,6 +127,9 @@ public class AccountStore extends Store {
         return mAccount;
     }
 
+    /**
+     * Can be used to check if Account is signed into WordPress.com.
+     */
     public boolean hasAccessToken() {
         return mAccessToken.exists();
     }
