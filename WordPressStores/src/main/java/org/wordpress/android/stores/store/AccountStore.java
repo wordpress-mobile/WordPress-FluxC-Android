@@ -12,12 +12,15 @@ import org.wordpress.android.stores.action.IAction;
 import org.wordpress.android.stores.model.AccountModel;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient;
+import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.AccountRestPayload;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.Token;
 import org.wordpress.android.stores.persistence.AccountSqlUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
+
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -31,6 +34,11 @@ public class AccountStore extends Store {
         public String username;
         public String password;
         public Action nextAction;
+    }
+
+    public static class PostAccountSettingsPayload implements Payload {
+        public PostAccountSettingsPayload() {}
+        public Map<String, String> params;
     }
 
     // OnChanged Events
@@ -48,8 +56,6 @@ public class AccountStore extends Store {
 
     private AccountModel mAccount;
     private AccessToken mAccessToken;
-
-    private int mFetchStatus = -1;
 
     @Inject
     public AccountStore(Dispatcher dispatcher, AccountRestClient accountRestClient,
@@ -83,32 +89,38 @@ public class AccountStore extends Store {
             AuthenticatePayload payload = (AuthenticatePayload) action.getPayload();
             authenticate(payload.username, payload.password, payload);
         } else if (actionType == AccountAction.FETCH) {
-            // prevent multiple in-progress fetches
-            if (mFetchStatus < 0) {
-                mFetchStatus = 0;
-                mAccountRestClient.fetchAccount();
-                mAccountRestClient.fetchAccountSettings();
-            }
+            // fetch Account and Account Settings
+            mAccountRestClient.fetchAccount();
+            mAccountRestClient.fetchAccountSettings();
+        } else if (actionType == AccountAction.FETCH_ACCOUNT) {
+            // fetch only Account
+            mAccountRestClient.fetchAccount();
+        } else if (actionType == AccountAction.FETCH_SETTINGS) {
+            // fetch only Account Settings
+            mAccountRestClient.fetchAccountSettings();
+        } else if (actionType == AccountAction.POST_SETTINGS) {
+            PostAccountSettingsPayload payload = (PostAccountSettingsPayload) action.getPayload();
+            mAccountRestClient.postAccountSettings(payload.params);
         } else if (actionType == AccountAction.FETCHED_ACCOUNT) {
-            mAccount.copyAccountAttributes((AccountModel) action.getPayload());
-            AccountSqlUtils.insertOrUpdateOnlyAccount((AccountModel) action.getPayload());
-            moveFetchStatus();
+            AccountRestPayload data = (AccountRestPayload) action.getPayload();
+            if (!checkError(data, "Error fetching Account via REST API (/me)")) {
+                mAccount.copyAccountAttributes(data.account);
+                update(mAccount);
+            }
         } else if (actionType == AccountAction.FETCHED_SETTINGS) {
-            mAccount.copyAccountSettingsAttributes((AccountModel) action.getPayload());
-            AccountSqlUtils.insertOrUpdateOnlyAccountSettings((AccountModel) action.getPayload());
-            moveFetchStatus();
+            AccountRestPayload data = (AccountRestPayload) action.getPayload();
+            if (!checkError(data, "Error fetching Account Settings via REST API (/me/settings)")) {
+                mAccount.copyAccountSettingsAttributes(data.account);
+                update(mAccount);
+            }
+        } else if (actionType == AccountAction.POSTED_SETTINGS) {
+            AccountRestPayload data = (AccountRestPayload) action.getPayload();
+            if (!checkError(data, "Error saving Account Settings via REST API (/me/settings)")) {
+                update(data.account);
+            }
         } else if (actionType == AccountAction.UPDATE) {
             AccountModel accountModel = (AccountModel) action.getPayload();
             update(accountModel);
-            OnAccountChanged accountChanged = new OnAccountChanged();
-            accountChanged.accountInfosChanged = true;
-            emitChange(accountChanged);
-        } else if (actionType == AccountAction.ERROR_FETCH_ACCOUNT) {
-            AppLog.w(T.API, "Error fetching Account via REST API (/me)");
-        } else if (actionType == AccountAction.ERROR_FETCH_ACCOUNT_SETTINGS) {
-            AppLog.w(T.API, "Error fetching Account Settings via REST API (/me/settings)");
-        } else if (actionType == AccountAction.ERROR_POST_ACCOUNT_SETTINGS) {
-            AppLog.w(T.API, "Error fetching Account Settings via REST API (/me/settings)");
         }
     }
 
@@ -132,6 +144,10 @@ public class AccountStore extends Store {
         mAccount = accountModel;
 
         AccountSqlUtils.insertOrUpdateAccount(accountModel);
+
+        OnAccountChanged accountChanged = new OnAccountChanged();
+        accountChanged.accountInfosChanged = true;
+        emitChange(accountChanged);
     }
 
     private AccountModel loadAccount() {
@@ -160,13 +176,11 @@ public class AccountStore extends Store {
         });
     }
 
-    private void moveFetchStatus() {
-        if (++mFetchStatus >= 2) {
-            mFetchStatus = -1;
-            mDispatcher.dispatch(AccountAction.UPDATE, mAccount);
+    private boolean checkError(AccountRestPayload payload, String log) {
+        if (payload.isError()) {
+            AppLog.w(T.API, log + "\nError: " + payload.error.getMessage());
+            return true;
         }
-        OnAccountChanged accountChanged = new OnAccountChanged();
-        accountChanged.accountInfosChanged = true;
-        emitChange(accountChanged);
+        return false;
     }
 }

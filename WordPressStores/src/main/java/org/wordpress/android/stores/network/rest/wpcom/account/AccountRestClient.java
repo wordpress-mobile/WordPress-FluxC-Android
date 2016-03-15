@@ -15,8 +15,6 @@ import org.wordpress.android.stores.network.rest.wpcom.BaseWPComRestClient;
 import org.wordpress.android.stores.network.rest.wpcom.WPCOMREST;
 import org.wordpress.android.stores.network.rest.wpcom.WPComGsonRequest;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
-import org.wordpress.android.util.AppLog;
-import org.wordpress.android.util.AppLog.T;
 
 import java.util.Map;
 
@@ -25,16 +23,14 @@ import javax.inject.Singleton;
 
 @Singleton
 public class AccountRestClient extends BaseWPComRestClient {
-    public static class AccountError implements Payload {
-        private VolleyError mError;
-
-        public AccountError(VolleyError error) {
-            mError = error;
+    public static class AccountRestPayload implements Payload {
+        public AccountRestPayload(AccountModel account, VolleyError error) {
+            this.account = account;
+            this.error = error;
         }
-
-        public VolleyError getError() {
-            return mError;
-        }
+        public boolean isError() { return error != null; }
+        public VolleyError error;
+        public AccountModel account;
     }
 
     @Inject
@@ -57,14 +53,16 @@ public class AccountRestClient extends BaseWPComRestClient {
                 new Listener<AccountResponse>() {
                     @Override
                     public void onResponse(AccountResponse response) {
-                        AccountModel accountModel = responseToAccountModel(response);
-                        mDispatcher.dispatch(AccountAction.FETCHED_ACCOUNT, accountModel);
+                        AccountModel account = responseToAccountModel(response);
+                        AccountRestPayload payload = new AccountRestPayload(account, null);
+                        mDispatcher.dispatch(AccountAction.FETCHED_ACCOUNT, payload);
                     }
                 },
                 new ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        dispatchError(AccountAction.ERROR_FETCH_ACCOUNT, error);
+                        AccountRestPayload payload = new AccountRestPayload(null, error);
+                        mDispatcher.dispatch(AccountAction.FETCHED_ACCOUNT, payload);
                     }
                 }
         ));
@@ -85,13 +83,15 @@ public class AccountRestClient extends BaseWPComRestClient {
                     @Override
                     public void onResponse(AccountSettingsResponse response) {
                         AccountModel settings = responseToAccountSettingsModel(response);
-                        mDispatcher.dispatch(AccountAction.FETCHED_SETTINGS, settings);
+                        AccountRestPayload payload = new AccountRestPayload(settings, null);
+                        mDispatcher.dispatch(AccountAction.FETCHED_SETTINGS, payload);
                     }
                 },
                 new ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        dispatchError(AccountAction.ERROR_FETCH_ACCOUNT_SETTINGS, error);
+                        AccountRestPayload payload = new AccountRestPayload(null, error);
+                        mDispatcher.dispatch(AccountAction.FETCHED_SETTINGS, payload);
                     }
                 }
         ));
@@ -115,21 +115,18 @@ public class AccountRestClient extends BaseWPComRestClient {
                     @Override
                     public void onResponse(AccountSettingsResponse response) {
                         AccountModel settings = responseToAccountSettingsModel(response);
-                        mDispatcher.dispatch(AccountAction.POSTED_SETTINGS, settings);
+                        AccountRestPayload payload = new AccountRestPayload(settings, null);
+                        mDispatcher.dispatch(AccountAction.POSTED_SETTINGS, payload);
                     }
                 },
                 new ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        dispatchError(AccountAction.ERROR_POST_ACCOUNT_SETTINGS, error);
+                        AccountRestPayload payload = new AccountRestPayload(null, error);
+                        mDispatcher.dispatch(AccountAction.POSTED_SETTINGS, payload);
                     }
                 }
         ));
-    }
-
-    private void dispatchError(AccountAction action, VolleyError error) {
-        AppLog.e(T.API, "Account Volley error", error);
-        mDispatcher.dispatch(action, new AccountError(error));
     }
 
     private AccountModel responseToAccountModel(AccountResponse from) {
