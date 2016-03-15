@@ -6,6 +6,7 @@ import com.yarolegovich.wellsql.core.annotation.PrimaryKey;
 import com.yarolegovich.wellsql.core.annotation.Table;
 
 import org.wordpress.android.stores.Payload;
+import org.wordpress.android.util.StringUtils;
 
 @Table
 public class AccountModel implements Identifiable, Payload {
@@ -44,6 +45,28 @@ public class AccountModel implements Identifiable, Payload {
     @Override
     public void setId(int id) {
         mId = id;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null || !(other instanceof AccountModel)) return false;
+        AccountModel otherAccount = (AccountModel) other;
+        return getId() == otherAccount.getId() &&
+                StringUtils.equals(getUserName(), otherAccount.getUserName()) &&
+                getUserId() == otherAccount.getUserId() &&
+                StringUtils.equals(getDisplayName(), otherAccount.getDisplayName()) &&
+                StringUtils.equals(getProfileUrl(), otherAccount.getProfileUrl()) &&
+                StringUtils.equals(getAvatarUrl(), otherAccount.getAvatarUrl()) &&
+                getPrimaryBlogId() == otherAccount.getPrimaryBlogId() &&
+                getSiteCount() == otherAccount.getSiteCount() &&
+                getVisibleSiteCount() == otherAccount.getVisibleSiteCount() &&
+                StringUtils.equals(getFirstName(), otherAccount.getFirstName()) &&
+                StringUtils.equals(getLastName(), otherAccount.getLastName()) &&
+                StringUtils.equals(getAboutMe(), otherAccount.getAboutMe()) &&
+                StringUtils.equals(getDate(), otherAccount.getDate()) &&
+                StringUtils.equals(getNewEmail(), otherAccount.getNewEmail()) &&
+                getPendingEmailChange() == otherAccount.getPendingEmailChange() &&
+                StringUtils.equals(getWebAddress(), otherAccount.getWebAddress());
     }
 
     private void init() {
