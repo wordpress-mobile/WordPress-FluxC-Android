@@ -44,6 +44,7 @@ public class AccountStore extends Store {
     // OnChanged Events
     public class OnAccountChanged extends OnChanged {
         public boolean accountInfosChanged;
+        public AccountAction causeOfChange;
     }
 
     public class OnAuthenticationChanged extends OnChanged {
@@ -104,22 +105,22 @@ public class AccountStore extends Store {
             AccountRestPayload data = (AccountRestPayload) action.getPayload();
             if (!checkError(data, "Error fetching Account via REST API (/me)")) {
                 mAccount.copyAccountAttributes(data.account);
-                update(mAccount);
+                update(mAccount, AccountAction.FETCH_ACCOUNT);
             }
         } else if (actionType == AccountAction.FETCHED_SETTINGS) {
             AccountRestPayload data = (AccountRestPayload) action.getPayload();
             if (!checkError(data, "Error fetching Account Settings via REST API (/me/settings)")) {
                 mAccount.copyAccountSettingsAttributes(data.account);
-                update(mAccount);
+                update(mAccount, AccountAction.FETCH_SETTINGS);
             }
         } else if (actionType == AccountAction.POSTED_SETTINGS) {
             AccountRestPayload data = (AccountRestPayload) action.getPayload();
             if (!checkError(data, "Error saving Account Settings via REST API (/me/settings)")) {
-                update(data.account);
+                update(data.account, AccountAction.POST_SETTINGS);
             }
         } else if (actionType == AccountAction.UPDATE) {
             AccountModel accountModel = (AccountModel) action.getPayload();
-            update(accountModel);
+            update(accountModel, AccountAction.UPDATE);
         }
     }
 
@@ -141,7 +142,7 @@ public class AccountStore extends Store {
         return hasAccessToken() || mAccount.getVisibleSiteCount() > 0;
     }
 
-    private void update(AccountModel accountModel) {
+    private void update(AccountModel accountModel, AccountAction cause) {
         // Update memory instance
         mAccount = accountModel;
 
@@ -149,6 +150,7 @@ public class AccountStore extends Store {
 
         OnAccountChanged accountChanged = new OnAccountChanged();
         accountChanged.accountInfosChanged = true;
+        accountChanged.causeOfChange = cause;
         emitChange(accountChanged);
     }
 
