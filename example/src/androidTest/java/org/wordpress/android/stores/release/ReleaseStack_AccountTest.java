@@ -26,6 +26,15 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     CountDownLatch mCountDownLatch;
 
+    enum ACCOUNT_TEST_ACTIONS {
+        NONE,
+        AUTHENTICATE,
+        AUTHENTICATE_ERROR,
+        FETCHED,
+    }
+
+    ACCOUNT_TEST_ACTIONS mExpectedAction;
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -34,36 +43,52 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         // Register
         mDispatcher.register(mAccountStore);
         mDispatcher.register(this);
+        mExpectedAction = ACCOUNT_TEST_ACTIONS.NONE;
     }
 
     public void testWPCOMAuthenticationOK() throws InterruptedException {
-        // Authenticate a test user (actual credentials declared in gradle.properties)
-        AuthenticatePayload payload = new AuthenticatePayload();
-        payload.username = BuildConfig.TEST_WPCOM_USERNAME_TEST1;
-        payload.password = BuildConfig.TEST_WPCOM_PASSWORD_TEST1;
+        mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTHENTICATE;
+        authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+    }
 
-        // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationAction.AUTHENTICATE, payload);
-        mCountDownLatch = new CountDownLatch(1);
-        // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    public void testWPCOMAuthenticationError() throws InterruptedException {
+        mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTHENTICATE_ERROR;
+        authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_BAD_PASSWORD);
+    }
 
-        // Get user infos
+    public void testWPCOMFetch() throws InterruptedException {
+        mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTHENTICATE;
+        authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        mExpectedAction = ACCOUNT_TEST_ACTIONS.FETCHED;
         mDispatcher.dispatch(AccountAction.FETCH);
-        mCountDownLatch = new CountDownLatch(1);
-        // Wait for a network response / onChanged event
+        mCountDownLatch = new CountDownLatch(2);
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
-        assertEquals(false, event.isError);
+        if (event.isError) {
+            assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTHENTICATE_ERROR);
+        } else {
+            assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTHENTICATE);
+        }
         mCountDownLatch.countDown();
     }
 
     @Subscribe
     public void onAccountChanged(OnAccountChanged event) {
+        assertTrue(mExpectedAction == ACCOUNT_TEST_ACTIONS.FETCHED);
         assertEquals(BuildConfig.TEST_WPCOM_USERNAME_TEST1, mAccountStore.getAccount().getUserName());
         mCountDownLatch.countDown();
+    }
+
+    private void authenticate(String username, String password) throws InterruptedException {
+        AuthenticatePayload payload = new AuthenticatePayload();
+        payload.username = username;
+        payload.password = password;
+
+        mDispatcher.dispatch(AuthenticationAction.AUTHENTICATE, payload);
+        mCountDownLatch = new CountDownLatch(1);
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
