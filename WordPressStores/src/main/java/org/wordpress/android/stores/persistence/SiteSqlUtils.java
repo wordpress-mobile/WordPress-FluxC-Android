@@ -24,4 +24,15 @@ public class SiteSqlUtils {
                     .put(site, new UpdateAllExceptId<SiteModel>()).execute();
         }
     }
+
+    public static void deleteSite(SiteModel site) {
+        List<SiteModel> siteResult = WellSql.select(SiteModel.class)
+                .where().beginGroup()
+                .equals(SiteModelTable.SITE_ID, site.getSiteId())
+                .equals(SiteModelTable.URL, site.getUrl())
+                .endGroup().endWhere().getAsModel();
+        if (!siteResult.isEmpty()) {
+            WellSql.delete(SiteModel.class).whereId(site.getId());
+        }
+    }
 }

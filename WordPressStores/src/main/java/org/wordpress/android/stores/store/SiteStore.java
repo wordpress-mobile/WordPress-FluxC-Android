@@ -37,6 +37,7 @@ public class SiteStore extends Store {
 
     // OnChanged Events
     public class OnSiteChanged extends OnChanged {}
+    public class OnSiteDeleted extends OnChanged {}
 
     private SiteRestClient mSiteRestClient;
     private SiteXMLRPCClient mSiteXMLRPCClient;
@@ -103,6 +104,15 @@ public class SiteStore extends Store {
                 // TODO: check for WP-REST-API plugin and use it here
                 mSiteXMLRPCClient.pullSite(site);
             }
+        } else if (actionType == SiteAction.REQUEST_DELETE_SITE) {
+            SiteModel site = (SiteModel) action.getPayload();
+            if (site.isWPCom()) {
+                mSiteRestClient.deleteSite(site);
+            }
+        } else if (actionType == SiteAction.DELETE_SITE) {
+            SiteModel site = (SiteModel) action.getPayload();
+            SiteSqlUtils.deleteSite(site);
+            emitChange(new OnSiteDeleted());
         }
     }
 
