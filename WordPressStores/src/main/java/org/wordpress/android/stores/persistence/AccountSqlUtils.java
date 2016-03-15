@@ -126,6 +126,14 @@ public class AccountSqlUtils {
     }
 
     /**
+     * Deletes rows from the Account table that share an ID with the given {@link AccountModel}.
+     */
+    public static int deleteAccount(AccountModel account) {
+        return account == null ? 0 : WellSql.delete(AccountModel.class)
+                .where().equals(AccountModelTable.ID, account.getId()).endWhere().execute();
+    }
+
+    /**
      * Passthrough to {@link #getAccountByLocalId(long)} using the default Account local ID.
      */
     public static AccountModel getDefaultAccount() {
