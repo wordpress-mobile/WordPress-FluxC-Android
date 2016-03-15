@@ -104,8 +104,11 @@ public class AccountStore extends Store {
             accountChanged.accountInfosChanged = true;
             emitChange(accountChanged);
         } else if (actionType == AccountAction.ERROR_FETCH_ACCOUNT) {
+            AppLog.w(T.API, "Error fetching Account via REST API (/me)");
         } else if (actionType == AccountAction.ERROR_FETCH_ACCOUNT_SETTINGS) {
+            AppLog.w(T.API, "Error fetching Account Settings via REST API (/me/settings)");
         } else if (actionType == AccountAction.ERROR_POST_ACCOUNT_SETTINGS) {
+            AppLog.w(T.API, "Error fetching Account Settings via REST API (/me/settings)");
         }
     }
 
