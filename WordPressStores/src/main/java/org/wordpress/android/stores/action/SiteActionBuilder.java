@@ -4,13 +4,13 @@ import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.model.SitesModel;
 import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;
 
-public class SiteActionBuilder {
+public class SiteActionBuilder extends ActionBuilder {
     public static Action<SiteModel> generateFetchSiteAction(SiteModel payload) {
         return new Action<>(SiteAction.FETCH_SITE, payload);
     }
 
-    public static <T> Action<T> generateFetchSitesAction() {
-        return new Action<>(SiteAction.FETCH_SITES, null);
+    public static Action<Void> generateFetchSitesAction() {
+        return generateNoPayloadAction(SiteAction.FETCH_SITES);
     }
 
     public static Action<RefreshSitesXMLRPCPayload> generateFetchSitesXmlRpcAction(RefreshSitesXMLRPCPayload payload) {
@@ -29,8 +29,8 @@ public class SiteActionBuilder {
         return new Action<>(SiteAction.REMOVE_SITE, payload);
     }
 
-    public static <T> Action<T> generateLogoutWpcomAction() {
-        return new Action<>(SiteAction.LOGOUT_WPCOM, null);
+    public static Action<Void> generateLogoutWpComAction() {
+        return generateNoPayloadAction(SiteAction.LOGOUT_WPCOM);
     }
 
     public static Action<SitesModel> generateShowSitesAction(SitesModel payload) {

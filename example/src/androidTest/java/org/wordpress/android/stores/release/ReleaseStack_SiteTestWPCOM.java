@@ -74,7 +74,7 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mExpectedEvent = TEST_EVENTS.SITE_REMOVED;
         mExpectedRowsAffected = mSiteStore.getSitesCount();
-        mDispatcher.dispatch(SiteActionBuilder.generateLogoutWpcomAction());
+        mDispatcher.dispatch(SiteActionBuilder.generateLogoutWpComAction());
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
