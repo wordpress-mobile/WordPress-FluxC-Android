@@ -2,8 +2,10 @@ package org.wordpress.android.stores.module;
 
 import android.content.Context;
 
+import com.android.volley.Network;
 import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.Volley;
+import com.android.volley.toolbox.BasicNetwork;
+import com.android.volley.toolbox.DiskBasedCache;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.OkUrlFactory;
 
@@ -18,6 +20,8 @@ import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator;
 import org.wordpress.android.stores.network.rest.wpcom.site.SiteRestClient;
 import org.wordpress.android.stores.network.xmlrpc.site.SiteXMLRPCClient;
 
+import java.io.File;
+
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -25,6 +29,9 @@ import dagger.Provides;
 
 @Module
 public class ReleaseNetworkModule {
+    private static final String DEFAULT_CACHE_DIR = "volley-wpstores";
+    private static final int NETWORK_THREAD_POOL_SIZE = 10;
+
     @Provides
     public OkHttpClient provideOkHttpClient() {
         OkHttpClient okHttpClient = new OkHttpClient();
@@ -41,7 +48,11 @@ public class ReleaseNetworkModule {
     @Singleton
     @Provides
     public RequestQueue provideRequestQueue(OkUrlFactory okUrlFactory, Context appContext) {
-        return Volley.newRequestQueue(appContext, new OkHttpStack(okUrlFactory));
+        File cacheDir = new File(appContext.getCacheDir(), DEFAULT_CACHE_DIR);
+        Network network = new BasicNetwork(new OkHttpStack(okUrlFactory));
+        RequestQueue queue = new RequestQueue(new DiskBasedCache(cacheDir), network, NETWORK_THREAD_POOL_SIZE);
+        queue.start();
+        return queue;
     }
 
     @Singleton
