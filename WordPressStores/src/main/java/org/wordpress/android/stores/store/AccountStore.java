@@ -121,7 +121,15 @@ public class AccountStore extends Store {
         } else if (actionType == AccountAction.UPDATE) {
             AccountModel accountModel = (AccountModel) action.getPayload();
             update(accountModel, AccountAction.UPDATE);
+        } else if (actionType == AccountAction.SIGN_OUT) {
+            signOut();
         }
+    }
+
+    public void signOut() {
+        AccountSqlUtils.deleteAccount(mAccount);
+        mAccount.init();
+        mAccessToken.set(null);
     }
 
     public AccountModel getAccount() {
