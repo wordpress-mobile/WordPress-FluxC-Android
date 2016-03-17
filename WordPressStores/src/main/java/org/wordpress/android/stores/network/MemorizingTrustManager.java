@@ -38,6 +38,7 @@ public class MemorizingTrustManager implements X509TrustManager {
             // Init the key store for the first time
             try {
                 initLocalKeyStoreFile();
+                mLocalKeyStore = loadTrustStore();
             } catch (IOException | GeneralSecurityException e1) {
                 throw new IllegalStateException(e1);
             }
