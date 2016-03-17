@@ -11,6 +11,7 @@ import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
+import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;
@@ -38,6 +39,8 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         NONE,
         SITE_CHANGED,
         HTTP_AUTH_ERROR,
+        SITE_CHANGED,
+        SITE_REMOVED,
         INVALID_SSL_CERTIFICATE
     }
     private TEST_EVENTS mNextEvent;
@@ -164,12 +167,40 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    public void testSelfHostedFetchAndDeleteSite() throws InterruptedException {
+        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
+        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
+        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
+        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SIMPLE;
+        mNextEvent = TEST_EVENTS.SITE_CHANGED;
+        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+        mCountDownLatch = new CountDownLatch(1);
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        mNextEvent = TEST_EVENTS.SITE_REMOVED;
+        mCountDownLatch = new CountDownLatch(1);
+        SiteModel dotOrgSite = mSiteStore.getDotOrgSites().get(0);
+        mDispatcher.dispatch(SiteAction.REMOVE_SITE, dotOrgSite);
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @Subscribe
     public void onSiteChanged(OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         assertEquals(true, mSiteStore.hasSite());
-        assertEquals(true, mSiteStore.hasSelfHostedSite());
-        assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
+        assertEquals(true, mSiteStore.hasDotOrgSite());
+        assertEquals(mNextEvent, TEST_EVENTS.SITE_CHANGED);
+        mCountDownLatch.countDown();
+    }
+
+    @Subscribe
+    public void OnSitesRemoved(SiteStore.OnSitesRemoved event) {
+        AppLog.e(T.TESTS, "site count " + mSiteStore.getSitesCount());
+        assertEquals(false, mSiteStore.hasSite());
+        assertEquals(false, mSiteStore.hasDotOrgSite());
+        assertEquals(TEST_EVENTS.SITE_REMOVED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
