@@ -35,6 +35,12 @@ public class Authenticator {
     public static final String BEARER_GRANT_TYPE = "bearer";
     public static final String AUTHORIZATION_CODE_GRANT_TYPE = "authorization_code";
 
+    // Authentication error response keys/descriptions recognized
+    private static final String INVALID_REQUEST_ERROR = "invalid_request";
+    private static final String NEEDS_TWO_STEP_ERROR = "needs_2fa";
+    private static final String INVALID_OTP_ERROR = "invalid_otp";
+    private static final String INVALID_CREDS_ERROR = "Incorrect username or password.";
+
     private final RequestQueue mRequestQueue;
     private AppSecrets mAppSecrets;
 
@@ -69,6 +75,20 @@ public class Authenticator {
 
     public TokenRequest makeRequest(String code, Listener listener, ErrorListener errorListener) {
         return new BearerRequest(mAppSecrets.getAppId(), mAppSecrets.getAppSecret(), code, listener, errorListener);
+    }
+
+    public AuthError extractAuthError(String error, String description) {
+        if (error.equals(INVALID_REQUEST_ERROR)) {
+            if (description.contains(INVALID_CREDS_ERROR)) {
+                return AuthError.INCORRECT_USERNAME_OR_PASSWORD;
+            }
+        } else if (error.equals(NEEDS_TWO_STEP_ERROR)) {
+            return AuthError.NEEDS_2FA;
+        } else if (error.equals(INVALID_OTP_ERROR)) {
+            return AuthError.INVALID_OTP;
+        }
+
+        return AuthError.UNAUTHORIZED;
     }
 
     private static class TokenRequest extends Request<Token> {
