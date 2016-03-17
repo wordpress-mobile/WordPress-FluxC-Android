@@ -2,8 +2,10 @@ package org.wordpress.android.stores.module;
 
 import android.content.Context;
 
+import com.android.volley.Network;
 import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.Volley;
+import com.android.volley.toolbox.BasicNetwork;
+import com.android.volley.toolbox.DiskBasedCache;
 
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.network.HTTPAuthManager;
@@ -19,6 +21,7 @@ import org.wordpress.android.stores.network.xmlrpc.site.SiteXMLRPCClient;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
+import java.io.File;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
@@ -35,6 +38,17 @@ import okhttp3.OkUrlFactory;
 
 @Module
 public class ReleaseNetworkModule {
+    private static final String DEFAULT_CACHE_DIR = "volley-wpstores";
+    private static final int NETWORK_THREAD_POOL_SIZE = 10;
+
+    private RequestQueue newRequestQueue(OkUrlFactory okUrlFactory, Context appContext) {
+        File cacheDir = new File(appContext.getCacheDir(), DEFAULT_CACHE_DIR);
+        Network network = new BasicNetwork(new OkHttpStack(okUrlFactory));
+        RequestQueue queue = new RequestQueue(new DiskBasedCache(cacheDir), network, NETWORK_THREAD_POOL_SIZE);
+        queue.start();
+        return queue;
+    }
+
     @Provides
     @Named("regular")
     public OkHttpClient provideOkHttpClient() {
@@ -52,7 +66,7 @@ public class ReleaseNetworkModule {
     @Named("regular")
     @Provides
     public RequestQueue provideRequestQueue(@Named("regular") OkUrlFactory okUrlFactory, Context appContext) {
-        return Volley.newRequestQueue(appContext, new OkHttpStack(okUrlFactory));
+        return newRequestQueue(okUrlFactory, appContext);
     }
 
     @Provides
@@ -81,7 +95,7 @@ public class ReleaseNetworkModule {
     @Named("custom-ssl")
     @Provides
     public RequestQueue provideRequestQueueCustomSSL(@Named("custom-ssl") OkUrlFactory okUrlFactory, Context appContext) {
-        return Volley.newRequestQueue(appContext, new OkHttpStack(okUrlFactory));
+        return newRequestQueue(okUrlFactory, appContext);
     }
 
     @Singleton
