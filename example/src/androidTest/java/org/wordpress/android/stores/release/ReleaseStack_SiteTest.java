@@ -24,7 +24,8 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 /**
- * Tests with real credentials on real servers using the full release stack (no mock)
+ * Tests with real credentials on real servers using the full release stack (no mock).
+ * Skips self hosted site discovery, directly using the ENDPOINT URLs from tests.properties.
  */
 public class ReleaseStack_SiteTest extends ReleaseStack_Base {
     @Inject Dispatcher mDispatcher;
@@ -60,7 +61,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
-        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SIMPLE;
+        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT;
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
@@ -72,7 +73,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE_CONTRIB;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE_CONTRIB;
-        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SIMPLE_CONTRIB;
+        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SIMPLE_CONTRIB_ENDPOINT;
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
@@ -84,7 +85,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_MULTISITE;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_MULTISITE;
-        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_MULTISITE;
+        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_MULTISITE_ENDPOINT;
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
@@ -96,7 +97,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL;
-        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_VALID_SSL;
+        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_ENDPOINT;
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
@@ -108,7 +109,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SELFSIGNED_SSL;
-        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL;
+        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL_ENDPOINT;
 
         //  We're expecting a SSL Warning event
         mNextEvent = TEST_EVENTS.INVALID_SSL_CERTIFICATE;
@@ -130,7 +131,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH;
-        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH;
+        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH_ENDPOINT;
 
         // We're expecting a HTTP_AUTH_ERROR
         mNextEvent = TEST_EVENTS.HTTP_AUTH_ERROR;
@@ -140,7 +141,8 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         // Set known HTTP Auth credentials
         mHTTPAuthManager.addHTTPAuthCredentials(BuildConfig.TEST_WPORG_HTTPAUTH_USERNAME_SH_HTTPAUTH,
-                BuildConfig.TEST_WPORG_HTTPAUTH_PASSWORD_SH_HTTPAUTH, BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH, null);
+                BuildConfig.TEST_WPORG_HTTPAUTH_PASSWORD_SH_HTTPAUTH, BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH_ENDPOINT,
+                null);
         // Retry to fetch sites, this time we expect a site refresh
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
@@ -153,11 +155,12 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH;
-        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH;
+        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH_ENDPOINT;
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         // Set known HTTP Auth credentials
         mHTTPAuthManager.addHTTPAuthCredentials(BuildConfig.TEST_WPORG_HTTPAUTH_USERNAME_SH_HTTPAUTH,
-                BuildConfig.TEST_WPORG_HTTPAUTH_PASSWORD_SH_HTTPAUTH, BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH, null);
+                BuildConfig.TEST_WPORG_HTTPAUTH_PASSWORD_SH_HTTPAUTH, BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH_ENDPOINT,
+                null);
 
         mCountDownLatch = new CountDownLatch(1);
         // Retry to fetch sites,we expect a site refresh
@@ -170,7 +173,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
-        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SIMPLE;
+        payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT;
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
         mCountDownLatch = new CountDownLatch(1);
