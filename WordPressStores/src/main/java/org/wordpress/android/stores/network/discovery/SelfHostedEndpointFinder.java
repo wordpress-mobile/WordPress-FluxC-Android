@@ -1,14 +1,15 @@
-package org.wordpress.android.stores.network.xmlrpc;
+package org.wordpress.android.stores.network.discovery;
 
 import android.util.Xml;
 import android.webkit.URLUtil;
 
+import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.stores.utils.WPUrlUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 import org.wordpress.android.util.UrlUtils;
 
-import org.wordpress.android.stores.network.xmlrpc.SelfHostedEndpointFinder.DiscoveryCallback.Error;
+import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder.DiscoveryCallback.Error;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 

@@ -1,4 +1,4 @@
-package org.wordpress.android.stores.network.xmlrpc;
+package org.wordpress.android.stores.network.discovery;
 
 import com.android.volley.Request;
 import com.android.volley.Response;

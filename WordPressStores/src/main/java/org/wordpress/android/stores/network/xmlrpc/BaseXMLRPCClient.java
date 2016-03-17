@@ -11,6 +11,7 @@ import org.wordpress.android.stores.network.BaseRequest;
 import org.wordpress.android.stores.network.BaseRequest.OnAuthFailedListener;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.UserAgent;
+import org.wordpress.android.stores.network.discovery.DiscoveryRequest;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 
 public class BaseXMLRPCClient {
