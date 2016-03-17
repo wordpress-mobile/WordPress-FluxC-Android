@@ -8,4 +8,5 @@ public enum AuthError implements Payload {
     INCORRECT_USERNAME_OR_PASSWORD,
     UNAUTHORIZED,
     HTTP_AUTH_ERROR,
+    INVALID_SSL_CERTIFICATE,
 }

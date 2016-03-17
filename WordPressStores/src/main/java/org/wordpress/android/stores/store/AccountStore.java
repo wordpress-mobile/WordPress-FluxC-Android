@@ -30,7 +30,9 @@ import javax.inject.Inject;
 public class AccountStore extends Store {
     // Payloads
     public static class AuthenticatePayload implements Payload {
-        public AuthenticatePayload() {}
+        public AuthenticatePayload() {
+        }
+
         public String username;
         public String password;
         public Action nextAction;

@@ -9,27 +9,30 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
+import android.widget.TextView;
 
-public class SignInDialog extends DialogFragment {
+public class SSLWarningDialog extends DialogFragment {
     public interface Listener {
         void onClick(String username, String password, String url);
     }
 
-    private Listener mListener;
-    private EditText mUsernameView;
-    private EditText mPasswordView;
-    private EditText mUrlView;
+    private OnClickListener mListener;
+    private TextView mCertifText;
     private boolean mUrlEnabled;
+    private String mCertifString;
 
-    public void setListener(Listener onClickListener) {
+    public void setListener(OnClickListener onClickListener) {
         mListener = onClickListener;
     }
 
-    public static SignInDialog newInstance(Listener onClickListener, boolean enableUrl) {
-        SignInDialog fragment = new SignInDialog();
+    public void setCertifString(String certifString) {
+        mCertifString = certifString;
+    }
+
+    public static SSLWarningDialog newInstance(OnClickListener onClickListener, String certifString) {
+        SSLWarningDialog fragment = new SSLWarningDialog();
         fragment.setListener(onClickListener);
-        fragment.setUrlEnabled(enableUrl);
+        fragment.setCertifString(certifString);
         return fragment;
     }
 
@@ -46,18 +49,13 @@ public class SignInDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.signin_dialog, null);
-        mUsernameView = (EditText) view.findViewById(R.id.username);
-        mPasswordView = (EditText) view.findViewById(R.id.password);
-        mUrlView = (EditText) view.findViewById(R.id.url);
-        if (!mUrlEnabled) {
-            mUrlView.setVisibility(View.GONE);
-        }
+        View view = inflater.inflate(R.layout.ssl_warning_dialog, null);
+        mCertifText = (TextView) view.findViewById(R.id.text_certificate);
+        mCertifText.setText(mCertifString);
         builder.setView(view)
                 .setPositiveButton(android.R.string.ok, new OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        mListener.onClick(mUsernameView.getText().toString(), mPasswordView.getText().toString(),
-                                mUrlView.getText().toString());
+                        mListener.onClick(dialog, id);
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, null);

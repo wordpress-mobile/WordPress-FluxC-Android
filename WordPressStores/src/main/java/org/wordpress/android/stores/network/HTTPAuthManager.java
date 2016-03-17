@@ -14,15 +14,6 @@ import java.util.List;
 public class HTTPAuthManager {
     public HTTPAuthManager() {}
 
-    private String normalizeURL(String url) {
-        try {
-            URI uri = URI.create(url);
-            return uri.normalize().toString();
-        } catch (IllegalArgumentException e) {
-            return url;
-        }
-    }
-
     /**
      * Get an HTTPAuthModel containing username and password for the url parameter
      * TODO: Use an in memory model (or caching) - because this SQL query is executed every time a request is sent
@@ -49,5 +40,14 @@ public class HTTPAuthManager {
         httpAuthModel.setRealm(realm);
         // Replace old username / password / realm - URL used as key
         HTTPAuthSqlUtils.insertOrUpdateModel(httpAuthModel);
+    }
+
+    private String normalizeURL(String url) {
+        try {
+            URI uri = URI.create(url);
+            return uri.normalize().toString();
+        } catch (IllegalArgumentException e) {
+            return url;
+        }
     }
 }
