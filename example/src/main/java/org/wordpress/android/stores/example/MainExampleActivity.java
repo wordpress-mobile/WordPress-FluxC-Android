@@ -98,7 +98,6 @@ public class MainExampleActivity extends AppCompatActivity {
         // Order is important here since onRegister could fire onChanged events. "register(this)" should probably go
         // first everywhere.
         mDispatcher.register(this);
-        mDispatcher.register(mSelfHostedEndpointFinder);
         mDispatcher.register(mSiteStore);
         mDispatcher.register(mAccountStore);
     }
@@ -106,7 +105,6 @@ public class MainExampleActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        mDispatcher.unregister(mSelfHostedEndpointFinder);
         mDispatcher.unregister(mSiteStore);
         mDispatcher.unregister(mAccountStore);
         mDispatcher.unregister(this);
