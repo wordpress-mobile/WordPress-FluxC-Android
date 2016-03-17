@@ -37,11 +37,10 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
 
     enum TEST_EVENTS {
         NONE,
-        SITE_CHANGED,
         HTTP_AUTH_ERROR,
+        INVALID_SSL_CERTIFICATE,
         SITE_CHANGED,
-        SITE_REMOVED,
-        INVALID_SSL_CERTIFICATE
+        SITE_REMOVED
     }
     private TEST_EVENTS mNextEvent;
 
@@ -191,7 +190,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         assertEquals(true, mSiteStore.hasSite());
         assertEquals(true, mSiteStore.hasDotOrgSite());
-        assertEquals(mNextEvent, TEST_EVENTS.SITE_CHANGED);
+        assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
