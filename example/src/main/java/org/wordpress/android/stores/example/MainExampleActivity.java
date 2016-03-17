@@ -22,6 +22,7 @@ import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
+import org.wordpress.android.stores.network.xmlrpc.SelfHostedEndpointFinder;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.stores.store.AccountStore.OnAccountChanged;
@@ -29,8 +30,6 @@ import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;
-import org.wordpress.android.stores.utils.SelfHostedDiscoveryUtils;
-import org.wordpress.android.stores.utils.SelfHostedDiscoveryUtils.DiscoveryCallback;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -42,6 +41,7 @@ public class MainExampleActivity extends AppCompatActivity {
     @Inject Dispatcher mDispatcher;
     @Inject HTTPAuthManager mHTTPAuthManager;
     @Inject MemorizingTrustManager mMemorizingTrustManager;
+    @Inject SelfHostedEndpointFinder mSelfHostedEndpointFinder;
 
     private TextView mLogView;
     private Button mAccountInfos;
@@ -98,6 +98,7 @@ public class MainExampleActivity extends AppCompatActivity {
         // Order is important here since onRegister could fire onChanged events. "register(this)" should probably go
         // first everywhere.
         mDispatcher.register(this);
+        mDispatcher.register(mSelfHostedEndpointFinder);
         mDispatcher.register(mSiteStore);
         mDispatcher.register(mAccountStore);
     }
@@ -105,6 +106,7 @@ public class MainExampleActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+        mDispatcher.unregister(mSelfHostedEndpointFinder);
         mDispatcher.unregister(mSiteStore);
         mDispatcher.unregister(mAccountStore);
         mDispatcher.unregister(this);
@@ -207,11 +209,14 @@ public class MainExampleActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(url)) {
             wpcomFetchSites(username, password);
         } else {
-            SelfHostedDiscoveryUtils.discoverSelfHostedEndPoint(url, new DiscoveryCallback() {
+            mSelfHostedEndpointFinder.findEndpoint(url, new SelfHostedEndpointFinder.DiscoveryCallback() {
                 @Override
                 public void onError(Error error) {
                     if (error == Error.WORDPRESS_COM_SITE) {
                         wpcomFetchSites(username, password);
+                    } else if (error == Error.SSL_ERROR) {
+                        // TODO: handle SSL
+                        //showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
                     }
                     AppLog.e(T.API, "Discover error: " + error);
                 }
