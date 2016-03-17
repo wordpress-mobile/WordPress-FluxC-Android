@@ -81,7 +81,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testSelfHostedMutliSiteFetchSites() throws InterruptedException {
+    public void testSelfHostedMultiSiteFetchSites() throws InterruptedException {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_MULTISITE;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_MULTISITE;
