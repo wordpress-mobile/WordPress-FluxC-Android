@@ -58,7 +58,7 @@ public class MainExampleActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // show signin dialog
-                showSigninDialog();
+                showSigninDialog(false);
             }
         });
         mAccountInfos = (Button) findViewById(R.id.account_infos_button);
@@ -124,6 +124,8 @@ public class MainExampleActivity extends AppCompatActivity {
             if (event.authError == AuthError.HTTP_AUTH_ERROR) {
                 // Show a Dialog prompting for http username and password
                 showHTTPAuthDialog(mSelfhostedPayload.xmlrpcEndpoint);
+            } else if (event.authError == AuthError.NEEDS_2FA) {
+                showSigninDialog(true);
             }
         }
     }
@@ -146,22 +148,22 @@ public class MainExampleActivity extends AppCompatActivity {
         mLogView.setText(s);
     }
 
-    private void showSigninDialog() {
+    private void showSigninDialog(boolean showTwoStep) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        DialogFragment newFragment = SignInDialog.newInstance(new Listener() {
+        DialogFragment fragment = SignInDialog.newInstance(new Listener() {
             @Override
-            public void onClick(String username, String password, String url) {
-                signInAction(username, password, url);
+            public void onClick(String username, String password, String twoStep, String url) {
+                signInAction(username, password, twoStep, url);
             }
-        }, true);
-        newFragment.show(ft, "dialog");
+        }, true, showTwoStep);
+        fragment.show(ft, "dialog");
     }
 
     private void showHTTPAuthDialog(final String url) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         DialogFragment newFragment = SignInDialog.newInstance(new Listener() {
             @Override
-            public void onClick(String username, String password, String dummy) {
+            public void onClick(String username, String password, String twoStepCode, String dummy) {
                 // Add credentials
                 mHTTPAuthManager.addHTTPAuthCredentials(username, password, url, null);
                 // Retry login action
@@ -170,7 +172,7 @@ public class MainExampleActivity extends AppCompatActivity {
                             mSelfhostedPayload.xmlrpcEndpoint);
                 }
             }
-        }, false);
+        }, false, false);
         newFragment.show(ft, "dialog");
     }
 
@@ -178,15 +180,15 @@ public class MainExampleActivity extends AppCompatActivity {
      * Called when the user tap OK on the SignIn Dialog. It authenticates and list user sites, on wpcom or self hosted
      * depending if the user filled the URL field.
      */
-    private void signInAction(final String username, final String password, final String url) {
+    private void signInAction(final String username, final String password, final String twoStep, final String url) {
         if (TextUtils.isEmpty(url)) {
-            wpcomFetchSites(username, password);
+            wpcomFetchSites(username, password, twoStep, false);
         } else {
             SelfHostedDiscoveryUtils.discoverSelfHostedEndPoint(url, new DiscoveryCallback() {
                 @Override
                 public void onError(Error error) {
                     if (error == Error.WORDPRESS_COM_SITE) {
-                        wpcomFetchSites(username, password);
+                        wpcomFetchSites(username, password, twoStep, false);
                     }
                     AppLog.e(T.API, "Discover error: " + error);
                 }
@@ -199,10 +201,12 @@ public class MainExampleActivity extends AppCompatActivity {
         }
     }
 
-    private void wpcomFetchSites(String username, String password) {
+    private void wpcomFetchSites(String username, String password, String twoStep, boolean shouldSentSms) {
         AuthenticatePayload payload = new AuthenticatePayload();
         payload.username = username;
         payload.password = password;
+        payload.twoStepCode = twoStep;
+        payload.shouldSendTwoStepSms = shouldSentSms;
         // Next action will be dispatched if authentication is successful
         payload.nextAction = mDispatcher.createAction(SiteAction.FETCH_SITES);
         mDispatcher.dispatch(AuthenticationAction.AUTHENTICATE, payload);

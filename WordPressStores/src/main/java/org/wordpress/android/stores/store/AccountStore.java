@@ -3,6 +3,7 @@ package org.wordpress.android.stores.store;
 import com.android.volley.VolleyError;
 import com.squareup.otto.Subscribe;
 
+import org.json.JSONObject;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.Payload;
 import org.wordpress.android.stores.action.AccountAction;
@@ -17,6 +18,7 @@ import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.Token;
 import org.wordpress.android.stores.persistence.AccountSqlUtils;
+import org.wordpress.android.stores.utils.WPUrlUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -33,6 +35,8 @@ public class AccountStore extends Store {
         public AuthenticatePayload() {}
         public String username;
         public String password;
+        public String twoStepCode;
+        public boolean shouldSendTwoStepSms;
         public Action nextAction;
     }
 
@@ -87,7 +91,7 @@ public class AccountStore extends Store {
             emitChange(event);
         } else if (actionType == AuthenticationAction.AUTHENTICATE) {
             AuthenticatePayload payload = (AuthenticatePayload) action.getPayload();
-            authenticate(payload.username, payload.password, payload);
+            authenticate(payload);
         } else if (actionType == AccountAction.FETCH) {
             // fetch Account and Account Settings
             mAccountRestClient.fetchAccount();
@@ -121,7 +125,15 @@ public class AccountStore extends Store {
         } else if (actionType == AccountAction.UPDATE) {
             AccountModel accountModel = (AccountModel) action.getPayload();
             update(accountModel, AccountAction.UPDATE);
+        } else if (actionType == AccountAction.SIGN_OUT) {
+            signOut();
         }
+    }
+
+    public void signOut() {
+        AccountSqlUtils.deleteAccount(mAccount);
+        mAccount.init();
+        mAccessToken.set(null);
     }
 
     public AccountModel getAccount() {
@@ -159,25 +171,38 @@ public class AccountStore extends Store {
         return account == null ? new AccountModel() : account;
     }
 
-    private void authenticate(String username, String password, final AuthenticatePayload payload) {
-        mAuthenticator.authenticate(username, password, null, false, new Authenticator.Listener() {
-            @Override
-            public void onResponse(Token token) {
-                mAccessToken.set(token.getAccessToken());
-                if (payload.nextAction != null) {
-                    mDispatcher.dispatch(payload.nextAction);
-                }
-                emitChange(new OnAuthenticationChanged());
-            }
-        }, new Authenticator.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                AppLog.e(T.API, "Authentication error");
-                OnAuthenticationChanged event = new OnAuthenticationChanged();
-                event.isError = true;
-                emitChange(event);
-            }
-        });
+    private void authenticate(final AuthenticatePayload payload) {
+        mAuthenticator.authenticate(payload.username, payload.password, payload.twoStepCode,
+                payload.shouldSendTwoStepSms, new Authenticator.Listener() {
+                    @Override
+                    public void onResponse(Token token) {
+                        mAccessToken.set(token.getAccessToken());
+                        if (payload.nextAction != null) {
+                            mDispatcher.dispatch(payload.nextAction);
+                        }
+                        emitChange(new OnAuthenticationChanged());
+                    }
+                }, new Authenticator.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        AppLog.e(T.API, "Authentication error");
+                        emitChange(handleAuthError(volleyError));
+                    }
+                });
+    }
+
+    private OnAuthenticationChanged handleAuthError(VolleyError volleyError) {
+        OnAuthenticationChanged event = new OnAuthenticationChanged();
+        event.isError = true;
+        JSONObject errorJson = WPUrlUtils.volleyErrorToJSON(volleyError);
+
+        if (errorJson != null) {
+            String error = errorJson.optString("error", "");
+            String errorDescription = errorJson.optString("error_description", "");
+            event.authError = mAuthenticator.extractAuthError(error, errorDescription);
+        }
+
+        return event;
     }
 
     private boolean checkError(AccountRestPayload payload, String log) {

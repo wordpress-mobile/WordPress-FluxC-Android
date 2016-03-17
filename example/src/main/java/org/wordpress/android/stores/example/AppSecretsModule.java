@@ -9,6 +9,6 @@ import dagger.Provides;
 public class AppSecretsModule {
     @Provides
     public AppSecrets provideAppSecrets() {
-        return new AppSecrets(BuildConfig.OAUTH_APP_ID, BuildConfig.OAUTH_APP_SECRET);
+        return new AppSecrets(BuildConfig.OAUTH_APP_ID, BuildConfig.OAUTH_APP_SECRET, BuildConfig.OAUTH_APP_REDIRECT_URI);
     }
 }

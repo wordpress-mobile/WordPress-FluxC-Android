@@ -11,6 +11,7 @@ import com.android.volley.toolbox.HttpHeaderParser;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.wordpress.android.stores.network.AuthError;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ public class Authenticator {
 
     public static final String CLIENT_ID_PARAM_NAME = "client_id";
     public static final String CLIENT_SECRET_PARAM_NAME = "client_secret";
+    public static final String REDIRECT_URI_PARAM_NAME = "redirect_uri";
     public static final String CODE_PARAM_NAME = "code";
     public static final String GRANT_TYPE_PARAM_NAME = "grant_type";
     public static final String USERNAME_PARAM_NAME = "username";
@@ -34,6 +36,12 @@ public class Authenticator {
     public static final String PASSWORD_GRANT_TYPE = "password";
     public static final String BEARER_GRANT_TYPE = "bearer";
     public static final String AUTHORIZATION_CODE_GRANT_TYPE = "authorization_code";
+
+    // Authentication error response keys/descriptions recognized
+    private static final String INVALID_REQUEST_ERROR = "invalid_request";
+    private static final String NEEDS_TWO_STEP_ERROR = "needs_2fa";
+    private static final String INVALID_OTP_ERROR = "invalid_otp";
+    private static final String INVALID_CREDS_ERROR = "Incorrect username or password.";
 
     private final RequestQueue mRequestQueue;
     private AppSecrets mAppSecrets;
@@ -52,8 +60,7 @@ public class Authenticator {
 
     public void authenticate(String username, String password, String twoStepCode, boolean shouldSendTwoStepSMS,
                              Listener listener, ErrorListener errorListener) {
-        TokenRequest tokenRequest = new PasswordRequest(mAppSecrets.getAppId(), mAppSecrets.getAppSecret(),
-                username, password, twoStepCode, shouldSendTwoStepSMS, listener, errorListener);
+        TokenRequest tokenRequest = makeRequest(username, password, twoStepCode, shouldSendTwoStepSMS, listener, errorListener);
         mRequestQueue.add(tokenRequest);
     }
 
@@ -63,23 +70,40 @@ public class Authenticator {
 
     public TokenRequest makeRequest(String username, String password, String twoStepCode, boolean shouldSendTwoStepSMS,
                                     Listener listener, ErrorListener errorListener) {
-        return new PasswordRequest(mAppSecrets.getAppId(), mAppSecrets.getAppSecret(), username, password, twoStepCode,
+        return new PasswordRequest(mAppSecrets.getAppId(), mAppSecrets.getAppSecret(), mAppSecrets.getRedirectUri(), username, password, twoStepCode,
                 shouldSendTwoStepSMS, listener, errorListener);
     }
 
     public TokenRequest makeRequest(String code, Listener listener, ErrorListener errorListener) {
-        return new BearerRequest(mAppSecrets.getAppId(), mAppSecrets.getAppSecret(), code, listener, errorListener);
+        return new BearerRequest(mAppSecrets.getAppId(), mAppSecrets.getAppSecret(), mAppSecrets.getRedirectUri(), code, listener, errorListener);
+    }
+
+    public AuthError extractAuthError(String error, String description) {
+        if (error.equals(INVALID_REQUEST_ERROR)) {
+            if (description.contains(INVALID_CREDS_ERROR)) {
+                return AuthError.INCORRECT_USERNAME_OR_PASSWORD;
+            }
+        } else if (error.equals(NEEDS_TWO_STEP_ERROR)) {
+            return AuthError.NEEDS_2FA;
+        } else if (error.equals(INVALID_OTP_ERROR)) {
+            return AuthError.INVALID_OTP;
+        }
+
+        return AuthError.UNAUTHORIZED;
     }
 
     private static class TokenRequest extends Request<Token> {
         private final Listener mListener;
         protected Map<String, String> mParams = new HashMap<>();
 
-        TokenRequest(String appId, String appSecret, Listener listener, ErrorListener errorListener) {
+        TokenRequest(String appId, String appSecret, String redirectUri, Listener listener, ErrorListener errorListener) {
             super(Method.POST, TOKEN_ENDPOINT, errorListener);
             mListener = listener;
             mParams.put(CLIENT_ID_PARAM_NAME, appId);
             mParams.put(CLIENT_SECRET_PARAM_NAME, appSecret);
+            if (!TextUtils.isEmpty(redirectUri)) {
+                mParams.put(REDIRECT_URI_PARAM_NAME, redirectUri);
+            }
         }
 
         @Override
@@ -107,9 +131,9 @@ public class Authenticator {
     }
 
     public static class PasswordRequest extends TokenRequest {
-        public PasswordRequest(String appId, String appSecret, String username, String password, String twoStepCode,
+        public PasswordRequest(String appId, String appSecret, String redirectUri, String username, String password, String twoStepCode,
                                boolean shouldSendTwoStepSMS, Listener listener, ErrorListener errorListener) {
-            super(appId, appSecret, listener, errorListener);
+            super(appId, appSecret, redirectUri, listener, errorListener);
             mParams.put(USERNAME_PARAM_NAME, username);
             mParams.put(PASSWORD_PARAM_NAME, password);
             mParams.put(GRANT_TYPE_PARAM_NAME, PASSWORD_GRANT_TYPE);
@@ -118,17 +142,15 @@ public class Authenticator {
                 mParams.put("wpcom_otp", twoStepCode);
             } else {
                 mParams.put("wpcom_supports_2fa", "true");
-                if (shouldSendTwoStepSMS) {
-                    mParams.put("wpcom_resend_otp", "true");
-                }
+                mParams.put("wpcom_resend_otp", String.valueOf(shouldSendTwoStepSMS));
             }
         }
     }
 
     public static class BearerRequest extends TokenRequest {
-        public BearerRequest(String appId, String appSecret, String code, Listener listener,
+        public BearerRequest(String appId, String appSecret, String redirectUri, String code, Listener listener,
                              ErrorListener errorListener) {
-            super(appId, appSecret, listener, errorListener);
+            super(appId, appSecret, redirectUri, listener, errorListener);
             mParams.put(CODE_PARAM_NAME, code);
             mParams.put(GRANT_TYPE_PARAM_NAME, BEARER_GRANT_TYPE);
         }

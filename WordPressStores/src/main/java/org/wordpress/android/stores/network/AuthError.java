@@ -8,4 +8,6 @@ public enum AuthError implements Payload {
     INCORRECT_USERNAME_OR_PASSWORD,
     UNAUTHORIZED,
     HTTP_AUTH_ERROR,
+    NEEDS_2FA, // indicates that a two-factor authentication code is required
+    INVALID_OTP, // indicates the provided two-factor authentication code is incorrect
 }

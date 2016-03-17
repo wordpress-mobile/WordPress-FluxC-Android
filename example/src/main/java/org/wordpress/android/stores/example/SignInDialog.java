@@ -13,23 +13,26 @@ import android.widget.EditText;
 
 public class SignInDialog extends DialogFragment {
     public interface Listener {
-        void onClick(String username, String password, String url);
+        void onClick(String username, String password, String twoStepCode, String url);
     }
 
     private Listener mListener;
     private EditText mUsernameView;
     private EditText mPasswordView;
+    private EditText mTwoStepView;
     private EditText mUrlView;
     private boolean mUrlEnabled;
+    private boolean mTwoStepEnabled;
 
     public void setListener(Listener onClickListener) {
         mListener = onClickListener;
     }
 
-    public static SignInDialog newInstance(Listener onClickListener, boolean enableUrl) {
+    public static SignInDialog newInstance(Listener onClickListener, boolean enableUrl, boolean enableTwoStep) {
         SignInDialog fragment = new SignInDialog();
         fragment.setListener(onClickListener);
         fragment.setUrlEnabled(enableUrl);
+        fragment.setTwoStepVisible(enableTwoStep);
         return fragment;
     }
 
@@ -41,6 +44,10 @@ public class SignInDialog extends DialogFragment {
         mUrlEnabled = urlEnabled;
     }
 
+    public void setTwoStepVisible(boolean visible) {
+        mTwoStepEnabled = visible;
+    }
+
     @Override
     @NonNull
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -49,14 +56,20 @@ public class SignInDialog extends DialogFragment {
         View view = inflater.inflate(R.layout.signin_dialog, null);
         mUsernameView = (EditText) view.findViewById(R.id.username);
         mPasswordView = (EditText) view.findViewById(R.id.password);
+        mTwoStepView = (EditText) view.findViewById(R.id.twostep);
         mUrlView = (EditText) view.findViewById(R.id.url);
         if (!mUrlEnabled) {
             mUrlView.setVisibility(View.GONE);
         }
+        if (!mTwoStepEnabled) {
+            mTwoStepView.setVisibility(View.GONE);
+        }
         builder.setView(view)
                 .setPositiveButton(android.R.string.ok, new OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        mListener.onClick(mUsernameView.getText().toString(), mPasswordView.getText().toString(),
+                        mListener.onClick(mUsernameView.getText().toString(),
+                                mPasswordView.getText().toString(),
+                                mTwoStepView.getText().toString(),
                                 mUrlView.getText().toString());
                     }
                 })
