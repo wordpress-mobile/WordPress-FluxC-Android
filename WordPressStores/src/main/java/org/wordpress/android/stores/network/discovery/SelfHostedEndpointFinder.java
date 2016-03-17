@@ -3,6 +3,8 @@ package org.wordpress.android.stores.network.discovery;
 import android.util.Xml;
 import android.webkit.URLUtil;
 
+import com.android.volley.toolbox.RequestFuture;
+
 import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.stores.utils.WPUrlUtils;
 import org.wordpress.android.util.AppLog;
@@ -220,7 +222,7 @@ public class SelfHostedEndpointFinder {
      * Obtain the HTML response from a GET request for the given URL.
      */
     private String getResponse(String url) {
-        DiscoveryRequestFuture<String> future = DiscoveryRequestFuture.newFuture();
+        RequestFuture<String> future = RequestFuture.newFuture();
         DiscoveryRequest request = new DiscoveryRequest(url, future, future);
         mClient.add(request);
         try {
