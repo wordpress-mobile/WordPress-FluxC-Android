@@ -163,7 +163,7 @@ public class MainExampleActivity extends AppCompatActivity {
                         mMemorizingTrustManager.storeLastFailure();
                         // Retry login action
                         if (mSelfhostedPayload != null) {
-                            selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password,
+                            signInAction(mSelfhostedPayload.username, mSelfhostedPayload.password,
                                     mSelfhostedPayload.xmlrpcEndpoint);
                         }
                     }
