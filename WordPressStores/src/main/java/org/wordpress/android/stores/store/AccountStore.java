@@ -123,7 +123,22 @@ public class AccountStore extends Store {
         } else if (actionType == AccountAction.UPDATE) {
             AccountModel accountModel = (AccountModel) action.getPayload();
             update(accountModel, AccountAction.UPDATE);
+        } else if (actionType == AccountAction.SIGN_OUT) {
+            signOut();
         }
+    }
+
+    public void signOut() {
+        // Remove Account
+        AccountSqlUtils.deleteAccount(mAccount);
+        mAccount.init();
+        OnAccountChanged accountChanged = new OnAccountChanged();
+        accountChanged.accountInfosChanged = true;
+        emitChange(accountChanged);
+
+        // Remove authentication token
+        mAccessToken.set(null);
+        emitChange(new OnAuthenticationChanged());
     }
 
     public AccountModel getAccount() {

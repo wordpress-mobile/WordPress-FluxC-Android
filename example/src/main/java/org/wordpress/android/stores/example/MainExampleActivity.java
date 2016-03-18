@@ -48,6 +48,7 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mListSites;
     private Button mLogSites;
     private Button mUpdateFirstSite;
+    private Button mSignOut;
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
 
@@ -89,6 +90,13 @@ public class MainExampleActivity extends AppCompatActivity {
             }
         });
 
+        mSignOut = (Button) findViewById(R.id.signout);
+        mSignOut.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                signOutWpCom();
+            }
+        });
         mLogView = (TextView) findViewById(R.id.log);
     }
 
@@ -114,8 +122,12 @@ public class MainExampleActivity extends AppCompatActivity {
 
     @Subscribe
     public void onAccountChanged(OnAccountChanged event) {
-        if (event.accountInfosChanged) {
-            prependToLog("Display Name: " + mAccountStore.getAccount().getDisplayName());
+        if (!mAccountStore.isSignedIn()) {
+            prependToLog("Signed Out");
+        } else {
+            if (event.accountInfosChanged) {
+                prependToLog("Display Name: " + mAccountStore.getAccount().getDisplayName());
+            }
         }
     }
 
@@ -222,6 +234,10 @@ public class MainExampleActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    private void signOutWpCom() {
+        mDispatcher.dispatch(AccountAction.SIGN_OUT);
     }
 
     private void wpcomFetchSites(String username, String password) {
