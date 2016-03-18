@@ -10,4 +10,5 @@ public enum AuthError implements Payload {
     HTTP_AUTH_ERROR,
     NEEDS_2FA, // indicates that a two-factor authentication code is required
     INVALID_OTP, // indicates the provided two-factor authentication code is incorrect
+    INVALID_SSL_CERTIFICATE,
 }

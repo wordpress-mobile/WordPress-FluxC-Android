@@ -32,7 +32,9 @@ import javax.inject.Inject;
 public class AccountStore extends Store {
     // Payloads
     public static class AuthenticatePayload implements Payload {
-        public AuthenticatePayload() {}
+        public AuthenticatePayload() {
+        }
+
         public String username;
         public String password;
         public String twoStepCode;
@@ -131,9 +133,16 @@ public class AccountStore extends Store {
     }
 
     public void signOut() {
+        // Remove Account
         AccountSqlUtils.deleteAccount(mAccount);
         mAccount.init();
+        OnAccountChanged accountChanged = new OnAccountChanged();
+        accountChanged.accountInfosChanged = true;
+        emitChange(accountChanged);
+
+        // Remove authentication token
         mAccessToken.set(null);
+        emitChange(new OnAuthenticationChanged());
     }
 
     public AccountModel getAccount() {
