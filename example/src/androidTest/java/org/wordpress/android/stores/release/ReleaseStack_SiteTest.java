@@ -8,6 +8,7 @@ import org.wordpress.android.stores.action.SiteActionBuilder;
 import org.wordpress.android.stores.example.BuildConfig;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
+import org.wordpress.android.stores.network.MemorizingTrustManager;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.stores.model.SiteModel;
@@ -30,16 +31,18 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
     @Inject HTTPAuthManager mHTTPAuthManager;
+    @Inject MemorizingTrustManager mMemorizingTrustManager;
 
     CountDownLatch mCountDownLatch;
 
     enum TEST_EVENTS {
         NONE,
         HTTP_AUTH_ERROR,
+        INVALID_SSL_CERTIFICATE,
         SITE_CHANGED,
         SITE_REMOVED
     }
-    private TEST_EVENTS mExpectedEvent;
+    private TEST_EVENTS mNextEvent;
 
     @Override
     protected void setUp() throws Exception {
@@ -50,7 +53,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         mDispatcher.register(mAccountStore);
         mDispatcher.register(this);
         // Reset expected test event
-        mExpectedEvent = TEST_EVENTS.NONE;
+        mNextEvent = TEST_EVENTS.NONE;
     }
 
     public void testSelfHostedSimpleFetchSites() throws InterruptedException {
@@ -58,7 +61,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
         payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SIMPLE;
-        mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
+        mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.generateFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onChanged event
@@ -70,7 +73,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE_CONTRIB;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE_CONTRIB;
         payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SIMPLE_CONTRIB;
-        mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
+        mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.generateFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onChanged event
@@ -82,7 +85,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_MULTISITE;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_MULTISITE;
         payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_MULTISITE;
-        mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
+        mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.generateFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onChanged event
@@ -94,7 +97,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL;
         payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_VALID_SSL;
-        mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
+        mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.generateFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onChanged event
@@ -106,12 +109,20 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SELFSIGNED_SSL;
         payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL;
-        mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
+
+        //  We're expecting a SSL Warning event
+        mNextEvent = TEST_EVENTS.INVALID_SSL_CERTIFICATE;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.generateFetchSitesXmlRpcAction(payload));
-        // TODO: should get a SSL Warning event
-
-        // Wait for a network response / onChanged event
+        // Wait for a network response / onAuthenticationChanged error event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // Add an exception for the last certificate
+        mMemorizingTrustManager.storeLastFailure();
+        // Retry
+        mNextEvent = TEST_EVENTS.SITE_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(SiteActionBuilder.generateFetchSitesXmlRpcAction(payload));
+        // Wait for a network response
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -122,7 +133,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH;
 
         // We're expecting a HTTP_AUTH_ERROR
-        mExpectedEvent = TEST_EVENTS.HTTP_AUTH_ERROR;
+        mNextEvent = TEST_EVENTS.HTTP_AUTH_ERROR;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.generateFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onAuthenticationChanged error event
@@ -131,7 +142,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         mHTTPAuthManager.addHTTPAuthCredentials(BuildConfig.TEST_WPORG_HTTPAUTH_USERNAME_SH_HTTPAUTH,
                 BuildConfig.TEST_WPORG_HTTPAUTH_PASSWORD_SH_HTTPAUTH, BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH, null);
         // Retry to fetch sites, this time we expect a site refresh
-        mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
+        mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.generateFetchSitesXmlRpcAction(payload));
         // Wait for a network response
@@ -143,7 +154,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH;
         payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH;
-        mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
+        mNextEvent = TEST_EVENTS.SITE_CHANGED;
         // Set known HTTP Auth credentials
         mHTTPAuthManager.addHTTPAuthCredentials(BuildConfig.TEST_WPORG_HTTPAUTH_USERNAME_SH_HTTPAUTH,
                 BuildConfig.TEST_WPORG_HTTPAUTH_PASSWORD_SH_HTTPAUTH, BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH, null);
@@ -160,13 +171,13 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
         payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SIMPLE;
-        mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
+        mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.generateFetchSitesXmlRpcAction(payload));
         mCountDownLatch = new CountDownLatch(1);
         // Wait for a network response / onChanged event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        mExpectedEvent = TEST_EVENTS.SITE_REMOVED;
+        mNextEvent = TEST_EVENTS.SITE_REMOVED;
         mCountDownLatch = new CountDownLatch(1);
         SiteModel dotOrgSite = mSiteStore.getDotOrgSites().get(0);
         mDispatcher.dispatch(SiteActionBuilder.generateRemoveSiteAction(dotOrgSite));
@@ -179,7 +190,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         assertEquals(true, mSiteStore.hasSite());
         assertEquals(true, mSiteStore.hasDotOrgSite());
-        assertEquals(mExpectedEvent, TEST_EVENTS.SITE_CHANGED);
+        assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -188,7 +199,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         AppLog.e(T.TESTS, "site count " + mSiteStore.getSitesCount());
         assertEquals(false, mSiteStore.hasSite());
         assertEquals(false, mSiteStore.hasDotOrgSite());
-        assertEquals(TEST_EVENTS.SITE_REMOVED, mExpectedEvent);
+        assertEquals(TEST_EVENTS.SITE_REMOVED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -197,9 +208,12 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         if (event.isError) {
             AppLog.i(T.TESTS, "error " + event.authError);
             if (event.authError == AuthError.HTTP_AUTH_ERROR) {
-                assertEquals(mExpectedEvent, TEST_EVENTS.HTTP_AUTH_ERROR);
-                mCountDownLatch.countDown();
+                assertEquals(TEST_EVENTS.HTTP_AUTH_ERROR, mNextEvent);
+            }
+            if (event.authError == AuthError.INVALID_SSL_CERTIFICATE) {
+                assertEquals(TEST_EVENTS.INVALID_SSL_CERTIFICATE, mNextEvent);
             }
         }
+        mCountDownLatch.countDown();
     }
 }

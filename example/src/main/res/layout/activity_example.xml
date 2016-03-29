@@ -46,6 +46,15 @@
             android:layout_toEndOf="@+id/account_infos_button"
             android:layout_below="@+id/list_sites_button" />
 
+        <Button
+            android:id="@+id/signout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sign Out"
+            android:layout_below="@+id/update_first_site"
+            android:layout_toRightOf="@+id/log_sites"
+            />
+
     </RelativeLayout>
 
 

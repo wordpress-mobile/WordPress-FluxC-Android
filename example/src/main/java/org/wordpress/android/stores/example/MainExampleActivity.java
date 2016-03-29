@@ -1,5 +1,6 @@
 package org.wordpress.android.stores.example;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
@@ -20,6 +21,7 @@ import org.wordpress.android.stores.example.SignInDialog.Listener;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
+import org.wordpress.android.stores.network.MemorizingTrustManager;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.stores.store.AccountStore.OnAccountChanged;
@@ -39,12 +41,14 @@ public class MainExampleActivity extends AppCompatActivity {
     @Inject AccountStore mAccountStore;
     @Inject Dispatcher mDispatcher;
     @Inject HTTPAuthManager mHTTPAuthManager;
+    @Inject MemorizingTrustManager mMemorizingTrustManager;
 
     private TextView mLogView;
     private Button mAccountInfos;
     private Button mListSites;
     private Button mLogSites;
     private Button mUpdateFirstSite;
+    private Button mSignOut;
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
 
@@ -86,6 +90,13 @@ public class MainExampleActivity extends AppCompatActivity {
             }
         });
 
+        mSignOut = (Button) findViewById(R.id.signout);
+        mSignOut.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                signOutWpCom();
+            }
+        });
         mLogView = (TextView) findViewById(R.id.log);
     }
 
@@ -111,8 +122,12 @@ public class MainExampleActivity extends AppCompatActivity {
 
     @Subscribe
     public void onAccountChanged(OnAccountChanged event) {
-        if (event.accountInfosChanged) {
-            prependToLog("Display Name: " + mAccountStore.getAccount().getDisplayName());
+        if (!mAccountStore.isSignedIn()) {
+            prependToLog("Signed Out");
+        } else {
+            if (event.accountInfosChanged) {
+                prependToLog("Display Name: " + mAccountStore.getAccount().getDisplayName());
+            }
         }
     }
 
@@ -124,6 +139,10 @@ public class MainExampleActivity extends AppCompatActivity {
             if (event.authError == AuthError.HTTP_AUTH_ERROR) {
                 // Show a Dialog prompting for http username and password
                 showHTTPAuthDialog(mSelfhostedPayload.xmlrpcEndpoint);
+            }
+            if (event.authError == AuthError.INVALID_SSL_CERTIFICATE) {
+                // Show a SSL Warning Dialog
+                showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
             }
         }
     }
@@ -144,6 +163,24 @@ public class MainExampleActivity extends AppCompatActivity {
     private void prependToLog(String s) {
         s = s + "\n" + mLogView.getText();
         mLogView.setText(s);
+    }
+
+    private void showSSLWarningDialog(String certifString) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        SSLWarningDialog newFragment = SSLWarningDialog.newInstance(
+                new android.content.DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Add the certificate to our list
+                        mMemorizingTrustManager.storeLastFailure();
+                        // Retry login action
+                        if (mSelfhostedPayload != null) {
+                            selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password,
+                                    mSelfhostedPayload.xmlrpcEndpoint);
+                        }
+                    }
+                }, certifString);
+        newFragment.show(ft, "dialog");
     }
 
     private void showSigninDialog() {
@@ -197,6 +234,10 @@ public class MainExampleActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    private void signOutWpCom() {
+        mDispatcher.dispatch(AccountActionBuilder.generateSignOutAction());
     }
 
     private void wpcomFetchSites(String username, String password) {

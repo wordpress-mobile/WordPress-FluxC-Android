@@ -1,11 +1,12 @@
 package org.wordpress.android.stores.network;
 
 import com.android.volley.toolbox.HurlStack;
-import com.squareup.okhttp.OkUrlFactory;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import okhttp3.OkUrlFactory;
 
 public class OkHttpStack extends HurlStack {
     private final OkUrlFactory mOkUrlFactory;
