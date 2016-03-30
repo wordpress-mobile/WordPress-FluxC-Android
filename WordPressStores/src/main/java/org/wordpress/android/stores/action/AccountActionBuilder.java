@@ -1,6 +1,7 @@
 package org.wordpress.android.stores.action;
 
 import org.wordpress.android.stores.annotations.action.Action;
+import org.wordpress.android.stores.annotations.action.ActionBuilder;
 import org.wordpress.android.stores.model.AccountModel;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.AccountRestPayload;
 import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
