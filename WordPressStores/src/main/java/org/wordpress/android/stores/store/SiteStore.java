@@ -375,7 +375,7 @@ public class SiteStore extends Store {
             emitChange(new OnSiteChanged(rowsAffected));
         } else if (actionType == SiteAction.FETCH_SITES) {
             mSiteRestClient.pullSites();
-        } else if (actionType == SiteAction.FETCH_SITES_XMLRPC) {
+        } else if (actionType == SiteAction.FETCH_SITES_XML_RPC) {
             RefreshSitesXMLRPCPayload payload = (RefreshSitesXMLRPCPayload) action.getPayload();
             mSiteXMLRPCClient.pullSites(payload.xmlrpcEndpoint, payload.username, payload.password);
         } else if (actionType == SiteAction.FETCH_SITE) {
@@ -392,7 +392,7 @@ public class SiteStore extends Store {
             // TODO: Probably, we can inject QuickPressShortcutsStore into SiteStore and act on it directly
             // See WordPressDB.deleteQuickPressShortcutsForLocalTableBlogId(Context ctx, int blogId)
             emitChange(new OnSitesRemoved(rowsAffected));
-        } else if (actionType == SiteAction.LOGOUT_WPCOM) {
+        } else if (actionType == SiteAction.LOGOUT_WP_COM) {
             // Logging out of WP.com. Drop all WP.com sites, and all Jetpack sites that were pulled over the WP.com
             // REST API only (they don't have a .org site id)
             List<SiteModel> restApiSites = SiteSqlUtils.getAllRestApiSites();

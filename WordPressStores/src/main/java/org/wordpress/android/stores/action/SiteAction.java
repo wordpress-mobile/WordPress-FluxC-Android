@@ -13,16 +13,16 @@ public enum SiteAction implements IAction {
     FETCH_SITE,
     @Action
     FETCH_SITES,
-    FETCH_SITES_XMLRPC,
     @Action(payloadType = SiteStore.RefreshSitesXMLRPCPayload.class)
+    FETCH_SITES_XML_RPC,
     @Action(payloadType = SiteModel.class)
     UPDATE_SITE,
     @Action(payloadType = SitesModel.class)
     UPDATE_SITES,
     @Action(payloadType = SiteModel.class)
     REMOVE_SITE,
-    LOGOUT_WPCOM,
     @Action
+    LOGOUT_WP_COM,
     @Action(payloadType = SitesModel.class)
     SHOW_SITES,
     @Action(payloadType = SitesModel.class)
