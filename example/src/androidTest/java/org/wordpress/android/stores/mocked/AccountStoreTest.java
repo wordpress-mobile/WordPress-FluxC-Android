@@ -7,7 +7,7 @@ import com.squareup.otto.Subscribe;
 import com.yarolegovich.wellsql.WellSql;
 
 import org.wordpress.android.stores.Dispatcher;
-import org.wordpress.android.stores.action.AuthenticationActionBuilder;
+import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
 import org.wordpress.android.stores.module.AppContextModule;
 import org.wordpress.android.stores.persistence.WellSqlConfig;
 import org.wordpress.android.stores.store.AccountStore;

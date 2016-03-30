@@ -4,7 +4,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 
 import org.wordpress.android.stores.Dispatcher;
-import org.wordpress.android.stores.action.AuthenticationActionBuilder;
+import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.BaseRequest.OnAuthFailedListener;
 import org.wordpress.android.stores.network.UserAgent;
