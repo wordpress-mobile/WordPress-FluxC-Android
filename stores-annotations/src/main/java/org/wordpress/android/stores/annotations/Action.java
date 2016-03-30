@@ -1,19 +1,11 @@
 package org.wordpress.android.stores.annotations;
 
-public class Action<T> {
-    private final IAction mActionType;
-    private final T mPayload;
+import org.wordpress.android.stores.annotations.action.NoPayload;
 
-    public Action(IAction actionType, T payload) {
-        mActionType = actionType;
-        mPayload = payload;
-    }
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
-    public IAction getType() {
-        return mActionType;
-    }
-
-    public T getPayload() {
-        return mPayload;
-    }
+@Target(ElementType.FIELD)
+public @interface Action {
+    Class payloadType() default NoPayload.class;
 }
