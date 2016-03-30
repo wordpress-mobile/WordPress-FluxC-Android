@@ -15,9 +15,9 @@ import com.squareup.otto.Subscribe;
 
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.action.AccountActionBuilder;
-import org.wordpress.android.stores.action.SiteActionBuilder;
 import org.wordpress.android.stores.example.SignInDialog.Listener;
 import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
+import org.wordpress.android.stores.generated.SiteActionBuilder;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
