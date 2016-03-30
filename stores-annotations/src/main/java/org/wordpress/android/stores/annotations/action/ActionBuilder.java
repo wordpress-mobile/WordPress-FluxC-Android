@@ -1,4 +1,4 @@
-package org.wordpress.android.stores.annotations;
+package org.wordpress.android.stores.annotations.action;
 
 public abstract class ActionBuilder {
     public static Action<Void> generateNoPayloadAction(IAction actionType) {

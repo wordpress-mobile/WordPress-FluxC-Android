@@ -1,8 +1,8 @@
 package org.wordpress.android.stores.action;
 
-import org.wordpress.android.stores.annotations.ActionAnnotation;
-import org.wordpress.android.stores.annotations.ActionEnumAnnotation;
-import org.wordpress.android.stores.annotations.IAction;
+import org.wordpress.android.stores.annotations.Action;
+import org.wordpress.android.stores.annotations.ActionEnum;
+import org.wordpress.android.stores.annotations.action.IAction;
 
 public enum SiteAction implements IAction {
     FETCH_SITE,
