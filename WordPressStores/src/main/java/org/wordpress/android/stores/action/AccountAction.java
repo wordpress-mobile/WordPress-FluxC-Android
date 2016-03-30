@@ -1,5 +1,7 @@
 package org.wordpress.android.stores.action;
 
+import org.wordpress.android.stores.annotations.IAction;
+
 public enum AccountAction implements IAction {
     FETCH, // request fetch of both Account and Account Settings
     FETCH_ACCOUNT, // request fetch of Account information

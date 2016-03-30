@@ -1,11 +1,8 @@
 package org.wordpress.android.stores.action;
 
+import org.wordpress.android.stores.annotations.Action;
 import org.wordpress.android.stores.model.AccountModel;
-import org.wordpress.android.stores.network.AuthError;
-import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.AccountRestPayload;
-import org.wordpress.android.stores.store.AccountStore;
-import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
 
 public class AccountActionBuilder extends ActionBuilder {

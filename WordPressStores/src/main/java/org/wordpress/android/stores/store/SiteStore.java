@@ -9,9 +9,9 @@ import com.yarolegovich.wellsql.mapper.SelectMapper;
 
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.Payload;
-import org.wordpress.android.stores.action.Action;
-import org.wordpress.android.stores.action.IAction;
 import org.wordpress.android.stores.action.SiteAction;
+import org.wordpress.android.stores.annotations.Action;
+import org.wordpress.android.stores.annotations.IAction;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.model.SitesModel;
 import org.wordpress.android.stores.network.rest.wpcom.site.SiteRestClient;

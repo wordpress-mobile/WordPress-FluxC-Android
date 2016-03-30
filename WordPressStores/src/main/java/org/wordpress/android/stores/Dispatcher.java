@@ -3,7 +3,7 @@ package org.wordpress.android.stores;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
-import org.wordpress.android.stores.action.Action;
+import org.wordpress.android.stores.annotations.Action;
 import org.wordpress.android.stores.store.Store;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;

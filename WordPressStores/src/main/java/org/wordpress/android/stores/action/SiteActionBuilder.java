@@ -1,5 +1,6 @@
 package org.wordpress.android.stores.action;
 
+import org.wordpress.android.stores.annotations.Action;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.model.SitesModel;
 import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;
