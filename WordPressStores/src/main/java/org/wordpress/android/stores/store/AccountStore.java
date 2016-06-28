@@ -149,6 +149,13 @@ public class AccountStore extends Store {
     }
 
     /**
+     * Should be used for very specific purpose (like forwarding the token to a Webview)
+     */
+    public String getAccessToken() {
+        return mAccessToken.get();
+    }
+
+    /**
      * Checks if an Account is currently signed in to WordPress.com or any WordPress.org sites.
      */
     public boolean isSignedIn() {
