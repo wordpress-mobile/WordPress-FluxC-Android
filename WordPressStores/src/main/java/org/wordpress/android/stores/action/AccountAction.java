@@ -9,4 +9,5 @@ public enum AccountAction implements IAction {
     POST_SETTINGS, // request saving Account Settings remotely
     POSTED_SETTINGS, // response received from Account Settings post
     UPDATE, // update in-memory and persisted Account in AccountStore
+    SIGN_OUT, // delete persisted Account, reset in-memory Account, delete access token
 }

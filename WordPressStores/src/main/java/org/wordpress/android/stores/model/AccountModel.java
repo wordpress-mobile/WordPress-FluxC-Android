@@ -69,7 +69,7 @@ public class AccountModel implements Identifiable, Payload {
                 StringUtils.equals(getWebAddress(), otherAccount.getWebAddress());
     }
 
-    private void init() {
+    public void init() {
         mUserName = "";
         mUserId = 0;
         mDisplayName = "";
