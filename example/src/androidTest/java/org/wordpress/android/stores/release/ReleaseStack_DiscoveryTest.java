@@ -128,6 +128,78 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    // No protocol in URL tests
+
+    public void testSelfHostedSimpleNoProtocolFetchSites() throws InterruptedException {
+        final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
+        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
+        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
+
+        mNextEvent = TEST_EVENTS.SITE_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mSelfHostedEndpointFinder.findEndpoint(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_SIMPLE),
+                new SelfHostedEndpointFinder.DiscoveryCallback() {
+                    @Override
+                    public void onError(Error error) {}
+
+                    @Override
+                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
+                        payload.xmlrpcEndpoint = xmlrpcEndpoint;
+                        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+                    }
+                });
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testSelfHostedSimpleHTTPSNoProtocolFetchSites() throws InterruptedException {
+        final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
+        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL;
+        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL;
+
+        mNextEvent = TEST_EVENTS.SITE_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mSelfHostedEndpointFinder.findEndpoint(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL),
+                new SelfHostedEndpointFinder.DiscoveryCallback() {
+                    @Override
+                    public void onError(Error error) {}
+
+                    @Override
+                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
+                        payload.xmlrpcEndpoint = xmlrpcEndpoint;
+                        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+                    }
+                });
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testSelfHostedHTTPToHTTPSNoProtocolFetchSites() throws InterruptedException {
+        final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
+        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT;
+        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL_REDIRECT;
+
+        mNextEvent = TEST_EVENTS.SITE_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mSelfHostedEndpointFinder.findEndpoint(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT),
+                new SelfHostedEndpointFinder.DiscoveryCallback() {
+                    @Override
+                    public void onError(Error error) {}
+
+                    @Override
+                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
+                        payload.xmlrpcEndpoint = xmlrpcEndpoint;
+                        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+                    }
+                });
+
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @Subscribe
     public void onSiteChanged(OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
