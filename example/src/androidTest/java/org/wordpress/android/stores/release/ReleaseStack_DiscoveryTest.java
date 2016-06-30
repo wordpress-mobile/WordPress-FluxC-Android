@@ -38,6 +38,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     enum TEST_EVENTS {
         NONE,
+        NOT_AUTHENTICATED,
         HTTP_AUTH_ERROR,
         INVALID_SSL_CERTIFICATE,
         SITE_CHANGED,
@@ -151,8 +152,9 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
             AppLog.i(T.TESTS, "error " + event.authError);
             if (event.authError == AuthError.HTTP_AUTH_ERROR) {
                 assertEquals(TEST_EVENTS.HTTP_AUTH_ERROR, mNextEvent);
-            }
-            if (event.authError == AuthError.INVALID_SSL_CERTIFICATE) {
+            } else if (event.authError == AuthError.NOT_AUTHENTICATED) {
+                assertEquals(TEST_EVENTS.NOT_AUTHENTICATED, mNextEvent);
+            } else if (event.authError == AuthError.INVALID_SSL_CERTIFICATE) {
                 assertEquals(TEST_EVENTS.INVALID_SSL_CERTIFICATE, mNextEvent);
             }
         }
