@@ -66,7 +66,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT,
+        mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_SIMPLE,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
                     public void onError(Error error) {}
@@ -89,7 +89,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT,
+        mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
                     public void onError(Error error) {}
