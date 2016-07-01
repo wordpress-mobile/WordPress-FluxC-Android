@@ -82,7 +82,7 @@ public class SiteSqlUtils {
                 }).execute();
     }
 
-    public static List<SiteModel> getAllRestApiSites() {
+    public static List<SiteModel> getAllWPComSites() {
         return WellSql.select(SiteModel.class)
                 .where().beginGroup()
                 .equals(SiteModelTable.IS_WPCOM, true)
