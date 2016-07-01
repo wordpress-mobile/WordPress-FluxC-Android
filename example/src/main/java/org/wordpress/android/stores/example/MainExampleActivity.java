@@ -135,7 +135,7 @@ public class MainExampleActivity extends AppCompatActivity {
         if (!mAccountStore.isSignedIn()) {
             prependToLog("Signed Out");
         } else {
-            if (event.accountInfosChanged) {
+            if (event.accountInfosChanged && event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
                 prependToLog("Display Name: " + mAccountStore.getAccount().getDisplayName());
             }
         }
