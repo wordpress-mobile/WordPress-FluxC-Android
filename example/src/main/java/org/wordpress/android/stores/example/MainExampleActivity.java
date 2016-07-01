@@ -98,6 +98,16 @@ public class MainExampleActivity extends AppCompatActivity {
             }
         });
         mLogView = (TextView) findViewById(R.id.log);
+
+        init();
+    }
+
+    private void init() {
+        mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
+        if (mAccountStore.hasAccessToken()) {
+            prependToLog("You're signed in as: " + mAccountStore.getAccount().getUserName());
+        }
+        mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
     }
 
     @Override
