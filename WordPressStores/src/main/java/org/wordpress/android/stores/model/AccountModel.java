@@ -118,6 +118,7 @@ public class AccountModel implements Identifiable, Payload {
         setNewEmail(other.getNewEmail());
         setPendingEmailChange(other.getPendingEmailChange());
         setWebAddress(other.getWebAddress());
+        setDisplayName(other.getDisplayName());
     }
 
     public long getUserId() {

@@ -18,4 +18,5 @@ public class AccountSettingsResponse implements Response {
     public String new_user_email;
     public boolean user_email_change_pending;
     public String user_URL;
+    public String display_name;
 }

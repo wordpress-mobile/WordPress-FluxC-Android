@@ -16,7 +16,9 @@ import org.wordpress.android.stores.network.rest.wpcom.WPCOMREST;
 import org.wordpress.android.stores.network.rest.wpcom.WPComGsonRequest;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -31,6 +33,15 @@ public class AccountRestClient extends BaseWPComRestClient {
         public boolean isError() { return error != null; }
         public VolleyError error;
         public AccountModel account;
+    }
+
+    public static class AccountPostResponsePayload implements Payload {
+        public AccountPostResponsePayload(VolleyError error) {
+            this.error = error;
+        }
+        public boolean isError() { return error != null; }
+        public VolleyError error;
+        public Map<String, Object> settings;
     }
 
     @Inject
@@ -96,7 +107,7 @@ public class AccountRestClient extends BaseWPComRestClient {
     /**
      * Performs an HTTP POST call to the v1.1 {@link WPCOMREST#ME_SETTINGS} endpoint. Upon receiving
      * a response (success or error) a {@link AccountAction#POSTED_SETTINGS} action is dispatched
-     * with a payload of type {@link AccountRestPayload}. {@link AccountRestPayload#isError()} can
+     * with a payload of type {@link AccountPostResponsePayload}. {@link AccountPostResponsePayload#isError()} can
      * be used to determine the result of the request.
      *
      * No HTTP POST call is made if the given parameter map is null or contains no entries.
@@ -104,19 +115,22 @@ public class AccountRestClient extends BaseWPComRestClient {
     public void postAccountSettings(Map<String, String> params) {
         if (params == null || params.isEmpty()) return;
         String url = WPCOMREST.ME_SETTINGS.getUrlV1_1();
-        add(new WPComGsonRequest<>(Method.POST, url, params, AccountSettingsResponse.class,
-                new Listener<AccountSettingsResponse>() {
+        final Set<String> updatedFields = params.keySet();
+        // Note: we have to use a HashMap as a response here because the API response format is different depending
+        // of the request we do.
+        add(new WPComGsonRequest<>(Method.POST, url, params, HashMap.class,
+                new Listener<HashMap>() {
                     @Override
-                    public void onResponse(AccountSettingsResponse response) {
-                        AccountModel settings = responseToAccountSettingsModel(response);
-                        AccountRestPayload payload = new AccountRestPayload(settings, null);
+                    public void onResponse(HashMap response) {
+                        AccountPostResponsePayload payload = new AccountPostResponsePayload(null);
+                        payload.settings = response;
                         mDispatcher.dispatch(AccountAction.POSTED_SETTINGS, payload);
                     }
                 },
                 new ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        AccountRestPayload payload = new AccountRestPayload(null, error);
+                        AccountPostResponsePayload payload = new AccountPostResponsePayload(error);
                         mDispatcher.dispatch(AccountAction.POSTED_SETTINGS, payload);
                     }
                 }
