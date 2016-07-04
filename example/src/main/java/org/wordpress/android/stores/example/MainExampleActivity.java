@@ -4,11 +4,13 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.squareup.otto.Subscribe;
@@ -26,6 +28,7 @@ import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.stores.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
+import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;
@@ -33,6 +36,8 @@ import org.wordpress.android.stores.utils.SelfHostedDiscoveryUtils;
 import org.wordpress.android.stores.utils.SelfHostedDiscoveryUtils.DiscoveryCallback;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
+
+import java.util.HashMap;
 
 import javax.inject.Inject;
 
@@ -49,6 +54,8 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mLogSites;
     private Button mUpdateFirstSite;
     private Button mSignOut;
+    private Button mAccountSettings;
+
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
 
@@ -77,6 +84,14 @@ public class MainExampleActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mDispatcher.dispatch(SiteAction.FETCH_SITE, mSiteStore.getSites().get(0));
+            }
+        });
+
+        mAccountSettings = (Button) findViewById(R.id.account_settings);
+        mAccountSettings.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                changeAccountSettings();
             }
         });
 
@@ -134,6 +149,7 @@ public class MainExampleActivity extends AppCompatActivity {
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
+        mAccountSettings.setEnabled(mAccountStore.hasAccessToken());
         if (event.isError) {
             prependToLog("Authentication error: " + event.authError);
             if (event.authError == AuthError.HTTP_AUTH_ERROR) {
@@ -257,5 +273,22 @@ public class MainExampleActivity extends AppCompatActivity {
         mSelfhostedPayload = payload;
         // Self Hosted don't have any "Authentication" request, try to list sites with user/password
         mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+    }
+
+    private void changeAccountSettings() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        final EditText edittext = new EditText(this);
+        alert.setMessage("Update your display name:");
+        alert.setView(edittext);
+        alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String displayName = edittext.getText().toString();
+                PostAccountSettingsPayload payload = new PostAccountSettingsPayload();
+                payload.params = new HashMap<>();
+                payload.params.put("display_name", displayName);
+                mDispatcher.dispatch(AccountAction.POST_SETTINGS, payload);
+            }
+        });
+        alert.show();
     }
 }
