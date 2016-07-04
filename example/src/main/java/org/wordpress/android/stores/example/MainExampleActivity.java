@@ -219,7 +219,7 @@ public class MainExampleActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(url)) {
             wpcomFetchSites(username, password);
         } else {
-            mSelfHostedEndpointFinder.findEndpoint(url, new SelfHostedEndpointFinder.DiscoveryCallback() {
+            mSelfHostedEndpointFinder.findEndpoint(url, username, password, new SelfHostedEndpointFinder.DiscoveryCallback() {
                 @Override
                 public void onError(Error error) {
                     if (error == Error.WORDPRESS_COM_SITE) {

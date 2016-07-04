@@ -67,7 +67,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_SIMPLE,
+        mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_SIMPLE, payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
                     public void onError(Error error) {}
@@ -91,6 +91,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL,
+                payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
                     public void onError(Error error) {}
@@ -114,6 +115,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT,
+                payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
             @Override
             public void onError(Error error) {}
@@ -140,6 +142,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         mSelfHostedEndpointFinder.findEndpoint(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_SIMPLE),
+                payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
                     public void onError(Error error) {}
@@ -163,6 +166,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         mSelfHostedEndpointFinder.findEndpoint(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL),
+                payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
                     public void onError(Error error) {}
@@ -186,6 +190,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         mSelfHostedEndpointFinder.findEndpoint(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT),
+                payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
                     public void onError(Error error) {}
@@ -212,7 +217,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         mSelfHostedEndpointFinder.findEndpoint("hppt://" +
-                UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_SIMPLE),
+                UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_SIMPLE), payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
                     public void onError(Error error) {}
@@ -236,7 +241,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         mSelfHostedEndpointFinder.findEndpoint("hppt://" +
-                UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL),
+                UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL), payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
                     public void onError(Error error) {}
@@ -261,6 +266,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
         mSelfHostedEndpointFinder.findEndpoint("hppt://" +
                 UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT),
+                payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
                     public void onError(Error error) {}
