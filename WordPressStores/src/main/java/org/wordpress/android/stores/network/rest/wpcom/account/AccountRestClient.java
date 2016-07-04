@@ -18,7 +18,6 @@ import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -115,7 +114,6 @@ public class AccountRestClient extends BaseWPComRestClient {
     public void postAccountSettings(Map<String, String> params) {
         if (params == null || params.isEmpty()) return;
         String url = WPCOMREST.ME_SETTINGS.getUrlV1_1();
-        final Set<String> updatedFields = params.keySet();
         // Note: we have to use a HashMap as a response here because the API response format is different depending
         // of the request we do.
         add(new WPComGsonRequest<>(Method.POST, url, params, HashMap.class,
@@ -162,6 +160,30 @@ public class AccountRestClient extends BaseWPComRestClient {
         accountSettings.setNewEmail(from.new_user_email);
         accountSettings.setPendingEmailChange(from.user_email_change_pending);
         accountSettings.setWebAddress(from.user_URL);
+        accountSettings.setDisplayName(from.display_name);
         return accountSettings;
+    }
+
+    public static boolean updateAccountModelFromGenericResponse(AccountModel accountModel, Map<String, Object> from) {
+        AccountModel old = new AccountModel();
+        old.copyAccountAttributes(accountModel);
+        old.copyAccountSettingsAttributes(accountModel);
+        if (from.containsKey("user_login")) accountModel.setUserName((String) from.get("user_login"));
+        if (from.containsKey("primary_site_ID")) accountModel.setPrimaryBlogId((Long) from.get("primary_site_ID"));
+        if (from.containsKey("first_name")) accountModel.setFirstName((String) from.get("first_name"));
+        if (from.containsKey("last_name")) accountModel.setLastName((String) from.get("last_name"));
+        if (from.containsKey("description")) accountModel.setAboutMe((String) from.get("description"));
+        if (from.containsKey("date")) accountModel.setDate((String) from.get("date"));
+        if (from.containsKey("new_user_email")) accountModel.setNewEmail((String) from.get("new_user_email"));
+        if (from.containsKey("user_email_change_pending")) accountModel.setPendingEmailChange((Boolean) from.get
+                ("user_email_change_pending"));
+        if (from.containsKey("user_URL")) accountModel.setWebAddress((String) from.get("user_URL"));
+        if (from.containsKey("username")) accountModel.setUserName((String) from.get("username"));
+        if (from.containsKey("ID")) accountModel.setUserId((Long) from.get("ID"));
+        if (from.containsKey("profile_URL")) accountModel.setProfileUrl((String) from.get("profile_URL"));
+        if (from.containsKey("avatar_URL")) accountModel.setAvatarUrl((String) from.get("avatar_URL"));
+        if (from.containsKey("email")) accountModel.setEmail((String) from.get("email"));
+        if (from.containsKey("display_name")) accountModel.setDisplayName((String) from.get("display_name"));
+        return !old.equals(accountModel);
     }
 }
