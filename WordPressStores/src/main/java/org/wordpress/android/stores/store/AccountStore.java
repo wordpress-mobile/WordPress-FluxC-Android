@@ -117,10 +117,18 @@ public class AccountStore extends Store {
                 update(mAccount, AccountAction.FETCH_SETTINGS);
             }
         } else if (actionType == AccountAction.POSTED_SETTINGS) {
-            AccountRestPayload data = (AccountRestPayload) action.getPayload();
-            if (!checkError(data, "Error saving Account Settings via REST API (/me/settings)")) {
-                update(data.account, AccountAction.POST_SETTINGS);
+            AccountPostResponsePayload data = (AccountPostResponsePayload) action.getPayload();
+            if (!data.isError()) {
+                boolean updated = AccountRestClient.updateAccountModelFromGenericResponse(mAccount, data.settings);
+                if (updated) {
+                    update(mAccount, AccountAction.POST_SETTINGS);
+                } else {
+                    OnAccountChanged accountChanged = new OnAccountChanged();
+                    accountChanged.accountInfosChanged = false;
+                    emitChange(accountChanged);
+                }
             }
+            // TODO: error management
         } else if (actionType == AccountAction.UPDATE) {
             AccountModel accountModel = (AccountModel) action.getPayload();
             update(accountModel, AccountAction.UPDATE);
