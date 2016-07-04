@@ -107,22 +107,22 @@ public class AccountStore extends Store {
             AccountRestPayload data = (AccountRestPayload) action.getPayload();
             if (!checkError(data, "Error fetching Account via REST API (/me)")) {
                 mAccount.copyAccountAttributes(data.account);
-                update(mAccount, AccountAction.FETCH_ACCOUNT);
+                updateDefaultAccount(mAccount, AccountAction.FETCH_ACCOUNT);
             }
         } else if (actionType == AccountAction.FETCHED_SETTINGS) {
             AccountRestPayload data = (AccountRestPayload) action.getPayload();
             if (!checkError(data, "Error fetching Account Settings via REST API (/me/settings)")) {
                 mAccount.copyAccountSettingsAttributes(data.account);
-                update(mAccount, AccountAction.FETCH_SETTINGS);
+                updateDefaultAccount(mAccount, AccountAction.FETCH_SETTINGS);
             }
         } else if (actionType == AccountAction.POSTED_SETTINGS) {
             AccountRestPayload data = (AccountRestPayload) action.getPayload();
             if (!checkError(data, "Error saving Account Settings via REST API (/me/settings)")) {
-                update(data.account, AccountAction.POST_SETTINGS);
+                updateDefaultAccount(data.account, AccountAction.POST_SETTINGS);
             }
         } else if (actionType == AccountAction.UPDATE) {
             AccountModel accountModel = (AccountModel) action.getPayload();
-            update(accountModel, AccountAction.UPDATE);
+            updateDefaultAccount(accountModel, AccountAction.UPDATE);
         } else if (actionType == AccountAction.SIGN_OUT) {
             signOut();
         }
@@ -135,7 +135,6 @@ public class AccountStore extends Store {
         OnAccountChanged accountChanged = new OnAccountChanged();
         accountChanged.accountInfosChanged = true;
         emitChange(accountChanged);
-
         // Remove authentication token
         mAccessToken.set(null);
         emitChange(new OnAuthenticationChanged());
@@ -159,12 +158,10 @@ public class AccountStore extends Store {
         return hasAccessToken() || mAccount.getVisibleSiteCount() > 0;
     }
 
-    private void update(AccountModel accountModel, AccountAction cause) {
+    private void updateDefaultAccount(AccountModel accountModel, AccountAction cause) {
         // Update memory instance
         mAccount = accountModel;
-
-        AccountSqlUtils.insertOrUpdateAccount(accountModel);
-
+        AccountSqlUtils.insertOrUpdateDefaultAccount(accountModel);
         OnAccountChanged accountChanged = new OnAccountChanged();
         accountChanged.accountInfosChanged = true;
         accountChanged.causeOfChange = cause;

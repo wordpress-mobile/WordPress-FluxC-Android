@@ -11,16 +11,21 @@ import org.wordpress.android.stores.model.AccountModel;
 import java.util.List;
 
 public class AccountSqlUtils {
-    private static final long DEFAULT_ACCOUNT_LOCAL_ID = 1;
+    private static final int DEFAULT_ACCOUNT_LOCAL_ID = 1;
 
     /**
      * Adds or overwrites all columns for a matching row in the Account Table.
      */
-    public static int insertOrUpdateAccount(AccountModel account) {
+    public static int insertOrUpdateDefaultAccount(AccountModel account) {
+        return insertOrUpdateAccount(account, DEFAULT_ACCOUNT_LOCAL_ID);
+    }
+
+    public static int insertOrUpdateAccount(AccountModel account, int localId) {
         if (account == null) return 0;
+        account.setId(localId);
         List<AccountModel> accountResults = WellSql.select(AccountModel.class)
                 .where()
-                .equals(AccountModelTable.ID, account.getId())
+                .equals(AccountModelTable.ID, DEFAULT_ACCOUNT_LOCAL_ID)
                 .endWhere().getAsModel();
         if (accountResults.isEmpty()) {
             WellSql.insert(account).execute();
