@@ -1,11 +1,15 @@
 package org.wordpress.android.stores.network.rest.wpcom.account;
 
+import android.support.annotation.NonNull;
+
 import com.android.volley.Request.Method;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.Payload;
 import org.wordpress.android.stores.action.AccountAction;
@@ -15,7 +19,12 @@ import org.wordpress.android.stores.network.rest.wpcom.BaseWPComRestClient;
 import org.wordpress.android.stores.network.rest.wpcom.WPCOMREST;
 import org.wordpress.android.stores.network.rest.wpcom.WPComGsonRequest;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
+import org.wordpress.android.stores.network.rest.wpcom.auth.AppSecrets;
+import org.wordpress.android.stores.store.AccountStore.NewUserErrors;
+import org.wordpress.android.util.AppLog;
+import org.wordpress.android.util.AppLog.T;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -23,6 +32,8 @@ import javax.inject.Singleton;
 
 @Singleton
 public class AccountRestClient extends BaseWPComRestClient {
+    private final AppSecrets mAppSecrets;
+
     public static class AccountRestPayload implements Payload {
         public AccountRestPayload(AccountModel account, VolleyError error) {
             this.account = account;
@@ -33,10 +44,19 @@ public class AccountRestClient extends BaseWPComRestClient {
         public AccountModel account;
     }
 
+    public static class NewAccountResponsePayload implements Payload {
+        public NewAccountResponsePayload() {
+        }
+        public NewUserErrors errorType;
+        public String errorMessage;
+        public boolean isError;
+    }
+
     @Inject
-    public AccountRestClient(Dispatcher dispatcher, RequestQueue requestQueue,
+    public AccountRestClient(Dispatcher dispatcher, RequestQueue requestQueue, AppSecrets appSecrets,
                              AccessToken accessToken, UserAgent userAgent) {
         super(dispatcher, requestQueue, accessToken, userAgent);
+        mAppSecrets = appSecrets;
     }
 
     /**
