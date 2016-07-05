@@ -230,4 +230,72 @@ public class MainExampleActivity extends AppCompatActivity {
         // Self Hosted don't have any "Authentication" request, try to list sites with user/password
         mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
     }
+
+    private void showNewAccountDialog() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
+            @Override
+            public void onClick(String username, String email, String password) {
+                newAccountAction(username, email, password);
+            }
+        }, "Username", "Email", "Password");
+        newFragment.show(ft, "dialog");
+    }
+
+    private void newAccountAction(String username, String email, String password) {
+        NewAccountPayload newAccountPayload = new NewAccountPayload();
+        newAccountPayload.username = username;
+        newAccountPayload.email = email;
+        newAccountPayload.password = password;
+        mDispatcher.dispatch(AccountAction.VALIDATE_NEW_ACCOUNT, newAccountPayload);
+    }
+
+    // Event listeners
+
+    @Subscribe
+    public void onAccountChanged(OnAccountChanged event) {
+        if (!mAccountStore.isSignedIn()) {
+            prependToLog("Signed Out");
+        } else {
+            if (event.accountInfosChanged) {
+                prependToLog("Display Name: " + mAccountStore.getAccount().getDisplayName());
+            }
+        }
+    }
+
+    @Subscribe
+    public void onAuthenticationChanged(OnAuthenticationChanged event) {
+        mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
+        if (event.isError) {
+            prependToLog("Authentication error: " + event.authError);
+            if (event.authError == AuthError.HTTP_AUTH_ERROR) {
+                // Show a Dialog prompting for http username and password
+                showHTTPAuthDialog(mSelfhostedPayload.xmlrpcEndpoint);
+            }
+            if (event.authError == AuthError.INVALID_SSL_CERTIFICATE) {
+                // Show a SSL Warning Dialog
+                showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
+            }
+        }
+    }
+
+    @Subscribe
+    public void onSiteChanged(OnSiteChanged event) {
+        if (mSiteStore.hasSite()) {
+            SiteModel firstSite = mSiteStore.getSites().get(0);
+            prependToLog("First site name: " + firstSite.getName() + " - Total sites: " + mSiteStore.getSitesCount());
+            mUpdateFirstSite.setEnabled(true);
+        } else {
+            mUpdateFirstSite.setEnabled(false);
+        }
+    }
+
+    @Subscribe
+    public void onNewUserValidated(OnNewUserValidated event) {
+        if (event.isError) {
+            prependToLog("New user validation, error: " + event.errorMessage + " - " + event.errorType);
+        } else {
+            prependToLog("New user validation: success!");
+        }
+    }
 }

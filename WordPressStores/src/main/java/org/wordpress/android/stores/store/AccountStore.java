@@ -13,6 +13,7 @@ import org.wordpress.android.stores.model.AccountModel;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.AccountRestPayload;
+import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.NewAccountResponsePayload;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.Token;
@@ -30,17 +31,25 @@ import javax.inject.Inject;
 public class AccountStore extends Store {
     // Payloads
     public static class AuthenticatePayload implements Payload {
-        public AuthenticatePayload() {
-        }
-
         public String username;
         public String password;
         public Action nextAction;
+        public AuthenticatePayload() {
+        }
     }
 
     public static class PostAccountSettingsPayload implements Payload {
-        public PostAccountSettingsPayload() {}
         public Map<String, String> params;
+        public PostAccountSettingsPayload() {
+        }
+    }
+
+    public static class NewAccountPayload implements Payload {
+        public String username;
+        public String password;
+        public String email;
+        public NewAccountPayload() {
+        }
     }
 
     // OnChanged Events
@@ -54,6 +63,33 @@ public class AccountStore extends Store {
         public AuthError authError;
     }
 
+    public class OnNewUserValidated extends OnChanged {
+        public boolean isError;
+        public NewUserErrors errorType;
+        public String errorMessage;
+    }
+
+    // Enums
+    public enum NewUserErrors {
+        USERNAME_ONLY_LOWERCASE_LETTERS_AND_NUMBERS,
+        USERNAME_REQUIRED,
+        USERNAME_NOT_ALLOWED,
+        USERNAME_MUST_BE_AT_LEAST_FOUR_CHARACTERS,
+        USERNAME_CONTAINS_INVALID_CHARACTERS,
+        USERNAME_MUST_INCLUDE_LETTERS,
+        USERNAME_EXISTS,
+        USERNAME_RESERVED_BUT_MAY_BE_AVAILABLE,
+        USERNAME_INVALID,
+        PASSWORD_INVALID,
+        EMAIL_CANT_BE_USED_TO_SIGNUP,
+        EMAIL_INVALID,
+        EMAIL_NOT_ALLOWED,
+        EMAIL_EXISTS,
+        EMAIL_RESERVED,
+        GENERIC_ERROR,
+    }
+
+    // Fields
     private AccountRestClient mAccountRestClient;
     private Authenticator mAuthenticator;
     private AccountModel mAccount;
@@ -125,10 +161,23 @@ public class AccountStore extends Store {
             update(accountModel, AccountAction.UPDATE);
         } else if (actionType == AccountAction.SIGN_OUT) {
             signOut();
+        } else if (actionType == AccountAction.VALIDATE_NEW_ACCOUNT) {
+            validateNewAccount((NewAccountPayload) action.getPayload());
+        } else if (actionType == AccountAction.VALIDATED_NEW_ACCOUNT) {
+            NewAccountResponsePayload payload = (NewAccountResponsePayload) action.getPayload();
+            OnNewUserValidated onNewUserValidated = new OnNewUserValidated();
+            onNewUserValidated.isError = payload.isError;
+            onNewUserValidated.errorType = payload.errorType;
+            onNewUserValidated.errorMessage = payload.errorMessage;
+            emitChange(onNewUserValidated);
         }
     }
 
-    public void signOut() {
+    private void validateNewAccount(NewAccountPayload payload) {
+        mAccountRestClient.validateNewAccount(payload.username, payload.password, payload.email);
+    }
+
+    private void signOut() {
         // Remove Account
         AccountSqlUtils.deleteAccount(mAccount);
         mAccount.init();

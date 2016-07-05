@@ -143,6 +143,101 @@ public class AccountRestClient extends BaseWPComRestClient {
         ));
     }
 
+    public void validateNewAccount(@NonNull String username, @NonNull String password, @NonNull String email) {
+        String url = WPCOMREST.USERS_NEW.getUrlV1();
+        Map<String, String> params = new HashMap<>();
+        params.put("username", username);
+        params.put("password", password);
+        params.put("email", email);
+        params.put("validate", "1");
+        params.put("client_id", mAppSecrets.getAppId());
+        params.put("client_secret", mAppSecrets.getAppSecret());
+        add(new WPComGsonRequest<>(Method.POST, url, params, NewAccountResponse.class,
+                new Listener<NewAccountResponse>() {
+                    @Override
+                    public void onResponse(NewAccountResponse response) {
+                        NewAccountResponsePayload payload = new NewAccountResponsePayload();
+                        payload.isError = false;
+                        mDispatcher.dispatch(AccountAction.VALIDATED_NEW_ACCOUNT, payload);
+                    }
+                },
+                new ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        AppLog.e(T.NOTIFS, new String(error.networkResponse.data));
+                        mDispatcher.dispatch(AccountAction.VALIDATED_NEW_ACCOUNT,
+                                volleyErrorToAccountResponsePayload(error));
+                    }
+                }
+        ));
+    }
+
+    private NewAccountResponsePayload volleyErrorToAccountResponsePayload(VolleyError error) {
+        NewAccountResponsePayload payload = new NewAccountResponsePayload();
+        payload.isError = true;
+        payload.errorType = NewUserErrors.GENERIC_ERROR;
+        if (error.networkResponse != null && error.networkResponse.data != null) {
+            String jsonString = new String(error.networkResponse.data);
+            try {
+                JSONObject errorObj = new JSONObject(jsonString);
+                payload.errorType = errorStringToErrorType((String) errorObj.get("error"));
+                payload.errorMessage = (String) errorObj.get("message");
+            } catch (JSONException e) {
+                // Do nothing (keep default error)
+            }
+        }
+        return payload;
+    }
+
+    private NewUserErrors errorStringToErrorType(String error) {
+        if (error.equals("username_only_lowercase_letters_and_numbers")) {
+            return NewUserErrors.USERNAME_ONLY_LOWERCASE_LETTERS_AND_NUMBERS;
+        }
+        if (error.equals("username_required")) {
+            return NewUserErrors.USERNAME_REQUIRED;
+        }
+        if (error.equals("username_not_allowed")) {
+            return NewUserErrors.USERNAME_NOT_ALLOWED;
+        }
+        if (error.equals("username_must_be_at_least_four_characters")) {
+            return NewUserErrors.USERNAME_MUST_BE_AT_LEAST_FOUR_CHARACTERS;
+        }
+        if (error.equals("username_contains_invalid_characters")) {
+            return NewUserErrors.USERNAME_CONTAINS_INVALID_CHARACTERS;
+        }
+        if (error.equals("username_must_include_letters")) {
+            return NewUserErrors.USERNAME_MUST_INCLUDE_LETTERS;
+        }
+        if (error.equals("username_exists")) {
+            return NewUserErrors.USERNAME_EXISTS;
+        }
+        if (error.equals("email_cant_be_used_to_signup")) {
+            return NewUserErrors.EMAIL_CANT_BE_USED_TO_SIGNUP;
+        }
+        if (error.equals("email_invalid")) {
+            return NewUserErrors.EMAIL_INVALID;
+        }
+        if (error.equals("email_not_allowed")) {
+            return NewUserErrors.EMAIL_NOT_ALLOWED;
+        }
+        if (error.equals("email_exists")) {
+            return NewUserErrors.EMAIL_EXISTS;
+        }
+        if (error.equals("username_reserved_but_may_be_available")) {
+            return NewUserErrors.USERNAME_RESERVED_BUT_MAY_BE_AVAILABLE;
+        }
+        if (error.equals("email_reserved")) {
+            return NewUserErrors.EMAIL_RESERVED;
+        }
+        if (error.equals("password_invalid")) {
+            return NewUserErrors.PASSWORD_INVALID;
+        }
+        if (error.equals("username_invalid")) {
+            return NewUserErrors.USERNAME_INVALID;
+        }
+        return NewUserErrors.GENERIC_ERROR;
+    }
+
     private AccountModel responseToAccountModel(AccountResponse from) {
         AccountModel account = new AccountModel();
         account.setUserName(from.username);
