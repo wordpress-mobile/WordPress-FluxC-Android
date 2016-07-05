@@ -25,7 +25,7 @@ public class AccountSqlUtils {
         account.setId(localId);
         List<AccountModel> accountResults = WellSql.select(AccountModel.class)
                 .where()
-                .equals(AccountModelTable.ID, DEFAULT_ACCOUNT_LOCAL_ID)
+                .equals(AccountModelTable.ID, localId)
                 .endWhere().getAsModel();
         if (accountResults.isEmpty()) {
             WellSql.insert(account).execute();
