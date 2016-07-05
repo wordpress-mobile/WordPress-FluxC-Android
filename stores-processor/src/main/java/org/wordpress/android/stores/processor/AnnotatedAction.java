@@ -6,6 +6,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 
+/**
+ * Blueprint for an {@link Action}-annotated action after processing.
+ */
 public class AnnotatedAction {
     private String mActionName;
     private TypeMirror mPayloadType;

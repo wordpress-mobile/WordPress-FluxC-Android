@@ -9,6 +9,9 @@ import java.util.List;
 
 import javax.lang.model.element.Element;
 
+/**
+ * Blueprint for an {@link ActionEnum}-annotated enum after processing.
+ */
 public class AnnotatedActionEnum {
     private String mBuilderName;
     private List<AnnotatedAction> mActions = new ArrayList<>();
