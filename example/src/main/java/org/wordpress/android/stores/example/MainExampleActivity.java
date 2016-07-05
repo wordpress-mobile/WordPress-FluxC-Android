@@ -98,6 +98,16 @@ public class MainExampleActivity extends AppCompatActivity {
             }
         });
         mLogView = (TextView) findViewById(R.id.log);
+
+        init();
+    }
+
+    private void init() {
+        mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
+        if (mAccountStore.hasAccessToken()) {
+            prependToLog("You're signed in as: " + mAccountStore.getAccount().getUserName());
+        }
+        mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
     }
 
     @Override
@@ -125,7 +135,7 @@ public class MainExampleActivity extends AppCompatActivity {
         if (!mAccountStore.isSignedIn()) {
             prependToLog("Signed Out");
         } else {
-            if (event.accountInfosChanged) {
+            if (event.accountInfosChanged && event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
                 prependToLog("Display Name: " + mAccountStore.getAccount().getDisplayName());
             }
         }

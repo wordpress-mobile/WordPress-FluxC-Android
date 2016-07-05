@@ -72,10 +72,6 @@ public class AccountStore extends Store {
     @Override
     public void onRegister() {
         AppLog.d(T.API, "AccountStore onRegister");
-        // TODO: I'm really not sure about emitting OnChange events here. It helps by having startup events, but
-        // activity listeners must be registered before
-        emitChange(new OnAccountChanged());
-        emitChange(new OnAuthenticationChanged());
     }
 
     @Subscribe
@@ -150,6 +146,13 @@ public class AccountStore extends Store {
      */
     public boolean hasAccessToken() {
         return mAccessToken.exists();
+    }
+
+    /**
+     * Should be used for very specific purpose (like forwarding the token to a Webview)
+     */
+    public String getAccessToken() {
+        return mAccessToken.get();
     }
 
     /**
