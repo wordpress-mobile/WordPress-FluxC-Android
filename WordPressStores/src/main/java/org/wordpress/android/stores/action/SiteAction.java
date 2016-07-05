@@ -5,7 +5,7 @@ import org.wordpress.android.stores.annotations.ActionEnum;
 import org.wordpress.android.stores.annotations.action.IAction;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.model.SitesModel;
-import org.wordpress.android.stores.store.SiteStore;
+import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;
 
 @ActionEnum
 public enum SiteAction implements IAction {
@@ -13,7 +13,7 @@ public enum SiteAction implements IAction {
     FETCH_SITE,
     @Action
     FETCH_SITES,
-    @Action(payloadType = SiteStore.RefreshSitesXMLRPCPayload.class)
+    @Action(payloadType = RefreshSitesXMLRPCPayload.class)
     FETCH_SITES_XML_RPC,
     @Action(payloadType = SiteModel.class)
     UPDATE_SITE,
