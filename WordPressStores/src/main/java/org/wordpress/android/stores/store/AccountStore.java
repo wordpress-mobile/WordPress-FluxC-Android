@@ -23,10 +23,12 @@ import org.wordpress.android.util.AppLog.T;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * In-memory based and persisted in SQLite.
  */
+@Singleton
 public class AccountStore extends Store {
     // Payloads
     public static class AuthenticatePayload implements Payload {
