@@ -8,6 +8,7 @@ public abstract class Store {
 
     Store(Dispatcher dispatcher) {
         mDispatcher = dispatcher;
+        mDispatcher.register(this);
     }
     public class OnChanged {}
     public abstract void onAction(Action action);
