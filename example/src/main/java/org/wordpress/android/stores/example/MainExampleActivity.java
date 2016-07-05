@@ -17,15 +17,17 @@ import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.action.AccountAction;
 import org.wordpress.android.stores.action.AuthenticationAction;
 import org.wordpress.android.stores.action.SiteAction;
-import org.wordpress.android.stores.example.SignInDialog.Listener;
+import org.wordpress.android.stores.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
+import org.wordpress.android.stores.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.stores.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
+import org.wordpress.android.stores.store.AccountStore.OnNewUserValidated;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;
@@ -49,6 +51,7 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mLogSites;
     private Button mUpdateFirstSite;
     private Button mSignOut;
+    private Button mNewAccount;
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
 
@@ -97,6 +100,14 @@ public class MainExampleActivity extends AppCompatActivity {
                 signOutWpCom();
             }
         });
+
+        mNewAccount = (Button) findViewById(R.id.new_account);
+        mNewAccount.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showNewAccountDialog();
+            }
+        });
         mLogView = (TextView) findViewById(R.id.log);
     }
 
@@ -118,45 +129,6 @@ public class MainExampleActivity extends AppCompatActivity {
         mDispatcher.unregister(this);
     }
 
-    // Event listeners
-
-    @Subscribe
-    public void onAccountChanged(OnAccountChanged event) {
-        if (!mAccountStore.isSignedIn()) {
-            prependToLog("Signed Out");
-        } else {
-            if (event.accountInfosChanged) {
-                prependToLog("Display Name: " + mAccountStore.getAccount().getDisplayName());
-            }
-        }
-    }
-
-    @Subscribe
-    public void onAuthenticationChanged(OnAuthenticationChanged event) {
-        mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
-        if (event.isError) {
-            prependToLog("Authentication error: " + event.authError);
-            if (event.authError == AuthError.HTTP_AUTH_ERROR) {
-                // Show a Dialog prompting for http username and password
-                showHTTPAuthDialog(mSelfhostedPayload.xmlrpcEndpoint);
-            }
-            if (event.authError == AuthError.INVALID_SSL_CERTIFICATE) {
-                // Show a SSL Warning Dialog
-                showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
-            }
-        }
-    }
-
-    @Subscribe
-    public void onSiteChanged(OnSiteChanged event) {
-        if (mSiteStore.hasSite()) {
-            SiteModel firstSite = mSiteStore.getSites().get(0);
-            prependToLog("First site name: " + firstSite.getName() + " - Total sites: " + mSiteStore.getSitesCount());
-            mUpdateFirstSite.setEnabled(true);
-        } else {
-            mUpdateFirstSite.setEnabled(false);
-        }
-    }
 
     // Private methods
 
@@ -185,20 +157,20 @@ public class MainExampleActivity extends AppCompatActivity {
 
     private void showSigninDialog() {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        DialogFragment newFragment = SignInDialog.newInstance(new Listener() {
+        DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
             @Override
             public void onClick(String username, String password, String url) {
                 signInAction(username, password, url);
             }
-        }, true);
+        }, "Username", "Password", "XMLRPC Url");
         newFragment.show(ft, "dialog");
     }
 
     private void showHTTPAuthDialog(final String url) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        DialogFragment newFragment = SignInDialog.newInstance(new Listener() {
+        DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
             @Override
-            public void onClick(String username, String password, String dummy) {
+            public void onClick(String username, String password, String unused) {
                 // Add credentials
                 mHTTPAuthManager.addHTTPAuthCredentials(username, password, url, null);
                 // Retry login action
@@ -207,7 +179,7 @@ public class MainExampleActivity extends AppCompatActivity {
                             mSelfhostedPayload.xmlrpcEndpoint);
                 }
             }
-        }, false);
+        }, "Username", "Password", "unused");
         newFragment.show(ft, "dialog");
     }
 
