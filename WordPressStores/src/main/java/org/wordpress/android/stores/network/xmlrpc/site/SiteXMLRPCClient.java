@@ -141,7 +141,7 @@ public class SiteXMLRPCClient extends BaseXMLRPCClient {
         oldModel.setUrl(getOption(blogOptions, "home_url", String.class));
         oldModel.setSoftwareVersion(getOption(blogOptions, "software_version", String.class));
         oldModel.setIsFeaturedImageSupported(getOption(blogOptions, "post_thumbnail", Boolean.class));
-        long dotComIdForJetpack = getOption(blogOptions, "jetpack_client_id", Long.class);
+        long dotComIdForJetpack = Long.valueOf(getOption(blogOptions, "jetpack_client_id", String.class));
         oldModel.setSiteId(dotComIdForJetpack);
         if (dotComIdForJetpack != 0) {
             oldModel.setIsJetpack(true);
