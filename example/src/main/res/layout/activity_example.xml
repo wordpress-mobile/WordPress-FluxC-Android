@@ -20,8 +20,14 @@
                 android:id="@+id/new_account"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Create New Account"
-                android:layout_weight="1" />
+                android:text="Create New Account" />
+
+            <Button
+                android:id="@+id/new_site"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:text="Create New Site" />
 
             <Button
                 android:id="@+id/list_sites_button"
