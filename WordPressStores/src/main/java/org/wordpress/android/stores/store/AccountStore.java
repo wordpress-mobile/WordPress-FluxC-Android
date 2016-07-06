@@ -84,13 +84,13 @@ public class AccountStore extends Store {
 
     public class OnNewUserCreated extends OnChanged {
         public boolean isError;
-        public NewUserErrors errorType;
+        public NewUserError errorType;
         public String errorMessage;
         public boolean dryRun;
     }
 
     // Enums
-    public enum NewUserErrors {
+    public enum NewUserError {
         USERNAME_ONLY_LOWERCASE_LETTERS_AND_NUMBERS,
         USERNAME_REQUIRED,
         USERNAME_NOT_ALLOWED,
