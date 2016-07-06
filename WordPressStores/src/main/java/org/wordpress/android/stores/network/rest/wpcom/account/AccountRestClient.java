@@ -21,7 +21,7 @@ import org.wordpress.android.stores.network.rest.wpcom.WPCOMREST;
 import org.wordpress.android.stores.network.rest.wpcom.WPComGsonRequest;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AppSecrets;
-import org.wordpress.android.stores.store.AccountStore.NewUserErrors;
+import org.wordpress.android.stores.store.AccountStore.NewUserError;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -48,7 +48,7 @@ public class AccountRestClient extends BaseWPComRestClient {
     public static class NewAccountResponsePayload implements Payload {
         public NewAccountResponsePayload() {
         }
-        public NewUserErrors errorType;
+        public NewUserError errorType;
         public String errorMessage;
         public boolean isError;
         public boolean dryRun;
@@ -168,7 +168,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                 new ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        AppLog.e(T.NOTIFS, new String(error.networkResponse.data));
+                        AppLog.e(T.API, new String(error.networkResponse.data));
                         NewAccountResponsePayload payload = volleyErrorToAccountResponsePayload(error);
                         payload.dryRun = dryRun;
                         mDispatcher.dispatch(AccountActionBuilder.newCreatedNewAccountAction(payload));
@@ -180,7 +180,7 @@ public class AccountRestClient extends BaseWPComRestClient {
     private NewAccountResponsePayload volleyErrorToAccountResponsePayload(VolleyError error) {
         NewAccountResponsePayload payload = new NewAccountResponsePayload();
         payload.isError = true;
-        payload.errorType = NewUserErrors.GENERIC_ERROR;
+        payload.errorType = NewUserError.GENERIC_ERROR;
         if (error.networkResponse != null && error.networkResponse.data != null) {
             String jsonString = new String(error.networkResponse.data);
             try {
@@ -194,53 +194,53 @@ public class AccountRestClient extends BaseWPComRestClient {
         return payload;
     }
 
-    private NewUserErrors errorStringToErrorType(String error) {
+    private NewUserError errorStringToErrorType(String error) {
         if (error.equals("username_only_lowercase_letters_and_numbers")) {
-            return NewUserErrors.USERNAME_ONLY_LOWERCASE_LETTERS_AND_NUMBERS;
+            return NewUserError.USERNAME_ONLY_LOWERCASE_LETTERS_AND_NUMBERS;
         }
         if (error.equals("username_required")) {
-            return NewUserErrors.USERNAME_REQUIRED;
+            return NewUserError.USERNAME_REQUIRED;
         }
         if (error.equals("username_not_allowed")) {
-            return NewUserErrors.USERNAME_NOT_ALLOWED;
+            return NewUserError.USERNAME_NOT_ALLOWED;
         }
         if (error.equals("username_must_be_at_least_four_characters")) {
-            return NewUserErrors.USERNAME_MUST_BE_AT_LEAST_FOUR_CHARACTERS;
+            return NewUserError.USERNAME_MUST_BE_AT_LEAST_FOUR_CHARACTERS;
         }
         if (error.equals("username_contains_invalid_characters")) {
-            return NewUserErrors.USERNAME_CONTAINS_INVALID_CHARACTERS;
+            return NewUserError.USERNAME_CONTAINS_INVALID_CHARACTERS;
         }
         if (error.equals("username_must_include_letters")) {
-            return NewUserErrors.USERNAME_MUST_INCLUDE_LETTERS;
+            return NewUserError.USERNAME_MUST_INCLUDE_LETTERS;
         }
         if (error.equals("username_exists")) {
-            return NewUserErrors.USERNAME_EXISTS;
+            return NewUserError.USERNAME_EXISTS;
         }
         if (error.equals("email_cant_be_used_to_signup")) {
-            return NewUserErrors.EMAIL_CANT_BE_USED_TO_SIGNUP;
+            return NewUserError.EMAIL_CANT_BE_USED_TO_SIGNUP;
         }
         if (error.equals("email_invalid")) {
-            return NewUserErrors.EMAIL_INVALID;
+            return NewUserError.EMAIL_INVALID;
         }
         if (error.equals("email_not_allowed")) {
-            return NewUserErrors.EMAIL_NOT_ALLOWED;
+            return NewUserError.EMAIL_NOT_ALLOWED;
         }
         if (error.equals("email_exists")) {
-            return NewUserErrors.EMAIL_EXISTS;
+            return NewUserError.EMAIL_EXISTS;
         }
         if (error.equals("username_reserved_but_may_be_available")) {
-            return NewUserErrors.USERNAME_RESERVED_BUT_MAY_BE_AVAILABLE;
+            return NewUserError.USERNAME_RESERVED_BUT_MAY_BE_AVAILABLE;
         }
         if (error.equals("email_reserved")) {
-            return NewUserErrors.EMAIL_RESERVED;
+            return NewUserError.EMAIL_RESERVED;
         }
         if (error.equals("password_invalid")) {
-            return NewUserErrors.PASSWORD_INVALID;
+            return NewUserError.PASSWORD_INVALID;
         }
         if (error.equals("username_invalid")) {
-            return NewUserErrors.USERNAME_INVALID;
+            return NewUserError.USERNAME_INVALID;
         }
-        return NewUserErrors.GENERIC_ERROR;
+        return NewUserError.GENERIC_ERROR;
     }
 
     private AccountModel responseToAccountModel(AccountResponse from) {
