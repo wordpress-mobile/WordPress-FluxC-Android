@@ -175,7 +175,7 @@ public class AccountStore extends Store {
         } else if (actionType == AccountAction.SIGN_OUT) {
             signOut();
         } else if (actionType == AccountAction.CREATE_NEW_ACCOUNT) {
-            validateNewAccount((NewAccountPayload) action.getPayload());
+            newAccount((NewAccountPayload) action.getPayload());
         } else if (actionType == AccountAction.CREATED_NEW_ACCOUNT) {
             NewAccountResponsePayload payload = (NewAccountResponsePayload) action.getPayload();
             OnNewUserCreated onNewUserCreated = new OnNewUserCreated();
@@ -187,12 +187,8 @@ public class AccountStore extends Store {
         }
     }
 
-    private void validateNewAccount(NewAccountPayload payload) {
-        mAccountRestClient.newAccount(payload.username, payload.password, payload.email, true);
-    }
-
-    private void createNewAccount(NewAccountPayload payload) {
-        mAccountRestClient.newAccount(payload.username, payload.password, payload.email, false);
+    private void newAccount(NewAccountPayload payload) {
+        mAccountRestClient.newAccount(payload.username, payload.password, payload.email, payload.dryRun);
     }
 
     private void signOut() {
