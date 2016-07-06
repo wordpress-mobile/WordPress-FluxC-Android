@@ -6,6 +6,7 @@ import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.TestUtils;
 import org.wordpress.android.stores.action.SiteAction;
 import org.wordpress.android.stores.example.BuildConfig;
+import org.wordpress.android.stores.generated.SiteActionBuilder;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
@@ -75,7 +76,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
                         payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
                     }
                 });
         // Wait for a network response / onChanged event
@@ -99,7 +100,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
                         payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
                     }
                 });
         // Wait for a network response / onChanged event
@@ -123,7 +124,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
             @Override
             public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
                 payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+                mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
             }
         });
 
@@ -150,7 +151,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
                         payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
                     }
                 });
         // Wait for a network response / onChanged event
@@ -174,7 +175,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
                         payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
                     }
                 });
         // Wait for a network response / onChanged event
@@ -198,7 +199,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
                         payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
                     }
                 });
 
@@ -225,7 +226,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
                         payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
                     }
                 });
         // Wait for a network response / onChanged event
@@ -249,7 +250,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
                         payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
                     }
                 });
         // Wait for a network response / onChanged event
@@ -274,7 +275,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
                         payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
                     }
                 });
 
