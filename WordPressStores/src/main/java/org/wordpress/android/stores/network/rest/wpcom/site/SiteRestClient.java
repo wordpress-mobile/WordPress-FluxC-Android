@@ -41,7 +41,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                         for (SiteWPComRestResponse siteResponse : response.sites) {
                             sites.add(siteResponseToSiteModel(siteResponse));
                         }
-                        mDispatcher.dispatch(SiteActionBuilder.generateUpdateSitesAction(sites));
+                        mDispatcher.dispatch(SiteActionBuilder.newUpdateSitesAction(sites));
                     }
                 },
                 new ErrorListener() {
@@ -63,7 +63,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                     @Override
                     public void onResponse(SiteWPComRestResponse response) {
                         SiteModel site = siteResponseToSiteModel(response);
-                        mDispatcher.dispatch(SiteActionBuilder.generateUpdateSiteAction(site));
+                        mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(site));
                     }
                 },
                 new ErrorListener() {

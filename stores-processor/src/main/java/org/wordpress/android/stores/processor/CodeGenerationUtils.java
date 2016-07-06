@@ -3,7 +3,7 @@ package org.wordpress.android.stores.processor;
 public class CodeGenerationUtils {
 
     public static String getActionBuilderMethodName(AnnotatedAction annotatedAction) {
-        return "generate" + CodeGenerationUtils.toCamelCase(annotatedAction.getActionName()) + "Action";
+        return "new" + CodeGenerationUtils.toCamelCase(annotatedAction.getActionName()) + "Action";
     }
 
     public static String toCamelCase(String string){

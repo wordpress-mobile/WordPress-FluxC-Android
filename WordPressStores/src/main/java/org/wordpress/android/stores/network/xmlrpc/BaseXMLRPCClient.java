@@ -31,7 +31,7 @@ public class BaseXMLRPCClient {
         mOnAuthFailedListener = new OnAuthFailedListener() {
             @Override
             public void onAuthFailed(AuthError authError) {
-                mDispatcher.dispatch(AuthenticationActionBuilder.generateAuthenticateErrorAction(authError));
+                mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateErrorAction(authError));
             }
         };
     }

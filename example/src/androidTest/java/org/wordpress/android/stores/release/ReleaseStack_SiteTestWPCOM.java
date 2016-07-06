@@ -59,14 +59,14 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationActionBuilder.generateAuthenticateAction(payload));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         // Wait for a network response / onChanged event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.generateFetchSitesAction());
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -74,7 +74,7 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mExpectedEvent = TEST_EVENTS.SITE_REMOVED;
         mExpectedRowsAffected = mSiteStore.getSitesCount();
-        mDispatcher.dispatch(SiteActionBuilder.generateLogoutWpComAction());
+        mDispatcher.dispatch(SiteActionBuilder.newLogoutWpComAction());
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

@@ -41,7 +41,7 @@ public class SiteXMLRPCClient extends BaseXMLRPCClient {
                     public void onResponse(Object response) {
                         SitesModel sites = sitesResponseToSitesModel(response, username, password);
                         if (sites != null) {
-                            mDispatcher.dispatch(SiteActionBuilder.generateUpdateSitesAction(sites));
+                            mDispatcher.dispatch(SiteActionBuilder.newUpdateSitesAction(sites));
                         } else {
                             // TODO: do nothing or dispatch error?
                         }
@@ -84,7 +84,7 @@ public class SiteXMLRPCClient extends BaseXMLRPCClient {
                     @Override
                     public void onResponse(Object response) {
                         SiteModel updatedSite = updateSiteFromOptions(response, site);
-                        mDispatcher.dispatch(SiteActionBuilder.generateUpdateSiteAction(updatedSite));
+                        mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(updatedSite));
                     }
                 },
                 new ErrorListener() {

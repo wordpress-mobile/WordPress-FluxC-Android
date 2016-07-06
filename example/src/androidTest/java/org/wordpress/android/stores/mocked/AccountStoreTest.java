@@ -52,7 +52,7 @@ public class AccountStoreTest extends InstrumentationTestCase {
         payload.password = "test";
         mIsError = false;
         // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationActionBuilder.generateAuthenticateAction(payload));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
     }
 
     public void testAuthenticationKO() {
@@ -61,7 +61,7 @@ public class AccountStoreTest extends InstrumentationTestCase {
         payload.password = "error";
         mIsError = true;
         // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationActionBuilder.generateAuthenticateAction(payload));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
     }
 
     @Subscribe

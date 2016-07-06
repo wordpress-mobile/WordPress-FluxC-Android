@@ -70,14 +70,14 @@ public class MainExampleActivity extends AppCompatActivity {
         mAccountInfos.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDispatcher.dispatch(AccountActionBuilder.generateFetchAction());
+                mDispatcher.dispatch(AccountActionBuilder.newFetchAction());
             }
         });
         mUpdateFirstSite = (Button) findViewById(R.id.update_first_site);
         mUpdateFirstSite.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDispatcher.dispatch(SiteActionBuilder.generateFetchSiteAction(mSiteStore.getSites().get(0)));
+                mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(mSiteStore.getSites().get(0)));
             }
         });
 
@@ -248,7 +248,7 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void signOutWpCom() {
-        mDispatcher.dispatch(AccountActionBuilder.generateSignOutAction());
+        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
     }
 
     private void wpcomFetchSites(String username, String password) {
@@ -256,8 +256,8 @@ public class MainExampleActivity extends AppCompatActivity {
         payload.username = username;
         payload.password = password;
         // Next action will be dispatched if authentication is successful
-        payload.nextAction = SiteActionBuilder.generateFetchSitesAction();
-        mDispatcher.dispatch(AuthenticationActionBuilder.generateAuthenticateAction(payload));
+        payload.nextAction = SiteActionBuilder.newFetchSitesAction();
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
     }
 
     private void selfHostedFetchSites(String username, String password, String xmlrpcEndpoint) {
@@ -267,6 +267,6 @@ public class MainExampleActivity extends AppCompatActivity {
         payload.xmlrpcEndpoint = xmlrpcEndpoint;
         mSelfhostedPayload = payload;
         // Self Hosted don't have any "Authentication" request, try to list sites with user/password
-        mDispatcher.dispatch(SiteActionBuilder.generateFetchSitesXmlRpcAction(payload));
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
     }
 }
