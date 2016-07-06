@@ -8,9 +8,9 @@ import com.squareup.otto.Subscribe;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.Payload;
 import org.wordpress.android.stores.action.AccountAction;
-import org.wordpress.android.stores.action.Action;
 import org.wordpress.android.stores.action.AuthenticationAction;
-import org.wordpress.android.stores.action.IAction;
+import org.wordpress.android.stores.annotations.action.Action;
+import org.wordpress.android.stores.annotations.action.IAction;
 import org.wordpress.android.stores.model.AccountModel;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient;
@@ -58,6 +58,11 @@ public class AccountStore extends Store {
             this.email = email;
             this.dryRun = dryRun;
         }
+    }
+
+    public static class UpdateTokenPayload implements Payload {
+        public UpdateTokenPayload(String token) { this.token = token; }
+        public String token;
     }
 
     // OnChanged Events
@@ -117,10 +122,6 @@ public class AccountStore extends Store {
     @Override
     public void onRegister() {
         AppLog.d(T.API, "AccountStore onRegister");
-        // TODO: I'm really not sure about emitting OnChange events here. It helps by having startup events, but
-        // activity listeners must be registered before
-        emitChange(new OnAccountChanged());
-        emitChange(new OnAuthenticationChanged());
     }
 
     @Subscribe
@@ -168,6 +169,9 @@ public class AccountStore extends Store {
         } else if (actionType == AccountAction.UPDATE) {
             AccountModel accountModel = (AccountModel) action.getPayload();
             update(accountModel, AccountAction.UPDATE);
+        } else if (actionType == AccountAction.UPDATE_ACCESS_TOKEN) {
+            UpdateTokenPayload updateTokenPayload = (UpdateTokenPayload) action.getPayload();
+            updateToken(updateTokenPayload);
         } else if (actionType == AccountAction.SIGN_OUT) {
             signOut();
         } else if (actionType == AccountAction.CREATE_NEW_ACCOUNT) {
@@ -216,10 +220,21 @@ public class AccountStore extends Store {
     }
 
     /**
+     * Should be used for very specific purpose (like forwarding the token to a Webview)
+     */
+    public String getAccessToken() {
+        return mAccessToken.get();
+    }
+
+    /**
      * Checks if an Account is currently signed in to WordPress.com or any WordPress.org sites.
      */
     public boolean isSignedIn() {
         return hasAccessToken() || mAccount.getVisibleSiteCount() > 0;
+    }
+
+    private void updateToken(UpdateTokenPayload updateTokenPayload) {
+        mAccessToken.set(updateTokenPayload.token);
     }
 
     private void update(AccountModel accountModel, AccountAction cause) {

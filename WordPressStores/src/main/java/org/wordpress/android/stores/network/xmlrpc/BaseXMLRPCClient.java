@@ -4,7 +4,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 
 import org.wordpress.android.stores.Dispatcher;
-import org.wordpress.android.stores.action.AuthenticationAction;
+import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.BaseRequest.OnAuthFailedListener;
@@ -31,7 +31,7 @@ public class BaseXMLRPCClient {
         mOnAuthFailedListener = new OnAuthFailedListener() {
             @Override
             public void onAuthFailed(AuthError authError) {
-                mDispatcher.dispatch(AuthenticationAction.AUTHENTICATE_ERROR, authError);
+                mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateErrorAction(authError));
             }
         };
     }

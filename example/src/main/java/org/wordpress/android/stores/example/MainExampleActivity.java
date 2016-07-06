@@ -15,9 +15,10 @@ import com.squareup.otto.Subscribe;
 
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.action.AccountAction;
-import org.wordpress.android.stores.action.AuthenticationAction;
-import org.wordpress.android.stores.action.SiteAction;
 import org.wordpress.android.stores.example.ThreeEditTextDialog.Listener;
+import org.wordpress.android.stores.generated.AccountActionBuilder;
+import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
+import org.wordpress.android.stores.generated.SiteActionBuilder;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
@@ -72,14 +73,14 @@ public class MainExampleActivity extends AppCompatActivity {
         mAccountInfos.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDispatcher.dispatch(AccountAction.FETCH);
+                mDispatcher.dispatch(AccountActionBuilder.newFetchAction());
             }
         });
         mUpdateFirstSite = (Button) findViewById(R.id.update_first_site);
         mUpdateFirstSite.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDispatcher.dispatch(SiteAction.FETCH_SITE, mSiteStore.getSites().get(0));
+                mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(mSiteStore.getSites().get(0)));
             }
         });
 
@@ -109,6 +110,16 @@ public class MainExampleActivity extends AppCompatActivity {
             }
         });
         mLogView = (TextView) findViewById(R.id.log);
+
+        init();
+    }
+
+    private void init() {
+        mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
+        if (mAccountStore.hasAccessToken()) {
+            prependToLog("You're signed in as: " + mAccountStore.getAccount().getUserName());
+        }
+        mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
     }
 
     @Override
@@ -128,7 +139,6 @@ public class MainExampleActivity extends AppCompatActivity {
         mDispatcher.unregister(mAccountStore);
         mDispatcher.unregister(this);
     }
-
 
     // Private methods
 
@@ -209,14 +219,14 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void signOutWpCom() {
-        mDispatcher.dispatch(AccountAction.SIGN_OUT);
+        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
     }
 
     private void wpcomFetchSites(String username, String password) {
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
         // Next action will be dispatched if authentication is successful
-        payload.nextAction = mDispatcher.createAction(SiteAction.FETCH_SITES);
-        mDispatcher.dispatch(AuthenticationAction.AUTHENTICATE, payload);
+        payload.nextAction = SiteActionBuilder.newFetchSitesAction();
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
     }
 
     private void selfHostedFetchSites(String username, String password, String xmlrpcEndpoint) {
@@ -226,7 +236,7 @@ public class MainExampleActivity extends AppCompatActivity {
         payload.xmlrpcEndpoint = xmlrpcEndpoint;
         mSelfhostedPayload = payload;
         // Self Hosted don't have any "Authentication" request, try to list sites with user/password
-        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
     }
 
     private void showNewAccountDialog() {
@@ -242,7 +252,7 @@ public class MainExampleActivity extends AppCompatActivity {
 
     private void newAccountAction(String username, String email, String password) {
         NewAccountPayload newAccountPayload = new NewAccountPayload(username, password, email, true);
-        mDispatcher.dispatch(AccountAction.CREATE_NEW_ACCOUNT, newAccountPayload);
+        mDispatcher.dispatch(AccountActionBuilder.newCreateNewAccountAction(newAccountPayload));
     }
 
     // Event listeners
