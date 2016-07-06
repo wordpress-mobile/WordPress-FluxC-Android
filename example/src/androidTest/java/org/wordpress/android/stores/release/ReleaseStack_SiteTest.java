@@ -4,8 +4,8 @@ import com.squareup.otto.Subscribe;
 
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.TestUtils;
-import org.wordpress.android.stores.action.SiteAction;
 import org.wordpress.android.stores.example.BuildConfig;
+import org.wordpress.android.stores.generated.SiteActionBuilder;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
@@ -63,7 +63,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SIMPLE;
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onChanged event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -75,7 +75,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SIMPLE_CONTRIB;
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onChanged event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -87,7 +87,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_MULTISITE;
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onChanged event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -99,7 +99,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_VALID_SSL;
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onChanged event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -113,7 +113,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         //  We're expecting a SSL Warning event
         mNextEvent = TEST_EVENTS.INVALID_SSL_CERTIFICATE;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onAuthenticationChanged error event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         // Add an exception for the last certificate
@@ -121,7 +121,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         // Retry
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -135,7 +135,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         // We're expecting a HTTP_AUTH_ERROR
         mNextEvent = TEST_EVENTS.HTTP_AUTH_ERROR;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onAuthenticationChanged error event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         // Set known HTTP Auth credentials
@@ -144,7 +144,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         // Retry to fetch sites, this time we expect a site refresh
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -161,7 +161,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
 
         mCountDownLatch = new CountDownLatch(1);
         // Retry to fetch sites,we expect a site refresh
-        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -172,7 +172,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
         payload.xmlrpcEndpoint = BuildConfig.TEST_WPORG_URL_SH_SIMPLE;
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
-        mDispatcher.dispatch(SiteAction.FETCH_SITES_XMLRPC, payload);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         mCountDownLatch = new CountDownLatch(1);
         // Wait for a network response / onChanged event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -180,7 +180,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         mNextEvent = TEST_EVENTS.SITE_REMOVED;
         mCountDownLatch = new CountDownLatch(1);
         SiteModel dotOrgSite = mSiteStore.getDotOrgSites().get(0);
-        mDispatcher.dispatch(SiteAction.REMOVE_SITE, dotOrgSite);
+        mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(dotOrgSite));
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

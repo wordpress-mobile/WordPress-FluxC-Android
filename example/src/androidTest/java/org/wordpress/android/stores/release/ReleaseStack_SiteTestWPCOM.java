@@ -4,9 +4,9 @@ import com.squareup.otto.Subscribe;
 
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.TestUtils;
-import org.wordpress.android.stores.action.AuthenticationAction;
-import org.wordpress.android.stores.action.SiteAction;
 import org.wordpress.android.stores.example.BuildConfig;
+import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
+import org.wordpress.android.stores.generated.SiteActionBuilder;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
@@ -59,14 +59,14 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationAction.AUTHENTICATE, payload);
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         // Wait for a network response / onChanged event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
-        mDispatcher.dispatch(SiteAction.FETCH_SITES);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -74,7 +74,7 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mExpectedEvent = TEST_EVENTS.SITE_REMOVED;
         mExpectedRowsAffected = mSiteStore.getSitesCount();
-        mDispatcher.dispatch(SiteAction.LOGOUT_WPCOM);
+        mDispatcher.dispatch(SiteActionBuilder.newLogoutWpComAction());
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
