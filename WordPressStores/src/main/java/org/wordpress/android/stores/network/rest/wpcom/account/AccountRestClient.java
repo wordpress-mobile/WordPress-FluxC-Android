@@ -50,6 +50,7 @@ public class AccountRestClient extends BaseWPComRestClient {
         public NewUserErrors errorType;
         public String errorMessage;
         public boolean isError;
+        public boolean dryRun;
     }
 
     @Inject
@@ -143,13 +144,14 @@ public class AccountRestClient extends BaseWPComRestClient {
         ));
     }
 
-    public void validateNewAccount(@NonNull String username, @NonNull String password, @NonNull String email) {
+    public void newAccount(@NonNull String username, @NonNull String password, @NonNull String email,
+                           final boolean dryRun) {
         String url = WPCOMREST.USERS_NEW.getUrlV1();
         Map<String, String> params = new HashMap<>();
         params.put("username", username);
         params.put("password", password);
         params.put("email", email);
-        params.put("validate", "1");
+        params.put("validate", dryRun ? "1" : "0");
         params.put("client_id", mAppSecrets.getAppId());
         params.put("client_secret", mAppSecrets.getAppSecret());
         add(new WPComGsonRequest<>(Method.POST, url, params, NewAccountResponse.class,
@@ -158,15 +160,17 @@ public class AccountRestClient extends BaseWPComRestClient {
                     public void onResponse(NewAccountResponse response) {
                         NewAccountResponsePayload payload = new NewAccountResponsePayload();
                         payload.isError = false;
-                        mDispatcher.dispatch(AccountAction.VALIDATED_NEW_ACCOUNT, payload);
+                        payload.dryRun = dryRun;
+                        mDispatcher.dispatch(AccountAction.CREATED_NEW_ACCOUNT, payload);
                     }
                 },
                 new ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         AppLog.e(T.NOTIFS, new String(error.networkResponse.data));
-                        mDispatcher.dispatch(AccountAction.VALIDATED_NEW_ACCOUNT,
-                                volleyErrorToAccountResponsePayload(error));
+                        NewAccountResponsePayload payload = volleyErrorToAccountResponsePayload(error);
+                        payload.dryRun = dryRun;
+                        mDispatcher.dispatch(AccountAction.CREATED_NEW_ACCOUNT, payload);
                     }
                 }
         ));

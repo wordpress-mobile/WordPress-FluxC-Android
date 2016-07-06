@@ -1,5 +1,7 @@
 package org.wordpress.android.stores.store;
 
+import android.support.annotation.NonNull;
+
 import com.android.volley.VolleyError;
 import com.squareup.otto.Subscribe;
 
@@ -48,7 +50,13 @@ public class AccountStore extends Store {
         public String username;
         public String password;
         public String email;
-        public NewAccountPayload() {
+        public boolean dryRun;
+        public NewAccountPayload(@NonNull String username, @NonNull String password, @NonNull String email,
+                                 boolean dryRun) {
+            this.username = username;
+            this.password = password;
+            this.email = email;
+            this.dryRun = dryRun;
         }
     }
 
@@ -63,10 +71,11 @@ public class AccountStore extends Store {
         public AuthError authError;
     }
 
-    public class OnNewUserValidated extends OnChanged {
+    public class OnNewUserCreated extends OnChanged {
         public boolean isError;
         public NewUserErrors errorType;
         public String errorMessage;
+        public boolean dryRun;
     }
 
     // Enums
@@ -161,20 +170,25 @@ public class AccountStore extends Store {
             update(accountModel, AccountAction.UPDATE);
         } else if (actionType == AccountAction.SIGN_OUT) {
             signOut();
-        } else if (actionType == AccountAction.VALIDATE_NEW_ACCOUNT) {
+        } else if (actionType == AccountAction.CREATE_NEW_ACCOUNT) {
             validateNewAccount((NewAccountPayload) action.getPayload());
-        } else if (actionType == AccountAction.VALIDATED_NEW_ACCOUNT) {
+        } else if (actionType == AccountAction.CREATED_NEW_ACCOUNT) {
             NewAccountResponsePayload payload = (NewAccountResponsePayload) action.getPayload();
-            OnNewUserValidated onNewUserValidated = new OnNewUserValidated();
-            onNewUserValidated.isError = payload.isError;
-            onNewUserValidated.errorType = payload.errorType;
-            onNewUserValidated.errorMessage = payload.errorMessage;
-            emitChange(onNewUserValidated);
+            OnNewUserCreated onNewUserCreated = new OnNewUserCreated();
+            onNewUserCreated.isError = payload.isError;
+            onNewUserCreated.errorType = payload.errorType;
+            onNewUserCreated.errorMessage = payload.errorMessage;
+            onNewUserCreated.dryRun = payload.dryRun;
+            emitChange(onNewUserCreated);
         }
     }
 
     private void validateNewAccount(NewAccountPayload payload) {
-        mAccountRestClient.validateNewAccount(payload.username, payload.password, payload.email);
+        mAccountRestClient.newAccount(payload.username, payload.password, payload.email, true);
+    }
+
+    private void createNewAccount(NewAccountPayload payload) {
+        mAccountRestClient.newAccount(payload.username, payload.password, payload.email, false);
     }
 
     private void signOut() {

@@ -27,7 +27,7 @@ import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.stores.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.stores.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
-import org.wordpress.android.stores.store.AccountStore.OnNewUserValidated;
+import org.wordpress.android.stores.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;
@@ -243,11 +243,8 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void newAccountAction(String username, String email, String password) {
-        NewAccountPayload newAccountPayload = new NewAccountPayload();
-        newAccountPayload.username = username;
-        newAccountPayload.email = email;
-        newAccountPayload.password = password;
-        mDispatcher.dispatch(AccountAction.VALIDATE_NEW_ACCOUNT, newAccountPayload);
+        NewAccountPayload newAccountPayload = new NewAccountPayload(username, password, email, true);
+        mDispatcher.dispatch(AccountAction.CREATE_NEW_ACCOUNT, newAccountPayload);
     }
 
     // Event listeners
@@ -291,11 +288,12 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     @Subscribe
-    public void onNewUserValidated(OnNewUserValidated event) {
+    public void onNewUserValidated(OnNewUserCreated event) {
+        String message = event.dryRun ? "validated" : "created";
         if (event.isError) {
-            prependToLog("New user validation, error: " + event.errorMessage + " - " + event.errorType);
+            prependToLog("New user " + message + ", error: " + event.errorMessage + " - " + event.errorType);
         } else {
-            prependToLog("New user validation: success!");
+            prependToLog("New user " + message + ": success!");
         }
     }
 }
