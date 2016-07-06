@@ -1,2 +1,2 @@
-include ':WordPressStores'
+include ':WordPressStores', ':stores-processor', ':stores-annotations'
 include ':example'

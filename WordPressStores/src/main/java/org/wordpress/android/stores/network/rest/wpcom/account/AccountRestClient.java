@@ -9,6 +9,7 @@ import com.android.volley.VolleyError;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.Payload;
 import org.wordpress.android.stores.action.AccountAction;
+import org.wordpress.android.stores.generated.AccountActionBuilder;
 import org.wordpress.android.stores.model.AccountModel;
 import org.wordpress.android.stores.network.UserAgent;
 import org.wordpress.android.stores.network.rest.wpcom.BaseWPComRestClient;
@@ -53,14 +54,14 @@ public class AccountRestClient extends BaseWPComRestClient {
                     public void onResponse(AccountResponse response) {
                         AccountModel account = responseToAccountModel(response);
                         AccountRestPayload payload = new AccountRestPayload(account, null);
-                        mDispatcher.dispatch(AccountAction.FETCHED_ACCOUNT, payload);
+                        mDispatcher.dispatch(AccountActionBuilder.newFetchedAccountAction(payload));
                     }
                 },
                 new ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         AccountRestPayload payload = new AccountRestPayload(null, error);
-                        mDispatcher.dispatch(AccountAction.FETCHED_ACCOUNT, payload);
+                        mDispatcher.dispatch(AccountActionBuilder.newFetchedAccountAction(payload));
                     }
                 }
         ));
@@ -80,14 +81,14 @@ public class AccountRestClient extends BaseWPComRestClient {
                     public void onResponse(AccountSettingsResponse response) {
                         AccountModel settings = responseToAccountSettingsModel(response);
                         AccountRestPayload payload = new AccountRestPayload(settings, null);
-                        mDispatcher.dispatch(AccountAction.FETCHED_SETTINGS, payload);
+                        mDispatcher.dispatch(AccountActionBuilder.newFetchedSettingsAction(payload));
                     }
                 },
                 new ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         AccountRestPayload payload = new AccountRestPayload(null, error);
-                        mDispatcher.dispatch(AccountAction.FETCHED_SETTINGS, payload);
+                        mDispatcher.dispatch(AccountActionBuilder.newFetchedSettingsAction(payload));
                     }
                 }
         ));
@@ -110,14 +111,14 @@ public class AccountRestClient extends BaseWPComRestClient {
                     public void onResponse(AccountSettingsResponse response) {
                         AccountModel settings = responseToAccountSettingsModel(response);
                         AccountRestPayload payload = new AccountRestPayload(settings, null);
-                        mDispatcher.dispatch(AccountAction.POSTED_SETTINGS, payload);
+                        mDispatcher.dispatch(AccountActionBuilder.newPostedSettingsAction(payload));
                     }
                 },
                 new ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         AccountRestPayload payload = new AccountRestPayload(null, error);
-                        mDispatcher.dispatch(AccountAction.POSTED_SETTINGS, payload);
+                        mDispatcher.dispatch(AccountActionBuilder.newPostedSettingsAction(payload));
                     }
                 }
         ));
