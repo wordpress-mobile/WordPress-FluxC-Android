@@ -36,8 +36,8 @@ public class AccountStore extends Store {
         public String username;
         public String password;
         public Action nextAction;
-        public AuthenticatePayload() {
-        }
+        public AuthenticatePayload(@NonNull String username, @NonNull String password) {}
+        public AuthenticatePayload(@NonNull String username, @NonNull String password, @NonNull Action nextAction) {}
     }
 
     public static class PostAccountSettingsPayload implements Payload {

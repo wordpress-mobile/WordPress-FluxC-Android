@@ -213,9 +213,7 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void wpcomFetchSites(String username, String password) {
-        AuthenticatePayload payload = new AuthenticatePayload();
-        payload.username = username;
-        payload.password = password;
+        AuthenticatePayload payload = new AuthenticatePayload(username, password);
         // Next action will be dispatched if authentication is successful
         payload.nextAction = mDispatcher.createAction(SiteAction.FETCH_SITES);
         mDispatcher.dispatch(AuthenticationAction.AUTHENTICATE, payload);
