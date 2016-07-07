@@ -9,9 +9,9 @@ import com.yarolegovich.wellsql.mapper.SelectMapper;
 
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.Payload;
-import org.wordpress.android.stores.action.Action;
-import org.wordpress.android.stores.action.IAction;
 import org.wordpress.android.stores.action.SiteAction;
+import org.wordpress.android.stores.annotations.action.Action;
+import org.wordpress.android.stores.annotations.action.IAction;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.model.SitesModel;
 import org.wordpress.android.stores.network.rest.wpcom.site.SiteRestClient;
@@ -68,8 +68,6 @@ public class SiteStore extends Store {
     @Override
     public void onRegister() {
         AppLog.d(T.API, "SiteStore onRegister");
-        // TODO: I'm really not sure about emitting OnChange event here.
-        emitChange(new OnSiteChanged(0));
     }
 
     /**
@@ -377,7 +375,7 @@ public class SiteStore extends Store {
             emitChange(new OnSiteChanged(rowsAffected));
         } else if (actionType == SiteAction.FETCH_SITES) {
             mSiteRestClient.pullSites();
-        } else if (actionType == SiteAction.FETCH_SITES_XMLRPC) {
+        } else if (actionType == SiteAction.FETCH_SITES_XML_RPC) {
             RefreshSitesXMLRPCPayload payload = (RefreshSitesXMLRPCPayload) action.getPayload();
             mSiteXMLRPCClient.pullSites(payload.xmlrpcEndpoint, payload.username, payload.password);
         } else if (actionType == SiteAction.FETCH_SITE) {
@@ -394,7 +392,7 @@ public class SiteStore extends Store {
             // TODO: Probably, we can inject QuickPressShortcutsStore into SiteStore and act on it directly
             // See WordPressDB.deleteQuickPressShortcutsForLocalTableBlogId(Context ctx, int blogId)
             emitChange(new OnSitesRemoved(rowsAffected));
-        } else if (actionType == SiteAction.LOGOUT_WPCOM) {
+        } else if (actionType == SiteAction.LOGOUT_WP_COM) {
             // Logging out of WP.com. Drop all WP.com sites, and all Jetpack sites that were pulled over the WP.com
             // REST API only (they don't have a .org site id)
             List<SiteModel> restApiSites = SiteSqlUtils.getAllRestApiSites();
