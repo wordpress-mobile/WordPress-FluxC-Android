@@ -32,6 +32,7 @@ import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.NewSitePayload;
 import org.wordpress.android.stores.store.SiteStore.OnNewSiteCreated;
 import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.stores.store.SiteStore.OnSitesRemoved;
 import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.stores.store.SiteStore.SiteVisibility;
 import org.wordpress.android.stores.utils.SelfHostedDiscoveryUtils;
@@ -140,15 +141,11 @@ public class MainExampleActivity extends AppCompatActivity {
         // Order is important here since onRegister could fire onChanged events. "register(this)" should probably go
         // first everywhere.
         mDispatcher.register(this);
-        mDispatcher.register(mSiteStore);
-        mDispatcher.register(mAccountStore);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        mDispatcher.unregister(mSiteStore);
-        mDispatcher.unregister(mAccountStore);
         mDispatcher.unregister(this);
     }
 
@@ -232,6 +229,7 @@ public class MainExampleActivity extends AppCompatActivity {
 
     private void signOutWpCom() {
         mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
+        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
     }
 
     private void wpcomFetchSites(String username, String password) {
@@ -343,5 +341,10 @@ public class MainExampleActivity extends AppCompatActivity {
         } else {
             prependToLog("New site " + message + ": success!");
         }
+    }
+
+    @Subscribe
+    public void onSitesRemoved(OnSitesRemoved event) {
+        mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
     }
 }

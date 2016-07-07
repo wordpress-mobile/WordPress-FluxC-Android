@@ -42,8 +42,6 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
-        mDispatcher.register(mSiteStore);
-        mDispatcher.register(mAccountStore);
         mDispatcher.register(this);
         // Reset expected test event
         mExpectedEvent = TEST_EVENTS.NONE;
@@ -52,10 +50,9 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
 
     public void testWPCOMSiteFetchAndLogout() throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
-        AccountStore.AuthenticatePayload payload = new AccountStore.AuthenticatePayload();
-        payload.username = BuildConfig.TEST_WPCOM_USERNAME_TEST1;
-        payload.password = BuildConfig.TEST_WPCOM_PASSWORD_TEST1;
-
+        AccountStore.AuthenticatePayload payload =
+                new AccountStore.AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                        BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         mCountDownLatch = new CountDownLatch(1);
 
         // Correct user we should get an OnAuthenticationChanged message
@@ -74,7 +71,7 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mExpectedEvent = TEST_EVENTS.SITE_REMOVED;
         mExpectedRowsAffected = mSiteStore.getSitesCount();
-        mDispatcher.dispatch(SiteActionBuilder.newLogoutWpComAction());
+        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

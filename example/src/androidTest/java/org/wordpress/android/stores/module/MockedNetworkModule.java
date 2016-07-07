@@ -112,8 +112,9 @@ public class MockedNetworkModule {
     @Singleton
     @Provides
     public AccountRestClient provideAccountRestClient(Dispatcher dispatcher, RequestQueue requestQueue,
+                                                      AppSecrets appSecrets,
                                                       AccessToken token, UserAgent userAgent) {
-        return new AccountRestClient(dispatcher, requestQueue, token, userAgent);
+        return new AccountRestClient(dispatcher, requestQueue, appSecrets, token, userAgent);
     }
 
     @Singleton

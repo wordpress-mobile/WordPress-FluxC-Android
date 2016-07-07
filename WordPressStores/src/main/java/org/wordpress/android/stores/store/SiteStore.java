@@ -25,10 +25,12 @@ import org.wordpress.android.util.AppLog.T;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * SQLite based only. There is no in memory copy of mapped data, everything is queried from the DB.
  */
+@Singleton
 public class SiteStore extends Store {
     // Payloads
     public static class RefreshSitesXMLRPCPayload implements Payload {
@@ -446,11 +448,11 @@ public class SiteStore extends Store {
             // TODO: Probably, we can inject QuickPressShortcutsStore into SiteStore and act on it directly
             // See WordPressDB.deleteQuickPressShortcutsForLocalTableBlogId(Context ctx, int blogId)
             emitChange(new OnSitesRemoved(rowsAffected));
-        } else if (actionType == SiteAction.LOGOUT_WP_COM) {
+        } else if (actionType == SiteAction.REMOVE_WPCOM_SITES) {
             // Logging out of WP.com. Drop all WP.com sites, and all Jetpack sites that were pulled over the WP.com
             // REST API only (they don't have a .org site id)
-            List<SiteModel> restApiSites = SiteSqlUtils.getAllRestApiSites();
-            int rowsAffected = removeSites(restApiSites);
+            List<SiteModel> wpcomSites = SiteSqlUtils.getAllWPComSites();
+            int rowsAffected = removeSites(wpcomSites);
             // TODO: Same as above, this needs to be captured and handled by QuickPressShortcutsStore
             emitChange(new OnSitesRemoved(rowsAffected));
         } else if (actionType == SiteAction.SHOW_SITES) {
