@@ -46,7 +46,6 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mReleaseStackAppComponent.inject(this);
 
         // Register
-        mDispatcher.register(mAccountStore);
         mDispatcher.register(this);
         mExpectedAction = ACCOUNT_TEST_ACTIONS.NONE;
     }
