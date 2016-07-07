@@ -42,10 +42,6 @@ public class AccountStore extends Store {
             this.username = username;
             this.password = password;
         }
-        public AuthenticatePayload(@NonNull String username, @NonNull String password, @NonNull Action nextAction) {
-            this(username, password);
-            this.nextAction = nextAction;
-        }
     }
 
     public static class PostAccountSettingsPayload implements Payload {
