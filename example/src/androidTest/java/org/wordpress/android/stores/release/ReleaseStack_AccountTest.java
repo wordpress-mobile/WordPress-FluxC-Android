@@ -5,8 +5,9 @@ import com.squareup.otto.Subscribe;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.TestUtils;
 import org.wordpress.android.stores.action.AccountAction;
-import org.wordpress.android.stores.action.AuthenticationAction;
 import org.wordpress.android.stores.example.BuildConfig;
+import org.wordpress.android.stores.generated.AccountActionBuilder;
+import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
 import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
@@ -66,7 +67,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         }
         mExpectedAction = ACCOUNT_TEST_ACTIONS.FETCHED;
-        mDispatcher.dispatch(AccountAction.FETCH);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAction());
         mCountDownLatch = new CountDownLatch(2);
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -81,7 +82,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mExpectedValue = String.valueOf(System.currentTimeMillis());
         payload.params = new HashMap<>();
         payload.params.put("description", mExpectedValue);
-        mDispatcher.dispatch(AccountAction.POST_SETTINGS, payload);
+        mDispatcher.dispatch(AccountActionBuilder.newPostSettingsAction(payload));
         mCountDownLatch = new CountDownLatch(1);
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -116,7 +117,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         payload.username = username;
         payload.password = password;
 
-        mDispatcher.dispatch(AuthenticationAction.AUTHENTICATE, payload);
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         mCountDownLatch = new CountDownLatch(1);
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
