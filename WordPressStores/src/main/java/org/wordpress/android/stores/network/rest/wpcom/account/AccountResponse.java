@@ -18,4 +18,5 @@ public class AccountResponse implements Response {
     public int site_count;
     public int visible_site_count;
     public String email;
+    public String date;
 }

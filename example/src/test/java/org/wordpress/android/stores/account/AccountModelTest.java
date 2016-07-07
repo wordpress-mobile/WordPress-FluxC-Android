@@ -56,7 +56,7 @@ public class AccountModelTest {
         copyAccount.setFirstName("copyFirstName");
         copyAccount.setLastName("copyLastName");
         copyAccount.setAboutMe("copyAboutMe");
-        copyAccount.setDate("copyDate");
+        copyAccount.setDateCreated("copyDate");
         copyAccount.setNewEmail("copyNewEmail");
         copyAccount.setPendingEmailChange(!testAccount.getPendingEmailChange());
         copyAccount.setWebAddress("copyWebAddress");

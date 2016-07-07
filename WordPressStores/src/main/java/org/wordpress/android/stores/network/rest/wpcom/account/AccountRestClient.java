@@ -17,6 +17,10 @@ import org.wordpress.android.stores.network.rest.wpcom.WPCOMREST;
 import org.wordpress.android.stores.network.rest.wpcom.WPComGsonRequest;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -79,7 +83,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                 new Listener<AccountSettingsResponse>() {
                     @Override
                     public void onResponse(AccountSettingsResponse response) {
-                        AccountModel settings = responseToAccountSettingsModel(response);
+                        AccountModel settings = settingsResponseToAccountModel(response);
                         AccountRestPayload payload = new AccountRestPayload(settings, null);
                         mDispatcher.dispatch(AccountActionBuilder.newFetchedSettingsAction(payload));
                     }
@@ -109,7 +113,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                 new Listener<AccountSettingsResponse>() {
                     @Override
                     public void onResponse(AccountSettingsResponse response) {
-                        AccountModel settings = responseToAccountSettingsModel(response);
+                        AccountModel settings = settingsResponseToAccountModel(response);
                         AccountRestPayload payload = new AccountRestPayload(settings, null);
                         mDispatcher.dispatch(AccountActionBuilder.newPostedSettingsAction(payload));
                     }
@@ -135,20 +139,34 @@ public class AccountRestClient extends BaseWPComRestClient {
         account.setSiteCount(from.site_count);
         account.setVisibleSiteCount(from.visible_site_count);
         account.setEmail(from.email);
+        if (from.date != null) {
+            account.setDateCreated(iso8601ToJavaDate(from.date));
+        }
         return account;
     }
 
-    private AccountModel responseToAccountSettingsModel(AccountSettingsResponse from) {
-        AccountModel accountSettings = new AccountModel();
-        accountSettings.setUserName(from.user_login);
-        accountSettings.setPrimaryBlogId(from.primary_site_ID);
-        accountSettings.setFirstName(from.first_name);
-        accountSettings.setLastName(from.last_name);
-        accountSettings.setAboutMe(from.description);
-        accountSettings.setDate(from.date);
-        accountSettings.setNewEmail(from.new_user_email);
-        accountSettings.setPendingEmailChange(from.user_email_change_pending);
-        accountSettings.setWebAddress(from.user_URL);
-        return accountSettings;
+    private AccountModel settingsResponseToAccountModel(AccountSettingsResponse from) {
+        AccountModel account = new AccountModel();
+        account.setUserName(from.user_login);
+        account.setPrimaryBlogId(from.primary_site_ID);
+        account.setFirstName(from.first_name);
+        account.setLastName(from.last_name);
+        account.setAboutMe(from.description);
+        account.setNewEmail(from.new_user_email);
+        account.setPendingEmailChange(from.user_email_change_pending);
+        account.setWebAddress(from.user_URL);
+        if (from.date != null) {
+            account.setDateCreated(iso8601ToJavaDate(from.date));
+        }
+        return account;
+    }
+
+    private Date iso8601ToJavaDate(final String strDate) {
+        try {
+            SimpleDateFormat ISO8601Format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.US);
+            return ISO8601Format.parse(strDate);
+        } catch (ParseException e) {
+            return new Date();
+        }
     }
 }
