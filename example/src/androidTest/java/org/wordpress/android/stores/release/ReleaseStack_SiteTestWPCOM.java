@@ -42,8 +42,6 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
-        mDispatcher.register(mSiteStore);
-        mDispatcher.register(mAccountStore);
         mDispatcher.register(this);
         // Reset expected test event
         mExpectedEvent = TEST_EVENTS.NONE;

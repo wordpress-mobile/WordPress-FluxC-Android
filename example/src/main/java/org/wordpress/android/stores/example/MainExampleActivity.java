@@ -118,15 +118,11 @@ public class MainExampleActivity extends AppCompatActivity {
         // Order is important here since onRegister could fire onChanged events. "register(this)" should probably go
         // first everywhere.
         mDispatcher.register(this);
-        mDispatcher.register(mSiteStore);
-        mDispatcher.register(mAccountStore);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        mDispatcher.unregister(mSiteStore);
-        mDispatcher.unregister(mAccountStore);
         mDispatcher.unregister(this);
     }
 
