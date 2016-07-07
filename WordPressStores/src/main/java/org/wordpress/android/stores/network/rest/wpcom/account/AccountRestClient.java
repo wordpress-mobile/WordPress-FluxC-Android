@@ -35,8 +35,8 @@ public class AccountRestClient extends BaseWPComRestClient {
         public AccountModel account;
     }
 
-    public static class AccountPostResponsePayload implements Payload {
-        public AccountPostResponsePayload(VolleyError error) {
+    public static class AccountPostSettingsResponsePayload implements Payload {
+        public AccountPostSettingsResponsePayload(VolleyError error) {
             this.error = error;
         }
         public boolean isError() { return error != null; }
@@ -107,7 +107,7 @@ public class AccountRestClient extends BaseWPComRestClient {
     /**
      * Performs an HTTP POST call to the v1.1 {@link WPCOMREST#ME_SETTINGS} endpoint. Upon receiving
      * a response (success or error) a {@link AccountAction#POSTED_SETTINGS} action is dispatched
-     * with a payload of type {@link AccountPostResponsePayload}. {@link AccountPostResponsePayload#isError()} can
+     * with a payload of type {@link AccountPostSettingsResponsePayload}. {@link AccountPostSettingsResponsePayload#isError()} can
      * be used to determine the result of the request.
      *
      * No HTTP POST call is made if the given parameter map is null or contains no entries.
@@ -121,7 +121,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                 new Listener<HashMap>() {
                     @Override
                     public void onResponse(HashMap response) {
-                        AccountPostResponsePayload payload = new AccountPostResponsePayload(null);
+                        AccountPostSettingsResponsePayload payload = new AccountPostSettingsResponsePayload(null);
                         payload.settings = response;
                         mDispatcher.dispatch(AccountActionBuilder.newPostedSettingsAction(payload));
                     }
@@ -129,7 +129,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                 new ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        AccountPostResponsePayload payload = new AccountPostResponsePayload(error);
+                        AccountPostSettingsResponsePayload payload = new AccountPostSettingsResponsePayload(error);
                         mDispatcher.dispatch(AccountActionBuilder.newPostedSettingsAction(payload));
                     }
                 }
@@ -138,53 +138,48 @@ public class AccountRestClient extends BaseWPComRestClient {
 
     private AccountModel responseToAccountModel(AccountResponse from) {
         AccountModel account = new AccountModel();
-        account.setUserName(from.username);
         account.setUserId(from.ID);
         account.setDisplayName(from.display_name);
-        account.setProfileUrl(from.profile_URL);
-        account.setAvatarUrl(from.avatar_URL);
+        account.setUserName(from.username);
+        account.setEmail(from.email);
         account.setPrimaryBlogId(from.primary_blog);
+        account.setAvatarUrl(from.avatar_URL);
+        account.setProfileUrl(from.profile_URL);
+        account.setDate(from.date);
         account.setSiteCount(from.site_count);
         account.setVisibleSiteCount(from.visible_site_count);
-        account.setEmail(from.email);
         return account;
     }
 
     private AccountModel responseToAccountSettingsModel(AccountSettingsResponse from) {
-        AccountModel accountSettings = new AccountModel();
-        accountSettings.setUserName(from.user_login);
-        accountSettings.setPrimaryBlogId(from.primary_site_ID);
-        accountSettings.setFirstName(from.first_name);
-        accountSettings.setLastName(from.last_name);
-        accountSettings.setAboutMe(from.description);
-        accountSettings.setDate(from.date);
-        accountSettings.setNewEmail(from.new_user_email);
-        accountSettings.setPendingEmailChange(from.user_email_change_pending);
-        accountSettings.setWebAddress(from.user_URL);
-        accountSettings.setDisplayName(from.display_name);
-        return accountSettings;
+        AccountModel account = new AccountModel();
+        account.setUserName(from.user_login);
+        account.setDisplayName(from.display_name);
+        account.setFirstName(from.first_name);
+        account.setLastName(from.last_name);
+        account.setAboutMe(from.description);
+        account.setNewEmail(from.new_user_email);
+        account.setAvatarUrl(from.avatar_URL);
+        account.setPendingEmailChange(from.user_email_change_pending);
+        account.setWebAddress(from.user_URL);
+        account.setPrimaryBlogId(from.primary_site_ID);
+        return account;
     }
 
-    public static boolean updateAccountModelFromGenericResponse(AccountModel accountModel, Map<String, Object> from) {
+    public static boolean updateAccountModelFromPostSettingsResponse(AccountModel accountModel, Map<String, Object> from) {
         AccountModel old = new AccountModel();
         old.copyAccountAttributes(accountModel);
         old.copyAccountSettingsAttributes(accountModel);
-        if (from.containsKey("user_login")) accountModel.setUserName((String) from.get("user_login"));
-        if (from.containsKey("primary_site_ID")) accountModel.setPrimaryBlogId((Long) from.get("primary_site_ID"));
+        if (from.containsKey("display_name")) accountModel.setDisplayName((String) from.get("display_name"));
         if (from.containsKey("first_name")) accountModel.setFirstName((String) from.get("first_name"));
         if (from.containsKey("last_name")) accountModel.setLastName((String) from.get("last_name"));
         if (from.containsKey("description")) accountModel.setAboutMe((String) from.get("description"));
-        if (from.containsKey("date")) accountModel.setDate((String) from.get("date"));
-        if (from.containsKey("new_user_email")) accountModel.setNewEmail((String) from.get("new_user_email"));
+        if (from.containsKey("user_email")) accountModel.setEmail((String) from.get("user_email"));
         if (from.containsKey("user_email_change_pending")) accountModel.setPendingEmailChange((Boolean) from.get
                 ("user_email_change_pending"));
+        if (from.containsKey("new_user_email")) accountModel.setEmail((String) from.get("new_user_email"));
         if (from.containsKey("user_URL")) accountModel.setWebAddress((String) from.get("user_URL"));
-        if (from.containsKey("username")) accountModel.setUserName((String) from.get("username"));
-        if (from.containsKey("ID")) accountModel.setUserId((Long) from.get("ID"));
-        if (from.containsKey("profile_URL")) accountModel.setProfileUrl((String) from.get("profile_URL"));
-        if (from.containsKey("avatar_URL")) accountModel.setAvatarUrl((String) from.get("avatar_URL"));
-        if (from.containsKey("email")) accountModel.setEmail((String) from.get("email"));
-        if (from.containsKey("display_name")) accountModel.setDisplayName((String) from.get("display_name"));
+        if (from.containsKey("primary_site_ID")) accountModel.setPrimaryBlogId((Long) from.get("primary_site_ID"));
         return !old.equals(accountModel);
     }
 }

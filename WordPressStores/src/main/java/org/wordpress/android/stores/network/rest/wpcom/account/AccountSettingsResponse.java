@@ -10,13 +10,13 @@ import org.wordpress.android.stores.network.Response;
  */
 public class AccountSettingsResponse implements Response {
     public String user_login;
-    public long primary_site_ID;
+    public String display_name;
     public String first_name;
     public String last_name;
     public String description;
-    public String date;
     public String new_user_email;
     public boolean user_email_change_pending;
     public String user_URL;
-    public String display_name;
+    public String avatar_URL;
+    public long primary_site_ID;
 }

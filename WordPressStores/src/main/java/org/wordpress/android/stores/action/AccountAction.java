@@ -4,7 +4,7 @@ import org.wordpress.android.stores.annotations.Action;
 import org.wordpress.android.stores.annotations.ActionEnum;
 import org.wordpress.android.stores.annotations.action.IAction;
 import org.wordpress.android.stores.model.AccountModel;
-import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.AccountPostResponsePayload;
+import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.AccountPostSettingsResponsePayload;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.AccountRestPayload;
 import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
 import org.wordpress.android.stores.store.AccountStore.UpdateTokenPayload;
@@ -23,7 +23,7 @@ public enum AccountAction implements IAction {
     FETCHED_SETTINGS,       // response received from Account Settings fetch
     @Action(payloadType = PostAccountSettingsPayload.class)
     POST_SETTINGS,          // request saving Account Settings remotely
-    @Action(payloadType = AccountPostResponsePayload.class)
+    @Action(payloadType = AccountPostSettingsResponsePayload.class)
     POSTED_SETTINGS,        // response received from Account Settings post
     @Action(payloadType = AccountModel.class)
     UPDATE,                 // update in-memory and persisted Account in AccountStore
