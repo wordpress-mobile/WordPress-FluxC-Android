@@ -108,7 +108,18 @@ public class AccountStore extends Store {
         EMAIL_NOT_ALLOWED,
         EMAIL_EXISTS,
         EMAIL_RESERVED,
-        GENERIC_ERROR,
+        GENERIC_ERROR;
+
+        public static NewUserError fromString(String string) {
+            if (string != null) {
+                for (NewUserError v : NewUserError.values()) {
+                    if (string.equalsIgnoreCase(v.name())) {
+                        return v;
+                    }
+                }
+            }
+            return GENERIC_ERROR;
+        }
     }
 
     // Fields

@@ -185,62 +185,13 @@ public class AccountRestClient extends BaseWPComRestClient {
             String jsonString = new String(error.networkResponse.data);
             try {
                 JSONObject errorObj = new JSONObject(jsonString);
-                payload.errorType = errorStringToErrorType((String) errorObj.get("error"));
+                payload.errorType = NewUserError.fromString((String) errorObj.get("error"));
                 payload.errorMessage = (String) errorObj.get("message");
             } catch (JSONException e) {
                 // Do nothing (keep default error)
             }
         }
         return payload;
-    }
-
-    private NewUserError errorStringToErrorType(String error) {
-        if (error.equals("username_only_lowercase_letters_and_numbers")) {
-            return NewUserError.USERNAME_ONLY_LOWERCASE_LETTERS_AND_NUMBERS;
-        }
-        if (error.equals("username_required")) {
-            return NewUserError.USERNAME_REQUIRED;
-        }
-        if (error.equals("username_not_allowed")) {
-            return NewUserError.USERNAME_NOT_ALLOWED;
-        }
-        if (error.equals("username_must_be_at_least_four_characters")) {
-            return NewUserError.USERNAME_MUST_BE_AT_LEAST_FOUR_CHARACTERS;
-        }
-        if (error.equals("username_contains_invalid_characters")) {
-            return NewUserError.USERNAME_CONTAINS_INVALID_CHARACTERS;
-        }
-        if (error.equals("username_must_include_letters")) {
-            return NewUserError.USERNAME_MUST_INCLUDE_LETTERS;
-        }
-        if (error.equals("username_exists")) {
-            return NewUserError.USERNAME_EXISTS;
-        }
-        if (error.equals("email_cant_be_used_to_signup")) {
-            return NewUserError.EMAIL_CANT_BE_USED_TO_SIGNUP;
-        }
-        if (error.equals("email_invalid")) {
-            return NewUserError.EMAIL_INVALID;
-        }
-        if (error.equals("email_not_allowed")) {
-            return NewUserError.EMAIL_NOT_ALLOWED;
-        }
-        if (error.equals("email_exists")) {
-            return NewUserError.EMAIL_EXISTS;
-        }
-        if (error.equals("username_reserved_but_may_be_available")) {
-            return NewUserError.USERNAME_RESERVED_BUT_MAY_BE_AVAILABLE;
-        }
-        if (error.equals("email_reserved")) {
-            return NewUserError.EMAIL_RESERVED;
-        }
-        if (error.equals("password_invalid")) {
-            return NewUserError.PASSWORD_INVALID;
-        }
-        if (error.equals("username_invalid")) {
-            return NewUserError.USERNAME_INVALID;
-        }
-        return NewUserError.GENERIC_ERROR;
     }
 
     private AccountModel responseToAccountModel(AccountResponse from) {
