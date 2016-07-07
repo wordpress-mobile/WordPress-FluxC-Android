@@ -24,10 +24,12 @@ import org.wordpress.android.util.AppLog.T;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * In-memory based and persisted in SQLite.
  */
+@Singleton
 public class AccountStore extends Store {
     // Payloads
     public static class AuthenticatePayload implements Payload {
@@ -109,20 +111,20 @@ public class AccountStore extends Store {
             AccountRestPayload data = (AccountRestPayload) action.getPayload();
             if (!checkError(data, "Error fetching Account via REST API (/me)")) {
                 mAccount.copyAccountAttributes(data.account);
-                update(mAccount, AccountAction.FETCH_ACCOUNT);
+                updateDefaultAccount(mAccount, AccountAction.FETCH_ACCOUNT);
             }
         } else if (actionType == AccountAction.FETCHED_SETTINGS) {
             AccountRestPayload data = (AccountRestPayload) action.getPayload();
             if (!checkError(data, "Error fetching Account Settings via REST API (/me/settings)")) {
                 mAccount.copyAccountSettingsAttributes(data.account);
-                update(mAccount, AccountAction.FETCH_SETTINGS);
+                updateDefaultAccount(mAccount, AccountAction.FETCH_SETTINGS);
             }
         } else if (actionType == AccountAction.POSTED_SETTINGS) {
             AccountPostResponsePayload data = (AccountPostResponsePayload) action.getPayload();
             if (!data.isError()) {
                 boolean updated = AccountRestClient.updateAccountModelFromGenericResponse(mAccount, data.settings);
                 if (updated) {
-                    update(mAccount, AccountAction.POST_SETTINGS);
+                    updateDefaultAccount(mAccount, AccountAction.POST_SETTINGS);
                 } else {
                     OnAccountChanged accountChanged = new OnAccountChanged();
                     accountChanged.accountInfosChanged = false;
@@ -132,7 +134,7 @@ public class AccountStore extends Store {
             // TODO: error management
         } else if (actionType == AccountAction.UPDATE) {
             AccountModel accountModel = (AccountModel) action.getPayload();
-            update(accountModel, AccountAction.UPDATE);
+            updateDefaultAccount(accountModel, AccountAction.UPDATE);
         } else if (actionType == AccountAction.UPDATE_ACCESS_TOKEN) {
             UpdateTokenPayload updateTokenPayload = (UpdateTokenPayload) action.getPayload();
             updateToken(updateTokenPayload);
@@ -148,7 +150,6 @@ public class AccountStore extends Store {
         OnAccountChanged accountChanged = new OnAccountChanged();
         accountChanged.accountInfosChanged = true;
         emitChange(accountChanged);
-
         // Remove authentication token
         mAccessToken.set(null);
         emitChange(new OnAuthenticationChanged());
@@ -183,12 +184,10 @@ public class AccountStore extends Store {
         mAccessToken.set(updateTokenPayload.token);
     }
 
-    private void update(AccountModel accountModel, AccountAction cause) {
+    private void updateDefaultAccount(AccountModel accountModel, AccountAction cause) {
         // Update memory instance
         mAccount = accountModel;
-
-        AccountSqlUtils.insertOrUpdateAccount(accountModel);
-
+        AccountSqlUtils.insertOrUpdateDefaultAccount(accountModel);
         OnAccountChanged accountChanged = new OnAccountChanged();
         accountChanged.accountInfosChanged = true;
         accountChanged.causeOfChange = cause;

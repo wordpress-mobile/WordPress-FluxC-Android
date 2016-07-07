@@ -43,7 +43,6 @@ public class AccountStoreTest extends InstrumentationTestCase {
 
         // Register
         mDispatcher.register(this);
-        mDispatcher.register(mAccountStore);
     }
 
     public void testAuthenticationOK() {

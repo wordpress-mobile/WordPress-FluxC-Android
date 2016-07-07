@@ -22,7 +22,7 @@ public enum SiteAction implements IAction {
     @Action(payloadType = SiteModel.class)
     REMOVE_SITE,
     @Action
-    LOGOUT_WP_COM,
+    REMOVE_WPCOM_SITES,
     @Action(payloadType = SitesModel.class)
     SHOW_SITES,
     @Action(payloadType = SitesModel.class)
