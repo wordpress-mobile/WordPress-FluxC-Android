@@ -29,6 +29,7 @@ import org.wordpress.android.stores.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.stores.store.SiteStore.OnSitesRemoved;
 import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.stores.utils.SelfHostedDiscoveryUtils;
 import org.wordpress.android.stores.utils.SelfHostedDiscoveryUtils.DiscoveryCallback;
@@ -169,6 +170,11 @@ public class MainExampleActivity extends AppCompatActivity {
         }
     }
 
+    @Subscribe
+    public void onSitesRemoved(OnSitesRemoved event) {
+        mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
+    }
+
     // Private methods
 
     private void prependToLog(String s) {
@@ -249,6 +255,7 @@ public class MainExampleActivity extends AppCompatActivity {
 
     private void signOutWpCom() {
         mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
+        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
     }
 
     private void wpcomFetchSites(String username, String password) {
