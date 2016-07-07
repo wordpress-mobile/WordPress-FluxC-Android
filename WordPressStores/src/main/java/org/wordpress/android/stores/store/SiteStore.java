@@ -94,7 +94,18 @@ public class SiteStore extends Store {
         SITE_NAME_RESERVED_BUT_MAY_BE_AVAILABLE,
         SITE_NAME_INVALID,
         SITE_TITLE_INVALID,
-        GENERIC_ERROR,
+        GENERIC_ERROR;
+
+        public static NewSiteError fromString(String string) {
+            if (string != null) {
+                for (NewSiteError v : NewSiteError.values()) {
+                    if (string.equalsIgnoreCase(v.name())) {
+                        return v;
+                    }
+                }
+            }
+            return GENERIC_ERROR;
+        }
     }
 
     public enum SiteVisibility {

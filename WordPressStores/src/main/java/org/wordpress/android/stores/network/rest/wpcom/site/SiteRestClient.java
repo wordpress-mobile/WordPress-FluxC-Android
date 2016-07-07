@@ -160,55 +160,12 @@ public class SiteRestClient extends BaseWPComRestClient {
             String jsonString = new String(error.networkResponse.data);
             try {
                 JSONObject errorObj = new JSONObject(jsonString);
-                payload.errorType = errorStringToErrorType((String) errorObj.get("error"));
+                payload.errorType = NewSiteError.fromString((String) errorObj.get("error"));
                 payload.errorMessage = (String) errorObj.get("message");
             } catch (JSONException e) {
                 // Do nothing (keep default error)
             }
         }
         return payload;
-    }
-
-    private NewSiteError errorStringToErrorType(String error) {
-        if (error.equals("blog_name_required")) {
-            return NewSiteError.SITE_NAME_REQUIRED;
-        }
-        if (error.equals("blog_name_not_allowed")) {
-            return NewSiteError.SITE_NAME_NOT_ALLOWED;
-        }
-        if (error.equals("blog_name_must_be_at_least_four_characters")) {
-            return NewSiteError.SITE_NAME_MUST_BE_AT_LEAST_FOUR_CHARACTERS;
-        }
-        if (error.equals("blog_name_must_be_less_than_sixty_four_characters")) {
-            return NewSiteError.SITE_NAME_MUST_BE_LESS_THAN_SIXTY_FOUR_CHARACTERS;
-        }
-        if (error.equals("blog_name_contains_invalid_characters")) {
-            return NewSiteError.SITE_NAME_CONTAINS_INVALID_CHARACTERS;
-        }
-        if (error.equals("blog_name_cant_be_used")) {
-            return NewSiteError.SITE_NAME_CANT_BE_USED;
-        }
-        if (error.equals("blog_name_only_lowercase_letters_and_numbers")) {
-            return NewSiteError.SITE_NAME_ONLY_LOWERCASE_LETTERS_AND_NUMBERS;
-        }
-        if (error.equals("blog_name_must_include_letters")) {
-            return NewSiteError.SITE_NAME_MUST_INCLUDE_LETTERS;
-        }
-        if (error.equals("blog_name_exists")) {
-            return NewSiteError.SITE_NAME_EXISTS;
-        }
-        if (error.equals("blog_name_reserved")) {
-            return NewSiteError.SITE_NAME_RESERVED;
-        }
-        if (error.equals("blog_name_reserved_but_may_be_available")) {
-            return NewSiteError.SITE_NAME_RESERVED_BUT_MAY_BE_AVAILABLE;
-        }
-        if (error.equals("blog_name_invalid")) {
-            return NewSiteError.SITE_NAME_INVALID;
-        }
-        if (error.equals("blog_title_invalid")) {
-            return NewSiteError.SITE_TITLE_INVALID;
-        }
-        return NewSiteError.GENERIC_ERROR;
     }
 }
