@@ -9,13 +9,14 @@ import org.wordpress.android.stores.network.Response;
  * See <a href="https://developer.wordpress.com/docs/api/1.1/get/me/">documentation</a>
  */
 public class AccountResponse implements Response {
-    public String username;
     public long ID;
     public String display_name;
-    public String profile_URL;
-    public String avatar_URL;
+    public String username;
+    public String email;
     public long primary_blog;
+    public String avatar_URL;
+    public String profile_URL;
+    public String date;
     public int site_count;
     public int visible_site_count;
-    public String email;
 }

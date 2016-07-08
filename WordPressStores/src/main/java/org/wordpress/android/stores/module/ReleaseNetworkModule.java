@@ -116,8 +116,9 @@ public class ReleaseNetworkModule {
     @Provides
     public SiteRestClient provideSiteRestClient(Dispatcher dispatcher,
                                                 @Named("regular") RequestQueue requestQueue,
+                                                AppSecrets appSecrets,
                                                 AccessToken token, UserAgent userAgent) {
-        return new SiteRestClient(dispatcher, requestQueue, token, userAgent);
+        return new SiteRestClient(dispatcher, requestQueue, appSecrets, token, userAgent);
     }
 
     @Singleton
@@ -142,8 +143,9 @@ public class ReleaseNetworkModule {
     @Provides
     public AccountRestClient provideAccountRestClient(Dispatcher dispatcher,
                                                       @Named("regular") RequestQueue requestQueue,
+                                                      AppSecrets appSecrets,
                                                       AccessToken token, UserAgent userAgent) {
-        return new AccountRestClient(dispatcher, requestQueue, token, userAgent);
+        return new AccountRestClient(dispatcher, requestQueue, appSecrets, token, userAgent);
     }
 
     @Singleton
