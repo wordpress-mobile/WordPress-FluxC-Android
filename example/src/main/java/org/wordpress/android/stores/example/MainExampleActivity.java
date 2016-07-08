@@ -19,11 +19,11 @@ import org.wordpress.android.stores.generated.AccountActionBuilder;
 import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
 import org.wordpress.android.stores.generated.SiteActionBuilder;
 import org.wordpress.android.stores.model.SiteModel;
-import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
+import org.wordpress.android.stores.store.AccountStore.AuthenticationError;
 import org.wordpress.android.stores.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.stores.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
@@ -269,12 +269,12 @@ public class MainExampleActivity extends AppCompatActivity {
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
         if (event.isError) {
-            prependToLog("Authentication error: " + event.authError);
-            if (event.authError == AuthError.HTTP_AUTH_ERROR) {
+            prependToLog("Authentication error: " + event.errorType + " - " + event.errorMessage);
+            if (event.errorType == AuthenticationError.HTTP_AUTH_ERROR) {
                 // Show a Dialog prompting for http username and password
                 showHTTPAuthDialog(mSelfhostedPayload.xmlrpcEndpoint);
             }
-            if (event.authError == AuthError.INVALID_SSL_CERTIFICATE) {
+            if (event.errorType == AuthenticationError.INVALID_SSL_CERTIFICATE) {
                 // Show a SSL Warning Dialog
                 showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
             }

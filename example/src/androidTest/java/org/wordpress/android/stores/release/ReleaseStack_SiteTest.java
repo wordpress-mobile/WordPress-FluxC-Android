@@ -6,7 +6,6 @@ import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.TestUtils;
 import org.wordpress.android.stores.example.BuildConfig;
 import org.wordpress.android.stores.generated.SiteActionBuilder;
-import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
 import org.wordpress.android.stores.store.AccountStore;
