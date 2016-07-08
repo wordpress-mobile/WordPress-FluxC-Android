@@ -50,10 +50,9 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
 
     public void testWPCOMSiteFetchAndLogout() throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
-        AccountStore.AuthenticatePayload payload = new AccountStore.AuthenticatePayload();
-        payload.username = BuildConfig.TEST_WPCOM_USERNAME_TEST1;
-        payload.password = BuildConfig.TEST_WPCOM_PASSWORD_TEST1;
-
+        AccountStore.AuthenticatePayload payload =
+                new AccountStore.AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                        BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         mCountDownLatch = new CountDownLatch(1);
 
         // Correct user we should get an OnAuthenticationChanged message

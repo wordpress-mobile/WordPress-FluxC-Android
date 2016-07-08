@@ -112,10 +112,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     }
 
     private void authenticate(String username, String password) throws InterruptedException {
-        AuthenticatePayload payload = new AuthenticatePayload();
-        payload.username = username;
-        payload.password = password;
-
+        AuthenticatePayload payload = new AuthenticatePayload(username, password);
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         mCountDownLatch = new CountDownLatch(1);
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));

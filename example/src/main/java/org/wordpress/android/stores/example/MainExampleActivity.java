@@ -16,8 +16,7 @@ import android.widget.TextView;
 import com.squareup.otto.Subscribe;
 
 import org.wordpress.android.stores.Dispatcher;
-import org.wordpress.android.stores.action.AccountAction;
-import org.wordpress.android.stores.example.SignInDialog.Listener;
+import org.wordpress.android.stores.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.stores.generated.AccountActionBuilder;
 import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
 import org.wordpress.android.stores.generated.SiteActionBuilder;
@@ -27,8 +26,10 @@ import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
+import org.wordpress.android.stores.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.stores.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
+import org.wordpress.android.stores.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
@@ -42,6 +43,7 @@ import org.wordpress.android.util.AppLog.T;
 import java.util.HashMap;
 
 import javax.inject.Inject;
+
 
 public class MainExampleActivity extends AppCompatActivity {
     @Inject SiteStore mSiteStore;
@@ -57,6 +59,7 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mUpdateFirstSite;
     private Button mSignOut;
     private Button mAccountSettings;
+    private Button mNewAccount;
 
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
@@ -66,7 +69,7 @@ public class MainExampleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ((ExampleApp) getApplication()).component().inject(this);
         setContentView(R.layout.activity_example);
-        mListSites = (Button) findViewById(R.id.list_sites_button);
+        mListSites = (Button) findViewById(R.id.sign_in_fetch_sites_button);
         mListSites.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -114,6 +117,14 @@ public class MainExampleActivity extends AppCompatActivity {
                 signOutWpCom();
             }
         });
+
+        mNewAccount = (Button) findViewById(R.id.new_account);
+        mNewAccount.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showNewAccountDialog();
+            }
+        });
         mLogView = (TextView) findViewById(R.id.log);
 
         init();
@@ -121,6 +132,7 @@ public class MainExampleActivity extends AppCompatActivity {
 
     private void init() {
         mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
+        mAccountSettings.setEnabled(mAccountStore.hasAccessToken());
         if (mAccountStore.hasAccessToken()) {
             prependToLog("You're signed in as: " + mAccountStore.getAccount().getUserName());
         }
@@ -139,52 +151,6 @@ public class MainExampleActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         mDispatcher.unregister(this);
-    }
-
-    // Event listeners
-
-    @Subscribe
-    public void onAccountChanged(OnAccountChanged event) {
-        if (!mAccountStore.isSignedIn()) {
-            prependToLog("Signed Out");
-        } else {
-            if (event.accountInfosChanged && event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
-                prependToLog("Display Name: " + mAccountStore.getAccount().getDisplayName());
-            }
-        }
-    }
-
-    @Subscribe
-    public void onAuthenticationChanged(OnAuthenticationChanged event) {
-        mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
-        mAccountSettings.setEnabled(mAccountStore.hasAccessToken());
-        if (event.isError) {
-            prependToLog("Authentication error: " + event.authError);
-            if (event.authError == AuthError.HTTP_AUTH_ERROR) {
-                // Show a Dialog prompting for http username and password
-                showHTTPAuthDialog(mSelfhostedPayload.xmlrpcEndpoint);
-            }
-            if (event.authError == AuthError.INVALID_SSL_CERTIFICATE) {
-                // Show a SSL Warning Dialog
-                showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
-            }
-        }
-    }
-
-    @Subscribe
-    public void onSiteChanged(OnSiteChanged event) {
-        if (mSiteStore.hasSite()) {
-            SiteModel firstSite = mSiteStore.getSites().get(0);
-            prependToLog("First site name: " + firstSite.getName() + " - Total sites: " + mSiteStore.getSitesCount());
-            mUpdateFirstSite.setEnabled(true);
-        } else {
-            mUpdateFirstSite.setEnabled(false);
-        }
-    }
-
-    @Subscribe
-    public void onSitesRemoved(OnSitesRemoved event) {
-        mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
     }
 
     // Private methods
@@ -214,20 +180,20 @@ public class MainExampleActivity extends AppCompatActivity {
 
     private void showSigninDialog() {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        DialogFragment newFragment = SignInDialog.newInstance(new Listener() {
+        DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
             @Override
             public void onClick(String username, String password, String url) {
                 signInAction(username, password, url);
             }
-        }, true);
+        }, "Username", "Password", "XMLRPC Url");
         newFragment.show(ft, "dialog");
     }
 
     private void showHTTPAuthDialog(final String url) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        DialogFragment newFragment = SignInDialog.newInstance(new Listener() {
+        DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
             @Override
-            public void onClick(String username, String password, String dummy) {
+            public void onClick(String username, String password, String unused) {
                 // Add credentials
                 mHTTPAuthManager.addHTTPAuthCredentials(username, password, url, null);
                 // Retry login action
@@ -236,7 +202,7 @@ public class MainExampleActivity extends AppCompatActivity {
                             mSelfhostedPayload.xmlrpcEndpoint);
                 }
             }
-        }, false);
+        }, "Username", "Password", "unused");
         newFragment.show(ft, "dialog");
     }
 
@@ -271,9 +237,7 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void wpcomFetchSites(String username, String password) {
-        AuthenticatePayload payload = new AuthenticatePayload();
-        payload.username = username;
-        payload.password = password;
+        AuthenticatePayload payload = new AuthenticatePayload(username, password);
         // Next action will be dispatched if authentication is successful
         payload.nextAction = SiteActionBuilder.newFetchSitesAction();
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
@@ -304,5 +268,77 @@ public class MainExampleActivity extends AppCompatActivity {
             }
         });
         alert.show();
+    }
+
+    private void showNewAccountDialog() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
+            @Override
+            public void onClick(String username, String email, String password) {
+                newAccountAction(username, email, password);
+            }
+        }, "Username", "Email", "Password");
+        newFragment.show(ft, "dialog");
+    }
+
+    private void newAccountAction(String username, String email, String password) {
+        NewAccountPayload newAccountPayload = new NewAccountPayload(username, password, email, true);
+        mDispatcher.dispatch(AccountActionBuilder.newCreateNewAccountAction(newAccountPayload));
+    }
+
+    // Event listeners
+
+    @Subscribe
+    public void onAccountChanged(OnAccountChanged event) {
+        if (!mAccountStore.isSignedIn()) {
+            prependToLog("Signed Out");
+        } else {
+            if (event.accountInfosChanged) {
+                prependToLog("Display Name: " + mAccountStore.getAccount().getDisplayName());
+            }
+        }
+    }
+
+    @Subscribe
+    public void onAuthenticationChanged(OnAuthenticationChanged event) {
+        mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
+        mAccountSettings.setEnabled(mAccountStore.hasAccessToken());
+        if (event.isError) {
+            prependToLog("Authentication error: " + event.authError);
+            if (event.authError == AuthError.HTTP_AUTH_ERROR) {
+                // Show a Dialog prompting for http username and password
+                showHTTPAuthDialog(mSelfhostedPayload.xmlrpcEndpoint);
+            }
+            if (event.authError == AuthError.INVALID_SSL_CERTIFICATE) {
+                // Show a SSL Warning Dialog
+                showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
+            }
+        }
+    }
+
+    @Subscribe
+    public void onSiteChanged(OnSiteChanged event) {
+        if (mSiteStore.hasSite()) {
+            SiteModel firstSite = mSiteStore.getSites().get(0);
+            prependToLog("First site name: " + firstSite.getName() + " - Total sites: " + mSiteStore.getSitesCount());
+            mUpdateFirstSite.setEnabled(true);
+        } else {
+            mUpdateFirstSite.setEnabled(false);
+        }
+    }
+
+    @Subscribe
+    public void onNewUserValidated(OnNewUserCreated event) {
+        String message = event.dryRun ? "validated" : "created";
+        if (event.isError) {
+            prependToLog("New user " + message + ", error: " + event.errorMessage + " - " + event.errorType);
+        } else {
+            prependToLog("New user " + message + ": success!");
+        }
+    }
+
+    @Subscribe
+    public void onSitesRemoved(OnSitesRemoved event) {
+        mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
     }
 }

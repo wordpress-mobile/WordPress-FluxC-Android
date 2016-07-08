@@ -1,5 +1,7 @@
 package org.wordpress.android.stores.store;
 
+import android.support.annotation.NonNull;
+
 import com.android.volley.VolleyError;
 import com.squareup.otto.Subscribe;
 
@@ -14,6 +16,7 @@ import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.AccountPostSettingsResponsePayload;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.AccountRestPayload;
+import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.NewAccountResponsePayload;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.Token;
@@ -33,17 +36,33 @@ import javax.inject.Singleton;
 public class AccountStore extends Store {
     // Payloads
     public static class AuthenticatePayload implements Payload {
-        public AuthenticatePayload() {
-        }
-
         public String username;
         public String password;
         public Action nextAction;
+        public AuthenticatePayload(@NonNull String username, @NonNull String password) {
+            this.username = username;
+            this.password = password;
+        }
     }
 
     public static class PostAccountSettingsPayload implements Payload {
-        public PostAccountSettingsPayload() {}
         public Map<String, String> params;
+        public PostAccountSettingsPayload() {
+        }
+    }
+
+    public static class NewAccountPayload implements Payload {
+        public String username;
+        public String password;
+        public String email;
+        public boolean dryRun;
+        public NewAccountPayload(@NonNull String username, @NonNull String password, @NonNull String email,
+                                 boolean dryRun) {
+            this.username = username;
+            this.password = password;
+            this.email = email;
+            this.dryRun = dryRun;
+        }
     }
 
     public static class UpdateTokenPayload implements Payload {
@@ -62,6 +81,45 @@ public class AccountStore extends Store {
         public AuthError authError;
     }
 
+    public class OnNewUserCreated extends OnChanged {
+        public boolean isError;
+        public NewUserError errorType;
+        public String errorMessage;
+        public boolean dryRun;
+    }
+
+    // Enums
+    public enum NewUserError {
+        USERNAME_ONLY_LOWERCASE_LETTERS_AND_NUMBERS,
+        USERNAME_REQUIRED,
+        USERNAME_NOT_ALLOWED,
+        USERNAME_MUST_BE_AT_LEAST_FOUR_CHARACTERS,
+        USERNAME_CONTAINS_INVALID_CHARACTERS,
+        USERNAME_MUST_INCLUDE_LETTERS,
+        USERNAME_EXISTS,
+        USERNAME_RESERVED_BUT_MAY_BE_AVAILABLE,
+        USERNAME_INVALID,
+        PASSWORD_INVALID,
+        EMAIL_CANT_BE_USED_TO_SIGNUP,
+        EMAIL_INVALID,
+        EMAIL_NOT_ALLOWED,
+        EMAIL_EXISTS,
+        EMAIL_RESERVED,
+        GENERIC_ERROR;
+
+        public static NewUserError fromString(String string) {
+            if (string != null) {
+                for (NewUserError v : NewUserError.values()) {
+                    if (string.equalsIgnoreCase(v.name())) {
+                        return v;
+                    }
+                }
+            }
+            return GENERIC_ERROR;
+        }
+    }
+
+    // Fields
     private AccountRestClient mAccountRestClient;
     private Authenticator mAuthenticator;
     private AccountModel mAccount;
@@ -140,10 +198,24 @@ public class AccountStore extends Store {
             updateToken(updateTokenPayload);
         } else if (actionType == AccountAction.SIGN_OUT) {
             signOut();
+        } else if (actionType == AccountAction.CREATE_NEW_ACCOUNT) {
+            newAccount((NewAccountPayload) action.getPayload());
+        } else if (actionType == AccountAction.CREATED_NEW_ACCOUNT) {
+            NewAccountResponsePayload payload = (NewAccountResponsePayload) action.getPayload();
+            OnNewUserCreated onNewUserCreated = new OnNewUserCreated();
+            onNewUserCreated.isError = payload.isError;
+            onNewUserCreated.errorType = payload.errorType;
+            onNewUserCreated.errorMessage = payload.errorMessage;
+            onNewUserCreated.dryRun = payload.dryRun;
+            emitChange(onNewUserCreated);
         }
     }
 
-    public void signOut() {
+    private void newAccount(NewAccountPayload payload) {
+        mAccountRestClient.newAccount(payload.username, payload.password, payload.email, payload.dryRun);
+    }
+
+    private void signOut() {
         // Remove Account
         AccountSqlUtils.deleteAccount(mAccount);
         mAccount.init();

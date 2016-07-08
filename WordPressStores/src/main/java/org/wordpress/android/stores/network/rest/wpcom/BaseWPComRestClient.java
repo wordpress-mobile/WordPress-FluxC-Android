@@ -18,8 +18,8 @@ public class BaseWPComRestClient {
 
     protected OnAuthFailedListener mOnAuthFailedListener;
 
-    public BaseWPComRestClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken accessToken,
-                               UserAgent userAgent) {
+    public BaseWPComRestClient(Dispatcher dispatcher, RequestQueue requestQueue,
+                               AccessToken accessToken, UserAgent userAgent) {
         mRequestQueue = requestQueue;
         mDispatcher = dispatcher;
         mAccessToken = accessToken;
