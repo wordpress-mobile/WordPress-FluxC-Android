@@ -8,6 +8,8 @@ import com.yarolegovich.wellsql.core.annotation.Table;
 import org.wordpress.android.stores.Payload;
 import org.wordpress.android.util.StringUtils;
 
+import java.util.Date;
+
 @Table
 public class AccountModel implements Identifiable, Payload {
     @PrimaryKey
@@ -28,7 +30,7 @@ public class AccountModel implements Identifiable, Payload {
     @Column private String mFirstName;
     @Column private String mLastName;
     @Column private String mAboutMe;
-    @Column private String mDate;
+    @Column private Date mDateCreated;
     @Column private String mNewEmail;
     @Column private boolean mPendingEmailChange;
     @Column private String mWebAddress;
@@ -63,7 +65,7 @@ public class AccountModel implements Identifiable, Payload {
                 StringUtils.equals(getFirstName(), otherAccount.getFirstName()) &&
                 StringUtils.equals(getLastName(), otherAccount.getLastName()) &&
                 StringUtils.equals(getAboutMe(), otherAccount.getAboutMe()) &&
-                StringUtils.equals(getDate(), otherAccount.getDate()) &&
+                getDateCreated().equals(otherAccount.getDateCreated()) &&
                 StringUtils.equals(getNewEmail(), otherAccount.getNewEmail()) &&
                 getPendingEmailChange() == otherAccount.getPendingEmailChange() &&
                 StringUtils.equals(getWebAddress(), otherAccount.getWebAddress());
@@ -82,7 +84,7 @@ public class AccountModel implements Identifiable, Payload {
         mFirstName = "";
         mLastName = "";
         mAboutMe = "";
-        mDate = "";
+        mDateCreated = new Date();
         mNewEmail = "";
         mPendingEmailChange = false;
         mWebAddress = "";
@@ -102,6 +104,7 @@ public class AccountModel implements Identifiable, Payload {
         setSiteCount(other.getSiteCount());
         setVisibleSiteCount(other.getVisibleSiteCount());
         setEmail(other.getEmail());
+        setDateCreated(other.getDateCreated());
     }
 
     /**
@@ -114,10 +117,10 @@ public class AccountModel implements Identifiable, Payload {
         setFirstName(other.getFirstName());
         setLastName(other.getLastName());
         setAboutMe(other.getAboutMe());
-        setDate(other.getDate());
         setNewEmail(other.getNewEmail());
         setPendingEmailChange(other.getPendingEmailChange());
         setWebAddress(other.getWebAddress());
+        setDateCreated(other.getDateCreated());
     }
 
     public long getUserId() {
@@ -216,12 +219,12 @@ public class AccountModel implements Identifiable, Payload {
         return mAboutMe;
     }
 
-    public void setDate(String date) {
-        mDate = date;
+    public void setDateCreated(Date dateCreated) {
+        mDateCreated = dateCreated;
     }
 
-    public String getDate() {
-        return mDate;
+    public Date getDateCreated() {
+        return mDateCreated;
     }
 
     public void setNewEmail(String newEmail) {
