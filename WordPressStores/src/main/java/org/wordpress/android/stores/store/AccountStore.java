@@ -14,6 +14,7 @@ import org.wordpress.android.stores.annotations.action.IAction;
 import org.wordpress.android.stores.model.AccountModel;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient;
+import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.AccountPostSettingsResponsePayload;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.AccountRestPayload;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.NewAccountResponsePayload;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
@@ -177,10 +178,18 @@ public class AccountStore extends Store {
                 updateDefaultAccount(mAccount, AccountAction.FETCH_SETTINGS);
             }
         } else if (actionType == AccountAction.POSTED_SETTINGS) {
-            AccountRestPayload data = (AccountRestPayload) action.getPayload();
-            if (!checkError(data, "Error saving Account Settings via REST API (/me/settings)")) {
-                updateDefaultAccount(data.account, AccountAction.POST_SETTINGS);
+            AccountPostSettingsResponsePayload data = (AccountPostSettingsResponsePayload) action.getPayload();
+            if (!data.isError()) {
+                boolean updated = AccountRestClient.updateAccountModelFromPostSettingsResponse(mAccount, data.settings);
+                if (updated) {
+                    updateDefaultAccount(mAccount, AccountAction.POST_SETTINGS);
+                } else {
+                    OnAccountChanged accountChanged = new OnAccountChanged();
+                    accountChanged.accountInfosChanged = false;
+                    emitChange(accountChanged);
+                }
             }
+            // TODO: error management
         } else if (actionType == AccountAction.UPDATE) {
             AccountModel accountModel = (AccountModel) action.getPayload();
             updateDefaultAccount(accountModel, AccountAction.UPDATE);

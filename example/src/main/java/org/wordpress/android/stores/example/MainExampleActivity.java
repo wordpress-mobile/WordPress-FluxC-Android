@@ -4,11 +4,13 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.squareup.otto.Subscribe;
@@ -28,6 +30,7 @@ import org.wordpress.android.stores.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.stores.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.stores.store.AccountStore.OnNewUserCreated;
+import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.stores.store.SiteStore.OnSitesRemoved;
@@ -37,7 +40,10 @@ import org.wordpress.android.stores.utils.SelfHostedDiscoveryUtils.DiscoveryCall
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
+import java.util.HashMap;
+
 import javax.inject.Inject;
+
 
 public class MainExampleActivity extends AppCompatActivity {
     @Inject SiteStore mSiteStore;
@@ -52,7 +58,9 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mLogSites;
     private Button mUpdateFirstSite;
     private Button mSignOut;
+    private Button mAccountSettings;
     private Button mNewAccount;
+
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
 
@@ -61,7 +69,7 @@ public class MainExampleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ((ExampleApp) getApplication()).component().inject(this);
         setContentView(R.layout.activity_example);
-        mListSites = (Button) findViewById(R.id.list_sites_button);
+        mListSites = (Button) findViewById(R.id.sign_in_fetch_sites_button);
         mListSites.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -81,6 +89,14 @@ public class MainExampleActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(mSiteStore.getSites().get(0)));
+            }
+        });
+
+        mAccountSettings = (Button) findViewById(R.id.account_settings);
+        mAccountSettings.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                changeAccountSettings();
             }
         });
 
@@ -116,6 +132,7 @@ public class MainExampleActivity extends AppCompatActivity {
 
     private void init() {
         mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
+        mAccountSettings.setEnabled(mAccountStore.hasAccessToken());
         if (mAccountStore.hasAccessToken()) {
             prependToLog("You're signed in as: " + mAccountStore.getAccount().getUserName());
         }
@@ -236,6 +253,23 @@ public class MainExampleActivity extends AppCompatActivity {
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
     }
 
+    private void changeAccountSettings() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        final EditText edittext = new EditText(this);
+        alert.setMessage("Update your display name:");
+        alert.setView(edittext);
+        alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String displayName = edittext.getText().toString();
+                PostAccountSettingsPayload payload = new PostAccountSettingsPayload();
+                payload.params = new HashMap<>();
+                payload.params.put("display_name", displayName);
+                mDispatcher.dispatch(AccountActionBuilder.newPostSettingsAction(payload));
+            }
+        });
+        alert.show();
+    }
+
     private void showNewAccountDialog() {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
@@ -268,6 +302,7 @@ public class MainExampleActivity extends AppCompatActivity {
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
+        mAccountSettings.setEnabled(mAccountStore.hasAccessToken());
         if (event.isError) {
             prependToLog("Authentication error: " + event.authError);
             if (event.authError == AuthError.HTTP_AUTH_ERROR) {
