@@ -5,6 +5,8 @@ import org.wordpress.android.stores.annotations.ActionEnum;
 import org.wordpress.android.stores.annotations.action.IAction;
 import org.wordpress.android.stores.model.AccountModel;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.AccountRestPayload;
+import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.NewAccountResponsePayload;
+import org.wordpress.android.stores.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
 import org.wordpress.android.stores.store.AccountStore.UpdateTokenPayload;
 
@@ -30,4 +32,8 @@ public enum AccountAction implements IAction {
     UPDATE_ACCESS_TOKEN,    // update in-memory and persisted Access Token
     @Action
     SIGN_OUT,               // delete persisted Account, reset in-memory Account, delete access token
+    @Action(payloadType = NewAccountPayload.class)
+    CREATE_NEW_ACCOUNT,     // create a new account (can be used to validate the account before creating it)
+    @Action(payloadType = NewAccountResponsePayload.class)
+    CREATED_NEW_ACCOUNT,    // create a new account response
 }

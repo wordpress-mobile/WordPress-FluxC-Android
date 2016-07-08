@@ -23,10 +23,12 @@ import org.wordpress.android.util.AppLog.T;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * SQLite based only. There is no in memory copy of mapped data, everything is queried from the DB.
  */
+@Singleton
 public class SiteStore extends Store {
     // Payloads
     public static class RefreshSitesXMLRPCPayload implements Payload {

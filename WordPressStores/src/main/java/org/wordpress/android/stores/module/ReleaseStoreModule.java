@@ -9,18 +9,22 @@ import org.wordpress.android.stores.network.xmlrpc.site.SiteXMLRPCClient;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.SiteStore;
 
+import javax.inject.Singleton;
+
 import dagger.Module;
 import dagger.Provides;
 
 @Module
 public class ReleaseStoreModule {
     @Provides
+    @Singleton
     public SiteStore provideSiteStore(Dispatcher dispatcher, SiteRestClient siteRestClient,
                                       SiteXMLRPCClient siteXMLRPCClient) {
         return new SiteStore(dispatcher, siteRestClient, siteXMLRPCClient);
     }
 
     @Provides
+    @Singleton
     public AccountStore provideUserStore(Dispatcher dispatcher, AccountRestClient accountRestClient,
                                          Authenticator authenticator, AccessToken accessToken) {
         return new AccountStore(dispatcher, accountRestClient, authenticator, accessToken);

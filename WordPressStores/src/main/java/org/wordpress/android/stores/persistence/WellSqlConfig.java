@@ -60,7 +60,7 @@ public class WellSqlConfig extends DefaultWellConfig {
         SQLiteDatabase db = WellSql.giveMeWritableDb();
         for (Class clazz : TABLES) {
             TableClass table = getTable(clazz);
-            db.execSQL("DROP TABLE " + table.getTableName());
+            db.execSQL("DROP TABLE IF EXISTS " + table.getTableName());
             db.execSQL(table.createStatement());
         }
     }
