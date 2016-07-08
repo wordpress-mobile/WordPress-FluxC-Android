@@ -29,9 +29,12 @@ import org.wordpress.android.stores.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.stores.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.stores.store.SiteStore;
+import org.wordpress.android.stores.store.SiteStore.NewSitePayload;
+import org.wordpress.android.stores.store.SiteStore.OnNewSiteCreated;
 import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.stores.store.SiteStore.OnSitesRemoved;
 import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;
+import org.wordpress.android.stores.store.SiteStore.SiteVisibility;
 import org.wordpress.android.stores.utils.SelfHostedDiscoveryUtils;
 import org.wordpress.android.stores.utils.SelfHostedDiscoveryUtils.DiscoveryCallback;
 import org.wordpress.android.util.AppLog;
@@ -53,6 +56,7 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mUpdateFirstSite;
     private Button mSignOut;
     private Button mNewAccount;
+    private Button mNewSite;
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
 
@@ -109,6 +113,14 @@ public class MainExampleActivity extends AppCompatActivity {
                 showNewAccountDialog();
             }
         });
+
+        mNewSite = (Button) findViewById(R.id.new_site);
+        mNewSite.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showNewSiteDialog();
+            }
+        });
         mLogView = (TextView) findViewById(R.id.log);
 
         init();
@@ -120,6 +132,7 @@ public class MainExampleActivity extends AppCompatActivity {
             prependToLog("You're signed in as: " + mAccountStore.getAccount().getUserName());
         }
         mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
+        mNewSite.setEnabled(mAccountStore.hasAccessToken());
     }
 
     @Override
@@ -252,6 +265,23 @@ public class MainExampleActivity extends AppCompatActivity {
         mDispatcher.dispatch(AccountActionBuilder.newCreateNewAccountAction(newAccountPayload));
     }
 
+    private void showNewSiteDialog() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
+            @Override
+            public void onClick(String name, String title, String unused) {
+                newSiteAction(name, title);
+            }
+        }, "Site Name", "Site Title", "Unused");
+        newFragment.show(ft, "dialog");
+    }
+
+    private void newSiteAction(String name, String title) {
+        // Default language "en" (english)
+        NewSitePayload newSitePayload = new NewSitePayload(name, title, "en", SiteVisibility.PUBLIC, true);
+        mDispatcher.dispatch(SiteActionBuilder.newCreateNewSiteAction(newSitePayload));
+    }
+
     // Event listeners
 
     @Subscribe
@@ -268,6 +298,7 @@ public class MainExampleActivity extends AppCompatActivity {
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
+        mNewSite.setEnabled(mAccountStore.hasAccessToken());
         if (event.isError) {
             prependToLog("Authentication error: " + event.authError);
             if (event.authError == AuthError.HTTP_AUTH_ERROR) {
@@ -299,6 +330,16 @@ public class MainExampleActivity extends AppCompatActivity {
             prependToLog("New user " + message + ", error: " + event.errorMessage + " - " + event.errorType);
         } else {
             prependToLog("New user " + message + ": success!");
+        }
+    }
+
+    @Subscribe
+    public void onNewSiteCreated(OnNewSiteCreated event) {
+        String message = event.dryRun ? "validated" : "created";
+        if (event.isError) {
+            prependToLog("New site " + message + ", error: " + event.errorMessage + " - " + event.errorType);
+        } else {
+            prependToLog("New site " + message + ": success!");
         }
     }
 
