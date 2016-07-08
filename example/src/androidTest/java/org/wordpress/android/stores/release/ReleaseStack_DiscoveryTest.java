@@ -53,8 +53,6 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
-        mDispatcher.register(mSiteStore);
-        mDispatcher.register(mAccountStore);
         mDispatcher.register(this);
         // Reset expected test event
         mNextEvent = TEST_EVENTS.NONE;
