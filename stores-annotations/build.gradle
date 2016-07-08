@@ -8,11 +8,8 @@ buildscript {
     }
 }
 
+apply plugin: 'maven'
 apply plugin: 'java'
 
 sourceCompatibility = JavaVersion.VERSION_1_7
 targetCompatibility = JavaVersion.VERSION_1_7
-
-dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-}
