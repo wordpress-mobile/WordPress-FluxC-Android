@@ -39,6 +39,8 @@ public class SiteSqlUtils {
         if (site == null) {
             return 0;
         }
+        // TODO: Check if the URL is not enough, we could get surprise with the site id with .org sites becoming
+        // jetpack sites
         List<SiteModel> siteResult = WellSql.select(SiteModel.class)
                 .where().beginGroup()
                 .equals(SiteModelTable.SITE_ID, site.getSiteId())
