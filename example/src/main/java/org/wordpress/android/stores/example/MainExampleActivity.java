@@ -229,7 +229,7 @@ public class MainExampleActivity extends AppCompatActivity {
         } else {
             mSelfHostedEndpointFinder.findEndpoint(url, username, password, new SelfHostedEndpointFinder.DiscoveryCallback() {
                 @Override
-                public void onError(Error error) {
+                public void onError(Error error, String lastEndpoint) {
                     if (error == Error.WORDPRESS_COM_SITE) {
                         wpcomFetchSites(username, password);
                     } else if (error == Error.SSL_ERROR) {

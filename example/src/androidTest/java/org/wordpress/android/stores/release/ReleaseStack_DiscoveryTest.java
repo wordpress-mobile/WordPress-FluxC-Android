@@ -69,7 +69,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_SIMPLE, payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error) {}
+                    public void onError(Error error, String lastEndpoint) {}
 
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
@@ -93,7 +93,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error) {}
+                    public void onError(Error error, String lastEndpoint) {}
 
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
@@ -117,7 +117,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
             @Override
-            public void onError(Error error) {}
+            public void onError(Error error, String lastEndpoint) {}
 
             @Override
             public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
@@ -144,7 +144,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error) {}
+                    public void onError(Error error, String lastEndpoint) {}
 
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
@@ -168,7 +168,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error) {}
+                    public void onError(Error error, String lastEndpoint) {}
 
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
@@ -192,7 +192,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error) {}
+                    public void onError(Error error, String lastEndpoint) {}
 
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
@@ -219,7 +219,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_SIMPLE), payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error) {}
+                    public void onError(Error error, String lastEndpoint) {}
 
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
@@ -243,7 +243,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL), payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error) {}
+                    public void onError(Error error, String lastEndpoint) {}
 
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
@@ -268,7 +268,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error) {}
+                    public void onError(Error error, String lastEndpoint) {}
 
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {

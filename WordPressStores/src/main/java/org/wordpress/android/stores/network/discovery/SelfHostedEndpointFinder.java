@@ -9,7 +9,6 @@ import com.android.volley.toolbox.RequestFuture;
 import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder.DiscoveryCallback.Error;
 import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.stores.network.xmlrpc.XMLRPC;
-import org.wordpress.android.stores.network.xmlrpc.XMLRPCRequest;
 import org.wordpress.android.stores.utils.WPUrlUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -45,7 +44,7 @@ public class SelfHostedEndpointFinder {
             SSL_ERROR;
         }
 
-        void onError(Error error);
+        void onError(Error error, String endpoint);
         void onSuccess(String xmlrpcEndpoint, String restEndpoint);
     }
 
@@ -102,22 +101,22 @@ public class SelfHostedEndpointFinder {
         mCallback = callback;
 
         if (TextUtils.isEmpty(siteUrl)) {
-            mCallback.onError(Error.INVALID_SOURCE_URL);
+            mCallback.onError(Error.INVALID_SOURCE_URL, siteUrl);
             return null;
         }
 
         if (WPUrlUtils.isWordPressCom(siteUrl)) {
-            mCallback.onError(Error.WORDPRESS_COM_SITE);
+            mCallback.onError(Error.WORDPRESS_COM_SITE, siteUrl);
             return null;
         }
 
         String xmlrpcUrl = verifyXMLRPCUrl(siteUrl, httpUsername, httpPassword);
 
         if (xmlrpcUrl == null) {
-            AppLog.w(T.NUX, "The XML-RPC endpoint was not found by using our 'smart' cleaning approach." +
+            AppLog.w(T.NUX, "The XML-RPC endpoint was not found by using our 'smart' cleaning approach. " +
                     "Time to start the Endpoint discovery process");
             // TODO: Remove this line once discovery process has been implemented
-            mCallback.onError(Error.INVALID_SOURCE_URL);
+            mCallback.onError(Error.INVALID_SOURCE_URL, xmlrpcUrl);
             throw new DiscoveryException(FailureType.INVALID_URL, xmlrpcUrl, null);
             // Try to discover the XML-RPC Endpoint address
             // TODO: Implement discovery process
@@ -188,7 +187,7 @@ public class SelfHostedEndpointFinder {
         try {
             rsdUrl = UrlUtils.addUrlSchemeIfNeeded(getRsdUrl(url), false);
         } catch (SSLHandshakeException e) {
-            mCallback.onError(Error.SSL_ERROR);
+            mCallback.onError(Error.SSL_ERROR, url);
             return null;
         }
 
@@ -200,7 +199,7 @@ public class SelfHostedEndpointFinder {
                 }
             }
         } catch (SSLHandshakeException e) {
-            mCallback.onError(Error.SSL_ERROR);
+            mCallback.onError(Error.SSL_ERROR, rsdUrl);
             return null;
         }
 
@@ -367,7 +366,7 @@ public class SelfHostedEndpointFinder {
         try {
             Object[] methods = doSystemListMethodsXMLRPC(url, httpUsername, httpPassword);
             if (methods == null) {
-                AppLog.e(T.NUX, "The response of system.listMethods was empty!");
+                AppLog.e(T.NUX, "The response of system.listMethods was empty for " + url);
                 return false;
             }
             // Exit the loop on the first URL that replies with a XML-RPC doc.
