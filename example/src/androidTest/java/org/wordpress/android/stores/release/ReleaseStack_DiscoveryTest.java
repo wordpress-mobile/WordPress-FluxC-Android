@@ -38,6 +38,8 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     CountDownLatch mCountDownLatch;
 
+    String mLastEndpoint;
+
     enum TEST_EVENTS {
         NONE,
         NOT_AUTHENTICATED,
@@ -114,6 +116,59 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT,
+                payload.username, payload.password,
+                new SelfHostedEndpointFinder.DiscoveryCallback() {
+                    @Override
+                    public void onError(Error error, String lastEndpoint) {}
+
+                    @Override
+                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
+                        payload.xmlrpcEndpoint = xmlrpcEndpoint;
+                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+                    }
+                });
+
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testSelfHostedHTTPAuthFetchSites() throws InterruptedException {
+        final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
+        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH;
+        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH;
+
+        mCountDownLatch = new CountDownLatch(1);
+
+        mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH,
+                payload.username, payload.password,
+                new SelfHostedEndpointFinder.DiscoveryCallback() {
+                    @Override
+                    public void onError(Error error, String lastEndpoint) {
+                        assertEquals(Error.HTTP_AUTH_ERROR, error);
+                        mLastEndpoint = lastEndpoint;
+                        mCountDownLatch.countDown();
+                    }
+
+                    @Override
+                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
+                        throw new AssertionError("Expected failure due to HTTP AUTH error but discovery succeeded");
+                    }
+                });
+
+        // Wait for a network response / onAuthenticationChanged error event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Set known HTTP Auth credentials
+        mHTTPAuthManager.addHTTPAuthCredentials(
+                BuildConfig.TEST_WPORG_HTTPAUTH_USERNAME_SH_HTTPAUTH,
+                BuildConfig.TEST_WPORG_HTTPAUTH_PASSWORD_SH_HTTPAUTH,
+                mLastEndpoint, null);
+
+        // Retry endpoint discovery, and attempt to fetch sites
+        mNextEvent = TEST_EVENTS.SITE_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mSelfHostedEndpointFinder.findEndpoint(mLastEndpoint,
                 payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
             @Override

@@ -211,8 +211,7 @@ public class MainExampleActivity extends AppCompatActivity {
                 mHTTPAuthManager.addHTTPAuthCredentials(username, password, url, null);
                 // Retry login action
                 if (mSelfhostedPayload != null) {
-                    selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password,
-                            mSelfhostedPayload.xmlrpcEndpoint);
+                    signInAction(mSelfhostedPayload.username, mSelfhostedPayload.password, url);
                 }
             }
         }, "Username", "Password", "unused");
@@ -227,11 +226,16 @@ public class MainExampleActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(url)) {
             wpcomFetchSites(username, password);
         } else {
+            mSelfhostedPayload = new RefreshSitesXMLRPCPayload();
+            mSelfhostedPayload.username = username;
+            mSelfhostedPayload.password = password;
             mSelfHostedEndpointFinder.findEndpoint(url, username, password, new SelfHostedEndpointFinder.DiscoveryCallback() {
                 @Override
                 public void onError(Error error, String lastEndpoint) {
                     if (error == Error.WORDPRESS_COM_SITE) {
                         wpcomFetchSites(username, password);
+                    } else if (error == Error.HTTP_AUTH_ERROR) {
+                        showHTTPAuthDialog(lastEndpoint);
                     } else if (error == Error.SSL_ERROR) {
                         // TODO: handle SSL
                         //showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());

@@ -12,6 +12,7 @@ import org.wordpress.android.stores.network.BaseRequest.OnAuthFailedListener;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.UserAgent;
 import org.wordpress.android.stores.network.discovery.DiscoveryRequest;
+import org.wordpress.android.stores.network.discovery.DiscoveryXMLRPCRequest;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 
 public class BaseXMLRPCClient {
@@ -45,6 +46,11 @@ public class BaseXMLRPCClient {
     public Request add(DiscoveryRequest request) {
         return mRequestQueue.add(setRequestAuthParams(request));
     }
+
+    public Request add(DiscoveryXMLRPCRequest request) {
+        return mRequestQueue.add(setRequestAuthParams(request));
+    }
+
 
     private BaseRequest setRequestAuthParams(BaseRequest request) {
         request.setOnAuthFailedListener(mOnAuthFailedListener);

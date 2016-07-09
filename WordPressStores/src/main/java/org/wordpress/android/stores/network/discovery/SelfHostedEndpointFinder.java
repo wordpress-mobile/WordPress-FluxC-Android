@@ -4,6 +4,7 @@ import android.text.TextUtils;
 import android.util.Xml;
 import android.webkit.URLUtil;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.toolbox.RequestFuture;
 
 import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder.DiscoveryCallback.Error;
@@ -41,6 +42,7 @@ public class SelfHostedEndpointFinder {
         enum Error {
             INVALID_SOURCE_URL,
             WORDPRESS_COM_SITE,
+            HTTP_AUTH_ERROR,
             SSL_ERROR;
         }
 
@@ -384,7 +386,7 @@ public class SelfHostedEndpointFinder {
             }
         } catch (DiscoveryException e) {
             AppLog.e(T.NUX, "system.listMethods failed on: " + url, e);
-            if (DiscoveryUtils.isHTTPAuthErrorMessage(e)) {
+            if (DiscoveryUtils.isHTTPAuthErrorMessage(e) || e.failureType.equals(FailureType.HTTP_AUTH_REQUIRED)) {
                 throw new DiscoveryException(FailureType.HTTP_AUTH_REQUIRED, url, null);
             }
         } catch (SSLHandshakeException | SSLPeerUnverifiedException e) {
@@ -419,8 +421,7 @@ public class SelfHostedEndpointFinder {
         params.add(httpPassword);
 
         RequestFuture<Object[]> future = RequestFuture.newFuture();
-        // TODO: This might need to be modified not to emit the events to OnAuthFailedListener once SSL/HTTP AUTH are implemented
-        XMLRPCRequest request = new XMLRPCRequest(url, XMLRPC.LIST_METHODS, params, future, future);
+        DiscoveryXMLRPCRequest request = new DiscoveryXMLRPCRequest(url, XMLRPC.LIST_METHODS, params, future, future);
         mClient.add(request);
         try {
             return future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
@@ -428,6 +429,12 @@ public class SelfHostedEndpointFinder {
             AppLog.e(T.API, "Couldn't get XML-RPC response.");
         } catch (ExecutionException e) {
             // TODO: Handle redirect errors
+            if (e.getCause() instanceof AuthFailureError) {
+                // Notify caller that HTTP AUTH is required
+                mCallback.onError(Error.HTTP_AUTH_ERROR, url);
+                // In the event of an HTTP AUTH error we should stop attempting discovery
+                throw new DiscoveryException(FailureType.HTTP_AUTH_REQUIRED, url, null);
+            }
         } catch (TimeoutException e) {
             AppLog.e(T.API, "Couldn't get XML-RPC response.");
         }
