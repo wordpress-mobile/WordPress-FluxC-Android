@@ -60,6 +60,32 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = TEST_EVENTS.NONE;
     }
 
+    public void testInvalidUrlFetchSites() throws InterruptedException {
+        final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
+        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
+        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
+
+        mCountDownLatch = new CountDownLatch(1);
+
+        mSelfHostedEndpointFinder.findEndpoint("notaurl&*@", payload.username, payload.password,
+                new SelfHostedEndpointFinder.DiscoveryCallback() {
+                    @Override
+                    public void onError(Error error, String lastEndpoint) {
+                        if (error.equals(Error.INVALID_SOURCE_URL)) {
+                            mCountDownLatch.countDown();
+                        }
+                    }
+
+                    @Override
+                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
+                        payload.xmlrpcEndpoint = xmlrpcEndpoint;
+                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+                    }
+                });
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     public void testSelfHostedSimpleFetchSites() throws InterruptedException {
         final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
