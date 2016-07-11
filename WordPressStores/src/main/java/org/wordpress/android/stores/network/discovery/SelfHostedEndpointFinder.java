@@ -1,5 +1,6 @@
 package org.wordpress.android.stores.network.discovery;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Xml;
 import android.webkit.URLUtil;
@@ -133,7 +134,7 @@ public class SelfHostedEndpointFinder {
         return xmlrpcUrl;
     }
 
-    private  String verifyXMLRPCUrl(final String siteUrl, final String httpUsername, final String httpPassword)
+    private  String verifyXMLRPCUrl(@NonNull final String siteUrl, final String httpUsername, final String httpPassword)
             throws DiscoveryException {
         // Ordered set of Strings that contains the URLs we want to try
         final Set<String> urlsToTry = new LinkedHashSet<>();
@@ -141,13 +142,25 @@ public class SelfHostedEndpointFinder {
         final String sanitizedSiteUrlHttps = sanitizeSiteUrl(siteUrl, true);
         final String sanitizedSiteUrlHttp = sanitizeSiteUrl(siteUrl, false);
 
-        // start by adding the https URL with 'xmlrpc.php'. This will be the first URL to try.
-        urlsToTry.add(DiscoveryUtils.appendXMLRPCPath(sanitizedSiteUrlHttp));
-        urlsToTry.add(DiscoveryUtils.appendXMLRPCPath(sanitizedSiteUrlHttps));
+        // Start by adding the URL with 'xmlrpc.php'. This will be the first URL to try.
+        // Prioritize https, unless the user specified the http:// protocol
+        if (siteUrl.startsWith("http://")) {
+            urlsToTry.add(DiscoveryUtils.appendXMLRPCPath(sanitizedSiteUrlHttp));
+            urlsToTry.add(DiscoveryUtils.appendXMLRPCPath(sanitizedSiteUrlHttps));
+        } else {
+            urlsToTry.add(DiscoveryUtils.appendXMLRPCPath(sanitizedSiteUrlHttps));
+            urlsToTry.add(DiscoveryUtils.appendXMLRPCPath(sanitizedSiteUrlHttp));
+        }
 
-        // add the sanitized https URL without the '/xmlrpc.php' suffix added to it
-        urlsToTry.add(sanitizedSiteUrlHttp);
-        urlsToTry.add(sanitizedSiteUrlHttps);
+        // Add the sanitized URL without the '/xmlrpc.php' suffix added to it
+        // Prioritize https, unless the user specified the http:// protocol
+        if (siteUrl.startsWith("http://")) {
+            urlsToTry.add(sanitizedSiteUrlHttp);
+            urlsToTry.add(sanitizedSiteUrlHttps);
+        } else {
+            urlsToTry.add(sanitizedSiteUrlHttps);
+            urlsToTry.add(sanitizedSiteUrlHttp);
+        }
 
         // add the user provided URL as well
         urlsToTry.add(siteUrl);
