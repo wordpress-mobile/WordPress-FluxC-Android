@@ -237,8 +237,8 @@ public class MainExampleActivity extends AppCompatActivity {
                     } else if (error == Error.HTTP_AUTH_ERROR) {
                         showHTTPAuthDialog(lastEndpoint);
                     } else if (error == Error.SSL_ERROR) {
-                        // TODO: handle SSL
-                        //showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
+                        mSelfhostedPayload.xmlrpcEndpoint = lastEndpoint;
+                        showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
                     }
                     AppLog.e(T.API, "Discover error: " + error);
                 }

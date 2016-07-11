@@ -6,6 +6,7 @@ import android.util.Xml;
 import android.webkit.URLUtil;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.NoConnectionError;
 import com.android.volley.toolbox.RequestFuture;
 
 import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder.DiscoveryCallback.Error;
@@ -401,6 +402,8 @@ public class SelfHostedEndpointFinder {
             AppLog.e(T.NUX, "system.listMethods failed on: " + url, e);
             if (DiscoveryUtils.isHTTPAuthErrorMessage(e) || e.failureType.equals(FailureType.HTTP_AUTH_REQUIRED)) {
                 throw new DiscoveryException(FailureType.HTTP_AUTH_REQUIRED, url, null);
+            } else if (e.failureType.equals(FailureType.ERRONEOUS_SSL_CERTIFICATE)) {
+                throw new DiscoveryException(FailureType.ERRONEOUS_SSL_CERTIFICATE, url, null);
             }
         } catch (SSLHandshakeException | SSLPeerUnverifiedException e) {
             if (!WPUrlUtils.isWordPressCom(url)) {
@@ -447,6 +450,12 @@ public class SelfHostedEndpointFinder {
                 mCallback.onError(Error.HTTP_AUTH_ERROR, url);
                 // In the event of an HTTP AUTH error we should stop attempting discovery
                 throw new DiscoveryException(FailureType.HTTP_AUTH_REQUIRED, url, null);
+            } else if (e.getCause() instanceof NoConnectionError && e.getCause().getCause() != null &&
+                    e.getCause().getCause() instanceof SSLHandshakeException) {
+                // Notify caller that SSL validation is required
+                mCallback.onError(Error.SSL_ERROR, url);
+                // In the event of an SSL error we should stop attempting discovery
+                throw new DiscoveryException(FailureType.ERRONEOUS_SSL_CERTIFICATE, url, null);
             }
         } catch (TimeoutException e) {
             AppLog.e(T.API, "Couldn't get XML-RPC response.");

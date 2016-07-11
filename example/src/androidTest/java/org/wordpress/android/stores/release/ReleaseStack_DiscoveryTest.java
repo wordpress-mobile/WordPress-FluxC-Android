@@ -158,6 +158,55 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    public void testSelfHostedSelfSignedSSLFetchSites() throws InterruptedException {
+        final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
+        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL;
+        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SELFSIGNED_SSL;
+
+        mCountDownLatch = new CountDownLatch(1);
+
+        mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL,
+                payload.username, payload.password,
+                new SelfHostedEndpointFinder.DiscoveryCallback() {
+                    @Override
+                    public void onError(Error error, String lastEndpoint) {
+                        assertEquals(Error.SSL_ERROR, error);
+                        mLastEndpoint = lastEndpoint;
+                        mCountDownLatch.countDown();
+                    }
+
+                    @Override
+                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
+                        throw new AssertionError("Expected failure due to SSL error but discovery succeeded");
+                    }
+                });
+
+        // Wait for a network response / onAuthenticationChanged error event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // Add an exception for the last certificate
+        mMemorizingTrustManager.storeLastFailure();
+
+        // Retry endpoint discovery, and attempt to fetch sites
+        mNextEvent = TEST_EVENTS.SITE_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mSelfHostedEndpointFinder.findEndpoint(mLastEndpoint,
+                payload.username, payload.password,
+                new SelfHostedEndpointFinder.DiscoveryCallback() {
+                    @Override
+                    public void onError(Error error, String lastEndpoint) {}
+
+                    @Override
+                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
+                        payload.xmlrpcEndpoint = xmlrpcEndpoint;
+                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+                    }
+                });
+
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     public void testSelfHostedHTTPAuthFetchSites() throws InterruptedException {
         final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH;
