@@ -87,62 +87,115 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     }
 
     public void testSelfHostedSimpleFetchSites() throws InterruptedException {
-        final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
-
-        mNextEvent = TEST_EVENTS.SITE_CHANGED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_SIMPLE, payload.username, payload.password,
-                new SelfHostedEndpointFinder.DiscoveryCallback() {
-                    @Override
-                    public void onError(Error error, String lastEndpoint) {}
-
-                    @Override
-                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
-                        payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
-                    }
-                });
-        // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE);
     }
 
     public void testSelfHostedSimpleHTTPSFetchSites() throws InterruptedException {
-        final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL;
-
-        mNextEvent = TEST_EVENTS.SITE_CHANGED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL,
-                payload.username, payload.password,
-                new SelfHostedEndpointFinder.DiscoveryCallback() {
-                    @Override
-                    public void onError(Error error, String lastEndpoint) {}
-
-                    @Override
-                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
-                        payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
-                    }
-                });
-        // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL,
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL);
     }
 
     public void testSelfHostedHTTPToHTTPSRedirectFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT,
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL_REDIRECT);
+    }
+
+    public void testSelfHostedSelfSignedSSLFetchSites() throws InterruptedException {
+        checkSelfHostedSelfSignedSSLFetchForSite(BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL,
+                BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_SELFSIGNED_SSL);
+    }
+
+    public void testSelfHostedHTTPAuthFetchSites() throws InterruptedException {
+        checkSelfHostedHTTPAuthFetchForSite(BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH,
+                BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH,
+                BuildConfig.TEST_WPORG_HTTPAUTH_USERNAME_SH_HTTPAUTH,
+                BuildConfig.TEST_WPORG_HTTPAUTH_PASSWORD_SH_HTTPAUTH);
+    }
+
+    // No protocol in URL tests
+
+    public void testSelfHostedSimpleNoProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_SIMPLE),
+                BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE);
+    }
+
+    public void testSelfHostedSimpleHTTPSNoProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL);
+    }
+
+    public void testSelfHostedHTTPToHTTPSNoProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL_REDIRECT);
+    }
+
+    public void testSelfHostedSelfSignedSSLNoProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSelfSignedSSLFetchForSite(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL),
+                BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_SELFSIGNED_SSL);
+    }
+
+    public void testSelfHostedHTTPAuthNoProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedHTTPAuthFetchForSite(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH),
+                BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH,
+                BuildConfig.TEST_WPORG_HTTPAUTH_USERNAME_SH_HTTPAUTH,
+                BuildConfig.TEST_WPORG_HTTPAUTH_PASSWORD_SH_HTTPAUTH);
+    }
+
+    // Bad protocol tests
+
+    public void testSelfHostedSimpleBadProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE),
+                BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE);
+    }
+
+    public void testSelfHostedSimpleHTTPSBadProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL);
+    }
+
+    public void testSelfHostedHTTPToHTTPSBadProtocolRedirectFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL_REDIRECT);
+    }
+
+    public void testSelfHostedSelfSignedSSLBadProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSelfSignedSSLFetchForSite(addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL),
+                BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_SELFSIGNED_SSL);
+    }
+
+    public void testSelfHostedHTTPAuthBadProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedHTTPAuthFetchForSite(addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH),
+                BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH,
+                BuildConfig.TEST_WPORG_HTTPAUTH_USERNAME_SH_HTTPAUTH,
+                BuildConfig.TEST_WPORG_HTTPAUTH_PASSWORD_SH_HTTPAUTH);
+    }
+
+    private void checkSelfHostedSimpleFetchForSite(String url, String username, String password)
+            throws InterruptedException {
         final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL_REDIRECT;
+        payload.username = username;
+        payload.password = password;
 
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT,
-                payload.username, payload.password,
+        mSelfHostedEndpointFinder.findEndpoint(url, payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
                     public void onError(Error error, String lastEndpoint) {}
@@ -153,20 +206,19 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
                     }
                 });
-
         // Wait for a network response / onChanged event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testSelfHostedSelfSignedSSLFetchSites() throws InterruptedException {
+    private void checkSelfHostedSelfSignedSSLFetchForSite(String url, String username, String password)
+            throws InterruptedException {
         final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SELFSIGNED_SSL;
+        payload.username = username;
+        payload.password = password;
 
         mCountDownLatch = new CountDownLatch(1);
 
-        mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL,
-                payload.username, payload.password,
+        mSelfHostedEndpointFinder.findEndpoint(url, payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
                     public void onError(Error error, String lastEndpoint) {
@@ -209,15 +261,15 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mMemorizingTrustManager.clearLocalTrustStore();
     }
 
-    public void testSelfHostedHTTPAuthFetchSites() throws InterruptedException {
+    private void checkSelfHostedHTTPAuthFetchForSite(String url, String username, String password, String auth_username,
+                                                    String auth_password) throws InterruptedException {
         final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH;
+        payload.username = username;
+        payload.password = password;
 
         mCountDownLatch = new CountDownLatch(1);
 
-        mSelfHostedEndpointFinder.findEndpoint(BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH,
-                payload.username, payload.password,
+        mSelfHostedEndpointFinder.findEndpoint(url, payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
                     public void onError(Error error, String lastEndpoint) {
@@ -236,92 +288,13 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Set known HTTP Auth credentials
-        mHTTPAuthManager.addHTTPAuthCredentials(
-                BuildConfig.TEST_WPORG_HTTPAUTH_USERNAME_SH_HTTPAUTH,
-                BuildConfig.TEST_WPORG_HTTPAUTH_PASSWORD_SH_HTTPAUTH,
-                mLastEndpoint, null);
+        mHTTPAuthManager.addHTTPAuthCredentials(auth_username, auth_password, mLastEndpoint, null);
 
         // Retry endpoint discovery, and attempt to fetch sites
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mSelfHostedEndpointFinder.findEndpoint(mLastEndpoint,
-                payload.username, payload.password,
-                new SelfHostedEndpointFinder.DiscoveryCallback() {
-            @Override
-            public void onError(Error error, String lastEndpoint) {}
-
-            @Override
-            public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
-                payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
-            }
-        });
-
-        // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    // No protocol in URL tests
-
-    public void testSelfHostedSimpleNoProtocolFetchSites() throws InterruptedException {
-        final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
-
-        mNextEvent = TEST_EVENTS.SITE_CHANGED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        mSelfHostedEndpointFinder.findEndpoint(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_SIMPLE),
-                payload.username, payload.password,
-                new SelfHostedEndpointFinder.DiscoveryCallback() {
-                    @Override
-                    public void onError(Error error, String lastEndpoint) {}
-
-                    @Override
-                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
-                        payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
-                    }
-                });
-        // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    public void testSelfHostedSimpleHTTPSNoProtocolFetchSites() throws InterruptedException {
-        final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL;
-
-        mNextEvent = TEST_EVENTS.SITE_CHANGED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        mSelfHostedEndpointFinder.findEndpoint(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL),
-                payload.username, payload.password,
-                new SelfHostedEndpointFinder.DiscoveryCallback() {
-                    @Override
-                    public void onError(Error error, String lastEndpoint) {}
-
-                    @Override
-                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
-                        payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
-                    }
-                });
-        // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    public void testSelfHostedHTTPToHTTPSNoProtocolFetchSites() throws InterruptedException {
-        final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL_REDIRECT;
-
-        mNextEvent = TEST_EVENTS.SITE_CHANGED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        mSelfHostedEndpointFinder.findEndpoint(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT),
-                payload.username, payload.password,
+        mSelfHostedEndpointFinder.findEndpoint(mLastEndpoint, payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
                     public void onError(Error error, String lastEndpoint) {}
@@ -337,80 +310,8 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    // Bad protocol tests
-
-    public void testSelfHostedSimpleBadProtocolFetchSites() throws InterruptedException {
-        final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
-
-        mNextEvent = TEST_EVENTS.SITE_CHANGED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        mSelfHostedEndpointFinder.findEndpoint("hppt://" +
-                UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_SIMPLE), payload.username, payload.password,
-                new SelfHostedEndpointFinder.DiscoveryCallback() {
-                    @Override
-                    public void onError(Error error, String lastEndpoint) {}
-
-                    @Override
-                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
-                        payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
-                    }
-                });
-        // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    public void testSelfHostedSimpleHTTPSBadProtocolFetchSites() throws InterruptedException {
-        final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL;
-
-        mNextEvent = TEST_EVENTS.SITE_CHANGED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        mSelfHostedEndpointFinder.findEndpoint("hppt://" +
-                UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL), payload.username, payload.password,
-                new SelfHostedEndpointFinder.DiscoveryCallback() {
-                    @Override
-                    public void onError(Error error, String lastEndpoint) {}
-
-                    @Override
-                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
-                        payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
-                    }
-                });
-        // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    public void testSelfHostedHTTPToHTTPSBadProtocolRedirectFetchSites() throws InterruptedException {
-        final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL_REDIRECT;
-
-        mNextEvent = TEST_EVENTS.SITE_CHANGED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        mSelfHostedEndpointFinder.findEndpoint("hppt://" +
-                UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT),
-                payload.username, payload.password,
-                new SelfHostedEndpointFinder.DiscoveryCallback() {
-                    @Override
-                    public void onError(Error error, String lastEndpoint) {}
-
-                    @Override
-                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
-                        payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
-                    }
-                });
-
-        // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    private static String addBadProtocolToUrl(String url) {
+        return "hppt://" + UrlUtils.removeScheme(url);
     }
 
     @Subscribe
