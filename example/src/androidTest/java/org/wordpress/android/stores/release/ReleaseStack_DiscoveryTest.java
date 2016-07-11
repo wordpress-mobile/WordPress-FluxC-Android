@@ -4,7 +4,6 @@ import com.squareup.otto.Subscribe;
 
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.TestUtils;
-import org.wordpress.android.stores.action.SiteAction;
 import org.wordpress.android.stores.example.BuildConfig;
 import org.wordpress.android.stores.generated.SiteActionBuilder;
 import org.wordpress.android.stores.network.AuthError;
@@ -71,15 +70,13 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
                     public void onError(Error error, String lastEndpoint) {
-                        if (error.equals(Error.INVALID_SOURCE_URL)) {
-                            mCountDownLatch.countDown();
-                        }
+                        assertEquals(Error.INVALID_SOURCE_URL, error);
+                        mCountDownLatch.countDown();
                     }
 
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
-                        payload.xmlrpcEndpoint = xmlrpcEndpoint;
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+                        throw new AssertionError("Expected failure due to invalid URL error but discovery succeeded");
                     }
                 });
         // Wait for a network response / onChanged event
@@ -198,7 +195,9 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mSelfHostedEndpointFinder.findEndpoint(url, payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error, String lastEndpoint) {}
+                    public void onError(Error error, String lastEndpoint) {
+                        throw new AssertionError("Expected successful discovery but got error: " + error);
+                    }
 
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
@@ -246,7 +245,9 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error, String lastEndpoint) {}
+                    public void onError(Error error, String lastEndpoint) {
+                        throw new AssertionError("Expected successful discovery but got error: " + error);
+                    }
 
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
@@ -297,7 +298,9 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mSelfHostedEndpointFinder.findEndpoint(mLastEndpoint, payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error, String lastEndpoint) {}
+                    public void onError(Error error, String lastEndpoint) {
+                        throw new AssertionError("Expected successful discovery but got error: " + error);
+                    }
 
                     @Override
                     public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
