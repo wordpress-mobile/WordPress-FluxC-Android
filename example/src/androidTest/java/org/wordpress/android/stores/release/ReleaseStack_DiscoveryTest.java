@@ -205,6 +205,8 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
         // Wait for a network response / onChanged event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        mMemorizingTrustManager.clearLocalTrustStore();
     }
 
     public void testSelfHostedHTTPAuthFetchSites() throws InterruptedException {

@@ -123,6 +123,8 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        mMemorizingTrustManager.clearLocalTrustStore();
     }
 
     public void testSelfHostedHTTPAuthFetchSites() throws InterruptedException {
