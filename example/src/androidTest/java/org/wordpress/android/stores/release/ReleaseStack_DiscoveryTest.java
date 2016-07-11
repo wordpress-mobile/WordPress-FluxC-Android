@@ -140,6 +140,12 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 BuildConfig.TEST_WPORG_HTTPAUTH_PASSWORD_SH_HTTPAUTH);
     }
 
+    public void testSelfHostedHTTPToHTTPSRedirectWithEndpointFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT_ENDPOINT,
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL_REDIRECT);
+    }
+
     // No protocol in URL tests
 
     public void testSelfHostedSimpleNoProtocolFetchSites() throws InterruptedException {
