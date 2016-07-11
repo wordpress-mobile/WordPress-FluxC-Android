@@ -62,7 +62,8 @@ public class SelfHostedEndpointFinder {
             SITE_TIME_OUT,
             NO_SITE_ERROR,
             XMLRPC_MALFORMED_RESPONSE,
-            XMLRPC_ERROR
+            XMLRPC_ERROR,
+            WORDPRESS_COM_SITE
         }
 
         public final FailureType failureType;
@@ -106,12 +107,12 @@ public class SelfHostedEndpointFinder {
 
         if (TextUtils.isEmpty(siteUrl)) {
             mCallback.onError(Error.INVALID_SOURCE_URL, siteUrl);
-            return null;
+            throw new DiscoveryException(FailureType.INVALID_URL, siteUrl, null);
         }
 
-        if (WPUrlUtils.isWordPressCom(siteUrl)) {
+        if (WPUrlUtils.isWordPressCom(sanitizeSiteUrl(siteUrl, false))) {
             mCallback.onError(Error.WORDPRESS_COM_SITE, siteUrl);
-            return null;
+            throw new DiscoveryException(FailureType.WORDPRESS_COM_SITE, siteUrl, null);
         }
 
         String xmlrpcUrl = verifyXMLRPCUrl(siteUrl, httpUsername, httpPassword);

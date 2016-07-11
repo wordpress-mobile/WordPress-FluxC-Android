@@ -83,6 +83,31 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    public void testWordPressCOMUrlFetchSites() throws InterruptedException {
+        final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
+        payload.username = BuildConfig.TEST_WPCOM_USERNAME;
+        payload.password = BuildConfig.TEST_WPCOM_PASSWORD;
+
+        mCountDownLatch = new CountDownLatch(1);
+
+        mSelfHostedEndpointFinder.findEndpoint("mysite.wordpress.com", payload.username, payload.password,
+                new SelfHostedEndpointFinder.DiscoveryCallback() {
+                    @Override
+                    public void onError(Error error, String lastEndpoint) {
+                        assertEquals(Error.WORDPRESS_COM_SITE, error);
+                        mCountDownLatch.countDown();
+                    }
+
+                    @Override
+                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
+                        throw new AssertionError(
+                                "Expected failure due to WORDPRESS_COM_SITE error but discovery succeeded");
+                    }
+                });
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     public void testSelfHostedSimpleFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
