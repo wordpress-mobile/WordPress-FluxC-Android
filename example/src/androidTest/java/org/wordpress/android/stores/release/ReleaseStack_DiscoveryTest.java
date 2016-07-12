@@ -83,6 +83,30 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    public void testNonWordPressFetchSites() throws InterruptedException {
+        final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
+        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
+        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
+
+        mCountDownLatch = new CountDownLatch(1);
+
+        mSelfHostedEndpointFinder.findEndpoint("example.com", payload.username, payload.password,
+                new SelfHostedEndpointFinder.DiscoveryCallback() {
+                    @Override
+                    public void onError(Error error, String lastEndpoint) {
+                        assertEquals(Error.INVALID_SOURCE_URL, error);
+                        mCountDownLatch.countDown();
+                    }
+
+                    @Override
+                    public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
+                        throw new AssertionError("Expected failure due to invalid URL error but discovery succeeded");
+                    }
+                });
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     public void testWordPressCOMUrlFetchSites() throws InterruptedException {
         final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPCOM_USERNAME;
