@@ -52,7 +52,7 @@ public class SelfHostedEndpointFinder {
         void onSuccess(String xmlrpcEndpoint, String restEndpoint);
     }
 
-    public static class DiscoveryException extends Exception {
+    protected static class DiscoveryException extends Exception {
         public enum FailureType {
             SITE_URL_CANNOT_BE_EMPTY,
             INVALID_URL,
@@ -95,7 +95,26 @@ public class SelfHostedEndpointFinder {
                     String wpRestEndpoint = discoverWPRESTEndpoint(url, callback);
                     mCallback.onSuccess(xmlRpcEndpoint, wpRestEndpoint);
                 } catch (DiscoveryException e) {
-                    // TODO: Handle reporting/tracking of XMLRPCDiscoveryException
+                    // TODO: Handle tracking of XMLRPCDiscoveryException
+                    switch(e.failureType) {
+                        case INVALID_URL:
+                            mCallback.onError(Error.INVALID_SOURCE_URL, e.failedUrl);
+                            break;
+                        case WORDPRESS_COM_SITE:
+                            mCallback.onError(Error.WORDPRESS_COM_SITE, e.failedUrl);
+                            break;
+                        case NO_SITE_ERROR:
+                            mCallback.onError(Error.INVALID_SOURCE_URL, e.failedUrl);
+                            break;
+                        case HTTP_AUTH_REQUIRED:
+                            mCallback.onError(Error.HTTP_AUTH_ERROR, e.failedUrl);
+                            break;
+                        case ERRONEOUS_SSL_CERTIFICATE:
+                            mCallback.onError(Error.SSL_ERROR, e.failedUrl);
+                            break;
+                        default:
+                            mCallback.onError(Error.INVALID_SOURCE_URL, e.failedUrl);
+                    }
                 }
             }
         }).start();
@@ -106,12 +125,10 @@ public class SelfHostedEndpointFinder {
         mCallback = callback;
 
         if (TextUtils.isEmpty(siteUrl)) {
-            mCallback.onError(Error.INVALID_SOURCE_URL, siteUrl);
             throw new DiscoveryException(FailureType.INVALID_URL, siteUrl, null);
         }
 
         if (WPUrlUtils.isWordPressCom(sanitizeSiteUrl(siteUrl, false))) {
-            mCallback.onError(Error.WORDPRESS_COM_SITE, siteUrl);
             throw new DiscoveryException(FailureType.WORDPRESS_COM_SITE, siteUrl, null);
         }
 
@@ -126,7 +143,6 @@ public class SelfHostedEndpointFinder {
         // Validate the XML-RPC URL we've found before. This check prevents a crash that can occur
         // during the setup of self-hosted sites that have malformed xmlrpc URLs in their declaration.
         if (!URLUtil.isValidUrl(xmlrpcUrl)) {
-            mCallback.onError(Error.INVALID_SOURCE_URL, xmlrpcUrl);
             throw new DiscoveryException(FailureType.NO_SITE_ERROR, xmlrpcUrl, null);
         }
 
@@ -173,7 +189,6 @@ public class SelfHostedEndpointFinder {
                 }
             } catch (DiscoveryException e) {
                 // Stop execution for errors requiring user interaction
-                // TODO: These should trigger an appropriate DiscoveryCallback.Error
                 if (e.failureType == FailureType.ERRONEOUS_SSL_CERTIFICATE ||
                         e.failureType == FailureType.HTTP_AUTH_REQUIRED ||
                         e.failureType == FailureType.MISSING_XMLRPC_METHOD) {
@@ -279,7 +294,6 @@ public class SelfHostedEndpointFinder {
             }
         }
 
-        mCallback.onError(Error.INVALID_SOURCE_URL, xmlrpcUrl);
         throw new DiscoveryException(FailureType.NO_SITE_ERROR, null, null);
     }
 
@@ -300,7 +314,7 @@ public class SelfHostedEndpointFinder {
      * Returns RSD URL based on regex match.
      */
     private String getRSDMetaTagHrefRegEx(String urlString)
-            throws SSLHandshakeException {
+            throws SSLHandshakeException, DiscoveryException {
         String html = getResponse(urlString);
         if (html != null) {
             Matcher matcher = rsdLink.matcher(html);
@@ -316,7 +330,7 @@ public class SelfHostedEndpointFinder {
      * Returns RSD URL based on html tag search.
      */
     private String getRSDMetaTagHref(String urlString)
-            throws SSLHandshakeException {
+            throws SSLHandshakeException, DiscoveryException {
         // get the html code
         String data = getResponse(urlString);
 
@@ -370,18 +384,23 @@ public class SelfHostedEndpointFinder {
     /**
      * Obtain the HTML response from a GET request for the given URL.
      */
-    private String getResponse(String url) {
+    private String getResponse(String url) throws DiscoveryException {
         RequestFuture<String> future = RequestFuture.newFuture();
         DiscoveryRequest request = new DiscoveryRequest(url, future, future);
         mClient.add(request);
         try {
             return future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | TimeoutException e) {
             AppLog.e(T.API, "Couldn't get XML-RPC response.");
         } catch (ExecutionException e) {
             // TODO: Handle redirect errors
-        } catch (TimeoutException e) {
-            AppLog.e(T.API, "Couldn't get XML-RPC response.");
+            if (e.getCause() instanceof AuthFailureError) {
+                throw new DiscoveryException(FailureType.HTTP_AUTH_REQUIRED, url, null);
+            } else if (e.getCause() instanceof NoConnectionError && e.getCause().getCause() != null &&
+                    e.getCause().getCause() instanceof SSLHandshakeException) {
+                // In the event of an SSL error we should stop attempting discovery
+                throw new DiscoveryException(FailureType.ERRONEOUS_SSL_CERTIFICATE, url, null);
+            }
         }
         return null;
     }
@@ -474,24 +493,17 @@ public class SelfHostedEndpointFinder {
         mClient.add(request);
         try {
             return future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | TimeoutException e) {
             AppLog.e(T.API, "Couldn't get XML-RPC response.");
         } catch (ExecutionException e) {
             // TODO: Handle redirect errors
             if (e.getCause() instanceof AuthFailureError) {
-                // Notify caller that HTTP AUTH is required
-                mCallback.onError(Error.HTTP_AUTH_ERROR, url);
-                // In the event of an HTTP AUTH error we should stop attempting discovery
                 throw new DiscoveryException(FailureType.HTTP_AUTH_REQUIRED, url, null);
             } else if (e.getCause() instanceof NoConnectionError && e.getCause().getCause() != null &&
                     e.getCause().getCause() instanceof SSLHandshakeException) {
-                // Notify caller that SSL validation is required
-                mCallback.onError(Error.SSL_ERROR, url);
                 // In the event of an SSL error we should stop attempting discovery
                 throw new DiscoveryException(FailureType.ERRONEOUS_SSL_CERTIFICATE, url, null);
             }
-        } catch (TimeoutException e) {
-            AppLog.e(T.API, "Couldn't get XML-RPC response.");
         }
         return null;
     }
