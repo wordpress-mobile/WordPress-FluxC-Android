@@ -53,6 +53,7 @@ dependencies {
     compile 'org.wordpress:wellsql:1.0.6'
     apt 'org.wordpress:wellsql-processor:1.0.6'
 
+    // Stores annotations
     compile project(':stores-annotations')
     apt project(':stores-processor')
 
@@ -65,7 +66,6 @@ dependencies {
     compile 'com.google.dagger:dagger:2.0.2'
     apt 'com.google.dagger:dagger-compiler:2.0.2'
     provided 'org.glassfish:javax.annotation:10.0-b28'
-    compile project(path: ':stores-annotations')
 }
 
 version android.defaultConfig.versionName
