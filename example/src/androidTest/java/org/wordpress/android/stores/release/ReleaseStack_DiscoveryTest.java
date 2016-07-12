@@ -384,7 +384,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     @Subscribe
     public void OnSitesRemoved(SiteStore.OnSitesRemoved event) {
-        AppLog.e(T.TESTS, "site count " + mSiteStore.getSitesCount());
+        AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         assertEquals(false, mSiteStore.hasSite());
         assertEquals(false, mSiteStore.hasDotOrgSite());
         assertEquals(TEST_EVENTS.SITE_REMOVED, mNextEvent);
@@ -393,16 +393,6 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
-        if (event.isError) {
-            AppLog.i(T.TESTS, "error " + event.authError);
-            if (event.authError == AuthError.HTTP_AUTH_ERROR) {
-                assertEquals(TEST_EVENTS.HTTP_AUTH_ERROR, mNextEvent);
-            } else if (event.authError == AuthError.NOT_AUTHENTICATED) {
-                assertEquals(TEST_EVENTS.NOT_AUTHENTICATED, mNextEvent);
-            } else if (event.authError == AuthError.INVALID_SSL_CERTIFICATE) {
-                assertEquals(TEST_EVENTS.INVALID_SSL_CERTIFICATE, mNextEvent);
-            }
-        }
-        mCountDownLatch.countDown();
+        throw new AssertionError("OnAuthenticationChanged called - that's not supposed to happen for discovery");
     }
 }
