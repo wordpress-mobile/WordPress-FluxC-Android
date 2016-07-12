@@ -9,7 +9,6 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.NoConnectionError;
 import com.android.volley.toolbox.RequestFuture;
 
-import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder.DiscoveryCallback.Error;
 import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.stores.network.xmlrpc.XMLRPC;
 import org.wordpress.android.stores.utils.WPUrlUtils;
@@ -35,43 +34,34 @@ import javax.inject.Inject;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 
-import static org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder.DiscoveryException.FailureType;
-
 public class SelfHostedEndpointFinder {
     private final static int TIMEOUT_MS = 60000;
 
-    public interface DiscoveryCallback {
-        enum Error {
-            INVALID_SOURCE_URL,
-            WORDPRESS_COM_SITE,
-            HTTP_AUTH_ERROR,
-            SSL_ERROR;
-        }
+    public enum DiscoveryError {
+        SITE_URL_CANNOT_BE_EMPTY,
+        INVALID_URL,
+        MISSING_XMLRPC_METHOD,
+        ERRONEOUS_SSL_CERTIFICATE,
+        HTTP_AUTH_REQUIRED,
+        SITE_TIME_OUT,
+        NO_SITE_ERROR,
+        XMLRPC_MALFORMED_RESPONSE,
+        XMLRPC_ERROR,
+        WORDPRESS_COM_SITE
+    }
 
-        void onError(Error error, String endpoint);
+    public interface DiscoveryCallback {
+        void onError(DiscoveryError error, String endpoint);
         void onSuccess(String xmlrpcEndpoint, String restEndpoint);
     }
 
     protected static class DiscoveryException extends Exception {
-        public enum FailureType {
-            SITE_URL_CANNOT_BE_EMPTY,
-            INVALID_URL,
-            MISSING_XMLRPC_METHOD,
-            ERRONEOUS_SSL_CERTIFICATE,
-            HTTP_AUTH_REQUIRED,
-            SITE_TIME_OUT,
-            NO_SITE_ERROR,
-            XMLRPC_MALFORMED_RESPONSE,
-            XMLRPC_ERROR,
-            WORDPRESS_COM_SITE
-        }
-
-        public final FailureType failureType;
+        public final DiscoveryError discoveryError;
         public final String failedUrl;
         public final String clientResponse;
 
-        public DiscoveryException(FailureType failureType, String failedUrl, String clientResponse) {
-            this.failureType = failureType;
+        public DiscoveryException(DiscoveryError failureType, String failedUrl, String clientResponse) {
+            this.discoveryError = failureType;
             this.failedUrl = failedUrl;
             this.clientResponse = clientResponse;
         }
@@ -96,25 +86,11 @@ public class SelfHostedEndpointFinder {
                     mCallback.onSuccess(xmlRpcEndpoint, wpRestEndpoint);
                 } catch (DiscoveryException e) {
                     // TODO: Handle tracking of XMLRPCDiscoveryException
-                    switch(e.failureType) {
-                        case INVALID_URL:
-                            mCallback.onError(Error.INVALID_SOURCE_URL, e.failedUrl);
-                            break;
-                        case WORDPRESS_COM_SITE:
-                            mCallback.onError(Error.WORDPRESS_COM_SITE, e.failedUrl);
-                            break;
-                        case NO_SITE_ERROR:
-                            mCallback.onError(Error.INVALID_SOURCE_URL, e.failedUrl);
-                            break;
-                        case HTTP_AUTH_REQUIRED:
-                            mCallback.onError(Error.HTTP_AUTH_ERROR, e.failedUrl);
-                            break;
-                        case ERRONEOUS_SSL_CERTIFICATE:
-                            mCallback.onError(Error.SSL_ERROR, e.failedUrl);
-                            break;
-                        default:
-                            mCallback.onError(Error.INVALID_SOURCE_URL, e.failedUrl);
-                    }
+                    // If a DiscoveryException is caught this high up, it means that either:
+                    // 1. The discovery process has completed, and did not turn up a valid WordPress.com site
+                    // 2. Discovery was halted early because the given site requires SSL validation, or HTTP AUTH login,
+                    // or is a WordPress.com site, or is a completely invalid URL
+                    mCallback.onError(e.discoveryError, e.failedUrl);
                 }
             }
         }).start();
@@ -125,11 +101,11 @@ public class SelfHostedEndpointFinder {
         mCallback = callback;
 
         if (TextUtils.isEmpty(siteUrl)) {
-            throw new DiscoveryException(FailureType.INVALID_URL, siteUrl, null);
+            throw new DiscoveryException(DiscoveryError.INVALID_URL, siteUrl, null);
         }
 
         if (WPUrlUtils.isWordPressCom(sanitizeSiteUrl(siteUrl, false))) {
-            throw new DiscoveryException(FailureType.WORDPRESS_COM_SITE, siteUrl, null);
+            throw new DiscoveryException(DiscoveryError.WORDPRESS_COM_SITE, siteUrl, null);
         }
 
         String xmlrpcUrl = verifyXMLRPCUrl(siteUrl, httpUsername, httpPassword);
@@ -143,7 +119,7 @@ public class SelfHostedEndpointFinder {
         // Validate the XML-RPC URL we've found before. This check prevents a crash that can occur
         // during the setup of self-hosted sites that have malformed xmlrpc URLs in their declaration.
         if (!URLUtil.isValidUrl(xmlrpcUrl)) {
-            throw new DiscoveryException(FailureType.NO_SITE_ERROR, xmlrpcUrl, null);
+            throw new DiscoveryException(DiscoveryError.NO_SITE_ERROR, xmlrpcUrl, null);
         }
 
         return xmlrpcUrl;
@@ -177,7 +153,7 @@ public class SelfHostedEndpointFinder {
             urlsToTry.add(sanitizedSiteUrlHttp);
         }
 
-        // add the user provided URL as well
+        // Add the user provided URL as well
         urlsToTry.add(siteUrl);
 
         AppLog.i(T.NUX, "The app will call system.listMethods on the following URLs: " + urlsToTry);
@@ -189,20 +165,18 @@ public class SelfHostedEndpointFinder {
                 }
             } catch (DiscoveryException e) {
                 // Stop execution for errors requiring user interaction
-                if (e.failureType == FailureType.ERRONEOUS_SSL_CERTIFICATE ||
-                        e.failureType == FailureType.HTTP_AUTH_REQUIRED ||
-                        e.failureType == FailureType.MISSING_XMLRPC_METHOD) {
+                if (e.discoveryError == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE ||
+                        e.discoveryError == DiscoveryError.HTTP_AUTH_REQUIRED ||
+                        e.discoveryError == DiscoveryError.MISSING_XMLRPC_METHOD) {
                     throw e;
                 }
                 // Otherwise. swallow the error since we are just verifying various URLs
-                continue;
             } catch (RuntimeException re) {
                 // Depending how corrupt the user entered URL is, it can generate several kinds of runtime exceptions,
                 // ignore them
-                continue;
             }
         }
-        // input url was not verified to be working
+        // Input url was not verified to be working
         return null;
     }
 
@@ -280,7 +254,7 @@ public class SelfHostedEndpointFinder {
                 }
             } catch (SSLHandshakeException e) {
                 if (!WPUrlUtils.isWordPressCom(currentURL)) {
-                    throw new DiscoveryException(FailureType.ERRONEOUS_SSL_CERTIFICATE, currentURL, null);
+                    throw new DiscoveryException(DiscoveryError.ERRONEOUS_SSL_CERTIFICATE, currentURL, null);
                 }
                 AppLog.w(AppLog.T.NUX, "SSLHandshakeException failed. Erroneous SSL certificate detected.");
                 return null;
@@ -294,7 +268,7 @@ public class SelfHostedEndpointFinder {
             }
         }
 
-        throw new DiscoveryException(FailureType.NO_SITE_ERROR, null, null);
+        throw new DiscoveryException(DiscoveryError.NO_SITE_ERROR, null, null);
     }
 
 
@@ -331,15 +305,15 @@ public class SelfHostedEndpointFinder {
      */
     private String getRSDMetaTagHref(String urlString)
             throws SSLHandshakeException, DiscoveryException {
-        // get the html code
+        // Get the html code
         String data = getResponse(urlString);
 
-        // parse the html and get the attribute for xmlrpc endpoint
+        // Parse the html and get the attribute for xmlrpc endpoint
         if (data != null) {
             StringReader stringReader = new StringReader(data);
             XmlPullParser parser = Xml.newPullParser();
             try {
-                // auto-detect the encoding from the stream
+                // Auto-detect the encoding from the stream
                 parser.setInput(stringReader);
                 int eventType = parser.getEventType();
                 while (eventType != XmlPullParser.END_DOCUMENT) {
@@ -378,7 +352,7 @@ public class SelfHostedEndpointFinder {
                 return null;
             }
         }
-        return null; // never found the rsd tag
+        return null; // Never found the rsd tag
     }
 
     /**
@@ -395,22 +369,22 @@ public class SelfHostedEndpointFinder {
         } catch (ExecutionException e) {
             // TODO: Handle redirect errors
             if (e.getCause() instanceof AuthFailureError) {
-                throw new DiscoveryException(FailureType.HTTP_AUTH_REQUIRED, url, null);
+                throw new DiscoveryException(DiscoveryError.HTTP_AUTH_REQUIRED, url, null);
             } else if (e.getCause() instanceof NoConnectionError && e.getCause().getCause() != null &&
                     e.getCause().getCause() instanceof SSLHandshakeException) {
                 // In the event of an SSL error we should stop attempting discovery
-                throw new DiscoveryException(FailureType.ERRONEOUS_SSL_CERTIFICATE, url, null);
+                throw new DiscoveryException(DiscoveryError.ERRONEOUS_SSL_CERTIFICATE, url, null);
             }
         }
         return null;
     }
 
     private String sanitizeSiteUrl(String siteUrl, boolean addHttps) throws DiscoveryException {
-        // remove padding whitespace
+        // Remove padding whitespace
         String url = siteUrl.trim();
 
         if (TextUtils.isEmpty(url)) {
-            throw new DiscoveryException(FailureType.SITE_URL_CANNOT_BE_EMPTY, siteUrl, null);
+            throw new DiscoveryException(DiscoveryError.SITE_URL_CANNOT_BE_EMPTY, siteUrl, null);
         }
 
         // Convert IDN names to punycode if necessary
@@ -419,11 +393,11 @@ public class SelfHostedEndpointFinder {
         // Add http to the beginning of the URL if needed
         url = UrlUtils.addUrlSchemeIfNeeded(UrlUtils.removeScheme(url), addHttps);
 
-        // strip url from known usual trailing paths
+        // Strip url from known usual trailing paths
         url = DiscoveryUtils.stripKnownPaths(url);
 
         if (!(URLUtil.isHttpsUrl(url) || URLUtil.isHttpUrl(url))) {
-            throw new DiscoveryException(FailureType.INVALID_URL, url, null);
+            throw new DiscoveryException(DiscoveryError.INVALID_URL, url, null);
         }
 
         return url;
@@ -448,28 +422,28 @@ public class SelfHostedEndpointFinder {
                 // Endpoint found, but it has problem.
                 AppLog.w(T.NUX, "Validation ended with errors! Endpoint found but doesn't contain all the " +
                         "required methods.");
-                throw new DiscoveryException(FailureType.MISSING_XMLRPC_METHOD, url, null);
+                throw new DiscoveryException(DiscoveryError.MISSING_XMLRPC_METHOD, url, null);
             }
         } catch (DiscoveryException e) {
             AppLog.e(T.NUX, "system.listMethods failed on: " + url, e);
-            if (DiscoveryUtils.isHTTPAuthErrorMessage(e) || e.failureType.equals(FailureType.HTTP_AUTH_REQUIRED)) {
-                throw new DiscoveryException(FailureType.HTTP_AUTH_REQUIRED, url, null);
-            } else if (e.failureType.equals(FailureType.ERRONEOUS_SSL_CERTIFICATE)) {
-                throw new DiscoveryException(FailureType.ERRONEOUS_SSL_CERTIFICATE, url, null);
+            if (DiscoveryUtils.isHTTPAuthErrorMessage(e) || e.discoveryError.equals(DiscoveryError.HTTP_AUTH_REQUIRED)) {
+                throw new DiscoveryException(DiscoveryError.HTTP_AUTH_REQUIRED, url, null);
+            } else if (e.discoveryError.equals(DiscoveryError.ERRONEOUS_SSL_CERTIFICATE)) {
+                throw new DiscoveryException(DiscoveryError.ERRONEOUS_SSL_CERTIFICATE, url, null);
             }
         } catch (SSLHandshakeException | SSLPeerUnverifiedException e) {
             if (!WPUrlUtils.isWordPressCom(url)) {
-                throw new DiscoveryException(FailureType.ERRONEOUS_SSL_CERTIFICATE, url, null);
+                throw new DiscoveryException(DiscoveryError.ERRONEOUS_SSL_CERTIFICATE, url, null);
             }
             AppLog.e(T.NUX, "SSL error. Erroneous SSL certificate detected.", e);
         } catch (IOException | XmlPullParserException e) {
             AppLog.e(T.NUX, "system.listMethods failed on: " + url, e);
             if (DiscoveryUtils.isHTTPAuthErrorMessage(e)) {
-                throw new DiscoveryException(FailureType.HTTP_AUTH_REQUIRED, url, null);
+                throw new DiscoveryException(DiscoveryError.HTTP_AUTH_REQUIRED, url, null);
             }
         } catch (IllegalArgumentException e) {
             // The XML-RPC client returns this error in case of redirect to an invalid URL.
-            throw new DiscoveryException(FailureType.INVALID_URL, url, null);
+            throw new DiscoveryException(DiscoveryError.INVALID_URL, url, null);
         }
 
         return false;
@@ -479,7 +453,7 @@ public class SelfHostedEndpointFinder {
             IOException, XmlPullParserException, DiscoveryException {
         if (!UrlUtils.isValidUrlAndHostNotNull(url)) {
             AppLog.e(T.NUX, "invalid URL: " + url);
-            throw new DiscoveryException(FailureType.INVALID_URL, url, null);
+            throw new DiscoveryException(DiscoveryError.INVALID_URL, url, null);
         }
 
         AppLog.i(T.NUX, "Trying system.listMethods on the following URL: " + url);
@@ -498,11 +472,11 @@ public class SelfHostedEndpointFinder {
         } catch (ExecutionException e) {
             // TODO: Handle redirect errors
             if (e.getCause() instanceof AuthFailureError) {
-                throw new DiscoveryException(FailureType.HTTP_AUTH_REQUIRED, url, null);
+                throw new DiscoveryException(DiscoveryError.HTTP_AUTH_REQUIRED, url, null);
             } else if (e.getCause() instanceof NoConnectionError && e.getCause().getCause() != null &&
                     e.getCause().getCause() instanceof SSLHandshakeException) {
                 // In the event of an SSL error we should stop attempting discovery
-                throw new DiscoveryException(FailureType.ERRONEOUS_SSL_CERTIFICATE, url, null);
+                throw new DiscoveryException(DiscoveryError.ERRONEOUS_SSL_CERTIFICATE, url, null);
             }
         }
         return null;

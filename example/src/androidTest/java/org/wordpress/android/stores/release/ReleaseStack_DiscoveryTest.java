@@ -10,6 +10,7 @@ import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
 import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder;
+import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.stores.store.SiteStore;
@@ -69,8 +70,8 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mSelfHostedEndpointFinder.findEndpoint("notaurl&*@", payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error, String lastEndpoint) {
-                        assertEquals(Error.INVALID_SOURCE_URL, error);
+                    public void onError(DiscoveryError error, String lastEndpoint) {
+                        assertEquals(DiscoveryError.NO_SITE_ERROR, error);
                         mCountDownLatch.countDown();
                     }
 
@@ -93,8 +94,8 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mSelfHostedEndpointFinder.findEndpoint("example.com", payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error, String lastEndpoint) {
-                        assertEquals(Error.INVALID_SOURCE_URL, error);
+                    public void onError(DiscoveryError error, String lastEndpoint) {
+                        assertEquals(DiscoveryError.NO_SITE_ERROR, error);
                         mCountDownLatch.countDown();
                     }
 
@@ -117,8 +118,8 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mSelfHostedEndpointFinder.findEndpoint("mysite.wordpress.com", payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error, String lastEndpoint) {
-                        assertEquals(Error.WORDPRESS_COM_SITE, error);
+                    public void onError(DiscoveryError error, String lastEndpoint) {
+                        assertEquals(DiscoveryError.WORDPRESS_COM_SITE, error);
                         mCountDownLatch.countDown();
                     }
 
@@ -250,7 +251,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mSelfHostedEndpointFinder.findEndpoint(url, payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error, String lastEndpoint) {
+                    public void onError(DiscoveryError error, String lastEndpoint) {
                         throw new AssertionError("Expected successful discovery but got error: " + error);
                     }
 
@@ -275,8 +276,8 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mSelfHostedEndpointFinder.findEndpoint(url, payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error, String lastEndpoint) {
-                        assertEquals(Error.SSL_ERROR, error);
+                    public void onError(DiscoveryError error, String lastEndpoint) {
+                        assertEquals(DiscoveryError.ERRONEOUS_SSL_CERTIFICATE, error);
                         mLastEndpoint = lastEndpoint;
                         mCountDownLatch.countDown();
                     }
@@ -300,7 +301,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error, String lastEndpoint) {
+                    public void onError(DiscoveryError error, String lastEndpoint) {
                         throw new AssertionError("Expected successful discovery but got error: " + error);
                     }
 
@@ -328,8 +329,8 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mSelfHostedEndpointFinder.findEndpoint(url, payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error, String lastEndpoint) {
-                        assertEquals(Error.HTTP_AUTH_ERROR, error);
+                    public void onError(DiscoveryError error, String lastEndpoint) {
+                        assertEquals(DiscoveryError.HTTP_AUTH_REQUIRED, error);
                         mLastEndpoint = lastEndpoint;
                         mCountDownLatch.countDown();
                     }
@@ -353,7 +354,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mSelfHostedEndpointFinder.findEndpoint(mLastEndpoint, payload.username, payload.password,
                 new SelfHostedEndpointFinder.DiscoveryCallback() {
                     @Override
-                    public void onError(Error error, String lastEndpoint) {
+                    public void onError(DiscoveryError error, String lastEndpoint) {
                         throw new AssertionError("Expected successful discovery but got error: " + error);
                     }
 

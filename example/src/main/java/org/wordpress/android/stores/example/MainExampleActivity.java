@@ -25,6 +25,7 @@ import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
 import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder;
+import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.stores.store.AccountStore.NewAccountPayload;
@@ -229,14 +230,15 @@ public class MainExampleActivity extends AppCompatActivity {
             mSelfhostedPayload = new RefreshSitesXMLRPCPayload();
             mSelfhostedPayload.username = username;
             mSelfhostedPayload.password = password;
-            mSelfHostedEndpointFinder.findEndpoint(url, username, password, new SelfHostedEndpointFinder.DiscoveryCallback() {
+            mSelfHostedEndpointFinder.findEndpoint(url, username, password,
+                    new SelfHostedEndpointFinder.DiscoveryCallback() {
                 @Override
-                public void onError(Error error, String lastEndpoint) {
-                    if (error == Error.WORDPRESS_COM_SITE) {
+                public void onError(DiscoveryError error, String lastEndpoint) {
+                    if (error == DiscoveryError.WORDPRESS_COM_SITE) {
                         wpcomFetchSites(username, password);
-                    } else if (error == Error.HTTP_AUTH_ERROR) {
+                    } else if (error == DiscoveryError.HTTP_AUTH_REQUIRED) {
                         showHTTPAuthDialog(lastEndpoint);
-                    } else if (error == Error.SSL_ERROR) {
+                    } else if (error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
                         mSelfhostedPayload.xmlrpcEndpoint = lastEndpoint;
                         showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
                     }
