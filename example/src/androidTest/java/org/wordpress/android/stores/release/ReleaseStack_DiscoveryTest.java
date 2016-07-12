@@ -107,8 +107,8 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     public void testWordPressCOMUrlFetchSites() throws InterruptedException {
         final RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPCOM_USERNAME;
-        payload.password = BuildConfig.TEST_WPCOM_PASSWORD;
+        payload.username = BuildConfig.TEST_WPCOM_USERNAME_TEST1;
+        payload.password = BuildConfig.TEST_WPCOM_PASSWORD_TEST1;
 
         mCountDownLatch = new CountDownLatch(1);
 
