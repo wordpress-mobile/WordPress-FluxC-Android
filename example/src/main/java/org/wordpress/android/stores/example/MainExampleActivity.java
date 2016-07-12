@@ -169,9 +169,14 @@ public class MainExampleActivity extends AppCompatActivity {
 
     // Private methods
 
-    private void prependToLog(String s) {
-        s = s + "\n" + mLogView.getText();
-        mLogView.setText(s);
+    private void prependToLog(final String s) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String output = s + "\n" + mLogView.getText();
+                mLogView.setText(output);
+            }
+        });
     }
 
     private void showSSLWarningDialog(String certifString) {
@@ -242,11 +247,13 @@ public class MainExampleActivity extends AppCompatActivity {
                         mSelfhostedPayload.xmlrpcEndpoint = lastEndpoint;
                         showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
                     }
+                    prependToLog("Discovery failed with error: " + error);
                     AppLog.e(T.API, "Discover error: " + error);
                 }
 
                 @Override
                 public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
+                    prependToLog("Discovery succeeded, endpoint: " + xmlrpcEndpoint);
                     selfHostedFetchSites(username, password, xmlrpcEndpoint);
                 }
             });
