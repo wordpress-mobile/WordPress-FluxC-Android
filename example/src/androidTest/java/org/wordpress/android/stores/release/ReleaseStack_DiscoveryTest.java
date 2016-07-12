@@ -42,9 +42,6 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     enum TEST_EVENTS {
         NONE,
-        NOT_AUTHENTICATED,
-        HTTP_AUTH_ERROR,
-        INVALID_SSL_CERTIFICATE,
         SITE_CHANGED,
         SITE_REMOVED
     }
