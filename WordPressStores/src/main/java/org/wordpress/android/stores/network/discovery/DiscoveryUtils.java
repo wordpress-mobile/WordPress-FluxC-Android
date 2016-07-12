@@ -5,6 +5,9 @@ import android.webkit.URLUtil;
 
 import org.wordpress.android.util.AppLog;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class DiscoveryUtils {
     /**
      * Strip known unnecessary paths from XML-RPC URL and remove trailing slashes
@@ -95,5 +98,40 @@ public class DiscoveryUtils {
      */
     public static boolean isHTTPAuthErrorMessage(Exception e) {
         return e != null && e.getMessage() != null && e.getMessage().contains("401");
+    }
+
+    /**
+     * Find the XML-RPC endpoint for the WordPress API.
+     *
+     * @return XML-RPC endpoint for the specified blog, or null if unable to discover endpoint.
+     */
+    public static String getXMLRPCApiLink(String html) {
+        Pattern xmlrpcLink = Pattern.compile("<api\\s*?name=\"WordPress\".*?apiLink=\"(.*?)\"",
+                Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        if (html != null) {
+            Matcher matcher = xmlrpcLink.matcher(html);
+            if (matcher.find()) {
+                return matcher.group(1);
+            }
+        }
+        return null; // never found the api link tag
+    }
+
+    /**
+     * Find the XML-RPC endpoint by using the pingback tag
+     *
+     * @return String XML-RPC url
+     */
+    public static String getXMLRPCPingback(String html) {
+        Pattern pingbackLink = Pattern.compile(
+                "<link\\s*?rel=\"pingback\"\\s*?href=\"(.*?)\"",
+                Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        if (html != null) {
+            Matcher matcher = pingbackLink.matcher(html);
+            if (matcher.find()) {
+                return matcher.group(1);
+            }
+        }
+        return null;
     }
 }

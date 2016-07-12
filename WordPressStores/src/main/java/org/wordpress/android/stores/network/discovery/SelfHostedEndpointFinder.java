@@ -120,16 +120,13 @@ public class SelfHostedEndpointFinder {
         if (xmlrpcUrl == null) {
             AppLog.w(T.NUX, "The XML-RPC endpoint was not found by using our 'smart' cleaning approach. " +
                     "Time to start the Endpoint discovery process");
-            // TODO: Remove this line once discovery process has been implemented
-            mCallback.onError(Error.INVALID_SOURCE_URL, xmlrpcUrl);
-            throw new DiscoveryException(FailureType.INVALID_URL, xmlrpcUrl, null);
-            // Try to discover the XML-RPC Endpoint address
-            // TODO: Implement discovery process
+            xmlrpcUrl = discoverXMLRPCEndpoint(siteUrl, httpUsername, httpPassword);
         }
 
         // Validate the XML-RPC URL we've found before. This check prevents a crash that can occur
         // during the setup of self-hosted sites that have malformed xmlrpc URLs in their declaration.
         if (!URLUtil.isValidUrl(xmlrpcUrl)) {
+            mCallback.onError(Error.INVALID_SOURCE_URL, xmlrpcUrl);
             throw new DiscoveryException(FailureType.NO_SITE_ERROR, xmlrpcUrl, null);
         }
 
@@ -194,47 +191,102 @@ public class SelfHostedEndpointFinder {
         return null;
     }
 
-    // Attempts to retrieve the xmlrpc url for a self-hosted site, in this order:
-    // 1: Try to retrieve it by finding the ?rsd url in the site's header
-    // 2: Take whatever URL the user entered to see if that returns a correct response
-    // 3: Finally, just guess as to what the xmlrpc url should be
-    private String discoverXMLRPCEndpoint(String url) {
-        // Attempt to get the XMLRPC URL via RSD
-        String rsdUrl;
-        try {
-            rsdUrl = UrlUtils.addUrlSchemeIfNeeded(getRsdUrl(url), false);
-        } catch (SSLHandshakeException e) {
-            mCallback.onError(Error.SSL_ERROR, url);
-            return null;
+    // Attempts to retrieve the XML-RPC url for a self-hosted site.
+    // See diagrams here https://github.com/wordpress-mobile/WordPress-Android/issues/3805 for details about the
+    // whole process.
+    private String discoverXMLRPCEndpoint(String siteUrl, String httpUsername, String httpPassword) throws
+            DiscoveryException {
+        // Ordered set of Strings that contains the URLs we want to try
+        final Set<String> urlsToTry = new LinkedHashSet<>();
+
+        // Add the url as provided by the user
+        urlsToTry.add(siteUrl);
+
+        // Add the sanitized URL url, prioritizing https, unless the user specified the http:// protocol
+        if (siteUrl.startsWith("http://")) {
+            urlsToTry.add(sanitizeSiteUrl(siteUrl, false));
+            urlsToTry.add(sanitizeSiteUrl(siteUrl, true));
+        } else {
+            urlsToTry.add(sanitizeSiteUrl(siteUrl, true));
+            urlsToTry.add(sanitizeSiteUrl(siteUrl, false));
         }
 
-        try {
-            if (rsdUrl != null) {
-                url = UrlUtils.addUrlSchemeIfNeeded(getXMLRPCUrl(rsdUrl), false);
-                if (url == null) {
-                    url = UrlUtils.addUrlSchemeIfNeeded(rsdUrl.replace("?rsd", ""), false);
+        AppLog.i(AppLog.T.NUX, "The app will call the RSD discovery process on the following URLs: " + urlsToTry);
+
+        String xmlrpcUrl = null;
+        for (String currentURL : urlsToTry) {
+            try {
+                if (!URLUtil.isValidUrl(currentURL)) {
+                    continue;
                 }
+                // Download the HTML content
+                AppLog.i(AppLog.T.NUX, "Downloading the HTML content at the following URL: " + currentURL);
+                String responseHTML = getResponse(currentURL);
+                if (TextUtils.isEmpty(responseHTML)) {
+                    AppLog.w(AppLog.T.NUX, "Content downloaded but it's empty or null. Skipping this URL");
+                    continue;
+                }
+
+                // Try to find the RSD tag with a regex
+                String rsdUrl = getRSDMetaTagHrefRegEx(responseHTML);
+                // If the regex approach fails try to parse the HTML doc and retrieve the RSD tag.
+                if (rsdUrl == null) {
+                    rsdUrl = getRSDMetaTagHref(responseHTML);
+                }
+                rsdUrl = UrlUtils.addUrlSchemeIfNeeded(rsdUrl, false);
+
+                // If the RSD URL is empty here, try to see if the pingback or Apilink are in the doc, as the user
+                // could have inserted a direct link to the XML-RPC endpoint
+                if (rsdUrl == null) {
+                    AppLog.i(AppLog.T.NUX, "Can't find the RSD endpoint in the HTML document. Try to check the " +
+                            "pingback tag, and the apiLink tag.");
+                    xmlrpcUrl = UrlUtils.addUrlSchemeIfNeeded(DiscoveryUtils.getXMLRPCPingback(responseHTML), false);
+                    if (xmlrpcUrl == null) {
+                        xmlrpcUrl = UrlUtils.addUrlSchemeIfNeeded(DiscoveryUtils.getXMLRPCApiLink(responseHTML), false);
+                    }
+                } else {
+                    AppLog.i(AppLog.T.NUX, "RSD endpoint found at the following address: " + rsdUrl);
+                    AppLog.i(AppLog.T.NUX, "Downloading the RSD document...");
+                    String rsdEndpointDocument = getResponse(rsdUrl);
+                    if (TextUtils.isEmpty(rsdEndpointDocument)) {
+                        AppLog.w(AppLog.T.NUX, "Content downloaded but it's empty or null. Skipping this RSD document" +
+                                " URL.");
+                        continue;
+                    }
+                    AppLog.i(AppLog.T.NUX, "Extracting the XML-RPC Endpoint address from the RSD document");
+                    xmlrpcUrl = UrlUtils.addUrlSchemeIfNeeded(DiscoveryUtils.getXMLRPCApiLink(rsdEndpointDocument),
+                            false);
+                }
+                if (xmlrpcUrl != null) {
+                    AppLog.i(AppLog.T.NUX, "Found the XML-RPC endpoint in the HTML document!!!");
+                    break;
+                } else {
+                    AppLog.i(AppLog.T.NUX, "XML-RPC endpoint not found");
+                }
+            } catch (SSLHandshakeException e) {
+                if (!WPUrlUtils.isWordPressCom(currentURL)) {
+                    throw new DiscoveryException(FailureType.ERRONEOUS_SSL_CERTIFICATE, currentURL, null);
+                }
+                AppLog.w(AppLog.T.NUX, "SSLHandshakeException failed. Erroneous SSL certificate detected.");
+                return null;
             }
-        } catch (SSLHandshakeException e) {
-            mCallback.onError(Error.SSL_ERROR, rsdUrl);
-            return null;
         }
 
-        return(url);
+        if (URLUtil.isValidUrl(xmlrpcUrl)) {
+            if (checkXMLRPCEndpointValidity(xmlrpcUrl, httpUsername, httpPassword)) {
+                // Endpoint found and works fine.
+                return xmlrpcUrl;
+            }
+        }
+
+        mCallback.onError(Error.INVALID_SOURCE_URL, xmlrpcUrl);
+        throw new DiscoveryException(FailureType.NO_SITE_ERROR, null, null);
     }
+
 
     private String discoverWPRESTEndpoint(String url, final DiscoveryCallback callback) {
         // TODO: See http://v2.wp-api.org/guide/discovery/
         return url + "/wp-json/wp/v2/";
-    }
-
-    private String getRsdUrl(String baseUrl) throws SSLHandshakeException {
-        String rsdUrl;
-        rsdUrl = getRSDMetaTagHrefRegEx(baseUrl);
-        if (rsdUrl == null) {
-            rsdUrl = getRSDMetaTagHref(baseUrl);
-        }
-        return rsdUrl;
     }
 
     /**
@@ -310,26 +362,6 @@ public class SelfHostedEndpointFinder {
             } catch (IOException e) {
                 AppLog.e(T.API, e);
                 return null;
-            }
-        }
-        return null; // never found the rsd tag
-    }
-
-    /**
-     * Discover the XML-RPC endpoint for the WordPress API associated with the specified blog URL.
-     *
-     * @param urlString URL of the blog to get the XML-RPC endpoint for.
-     * @return XML-RPC endpoint for the specified blog, or null if unable to discover endpoint.
-     */
-    private String getXMLRPCUrl(String urlString) throws SSLHandshakeException {
-        Pattern xmlrpcLink = Pattern.compile("<api\\s*?name=\"WordPress\".*?apiLink=\"(.*?)\"",
-                Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-
-        String html = getResponse(urlString);
-        if (html != null) {
-            Matcher matcher = xmlrpcLink.matcher(html);
-            if (matcher.find()) {
-                return matcher.group(1);
             }
         }
         return null; // never found the rsd tag
