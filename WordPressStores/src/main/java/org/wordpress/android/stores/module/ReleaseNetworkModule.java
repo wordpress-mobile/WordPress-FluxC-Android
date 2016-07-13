@@ -12,11 +12,13 @@ import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
 import org.wordpress.android.stores.network.OkHttpStack;
 import org.wordpress.android.stores.network.UserAgent;
+import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AppSecrets;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator;
 import org.wordpress.android.stores.network.rest.wpcom.site.SiteRestClient;
+import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.stores.network.xmlrpc.site.SiteXMLRPCClient;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -113,6 +115,15 @@ public class ReleaseNetworkModule {
 
     @Singleton
     @Provides
+    public BaseXMLRPCClient provideBaseXMLRPCClient(Dispatcher dispatcher,
+                                                    @Named("custom-ssl") RequestQueue requestQueue,
+                                                    AccessToken token,
+                                                    UserAgent userAgent, HTTPAuthManager httpAuthManager) {
+        return new BaseXMLRPCClient(dispatcher, requestQueue, token, userAgent, httpAuthManager);
+    }
+
+    @Singleton
+    @Provides
     public SiteRestClient provideSiteRestClient(Dispatcher dispatcher,
                                                 @Named("regular") RequestQueue requestQueue,
                                                 AppSecrets appSecrets,
@@ -136,6 +147,13 @@ public class ReleaseNetworkModule {
                                                       AppSecrets appSecrets,
                                                       AccessToken token, UserAgent userAgent) {
         return new AccountRestClient(dispatcher, requestQueue, appSecrets, token, userAgent);
+    }
+
+    @Singleton
+    @Provides
+    public SelfHostedEndpointFinder provideSelfHostedEndpointFinder(Dispatcher dispatcher,
+                                                                    BaseXMLRPCClient baseXMLRPCClient) {
+        return new SelfHostedEndpointFinder(dispatcher, baseXMLRPCClient);
     }
 
     @Singleton

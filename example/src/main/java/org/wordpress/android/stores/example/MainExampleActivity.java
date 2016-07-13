@@ -24,6 +24,7 @@ import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
+import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.stores.store.AccountStore.NewAccountPayload;
@@ -38,15 +39,12 @@ import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.stores.store.SiteStore.OnSitesRemoved;
 import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.stores.store.SiteStore.SiteVisibility;
-import org.wordpress.android.stores.utils.SelfHostedDiscoveryUtils;
-import org.wordpress.android.stores.utils.SelfHostedDiscoveryUtils.DiscoveryCallback;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
 import java.util.HashMap;
 
 import javax.inject.Inject;
-
 
 public class MainExampleActivity extends AppCompatActivity {
     @Inject SiteStore mSiteStore;
@@ -168,9 +166,9 @@ public class MainExampleActivity extends AppCompatActivity {
 
     // Private methods
 
-    private void prependToLog(String s) {
-        s = s + "\n" + mLogView.getText();
-        mLogView.setText(s);
+    private void prependToLog(final String s) {
+        String output = s + "\n" + mLogView.getText();
+        mLogView.setText(output);
     }
 
     private void showSSLWarningDialog(String certifString) {
@@ -183,8 +181,8 @@ public class MainExampleActivity extends AppCompatActivity {
                         mMemorizingTrustManager.storeLastFailure();
                         // Retry login action
                         if (mSelfhostedPayload != null) {
-                            selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password,
-                                    mSelfhostedPayload.xmlrpcEndpoint);
+                            signInAction(mSelfhostedPayload.username, mSelfhostedPayload.password,
+                                    mSelfhostedPayload.url);
                         }
                     }
                 }, certifString);
@@ -211,8 +209,7 @@ public class MainExampleActivity extends AppCompatActivity {
                 mHTTPAuthManager.addHTTPAuthCredentials(username, password, url, null);
                 // Retry login action
                 if (mSelfhostedPayload != null) {
-                    selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password,
-                            mSelfhostedPayload.xmlrpcEndpoint);
+                    signInAction(mSelfhostedPayload.username, mSelfhostedPayload.password, url);
                 }
             }
         }, "Username", "Password", "unused");
@@ -227,20 +224,12 @@ public class MainExampleActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(url)) {
             wpcomFetchSites(username, password);
         } else {
-            SelfHostedDiscoveryUtils.discoverSelfHostedEndPoint(url, new DiscoveryCallback() {
-                @Override
-                public void onError(Error error) {
-                    if (error == Error.WORDPRESS_COM_SITE) {
-                        wpcomFetchSites(username, password);
-                    }
-                    AppLog.e(T.API, "Discover error: " + error);
-                }
+            mSelfhostedPayload = new RefreshSitesXMLRPCPayload();
+            mSelfhostedPayload.url = url;
+            mSelfhostedPayload.username = username;
+            mSelfhostedPayload.password = password;
 
-                @Override
-                public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
-                    selfHostedFetchSites(username, password, xmlrpcEndpoint);
-                }
-            });
+            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mSelfhostedPayload));
         }
     }
 
@@ -260,7 +249,7 @@ public class MainExampleActivity extends AppCompatActivity {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = username;
         payload.password = password;
-        payload.xmlrpcEndpoint = xmlrpcEndpoint;
+        payload.url = xmlrpcEndpoint;
         mSelfhostedPayload = payload;
         // Self Hosted don't have any "Authentication" request, try to list sites with user/password
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
@@ -338,13 +327,33 @@ public class MainExampleActivity extends AppCompatActivity {
             prependToLog("Authentication error: " + event.authError);
             if (event.authError == AuthError.HTTP_AUTH_ERROR) {
                 // Show a Dialog prompting for http username and password
-                showHTTPAuthDialog(mSelfhostedPayload.xmlrpcEndpoint);
+                showHTTPAuthDialog(mSelfhostedPayload.url);
             }
             if (event.authError == AuthError.INVALID_SSL_CERTIFICATE) {
                 // Show a SSL Warning Dialog
                 showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
             }
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDiscoverySucceeded(AccountStore.OnDiscoverySucceeded event) {
+        prependToLog("Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
+        selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDiscoveryFailed(AccountStore.OnDiscoveryFailed event) {
+        if (event.error == DiscoveryError.WORDPRESS_COM_SITE) {
+            wpcomFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password);
+        } else if (event.error == DiscoveryError.HTTP_AUTH_REQUIRED) {
+            showHTTPAuthDialog(event.failedEndpoint);
+        } else if (event.error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
+            mSelfhostedPayload.url = event.failedEndpoint;
+            showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
+        }
+        prependToLog("Discovery failed with error: " + event.error);
+        AppLog.e(T.API, "Discover error: " + event.error);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

@@ -13,6 +13,9 @@ import org.wordpress.android.stores.annotations.action.Action;
 import org.wordpress.android.stores.annotations.action.IAction;
 import org.wordpress.android.stores.model.AccountModel;
 import org.wordpress.android.stores.network.AuthError;
+import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder;
+import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
+import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder.DiscoveryResultPayload;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.AccountPostSettingsResponsePayload;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.AccountRestPayload;
@@ -21,6 +24,7 @@ import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.Token;
 import org.wordpress.android.stores.persistence.AccountSqlUtils;
+import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -81,6 +85,16 @@ public class AccountStore extends Store {
         public AuthError authError;
     }
 
+    public class OnDiscoverySucceeded extends OnChanged {
+        public String xmlRpcEndpoint;
+        public String wpRestEndpoint;
+    }
+
+    public class OnDiscoveryFailed extends OnChanged {
+        public DiscoveryError error;
+        public String failedEndpoint;
+    }
+
     public class OnNewUserCreated extends OnChanged {
         public boolean isError;
         public NewUserError errorType;
@@ -124,13 +138,16 @@ public class AccountStore extends Store {
     private Authenticator mAuthenticator;
     private AccountModel mAccount;
     private AccessToken mAccessToken;
+    private SelfHostedEndpointFinder mSelfHostedEndpointFinder;
 
     @Inject
     public AccountStore(Dispatcher dispatcher, AccountRestClient accountRestClient,
-                        Authenticator authenticator, AccessToken accessToken) {
+                        SelfHostedEndpointFinder selfHostedEndpointFinder, Authenticator authenticator,
+                        AccessToken accessToken) {
         super(dispatcher);
         mAuthenticator = authenticator;
         mAccountRestClient = accountRestClient;
+        mSelfHostedEndpointFinder = selfHostedEndpointFinder;
         mAccount = loadAccount();
         mAccessToken = accessToken;
     }
@@ -152,6 +169,22 @@ public class AccountStore extends Store {
         } else if (actionType == AuthenticationAction.AUTHENTICATE) {
             AuthenticatePayload payload = (AuthenticatePayload) action.getPayload();
             authenticate(payload.username, payload.password, payload);
+        } else if (actionType == AuthenticationAction.DISCOVER_ENDPOINT) {
+            RefreshSitesXMLRPCPayload payload = (RefreshSitesXMLRPCPayload) action.getPayload();
+            mSelfHostedEndpointFinder.findEndpoint(payload.url, payload.username, payload.password);
+        } else if (actionType == AuthenticationAction.DISCOVERY_RESULT) {
+            DiscoveryResultPayload payload = (DiscoveryResultPayload) action.getPayload();
+            if (payload.isError) {
+                OnDiscoveryFailed discoveryFailed = new OnDiscoveryFailed();
+                discoveryFailed.error = payload.error;
+                discoveryFailed.failedEndpoint = payload.failedEndpoint;
+                emitChange(discoveryFailed);
+            } else {
+                OnDiscoverySucceeded discoverySucceeded = new OnDiscoverySucceeded();
+                discoverySucceeded.xmlRpcEndpoint = payload.xmlRpcEndpoint;
+                discoverySucceeded.wpRestEndpoint = payload.wpRestEndpoint;
+                emitChange(discoverySucceeded);
+            }
         } else if (actionType == AccountAction.FETCH) {
             // fetch Account and Account Settings
             mAccountRestClient.fetchAccount();

@@ -160,4 +160,9 @@ public class MemorizingTrustManager implements X509TrustManager {
     public X509Certificate getLastFailure() {
         return mLastFailure;
     }
+
+    public void clearLocalTrustStore() {
+        File localKeyStoreFile = new File(mContext.getFilesDir(), KEYSTORE_FILENAME);
+        localKeyStoreFile.delete();
+    }
 }
