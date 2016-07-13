@@ -1,17 +1,16 @@
 package org.wordpress.android.stores.release;
 
-import com.squareup.otto.Subscribe;
-
+import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.TestUtils;
 import org.wordpress.android.stores.example.BuildConfig;
 import org.wordpress.android.stores.generated.SiteActionBuilder;
+import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
-import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;

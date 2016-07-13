@@ -13,8 +13,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.squareup.otto.Subscribe;
-
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.stores.generated.AccountActionBuilder;
@@ -318,7 +318,7 @@ public class MainExampleActivity extends AppCompatActivity {
 
     // Event listeners
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAccountChanged(OnAccountChanged event) {
         if (!mAccountStore.isSignedIn()) {
             prependToLog("Signed Out");
@@ -329,7 +329,7 @@ public class MainExampleActivity extends AppCompatActivity {
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
         mAccountSettings.setEnabled(mAccountStore.hasAccessToken());
@@ -347,7 +347,7 @@ public class MainExampleActivity extends AppCompatActivity {
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteChanged(OnSiteChanged event) {
         if (mSiteStore.hasSite()) {
             SiteModel firstSite = mSiteStore.getSites().get(0);
@@ -358,7 +358,7 @@ public class MainExampleActivity extends AppCompatActivity {
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNewUserValidated(OnNewUserCreated event) {
         String message = event.dryRun ? "validated" : "created";
         if (event.isError) {
@@ -368,7 +368,7 @@ public class MainExampleActivity extends AppCompatActivity {
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNewSiteCreated(OnNewSiteCreated event) {
         String message = event.dryRun ? "validated" : "created";
         if (event.isError) {
@@ -378,7 +378,7 @@ public class MainExampleActivity extends AppCompatActivity {
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSitesRemoved(OnSitesRemoved event) {
         mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
     }

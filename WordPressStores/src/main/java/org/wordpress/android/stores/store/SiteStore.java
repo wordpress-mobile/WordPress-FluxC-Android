@@ -3,11 +3,11 @@ package org.wordpress.android.stores.store;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 
-import com.squareup.otto.Subscribe;
 import com.wellsql.generated.SiteModelTable;
 import com.yarolegovich.wellsql.WellSql;
 import com.yarolegovich.wellsql.mapper.SelectMapper;
 
+import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.Payload;
 import org.wordpress.android.stores.action.SiteAction;
