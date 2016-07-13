@@ -39,7 +39,7 @@ public class DiscoveryUtils {
      * @return new string truncated to the begining of the marker or the input string if marker is not found
      */
     public static String truncateUrl(String url, String marker) {
-        if (TextUtils.isEmpty(marker) || url.indexOf(marker) < 0) {
+        if (TextUtils.isEmpty(marker) || !url.contains(marker)) {
             return url;
         }
 

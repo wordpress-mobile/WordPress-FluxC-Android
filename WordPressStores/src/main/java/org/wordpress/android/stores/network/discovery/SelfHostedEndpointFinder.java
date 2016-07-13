@@ -35,12 +35,12 @@ import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLPeerUnverifiedException;
 
 public class SelfHostedEndpointFinder {
-    private Dispatcher mDispatcher;
-
     private final static int TIMEOUT_MS = 60000;
+
+    private final Dispatcher mDispatcher;
+    private final BaseXMLRPCClient mClient;
 
     public enum DiscoveryError {
         SITE_URL_CANNOT_BE_EMPTY,
@@ -48,22 +48,17 @@ public class SelfHostedEndpointFinder {
         MISSING_XMLRPC_METHOD,
         ERRONEOUS_SSL_CERTIFICATE,
         HTTP_AUTH_REQUIRED,
-        SITE_TIME_OUT,
         NO_SITE_ERROR,
-        XMLRPC_MALFORMED_RESPONSE,
-        XMLRPC_ERROR,
         WORDPRESS_COM_SITE
     }
 
-    protected static class DiscoveryException extends Exception {
+    static class DiscoveryException extends Exception {
         public final DiscoveryError discoveryError;
         public final String failedUrl;
-        public final String clientResponse;
 
-        public DiscoveryException(DiscoveryError failureType, String failedUrl, String clientResponse) {
+        public DiscoveryException(DiscoveryError failureType, String failedUrl) {
             this.discoveryError = failureType;
             this.failedUrl = failedUrl;
-            this.clientResponse = clientResponse;
         }
     }
 
@@ -85,8 +80,6 @@ public class SelfHostedEndpointFinder {
             this.failedEndpoint = failedEndpoint;
         }
     }
-
-    private BaseXMLRPCClient mClient;
 
     @Inject
     public SelfHostedEndpointFinder(Dispatcher dispatcher, BaseXMLRPCClient baseXMLRPCClient) {
@@ -119,11 +112,11 @@ public class SelfHostedEndpointFinder {
     private String verifyOrDiscoverXMLRPCEndpoint(final String siteUrl, final String httpUsername,
                                                  final String httpPassword) throws DiscoveryException {
         if (TextUtils.isEmpty(siteUrl)) {
-            throw new DiscoveryException(DiscoveryError.INVALID_URL, siteUrl, null);
+            throw new DiscoveryException(DiscoveryError.INVALID_URL, siteUrl);
         }
 
         if (WPUrlUtils.isWordPressCom(sanitizeSiteUrl(siteUrl, false))) {
-            throw new DiscoveryException(DiscoveryError.WORDPRESS_COM_SITE, siteUrl, null);
+            throw new DiscoveryException(DiscoveryError.WORDPRESS_COM_SITE, siteUrl);
         }
 
         String xmlrpcUrl = verifyXMLRPCUrl(siteUrl, httpUsername, httpPassword);
@@ -137,7 +130,7 @@ public class SelfHostedEndpointFinder {
         // Validate the XML-RPC URL we've found before. This check prevents a crash that can occur
         // during the setup of self-hosted sites that have malformed xmlrpc URLs in their declaration.
         if (!URLUtil.isValidUrl(xmlrpcUrl)) {
-            throw new DiscoveryException(DiscoveryError.NO_SITE_ERROR, xmlrpcUrl, null);
+            throw new DiscoveryException(DiscoveryError.NO_SITE_ERROR, xmlrpcUrl);
         }
 
         return xmlrpcUrl;
@@ -222,60 +215,52 @@ public class SelfHostedEndpointFinder {
 
         String xmlrpcUrl = null;
         for (String currentURL : urlsToTry) {
-            try {
-                if (!URLUtil.isValidUrl(currentURL)) {
+            if (!URLUtil.isValidUrl(currentURL)) {
+                continue;
+            }
+            // Download the HTML content
+            AppLog.i(AppLog.T.NUX, "Downloading the HTML content at the following URL: " + currentURL);
+            String responseHTML = getResponse(currentURL);
+            if (TextUtils.isEmpty(responseHTML)) {
+                AppLog.w(AppLog.T.NUX, "Content downloaded but it's empty or null. Skipping this URL");
+                continue;
+            }
+
+            // Try to find the RSD tag with a regex
+            String rsdUrl = getRSDMetaTagHrefRegEx(responseHTML);
+            // If the regex approach fails try to parse the HTML doc and retrieve the RSD tag.
+            if (rsdUrl == null) {
+                rsdUrl = getRSDMetaTagHref(responseHTML);
+            }
+            rsdUrl = UrlUtils.addUrlSchemeIfNeeded(rsdUrl, false);
+
+            // If the RSD URL is empty here, try to see if the pingback or Apilink are in the doc, as the user
+            // could have inserted a direct link to the XML-RPC endpoint
+            if (rsdUrl == null) {
+                AppLog.i(AppLog.T.NUX, "Can't find the RSD endpoint in the HTML document. Try to check the " +
+                        "pingback tag, and the apiLink tag.");
+                xmlrpcUrl = UrlUtils.addUrlSchemeIfNeeded(DiscoveryUtils.getXMLRPCPingback(responseHTML), false);
+                if (xmlrpcUrl == null) {
+                    xmlrpcUrl = UrlUtils.addUrlSchemeIfNeeded(DiscoveryUtils.getXMLRPCApiLink(responseHTML), false);
+                }
+            } else {
+                AppLog.i(AppLog.T.NUX, "RSD endpoint found at the following address: " + rsdUrl);
+                AppLog.i(AppLog.T.NUX, "Downloading the RSD document...");
+                String rsdEndpointDocument = getResponse(rsdUrl);
+                if (TextUtils.isEmpty(rsdEndpointDocument)) {
+                    AppLog.w(AppLog.T.NUX, "Content downloaded but it's empty or null. Skipping this RSD document" +
+                            " URL.");
                     continue;
                 }
-                // Download the HTML content
-                AppLog.i(AppLog.T.NUX, "Downloading the HTML content at the following URL: " + currentURL);
-                String responseHTML = getResponse(currentURL);
-                if (TextUtils.isEmpty(responseHTML)) {
-                    AppLog.w(AppLog.T.NUX, "Content downloaded but it's empty or null. Skipping this URL");
-                    continue;
-                }
-
-                // Try to find the RSD tag with a regex
-                String rsdUrl = getRSDMetaTagHrefRegEx(responseHTML);
-                // If the regex approach fails try to parse the HTML doc and retrieve the RSD tag.
-                if (rsdUrl == null) {
-                    rsdUrl = getRSDMetaTagHref(responseHTML);
-                }
-                rsdUrl = UrlUtils.addUrlSchemeIfNeeded(rsdUrl, false);
-
-                // If the RSD URL is empty here, try to see if the pingback or Apilink are in the doc, as the user
-                // could have inserted a direct link to the XML-RPC endpoint
-                if (rsdUrl == null) {
-                    AppLog.i(AppLog.T.NUX, "Can't find the RSD endpoint in the HTML document. Try to check the " +
-                            "pingback tag, and the apiLink tag.");
-                    xmlrpcUrl = UrlUtils.addUrlSchemeIfNeeded(DiscoveryUtils.getXMLRPCPingback(responseHTML), false);
-                    if (xmlrpcUrl == null) {
-                        xmlrpcUrl = UrlUtils.addUrlSchemeIfNeeded(DiscoveryUtils.getXMLRPCApiLink(responseHTML), false);
-                    }
-                } else {
-                    AppLog.i(AppLog.T.NUX, "RSD endpoint found at the following address: " + rsdUrl);
-                    AppLog.i(AppLog.T.NUX, "Downloading the RSD document...");
-                    String rsdEndpointDocument = getResponse(rsdUrl);
-                    if (TextUtils.isEmpty(rsdEndpointDocument)) {
-                        AppLog.w(AppLog.T.NUX, "Content downloaded but it's empty or null. Skipping this RSD document" +
-                                " URL.");
-                        continue;
-                    }
-                    AppLog.i(AppLog.T.NUX, "Extracting the XML-RPC Endpoint address from the RSD document");
-                    xmlrpcUrl = UrlUtils.addUrlSchemeIfNeeded(DiscoveryUtils.getXMLRPCApiLink(rsdEndpointDocument),
-                            false);
-                }
-                if (xmlrpcUrl != null) {
-                    AppLog.i(AppLog.T.NUX, "Found the XML-RPC endpoint in the HTML document!!!");
-                    break;
-                } else {
-                    AppLog.i(AppLog.T.NUX, "XML-RPC endpoint not found");
-                }
-            } catch (SSLHandshakeException e) {
-                if (!WPUrlUtils.isWordPressCom(currentURL)) {
-                    throw new DiscoveryException(DiscoveryError.ERRONEOUS_SSL_CERTIFICATE, currentURL, null);
-                }
-                AppLog.w(AppLog.T.NUX, "SSLHandshakeException failed. Erroneous SSL certificate detected.");
-                return null;
+                AppLog.i(AppLog.T.NUX, "Extracting the XML-RPC Endpoint address from the RSD document");
+                xmlrpcUrl = UrlUtils.addUrlSchemeIfNeeded(DiscoveryUtils.getXMLRPCApiLink(rsdEndpointDocument),
+                        false);
+            }
+            if (xmlrpcUrl != null) {
+                AppLog.i(AppLog.T.NUX, "Found the XML-RPC endpoint in the HTML document!!!");
+                break;
+            } else {
+                AppLog.i(AppLog.T.NUX, "XML-RPC endpoint not found");
             }
         }
 
@@ -286,7 +271,7 @@ public class SelfHostedEndpointFinder {
             }
         }
 
-        throw new DiscoveryException(DiscoveryError.NO_SITE_ERROR, null, null);
+        throw new DiscoveryException(DiscoveryError.NO_SITE_ERROR, null);
     }
 
 
@@ -305,14 +290,12 @@ public class SelfHostedEndpointFinder {
     /**
      * Returns RSD URL based on regex match.
      */
-    private String getRSDMetaTagHrefRegEx(String urlString)
-            throws SSLHandshakeException, DiscoveryException {
+    private String getRSDMetaTagHrefRegEx(String urlString) throws DiscoveryException {
         String html = getResponse(urlString);
         if (html != null) {
             Matcher matcher = rsdLink.matcher(html);
             if (matcher.find()) {
-                String href = matcher.group(1);
-                return href;
+                return matcher.group(1);
             }
         }
         return null;
@@ -321,8 +304,7 @@ public class SelfHostedEndpointFinder {
     /**
      * Returns RSD URL based on html tag search.
      */
-    private String getRSDMetaTagHref(String urlString)
-            throws SSLHandshakeException, DiscoveryException {
+    private String getRSDMetaTagHref(String urlString) throws DiscoveryException {
         // Get the html code
         String data = getResponse(urlString);
 
@@ -335,7 +317,7 @@ public class SelfHostedEndpointFinder {
                 parser.setInput(stringReader);
                 int eventType = parser.getEventType();
                 while (eventType != XmlPullParser.END_DOCUMENT) {
-                    String name = null;
+                    String name;
                     String rel = "";
                     String type = "";
                     String href = "";
@@ -346,12 +328,17 @@ public class SelfHostedEndpointFinder {
                                 for (int i = 0; i < parser.getAttributeCount(); i++) {
                                     String attrName = parser.getAttributeName(i);
                                     String attrValue = parser.getAttributeValue(i);
-                                    if (attrName.equals("rel")) {
-                                        rel = attrValue;
-                                    } else if (attrName.equals("type"))
-                                        type = attrValue;
-                                    else if (attrName.equals("href"))
-                                        href = attrValue;
+                                    switch (attrName) {
+                                        case "rel":
+                                            rel = attrValue;
+                                            break;
+                                        case "type":
+                                            type = attrValue;
+                                            break;
+                                        case "href":
+                                            href = attrValue;
+                                            break;
+                                    }
                                 }
 
                                 if (rel.equals("EditURI") && type.equals("application/rsd+xml")) {
@@ -386,11 +373,11 @@ public class SelfHostedEndpointFinder {
             AppLog.e(T.API, "Couldn't get XML-RPC response.");
         } catch (ExecutionException e) {
             if (e.getCause() instanceof AuthFailureError) {
-                throw new DiscoveryException(DiscoveryError.HTTP_AUTH_REQUIRED, url, null);
+                throw new DiscoveryException(DiscoveryError.HTTP_AUTH_REQUIRED, url);
             } else if (e.getCause() instanceof NoConnectionError && e.getCause().getCause() != null &&
                     e.getCause().getCause() instanceof SSLHandshakeException) {
                 // In the event of an SSL error we should stop attempting discovery
-                throw new DiscoveryException(DiscoveryError.ERRONEOUS_SSL_CERTIFICATE, url, null);
+                throw new DiscoveryException(DiscoveryError.ERRONEOUS_SSL_CERTIFICATE, url);
             }
         }
         return null;
@@ -401,7 +388,7 @@ public class SelfHostedEndpointFinder {
         String url = siteUrl.trim();
 
         if (TextUtils.isEmpty(url)) {
-            throw new DiscoveryException(DiscoveryError.SITE_URL_CANNOT_BE_EMPTY, siteUrl, null);
+            throw new DiscoveryException(DiscoveryError.SITE_URL_CANNOT_BE_EMPTY, siteUrl);
         }
 
         // Convert IDN names to punycode if necessary
@@ -414,7 +401,7 @@ public class SelfHostedEndpointFinder {
         url = DiscoveryUtils.stripKnownPaths(url);
 
         if (!(URLUtil.isHttpsUrl(url) || URLUtil.isHttpUrl(url))) {
-            throw new DiscoveryException(DiscoveryError.INVALID_URL, url, null);
+            throw new DiscoveryException(DiscoveryError.INVALID_URL, url);
         }
 
         return url;
@@ -439,38 +426,28 @@ public class SelfHostedEndpointFinder {
                 // Endpoint found, but it has problem.
                 AppLog.w(T.NUX, "Validation ended with errors! Endpoint found but doesn't contain all the " +
                         "required methods.");
-                throw new DiscoveryException(DiscoveryError.MISSING_XMLRPC_METHOD, url, null);
+                throw new DiscoveryException(DiscoveryError.MISSING_XMLRPC_METHOD, url);
             }
         } catch (DiscoveryException e) {
             AppLog.e(T.NUX, "system.listMethods failed on: " + url, e);
             if (DiscoveryUtils.isHTTPAuthErrorMessage(e) || e.discoveryError.equals(DiscoveryError.HTTP_AUTH_REQUIRED)) {
-                throw new DiscoveryException(DiscoveryError.HTTP_AUTH_REQUIRED, url, null);
+                throw new DiscoveryException(DiscoveryError.HTTP_AUTH_REQUIRED, url);
             } else if (e.discoveryError.equals(DiscoveryError.ERRONEOUS_SSL_CERTIFICATE)) {
-                throw new DiscoveryException(DiscoveryError.ERRONEOUS_SSL_CERTIFICATE, url, null);
-            }
-        } catch (SSLHandshakeException | SSLPeerUnverifiedException e) {
-            if (!WPUrlUtils.isWordPressCom(url)) {
-                throw new DiscoveryException(DiscoveryError.ERRONEOUS_SSL_CERTIFICATE, url, null);
-            }
-            AppLog.e(T.NUX, "SSL error. Erroneous SSL certificate detected.", e);
-        } catch (IOException | XmlPullParserException e) {
-            AppLog.e(T.NUX, "system.listMethods failed on: " + url, e);
-            if (DiscoveryUtils.isHTTPAuthErrorMessage(e)) {
-                throw new DiscoveryException(DiscoveryError.HTTP_AUTH_REQUIRED, url, null);
+                throw new DiscoveryException(DiscoveryError.ERRONEOUS_SSL_CERTIFICATE, url);
             }
         } catch (IllegalArgumentException e) {
             // The XML-RPC client returns this error in case of redirect to an invalid URL.
-            throw new DiscoveryException(DiscoveryError.INVALID_URL, url, null);
+            throw new DiscoveryException(DiscoveryError.INVALID_URL, url);
         }
 
         return false;
     }
 
     private Object[] doSystemListMethodsXMLRPC(String url, String httpUsername, String httpPassword) throws
-            IOException, XmlPullParserException, DiscoveryException {
+            DiscoveryException {
         if (!UrlUtils.isValidUrlAndHostNotNull(url)) {
             AppLog.e(T.NUX, "invalid URL: " + url);
-            throw new DiscoveryException(DiscoveryError.INVALID_URL, url, null);
+            throw new DiscoveryException(DiscoveryError.INVALID_URL, url);
         }
 
         AppLog.i(T.NUX, "Trying system.listMethods on the following URL: " + url);
@@ -488,11 +465,11 @@ public class SelfHostedEndpointFinder {
             AppLog.e(T.API, "Couldn't get XML-RPC response.");
         } catch (ExecutionException e) {
             if (e.getCause() instanceof AuthFailureError) {
-                throw new DiscoveryException(DiscoveryError.HTTP_AUTH_REQUIRED, url, null);
+                throw new DiscoveryException(DiscoveryError.HTTP_AUTH_REQUIRED, url);
             } else if (e.getCause() instanceof NoConnectionError && e.getCause().getCause() != null &&
                     e.getCause().getCause() instanceof SSLHandshakeException) {
                 // In the event of an SSL error we should stop attempting discovery
-                throw new DiscoveryException(DiscoveryError.ERRONEOUS_SSL_CERTIFICATE, url, null);
+                throw new DiscoveryException(DiscoveryError.ERRONEOUS_SSL_CERTIFICATE, url);
             }
         }
         return null;
