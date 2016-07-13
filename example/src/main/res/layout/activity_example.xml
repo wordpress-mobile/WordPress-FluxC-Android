@@ -20,14 +20,27 @@
                 android:id="@+id/new_account"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Create New Account"
-                android:layout_weight="1" />
+                android:text="Create New Account" />
 
             <Button
-                android:id="@+id/list_sites_button"
+                android:id="@+id/new_site"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:text="Create New Site" />
+
+            <Button
+                android:id="@+id/sign_in_fetch_sites_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Sign In And Fetch Sites" />
+
+            <Button
+                android:id="@+id/account_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Set Display Name"
+                android:enabled="false" />
 
             <Button
                 android:id="@+id/account_infos_button"
