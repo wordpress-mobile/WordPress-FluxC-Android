@@ -7,8 +7,10 @@ import com.android.volley.toolbox.HttpHeaderParser;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.rest.GsonRequest;
+import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator;
+import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.AuthenticateErrorPayload;
+import org.wordpress.android.stores.store.AccountStore.AuthenticationError;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
@@ -43,30 +45,36 @@ public class WPComGsonRequest<T> extends GsonRequest<T> {
     }
 
     @Override
-    public void deliverError(VolleyError error) {
-        super.deliverError(error);
+    public void deliverError(VolleyError volleyError) {
+        super.deliverError(volleyError);
 
-        // Fire OnAuthFailedListener if we receive an invalid token error
-        if (error.networkResponse != null && error.networkResponse.statusCode >= 400 && mOnAuthFailedListener != null) {
+        // Fire OnAuthFailedListener if we receive it matches certain types of error
+        if (volleyError.networkResponse != null && volleyError.networkResponse.statusCode >= 400 && mOnAuthFailedListener != null) {
             String jsonString;
             try {
-                jsonString = new String(error.networkResponse.data,
-                        HttpHeaderParser.parseCharset(error.networkResponse.headers));
+                jsonString = new String(volleyError.networkResponse.data,
+                        HttpHeaderParser.parseCharset(volleyError.networkResponse.headers));
             } catch (UnsupportedEncodingException e) {
                 jsonString = "";
             }
 
             // TODO: we could use GSON here
-            JSONObject responseObject;
+            JSONObject jsonObject;
             try {
-                responseObject = new JSONObject(jsonString);
+                jsonObject = new JSONObject(jsonString);
             } catch (JSONException e) {
-                responseObject = new JSONObject();
+                jsonObject = new JSONObject();
             }
 
-            String restError = responseObject.optString("error", "");
-            if (restError.equals("authorization_required") || restError.equals("invalid_token")) {
-                mOnAuthFailedListener.onAuthFailed(AuthError.INVALID_TOKEN);
+            String apiResponseError = jsonObject.optString("error", "");
+            if (apiResponseError.equals("authorization_required")
+                    || apiResponseError.equals("invalid_token")
+                    || apiResponseError.equals("access_denied")
+                    || apiResponseError.equals("needs_2fa")) {
+                AuthenticationError error = Authenticator.jsonErrorToAuthenticationError(jsonObject);
+                AuthenticateErrorPayload payload = new AuthenticateErrorPayload(error, jsonObject.optString
+                        ("error_description", ""));
+                mOnAuthFailedListener.onAuthFailed(payload);
             }
         }
     }

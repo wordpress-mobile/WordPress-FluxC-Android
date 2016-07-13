@@ -11,8 +11,9 @@ import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 
-import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.BaseRequest;
+import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.AuthenticateErrorPayload;
+import org.wordpress.android.stores.store.AccountStore.AuthenticationError;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 import org.xmlpull.v1.XmlPullParserException;
@@ -99,26 +100,25 @@ public class XMLRPCRequest extends BaseRequest<Object> {
     public void deliverError(VolleyError error) {
         super.deliverError(error);
         // XMLRPC Error
+        AuthenticateErrorPayload payload = new AuthenticateErrorPayload(AuthenticationError.GENERIC_ERROR, "");
         if (error.getCause() instanceof XMLRPCFault) {
             XMLRPCFault xmlrpcFault = (XMLRPCFault) error.getCause();
             if (xmlrpcFault.getFaultCode() == 401) {
                 // Unauthorized
-                mOnAuthFailedListener.onAuthFailed(AuthError.UNAUTHORIZED);
+                payload.errorType = AuthenticationError.AUTHORIZATION_REQUIRED;
             } else if (xmlrpcFault.getFaultCode() == 403) {
                 // Not authenticated
-                mOnAuthFailedListener.onAuthFailed(AuthError.NOT_AUTHENTICATED);
-                return;
+                payload.errorType = AuthenticationError.NOT_AUTHENTICATED;
             }
         }
         // Invalid SSL Handshake
         if (error.getCause() instanceof SSLHandshakeException) {
-            mOnAuthFailedListener.onAuthFailed(AuthError.INVALID_SSL_CERTIFICATE);
-            return;
+            payload.errorType = AuthenticationError.INVALID_SSL_CERTIFICATE;
         }
         // Invalid HTTP Auth
         if (error instanceof AuthFailureError) {
-            mOnAuthFailedListener.onAuthFailed(AuthError.HTTP_AUTH_ERROR);
-            return;
+            payload.errorType = AuthenticationError.HTTP_AUTH_ERROR;
         }
+        mOnAuthFailedListener.onAuthFailed(payload);
     }
 }

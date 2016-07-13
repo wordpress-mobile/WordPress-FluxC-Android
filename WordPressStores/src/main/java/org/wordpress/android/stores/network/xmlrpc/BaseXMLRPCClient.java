@@ -6,7 +6,6 @@ import com.android.volley.RequestQueue;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
 import org.wordpress.android.stores.model.SiteModel;
-import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.BaseRequest;
 import org.wordpress.android.stores.network.BaseRequest.OnAuthFailedListener;
 import org.wordpress.android.stores.network.HTTPAuthManager;
@@ -14,6 +13,7 @@ import org.wordpress.android.stores.network.UserAgent;
 import org.wordpress.android.stores.network.discovery.DiscoveryRequest;
 import org.wordpress.android.stores.network.discovery.DiscoveryXMLRPCRequest;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
+import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.AuthenticateErrorPayload;
 
 public class BaseXMLRPCClient {
     private AccessToken mAccessToken;
@@ -33,7 +33,7 @@ public class BaseXMLRPCClient {
         mHTTPAuthManager = httpAuthManager;
         mOnAuthFailedListener = new OnAuthFailedListener() {
             @Override
-            public void onAuthFailed(AuthError authError) {
+            public void onAuthFailed(AuthenticateErrorPayload authError) {
                 mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateErrorAction(authError));
             }
         };

@@ -12,7 +12,6 @@ import org.wordpress.android.stores.action.AuthenticationAction;
 import org.wordpress.android.stores.annotations.action.Action;
 import org.wordpress.android.stores.annotations.action.IAction;
 import org.wordpress.android.stores.model.AccountModel;
-import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder;
 import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
 import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder.DiscoveryResultPayload;
@@ -22,6 +21,7 @@ import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient.NewAccountResponsePayload;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator;
+import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.AuthenticateErrorPayload;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.Token;
 import org.wordpress.android.stores.persistence.AccountSqlUtils;
 import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;
@@ -82,7 +82,8 @@ public class AccountStore extends Store {
 
     public class OnAuthenticationChanged extends OnChanged {
         public boolean isError;
-        public AuthError authError;
+        public AuthenticationError errorType;
+        public String errorMessage;
     }
 
     public class OnDiscoverySucceeded extends OnChanged {
@@ -103,6 +104,43 @@ public class AccountStore extends Store {
     }
 
     // Enums
+    public enum AuthenticationError {
+        // From response's "error" field
+        ACCESS_DENIED,
+        AUTHORIZATION_REQUIRED,
+        INVALID_CLIENT,
+        INVALID_GRANT,
+        INVALID_OTP,
+        INVALID_REQUEST,
+        INVALID_TOKEN,
+        NEEDS_2FA,
+        UNSUPPORTED_GRANT_TYPE,
+        UNSUPPORTED_RESPONSE_TYPE,
+        UNKNOWN_TOKEN,
+
+        // From response's "message" field - sadly... (be careful with i18n)
+        INCORRECT_USERNAME_OR_PASSWORD,
+
+        // .org specifics
+        INVALID_SSL_CERTIFICATE,
+        HTTP_AUTH_ERROR,
+        NOT_AUTHENTICATED,
+
+        // Generic error
+        GENERIC_ERROR;
+
+        public static AuthenticationError fromString(String string) {
+            if (string != null) {
+                for (AuthenticationError v : AuthenticationError.values()) {
+                    if (string.equalsIgnoreCase(v.name())) {
+                        return v;
+                    }
+                }
+            }
+            return GENERIC_ERROR;
+        }
+    }
+
     public enum NewUserError {
         USERNAME_ONLY_LOWERCASE_LETTERS_AND_NUMBERS,
         USERNAME_REQUIRED,
@@ -163,8 +201,10 @@ public class AccountStore extends Store {
         IAction actionType = action.getType();
         if (actionType == AuthenticationAction.AUTHENTICATE_ERROR) {
             OnAuthenticationChanged event = new OnAuthenticationChanged();
+            AuthenticateErrorPayload payload = (AuthenticateErrorPayload) action.getPayload();
             event.isError = true;
-            event.authError = (AuthError) action.getPayload();
+            event.errorMessage = payload.errorMessage;
+            event.errorType = payload.errorType;
             emitChange(event);
         } else if (actionType == AuthenticationAction.AUTHENTICATE) {
             AuthenticatePayload payload = (AuthenticatePayload) action.getPayload();
@@ -319,6 +359,8 @@ public class AccountStore extends Store {
             public void onErrorResponse(VolleyError volleyError) {
                 AppLog.e(T.API, "Authentication error");
                 OnAuthenticationChanged event = new OnAuthenticationChanged();
+                event.errorType = Authenticator.volleyErrorToAuthenticationError(volleyError);
+                event.errorMessage = Authenticator.volleyErrorToErrorMessage(volleyError);
                 event.isError = true;
                 emitChange(event);
             }
