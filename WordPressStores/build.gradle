@@ -58,7 +58,7 @@ dependencies {
     apt project(':stores-processor')
 
     // External libs
-    compile 'com.squareup:otto:1.3.8'
+    compile 'org.greenrobot:eventbus:3.0.0'
     compile 'com.squareup.okhttp3:okhttp:3.2.0'
     compile 'com.squareup.okhttp3:okhttp-urlconnection:3.2.0'
     compile 'com.android.volley:volley:1.0.0'

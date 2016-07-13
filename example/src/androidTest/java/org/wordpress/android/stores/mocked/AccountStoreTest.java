@@ -3,9 +3,9 @@ package org.wordpress.android.stores.mocked;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
-import com.squareup.otto.Subscribe;
 import com.yarolegovich.wellsql.WellSql;
 
+import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
 import org.wordpress.android.stores.module.AppContextModule;

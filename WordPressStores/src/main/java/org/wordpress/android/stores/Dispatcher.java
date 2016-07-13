@@ -1,8 +1,6 @@
 package org.wordpress.android.stores;
 
-import com.squareup.otto.Bus;
-import com.squareup.otto.ThreadEnforcer;
-
+import org.greenrobot.eventbus.EventBus;
 import org.wordpress.android.stores.annotations.action.Action;
 import org.wordpress.android.stores.store.Store;
 import org.wordpress.android.util.AppLog;
@@ -10,12 +8,17 @@ import org.wordpress.android.util.AppLog.T;
 
 import javax.inject.Singleton;
 
+
 @Singleton
 public class Dispatcher {
-    private final Bus mBus;
+    private final EventBus mBus;
 
     public Dispatcher() {
-        mBus = new Bus(ThreadEnforcer.ANY);
+        mBus = EventBus.builder()
+                .logNoSubscriberMessages(true)
+                .sendNoSubscriberEvent(true)
+                .throwSubscriberException(true)
+                .build();
     }
 
     public void register(final Object object) {

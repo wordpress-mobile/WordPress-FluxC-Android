@@ -1,7 +1,6 @@
 package org.wordpress.android.stores.release;
 
-import com.squareup.otto.Subscribe;
-
+import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.TestUtils;
 import org.wordpress.android.stores.action.AccountAction;
@@ -9,10 +8,10 @@ import org.wordpress.android.stores.example.BuildConfig;
 import org.wordpress.android.stores.generated.AccountActionBuilder;
 import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
 import org.wordpress.android.stores.store.AccountStore;
-import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
 import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.stores.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
+import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
 
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
