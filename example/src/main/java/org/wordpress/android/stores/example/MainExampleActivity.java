@@ -187,7 +187,7 @@ public class MainExampleActivity extends AppCompatActivity {
                         // Retry login action
                         if (mSelfhostedPayload != null) {
                             signInAction(mSelfhostedPayload.username, mSelfhostedPayload.password,
-                                    mSelfhostedPayload.xmlrpcEndpoint);
+                                    mSelfhostedPayload.url);
                         }
                     }
                 }, certifString);
@@ -230,7 +230,7 @@ public class MainExampleActivity extends AppCompatActivity {
             wpcomFetchSites(username, password);
         } else {
             mSelfhostedPayload = new RefreshSitesXMLRPCPayload();
-            mSelfhostedPayload.xmlrpcEndpoint = url;
+            mSelfhostedPayload.url = url;
             mSelfhostedPayload.username = username;
             mSelfhostedPayload.password = password;
 
@@ -254,7 +254,7 @@ public class MainExampleActivity extends AppCompatActivity {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = username;
         payload.password = password;
-        payload.xmlrpcEndpoint = xmlrpcEndpoint;
+        payload.url = xmlrpcEndpoint;
         mSelfhostedPayload = payload;
         // Self Hosted don't have any "Authentication" request, try to list sites with user/password
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
@@ -332,7 +332,7 @@ public class MainExampleActivity extends AppCompatActivity {
             prependToLog("Authentication error: " + event.authError);
             if (event.authError == AuthError.HTTP_AUTH_ERROR) {
                 // Show a Dialog prompting for http username and password
-                showHTTPAuthDialog(mSelfhostedPayload.xmlrpcEndpoint);
+                showHTTPAuthDialog(mSelfhostedPayload.url);
             }
             if (event.authError == AuthError.INVALID_SSL_CERTIFICATE) {
                 // Show a SSL Warning Dialog
@@ -349,7 +349,7 @@ public class MainExampleActivity extends AppCompatActivity {
             } else if (event.error == DiscoveryError.HTTP_AUTH_REQUIRED) {
                 showHTTPAuthDialog(event.failedEndpoint);
             } else if (event.error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
-                mSelfhostedPayload.xmlrpcEndpoint = event.failedEndpoint;
+                mSelfhostedPayload.url = event.failedEndpoint;
                 showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
             }
             prependToLog("Discovery failed with error: " + event.error);

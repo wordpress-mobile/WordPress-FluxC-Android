@@ -62,7 +62,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     public void testInvalidUrlFetchSites() throws InterruptedException {
         mPayload = new RefreshSitesXMLRPCPayload();
-        mPayload.xmlrpcEndpoint = "notaurl&*@";
+        mPayload.url = "notaurl&*@";
         mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
         mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
 
@@ -77,7 +77,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     public void testNonWordPressFetchSites() throws InterruptedException {
         mPayload = new RefreshSitesXMLRPCPayload();
-        mPayload.xmlrpcEndpoint = "example.com";
+        mPayload.url = "example.com";
         mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
         mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
 
@@ -92,7 +92,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     public void testWordPressCOMUrlFetchSites() throws InterruptedException {
         mPayload = new RefreshSitesXMLRPCPayload();
-        mPayload.xmlrpcEndpoint = "mysite.wordpress.com";
+        mPayload.url = "mysite.wordpress.com";
         mPayload.username = BuildConfig.TEST_WPCOM_USERNAME_TEST1;
         mPayload.password = BuildConfig.TEST_WPCOM_PASSWORD_TEST1;
 
@@ -214,7 +214,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     private void checkSelfHostedSimpleFetchForSite(String url, String username, String password)
             throws InterruptedException {
         mPayload = new RefreshSitesXMLRPCPayload();
-        mPayload.xmlrpcEndpoint = url;
+        mPayload.url = url;
         mPayload.username = username;
         mPayload.password = password;
 
@@ -232,7 +232,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     private void checkSelfHostedSelfSignedSSLFetchForSite(String url, String username, String password)
             throws InterruptedException {
         mPayload = new RefreshSitesXMLRPCPayload();
-        mPayload.xmlrpcEndpoint = url;
+        mPayload.url = url;
         mPayload.username = username;
         mPayload.password = password;
 
@@ -264,7 +264,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     private void checkSelfHostedHTTPAuthFetchForSite(String url, String username, String password, String auth_username,
                                                     String auth_password) throws InterruptedException {
         mPayload = new RefreshSitesXMLRPCPayload();
-        mPayload.xmlrpcEndpoint = url;
+        mPayload.url = url;
         mPayload.username = username;
         mPayload.password = password;
 
@@ -277,7 +277,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Set known HTTP Auth credentials
-        mHTTPAuthManager.addHTTPAuthCredentials(auth_username, auth_password, mPayload.xmlrpcEndpoint, null);
+        mHTTPAuthManager.addHTTPAuthCredentials(auth_username, auth_password, mPayload.url, null);
 
         // Retry endpoint discovery, and attempt to fetch sites
         mNextEvent = TEST_EVENTS.DISCOVERY_SUCCEEDED;
@@ -343,12 +343,12 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 throw new AssertionError("Didn't get the correct error, expected: " + mNextEvent + ", and got: "
                         + event.error);
             }
-            mPayload.xmlrpcEndpoint = event.failedEndpoint;
+            mPayload.url = event.failedEndpoint;
             mCountDownLatch.countDown();
         } else {
             AppLog.i(T.API, "Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
             assertEquals(TEST_EVENTS.DISCOVERY_SUCCEEDED, mNextEvent);
-            mPayload.xmlrpcEndpoint = event.xmlRpcEndpoint;
+            mPayload.url = event.xmlRpcEndpoint;
             mCountDownLatch.countDown();
         }
     }

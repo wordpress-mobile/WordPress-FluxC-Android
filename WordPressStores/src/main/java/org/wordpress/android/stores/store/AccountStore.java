@@ -169,7 +169,7 @@ public class AccountStore extends Store {
             authenticate(payload.username, payload.password, payload);
         } else if (actionType == AuthenticationAction.DISCOVER_ENDPOINT) {
             RefreshSitesXMLRPCPayload payload = (RefreshSitesXMLRPCPayload) action.getPayload();
-            mSelfHostedEndpointFinder.findEndpoint(payload.xmlrpcEndpoint, payload.username, payload.password);
+            mSelfHostedEndpointFinder.findEndpoint(payload.url, payload.username, payload.password);
         } else if (actionType == AuthenticationAction.DISCOVERY_RESULT) {
             DiscoveryResultPayload payload = (DiscoveryResultPayload) action.getPayload();
             OnDiscoveryCompleted discoveryCompleted = new OnDiscoveryCompleted();

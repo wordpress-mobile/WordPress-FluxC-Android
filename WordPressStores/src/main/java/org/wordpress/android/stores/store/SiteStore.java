@@ -37,7 +37,7 @@ public class SiteStore extends Store {
         public RefreshSitesXMLRPCPayload() {}
         public String username;
         public String password;
-        public String xmlrpcEndpoint;
+        public String url;
     }
 
     public static class NewSitePayload implements Payload {
@@ -444,7 +444,7 @@ public class SiteStore extends Store {
             mSiteRestClient.pullSites();
         } else if (actionType == SiteAction.FETCH_SITES_XML_RPC) {
             RefreshSitesXMLRPCPayload payload = (RefreshSitesXMLRPCPayload) action.getPayload();
-            mSiteXMLRPCClient.pullSites(payload.xmlrpcEndpoint, payload.username, payload.password);
+            mSiteXMLRPCClient.pullSites(payload.url, payload.username, payload.password);
         } else if (actionType == SiteAction.FETCH_SITE) {
             SiteModel site = (SiteModel) action.getPayload();
             if (site.isWPCom() || site.isJetpack()) {
