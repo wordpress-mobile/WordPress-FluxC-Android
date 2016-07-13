@@ -85,10 +85,12 @@ public class AccountStore extends Store {
         public AuthError authError;
     }
 
-    public class OnDiscoveryCompleted extends OnChanged {
+    public class OnDiscoverySucceeded extends OnChanged {
         public String xmlRpcEndpoint;
         public String wpRestEndpoint;
-        public boolean isError;
+    }
+
+    public class OnDiscoveryFailed extends OnChanged {
         public DiscoveryError error;
         public String failedEndpoint;
     }
@@ -172,13 +174,17 @@ public class AccountStore extends Store {
             mSelfHostedEndpointFinder.findEndpoint(payload.url, payload.username, payload.password);
         } else if (actionType == AuthenticationAction.DISCOVERY_RESULT) {
             DiscoveryResultPayload payload = (DiscoveryResultPayload) action.getPayload();
-            OnDiscoveryCompleted discoveryCompleted = new OnDiscoveryCompleted();
-            discoveryCompleted.isError = payload.isError;
-            discoveryCompleted.error = payload.error;
-            discoveryCompleted.failedEndpoint = payload.failedEndpoint;
-            discoveryCompleted.xmlRpcEndpoint = payload.xmlRpcEndpoint;
-            discoveryCompleted.wpRestEndpoint = payload.wpRestEndpoint;
-            emitChange(discoveryCompleted);
+            if (payload.isError) {
+                OnDiscoveryFailed discoveryFailed = new OnDiscoveryFailed();
+                discoveryFailed.error = payload.error;
+                discoveryFailed.failedEndpoint = payload.failedEndpoint;
+                emitChange(discoveryFailed);
+            } else {
+                OnDiscoverySucceeded discoverySucceeded = new OnDiscoverySucceeded();
+                discoverySucceeded.xmlRpcEndpoint = payload.xmlRpcEndpoint;
+                discoverySucceeded.wpRestEndpoint = payload.wpRestEndpoint;
+                emitChange(discoverySucceeded);
+            }
         } else if (actionType == AccountAction.FETCH) {
             // fetch Account and Account Settings
             mAccountRestClient.fetchAccount();

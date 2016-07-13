@@ -337,22 +337,23 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     @Subscribe
-    public void onDiscoveryCompleted(AccountStore.OnDiscoveryCompleted event) {
-        if (event.isError) {
-            if (event.error == DiscoveryError.WORDPRESS_COM_SITE) {
-                wpcomFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password);
-            } else if (event.error == DiscoveryError.HTTP_AUTH_REQUIRED) {
-                showHTTPAuthDialog(event.failedEndpoint);
-            } else if (event.error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
-                mSelfhostedPayload.url = event.failedEndpoint;
-                showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
-            }
-            prependToLog("Discovery failed with error: " + event.error);
-            AppLog.e(T.API, "Discover error: " + event.error);
-        } else {
-            prependToLog("Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
-            selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
+    public void onDiscoverySucceeded(AccountStore.OnDiscoverySucceeded event) {
+        prependToLog("Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
+        selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
+    }
+
+    @Subscribe
+    public void onDiscoveryFailed(AccountStore.OnDiscoveryFailed event) {
+        if (event.error == DiscoveryError.WORDPRESS_COM_SITE) {
+            wpcomFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password);
+        } else if (event.error == DiscoveryError.HTTP_AUTH_REQUIRED) {
+            showHTTPAuthDialog(event.failedEndpoint);
+        } else if (event.error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
+            mSelfhostedPayload.url = event.failedEndpoint;
+            showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
         }
+        prependToLog("Discovery failed with error: " + event.error);
+        AppLog.e(T.API, "Discover error: " + event.error);
     }
 
     @Subscribe

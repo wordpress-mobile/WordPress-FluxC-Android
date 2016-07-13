@@ -328,28 +328,29 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     }
 
     @Subscribe
-    public void onDiscoveryCompleted(AccountStore.OnDiscoveryCompleted event) {
-        if (event.isError) {
-            AppLog.i(T.API, "Discovery error: " + event.error);
-            if (event.error == DiscoveryError.NO_SITE_ERROR) {
-                assertEquals(TEST_EVENTS.NO_SITE_ERROR, mNextEvent);
-            } else if (event.error == DiscoveryError.WORDPRESS_COM_SITE) {
-                assertEquals(TEST_EVENTS.WORDPRESS_COM_SITE, mNextEvent);
-            } else if (event.error == DiscoveryError.HTTP_AUTH_REQUIRED) {
-                assertEquals(TEST_EVENTS.HTTP_AUTH_REQUIRED, mNextEvent);
-            } else if (event.error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
-                assertEquals(TEST_EVENTS.ERRONEOUS_SSL_CERTIFICATE, mNextEvent);
-            } else {
-                throw new AssertionError("Didn't get the correct error, expected: " + mNextEvent + ", and got: "
-                        + event.error);
-            }
-            mPayload.url = event.failedEndpoint;
-            mCountDownLatch.countDown();
+    public void onDiscoverySucceeded(AccountStore.OnDiscoverySucceeded event) {
+        AppLog.i(T.API, "Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
+        assertEquals(TEST_EVENTS.DISCOVERY_SUCCEEDED, mNextEvent);
+        mPayload.url = event.xmlRpcEndpoint;
+        mCountDownLatch.countDown();
+    }
+
+    @Subscribe
+    public void onDiscoveryFailed(AccountStore.OnDiscoveryFailed event) {
+        AppLog.i(T.API, "Discovery error: " + event.error);
+        if (event.error == DiscoveryError.NO_SITE_ERROR) {
+            assertEquals(TEST_EVENTS.NO_SITE_ERROR, mNextEvent);
+        } else if (event.error == DiscoveryError.WORDPRESS_COM_SITE) {
+            assertEquals(TEST_EVENTS.WORDPRESS_COM_SITE, mNextEvent);
+        } else if (event.error == DiscoveryError.HTTP_AUTH_REQUIRED) {
+            assertEquals(TEST_EVENTS.HTTP_AUTH_REQUIRED, mNextEvent);
+        } else if (event.error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
+            assertEquals(TEST_EVENTS.ERRONEOUS_SSL_CERTIFICATE, mNextEvent);
         } else {
-            AppLog.i(T.API, "Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
-            assertEquals(TEST_EVENTS.DISCOVERY_SUCCEEDED, mNextEvent);
-            mPayload.url = event.xmlRpcEndpoint;
-            mCountDownLatch.countDown();
+            throw new AssertionError("Didn't get the correct error, expected: " + mNextEvent + ", and got: "
+                    + event.error);
         }
+        mPayload.url = event.failedEndpoint;
+        mCountDownLatch.countDown();
     }
 }
