@@ -336,13 +336,13 @@ public class MainExampleActivity extends AppCompatActivity {
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDiscoverySucceeded(AccountStore.OnDiscoverySucceeded event) {
         prependToLog("Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
         selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDiscoveryFailed(AccountStore.OnDiscoveryFailed event) {
         if (event.error == DiscoveryError.WORDPRESS_COM_SITE) {
             wpcomFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password);
