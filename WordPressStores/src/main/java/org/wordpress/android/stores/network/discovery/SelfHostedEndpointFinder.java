@@ -1,5 +1,6 @@
 package org.wordpress.android.stores.network.discovery;
 
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Xml;
@@ -88,32 +89,50 @@ public class SelfHostedEndpointFinder {
 
     private BaseXMLRPCClient mClient;
 
+    // TODO: Drop this AsyncTask when the project upgrades to an event bus with better threading
+    private class DiscoveryTask extends AsyncTask<Object, Void, DiscoveryResultPayload> {
+        String mUrl;
+        String mUsername;
+        String mPassword;
+
+        protected DiscoveryTask(String url, String username, String password) {
+            mUrl = url;
+            mUsername = username;
+            mPassword = password;
+        }
+
+        @Override
+        protected DiscoveryResultPayload doInBackground(Object[] params) {
+            DiscoveryResultPayload payload;
+            try {
+                String xmlRpcEndpoint = verifyOrDiscoverXMLRPCEndpoint(mUrl, mUsername, mPassword);
+                String wpRestEndpoint = discoverWPRESTEndpoint(mUrl);
+                payload = new DiscoveryResultPayload(xmlRpcEndpoint, wpRestEndpoint);
+            } catch (DiscoveryException e) {
+                // TODO: Handle tracking of XMLRPCDiscoveryException
+                // If a DiscoveryException is caught this high up, it means that either:
+                // 1. The discovery process has completed, and did not turn up a valid WordPress.com site
+                // 2. Discovery was halted early because the given site requires SSL validation, or HTTP AUTH login,
+                // or is a WordPress.com site, or is a completely invalid URL
+                payload = new DiscoveryResultPayload(e.discoveryError, e.failedUrl);
+            }
+            return payload;
+        }
+
+        @Override
+        protected void onPostExecute(DiscoveryResultPayload payload) {
+            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoveryResultAction(payload));
+        }
+    }
+
     @Inject
     public SelfHostedEndpointFinder(Dispatcher dispatcher, BaseXMLRPCClient baseXMLRPCClient) {
         mDispatcher = dispatcher;
         mClient = baseXMLRPCClient;
     }
 
-    public void findEndpoint(final String url, final String httpUsername, final String httpPassword) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    String xmlRpcEndpoint = verifyOrDiscoverXMLRPCEndpoint(url, httpUsername, httpPassword);
-                    String wpRestEndpoint = discoverWPRESTEndpoint(url);
-                    DiscoveryResultPayload payload = new DiscoveryResultPayload(xmlRpcEndpoint, wpRestEndpoint);
-                    mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoveryResultAction(payload));
-                } catch (DiscoveryException e) {
-                    // TODO: Handle tracking of XMLRPCDiscoveryException
-                    // If a DiscoveryException is caught this high up, it means that either:
-                    // 1. The discovery process has completed, and did not turn up a valid WordPress.com site
-                    // 2. Discovery was halted early because the given site requires SSL validation, or HTTP AUTH login,
-                    // or is a WordPress.com site, or is a completely invalid URL
-                    DiscoveryResultPayload payload = new DiscoveryResultPayload(e.discoveryError, e.failedUrl);
-                    mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoveryResultAction(payload));
-                }
-            }
-        }).start();
+    public void findEndpoint(final String url, final String username, final String password) {
+        new DiscoveryTask(url, username, password).execute();
     }
 
     private String verifyOrDiscoverXMLRPCEndpoint(final String siteUrl, final String httpUsername,
@@ -385,7 +404,6 @@ public class SelfHostedEndpointFinder {
         } catch (InterruptedException | TimeoutException e) {
             AppLog.e(T.API, "Couldn't get XML-RPC response.");
         } catch (ExecutionException e) {
-            // TODO: Handle redirect errors
             if (e.getCause() instanceof AuthFailureError) {
                 throw new DiscoveryException(DiscoveryError.HTTP_AUTH_REQUIRED, url, null);
             } else if (e.getCause() instanceof NoConnectionError && e.getCause().getCause() != null &&
@@ -488,7 +506,6 @@ public class SelfHostedEndpointFinder {
         } catch (InterruptedException | TimeoutException e) {
             AppLog.e(T.API, "Couldn't get XML-RPC response.");
         } catch (ExecutionException e) {
-            // TODO: Handle redirect errors
             if (e.getCause() instanceof AuthFailureError) {
                 throw new DiscoveryException(DiscoveryError.HTTP_AUTH_REQUIRED, url, null);
             } else if (e.getCause() instanceof NoConnectionError && e.getCause().getCause() != null &&

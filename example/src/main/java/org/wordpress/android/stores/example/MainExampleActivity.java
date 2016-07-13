@@ -167,13 +167,8 @@ public class MainExampleActivity extends AppCompatActivity {
     // Private methods
 
     private void prependToLog(final String s) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                String output = s + "\n" + mLogView.getText();
-                mLogView.setText(output);
-            }
-        });
+        String output = s + "\n" + mLogView.getText();
+        mLogView.setText(output);
     }
 
     private void showSSLWarningDialog(String certifString) {
