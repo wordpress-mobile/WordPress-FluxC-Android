@@ -9,6 +9,7 @@ import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
 import org.wordpress.android.stores.store.AccountStore;
+import org.wordpress.android.stores.store.AccountStore.AuthenticationError;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
@@ -207,11 +208,11 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         if (event.isError) {
-            AppLog.i(T.TESTS, "error " + event.authError);
-            if (event.authError == AuthError.HTTP_AUTH_ERROR) {
+            AppLog.i(T.TESTS, "error " + event.errorType + " - " + event.errorMessage);
+            if (event.errorType == AuthenticationError.HTTP_AUTH_ERROR) {
                 assertEquals(TEST_EVENTS.HTTP_AUTH_ERROR, mNextEvent);
             }
-            if (event.authError == AuthError.INVALID_SSL_CERTIFICATE) {
+            if (event.errorType == AuthenticationError.INVALID_SSL_CERTIFICATE) {
                 assertEquals(TEST_EVENTS.INVALID_SSL_CERTIFICATE, mNextEvent);
             }
         }
