@@ -24,7 +24,6 @@ import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
-import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder;
 import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
@@ -47,14 +46,12 @@ import java.util.HashMap;
 
 import javax.inject.Inject;
 
-
 public class MainExampleActivity extends AppCompatActivity {
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
     @Inject Dispatcher mDispatcher;
     @Inject HTTPAuthManager mHTTPAuthManager;
     @Inject MemorizingTrustManager mMemorizingTrustManager;
-    @Inject SelfHostedEndpointFinder mSelfHostedEndpointFinder;
 
     private TextView mLogView;
     private Button mAccountInfos;
@@ -233,30 +230,11 @@ public class MainExampleActivity extends AppCompatActivity {
             wpcomFetchSites(username, password);
         } else {
             mSelfhostedPayload = new RefreshSitesXMLRPCPayload();
+            mSelfhostedPayload.xmlrpcEndpoint = url;
             mSelfhostedPayload.username = username;
             mSelfhostedPayload.password = password;
-            mSelfHostedEndpointFinder.findEndpoint(url, username, password,
-                    new SelfHostedEndpointFinder.DiscoveryCallback() {
-                @Override
-                public void onError(DiscoveryError error, String lastEndpoint) {
-                    if (error == DiscoveryError.WORDPRESS_COM_SITE) {
-                        wpcomFetchSites(username, password);
-                    } else if (error == DiscoveryError.HTTP_AUTH_REQUIRED) {
-                        showHTTPAuthDialog(lastEndpoint);
-                    } else if (error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
-                        mSelfhostedPayload.xmlrpcEndpoint = lastEndpoint;
-                        showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
-                    }
-                    prependToLog("Discovery failed with error: " + error);
-                    AppLog.e(T.API, "Discover error: " + error);
-                }
 
-                @Override
-                public void onSuccess(String xmlrpcEndpoint, String restEndpoint) {
-                    prependToLog("Discovery succeeded, endpoint: " + xmlrpcEndpoint);
-                    selfHostedFetchSites(username, password, xmlrpcEndpoint);
-                }
-            });
+            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mSelfhostedPayload));
         }
     }
 
@@ -360,6 +338,25 @@ public class MainExampleActivity extends AppCompatActivity {
                 // Show a SSL Warning Dialog
                 showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
             }
+        }
+    }
+
+    @Subscribe
+    public void onDiscoveryCompleted(AccountStore.OnDiscoveryCompleted event) {
+        if (event.isError) {
+            if (event.error == DiscoveryError.WORDPRESS_COM_SITE) {
+                wpcomFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password);
+            } else if (event.error == DiscoveryError.HTTP_AUTH_REQUIRED) {
+                showHTTPAuthDialog(event.failedEndpoint);
+            } else if (event.error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
+                mSelfhostedPayload.xmlrpcEndpoint = event.failedEndpoint;
+                showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
+            }
+            prependToLog("Discovery failed with error: " + event.error);
+            AppLog.e(T.API, "Discover error: " + event.error);
+        } else {
+            prependToLog("Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
+            selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
         }
     }
 

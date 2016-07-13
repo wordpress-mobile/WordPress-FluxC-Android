@@ -9,6 +9,9 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.NoConnectionError;
 import com.android.volley.toolbox.RequestFuture;
 
+import org.wordpress.android.stores.Dispatcher;
+import org.wordpress.android.stores.Payload;
+import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
 import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.stores.network.xmlrpc.XMLRPC;
 import org.wordpress.android.stores.utils.WPUrlUtils;
@@ -35,6 +38,8 @@ import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 
 public class SelfHostedEndpointFinder {
+    private Dispatcher mDispatcher;
+
     private final static int TIMEOUT_MS = 60000;
 
     public enum DiscoveryError {
@@ -50,11 +55,6 @@ public class SelfHostedEndpointFinder {
         WORDPRESS_COM_SITE
     }
 
-    public interface DiscoveryCallback {
-        void onError(DiscoveryError error, String endpoint);
-        void onSuccess(String xmlrpcEndpoint, String restEndpoint);
-    }
-
     protected static class DiscoveryException extends Exception {
         public final DiscoveryError discoveryError;
         public final String failedUrl;
@@ -67,39 +67,57 @@ public class SelfHostedEndpointFinder {
         }
     }
 
-    private DiscoveryCallback mCallback;
+    public static class DiscoveryResultPayload implements Payload {
+        public String xmlRpcEndpoint;
+        public String wpRestEndpoint;
+        public boolean isError;
+        public DiscoveryError error;
+        public String failedEndpoint;
+
+        public DiscoveryResultPayload(String xmlRpcEndpoint, String wpRestEndpoint) {
+            this.xmlRpcEndpoint = xmlRpcEndpoint;
+            this.wpRestEndpoint = wpRestEndpoint;
+        }
+
+        public DiscoveryResultPayload(DiscoveryError error, String failedEndpoint) {
+            this.isError = true;
+            this.error = error;
+            this.failedEndpoint = failedEndpoint;
+        }
+    }
+
     private BaseXMLRPCClient mClient;
 
     @Inject
-    public SelfHostedEndpointFinder(BaseXMLRPCClient baseXMLRPCClient) {
+    public SelfHostedEndpointFinder(Dispatcher dispatcher, BaseXMLRPCClient baseXMLRPCClient) {
+        mDispatcher = dispatcher;
         mClient = baseXMLRPCClient;
     }
 
-    public void findEndpoint(final String url, final String httpUsername, final String httpPassword,
-            final DiscoveryCallback callback) {
+    public void findEndpoint(final String url, final String httpUsername, final String httpPassword) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String xmlRpcEndpoint = verifyOrDiscoverXMLRPCEndpoint(url, httpUsername, httpPassword, callback);
-                    String wpRestEndpoint = discoverWPRESTEndpoint(url, callback);
-                    mCallback.onSuccess(xmlRpcEndpoint, wpRestEndpoint);
+                    String xmlRpcEndpoint = verifyOrDiscoverXMLRPCEndpoint(url, httpUsername, httpPassword);
+                    String wpRestEndpoint = discoverWPRESTEndpoint(url);
+                    DiscoveryResultPayload payload = new DiscoveryResultPayload(xmlRpcEndpoint, wpRestEndpoint);
+                    mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoveryResultAction(payload));
                 } catch (DiscoveryException e) {
                     // TODO: Handle tracking of XMLRPCDiscoveryException
                     // If a DiscoveryException is caught this high up, it means that either:
                     // 1. The discovery process has completed, and did not turn up a valid WordPress.com site
                     // 2. Discovery was halted early because the given site requires SSL validation, or HTTP AUTH login,
                     // or is a WordPress.com site, or is a completely invalid URL
-                    mCallback.onError(e.discoveryError, e.failedUrl);
+                    DiscoveryResultPayload payload = new DiscoveryResultPayload(e.discoveryError, e.failedUrl);
+                    mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoveryResultAction(payload));
                 }
             }
         }).start();
     }
 
-    public String verifyOrDiscoverXMLRPCEndpoint(final String siteUrl, final String httpUsername,
-            final String httpPassword, final DiscoveryCallback callback) throws DiscoveryException {
-        mCallback = callback;
-
+    private String verifyOrDiscoverXMLRPCEndpoint(final String siteUrl, final String httpUsername,
+                                                 final String httpPassword) throws DiscoveryException {
         if (TextUtils.isEmpty(siteUrl)) {
             throw new DiscoveryException(DiscoveryError.INVALID_URL, siteUrl, null);
         }
@@ -272,7 +290,7 @@ public class SelfHostedEndpointFinder {
     }
 
 
-    private String discoverWPRESTEndpoint(String url, final DiscoveryCallback callback) {
+    private String discoverWPRESTEndpoint(String url) {
         // TODO: See http://v2.wp-api.org/guide/discovery/
         return url + "/wp-json/wp/v2/";
     }
