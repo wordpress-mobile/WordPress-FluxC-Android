@@ -181,7 +181,6 @@ public class AccountRestClient extends BaseWPComRestClient {
                 new ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        AppLog.e(T.API, new String(error.networkResponse.data));
                         NewAccountResponsePayload payload = volleyErrorToAccountResponsePayload(error);
                         payload.dryRun = dryRun;
                         mDispatcher.dispatch(AccountActionBuilder.newCreatedNewAccountAction(payload));
@@ -195,6 +194,7 @@ public class AccountRestClient extends BaseWPComRestClient {
         payload.isError = true;
         payload.errorType = NewUserError.GENERIC_ERROR;
         if (error.networkResponse != null && error.networkResponse.data != null) {
+            AppLog.e(T.API, new String(error.networkResponse.data));
             String jsonString = new String(error.networkResponse.data);
             try {
                 JSONObject errorObj = new JSONObject(jsonString);
