@@ -309,7 +309,7 @@ public class MainExampleActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAccountChanged(OnAccountChanged event) {
-        if (!mAccountStore.isSignedIn(mSiteStore)) {
+        if (!mAccountStore.hasAccessToken()) {
             prependToLog("Signed Out");
         } else {
             if (event.accountInfosChanged) {

@@ -318,13 +318,6 @@ public class AccountStore extends Store {
         return mAccessToken.get();
     }
 
-    /**
-     * Checks if an Account is currently signed in to WordPress.com or any WordPress.org sites.
-     */
-    public boolean isSignedIn(SiteStore siteStore) {
-        return hasAccessToken() || siteStore.hasDotOrgSite();
-    }
-
     private void updateToken(UpdateTokenPayload updateTokenPayload) {
         mAccessToken.set(updateTokenPayload.token);
     }
