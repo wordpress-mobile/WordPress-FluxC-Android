@@ -66,7 +66,7 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        // Clear WP.com sites, and wait for OnSitesRemoved event
+        // Clear WP.com sites, and wait for OnSiteRemoved event
         mCountDownLatch = new CountDownLatch(1);
         mExpectedEvent = TEST_EVENTS.SITE_REMOVED;
         mExpectedRowsAffected = mSiteStore.getSitesCount();
@@ -91,7 +91,7 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
     }
 
     @Subscribe
-    public void OnSitesRemoved(SiteStore.OnSitesRemoved event) {
+    public void OnSiteRemoved(SiteStore.OnSiteRemoved event) {
         AppLog.e(T.TESTS, "site count " + mSiteStore.getSitesCount());
         assertEquals(mExpectedRowsAffected, event.mRowsAffected);
         assertEquals(false, mSiteStore.hasSite());
