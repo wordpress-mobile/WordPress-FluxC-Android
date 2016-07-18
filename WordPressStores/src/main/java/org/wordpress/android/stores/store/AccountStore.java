@@ -259,9 +259,9 @@ public class AccountStore extends Store {
                 }
             }
             // TODO: error management
-        } else if (actionType == AccountAction.UPDATE) {
+        } else if (actionType == AccountAction.UPDATE_ACCOUNT) {
             AccountModel accountModel = (AccountModel) action.getPayload();
-            updateDefaultAccount(accountModel, AccountAction.UPDATE);
+            updateDefaultAccount(accountModel, AccountAction.UPDATE_ACCOUNT);
         } else if (actionType == AccountAction.UPDATE_ACCESS_TOKEN) {
             UpdateTokenPayload updateTokenPayload = (UpdateTokenPayload) action.getPayload();
             updateToken(updateTokenPayload);
