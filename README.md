@@ -4,11 +4,11 @@
 
 WordPress-Stores-Android is a networking and persistence library that helps to connect and sync data from a WordPress site (self hosted, or wordpress.com site). It's not ready for prime time yet.
 
-Based on the [Flux](https://facebook.github.io/flux/docs/overview.html) pattern, we're using: [Dagger2](https://google.github.io/dagger/) for dependency injection, [WellSql](https://github.com/yarolegovich/wellsql) for persistence.
+Based on the [Flux][1] pattern, we're using: [Dagger2][2] for dependency injection, [WellSql][3] for persistence.
 
 ## Building the library
 
-The [gradle build system][2] will fetch all dependencies and generate
+The gradle build system will fetch all dependencies and generate
 files you need to build the project. You first need to generate the
 local.properties (replace YOUR_SDK_DIR with your actual android SDK directory)
 file and create the gradle.properties file. The easiest way is to copy
@@ -59,6 +59,9 @@ Say hello on our [Slack][6] channel: `#mobile`.
 
 WordPress-Stores-Android is an Open Source project covered by the [GNU General Public License version 2](LICENSE.md).
 
+[1]: https://facebook.github.io/flux/docs/overview.html
+[2]: https://google.github.io/dagger/
+[3]: https://github.com/yarolegovich/wellsql
 [4]: https://github.com/wordpress-mobile/WordPress-Stores-Android/blob/52ffa86d604f3f2df1b46bc3e9f20f7552ceeea5/WordPressStores/src/main/java/org/wordpress/android/stores/store/SiteStore.java
 [5]: https://github.com/wordpress-mobile/WordPress-Stores-Android/blob/52ffa86d604f3f2df1b46bc3e9f20f7552ceeea5/WordPressStores/src/main/java/org/wordpress/android/stores/action/SiteAction.java
 [6]: https://make.wordpress.org/chat/
