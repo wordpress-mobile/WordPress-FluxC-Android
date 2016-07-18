@@ -225,10 +225,6 @@ public class AccountStore extends Store {
                 discoverySucceeded.wpRestEndpoint = payload.wpRestEndpoint;
                 emitChange(discoverySucceeded);
             }
-        } else if (actionType == AccountAction.FETCH) {
-            // fetch Account and Account Settings
-            mAccountRestClient.fetchAccount();
-            mAccountRestClient.fetchAccountSettings();
         } else if (actionType == AccountAction.FETCH_ACCOUNT) {
             // fetch only Account
             mAccountRestClient.fetchAccount();

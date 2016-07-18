@@ -83,7 +83,8 @@ public class MainExampleActivity extends AppCompatActivity {
         mAccountInfos.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDispatcher.dispatch(AccountActionBuilder.newFetchAction());
+                mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
+                mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
             }
         });
         mUpdateFirstSite = (Button) findViewById(R.id.update_first_site);

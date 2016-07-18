@@ -65,7 +65,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         }
         mExpectedAction = ACCOUNT_TEST_ACTIONS.FETCHED;
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAction());
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
+        mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
         mCountDownLatch = new CountDownLatch(2);
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
