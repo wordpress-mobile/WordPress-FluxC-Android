@@ -8,9 +8,11 @@ import com.yarolegovich.wellsql.core.annotation.Table;
 
 import org.wordpress.android.stores.Payload;
 
+import java.io.Serializable;
+
 @Table
 @RawConstraints({"UNIQUE (SITE_ID, URL)"})
-public class SiteModel implements Identifiable, Payload {
+public class SiteModel implements Identifiable, Payload, Serializable {
 
     @PrimaryKey
     @Column private int mId;
