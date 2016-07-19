@@ -38,6 +38,8 @@ public class SiteModel implements Identifiable, Payload, Serializable {
     @Column private boolean mIsJetpack;
     @Column private boolean mIsVisible;
     @Column private boolean mIsVideoPressSupported;
+    @Column private long mPlanId;
+    @Column private String mPlanShortName;
 
     @Override
     public int getId() {
@@ -178,5 +180,21 @@ public class SiteModel implements Identifiable, Payload, Serializable {
 
     public void setIsVideoPressSupported(boolean videoPressSupported) {
         mIsVideoPressSupported = videoPressSupported;
+    }
+
+    public String getPlanShortName() {
+        return mPlanShortName;
+    }
+
+    public void setPlanShortName(String planShortName) {
+        mPlanShortName = planShortName;
+    }
+
+    public long getPlanId() {
+        return mPlanId;
+    }
+
+    public void setPlanId(long planId) {
+        mPlanId = planId;
     }
 }
