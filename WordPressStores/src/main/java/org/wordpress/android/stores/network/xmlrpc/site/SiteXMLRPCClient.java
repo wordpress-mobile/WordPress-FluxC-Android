@@ -134,13 +134,14 @@ public class SiteXMLRPCClient extends BaseXMLRPCClient {
     }
 
     private SiteModel updateSiteFromOptions(Object response, SiteModel oldModel) {
-        // TODO: plenty of other options to read here from requested blogOptionsXMLRPCParameters
         Map<?, ?> blogOptions = (Map<?, ?>) response;
         oldModel.setName(getOption(blogOptions, "blog_title", String.class));
         // TODO: set a canonical URL here
         oldModel.setUrl(getOption(blogOptions, "home_url", String.class));
         oldModel.setSoftwareVersion(getOption(blogOptions, "software_version", String.class));
-        oldModel.setIsFeaturedImageSupported(getOption(blogOptions, "post_thumbnail", Boolean.class));
+        Boolean post_thumbnail = getOption(blogOptions, "post_thumbnail", Boolean.class);
+        oldModel.setIsFeaturedImageSupported((post_thumbnail != null) && post_thumbnail);
+        oldModel.setTimezone(getOption(blogOptions, "time_zone", String.class));
         long dotComIdForJetpack = Long.valueOf(getOption(blogOptions, "jetpack_client_id", String.class));
         oldModel.setSiteId(dotComIdForJetpack);
         if (dotComIdForJetpack != 0) {
