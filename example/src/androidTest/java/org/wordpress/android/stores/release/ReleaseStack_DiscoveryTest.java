@@ -313,7 +313,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     }
 
     @Subscribe
-    public void OnSitesRemoved(SiteStore.OnSitesRemoved event) {
+    public void OnSiteRemoved(SiteStore.OnSiteRemoved event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         assertEquals(false, mSiteStore.hasSite());
         assertEquals(false, mSiteStore.hasDotOrgSite());

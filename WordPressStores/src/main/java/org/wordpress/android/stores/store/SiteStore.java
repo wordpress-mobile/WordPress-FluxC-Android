@@ -65,10 +65,10 @@ public class SiteStore extends Store {
         }
     }
 
-    public class OnSitesRemoved extends OnChanged {
+    public class OnSiteRemoved extends OnChanged {
         public int mRowsAffected;
 
-        public OnSitesRemoved(int rowsAffected) {
+        public OnSiteRemoved(int rowsAffected) {
             mRowsAffected = rowsAffected;
         }
     }
@@ -458,14 +458,14 @@ public class SiteStore extends Store {
             // TODO: This should be captured by 'QuickPressShortcutsStore' so it can handle deleting any QP shortcuts
             // TODO: Probably, we can inject QuickPressShortcutsStore into SiteStore and act on it directly
             // See WordPressDB.deleteQuickPressShortcutsForLocalTableBlogId(Context ctx, int blogId)
-            emitChange(new OnSitesRemoved(rowsAffected));
+            emitChange(new OnSiteRemoved(rowsAffected));
         } else if (actionType == SiteAction.REMOVE_WPCOM_SITES) {
             // Logging out of WP.com. Drop all WP.com sites, and all Jetpack sites that were pulled over the WP.com
             // REST API only (they don't have a .org site id)
             List<SiteModel> wpcomSites = SiteSqlUtils.getAllWPComSites();
             int rowsAffected = removeSites(wpcomSites);
             // TODO: Same as above, this needs to be captured and handled by QuickPressShortcutsStore
-            emitChange(new OnSitesRemoved(rowsAffected));
+            emitChange(new OnSiteRemoved(rowsAffected));
         } else if (actionType == SiteAction.SHOW_SITES) {
             toggleSitesVisibility((SitesModel) action.getPayload(), true);
         } else if (actionType == SiteAction.HIDE_SITES) {

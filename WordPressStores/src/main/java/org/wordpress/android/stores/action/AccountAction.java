@@ -14,8 +14,6 @@ import org.wordpress.android.stores.store.AccountStore.UpdateTokenPayload;
 @ActionEnum
 public enum AccountAction implements IAction {
     @Action
-    FETCH,                  // request fetch of both Account and Account Settings
-    @Action
     FETCH_ACCOUNT,          // request fetch of Account information
     @Action(payloadType = AccountRestPayload.class)
     FETCHED_ACCOUNT,        // response received from Account fetch request
@@ -28,7 +26,7 @@ public enum AccountAction implements IAction {
     @Action(payloadType = AccountPostSettingsResponsePayload.class)
     POSTED_SETTINGS,        // response received from Account Settings post
     @Action(payloadType = AccountModel.class)
-    UPDATE,                 // update in-memory and persisted Account in AccountStore
+    UPDATE_ACCOUNT,                 // update in-memory and persisted Account in AccountStore
     @Action(payloadType = UpdateTokenPayload.class)
     UPDATE_ACCESS_TOKEN,    // update in-memory and persisted Access Token
     @Action

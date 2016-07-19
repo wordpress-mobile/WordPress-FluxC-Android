@@ -36,7 +36,7 @@ import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.NewSitePayload;
 import org.wordpress.android.stores.store.SiteStore.OnNewSiteCreated;
 import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
-import org.wordpress.android.stores.store.SiteStore.OnSitesRemoved;
+import org.wordpress.android.stores.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.stores.store.SiteStore.SiteVisibility;
 import org.wordpress.android.util.AppLog;
@@ -83,7 +83,8 @@ public class MainExampleActivity extends AppCompatActivity {
         mAccountInfos.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDispatcher.dispatch(AccountActionBuilder.newFetchAction());
+                mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
+                mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
             }
         });
         mUpdateFirstSite = (Button) findViewById(R.id.update_first_site);
@@ -388,7 +389,7 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onSitesRemoved(OnSitesRemoved event) {
+    public void onSiteRemoved(OnSiteRemoved event) {
         mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
     }
 }
