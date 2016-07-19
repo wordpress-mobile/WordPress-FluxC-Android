@@ -17,6 +17,11 @@ public class SiteWPComRestResponse implements Payload, Response {
         public String timezone;
     }
 
+    public class Plan {
+        public long product_id;
+        public String product_name_short;
+    }
+
     public int ID;
     public String URL;
     public String name;
@@ -24,6 +29,7 @@ public class SiteWPComRestResponse implements Payload, Response {
     public boolean jetpack;
     public boolean visible;
     public Options options;
+    public Plan plan;
 }
 
 

@@ -8,9 +8,11 @@ import com.yarolegovich.wellsql.core.annotation.Table;
 
 import org.wordpress.android.stores.Payload;
 
+import java.io.Serializable;
+
 @Table
 @RawConstraints({"UNIQUE (SITE_ID, URL)"})
-public class SiteModel implements Identifiable, Payload {
+public class SiteModel implements Identifiable, Payload, Serializable {
 
     @PrimaryKey
     @Column private int mId;
@@ -38,6 +40,8 @@ public class SiteModel implements Identifiable, Payload {
     @Column private boolean mIsJetpack;
     @Column private boolean mIsVisible;
     @Column private boolean mIsVideoPressSupported;
+    @Column private long mPlanId;
+    @Column private String mPlanShortName;
 
     @Override
     public int getId() {
@@ -186,5 +190,21 @@ public class SiteModel implements Identifiable, Payload {
 
     public void setTimezone(String timezone) {
         mTimezone = timezone;
+    }
+
+    public String getPlanShortName() {
+        return mPlanShortName;
+    }
+
+    public void setPlanShortName(String planShortName) {
+        mPlanShortName = planShortName;
+    }
+
+    public long getPlanId() {
+        return mPlanId;
+    }
+
+    public void setPlanId(long planId) {
+        mPlanId = planId;
     }
 }

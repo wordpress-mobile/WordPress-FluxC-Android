@@ -149,6 +149,10 @@ public class SiteRestClient extends BaseWPComRestClient {
             site.setAdminUrl(from.options.admin_url);
             site.setTimezone(from.options.timezone);
         }
+        if (from.plan != null) {
+            site.setPlanId(from.plan.product_id);
+            site.setPlanShortName(from.plan.product_name_short);
+        }
         site.setIsWPCom(true);
         return site;
     }
