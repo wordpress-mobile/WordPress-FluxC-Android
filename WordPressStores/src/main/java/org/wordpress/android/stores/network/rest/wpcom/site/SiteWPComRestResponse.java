@@ -14,6 +14,7 @@ public class SiteWPComRestResponse implements Payload, Response {
         public boolean videopress_enabled;
         public boolean featured_images_enabled;
         public String admin_url;
+        public String timezone;
     }
 
     public int ID;

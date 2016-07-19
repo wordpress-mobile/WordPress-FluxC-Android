@@ -23,6 +23,8 @@ public class SiteModel implements Identifiable, Payload {
     @Column private boolean mIsWPCom;
     @Column private boolean mIsAdmin;
     @Column private boolean mIsFeaturedImageSupported;
+    @Column private String mTimezone;
+
 
     // Self hosted specifics
     // The siteId for .org sites. Jetpack sites will also have a mSiteId, which is their id on .COM
@@ -176,5 +178,13 @@ public class SiteModel implements Identifiable, Payload {
 
     public void setIsVideoPressSupported(boolean videoPressSupported) {
         mIsVideoPressSupported = videoPressSupported;
+    }
+
+    public String getTimezone() {
+        return mTimezone;
+    }
+
+    public void setTimezone(String timezone) {
+        mTimezone = timezone;
     }
 }
