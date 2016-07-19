@@ -148,6 +148,26 @@ public class SiteRestClient extends BaseWPComRestClient {
             site.setIsVideoPressSupported(from.options.videopress_enabled);
             site.setAdminUrl(from.options.admin_url);
         }
+        if (from.capabilities != null) {
+            site.setIsCapabilityEditPages(from.capabilities.edit_pages);
+            site.setIsCapabilityEditPosts(from.capabilities.edit_posts);
+            site.setIsCapabilityEditOthersPosts(from.capabilities.edit_others_posts);
+            site.setIsCapabilityEditOthersPages(from.capabilities.edit_others_pages);
+            site.setIsCapabilityDeletePosts(from.capabilities.delete_posts);
+            site.setIsCapabilityDeleteOthersPosts(from.capabilities.delete_others_posts);
+            site.setIsCapabilityEditThemeOptions(from.capabilities.edit_theme_options);
+            site.setIsCapabilityEditUsers(from.capabilities.edit_users);
+            site.setIsCapabilityListUsers(from.capabilities.list_users);
+            site.setIsCapabilityManageCategories(from.capabilities.manage_categories);
+            site.setIsCapabilityManageOptions(from.capabilities.manage_options);
+            site.setIsCapabilityActivateWordads(from.capabilities.activate_wordads);
+            site.setIsCapabilityPromoteUsers(from.capabilities.promote_users);
+            site.setIsCapabilityPublishPosts(from.capabilities.publish_posts);
+            site.setIsCapabilityUploadFiles(from.capabilities.upload_files);
+            site.setIsCapabilityDeleteUser(from.capabilities.delete_user);
+            site.setIsCapabilityRemoveUsers(from.capabilities.remove_users);
+            site.setIsCapabilityViewStats(from.capabilities.view_stats);
+        }
         site.setIsWPCom(true);
         return site;
     }

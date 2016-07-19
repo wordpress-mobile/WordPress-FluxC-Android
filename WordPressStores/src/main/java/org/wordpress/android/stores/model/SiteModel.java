@@ -37,6 +37,26 @@ public class SiteModel implements Identifiable, Payload {
     @Column private boolean mIsVisible;
     @Column private boolean mIsVideoPressSupported;
 
+    // WPCom capabilities
+    @Column private boolean mIsCapabilityEditPages;
+    @Column private boolean mIsCapabilityEditPosts;
+    @Column private boolean mIsCapabilityEditOthersPosts;
+    @Column private boolean mIsCapabilityEditOthersPages;
+    @Column private boolean mIsCapabilityDeletePosts;
+    @Column private boolean mIsCapabilityDeleteOthersPosts;
+    @Column private boolean mIsCapabilityEditThemeOptions;
+    @Column private boolean mIsCapabilityEditUsers;
+    @Column private boolean mIsCapabilityListUsers;
+    @Column private boolean mIsCapabilityManageCategories;
+    @Column private boolean mIsCapabilityManageOptions;
+    @Column private boolean mIsCapabilityActivateWordads;
+    @Column private boolean mIsCapabilityPromoteUsers;
+    @Column private boolean mIsCapabilityPublishPosts;
+    @Column private boolean mIsCapabilityUploadFiles;
+    @Column private boolean mIsCapabilityDeleteUser;
+    @Column private boolean mIsCapabilityRemoveUsers;
+    @Column private boolean mIsCapabilityViewStats;
+
     @Override
     public int getId() {
         return mId;
@@ -176,5 +196,149 @@ public class SiteModel implements Identifiable, Payload {
 
     public void setIsVideoPressSupported(boolean videoPressSupported) {
         mIsVideoPressSupported = videoPressSupported;
+    }
+
+    public boolean isCapabilityEditPages() {
+        return mIsCapabilityEditPages;
+    }
+
+    public void setIsCapabilityEditPages(boolean capabilityEditPages) {
+        mIsCapabilityEditPages = capabilityEditPages;
+    }
+
+    public boolean isCapabilityEditPosts() {
+        return mIsCapabilityEditPosts;
+    }
+
+    public void setIsCapabilityEditPosts(boolean capabilityEditPosts) {
+        mIsCapabilityEditPosts = capabilityEditPosts;
+    }
+
+    public boolean isCapabilityEditOthersPosts() {
+        return mIsCapabilityEditOthersPosts;
+    }
+
+    public void setIsCapabilityEditOthersPosts(boolean capabilityEditOthersPosts) {
+        mIsCapabilityEditOthersPosts = capabilityEditOthersPosts;
+    }
+
+    public boolean isCapabilityEditOthersPages() {
+        return mIsCapabilityEditOthersPages;
+    }
+
+    public void setIsCapabilityEditOthersPages(boolean capabilityEditOthersPages) {
+        mIsCapabilityEditOthersPages = capabilityEditOthersPages;
+    }
+
+    public boolean isCapabilityDeletePosts() {
+        return mIsCapabilityDeletePosts;
+    }
+
+    public void setIsCapabilityDeletePosts(boolean capabilityDeletePosts) {
+        mIsCapabilityDeletePosts = capabilityDeletePosts;
+    }
+
+    public boolean isCapabilityDeleteOthersPosts() {
+        return mIsCapabilityDeleteOthersPosts;
+    }
+
+    public void setIsCapabilityDeleteOthersPosts(boolean capabilityDeleteOthersPosts) {
+        mIsCapabilityDeleteOthersPosts = capabilityDeleteOthersPosts;
+    }
+
+    public boolean isCapabilityEditThemeOptions() {
+        return mIsCapabilityEditThemeOptions;
+    }
+
+    public void setIsCapabilityEditThemeOptions(boolean capabilityEditThemeOptions) {
+        mIsCapabilityEditThemeOptions = capabilityEditThemeOptions;
+    }
+
+    public boolean isCapabilityEditUsers() {
+        return mIsCapabilityEditUsers;
+    }
+
+    public void setIsCapabilityEditUsers(boolean capabilityEditUsers) {
+        mIsCapabilityEditUsers = capabilityEditUsers;
+    }
+
+    public boolean isCapabilityListUsers() {
+        return mIsCapabilityListUsers;
+    }
+
+    public void setIsCapabilityListUsers(boolean capabilityListUsers) {
+        mIsCapabilityListUsers = capabilityListUsers;
+    }
+
+    public boolean isCapabilityManageCategories() {
+        return mIsCapabilityManageCategories;
+    }
+
+    public void setIsCapabilityManageCategories(boolean capabilityManageCategories) {
+        mIsCapabilityManageCategories = capabilityManageCategories;
+    }
+
+    public boolean isCapabilityManageOptions() {
+        return mIsCapabilityManageOptions;
+    }
+
+    public void setIsCapabilityManageOptions(boolean capabilityManageOptions) {
+        mIsCapabilityManageOptions = capabilityManageOptions;
+    }
+
+    public boolean isCapabilityActivateWordads() {
+        return mIsCapabilityActivateWordads;
+    }
+
+    public void setIsCapabilityActivateWordads(boolean capabilityActivateWordads) {
+        mIsCapabilityActivateWordads = capabilityActivateWordads;
+    }
+
+    public boolean isCapabilityPromoteUsers() {
+        return mIsCapabilityPromoteUsers;
+    }
+
+    public void setIsCapabilityPromoteUsers(boolean capabilityPromoteUsers) {
+        mIsCapabilityPromoteUsers = capabilityPromoteUsers;
+    }
+
+    public boolean isCapabilityPublishPosts() {
+        return mIsCapabilityPublishPosts;
+    }
+
+    public void setIsCapabilityPublishPosts(boolean capabilityPublishPosts) {
+        mIsCapabilityPublishPosts = capabilityPublishPosts;
+    }
+
+    public boolean isCapabilityUploadFiles() {
+        return mIsCapabilityUploadFiles;
+    }
+
+    public void setIsCapabilityUploadFiles(boolean capabilityUploadFiles) {
+        mIsCapabilityUploadFiles = capabilityUploadFiles;
+    }
+
+    public boolean isCapabilityDeleteUser() {
+        return mIsCapabilityDeleteUser;
+    }
+
+    public void setIsCapabilityDeleteUser(boolean capabilityDeleteUser) {
+        mIsCapabilityDeleteUser = capabilityDeleteUser;
+    }
+
+    public boolean isCapabilityRemoveUsers() {
+        return mIsCapabilityRemoveUsers;
+    }
+
+    public void setIsCapabilityRemoveUsers(boolean capabilityRemoveUsers) {
+        mIsCapabilityRemoveUsers = capabilityRemoveUsers;
+    }
+
+    public boolean isCapabilityViewStats() {
+        return mIsCapabilityViewStats;
+    }
+
+    public void setIsCapabilityViewStats(boolean capabilityViewStats) {
+        mIsCapabilityViewStats = capabilityViewStats;
     }
 }
