@@ -148,6 +148,10 @@ public class SiteRestClient extends BaseWPComRestClient {
             site.setIsVideoPressSupported(from.options.videopress_enabled);
             site.setAdminUrl(from.options.admin_url);
         }
+        if (from.plan != null) {
+            site.setPlanId(from.plan.product_id);
+            site.setPlanShortName(from.plan.product_name_short);
+        }
         site.setIsWPCom(true);
         return site;
     }
