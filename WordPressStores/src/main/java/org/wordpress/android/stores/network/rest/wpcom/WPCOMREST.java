@@ -6,6 +6,15 @@ public enum WPCOMREST {
     ME_SETTINGS("/me/settings/"),
     ME_SITES("/me/sites/"),
 
+    // Posts
+    POSTS("/sites/$site/posts"),
+    // TODO: Collapse into one?
+    POST_GET("/sites/$site/posts/$post_ID"),
+    POST_EDIT("/sites/$site/posts/$post_ID"),
+    POST_NEW("/sites/$site/posts/new"),
+    POST_DELETE("/sites/$site/posts/$post_ID/delete"),
+
+
     // Sites
     SITES("/sites/"),
     SITES_NEW("/sites/new"),

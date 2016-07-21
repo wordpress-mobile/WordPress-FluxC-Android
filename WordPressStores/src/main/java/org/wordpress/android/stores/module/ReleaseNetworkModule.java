@@ -17,8 +17,10 @@ import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AppSecrets;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator;
+import org.wordpress.android.stores.network.rest.wpcom.post.PostRestClient;
 import org.wordpress.android.stores.network.rest.wpcom.site.SiteRestClient;
 import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
+import org.wordpress.android.stores.network.xmlrpc.post.PostXMLRPCClient;
 import org.wordpress.android.stores.network.xmlrpc.site.SiteXMLRPCClient;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -147,6 +149,24 @@ public class ReleaseNetworkModule {
                                                       AppSecrets appSecrets,
                                                       AccessToken token, UserAgent userAgent) {
         return new AccountRestClient(dispatcher, requestQueue, appSecrets, token, userAgent);
+    }
+
+    @Singleton
+    @Provides
+    public PostRestClient providePostRestClient(Dispatcher dispatcher,
+                                                @Named("regular") RequestQueue requestQueue,
+                                                AppSecrets appSecrets,
+                                                AccessToken token, UserAgent userAgent) {
+        return new PostRestClient(dispatcher, requestQueue, appSecrets, token, userAgent);
+    }
+
+    @Singleton
+    @Provides
+    public PostXMLRPCClient providePostXMLRPCClient(Dispatcher dispatcher,
+                                                    @Named("custom-ssl") RequestQueue requestQueue,
+                                                    AccessToken token,
+                                                    UserAgent userAgent, HTTPAuthManager httpAuthManager) {
+        return new PostXMLRPCClient(dispatcher, requestQueue, token, userAgent, httpAuthManager);
     }
 
     @Singleton

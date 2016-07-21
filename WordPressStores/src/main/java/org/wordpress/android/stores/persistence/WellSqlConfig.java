@@ -10,6 +10,7 @@ import com.yarolegovich.wellsql.core.TableClass;
 import com.yarolegovich.wellsql.mapper.SQLiteMapper;
 
 import org.wordpress.android.stores.model.AccountModel;
+import org.wordpress.android.stores.model.PostModel;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.HTTPAuthModel;
 
@@ -23,6 +24,7 @@ public class WellSqlConfig extends DefaultWellConfig {
     private static Class[] TABLES = {
             AccountModel.class,
             SiteModel.class,
+            PostModel.class,
             HTTPAuthModel.class
     };
 

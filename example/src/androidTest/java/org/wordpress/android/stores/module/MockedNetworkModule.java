@@ -19,8 +19,10 @@ import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.ErrorListener;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.Listener;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.Token;
+import org.wordpress.android.stores.network.rest.wpcom.post.PostRestClient;
 import org.wordpress.android.stores.network.rest.wpcom.site.SiteRestClient;
 import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
+import org.wordpress.android.stores.network.xmlrpc.post.PostXMLRPCClient;
 import org.wordpress.android.stores.network.xmlrpc.site.SiteXMLRPCClient;
 
 import javax.inject.Singleton;
@@ -117,6 +119,20 @@ public class MockedNetworkModule {
     public SiteXMLRPCClient provideSiteXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken token,
                                                     UserAgent userAgent, HTTPAuthManager httpAuthManager) {
         return new SiteXMLRPCClient(dispatcher, requestQueue, token, userAgent, httpAuthManager);
+    }
+
+    @Singleton
+    @Provides
+    public PostRestClient providePostRestClient(Dispatcher dispatcher, RequestQueue requestQueue, AppSecrets appSecrets,
+                                                AccessToken token, UserAgent userAgent) {
+        return new PostRestClient(dispatcher, requestQueue, appSecrets, token, userAgent);
+    }
+
+    @Singleton
+    @Provides
+    public PostXMLRPCClient providePostXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken token,
+                                                    UserAgent userAgent, HTTPAuthManager httpAuthManager) {
+        return new PostXMLRPCClient(dispatcher, requestQueue, token, userAgent, httpAuthManager);
     }
 
     @Singleton
