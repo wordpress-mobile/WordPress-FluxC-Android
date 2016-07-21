@@ -9,6 +9,8 @@ import org.wordpress.android.stores.Payload;
 
 @Table
 public class PostModel implements Identifiable, Payload {
+    private static long FEATURED_IMAGE_INIT_VALUE = -2;
+
     @PrimaryKey
     @Column private int mId;
 
@@ -32,7 +34,7 @@ public class PostModel implements Identifiable, Payload {
     @Column private String mAuthorDisplayName;
     @Column private String mAuthorId;
     @Column private String mPassword;
-    @Column private String mThumbnail;
+    @Column private long mFeaturedImageId = FEATURED_IMAGE_INIT_VALUE;
     @Column private String mPostFormat;
     @Column private String mSlug;
     @Column private double mLatitude;
@@ -216,12 +218,12 @@ public class PostModel implements Identifiable, Payload {
         mPassword = password;
     }
 
-    public String getThumbnail() {
-        return mThumbnail;
+    public long getFeaturedImageId() {
+        return mFeaturedImageId;
     }
 
-    public void setThumbnail(String thumbnail) {
-        mThumbnail = thumbnail;
+    public void setFeaturedImageId(long featuredImageId) {
+        mFeaturedImageId = featuredImageId;
     }
 
     public String getPostFormat() {

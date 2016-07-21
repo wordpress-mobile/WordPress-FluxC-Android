@@ -206,7 +206,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
             post.setPassword(MapUtils.getMapStr(postMap, "wp_password"));
             post.setAuthorId(MapUtils.getMapStr(postMap, "wp_author_id"));
             post.setAuthorDisplayName(MapUtils.getMapStr(postMap, "wp_author_display_name"));
-            post.setThumbnail(MapUtils.getMapStr(postMap, "wp_post_thumbnail"));
+            post.setFeaturedImageId(MapUtils.getMapInt(postMap, "wp_post_thumbnail"));
             post.setStatus(MapUtils.getMapStr(postMap, (isPage) ? "page_status" : "post_status"));
             post.setUserId(Integer.valueOf(MapUtils.getMapStr(postMap, "userid")));
 
