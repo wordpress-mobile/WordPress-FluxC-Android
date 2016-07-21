@@ -63,6 +63,13 @@
                 android:text="Log Sites" />
 
             <Button
+                android:id="@+id/fetch_first_site_posts"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:text="Fetch posts from first site" />
+
+            <Button
                 android:id="@+id/signout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

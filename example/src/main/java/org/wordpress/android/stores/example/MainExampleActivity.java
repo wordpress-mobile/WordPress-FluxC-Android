@@ -19,6 +19,7 @@ import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.stores.generated.AccountActionBuilder;
 import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
+import org.wordpress.android.stores.generated.PostActionBuilder;
 import org.wordpress.android.stores.generated.SiteActionBuilder;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.HTTPAuthManager;
@@ -32,6 +33,7 @@ import org.wordpress.android.stores.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.stores.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
+import org.wordpress.android.stores.store.PostStore;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.NewSitePayload;
 import org.wordpress.android.stores.store.SiteStore.OnNewSiteCreated;
@@ -49,6 +51,7 @@ import javax.inject.Inject;
 public class MainExampleActivity extends AppCompatActivity {
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
+    @Inject PostStore mPostStore;
     @Inject Dispatcher mDispatcher;
     @Inject HTTPAuthManager mHTTPAuthManager;
     @Inject MemorizingTrustManager mMemorizingTrustManager;
@@ -58,6 +61,7 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mListSites;
     private Button mLogSites;
     private Button mUpdateFirstSite;
+    private Button mFetchFirstSitePosts;
     private Button mSignOut;
     private Button mAccountSettings;
     private Button mNewAccount;
@@ -92,6 +96,16 @@ public class MainExampleActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(mSiteStore.getSites().get(0)));
+            }
+        });
+
+        mFetchFirstSitePosts = (Button) findViewById(R.id.fetch_first_site_posts);
+        mFetchFirstSitePosts.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PostStore.FetchPostsPayload payload = new PostStore.FetchPostsPayload(mSiteStore.getSites().get(0),
+                        false, false);
+                mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
             }
         });
 
@@ -148,6 +162,7 @@ public class MainExampleActivity extends AppCompatActivity {
             prependToLog("You're signed in as: " + mAccountStore.getAccount().getUserName());
         }
         mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
+        mFetchFirstSitePosts.setEnabled(mSiteStore.hasSite());
         mNewSite.setEnabled(mAccountStore.hasAccessToken());
     }
 
