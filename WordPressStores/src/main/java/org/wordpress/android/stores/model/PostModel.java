@@ -43,6 +43,9 @@ public class PostModel implements Identifiable, Payload {
     @Column private String mPageParentId;
     @Column private String mPageParentTitle;
 
+    @Column private boolean mIsLocalDraft;
+    @Column private boolean mIsLocallyChanged;
+
     @Override
     public void setId(int id) {
         mId = id;
@@ -289,5 +292,21 @@ public class PostModel implements Identifiable, Payload {
 
     public void setPageParentTitle(String pageParentTitle) {
         this.mPageParentTitle = pageParentTitle;
+    }
+
+    public boolean isLocalDraft() {
+        return mIsLocalDraft;
+    }
+
+    public void setIsLocalDraft(boolean isLocalDraft) {
+        mIsLocalDraft = isLocalDraft;
+    }
+
+    public boolean isLocallyChanged() {
+        return mIsLocallyChanged;
+    }
+
+    public void setIsLocallyChanged(boolean isLocallyChanged) {
+        mIsLocallyChanged = isLocallyChanged;
     }
 }

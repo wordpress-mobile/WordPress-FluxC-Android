@@ -15,6 +15,7 @@ import org.wordpress.android.stores.model.PostsModel;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.rest.wpcom.post.PostRestClient;
 import org.wordpress.android.stores.network.xmlrpc.post.PostXMLRPCClient;
+import org.wordpress.android.stores.persistence.PostSqlUtils;
 import org.wordpress.android.util.AppLog;
 
 import java.util.List;
@@ -96,7 +97,9 @@ public class PostStore extends Store {
             }
         } else if (actionType == PostAction.FETCHED_POSTS) {
             FetchPostsResponsePayload postsResponsePayload = (FetchPostsResponsePayload) action.getPayload();
-            // TODO: Implement storing to db
+            for (PostModel post : postsResponsePayload.posts) {
+                PostSqlUtils.insertOrUpdatePostKeepingLocalChanges(post);
+            }
         }
     }
 }
