@@ -22,10 +22,6 @@ public class PostSqlUtils {
                 .equals(PostModelTable.IS_PAGE, post.isPage())
                 .endGroup().endWhere().getAsModel();
 
-        if (overwriteLocalChanges) {
-            post.setIsLocallyChanged(false);
-        }
-
         if (postResult.isEmpty()) {
             // insert
             WellSql.insert(post).asSingleTransaction(true).execute();
