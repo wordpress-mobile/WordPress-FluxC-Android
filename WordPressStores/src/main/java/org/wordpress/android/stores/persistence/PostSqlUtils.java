@@ -4,7 +4,9 @@ import com.wellsql.generated.PostModelTable;
 import com.yarolegovich.wellsql.WellSql;
 
 import org.wordpress.android.stores.model.PostModel;
+import org.wordpress.android.stores.model.SiteModel;
 
+import java.util.Collections;
 import java.util.List;
 
 public class PostSqlUtils {
@@ -44,5 +46,32 @@ public class PostSqlUtils {
 
     public static int insertOrUpdatePostOverwritingLocalChanges(PostModel post) {
         return insertOrUpdatePost(post, true);
+    }
+
+    public static List<PostModel> getPostsForSite(SiteModel site, boolean getPages) {
+        if (site == null) {
+            return Collections.emptyList();
+        }
+
+        return WellSql.select(PostModel.class)
+                .where().beginGroup()
+                .equals(PostModelTable.SITE_ID, site.getId())
+                .equals(PostModelTable.IS_PAGE, getPages)
+                .endGroup().endWhere().getAsModel();
+
+    }
+
+    public static List<PostModel> getUploadedPostsForSite(SiteModel site, boolean getPages) {
+        if (site == null) {
+            return Collections.emptyList();
+        }
+
+        return WellSql.select(PostModel.class)
+                .where().beginGroup()
+                .equals(PostModelTable.SITE_ID, site.getId())
+                .equals(PostModelTable.IS_PAGE, getPages)
+                .equals(PostModelTable.IS_LOCAL_DRAFT, false)
+                .endGroup().endWhere().getAsModel();
+
     }
 }

@@ -83,6 +83,61 @@ public class PostStore extends Store {
         return getPostsCursor().getCount();
     }
 
+    /**
+     * Returns all posts in the store as a {@link PostModel} list.
+     */
+    public List<PostModel> getPostsForSite(SiteModel site) {
+        return PostSqlUtils.getPostsForSite(site, false);
+    }
+
+    /**
+     * Returns all posts in the store as a {@link PostModel} list.
+     */
+    public List<PostModel> getPagesForSite(SiteModel site) {
+        return PostSqlUtils.getPostsForSite(site, true);
+    }
+
+    /**
+     * Returns the number of posts in the store.
+     */
+    public int getPostsCountForSite(SiteModel site) {
+        return getPostsForSite(site).size();
+    }
+
+    /**
+     * Returns the number of posts in the store.
+     */
+    public int getPagesCountForSite(SiteModel site) {
+        return getPagesForSite(site).size();
+    }
+
+    /**
+     * Returns the number of posts in the store.
+     */
+    public List<PostModel> getUploadedPostsForSite(SiteModel site) {
+        return PostSqlUtils.getUploadedPostsForSite(site, false);
+    }
+
+    /**
+     * Returns the number of posts in the store.
+     */
+    public List<PostModel> getUploadedPagesForSite(SiteModel site) {
+        return PostSqlUtils.getUploadedPostsForSite(site, true);
+    }
+
+    /**
+     * Returns the number of posts in the store.
+     */
+    public int getUploadedPostsCountForSite(SiteModel site) {
+        return getUploadedPostsForSite(site).size();
+    }
+
+    /**
+     * Returns the number of posts in the store.
+     */
+    public int getUploadedPagesCountForSite(SiteModel site) {
+        return getUploadedPagesForSite(site).size();
+    }
     @Subscribe
     @Override
     public void onAction(Action action) {
