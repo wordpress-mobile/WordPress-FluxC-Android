@@ -68,11 +68,6 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                             if (offset > 0 && response.length > NUM_POSTS_TO_REQUEST) {
                                 startPosition = response.length - NUM_POSTS_TO_REQUEST;
                             }
-
-                            if (!loadMore) {
-                                // TODO: Implement WordPress.wpDB.deleteUploadedPosts(blogId, isPage);
-                            }
-                            // TODO: Implement WordPress.wpDB.savePosts(postsList, blogId, isPage, false);
                         } else {
                             canLoadMore = false;
                         }
@@ -81,7 +76,6 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
 
                         FetchPostsResponsePayload payload = new FetchPostsResponsePayload(posts, site, getPages,
                                 offset > 0, canLoadMore);
-                        // TODO: Will need a way to account for WPAndroid's overwriteLocalChanges: only overwrite local changes when updating individual posts, not from GET_POSTS
 
                         if (posts != null) {
                             mDispatcher.dispatch(PostActionBuilder.newFetchedPostsAction(payload));
