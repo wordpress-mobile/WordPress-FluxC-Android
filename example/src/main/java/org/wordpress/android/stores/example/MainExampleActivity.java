@@ -65,6 +65,10 @@ public class MainExampleActivity extends AppCompatActivity {
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
 
+    // used for 2fa
+    private String mLastUsername;
+    private String mLastPassword;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -200,6 +204,28 @@ public class MainExampleActivity extends AppCompatActivity {
         newFragment.show(ft, "dialog");
     }
 
+    private void show2faDialog() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
+            @Override
+            public void onClick(String text1, String text2, String text3) {
+                if (TextUtils.isEmpty(text3)) {
+                    prependToLog("2FA code required to login");
+                    return;
+                }
+                signIn2fa(mLastUsername, mLastPassword, text3);
+            }
+        }, "", "", "2FA Code");
+        newFragment.show(ft, "2fadialog");
+    }
+
+    private void signIn2fa(String username, String password, String twoStepCode) {
+        AuthenticatePayload payload = new AuthenticatePayload(username, password);
+        payload.twoStepCode = twoStepCode;
+        payload.nextAction = SiteActionBuilder.newFetchSitesAction();
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+    }
+
     private void showHTTPAuthDialog(final String url) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
@@ -221,6 +247,8 @@ public class MainExampleActivity extends AppCompatActivity {
      * depending if the user filled the URL field.
      */
     private void signInAction(final String username, final String password, final String url) {
+        mLastUsername = username;
+        mLastPassword = password;
         if (TextUtils.isEmpty(url)) {
             wpcomFetchSites(username, password);
         } else {
@@ -334,6 +362,9 @@ public class MainExampleActivity extends AppCompatActivity {
                 case INVALID_SSL_CERTIFICATE:
                     // Show a SSL Warning Dialog
                     showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
+                    break;
+                case NEEDS_2FA:
+                    show2faDialog();
                     break;
                 default:
                     break;
