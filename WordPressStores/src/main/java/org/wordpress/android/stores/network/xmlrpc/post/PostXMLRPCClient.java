@@ -42,15 +42,8 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         super(dispatcher, requestQueue, accessToken, userAgent, httpAuthManager);
     }
 
-    public void getPosts(final SiteModel site, final boolean isPage, final boolean loadMore) {
-        int numPostsToRequest;
-        if (loadMore) {
-            // TODO: Implement int numExisting = WordPress.wpDB.getUploadedCountInBlog(blogId, isPage);
-            int numExisting = 0;
-            numPostsToRequest = numExisting + NUM_POSTS_TO_REQUEST;
-        } else {
-            numPostsToRequest = NUM_POSTS_TO_REQUEST;
-        }
+    public void getPosts(final SiteModel site, final boolean isPage, final int offset) {
+        int numPostsToRequest = offset + NUM_POSTS_TO_REQUEST;
 
         List<Object> params = new ArrayList<>(4);
         params.add(site.getDotOrgSiteId());
@@ -72,7 +65,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                             // If we're loading more posts, only save the posts at the end of the array.
                             // NOTE: Switching to wp.getPosts wouldn't require janky solutions like this
                             // since it allows for an offset parameter.
-                            if (loadMore && response.length > NUM_POSTS_TO_REQUEST) {
+                            if (offset > 0 && response.length > NUM_POSTS_TO_REQUEST) {
                                 startPosition = response.length - NUM_POSTS_TO_REQUEST;
                             }
 

@@ -6,6 +6,7 @@ public enum XMLRPC {
     GET_USERS_BLOGS("wp.getUsersBlogs"),
     LIST_METHODS("system.listMethods"),
 
+    // TODO: Switch from metaWeblog to wp where feasible
     DELETE_PAGE("wp.deletePage"),
     DELETE_POST("wp.deletePost"),
     EDIT_POST("metaWeblog.editPost"), // Note: WPAndroid uses metaWeblog.editPost; wp.editPost is used by EditMediaItemTask

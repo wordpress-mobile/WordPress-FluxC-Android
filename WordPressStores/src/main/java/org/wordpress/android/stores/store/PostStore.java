@@ -158,7 +158,11 @@ public class PostStore extends Store {
                 // TODO: Implement REST API posts fetch
             } else {
                 // TODO: check for WP-REST-API plugin and use it here
-                mPostXMLRPCClient.getPosts(payload.site, false, payload.loadMore);
+                if (payload.loadMore) {
+                    mPostXMLRPCClient.getPosts(payload.site, false, getUploadedPostsCountForSite(payload.site));
+                } else {
+                    mPostXMLRPCClient.getPosts(payload.site, false, 0);
+                }
             }
         } else if (actionType == PostAction.FETCH_PAGES) {
             FetchPostsPayload payload = (FetchPostsPayload) action.getPayload();
@@ -166,7 +170,11 @@ public class PostStore extends Store {
                 // TODO: Implement REST API posts fetch
             } else {
                 // TODO: check for WP-REST-API plugin and use it here
-                mPostXMLRPCClient.getPosts(payload.site, true, payload.loadMore);
+                if (payload.loadMore) {
+                    mPostXMLRPCClient.getPosts(payload.site, true, getUploadedPagesCountForSite(payload.site));
+                } else {
+                    mPostXMLRPCClient.getPosts(payload.site, true, 0);
+                }
             }
         } else if (actionType == PostAction.FETCHED_POSTS) {
             FetchPostsResponsePayload postsResponsePayload = (FetchPostsResponsePayload) action.getPayload();
