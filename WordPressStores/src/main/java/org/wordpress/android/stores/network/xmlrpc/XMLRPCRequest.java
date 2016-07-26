@@ -14,6 +14,7 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import org.wordpress.android.stores.network.BaseRequest;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.AuthenticateErrorPayload;
 import org.wordpress.android.stores.store.AccountStore.AuthenticationError;
+import org.wordpress.android.stores.utils.xmlrpc.XMLSerializerUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 import org.xmlpull.v1.XmlPullParserException;
