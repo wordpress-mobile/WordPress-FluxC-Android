@@ -28,12 +28,10 @@ import javax.inject.Singleton;
 public class PostStore extends Store {
     public static class FetchPostsPayload implements Payload {
         public SiteModel site;
-        public boolean fetchPages;
         public boolean loadMore;
 
-        public FetchPostsPayload(SiteModel site, boolean fetchPages, boolean loadMore) {
+        public FetchPostsPayload(SiteModel site, boolean loadMore) {
             this.site = site;
-            this.fetchPages = fetchPages;
             this.loadMore = loadMore;
         }
     }
@@ -156,7 +154,15 @@ public class PostStore extends Store {
                 // TODO: Implement REST API posts fetch
             } else {
                 // TODO: check for WP-REST-API plugin and use it here
-                mPostXMLRPCClient.getPosts(payload.site, payload.fetchPages, payload.loadMore);
+                mPostXMLRPCClient.getPosts(payload.site, false, payload.loadMore);
+            }
+        } else if (actionType == PostAction.FETCH_PAGES) {
+            FetchPostsPayload payload = (FetchPostsPayload) action.getPayload();
+            if (payload.site.isWPCom() || payload.site.isJetpack()) {
+                // TODO: Implement REST API posts fetch
+            } else {
+                // TODO: check for WP-REST-API plugin and use it here
+                mPostXMLRPCClient.getPosts(payload.site, true, payload.loadMore);
             }
         } else if (actionType == PostAction.FETCHED_POSTS) {
             FetchPostsResponsePayload postsResponsePayload = (FetchPostsResponsePayload) action.getPayload();
