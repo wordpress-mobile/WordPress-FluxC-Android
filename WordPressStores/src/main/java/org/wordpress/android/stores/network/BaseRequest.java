@@ -4,12 +4,14 @@ import android.util.Base64;
 
 import com.android.volley.Response.ErrorListener;
 
+import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.AuthenticateErrorPayload;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public abstract class BaseRequest<T> extends com.android.volley.Request<T> {
     public interface OnAuthFailedListener {
-        void onAuthFailed(AuthError errorType);
+        void onAuthFailed(AuthenticateErrorPayload errorType);
     }
 
     private static final String USER_AGENT_HEADER = "User-Agent";

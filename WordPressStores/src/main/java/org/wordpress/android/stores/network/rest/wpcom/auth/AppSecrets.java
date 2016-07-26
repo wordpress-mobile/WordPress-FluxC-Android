@@ -5,6 +5,10 @@ public class AppSecrets {
     private final String mAppSecret;
     private final String mRedirectUri;
 
+    public AppSecrets(String appId, String appSecret) {
+        this(appId, appSecret, null);
+    }
+
     public AppSecrets(String appId, String appSecret, String redirectUri) {
         mAppId = appId;
         mAppSecret = appSecret;

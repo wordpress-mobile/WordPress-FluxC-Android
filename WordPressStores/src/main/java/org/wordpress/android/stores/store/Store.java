@@ -1,13 +1,14 @@
 package org.wordpress.android.stores.store;
 
 import org.wordpress.android.stores.Dispatcher;
-import org.wordpress.android.stores.action.Action;
+import org.wordpress.android.stores.annotations.action.Action;
 
 public abstract class Store {
     protected final Dispatcher mDispatcher;
 
     Store(Dispatcher dispatcher) {
         mDispatcher = dispatcher;
+        mDispatcher.register(this);
     }
     public class OnChanged {}
     public abstract void onAction(Action action);

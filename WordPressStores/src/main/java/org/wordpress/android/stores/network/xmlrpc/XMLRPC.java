@@ -2,7 +2,8 @@ package org.wordpress.android.stores.network.xmlrpc;
 
 public enum XMLRPC {
     GET_OPTIONS("wp.getOptions"),
-    GET_USERS_BLOGS("wp.getUsersBlogs");
+    GET_USERS_BLOGS("wp.getUsersBlogs"),
+    LIST_METHODS("system.listMethods");
 
     private final String mEndpoint;
 

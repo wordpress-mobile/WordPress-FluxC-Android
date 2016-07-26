@@ -1,5 +1,6 @@
 package org.wordpress.android.stores.network.rest.wpcom.auth;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.android.volley.NetworkResponse;
@@ -7,11 +8,17 @@ import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import org.wordpress.android.stores.network.AuthError;
+import org.wordpress.android.stores.Payload;
+import org.wordpress.android.stores.store.AccountStore.AuthenticationError;
+import org.wordpress.android.util.AppLog;
+import org.wordpress.android.util.AppLog.T;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -50,6 +57,15 @@ public class Authenticator {
     }
 
     public interface ErrorListener extends Response.ErrorListener {
+    }
+
+    public static class AuthenticateErrorPayload implements Payload {
+        public AuthenticationError errorType;
+        public String errorMessage;
+        public AuthenticateErrorPayload(@NonNull AuthenticationError errorType, @NonNull String errorMessage) {
+            this.errorType = errorType;
+            this.errorMessage = errorMessage;
+        }
     }
 
     @Inject
@@ -190,5 +206,48 @@ public class Authenticator {
                     tokenJSON.getString(BLOG_ID_FIELD_NAME), tokenJSON.getString(SCOPE_FIELD_NAME), tokenJSON.getString(
                     TOKEN_TYPE_FIELD_NAME));
         }
+    }
+
+    public static AuthenticationError volleyErrorToAuthenticationError(VolleyError error) {
+        if (error != null && error.networkResponse != null && error.networkResponse.data != null) {
+            String jsonString = new String(error.networkResponse.data);
+            try {
+                JSONObject jsonObject = new JSONObject(jsonString);
+                return jsonErrorToAuthenticationError(jsonObject);
+            } catch (JSONException e) {
+                AppLog.e(T.API, e);
+            }
+        }
+        return AuthenticationError.GENERIC_ERROR;
+    }
+
+    public static String volleyErrorToErrorMessage(VolleyError error) {
+        if (error != null && error.networkResponse != null && error.networkResponse.data != null) {
+            String jsonString = new String(error.networkResponse.data);
+            try {
+                JSONObject jsonObject = new JSONObject(jsonString);
+                return jsonObject.getString("error_description");
+            } catch (JSONException e) {
+                AppLog.e(T.API, e);
+            }
+        }
+        return null;
+    }
+
+    public static AuthenticationError jsonErrorToAuthenticationError(JSONObject jsonObject) {
+        AuthenticationError error = AuthenticationError.GENERIC_ERROR;
+        if (jsonObject != null) {
+                String errorType = jsonObject.optString("error", "");
+                String errorMessage = jsonObject.optString("error_description", "");
+                error = AuthenticationError.fromString(errorType);
+                // Special cases for vague error types
+                if (error == AuthenticationError.INVALID_REQUEST) {
+                    // Try to parse the error message to specify the error
+                    if (errorMessage.contains("Incorrect username or password.")) {
+                        return AuthenticationError.INCORRECT_USERNAME_OR_PASSWORD;
+                    }
+                }
+        }
+        return error;
     }
 }

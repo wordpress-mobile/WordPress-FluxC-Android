@@ -17,8 +17,8 @@ public class AccountModel implements Identifiable, Payload {
     @Column private String mUserName;
     @Column private long mUserId;
     @Column private String mDisplayName;
-    @Column private String mProfileUrl;
-    @Column private String mAvatarUrl;
+    @Column private String mProfileUrl; // profile_URL
+    @Column private String mAvatarUrl; // avatar_URL
     @Column private long mPrimaryBlogId;
     @Column private int mSiteCount;
     @Column private int mVisibleSiteCount;
@@ -31,7 +31,7 @@ public class AccountModel implements Identifiable, Payload {
     @Column private String mDate;
     @Column private String mNewEmail;
     @Column private boolean mPendingEmailChange;
-    @Column private String mWebAddress;
+    @Column private String mWebAddress; // WPCOM rest API: user_URL
 
     public AccountModel() {
         init();
@@ -118,6 +118,7 @@ public class AccountModel implements Identifiable, Payload {
         setNewEmail(other.getNewEmail());
         setPendingEmailChange(other.getPendingEmailChange());
         setWebAddress(other.getWebAddress());
+        setDisplayName(other.getDisplayName());
     }
 
     public long getUserId() {

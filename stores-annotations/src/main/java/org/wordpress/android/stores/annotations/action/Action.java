@@ -1,4 +1,4 @@
-package org.wordpress.android.stores.action;
+package org.wordpress.android.stores.annotations.action;
 
 public class Action<T> {
     private final IAction mActionType;

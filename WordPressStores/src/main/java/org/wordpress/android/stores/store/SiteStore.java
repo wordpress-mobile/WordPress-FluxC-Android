@@ -1,20 +1,22 @@
 package org.wordpress.android.stores.store;
 
 import android.database.Cursor;
+import android.support.annotation.NonNull;
 
-import com.squareup.otto.Subscribe;
 import com.wellsql.generated.SiteModelTable;
 import com.yarolegovich.wellsql.WellSql;
 import com.yarolegovich.wellsql.mapper.SelectMapper;
 
+import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.Payload;
-import org.wordpress.android.stores.action.Action;
-import org.wordpress.android.stores.action.IAction;
 import org.wordpress.android.stores.action.SiteAction;
+import org.wordpress.android.stores.annotations.action.Action;
+import org.wordpress.android.stores.annotations.action.IAction;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.model.SitesModel;
 import org.wordpress.android.stores.network.rest.wpcom.site.SiteRestClient;
+import org.wordpress.android.stores.network.rest.wpcom.site.SiteRestClient.NewSiteResponsePayload;
 import org.wordpress.android.stores.network.xmlrpc.site.SiteXMLRPCClient;
 import org.wordpress.android.stores.persistence.SiteSqlUtils;
 import org.wordpress.android.util.AppLog;
@@ -23,17 +25,35 @@ import org.wordpress.android.util.AppLog.T;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * SQLite based only. There is no in memory copy of mapped data, everything is queried from the DB.
  */
+@Singleton
 public class SiteStore extends Store {
     // Payloads
     public static class RefreshSitesXMLRPCPayload implements Payload {
         public RefreshSitesXMLRPCPayload() {}
         public String username;
         public String password;
-        public String xmlrpcEndpoint;
+        public String url;
+    }
+
+    public static class NewSitePayload implements Payload {
+        public String siteName;
+        public String siteTitle;
+        public String language;
+        public SiteVisibility visibility;
+        public boolean dryRun;
+        public NewSitePayload(@NonNull String siteName, @NonNull String siteTitle, @NonNull String language,
+                              SiteVisibility visibility, boolean dryRun) {
+            this.siteName = siteName;
+            this.siteTitle = siteTitle;
+            this.language = language;
+            this.visibility = visibility;
+            this.dryRun = dryRun;
+        }
     }
 
     // OnChanged Events
@@ -45,11 +65,60 @@ public class SiteStore extends Store {
         }
     }
 
-    public class OnSitesRemoved extends OnChanged {
+    public class OnSiteRemoved extends OnChanged {
         public int mRowsAffected;
 
-        public OnSitesRemoved(int rowsAffected) {
+        public OnSiteRemoved(int rowsAffected) {
             mRowsAffected = rowsAffected;
+        }
+    }
+
+    public class OnNewSiteCreated extends OnChanged {
+        public boolean isError;
+        public NewSiteError errorType;
+        public String errorMessage;
+        public boolean dryRun;
+    }
+    // Enums
+    public enum NewSiteError {
+        BLOG_NAME_REQUIRED,
+        BLOG_NAME_NOT_ALLOWED,
+        BLOG_NAME_MUST_BE_AT_LEAST_FOUR_CHARACTERS,
+        BLOG_NAME_MUST_BE_LESS_THAN_SIXTY_FOUR_CHARACTERS,
+        BLOG_NAME_CONTAINS_INVALID_CHARACTERS,
+        BLOG_NAME_CANT_BE_USED,
+        BLOG_NAME_ONLY_LOWERCASE_LETTERS_AND_NUMBERS,
+        BLOG_NAME_MUST_INCLUDE_LETTERS,
+        BLOG_NAME_EXISTS,
+        BLOG_NAME_RESERVED,
+        BLOG_NAME_RESERVED_BUT_MAY_BE_AVAILABLE,
+        BLOG_NAME_INVALID,
+        BLOG_TITLE_INVALID,
+        GENERIC_ERROR;
+
+        public static NewSiteError fromString(String string) {
+            if (string != null) {
+                for (NewSiteError v : NewSiteError.values()) {
+                    if (string.equalsIgnoreCase(v.name())) {
+                        return v;
+                    }
+                }
+            }
+            return GENERIC_ERROR;
+        }
+    }
+
+    public enum SiteVisibility {
+        PRIVATE (-1),
+        BLOCK_SEARCH_ENGINE (0),
+        PUBLIC (1);
+
+        private final int value;
+        SiteVisibility(int value) {
+            this.value = value;
+        }
+        public int value() {
+            return value;
         }
     }
 
@@ -66,8 +135,6 @@ public class SiteStore extends Store {
     @Override
     public void onRegister() {
         AppLog.d(T.API, "SiteStore onRegister");
-        // TODO: I'm really not sure about emitting OnChange event here.
-        emitChange(new OnSiteChanged(0));
     }
 
     /**
@@ -375,9 +442,9 @@ public class SiteStore extends Store {
             emitChange(new OnSiteChanged(rowsAffected));
         } else if (actionType == SiteAction.FETCH_SITES) {
             mSiteRestClient.pullSites();
-        } else if (actionType == SiteAction.FETCH_SITES_XMLRPC) {
+        } else if (actionType == SiteAction.FETCH_SITES_XML_RPC) {
             RefreshSitesXMLRPCPayload payload = (RefreshSitesXMLRPCPayload) action.getPayload();
-            mSiteXMLRPCClient.pullSites(payload.xmlrpcEndpoint, payload.username, payload.password);
+            mSiteXMLRPCClient.pullSites(payload.url, payload.username, payload.password);
         } else if (actionType == SiteAction.FETCH_SITE) {
             SiteModel site = (SiteModel) action.getPayload();
             if (site.isWPCom() || site.isJetpack()) {
@@ -391,18 +458,30 @@ public class SiteStore extends Store {
             // TODO: This should be captured by 'QuickPressShortcutsStore' so it can handle deleting any QP shortcuts
             // TODO: Probably, we can inject QuickPressShortcutsStore into SiteStore and act on it directly
             // See WordPressDB.deleteQuickPressShortcutsForLocalTableBlogId(Context ctx, int blogId)
-            emitChange(new OnSitesRemoved(rowsAffected));
-        } else if (actionType == SiteAction.LOGOUT_WPCOM) {
+            emitChange(new OnSiteRemoved(rowsAffected));
+        } else if (actionType == SiteAction.REMOVE_WPCOM_SITES) {
             // Logging out of WP.com. Drop all WP.com sites, and all Jetpack sites that were pulled over the WP.com
             // REST API only (they don't have a .org site id)
-            List<SiteModel> restApiSites = SiteSqlUtils.getAllRestApiSites();
-            int rowsAffected = removeSites(restApiSites);
+            List<SiteModel> wpcomSites = SiteSqlUtils.getAllWPComSites();
+            int rowsAffected = removeSites(wpcomSites);
             // TODO: Same as above, this needs to be captured and handled by QuickPressShortcutsStore
-            emitChange(new OnSitesRemoved(rowsAffected));
+            emitChange(new OnSiteRemoved(rowsAffected));
         } else if (actionType == SiteAction.SHOW_SITES) {
             toggleSitesVisibility((SitesModel) action.getPayload(), true);
         } else if (actionType == SiteAction.HIDE_SITES) {
             toggleSitesVisibility((SitesModel) action.getPayload(), false);
+        } else if (actionType == SiteAction.CREATE_NEW_SITE) {
+            NewSitePayload payload = (NewSitePayload) action.getPayload();
+            mSiteRestClient.newSite(payload.siteName, payload.siteTitle, payload.language, payload.visibility,
+                    payload.dryRun);
+        } else if (actionType == SiteAction.CREATED_NEW_SITE) {
+            NewSiteResponsePayload payload = (NewSiteResponsePayload) action.getPayload();
+            OnNewSiteCreated onNewSiteCreated = new OnNewSiteCreated();
+            onNewSiteCreated.isError = payload.isError;
+            onNewSiteCreated.errorType = payload.errorType;
+            onNewSiteCreated.errorMessage = payload.errorMessage;
+            onNewSiteCreated.dryRun = payload.dryRun;
+            emitChange(onNewSiteCreated);
         }
     }
 

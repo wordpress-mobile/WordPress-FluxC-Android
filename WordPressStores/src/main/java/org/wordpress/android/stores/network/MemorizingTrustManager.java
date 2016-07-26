@@ -22,7 +22,7 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 public class MemorizingTrustManager implements X509TrustManager {
-    public static final String KEYSTORE_FILENAME = "self_signed_certs_truststore.bks";
+    public static final String KEYSTORE_FILENAME = "wpstore_certs_truststore.bks";
     public static final String KEYSTORE_PASSWORD = "secret";
 
     private X509TrustManager mDefaultTrustManager;
@@ -159,5 +159,10 @@ public class MemorizingTrustManager implements X509TrustManager {
 
     public X509Certificate getLastFailure() {
         return mLastFailure;
+    }
+
+    public void clearLocalTrustStore() {
+        File localKeyStoreFile = new File(mContext.getFilesDir(), KEYSTORE_FILENAME);
+        localKeyStoreFile.delete();
     }
 }

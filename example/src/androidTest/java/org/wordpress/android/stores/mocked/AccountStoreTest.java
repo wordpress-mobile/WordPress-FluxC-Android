@@ -3,11 +3,11 @@ package org.wordpress.android.stores.mocked;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
-import com.squareup.otto.Subscribe;
 import com.yarolegovich.wellsql.WellSql;
 
+import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.stores.Dispatcher;
-import org.wordpress.android.stores.action.AuthenticationAction;
+import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
 import org.wordpress.android.stores.module.AppContextModule;
 import org.wordpress.android.stores.persistence.WellSqlConfig;
 import org.wordpress.android.stores.store.AccountStore;
@@ -43,25 +43,20 @@ public class AccountStoreTest extends InstrumentationTestCase {
 
         // Register
         mDispatcher.register(this);
-        mDispatcher.register(mAccountStore);
     }
 
     public void testAuthenticationOK() {
-        AuthenticatePayload payload = new AuthenticatePayload();
-        payload.username = "test";
-        payload.password = "test";
+        AuthenticatePayload payload = new AuthenticatePayload("test", "test");
         mIsError = false;
         // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationAction.AUTHENTICATE, payload);
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
     }
 
     public void testAuthenticationKO() {
-        AuthenticatePayload payload = new AuthenticatePayload();
-        payload.username = "error";
-        payload.password = "error";
+        AuthenticatePayload payload = new AuthenticatePayload("error", "error");
         mIsError = true;
         // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationAction.AUTHENTICATE, payload);
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
     }
 
     @Subscribe

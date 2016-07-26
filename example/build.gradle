@@ -3,7 +3,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.0.0-beta7'
+        classpath 'com.android.tools.build:gradle:2.1.2'
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
     }
 }
@@ -48,7 +48,14 @@ android.buildTypes.all { buildType ->
 
     // Load test properties and add them to BuildConfig
     Properties testProperties = new Properties()
-    testProperties.load(new FileInputStream("example/tests.properties"))
+    File testFile = file("tests.properties")
+    if (testFile.exists()) {
+        testProperties.load(new FileInputStream(testFile))
+    } else {
+        // Load defaults
+        println("WARNING: you're using the example example/tests.properties-example file - tests won't pass")
+        testProperties.load(new FileInputStream(file("tests.properties-example")))
+    }
     testProperties.any { property ->
         buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(), "\"${property.value}\""
     }

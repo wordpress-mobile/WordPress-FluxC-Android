@@ -1,33 +1,57 @@
 package org.wordpress.android.stores.network.rest.wpcom.site;
 
+import android.support.annotation.NonNull;
+
 import com.android.volley.Request.Method;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.ErrorListener;
 import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.wordpress.android.stores.Dispatcher;
-import org.wordpress.android.stores.action.SiteAction;
+import org.wordpress.android.stores.Payload;
+import org.wordpress.android.stores.generated.SiteActionBuilder;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.model.SitesModel;
 import org.wordpress.android.stores.network.UserAgent;
 import org.wordpress.android.stores.network.rest.wpcom.BaseWPComRestClient;
 import org.wordpress.android.stores.network.rest.wpcom.WPCOMREST;
 import org.wordpress.android.stores.network.rest.wpcom.WPComGsonRequest;
+import org.wordpress.android.stores.network.rest.wpcom.account.NewAccountResponse;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
+import org.wordpress.android.stores.network.rest.wpcom.auth.AppSecrets;
 import org.wordpress.android.stores.network.rest.wpcom.site.SiteWPComRestResponse.SitesResponse;
+import org.wordpress.android.stores.store.SiteStore.NewSiteError;
+import org.wordpress.android.stores.store.SiteStore.SiteVisibility;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
 public class SiteRestClient extends BaseWPComRestClient {
+    private final AppSecrets mAppSecrets;
+
+    public static class NewSiteResponsePayload implements Payload {
+        public NewSiteResponsePayload() {
+        }
+        public NewSiteError errorType;
+        public String errorMessage;
+        public boolean isError;
+        public boolean dryRun;
+    }
+
     @Inject
-    public SiteRestClient(Dispatcher dispatcher, RequestQueue requestQueue,
+    public SiteRestClient(Dispatcher dispatcher, RequestQueue requestQueue, AppSecrets appSecrets,
                           AccessToken accessToken, UserAgent userAgent) {
         super(dispatcher, requestQueue, accessToken, userAgent);
+        mAppSecrets = appSecrets;
     }
 
     public void pullSites() {
@@ -41,7 +65,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                         for (SiteWPComRestResponse siteResponse : response.sites) {
                             sites.add(siteResponseToSiteModel(siteResponse));
                         }
-                        mDispatcher.dispatch(SiteAction.UPDATE_SITES, sites);
+                        mDispatcher.dispatch(SiteActionBuilder.newUpdateSitesAction(sites));
                     }
                 },
                 new ErrorListener() {
@@ -63,7 +87,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                     @Override
                     public void onResponse(SiteWPComRestResponse response) {
                         SiteModel site = siteResponseToSiteModel(response);
-                        mDispatcher.dispatch(SiteAction.UPDATE_SITE, site);
+                        mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(site));
                     }
                 },
                 new ErrorListener() {
@@ -75,6 +99,39 @@ public class SiteRestClient extends BaseWPComRestClient {
                 }
         );
         add(request);
+    }
+
+    public void newSite(@NonNull String siteName, @NonNull String siteTitle, @NonNull String language,
+                        @NonNull SiteVisibility visibility, final boolean dryRun) {
+        String url = WPCOMREST.SITES_NEW.getUrlV1();
+        Map<String, String> params = new HashMap<>();
+        params.put("blog_name", siteName);
+        params.put("blog_title", siteTitle);
+        params.put("lang_id", language);
+        params.put("public", visibility.toString());
+        params.put("validate", dryRun ? "1" : "0");
+        params.put("client_id", mAppSecrets.getAppId());
+        params.put("client_secret", mAppSecrets.getAppSecret());
+        add(new WPComGsonRequest<>(Method.POST, url, params, NewAccountResponse.class,
+                new Listener<NewAccountResponse>() {
+                    @Override
+                    public void onResponse(NewAccountResponse response) {
+                        NewSiteResponsePayload payload = new NewSiteResponsePayload();
+                        payload.isError = false;
+                        payload.dryRun = dryRun;
+                        mDispatcher.dispatch(SiteActionBuilder.newCreatedNewSiteAction(payload));
+                    }
+                },
+                new ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        AppLog.e(T.API, new String(error.networkResponse.data));
+                        NewSiteResponsePayload payload = volleyErrorToAccountResponsePayload(error);
+                        payload.dryRun = dryRun;
+                        mDispatcher.dispatch(SiteActionBuilder.newCreatedNewSiteAction(payload));
+                    }
+                }
+        ));
     }
 
     private SiteModel siteResponseToSiteModel(SiteWPComRestResponse from) {
@@ -90,8 +147,30 @@ public class SiteRestClient extends BaseWPComRestClient {
             site.setIsFeaturedImageSupported(from.options.featured_images_enabled);
             site.setIsVideoPressSupported(from.options.videopress_enabled);
             site.setAdminUrl(from.options.admin_url);
+            site.setTimezone(from.options.timezone);
+        }
+        if (from.plan != null) {
+            site.setPlanId(from.plan.product_id);
+            site.setPlanShortName(from.plan.product_name_short);
         }
         site.setIsWPCom(true);
         return site;
+    }
+
+    private NewSiteResponsePayload volleyErrorToAccountResponsePayload(VolleyError error) {
+        NewSiteResponsePayload payload = new NewSiteResponsePayload();
+        payload.isError = true;
+        payload.errorType = NewSiteError.GENERIC_ERROR;
+        if (error.networkResponse != null && error.networkResponse.data != null) {
+            String jsonString = new String(error.networkResponse.data);
+            try {
+                JSONObject errorObj = new JSONObject(jsonString);
+                payload.errorType = NewSiteError.fromString((String) errorObj.get("error"));
+                payload.errorMessage = (String) errorObj.get("message");
+            } catch (JSONException e) {
+                // Do nothing (keep default error)
+            }
+        }
+        return payload;
     }
 }

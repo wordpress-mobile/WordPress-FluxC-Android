@@ -11,6 +11,7 @@ import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.OkHttpStack;
 import org.wordpress.android.stores.network.UserAgent;
+import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder;
 import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AppSecrets;
@@ -19,6 +20,7 @@ import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.ErrorL
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.Listener;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.Token;
 import org.wordpress.android.stores.network.rest.wpcom.site.SiteRestClient;
+import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.stores.network.xmlrpc.site.SiteXMLRPCClient;
 
 import javax.inject.Singleton;
@@ -97,9 +99,17 @@ public class MockedNetworkModule {
 
     @Singleton
     @Provides
-    public SiteRestClient provideSiteRestClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken token,
-                                                UserAgent userAgent) {
-        return new SiteRestClient(dispatcher, requestQueue, token, userAgent);
+    public BaseXMLRPCClient provideBaseXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken token,
+                                                    UserAgent userAgent, HTTPAuthManager httpAuthManager) {
+        return new BaseXMLRPCClient(dispatcher, requestQueue, token, userAgent, httpAuthManager);
+    }
+
+    @Singleton
+    @Provides
+    public SiteRestClient provideSiteRestClient(Dispatcher dispatcher, RequestQueue requestQueue,
+                                                AppSecrets appSecrets,
+                                                AccessToken token, UserAgent userAgent) {
+        return new SiteRestClient(dispatcher, requestQueue, appSecrets, token, userAgent);
     }
 
     @Singleton
@@ -112,8 +122,16 @@ public class MockedNetworkModule {
     @Singleton
     @Provides
     public AccountRestClient provideAccountRestClient(Dispatcher dispatcher, RequestQueue requestQueue,
+                                                      AppSecrets appSecrets,
                                                       AccessToken token, UserAgent userAgent) {
-        return new AccountRestClient(dispatcher, requestQueue, token, userAgent);
+        return new AccountRestClient(dispatcher, requestQueue, appSecrets, token, userAgent);
+    }
+
+    @Singleton
+    @Provides
+    public SelfHostedEndpointFinder provideSelfHostedEndpointFinder(Dispatcher dispatcher,
+                                                                    BaseXMLRPCClient baseXMLRPCClient) {
+        return new SelfHostedEndpointFinder(dispatcher, baseXMLRPCClient);
     }
 
     @Singleton

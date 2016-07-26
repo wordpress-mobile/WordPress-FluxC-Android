@@ -1,12 +1,11 @@
 package org.wordpress.android.stores.release;
 
-import com.squareup.otto.Subscribe;
-
+import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.TestUtils;
-import org.wordpress.android.stores.action.AuthenticationAction;
-import org.wordpress.android.stores.action.SiteAction;
 import org.wordpress.android.stores.example.BuildConfig;
+import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
+import org.wordpress.android.stores.generated.SiteActionBuilder;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
@@ -42,8 +41,6 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
-        mDispatcher.register(mSiteStore);
-        mDispatcher.register(mAccountStore);
         mDispatcher.register(this);
         // Reset expected test event
         mExpectedEvent = TEST_EVENTS.NONE;
@@ -52,29 +49,28 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
 
     public void testWPCOMSiteFetchAndLogout() throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
-        AccountStore.AuthenticatePayload payload = new AccountStore.AuthenticatePayload();
-        payload.username = BuildConfig.TEST_WPCOM_USERNAME_TEST1;
-        payload.password = BuildConfig.TEST_WPCOM_PASSWORD_TEST1;
-
+        AccountStore.AuthenticatePayload payload =
+                new AccountStore.AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                        BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         mCountDownLatch = new CountDownLatch(1);
 
         // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationAction.AUTHENTICATE, payload);
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         // Wait for a network response / onChanged event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
-        mDispatcher.dispatch(SiteAction.FETCH_SITES);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        // Clear WP.com sites, and wait for OnSitesRemoved event
+        // Clear WP.com sites, and wait for OnSiteRemoved event
         mCountDownLatch = new CountDownLatch(1);
         mExpectedEvent = TEST_EVENTS.SITE_REMOVED;
         mExpectedRowsAffected = mSiteStore.getSitesCount();
-        mDispatcher.dispatch(SiteAction.LOGOUT_WPCOM);
+        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -95,7 +91,7 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
     }
 
     @Subscribe
-    public void OnSitesRemoved(SiteStore.OnSitesRemoved event) {
+    public void OnSiteRemoved(SiteStore.OnSiteRemoved event) {
         AppLog.e(T.TESTS, "site count " + mSiteStore.getSitesCount());
         assertEquals(mExpectedRowsAffected, event.mRowsAffected);
         assertEquals(false, mSiteStore.hasSite());

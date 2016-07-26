@@ -1,10 +1,17 @@
 package org.wordpress.android.stores.network.rest.wpcom;
 
 public enum WPCOMREST {
+    // Me
     ME("/me/"),
     ME_SETTINGS("/me/settings/"),
     ME_SITES("/me/sites/"),
-    SITES("/sites/");
+
+    // Sites
+    SITES("/sites/"),
+    SITES_NEW("/sites/new"),
+
+    // Users
+    USERS_NEW("/users/new");
 
     private static final String WPCOM_REST_PREFIX = "https://public-api.wordpress.com/rest";
     private static final String WPCOM_PREFIX_V1 = WPCOM_REST_PREFIX + "/v1";

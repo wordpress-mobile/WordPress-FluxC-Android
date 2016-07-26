@@ -1,22 +1,24 @@
 package org.wordpress.android.stores;
 
-import com.squareup.otto.Bus;
-import com.squareup.otto.ThreadEnforcer;
-
-import org.wordpress.android.stores.action.Action;
-import org.wordpress.android.stores.action.IAction;
+import org.greenrobot.eventbus.EventBus;
+import org.wordpress.android.stores.annotations.action.Action;
 import org.wordpress.android.stores.store.Store;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
 import javax.inject.Singleton;
 
+
 @Singleton
 public class Dispatcher {
-    private final Bus mBus;
+    private final EventBus mBus;
 
     public Dispatcher() {
-        mBus = new Bus(ThreadEnforcer.ANY);
+        mBus = EventBus.builder()
+                .logNoSubscriberMessages(true)
+                .sendNoSubscriberEvent(true)
+                .throwSubscriberException(true)
+                .build();
     }
 
     public void register(final Object object) {
@@ -34,22 +36,6 @@ public class Dispatcher {
         AppLog.d(T.API, "Dispatching action: " + action.getType().getClass().getSimpleName()
                 + "-" + action.getType().name());
         post(action);
-    }
-
-    public <T> void dispatch(final IAction actionType, final T payload) {
-        dispatch(createAction(actionType, payload));
-    }
-
-    public void dispatch(IAction actionType) {
-        dispatch(actionType, null);
-    }
-
-    public <T> Action<T> createAction(final IAction actionType, final T payload) {
-        return new Action<T>(actionType, payload);
-    }
-
-    public <T> Action<T> createAction(final IAction actionType) {
-        return createAction(actionType, null);
     }
 
     public void emitChange(final Object changeEvent) {
