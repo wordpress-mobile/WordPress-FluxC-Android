@@ -48,6 +48,11 @@ public class PostModel implements Identifiable, Payload {
     @Column private boolean mIsLocalDraft;
     @Column private boolean mIsLocallyChanged;
 
+    // XML-RPC only, needed to work around a bug with the API:
+    // https://github.com/wordpress-mobile/WordPress-Android/pull/3425
+    // We may be able to drop this if we switch to wp.editPost (and it doesn't have the same bug as metaWeblog.editPost)
+    @Column private long mLastKnownRemoteFeaturedImageId;
+
     @Override
     public void setId(int id) {
         mId = id;
@@ -310,5 +315,13 @@ public class PostModel implements Identifiable, Payload {
 
     public void setIsLocallyChanged(boolean isLocallyChanged) {
         mIsLocallyChanged = isLocallyChanged;
+    }
+
+    public long getLastKnownRemoteFeaturedImageId() {
+        return mLastKnownRemoteFeaturedImageId;
+    }
+
+    public void setLastKnownRemoteFeaturedImageId(long lastKnownRemoteFeaturedImageId) {
+        this.mLastKnownRemoteFeaturedImageId = lastKnownRemoteFeaturedImageId;
     }
 }
