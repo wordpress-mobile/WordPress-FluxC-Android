@@ -138,6 +138,7 @@ public class PostStore extends Store {
     public int getUploadedPagesCountForSite(SiteModel site) {
         return getUploadedPagesForSite(site).size();
     }
+
     @Subscribe
     @Override
     public void onAction(Action action) {
@@ -155,6 +156,8 @@ public class PostStore extends Store {
             for (PostModel post : postsResponsePayload.posts) {
                 PostSqlUtils.insertOrUpdatePostKeepingLocalChanges(post);
             }
+        } else if (actionType == PostAction.UPDATE_POST) {
+            PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges((PostModel) action.getPayload());
         }
     }
 }

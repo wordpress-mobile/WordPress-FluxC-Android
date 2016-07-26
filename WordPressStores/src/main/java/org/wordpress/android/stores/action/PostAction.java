@@ -3,7 +3,7 @@ package org.wordpress.android.stores.action;
 import org.wordpress.android.stores.annotations.Action;
 import org.wordpress.android.stores.annotations.ActionEnum;
 import org.wordpress.android.stores.annotations.action.IAction;
-import org.wordpress.android.stores.model.SiteModel;
+import org.wordpress.android.stores.model.PostModel;
 import org.wordpress.android.stores.store.PostStore;
 
 @ActionEnum
@@ -13,5 +13,7 @@ public enum PostAction implements IAction {
     FETCH_POSTS,
     // TODO: Rename to UPDATE_POSTS?
     @Action(payloadType = PostStore.FetchPostsResponsePayload.class)
-    FETCHED_POSTS
+    FETCHED_POSTS,
+    @Action(payloadType = PostModel.class)
+    UPDATE_POST
 }
