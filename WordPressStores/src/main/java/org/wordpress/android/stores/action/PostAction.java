@@ -16,5 +16,7 @@ public enum PostAction implements IAction {
     @Action(payloadType = PostStore.FetchPostsResponsePayload.class)
     FETCHED_POSTS,
     @Action(payloadType = PostModel.class)
-    UPDATE_POST
+    UPDATE_POST,
+    @Action(payloadType = PostModel.class)
+    REMOVE_POST
 }

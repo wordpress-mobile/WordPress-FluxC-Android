@@ -71,6 +71,20 @@ public class PostSqlUtils {
 
     }
 
+    public static int deletePost(PostModel post) {
+        if (post == null) {
+            return 0;
+        }
+
+        return WellSql.delete(PostModel.class)
+                .where().beginGroup()
+                .equals(PostModelTable.ID, post.getId())
+                .equals(PostModelTable.LOCAL_TABLE_SITE_ID, post.getLocalTableSiteId())
+                .endGroup()
+                .endWhere()
+                .execute();
+    }
+
     public static int deleteUploadedPostsForSite(SiteModel site, boolean pages) {
         if (site == null) {
             return 0;

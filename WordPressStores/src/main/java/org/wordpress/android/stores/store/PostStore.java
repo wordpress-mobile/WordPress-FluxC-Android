@@ -150,9 +150,15 @@ public class PostStore extends Store {
     }
 
     public PostModel getPostByLocalPostId(long localId) {
-        return WellSql.select(PostModel.class)
+        List<PostModel> result = WellSql.select(PostModel.class)
                 .where().equals(PostModelTable.ID, localId).endWhere()
-                .getAsModel().get(0);
+                .getAsModel();
+
+        if (result.isEmpty()) {
+            return null;
+        } else {
+            return result.get(0);
+        }
     }
 
     @Subscribe
@@ -199,6 +205,8 @@ public class PostStore extends Store {
             // TODO: Trigger onPostUpdated, and pass it postsResponsePayload.canLoadMore
         } else if (actionType == PostAction.UPDATE_POST) {
             PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges((PostModel) action.getPayload());
+        } else if (actionType == PostAction.REMOVE_POST) {
+            PostSqlUtils.deletePost((PostModel) action.getPayload());
         }
     }
 }
