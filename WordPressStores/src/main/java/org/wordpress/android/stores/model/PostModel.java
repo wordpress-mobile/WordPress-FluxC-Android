@@ -343,4 +343,65 @@ public class PostModel implements Identifiable, Payload {
     public void setLastKnownRemoteFeaturedImageId(long lastKnownRemoteFeaturedImageId) {
         mLastKnownRemoteFeaturedImageId = lastKnownRemoteFeaturedImageId;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+
+        PostModel otherPost = (PostModel) other;
+
+        return (getId() == otherPost.getId() &&
+                getLocalTableSiteId() == otherPost.getLocalTableSiteId() &&
+                getSiteId() == otherPost.getSiteId() &&
+                getPostId() == otherPost.getPostId() &&
+                getDateCreated() == otherPost.getDateCreated() &&
+                getDateCreatedGmt() == otherPost.getDateCreatedGmt() &&
+                getAllowComments() == otherPost.getAllowComments() &&
+                getAllowPings() == otherPost.getAllowPings() &&
+                getUserId() == otherPost.getUserId() &&
+                getFeaturedImageId() == otherPost.getFeaturedImageId() &&
+                Double.compare(otherPost.getLatitude(), getLatitude()) == 0 &&
+                Double.compare(otherPost.getLongitude(), getLongitude()) == 0 &&
+                isPage() == otherPost.isPage() &&
+                isLocalDraft() == otherPost.isLocalDraft() &&
+                isLocallyChanged() == otherPost.isLocallyChanged() &&
+                getLastKnownRemoteFeaturedImageId() == otherPost.getLastKnownRemoteFeaturedImageId() &&
+                getTitle() != null ? getTitle().equals(otherPost.getTitle()) : otherPost.getTitle() == null &&
+                getCategories() != null ? getCategories().equals(otherPost.getCategories()) :
+                        otherPost.getCategories() == null &&
+                getCustomFields() != null ? getCustomFields().equals(otherPost.getCustomFields()) :
+                        otherPost.getCustomFields() == null &&
+                getDescription() != null ? getDescription().equals(otherPost.getDescription()) :
+                        otherPost.getDescription() == null &&
+                getLink() != null ? getLink().equals(otherPost.getLink()) : otherPost.getLink() == null &&
+                getExcerpt() != null ? getExcerpt().equals(otherPost.getExcerpt()) :
+                        otherPost.getExcerpt() == null &&
+                getKeywords() != null ? getKeywords().equals(otherPost.getKeywords()) :
+                        otherPost.getKeywords() == null &&
+                getMoreText() != null ? getMoreText().equals(otherPost.getMoreText()) :
+                        otherPost.getMoreText() == null &&
+                getPermaLink() != null ? getPermaLink().equals(otherPost.getPermaLink()) :
+                        otherPost.getPermaLink() == null &&
+                getStatus() != null ? getStatus().equals(otherPost.getStatus()) : otherPost.getStatus() == null &&
+                getAuthorDisplayName() != null ? getAuthorDisplayName().equals(otherPost.getAuthorDisplayName()) :
+                        otherPost.getAuthorDisplayName() != null &&
+                getAuthorId() != null ? getAuthorId().equals(otherPost.getAuthorId()) :
+                        otherPost.getAuthorId() == null &&
+                getPassword() != null ? getPassword().equals(otherPost.getPassword()) :
+                        otherPost.getPassword() == null &&
+                getPostFormat() != null ? getPostFormat().equals(otherPost.getPostFormat()) :
+                        otherPost.getPostFormat() == null &&
+                getSlug() != null ? getSlug().equals(otherPost.getSlug()) : otherPost.getSlug() == null &&
+                getPageParentId() != null ? getPageParentId().equals(otherPost.getPageParentId()) :
+                        otherPost.getPageParentId() == null &&
+                getPageParentTitle() != null ? getPageParentTitle().equals(otherPost.getPageParentTitle()) :
+                        otherPost.getPageParentTitle() == null);
+
+    }
 }

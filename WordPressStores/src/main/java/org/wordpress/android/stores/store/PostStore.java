@@ -2,6 +2,7 @@ package org.wordpress.android.stores.store;
 
 import android.database.Cursor;
 
+import com.wellsql.generated.PostModelTable;
 import com.yarolegovich.wellsql.WellSql;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -137,6 +138,12 @@ public class PostStore extends Store {
      */
     public int getUploadedPagesCountForSite(SiteModel site) {
         return getUploadedPagesForSite(site).size();
+    }
+
+    public PostModel getPostByLocalPostId(long localId) {
+        return WellSql.select(PostModel.class)
+                .where().equals(PostModelTable.ID, localId).endWhere()
+                .getAsModel().get(0);
     }
 
     @Subscribe
