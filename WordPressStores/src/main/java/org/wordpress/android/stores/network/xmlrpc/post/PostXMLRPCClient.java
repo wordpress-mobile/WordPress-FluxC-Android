@@ -42,7 +42,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         super(dispatcher, requestQueue, accessToken, userAgent, httpAuthManager);
     }
 
-    public void getPosts(final SiteModel site, final boolean isPage, final int offset) {
+    public void getPosts(final SiteModel site, final boolean getPages, final int offset) {
         int numPostsToRequest = offset + NUM_POSTS_TO_REQUEST;
 
         List<Object> params = new ArrayList<>(4);
@@ -51,7 +51,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         params.add(site.getPassword());
         params.add(numPostsToRequest);
 
-        XMLRPC method = (isPage ? XMLRPC.GET_PAGES : XMLRPC.GET_POSTS);
+        XMLRPC method = (getPages ? XMLRPC.GET_PAGES : XMLRPC.GET_POSTS);
 
         final XMLRPCRequest request = new XMLRPCRequest(site.getXmlRpcUrl(), method, params,
                 new Listener<Object[]>() {
@@ -77,10 +77,10 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                             canLoadMore = false;
                         }
 
-                        PostsModel posts = postsResponseToPostsModel(response, site, isPage, startPosition);
+                        PostsModel posts = postsResponseToPostsModel(response, site, getPages, startPosition);
 
-                        FetchPostsResponsePayload payload = new FetchPostsResponsePayload(posts, canLoadMore);
-
+                        FetchPostsResponsePayload payload = new FetchPostsResponsePayload(posts, site, getPages,
+                                offset > 0, canLoadMore);
                         // TODO: Will need a way to account for WPAndroid's overwriteLocalChanges: only overwrite local changes when updating individual posts, not from GET_POSTS
 
                         if (posts != null) {

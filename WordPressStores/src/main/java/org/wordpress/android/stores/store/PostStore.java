@@ -42,10 +42,17 @@ public class PostStore extends Store {
 
     public static class FetchPostsResponsePayload implements Payload {
         public PostsModel posts;
+        public SiteModel site;
+        public boolean isPages;
+        public boolean loadedMore;
         public boolean canLoadMore;
 
-        public FetchPostsResponsePayload(PostsModel posts, boolean canLoadMore) {
+        public FetchPostsResponsePayload(PostsModel posts, SiteModel site, boolean isPages, boolean loadedMore,
+                boolean canLoadMore) {
             this.posts = posts;
+            this.site = site;
+            this.isPages = isPages;
+            this.loadedMore = loadedMore;
             this.canLoadMore = canLoadMore;
         }
     }
@@ -178,9 +185,18 @@ public class PostStore extends Store {
             }
         } else if (actionType == PostAction.FETCHED_POSTS) {
             FetchPostsResponsePayload postsResponsePayload = (FetchPostsResponsePayload) action.getPayload();
+
+            // Clear existing uploading posts if this is a fresh fetch (loadMore = false in the original request)
+            // This is the simplest way of keeping our local posts in sync with remote posts (in case of deletions,
+            // or if the user manual changed some post IDs)
+            if (!postsResponsePayload.loadedMore) {
+                PostSqlUtils.deleteUploadedPostsForSite(postsResponsePayload.site, postsResponsePayload.isPages);
+            }
+
             for (PostModel post : postsResponsePayload.posts) {
                 PostSqlUtils.insertOrUpdatePostKeepingLocalChanges(post);
             }
+            // TODO: Trigger onPostUpdated, and pass it postsResponsePayload.canLoadMore
         } else if (actionType == PostAction.UPDATE_POST) {
             PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges((PostModel) action.getPayload());
         }
