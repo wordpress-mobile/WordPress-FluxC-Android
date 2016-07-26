@@ -30,6 +30,10 @@ public class PostStore extends Store {
         public SiteModel site;
         public boolean loadMore;
 
+        public FetchPostsPayload(SiteModel site) {
+            this.site = site;
+        }
+
         public FetchPostsPayload(SiteModel site, boolean loadMore) {
             this.site = site;
             this.loadMore = loadMore;

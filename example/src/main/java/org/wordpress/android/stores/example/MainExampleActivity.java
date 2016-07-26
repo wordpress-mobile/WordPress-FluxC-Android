@@ -103,8 +103,7 @@ public class MainExampleActivity extends AppCompatActivity {
         mFetchFirstSitePosts.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                PostStore.FetchPostsPayload payload = new PostStore.FetchPostsPayload(mSiteStore.getSites().get(0),
-                        false);
+                PostStore.FetchPostsPayload payload = new PostStore.FetchPostsPayload(mSiteStore.getSites().get(0));
                 mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
             }
         });
