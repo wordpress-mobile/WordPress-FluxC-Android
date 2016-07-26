@@ -29,6 +29,8 @@ public class XMLSerializerUtils {
     private static final String TAG_FAULT_CODE = "faultCode";
     private static final String TAG_FAULT_STRING = "faultString";
 
+    private static final int MAX_SCRUB_CHARACTERS = 5000;
+
     public static StringWriter serialize(XmlSerializer serializer, XMLRPC method, Object[] params)
             throws IOException {
         StringWriter bodyWriter = new StringWriter();
@@ -92,7 +94,7 @@ public class XMLSerializerUtils {
         // Many WordPress configs can output junk before the xml response (php warnings for example), this cleans it.
         int bomCheck = -1;
         int stopper = 0;
-        while ((bomCheck = is.read()) != -1 && stopper <= 5000) {
+        while ((bomCheck = is.read()) != -1 && stopper <= MAX_SCRUB_CHARACTERS) {
             stopper++;
             String snippet = "";
             // 60 == '<' character
