@@ -18,7 +18,7 @@ public class PostSqlUtils {
         List<PostModel> postResult = WellSql.select(PostModel.class)
                 .where().beginGroup()
                 .equals(PostModelTable.POST_ID, post.getPostId())
-                .equals(PostModelTable.SITE_ID, post.getSiteId())
+                .equals(PostModelTable.LOCAL_TABLE_SITE_ID, post.getLocalTableSiteId())
                 .equals(PostModelTable.IS_PAGE, post.isPage())
                 .endGroup().endWhere().getAsModel();
 
@@ -55,7 +55,7 @@ public class PostSqlUtils {
 
         return WellSql.select(PostModel.class)
                 .where().beginGroup()
-                .equals(PostModelTable.SITE_ID, site.getId())
+                .equals(PostModelTable.LOCAL_TABLE_SITE_ID, site.getId())
                 .equals(PostModelTable.IS_PAGE, getPages)
                 .endGroup().endWhere().getAsModel();
 
@@ -68,7 +68,7 @@ public class PostSqlUtils {
 
         return WellSql.select(PostModel.class)
                 .where().beginGroup()
-                .equals(PostModelTable.SITE_ID, site.getId())
+                .equals(PostModelTable.LOCAL_TABLE_SITE_ID, site.getId())
                 .equals(PostModelTable.IS_PAGE, getPages)
                 .equals(PostModelTable.IS_LOCAL_DRAFT, false)
                 .endGroup().endWhere().getAsModel();

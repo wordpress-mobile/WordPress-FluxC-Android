@@ -13,7 +13,7 @@ public class PostModel implements Identifiable, Payload {
 
     @PrimaryKey
     @Column private int mId;
-
+    @Column private int mLocalTableSiteId;
     @Column private int mSiteId;
     @Column private int mPostId;
     @Column private String mTitle;
@@ -62,6 +62,16 @@ public class PostModel implements Identifiable, Payload {
     public int getId() {
         return mId;
     }
+
+
+    public int getLocalTableSiteId() {
+        return mLocalTableSiteId;
+    }
+
+    public void setLocalTableSiteId(int localTableSiteId) {
+        mLocalTableSiteId = localTableSiteId;
+    }
+
 
     public int getSiteId() {
         return mSiteId;
@@ -290,7 +300,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public void setPageParentId(String pageParentId) {
-        this.mPageParentId = pageParentId;
+        mPageParentId = pageParentId;
     }
 
     public String getPageParentTitle() {
@@ -298,7 +308,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public void setPageParentTitle(String pageParentTitle) {
-        this.mPageParentTitle = pageParentTitle;
+        mPageParentTitle = pageParentTitle;
     }
 
     public boolean isLocalDraft() {
@@ -322,6 +332,6 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public void setLastKnownRemoteFeaturedImageId(long lastKnownRemoteFeaturedImageId) {
-        this.mLastKnownRemoteFeaturedImageId = lastKnownRemoteFeaturedImageId;
+        mLastKnownRemoteFeaturedImageId = lastKnownRemoteFeaturedImageId;
     }
 }

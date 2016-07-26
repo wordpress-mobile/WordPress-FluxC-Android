@@ -142,7 +142,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                 continue;
             }
 
-            post.setSiteId(site.getId()); // Using local id, should rename siteId
+            post.setLocalTableSiteId(site.getId());
             post.setPostId(Integer.valueOf(postID));
             post.setTitle(MapUtils.getMapStr(postMap, "title"));
 
