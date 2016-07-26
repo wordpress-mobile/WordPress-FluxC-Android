@@ -8,9 +8,11 @@ import com.yarolegovich.wellsql.core.annotation.Table;
 
 import org.wordpress.android.stores.Payload;
 
+import java.io.Serializable;
+
 @Table
 @RawConstraints({"UNIQUE (SITE_ID, URL)"})
-public class SiteModel implements Identifiable, Payload {
+public class SiteModel implements Identifiable, Payload, Serializable {
 
     @PrimaryKey
     @Column private int mId;
@@ -23,6 +25,8 @@ public class SiteModel implements Identifiable, Payload {
     @Column private boolean mIsWPCom;
     @Column private boolean mIsAdmin;
     @Column private boolean mIsFeaturedImageSupported;
+    @Column private String mTimezone;
+
 
     // Self hosted specifics
     // The siteId for .org sites. Jetpack sites will also have a mSiteId, which is their id on .COM
@@ -36,6 +40,8 @@ public class SiteModel implements Identifiable, Payload {
     @Column private boolean mIsJetpack;
     @Column private boolean mIsVisible;
     @Column private boolean mIsVideoPressSupported;
+    @Column private long mPlanId;
+    @Column private String mPlanShortName;
 
     // WPCom capabilities
     @Column private boolean mIsCapabilityEditPages;
@@ -340,5 +346,29 @@ public class SiteModel implements Identifiable, Payload {
 
     public void setIsCapabilityViewStats(boolean capabilityViewStats) {
         mIsCapabilityViewStats = capabilityViewStats;
+    }
+
+    public String getTimezone() {
+        return mTimezone;
+    }
+
+    public void setTimezone(String timezone) {
+        mTimezone = timezone;
+    }
+
+    public String getPlanShortName() {
+        return mPlanShortName;
+    }
+
+    public void setPlanShortName(String planShortName) {
+        mPlanShortName = planShortName;
+    }
+
+    public long getPlanId() {
+        return mPlanId;
+    }
+
+    public void setPlanId(long planId) {
+        mPlanId = planId;
     }
 }

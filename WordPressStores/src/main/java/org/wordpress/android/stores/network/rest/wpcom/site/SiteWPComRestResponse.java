@@ -14,6 +14,12 @@ public class SiteWPComRestResponse implements Payload, Response {
         public boolean videopress_enabled;
         public boolean featured_images_enabled;
         public String admin_url;
+        public String timezone;
+    }
+
+    public class Plan {
+        public long product_id;
+        public String product_name_short;
     }
 
     public class Capabilities {
@@ -45,6 +51,5 @@ public class SiteWPComRestResponse implements Payload, Response {
     public boolean visible;
     public Options options;
     public Capabilities capabilities;
+    public Plan plan;
 }
-
-
