@@ -14,7 +14,6 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import org.wordpress.android.stores.network.AuthError;
 import org.wordpress.android.stores.Payload;
 import org.wordpress.android.stores.store.AccountStore.AuthenticationError;
 import org.wordpress.android.util.AppLog;
@@ -92,20 +91,6 @@ public class Authenticator {
 
     public TokenRequest makeRequest(String code, Listener listener, ErrorListener errorListener) {
         return new BearerRequest(mAppSecrets.getAppId(), mAppSecrets.getAppSecret(), mAppSecrets.getRedirectUri(), code, listener, errorListener);
-    }
-
-    public AuthError extractAuthError(String error, String description) {
-        if (error.equals(INVALID_REQUEST_ERROR)) {
-            if (description.contains(INVALID_CREDS_ERROR)) {
-                return AuthError.INCORRECT_USERNAME_OR_PASSWORD;
-            }
-        } else if (error.equals(NEEDS_TWO_STEP_ERROR)) {
-            return AuthError.NEEDS_2FA;
-        } else if (error.equals(INVALID_OTP_ERROR)) {
-            return AuthError.INVALID_OTP;
-        }
-
-        return AuthError.UNAUTHORIZED;
     }
 
     private static class TokenRequest extends Request<Token> {
@@ -237,16 +222,16 @@ public class Authenticator {
     public static AuthenticationError jsonErrorToAuthenticationError(JSONObject jsonObject) {
         AuthenticationError error = AuthenticationError.GENERIC_ERROR;
         if (jsonObject != null) {
-                String errorType = jsonObject.optString("error", "");
-                String errorMessage = jsonObject.optString("error_description", "");
-                error = AuthenticationError.fromString(errorType);
-                // Special cases for vague error types
-                if (error == AuthenticationError.INVALID_REQUEST) {
-                    // Try to parse the error message to specify the error
-                    if (errorMessage.contains("Incorrect username or password.")) {
-                        return AuthenticationError.INCORRECT_USERNAME_OR_PASSWORD;
-                    }
+            String errorType = jsonObject.optString("error", "");
+            String errorMessage = jsonObject.optString("error_description", "");
+            error = AuthenticationError.fromString(errorType);
+            // Special cases for vague error types
+            if (error == AuthenticationError.INVALID_REQUEST) {
+                // Try to parse the error message to specify the error
+                if (errorMessage.contains("Incorrect username or password.")) {
+                    return AuthenticationError.INCORRECT_USERNAME_OR_PASSWORD;
                 }
+            }
         }
         return error;
     }
