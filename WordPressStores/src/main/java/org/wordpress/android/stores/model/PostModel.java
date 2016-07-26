@@ -53,6 +53,15 @@ public class PostModel implements Identifiable, Payload {
     // We may be able to drop this if we switch to wp.editPost (and it doesn't have the same bug as metaWeblog.editPost)
     @Column private long mLastKnownRemoteFeaturedImageId;
 
+    public PostModel() {}
+
+    public PostModel(int siteId, boolean isPage) {
+        // creates a new, empty post for the passed in blogId
+        mLocalTableSiteId = siteId;
+        mIsPage = isPage;
+        mIsLocalDraft = true;
+    }
+
     @Override
     public void setId(int id) {
         mId = id;
