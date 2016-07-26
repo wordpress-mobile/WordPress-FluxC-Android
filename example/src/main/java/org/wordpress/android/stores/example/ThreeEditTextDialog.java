@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -50,6 +51,15 @@ public class ThreeEditTextDialog extends DialogFragment {
         mEditText1.setHint(mHint1);
         mEditText2.setHint(mHint2);
         mEditText3.setHint(mHint3);
+        if (TextUtils.isEmpty(mHint1)) {
+            mEditText1.setVisibility(View.GONE);
+        }
+        if (TextUtils.isEmpty(mHint2)) {
+            mEditText2.setVisibility(View.GONE);
+        }
+        if (TextUtils.isEmpty(mHint3)) {
+            mEditText3.setVisibility(View.GONE);
+        }
         builder.setView(view)
                 .setPositiveButton(android.R.string.ok, new OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
