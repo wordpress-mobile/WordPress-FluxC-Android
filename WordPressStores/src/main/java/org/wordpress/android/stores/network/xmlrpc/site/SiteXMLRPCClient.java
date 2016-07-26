@@ -114,6 +114,7 @@ public class SiteXMLRPCClient extends BaseXMLRPCClient {
             site.setName((String) siteMap.get("blogName"));
             // TODO: set a canonical URL here
             site.setUrl((String) siteMap.get("url"));
+            site.setLoginUrl((String) siteMap.get("login_url"));
             site.setXmlRpcUrl((String) siteMap.get("xmlrpc"));
             site.setIsAdmin((Boolean) siteMap.get("isAdmin"));
             site.setIsVisible(true);

@@ -20,6 +20,7 @@ public class SiteModel implements Identifiable, Payload, Serializable {
     @Column private long mSiteId;
     @Column private String mUrl;
     @Column private String mAdminUrl;
+    @Column private String mLoginUrl;
     @Column private String mName;
     @Column private String mDescription;
     @Column private boolean mIsWPCom;
@@ -90,6 +91,14 @@ public class SiteModel implements Identifiable, Payload, Serializable {
 
     public void setUrl(String url) {
         mUrl = url;
+    }
+
+    public String getLoginUrl() {
+        return mLoginUrl;
+    }
+
+    public void setLoginUrl(String loginUrl) {
+        mLoginUrl = loginUrl;
     }
 
     public String getName() {
