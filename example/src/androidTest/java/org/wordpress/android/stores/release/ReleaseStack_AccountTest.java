@@ -81,7 +81,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mExpectedValue = String.valueOf(System.currentTimeMillis());
         payload.params = new HashMap<>();
         payload.params.put("description", mExpectedValue);
-        mDispatcher.dispatch(AccountActionBuilder.newPostSettingsAction(payload));
+        mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
         mCountDownLatch = new CountDownLatch(1);
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -104,7 +104,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         } else if (event.causeOfChange == AccountAction.FETCH_SETTINGS) {
             assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.FETCHED);
             assertEquals(BuildConfig.TEST_WPCOM_USERNAME_TEST1, mAccountStore.getAccount().getUserName());
-        } else if (event.causeOfChange == AccountAction.POST_SETTINGS) {
+        } else if (event.causeOfChange == AccountAction.PUSH_SETTINGS) {
             assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.POSTED);
             assertEquals(mExpectedValue, mAccountStore.getAccount().getAboutMe());
         }

@@ -300,7 +300,7 @@ public class MainExampleActivity extends AppCompatActivity {
                 PostAccountSettingsPayload payload = new PostAccountSettingsPayload();
                 payload.params = new HashMap<>();
                 payload.params.put("display_name", displayName);
-                mDispatcher.dispatch(AccountActionBuilder.newPostSettingsAction(payload));
+                mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
             }
         });
         alert.show();

@@ -33,11 +33,12 @@ We have some tests connecting to real HTTP servers, URL and credentials are defi
 
 ### Actions
 
-Each store should have a corresponding enum defining actions for that store. For example, [SiteStore][4]`'s actions are defined in the [SiteAction][5] enum.
+Each store should have a corresponding enum defining actions for that store. For example, [SiteStore][4]'s actions are defined in the [SiteAction][5] enum.
 
 Action naming guide:
 
     FETCH_X - request data from the server
+    PUSH_X - send data to the server
     UPDATE_X - local change
     REMOVE_X - local remove
     DELETE_X - request deletion on the server
