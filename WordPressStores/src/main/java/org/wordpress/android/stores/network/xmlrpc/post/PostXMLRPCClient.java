@@ -45,6 +45,52 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         super(dispatcher, requestQueue, accessToken, userAgent, httpAuthManager);
     }
 
+    public void getPost(final PostModel post, final SiteModel site) {
+        List<Object> params;
+
+        if (post.isPage()) {
+            params = new ArrayList<>(4);
+            params.add(site.getDotOrgSiteId());
+            params.add(post.getRemotePostId());
+            params.add(site.getUsername());
+            params.add(site.getPassword());
+        } else {
+            params = new ArrayList<>(3);
+            params.add(post.getRemotePostId());
+            params.add(site.getUsername());
+            params.add(site.getPassword());
+        }
+
+        params.add(site.getDotOrgSiteId());
+        params.add(site.getUsername());
+        params.add(site.getPassword());
+        params.add(post.getRemotePostId());
+
+        XMLRPC method = (post.isPage() ? XMLRPC.GET_PAGE : XMLRPC.GET_POST);
+
+        final XMLRPCRequest request = new XMLRPCRequest(site.getXmlRpcUrl(), method, params,
+                new Listener<Object>() {
+                    @Override
+                    public void onResponse(Object response) {
+                        if (response != null && response instanceof Map) {
+                            PostModel postModel = postResponseObjectToPostModel(response, site, post.isPage());
+                            if (postModel != null) {
+                                mDispatcher.dispatch(PostActionBuilder.newUpdatePostAction(postModel));
+                            } else {
+                                // TODO: do nothing or dispatch error?
+                            }
+                        }
+                    }
+                }, new ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO: Implement lower-level catching in BaseXMLRPCClient
+                    }
+                });
+
+        add(request);
+    }
+
     public void getPosts(final SiteModel site, final boolean getPages, final int offset) {
         int numPostsToRequest = offset + NUM_POSTS_TO_REQUEST;
 
@@ -265,7 +311,8 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
 
                 // TODO: Move analytics that were dropped to WPAndroid
 
-                // TODO: Request new copy of post from the server and then trigger UPDATE_POST to update the db
+                // Request a fresh copy of the uploaded post from the server to ensure local copy matches server
+                getPost(post, site);
             }
         }, new ErrorListener() {
             @Override
@@ -307,100 +354,13 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         }
 
         PostsModel posts = new PostsModel();
+        PostModel post;
 
         for (Object postObject : postsList) {
-            // Sanity checks
-            if (!(postObject instanceof Map)) {
-                continue;
+            post = postResponseObjectToPostModel(postObject, site, isPage);
+            if (post != null) {
+                posts.add(post);
             }
-
-            Map<?, ?> postMap = (Map<?, ?>) postObject;
-            PostModel post = new PostModel();
-
-            String postID = MapUtils.getMapStr(postMap, (isPage) ? "page_id" : "postid");
-            if (TextUtils.isEmpty(postID)) {
-                // If we don't have a post or page ID, move on
-                continue;
-            }
-
-            post.setLocalSiteId(site.getId());
-            post.setRemotePostId(Integer.valueOf(postID));
-            post.setTitle(MapUtils.getMapStr(postMap, "title"));
-
-            Date dateCreated = MapUtils.getMapDate(postMap, "dateCreated");
-            if (dateCreated != null) {
-                post.setDateCreated(dateCreated.getTime());
-            } else {
-                Date now = new Date();
-                post.setDateCreated(now.getTime());
-            }
-
-            Date dateCreatedGmt = MapUtils.getMapDate(postMap, "date_created_gmt");
-            if (dateCreatedGmt != null) {
-                post.setDateCreatedGmt(dateCreatedGmt.getTime());
-            } else {
-                dateCreatedGmt = new Date(post.getDateCreated());
-                post.setDateCreatedGmt(dateCreatedGmt.getTime() + (dateCreatedGmt.getTimezoneOffset() * 60000));
-            }
-
-
-            post.setDescription(MapUtils.getMapStr(postMap, "description"));
-            post.setLink(MapUtils.getMapStr(postMap, "link"));
-            post.setPermaLink(MapUtils.getMapStr(postMap, "permaLink"));
-
-            Object[] postCategories = (Object[]) postMap.get("categories");
-            JSONArray jsonCategoriesArray = new JSONArray();
-            if (postCategories != null) {
-                for (Object postCategory : postCategories) {
-                    jsonCategoriesArray.put(postCategory.toString());
-                }
-            }
-            post.setCategories(jsonCategoriesArray.toString());
-
-            Object[] custom_fields = (Object[]) postMap.get("custom_fields");
-            JSONArray jsonCustomFieldsArray = new JSONArray();
-            if (custom_fields != null) {
-                PostLocation postLocation = new PostLocation();
-                for (Object custom_field : custom_fields) {
-                    jsonCustomFieldsArray.put(custom_field.toString());
-                    // Update geo_long and geo_lat from custom fields
-                    if (!(custom_field instanceof Map))
-                        continue;
-                    Map<?, ?> customField = (Map<?, ?>) custom_field;
-                    if (customField.get("key") != null && customField.get("value") != null) {
-                        if (customField.get("key").equals("geo_longitude"))
-                            postLocation.setLongitude(Long.valueOf(customField.get("value").toString()));
-                        if (customField.get("key").equals("geo_latitude"))
-                            postLocation.setLatitude(Long.valueOf(customField.get("value").toString()));
-                    }
-                }
-                post.setPostLocation(postLocation);
-            }
-            post.setCustomFields(jsonCustomFieldsArray.toString());
-
-            post.setExcerpt(MapUtils.getMapStr(postMap, (isPage) ? "excerpt" : "mt_excerpt"));
-            post.setMoreText(MapUtils.getMapStr(postMap, (isPage) ? "text_more" : "mt_text_more"));
-
-            post.setAllowComments((MapUtils.getMapInt(postMap, "mt_allow_comments", 0)) != 0);
-            post.setAllowPings((MapUtils.getMapInt(postMap, "mt_allow_pings", 0)) != 0);
-            post.setSlug(MapUtils.getMapStr(postMap, "wp_slug"));
-            post.setPassword(MapUtils.getMapStr(postMap, "wp_password"));
-            post.setAuthorId(MapUtils.getMapStr(postMap, "wp_author_id"));
-            post.setAuthorDisplayName(MapUtils.getMapStr(postMap, "wp_author_display_name"));
-            post.setFeaturedImageId(MapUtils.getMapInt(postMap, "wp_post_thumbnail"));
-            post.setStatus(MapUtils.getMapStr(postMap, (isPage) ? "page_status" : "post_status"));
-            post.setUserId(Integer.valueOf(MapUtils.getMapStr(postMap, "userid")));
-
-            if (isPage) {
-                post.setIsPage(true);
-                post.setPageParentId(MapUtils.getMapStr(postMap, "wp_page_parent_id"));
-                post.setPageParentTitle(MapUtils.getMapStr(postMap, "wp_page_parent_title"));
-            } else {
-                post.setKeywords(MapUtils.getMapStr(postMap, "mt_keywords"));
-                post.setPostFormat(MapUtils.getMapStr(postMap, "wp_post_format"));
-            }
-
-            posts.add(post);
         }
 
         if (posts.isEmpty()) {
@@ -408,5 +368,100 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         }
 
         return posts;
+    }
+
+    private PostModel postResponseObjectToPostModel(Object postObject, SiteModel site, boolean isPage) {
+        // Sanity checks
+        if (!(postObject instanceof Map)) {
+            return null;
+        }
+
+        Map<?, ?> postMap = (Map<?, ?>) postObject;
+        PostModel post = new PostModel();
+
+        String postID = MapUtils.getMapStr(postMap, (isPage) ? "page_id" : "postid");
+        if (TextUtils.isEmpty(postID)) {
+            // If we don't have a post or page ID, move on
+            return null;
+        }
+
+        post.setLocalSiteId(site.getId());
+        post.setRemotePostId(Integer.valueOf(postID));
+        post.setTitle(MapUtils.getMapStr(postMap, "title"));
+
+        Date dateCreated = MapUtils.getMapDate(postMap, "dateCreated");
+        if (dateCreated != null) {
+            post.setDateCreated(dateCreated.getTime());
+        } else {
+            Date now = new Date();
+            post.setDateCreated(now.getTime());
+        }
+
+        Date dateCreatedGmt = MapUtils.getMapDate(postMap, "date_created_gmt");
+        if (dateCreatedGmt != null) {
+            post.setDateCreatedGmt(dateCreatedGmt.getTime());
+        } else {
+            dateCreatedGmt = new Date(post.getDateCreated());
+            post.setDateCreatedGmt(dateCreatedGmt.getTime() + (dateCreatedGmt.getTimezoneOffset() * 60000));
+        }
+
+
+        post.setDescription(MapUtils.getMapStr(postMap, "description"));
+        post.setLink(MapUtils.getMapStr(postMap, "link"));
+        post.setPermaLink(MapUtils.getMapStr(postMap, "permaLink"));
+
+        Object[] postCategories = (Object[]) postMap.get("categories");
+        JSONArray jsonCategoriesArray = new JSONArray();
+        if (postCategories != null) {
+            for (Object postCategory : postCategories) {
+                jsonCategoriesArray.put(postCategory.toString());
+            }
+        }
+        post.setCategories(jsonCategoriesArray.toString());
+
+        Object[] custom_fields = (Object[]) postMap.get("custom_fields");
+        JSONArray jsonCustomFieldsArray = new JSONArray();
+        if (custom_fields != null) {
+            PostLocation postLocation = new PostLocation();
+            for (Object custom_field : custom_fields) {
+                jsonCustomFieldsArray.put(custom_field.toString());
+                // Update geo_long and geo_lat from custom fields
+                if (!(custom_field instanceof Map))
+                    continue;
+                Map<?, ?> customField = (Map<?, ?>) custom_field;
+                if (customField.get("key") != null && customField.get("value") != null) {
+                    if (customField.get("key").equals("geo_longitude"))
+                        postLocation.setLongitude(Long.valueOf(customField.get("value").toString()));
+                    if (customField.get("key").equals("geo_latitude"))
+                        postLocation.setLatitude(Long.valueOf(customField.get("value").toString()));
+                }
+            }
+            post.setPostLocation(postLocation);
+        }
+        post.setCustomFields(jsonCustomFieldsArray.toString());
+
+        post.setExcerpt(MapUtils.getMapStr(postMap, (isPage) ? "excerpt" : "mt_excerpt"));
+        post.setMoreText(MapUtils.getMapStr(postMap, (isPage) ? "text_more" : "mt_text_more"));
+
+        post.setAllowComments((MapUtils.getMapInt(postMap, "mt_allow_comments", 0)) != 0);
+        post.setAllowPings((MapUtils.getMapInt(postMap, "mt_allow_pings", 0)) != 0);
+        post.setSlug(MapUtils.getMapStr(postMap, "wp_slug"));
+        post.setPassword(MapUtils.getMapStr(postMap, "wp_password"));
+        post.setAuthorId(MapUtils.getMapStr(postMap, "wp_author_id"));
+        post.setAuthorDisplayName(MapUtils.getMapStr(postMap, "wp_author_display_name"));
+        post.setFeaturedImageId(MapUtils.getMapInt(postMap, "wp_post_thumbnail"));
+        post.setStatus(MapUtils.getMapStr(postMap, (isPage) ? "page_status" : "post_status"));
+        post.setUserId(Integer.valueOf(MapUtils.getMapStr(postMap, "userid")));
+
+        if (isPage) {
+            post.setIsPage(true);
+            post.setPageParentId(MapUtils.getMapStr(postMap, "wp_page_parent_id"));
+            post.setPageParentTitle(MapUtils.getMapStr(postMap, "wp_page_parent_title"));
+        } else {
+            post.setKeywords(MapUtils.getMapStr(postMap, "mt_keywords"));
+            post.setPostFormat(MapUtils.getMapStr(postMap, "wp_post_format"));
+        }
+
+        return post;
     }
 }

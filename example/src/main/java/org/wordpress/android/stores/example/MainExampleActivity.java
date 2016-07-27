@@ -447,7 +447,7 @@ public class MainExampleActivity extends AppCompatActivity {
             if (event.causeOfChange.equals(PostAction.FETCH_POSTS) ||
                     event.causeOfChange.equals(PostAction.FETCH_PAGES)) {
                 SiteModel firstSite = mSiteStore.getSites().get(0);
-                prependToLog("Fetched " + event.numFetched + "posts from: " + firstSite.getName());
+                prependToLog("Fetched " + event.numFetched + " posts from: " + firstSite.getName());
             }
             mDeleteLatestPost.setEnabled(true);
         } else {

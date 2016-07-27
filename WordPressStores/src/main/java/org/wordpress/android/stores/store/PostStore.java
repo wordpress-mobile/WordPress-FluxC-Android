@@ -57,6 +57,16 @@ public class PostStore extends Store {
         }
     }
 
+    public static class FetchPostPayload implements Payload {
+        public PostModel post;
+        public SiteModel site;
+
+        public FetchPostPayload(PostModel post, SiteModel site) {
+            this.post = post;
+            this.site = site;
+        }
+    }
+
     public static class InstantiatePostPayload implements Payload {
         public SiteModel site;
         public boolean isPage;
@@ -274,6 +284,14 @@ public class PostStore extends Store {
             }
 
             emitChange(onPostChanged);
+        } else if (actionType == PostAction.FETCH_POST) {
+            FetchPostPayload payload = (FetchPostPayload) action.getPayload();
+            if (payload.site.isWPCom() || payload.site.isJetpack()) {
+                // TODO: Implement REST API pages fetch
+            } else {
+                // TODO: check for WP-REST-API plugin and use it here
+                mPostXMLRPCClient.getPost(payload.post, payload.site);
+            }
         } else if (actionType == PostAction.INSTANTIATE_POST) {
             InstantiatePostPayload payload = (InstantiatePostPayload) action.getPayload();
 
