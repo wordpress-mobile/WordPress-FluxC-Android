@@ -249,10 +249,18 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public long getFeaturedImageId() {
+        if (mFeaturedImageId == FEATURED_IMAGE_INIT_VALUE) {
+            return 0;
+        }
+
         return mFeaturedImageId;
     }
 
     public void setFeaturedImageId(long featuredImageId) {
+        if (mFeaturedImageId == FEATURED_IMAGE_INIT_VALUE) {
+            mLastKnownRemoteFeaturedImageId = featuredImageId;
+        }
+
         mFeaturedImageId = featuredImageId;
     }
 
@@ -409,5 +417,69 @@ public class PostModel implements Identifiable, Payload {
                 getPageParentTitle() != null ? getPageParentTitle().equals(otherPost.getPageParentTitle()) :
                         otherPost.getPageParentTitle() == null);
 
+    }
+
+    public JSONArray getJSONCategories() {
+        JSONArray jArray = null;
+        if (mCategories == null) {
+            mCategories = "[]";
+        }
+        try {
+            mCategories = StringUtils.unescapeHTML(mCategories);
+            if (TextUtils.isEmpty(mCategories)) {
+                jArray = new JSONArray();
+            } else {
+                jArray = new JSONArray(mCategories);
+            }
+        } catch (JSONException e) {
+            AppLog.e(AppLog.T.POSTS, e);
+        }
+        return jArray;
+    }
+
+    public JSONArray getJSONCustomFields() {
+        if (mCustomFields == null) {
+            return null;
+        }
+        JSONArray jArray = null;
+        try {
+            jArray = new JSONArray(mCustomFields);
+        } catch (JSONException e) {
+            AppLog.e(AppLog.T.POSTS, "No custom fields found for post.");
+        }
+        return jArray;
+    }
+
+    public JSONObject getCustomField(String key) {
+        JSONArray customFieldsJson = getJSONCustomFields();
+        if (customFieldsJson == null) {
+            return null;
+        }
+
+        for (int i = 0; i < customFieldsJson.length(); i++) {
+            try {
+                JSONObject jsonObject = new JSONObject(customFieldsJson.getString(i));
+                String curentKey = jsonObject.getString("key");
+                if (key.equals(curentKey)) {
+                    return jsonObject;
+                }
+            } catch (JSONException e) {
+                AppLog.e(AppLog.T.POSTS, e);
+            }
+        }
+        return null;
+    }
+
+    public boolean supportsLocation() {
+        // Right now, we only disable for pages.
+        return !isPage();
+    }
+
+    public boolean hasLocation() {
+        return getPostLocation() != null && getPostLocation().isValid();
+    }
+
+    public boolean featuredImageHasChanged() {
+        return (mLastKnownRemoteFeaturedImageId != mFeaturedImageId);
     }
 }
