@@ -16,14 +16,17 @@ import android.widget.TextView;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.stores.Dispatcher;
+import org.wordpress.android.stores.action.MediaAction;
 import org.wordpress.android.stores.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.stores.generated.AccountActionBuilder;
 import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
+import org.wordpress.android.stores.generated.MediaActionBuilder;
 import org.wordpress.android.stores.generated.SiteActionBuilder;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
 import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
+import org.wordpress.android.stores.network.rest.wpcom.media.MediaRestClient;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.stores.store.AccountStore.AuthenticationError;
@@ -62,6 +65,7 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mAccountSettings;
     private Button mNewAccount;
     private Button mNewSite;
+    private Button mFetchAllMedia;
 
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
@@ -136,6 +140,15 @@ public class MainExampleActivity extends AppCompatActivity {
                 showNewSiteDialog();
             }
         });
+
+        mFetchAllMedia = (Button) findViewById(R.id.all_media);
+        mFetchAllMedia.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fetchAllMedia();
+            }
+        });
+
         mLogView = (TextView) findViewById(R.id.log);
 
         init();
@@ -304,6 +317,11 @@ public class MainExampleActivity extends AppCompatActivity {
         // Default language "en" (english)
         NewSitePayload newSitePayload = new NewSitePayload(name, title, "en", SiteVisibility.PUBLIC, true);
         mDispatcher.dispatch(SiteActionBuilder.newCreateNewSiteAction(newSitePayload));
+    }
+
+    private void fetchAllMedia() {
+        MediaRestClient.MediaFetchPayload payload = new MediaRestClient.MediaFetchPayload(mSiteStore.getSites().get(0), null, null);
+        mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(payload));
     }
 
     // Event listeners
