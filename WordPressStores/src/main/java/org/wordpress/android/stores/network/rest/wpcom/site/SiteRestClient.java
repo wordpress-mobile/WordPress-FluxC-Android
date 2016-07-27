@@ -153,6 +153,26 @@ public class SiteRestClient extends BaseWPComRestClient {
             site.setPlanId(from.plan.product_id);
             site.setPlanShortName(from.plan.product_name_short);
         }
+        if (from.capabilities != null) {
+            site.setHasCapabilityEditPages(from.capabilities.edit_pages);
+            site.setHasCapabilityEditPosts(from.capabilities.edit_posts);
+            site.setHasCapabilityEditOthersPosts(from.capabilities.edit_others_posts);
+            site.setHasCapabilityEditOthersPages(from.capabilities.edit_others_pages);
+            site.setHasCapabilityDeletePosts(from.capabilities.delete_posts);
+            site.setHasCapabilityDeleteOthersPosts(from.capabilities.delete_others_posts);
+            site.setHasCapabilityEditThemeOptions(from.capabilities.edit_theme_options);
+            site.setHasCapabilityEditUsers(from.capabilities.edit_users);
+            site.setHasCapabilityListUsers(from.capabilities.list_users);
+            site.setHasCapabilityManageCategories(from.capabilities.manage_categories);
+            site.setHasCapabilityManageOptions(from.capabilities.manage_options);
+            site.setHasCapabilityActivateWordads(from.capabilities.activate_wordads);
+            site.setHasCapabilityPromoteUsers(from.capabilities.promote_users);
+            site.setHasCapabilityPublishPosts(from.capabilities.publish_posts);
+            site.setHasCapabilityUploadFiles(from.capabilities.upload_files);
+            site.setHasCapabilityDeleteUser(from.capabilities.delete_user);
+            site.setHasCapabilityRemoveUsers(from.capabilities.remove_users);
+            site.setHasCapabilityViewStats(from.capabilities.view_stats);
+        }
         site.setIsWPCom(true);
         return site;
     }
