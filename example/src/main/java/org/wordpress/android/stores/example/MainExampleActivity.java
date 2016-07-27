@@ -16,6 +16,7 @@ import android.widget.TextView;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.stores.Dispatcher;
+import org.wordpress.android.stores.action.PostAction;
 import org.wordpress.android.stores.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.stores.generated.AccountActionBuilder;
 import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
@@ -34,6 +35,8 @@ import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.stores.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
 import org.wordpress.android.stores.store.PostStore;
+import org.wordpress.android.stores.store.PostStore.FetchPostsPayload;
+import org.wordpress.android.stores.store.PostStore.OnPostChanged;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.NewSitePayload;
 import org.wordpress.android.stores.store.SiteStore.OnNewSiteCreated;
@@ -103,7 +106,7 @@ public class MainExampleActivity extends AppCompatActivity {
         mFetchFirstSitePosts.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                PostStore.FetchPostsPayload payload = new PostStore.FetchPostsPayload(mSiteStore.getSites().get(0));
+                FetchPostsPayload payload = new FetchPostsPayload(mSiteStore.getSites().get(0));
                 mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
             }
         });
@@ -405,5 +408,19 @@ public class MainExampleActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteRemoved(OnSiteRemoved event) {
         mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPostChanged(OnPostChanged event) {
+        if (!mPostStore.getPosts().isEmpty()) {
+            if (event.causeOfChange.equals(PostAction.FETCH_POSTS) ||
+                    event.causeOfChange.equals(PostAction.FETCH_PAGES)) {
+                SiteModel firstSite = mSiteStore.getSites().get(0);
+                prependToLog("Fetched " + event.numFetched + "posts from: " + firstSite.getName());
+            }
+            mDeleteLatestPost.setEnabled(true);
+        } else {
+            mDeleteLatestPost.setEnabled(false);
+        }
     }
 }

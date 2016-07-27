@@ -12,7 +12,6 @@ public enum PostAction implements IAction {
     FETCH_POSTS,
     @Action(payloadType = PostStore.FetchPostsPayload.class)
     FETCH_PAGES,
-    // TODO: Rename to UPDATE_POSTS?
     @Action(payloadType = PostStore.FetchPostsResponsePayload.class)
     FETCHED_POSTS,
     @Action(payloadType = PostModel.class)

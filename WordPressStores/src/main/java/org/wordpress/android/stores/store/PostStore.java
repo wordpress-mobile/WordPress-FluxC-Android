@@ -57,6 +57,18 @@ public class PostStore extends Store {
         }
     }
 
+    // OnChanged events
+    public class OnPostChanged extends OnChanged {
+        public int numFetched;
+        public boolean canLoadMore;
+        public PostAction causeOfChange;
+
+        public OnPostChanged(int numFetched, boolean canLoadMore) {
+            this.numFetched = numFetched;
+            this.canLoadMore = canLoadMore;
+        }
+    }
+
     private PostRestClient mPostRestClient;
     private PostXMLRPCClient mPostXMLRPCClient;
 
@@ -180,7 +192,7 @@ public class PostStore extends Store {
         } else if (actionType == PostAction.FETCH_PAGES) {
             FetchPostsPayload payload = (FetchPostsPayload) action.getPayload();
             if (payload.site.isWPCom() || payload.site.isJetpack()) {
-                // TODO: Implement REST API posts fetch
+                // TODO: Implement REST API pages fetch
             } else {
                 // TODO: check for WP-REST-API plugin and use it here
                 if (payload.loadMore) {
@@ -202,7 +214,16 @@ public class PostStore extends Store {
             for (PostModel post : postsResponsePayload.posts) {
                 PostSqlUtils.insertOrUpdatePostKeepingLocalChanges(post);
             }
-            // TODO: Trigger onPostUpdated, and pass it postsResponsePayload.canLoadMore
+
+            OnPostChanged onPostChanged = new OnPostChanged(postsResponsePayload.posts.size(),
+                    postsResponsePayload.canLoadMore);
+            if (postsResponsePayload.isPages) {
+                onPostChanged.causeOfChange = PostAction.FETCH_PAGES;
+            } else {
+                onPostChanged.causeOfChange = PostAction.FETCH_POSTS;
+            }
+
+            emitChange(onPostChanged);
         } else if (actionType == PostAction.UPDATE_POST) {
             PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges((PostModel) action.getPayload());
         } else if (actionType == PostAction.REMOVE_POST) {
