@@ -84,6 +84,14 @@ public class PostStore extends Store {
         }
     }
 
+    public class OnPostUploaded extends OnChanged {
+        public PostModel post;
+
+        public OnPostUploaded(PostModel post) {
+            this.post = post;
+        }
+    }
+
     private PostRestClient mPostRestClient;
     private PostXMLRPCClient mPostXMLRPCClient;
 
@@ -248,6 +256,10 @@ public class PostStore extends Store {
                 mPostXMLRPCClient.pushPost(payload.post, payload.site, payload.uploadMode);
             }
             // TODO: Should call UPDATE_POST at this point, probably
+        } else if (actionType == PostAction.PUSHED_POST) {
+            PostModel uploadedPost = (PostModel) action.getPayload();
+            PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges(uploadedPost);
+            emitChange(new OnPostUploaded(uploadedPost));
         } else if (actionType == PostAction.UPDATE_POST) {
             PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges((PostModel) action.getPayload());
         } else if (actionType == PostAction.DELETE_POST) {

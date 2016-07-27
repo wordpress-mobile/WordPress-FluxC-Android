@@ -8,10 +8,13 @@ import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.generated.PostActionBuilder;
 import org.wordpress.android.stores.model.PostLocation;
 import org.wordpress.android.stores.model.PostModel;
+import org.wordpress.android.stores.model.PostStatus;
 import org.wordpress.android.stores.model.PostsModel;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.HTTPAuthManager;
@@ -20,6 +23,7 @@ import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.stores.network.xmlrpc.XMLRPC;
 import org.wordpress.android.stores.network.xmlrpc.XMLRPCRequest;
+import org.wordpress.android.stores.store.PostStore.ChangePostPayload.UploadMode;
 import org.wordpress.android.stores.store.PostStore.FetchPostsResponsePayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -27,11 +31,14 @@ import org.wordpress.android.util.MapUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class PostXMLRPCClient extends BaseXMLRPCClient {
     private static final int NUM_POSTS_TO_REQUEST = 20;
+
+    private int mFeaturedImageId;
 
     public PostXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken accessToken,
                             UserAgent userAgent, HTTPAuthManager httpAuthManager) {
@@ -87,6 +94,185 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                     }
                 }
         );
+
+        add(request);
+    }
+
+    public void pushPost(final PostModel post, final SiteModel site, final UploadMode uploadMode) {
+        if (TextUtils.isEmpty(post.getStatus())) {
+            post.setStatus(PostStatus.toString(PostStatus.PUBLISHED));
+        }
+
+        // TODO: Implement media processing, along with an upload progress event - the event recipient will also be responsible for tracking hasImage, hasVideo, etc for analytics
+        String descriptionContent = post.getDescription();
+        //String descriptionContent = processPostMedia(post.getDescription());
+
+        String moreContent = "";
+        if (!TextUtils.isEmpty(post.getMoreText())) {
+            moreContent = post.getMoreText();
+            // TODO: Media processing
+            //moreContent = processPostMedia(post.getMoreText());
+        }
+
+        // TODO: Media processing
+        // If media file upload failed, let's stop here and prompt the user
+//        if (mIsMediaError) {
+//            return false;
+//        }
+
+        JSONArray categoriesJsonArray = post.getJSONCategories();
+        String[] postCategories = null;
+        if (categoriesJsonArray != null) {
+            postCategories = new String[categoriesJsonArray.length()];
+            for (int i = 0; i < categoriesJsonArray.length(); i++) {
+                try {
+                    postCategories[i] = TextUtils.htmlEncode(categoriesJsonArray.getString(i));
+                } catch (JSONException e) {
+                    AppLog.e(T.POSTS, e);
+                }
+            }
+        }
+
+        Map<String, Object> contentStruct = new HashMap<>();
+
+        // Post format
+        if (!post.isPage()) {
+            if (!TextUtils.isEmpty(post.getPostFormat())) {
+                contentStruct.put("wp_post_format", post.getPostFormat());
+            }
+        }
+
+        contentStruct.put("post_type", (post.isPage()) ? "page" : "post");
+        contentStruct.put("title", post.getTitle());
+        long pubDate = post.getDateCreatedGmt();
+        if (pubDate != 0) {
+            Date date_created_gmt = new Date(pubDate);
+            contentStruct.put("date_created_gmt", date_created_gmt);
+            Date dateCreated = new Date(pubDate + (date_created_gmt.getTimezoneOffset() * 60000));
+            contentStruct.put("dateCreated", dateCreated);
+        }
+
+        if (!TextUtils.isEmpty(moreContent)) {
+            descriptionContent = descriptionContent.trim() + "<!--more-->" + moreContent;
+            post.setMoreText("");
+        }
+
+        // get rid of the p and br tags that the editor adds.
+        if (post.isLocalDraft()) {
+            descriptionContent = descriptionContent.replace("<p>", "").replace("</p>", "\n").replace("<br>", "");
+        }
+
+        // gets rid of the weird character android inserts after images
+        descriptionContent = descriptionContent.replaceAll("\uFFFC", "");
+
+        contentStruct.put("description", descriptionContent);
+        if (!post.isPage()) {
+            contentStruct.put("mt_keywords", post.getKeywords());
+
+            if (postCategories != null && postCategories.length > 0) {
+                contentStruct.put("categories", postCategories);
+            }
+        }
+
+        contentStruct.put("mt_excerpt", post.getExcerpt());
+        contentStruct.put((post.isPage()) ? "page_status" : "post_status", post.getStatus());
+
+        // Geolocation
+        if (post.supportsLocation()) {
+            JSONObject remoteGeoLatitude = post.getCustomField("geo_latitude");
+            JSONObject remoteGeoLongitude = post.getCustomField("geo_longitude");
+            JSONObject remoteGeoPublic = post.getCustomField("geo_public");
+
+            Map<Object, Object> hLatitude = new HashMap<Object, Object>();
+            Map<Object, Object> hLongitude = new HashMap<Object, Object>();
+            Map<Object, Object> hPublic = new HashMap<Object, Object>();
+
+            try {
+                if (remoteGeoLatitude != null) {
+                    hLatitude.put("id", remoteGeoLatitude.getInt("id"));
+                }
+
+                if (remoteGeoLongitude != null) {
+                    hLongitude.put("id", remoteGeoLongitude.getInt("id"));
+                }
+
+                if (remoteGeoPublic != null) {
+                    hPublic.put("id", remoteGeoPublic.getInt("id"));
+                }
+
+                if (post.hasLocation()) {
+                    PostLocation location = post.getPostLocation();
+                    hLatitude.put("key", "geo_latitude");
+                    hLongitude.put("key", "geo_longitude");
+                    hPublic.put("key", "geo_public");
+                    hLatitude.put("value", location.getLatitude());
+                    hLongitude.put("value", location.getLongitude());
+                    hPublic.put("value", 1);
+                }
+            } catch (JSONException e) {
+                AppLog.e(T.EDITOR, e);
+            }
+
+            if (!hLatitude.isEmpty() && !hLongitude.isEmpty() && !hPublic.isEmpty()) {
+                Object[] geo = {hLatitude, hLongitude, hPublic};
+                contentStruct.put("custom_fields", geo);
+            }
+        }
+
+        // Featured images
+        if (uploadMode.equals(UploadMode.MEDIA_WITH_POST)) {
+            // Support for legacy editor - images are identified as featured as they're being uploaded with the post
+            if (mFeaturedImageId != -1) {
+                contentStruct.put("wp_post_thumbnail", mFeaturedImageId);
+            }
+        } else if (post.featuredImageHasChanged()) {
+            if (post.getFeaturedImageId() < 1 && !post.isLocalDraft()) {
+                // The featured image was removed from a live post
+                contentStruct.put("wp_post_thumbnail", "");
+            } else {
+                contentStruct.put("wp_post_thumbnail", post.getFeaturedImageId());
+            }
+        }
+
+        contentStruct.put("wp_password", post.getPassword());
+
+        List<Object> params = new ArrayList<>(5);
+        if (post.isLocalDraft()) {
+            params.add(site.getDotOrgSiteId());
+        } else {
+            params.add(post.getRemotePostId());
+        }
+        params.add(site.getUsername());
+        params.add(site.getPassword());
+        params.add(contentStruct);
+        params.add(false);
+
+        final XMLRPC method = (post.isLocalDraft() ? XMLRPC.NEW_POST : XMLRPC.EDIT_POST);
+
+        // TODO: Send PostUploadStarted event
+        //EventBus.getDefault().post(new PostUploadStarted(mPost.getLocalTableBlogId()));
+
+        final XMLRPCRequest request = new XMLRPCRequest(site.getXmlRpcUrl(), method, params, new Listener() {
+            @Override
+            public void onResponse(Object response) {
+                if (method.equals(XMLRPC.NEW_POST) && response instanceof String) {
+                    post.setRemotePostId(Integer.valueOf((String) response));
+                }
+                post.setIsLocalDraft(false);
+                post.setIsLocallyChanged(false);
+
+                mDispatcher.dispatch(PostActionBuilder.newPushedPostAction(post));
+
+                // TODO: Move analytics that were dropped to WPAndroid
+
+                // TODO: Request new copy of post from the server and then trigger UPDATE_POST to update the db
+            }
+        }, new ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // TODO: Implement lower-level catching in BaseXMLRPCClient
+            }
+        });
 
         add(request);
     }

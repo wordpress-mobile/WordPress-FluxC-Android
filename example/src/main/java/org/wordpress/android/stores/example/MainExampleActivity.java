@@ -38,6 +38,7 @@ import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayloa
 import org.wordpress.android.stores.store.PostStore;
 import org.wordpress.android.stores.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.stores.store.PostStore.OnPostChanged;
+import org.wordpress.android.stores.store.PostStore.OnPostUploaded;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.NewSitePayload;
 import org.wordpress.android.stores.store.SiteStore.OnNewSiteCreated;
@@ -67,6 +68,7 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mLogSites;
     private Button mUpdateFirstSite;
     private Button mFetchFirstSitePosts;
+    private Button mCreatePostOnFirstSite;
     private Button mDeleteLatestPost;
     private Button mSignOut;
     private Button mAccountSettings;
@@ -111,6 +113,22 @@ public class MainExampleActivity extends AppCompatActivity {
             public void onClick(View v) {
                 FetchPostsPayload payload = new FetchPostsPayload(mSiteStore.getSites().get(0));
                 mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
+            }
+        });
+
+        mCreatePostOnFirstSite = (Button) findViewById(R.id.create_new_post_first_site);
+        mCreatePostOnFirstSite.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SiteModel firstSite = mSiteStore.getSites().get(0);
+                PostModel examplePost = new PostModel();
+                examplePost.setIsLocalDraft(true);
+                examplePost.setId(5);
+                examplePost.setTitle("From example activity");
+                examplePost.setDescription("Hi there, I'm a post from WordPress-{Placeholder Name}-Android!");
+                examplePost.setFeaturedImageId(0);
+                PostStore.ChangePostPayload payload = new PostStore.ChangePostPayload(examplePost, firstSite);
+                mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
             }
         });
 
@@ -181,6 +199,7 @@ public class MainExampleActivity extends AppCompatActivity {
         }
         mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
         mFetchFirstSitePosts.setEnabled(mSiteStore.hasSite());
+        mCreatePostOnFirstSite.setEnabled(mSiteStore.hasSite());
         mNewSite.setEnabled(mAccountStore.hasAccessToken());
     }
 
@@ -438,5 +457,10 @@ public class MainExampleActivity extends AppCompatActivity {
         } else {
             mDeleteLatestPost.setEnabled(false);
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPostUploaded(OnPostUploaded event) {
+        prependToLog("Post uploaded! Remote post id: " + event.post.getRemotePostId());
     }
 }

@@ -9,11 +9,12 @@ public enum XMLRPC {
     // TODO: Switch from metaWeblog to wp where feasible
     DELETE_PAGE("wp.deletePage"),
     DELETE_POST("wp.deletePost"),
-    EDIT_POST("metaWeblog.editPost"), // Note: WPAndroid uses metaWeblog.editPost; wp.editPost is used by EditMediaItemTask
+    EDIT_POST("metaWeblog.editPost"),
     GET_PAGE("wp.getPage"),
     GET_PAGES("wp.getPages"),
-    GET_POST("metaWeblog.getPost"), // Note: WPAndroid uses metaWeblog.getPost, maybe we can use wp.getPost?
-    GET_POSTS("metaWeblog.getRecentPosts"); // Note: WPAndroid uses metaWeblog.getRecentPosts, maybe we can use wp.getPosts?
+    GET_POST("metaWeblog.getPost"),
+    GET_POSTS("metaWeblog.getRecentPosts"),
+    NEW_POST("metaWeblog.newPost");
 
     private final String mEndpoint;
 

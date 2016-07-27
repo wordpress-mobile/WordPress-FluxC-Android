@@ -19,6 +19,8 @@ public enum PostAction implements IAction {
     @Action(payloadType = ChangePostPayload.class)
     PUSH_POST,
     @Action(payloadType = PostModel.class)
+    PUSHED_POST,
+    @Action(payloadType = PostModel.class)
     UPDATE_POST,
     @Action(payloadType = ChangePostPayload.class)
     DELETE_POST,
