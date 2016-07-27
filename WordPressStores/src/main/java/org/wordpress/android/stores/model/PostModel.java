@@ -1,11 +1,18 @@
 package org.wordpress.android.stores.model;
 
+import android.text.TextUtils;
+
 import com.yarolegovich.wellsql.core.Identifiable;
 import com.yarolegovich.wellsql.core.annotation.Column;
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey;
 import com.yarolegovich.wellsql.core.annotation.Table;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.wordpress.android.stores.Payload;
+import org.wordpress.android.util.AppLog;
+import org.wordpress.android.util.StringUtils;
 
 @Table
 public class PostModel implements Identifiable, Payload {
@@ -13,9 +20,9 @@ public class PostModel implements Identifiable, Payload {
 
     @PrimaryKey
     @Column private int mId;
-    @Column private int mLocalTableSiteId;
-    @Column private int mSiteId;
-    @Column private int mPostId;
+    @Column private int mLocalSiteId;
+    @Column private long mRemoteSiteId; // .COM REST API
+    @Column private long mRemotePostId;
     @Column private String mTitle;
     @Column private long mDateCreated;
     @Column private long mDateCreatedGmt;
@@ -57,7 +64,7 @@ public class PostModel implements Identifiable, Payload {
 
     public PostModel(int siteId, boolean isPage) {
         // creates a new, empty post for the passed in blogId
-        mLocalTableSiteId = siteId;
+        mLocalSiteId = siteId;
         mIsPage = isPage;
         mIsLocalDraft = true;
     }
@@ -73,33 +80,32 @@ public class PostModel implements Identifiable, Payload {
     }
 
 
-    public int getLocalTableSiteId() {
-        return mLocalTableSiteId;
+    public int getLocalSiteId() {
+        return mLocalSiteId;
     }
 
-    public void setLocalTableSiteId(int localTableSiteId) {
-        mLocalTableSiteId = localTableSiteId;
+    public void setLocalSiteId(int localTableSiteId) {
+        mLocalSiteId = localTableSiteId;
     }
 
-
-    public int getSiteId() {
-        return mSiteId;
+    public long getRemoteSiteId() {
+        return mRemoteSiteId;
     }
 
-    public void setSiteId(int siteId) {
-        mSiteId = siteId;
+    public void setRemoteSiteId(long siteId) {
+        mRemoteSiteId = siteId;
     }
 
-    public int getPostId() {
-        return mPostId;
+    public long getRemotePostId() {
+        return mRemotePostId;
     }
 
-    public void setPostId(int postId) {
-        mPostId = postId;
+    public void setRemotePostId(long postId) {
+        mRemotePostId = postId;
     }
 
     public String getTitle() {
-        return mTitle;
+        return StringUtils.notNullStr(mTitle);
     }
 
     public void setTitle(String title) {
@@ -123,7 +129,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public String getCategories() {
-        return mCategories;
+        return StringUtils.notNullStr(mCategories);
     }
 
     public void setCategories(String categories) {
@@ -131,7 +137,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public String getCustomFields() {
-        return mCustomFields;
+        return StringUtils.notNullStr(mCustomFields);
     }
 
     public void setCustomFields(String customFields) {
@@ -139,7 +145,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public String getDescription() {
-        return mDescription;
+        return StringUtils.notNullStr(mDescription);
     }
 
     public void setDescription(String description) {
@@ -147,7 +153,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public String getLink() {
-        return mLink;
+        return StringUtils.notNullStr(mLink);
     }
 
     public void setLink(String link) {
@@ -171,7 +177,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public String getExcerpt() {
-        return mExcerpt;
+        return StringUtils.notNullStr(mExcerpt);
     }
 
     public void setExcerpt(String excerpt) {
@@ -179,7 +185,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public String getKeywords() {
-        return mKeywords;
+        return StringUtils.notNullStr(mKeywords);
     }
 
     public void setKeywords(String keywords) {
@@ -187,7 +193,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public String getMoreText() {
-        return mMoreText;
+        return StringUtils.notNullStr(mMoreText);
     }
 
     public void setMoreText(String moreText) {
@@ -195,7 +201,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public String getPermaLink() {
-        return mPermaLink;
+        return StringUtils.notNullStr(mPermaLink);
     }
 
     public void setPermaLink(String permaLink) {
@@ -203,7 +209,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public String getStatus() {
-        return mStatus;
+        return StringUtils.notNullStr(mStatus);
     }
 
     public void setStatus(String status) {
@@ -219,7 +225,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public String getAuthorDisplayName() {
-        return mAuthorDisplayName;
+        return StringUtils.notNullStr(mAuthorDisplayName);
     }
 
     public void setAuthorDisplayName(String authorDisplayName) {
@@ -227,7 +233,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public String getAuthorId() {
-        return mAuthorId;
+        return StringUtils.notNullStr(mAuthorId);
     }
 
     public void setAuthorId(String authorId) {
@@ -235,7 +241,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public String getPassword() {
-        return mPassword;
+        return StringUtils.notNullStr(mPassword);
     }
 
     public void setPassword(String password) {
@@ -251,7 +257,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public String getPostFormat() {
-        return mPostFormat;
+        return StringUtils.notNullStr(mPostFormat);
     }
 
     public void setPostFormat(String postFormat) {
@@ -259,7 +265,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public String getSlug() {
-        return mSlug;
+        return StringUtils.notNullStr(mSlug);
     }
 
     public void setSlug(String slug) {
@@ -305,7 +311,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public String getPageParentId() {
-        return mPageParentId;
+        return StringUtils.notNullStr(mPageParentId);
     }
 
     public void setPageParentId(String pageParentId) {
@@ -313,7 +319,7 @@ public class PostModel implements Identifiable, Payload {
     }
 
     public String getPageParentTitle() {
-        return mPageParentTitle;
+        return StringUtils.notNullStr(mPageParentTitle);
     }
 
     public void setPageParentTitle(String pageParentTitle) {
@@ -357,9 +363,9 @@ public class PostModel implements Identifiable, Payload {
         PostModel otherPost = (PostModel) other;
 
         return (getId() == otherPost.getId() &&
-                getLocalTableSiteId() == otherPost.getLocalTableSiteId() &&
-                getSiteId() == otherPost.getSiteId() &&
-                getPostId() == otherPost.getPostId() &&
+                getLocalSiteId() == otherPost.getLocalSiteId() &&
+                getRemoteSiteId() == otherPost.getRemoteSiteId() &&
+                getRemotePostId() == otherPost.getRemotePostId() &&
                 getDateCreated() == otherPost.getDateCreated() &&
                 getDateCreatedGmt() == otherPost.getDateCreatedGmt() &&
                 getAllowComments() == otherPost.getAllowComments() &&

@@ -19,9 +19,7 @@ import org.wordpress.android.stores.network.UserAgent;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.stores.network.xmlrpc.XMLRPC;
-import org.wordpress.android.stores.network.xmlrpc.XMLRPCFault;
 import org.wordpress.android.stores.network.xmlrpc.XMLRPCRequest;
-import org.wordpress.android.stores.store.AccountStore.AuthenticationError;
 import org.wordpress.android.stores.store.PostStore.FetchPostsResponsePayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -31,8 +29,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
-import static org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.*;
 
 public class PostXMLRPCClient extends BaseXMLRPCClient {
     private static final int NUM_POSTS_TO_REQUEST = 20;
@@ -100,7 +96,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         params.add(site.getDotOrgSiteId());
         params.add(site.getUsername());
         params.add(site.getPassword());
-        params.add(post.getPostId());
+        params.add(post.getRemotePostId());
 
         XMLRPC method = (post.isPage() ? XMLRPC.DELETE_PAGE : XMLRPC.DELETE_POST);
 
@@ -141,8 +137,8 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                 continue;
             }
 
-            post.setLocalTableSiteId(site.getId());
-            post.setPostId(Integer.valueOf(postID));
+            post.setLocalSiteId(site.getId());
+            post.setRemotePostId(Integer.valueOf(postID));
             post.setTitle(MapUtils.getMapStr(postMap, "title"));
 
             Date dateCreated = MapUtils.getMapDate(postMap, "dateCreated");

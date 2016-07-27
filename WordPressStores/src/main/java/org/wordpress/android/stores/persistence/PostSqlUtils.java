@@ -17,8 +17,8 @@ public class PostSqlUtils {
 
         List<PostModel> postResult = WellSql.select(PostModel.class)
                 .where().beginGroup()
-                .equals(PostModelTable.POST_ID, post.getPostId())
-                .equals(PostModelTable.LOCAL_TABLE_SITE_ID, post.getLocalTableSiteId())
+                .equals(PostModelTable.REMOTE_POST_ID, post.getRemotePostId())
+                .equals(PostModelTable.LOCAL_SITE_ID, post.getLocalSiteId())
                 .equals(PostModelTable.IS_PAGE, post.isPage())
                 .endGroup().endWhere().getAsModel();
 
@@ -51,7 +51,7 @@ public class PostSqlUtils {
 
         return WellSql.select(PostModel.class)
                 .where().beginGroup()
-                .equals(PostModelTable.LOCAL_TABLE_SITE_ID, site.getId())
+                .equals(PostModelTable.LOCAL_SITE_ID, site.getId())
                 .equals(PostModelTable.IS_PAGE, getPages)
                 .endGroup().endWhere().getAsModel();
 
@@ -64,7 +64,7 @@ public class PostSqlUtils {
 
         return WellSql.select(PostModel.class)
                 .where().beginGroup()
-                .equals(PostModelTable.LOCAL_TABLE_SITE_ID, site.getId())
+                .equals(PostModelTable.LOCAL_SITE_ID, site.getId())
                 .equals(PostModelTable.IS_PAGE, getPages)
                 .equals(PostModelTable.IS_LOCAL_DRAFT, false)
                 .endGroup().endWhere().getAsModel();
@@ -79,7 +79,7 @@ public class PostSqlUtils {
         return WellSql.delete(PostModel.class)
                 .where().beginGroup()
                 .equals(PostModelTable.ID, post.getId())
-                .equals(PostModelTable.LOCAL_TABLE_SITE_ID, post.getLocalTableSiteId())
+                .equals(PostModelTable.LOCAL_SITE_ID, post.getLocalSiteId())
                 .endGroup()
                 .endWhere()
                 .execute();
@@ -92,7 +92,7 @@ public class PostSqlUtils {
 
         return WellSql.delete(PostModel.class)
                 .where().beginGroup()
-                .equals(PostModelTable.LOCAL_TABLE_SITE_ID, site.getId())
+                .equals(PostModelTable.LOCAL_SITE_ID, site.getId())
                 .equals(PostModelTable.IS_PAGE, pages)
                 .equals(PostModelTable.IS_LOCAL_DRAFT, false)
                 .equals(PostModelTable.IS_LOCALLY_CHANGED, false)

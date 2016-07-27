@@ -60,6 +60,11 @@ public class PostStore extends Store {
     public static class ChangePostPayload implements Payload {
         public PostModel post;
         public SiteModel site;
+        public UploadMode uploadMode = UploadMode.MEDIA_IN_PLACE;
+
+        public enum UploadMode {
+            MEDIA_WITH_POST, MEDIA_IN_PLACE
+        }
 
         public ChangePostPayload(PostModel post, SiteModel site) {
             this.post = post;
@@ -234,17 +239,26 @@ public class PostStore extends Store {
             }
 
             emitChange(onPostChanged);
-        } else if (actionType == PostAction.UPDATE_POST) {
-            PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges((PostModel) action.getPayload());
-        } else if (actionType == PostAction.DELETE_POST) {
-            ChangePostPayload changePostPayload = (ChangePostPayload) action.getPayload();
-            if (changePostPayload.site.isWPCom() || changePostPayload.site.isJetpack()) {
+        } else if (actionType == PostAction.PUSH_POST) {
+            ChangePostPayload payload = (ChangePostPayload) action.getPayload();
+            if (payload.site.isWPCom() || payload.site.isJetpack()) {
                 // TODO: Implement REST API post delete
             } else {
                 // TODO: check for WP-REST-API plugin and use it here
-                mPostXMLRPCClient.deletePost(changePostPayload.post, changePostPayload.site);
+                mPostXMLRPCClient.pushPost(payload.post, payload.site, payload.uploadMode);
             }
-            PostSqlUtils.deletePost(changePostPayload.post);
+            // TODO: Should call UPDATE_POST at this point, probably
+        } else if (actionType == PostAction.UPDATE_POST) {
+            PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges((PostModel) action.getPayload());
+        } else if (actionType == PostAction.DELETE_POST) {
+            ChangePostPayload payload = (ChangePostPayload) action.getPayload();
+            if (payload.site.isWPCom() || payload.site.isJetpack()) {
+                // TODO: Implement REST API post delete
+            } else {
+                // TODO: check for WP-REST-API plugin and use it here
+                mPostXMLRPCClient.deletePost(payload.post, payload.site);
+            }
+            PostSqlUtils.deletePost(payload.post);
         } else if (actionType == PostAction.REMOVE_POST) {
             PostSqlUtils.deletePost((PostModel) action.getPayload());
         }
