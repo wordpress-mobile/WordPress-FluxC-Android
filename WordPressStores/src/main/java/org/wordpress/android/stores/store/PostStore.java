@@ -57,6 +57,16 @@ public class PostStore extends Store {
         }
     }
 
+    public static class DeletePostPayload implements Payload {
+        public PostModel post;
+        public SiteModel site;
+
+        public DeletePostPayload(PostModel post, SiteModel site) {
+            this.post = post;
+            this.site = site;
+        }
+    }
+
     // OnChanged events
     public class OnPostChanged extends OnChanged {
         public int numFetched;
@@ -226,6 +236,15 @@ public class PostStore extends Store {
             emitChange(onPostChanged);
         } else if (actionType == PostAction.UPDATE_POST) {
             PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges((PostModel) action.getPayload());
+        } else if (actionType == PostAction.DELETE_POST) {
+            DeletePostPayload deletePostPayload = (DeletePostPayload) action.getPayload();
+            if (deletePostPayload.site.isWPCom() || deletePostPayload.site.isJetpack()) {
+                // TODO: Implement REST API post delete
+            } else {
+                // TODO: check for WP-REST-API plugin and use it here
+                mPostXMLRPCClient.deletePost(deletePostPayload.post, deletePostPayload.site);
+            }
+            PostSqlUtils.deletePost(deletePostPayload.post);
         } else if (actionType == PostAction.REMOVE_POST) {
             PostSqlUtils.deletePost((PostModel) action.getPayload());
         }

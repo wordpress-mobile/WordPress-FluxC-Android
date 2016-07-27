@@ -87,20 +87,32 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                 new ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        AppLog.e(T.API, "Volley error", error);
-                        AuthenticateErrorPayload payload = new AuthenticateErrorPayload();
-                        if (error.getCause() instanceof XMLRPCFault) {
-                            if (((XMLRPCFault) (error.getCause())).getFaultCode() == 401) {
-                                payload.errorType = AuthenticationError.NOT_AUTHENTICATED;
-                            } else {
-                                // TODO: we probably need a more specific error here (in WPA it's ApiHelper.ErrorType.NETWORK_XMLRPC)
-                                payload.errorType = AuthenticationError.GENERIC_ERROR;
-                            }
-                        }
-                        mOnAuthFailedListener.onAuthFailed(payload);
+                        // TODO: Implement lower-level catching in BaseXMLRPCClient
                     }
                 }
         );
+
+        add(request);
+    }
+
+    public void deletePost(final PostModel post, final SiteModel site) {
+        List<Object> params = new ArrayList<>(4);
+        params.add(site.getDotOrgSiteId());
+        params.add(site.getUsername());
+        params.add(site.getPassword());
+        params.add(post.getPostId());
+
+        XMLRPC method = (post.isPage() ? XMLRPC.DELETE_PAGE : XMLRPC.DELETE_POST);
+
+        final XMLRPCRequest request = new XMLRPCRequest(site.getXmlRpcUrl(), method, params, new Listener() {
+            @Override
+            public void onResponse(Object response) {}
+        }, new ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // TODO: Implement lower-level catching in BaseXMLRPCClient
+            }
+        });
 
         add(request);
     }

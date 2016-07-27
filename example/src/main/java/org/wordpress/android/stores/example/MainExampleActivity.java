@@ -22,6 +22,7 @@ import org.wordpress.android.stores.generated.AccountActionBuilder;
 import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
 import org.wordpress.android.stores.generated.PostActionBuilder;
 import org.wordpress.android.stores.generated.SiteActionBuilder;
+import org.wordpress.android.stores.model.PostModel;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
@@ -48,6 +49,7 @@ import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
 import java.util.HashMap;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -65,6 +67,7 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mLogSites;
     private Button mUpdateFirstSite;
     private Button mFetchFirstSitePosts;
+    private Button mDeleteLatestPost;
     private Button mSignOut;
     private Button mAccountSettings;
     private Button mNewAccount;
@@ -108,6 +111,19 @@ public class MainExampleActivity extends AppCompatActivity {
             public void onClick(View v) {
                 FetchPostsPayload payload = new FetchPostsPayload(mSiteStore.getSites().get(0));
                 mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
+            }
+        });
+
+        mDeleteLatestPost = (Button) findViewById(R.id.delete_a_post_from_first_site);
+        mDeleteLatestPost.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SiteModel firstSite = mSiteStore.getSites().get(0);
+                List<PostModel> posts = mPostStore.getPostsForSite(firstSite);
+                if (!posts.isEmpty()) {
+                    PostStore.DeletePostPayload payload = new PostStore.DeletePostPayload(posts.get(0), firstSite);
+                    mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(payload));
+                }
             }
         });
 

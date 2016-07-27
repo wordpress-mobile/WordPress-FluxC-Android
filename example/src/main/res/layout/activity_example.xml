@@ -70,6 +70,13 @@
                 android:text="Fetch posts from first site" />
 
             <Button
+                android:id="@+id/delete_a_post_from_first_site"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:text="Delete a post from first site" />
+
+            <Button
                 android:id="@+id/signout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
