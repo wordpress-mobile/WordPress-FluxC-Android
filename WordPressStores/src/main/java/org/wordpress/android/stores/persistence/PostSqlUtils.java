@@ -68,7 +68,12 @@ public class PostSqlUtils {
                 .equals(PostModelTable.IS_PAGE, getPages)
                 .equals(PostModelTable.IS_LOCAL_DRAFT, false)
                 .endGroup().endWhere().getAsModel();
+    }
 
+    public static PostModel insertPostForResult(PostModel post) {
+        WellSql.insert(post).asSingleTransaction(true).execute();
+
+        return post;
     }
 
     public static int deletePost(PostModel post) {

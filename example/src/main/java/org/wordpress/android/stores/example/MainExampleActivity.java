@@ -36,8 +36,11 @@ import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.stores.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
 import org.wordpress.android.stores.store.PostStore;
+import org.wordpress.android.stores.store.PostStore.ChangePostPayload;
 import org.wordpress.android.stores.store.PostStore.FetchPostsPayload;
+import org.wordpress.android.stores.store.PostStore.InstantiatePostPayload;
 import org.wordpress.android.stores.store.PostStore.OnPostChanged;
+import org.wordpress.android.stores.store.PostStore.OnPostInstantiated;
 import org.wordpress.android.stores.store.PostStore.OnPostUploaded;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.NewSitePayload;
@@ -120,15 +123,8 @@ public class MainExampleActivity extends AppCompatActivity {
         mCreatePostOnFirstSite.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                SiteModel firstSite = mSiteStore.getSites().get(0);
-                PostModel examplePost = new PostModel();
-                examplePost.setIsLocalDraft(true);
-                examplePost.setId(5);
-                examplePost.setTitle("From example activity");
-                examplePost.setDescription("Hi there, I'm a post from WordPress-{Placeholder Name}-Android!");
-                examplePost.setFeaturedImageId(0);
-                PostStore.ChangePostPayload payload = new PostStore.ChangePostPayload(examplePost, firstSite);
-                mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
+                PostStore.InstantiatePostPayload payload = new InstantiatePostPayload(mSiteStore.getSites().get(0), false);
+                mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
             }
         });
 
@@ -457,6 +453,17 @@ public class MainExampleActivity extends AppCompatActivity {
         } else {
             mDeleteLatestPost.setEnabled(false);
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPostInstantiated(OnPostInstantiated event) {
+        PostModel examplePost = event.post;
+        examplePost.setTitle("From example activity");
+        examplePost.setDescription("Hi there, I'm a post from WordPress-{Placeholder Name}-Android!");
+        examplePost.setFeaturedImageId(0);
+
+        ChangePostPayload payload = new ChangePostPayload(examplePost, mSiteStore.getSites().get(0));
+        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

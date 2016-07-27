@@ -57,6 +57,25 @@ public class PostStore extends Store {
         }
     }
 
+    public static class InstantiatePostPayload implements Payload {
+        public SiteModel site;
+        public boolean isPage;
+        public String categories;
+        public String postFormat;
+
+        public InstantiatePostPayload(SiteModel site, boolean isPage) {
+            this.site = site;
+            this.isPage = isPage;
+        }
+
+        public InstantiatePostPayload(SiteModel site, boolean isPage, String categories, String postFormat) {
+            this.site = site;
+            this.isPage = isPage;
+            this.categories = categories;
+            this.postFormat = postFormat;
+        }
+    }
+
     public static class ChangePostPayload implements Payload {
         public PostModel post;
         public SiteModel site;
@@ -81,6 +100,14 @@ public class PostStore extends Store {
         public OnPostChanged(int numFetched, boolean canLoadMore) {
             this.numFetched = numFetched;
             this.canLoadMore = canLoadMore;
+        }
+    }
+
+    public class OnPostInstantiated extends OnChanged {
+        public PostModel post;
+
+        public OnPostInstantiated(PostModel post) {
+            this.post = post;
         }
     }
 
@@ -247,6 +274,20 @@ public class PostStore extends Store {
             }
 
             emitChange(onPostChanged);
+        } else if (actionType == PostAction.INSTANTIATE_POST) {
+            InstantiatePostPayload payload = (InstantiatePostPayload) action.getPayload();
+
+            PostModel newPost = new PostModel();
+            newPost.setLocalSiteId(payload.site.getId());
+            newPost.setIsLocalDraft(true);
+            newPost.setIsPage(payload.isPage);
+            newPost.setCategories(payload.categories);
+            newPost.setPostFormat(payload.postFormat);
+
+            // Insert the post into the db, updating the object to include the local ID
+            newPost = PostSqlUtils.insertPostForResult(newPost);
+
+            emitChange(new OnPostInstantiated(newPost));
         } else if (actionType == PostAction.PUSH_POST) {
             ChangePostPayload payload = (ChangePostPayload) action.getPayload();
             if (payload.site.isWPCom() || payload.site.isJetpack()) {

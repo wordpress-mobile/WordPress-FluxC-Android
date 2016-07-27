@@ -62,13 +62,6 @@ public class PostModel implements Identifiable, Payload {
 
     public PostModel() {}
 
-    public PostModel(int siteId, boolean isPage) {
-        // creates a new, empty post for the passed in blogId
-        mLocalSiteId = siteId;
-        mIsPage = isPage;
-        mIsLocalDraft = true;
-    }
-
     @Override
     public void setId(int id) {
         mId = id;

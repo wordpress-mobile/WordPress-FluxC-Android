@@ -7,6 +7,7 @@ import org.wordpress.android.stores.model.PostModel;
 import org.wordpress.android.stores.store.PostStore.ChangePostPayload;
 import org.wordpress.android.stores.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.stores.store.PostStore.FetchPostsResponsePayload;
+import org.wordpress.android.stores.store.PostStore.InstantiatePostPayload;
 
 @ActionEnum
 public enum PostAction implements IAction {
@@ -16,6 +17,8 @@ public enum PostAction implements IAction {
     FETCH_PAGES,
     @Action(payloadType = FetchPostsResponsePayload.class)
     FETCHED_POSTS,
+    @Action(payloadType = InstantiatePostPayload.class)
+    INSTANTIATE_POST,
     @Action(payloadType = ChangePostPayload.class)
     PUSH_POST,
     @Action(payloadType = PostModel.class)
