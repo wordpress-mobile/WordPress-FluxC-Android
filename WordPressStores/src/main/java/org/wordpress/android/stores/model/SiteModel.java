@@ -44,24 +44,24 @@ public class SiteModel implements Identifiable, Payload, Serializable {
     @Column private String mPlanShortName;
 
     // WPCom capabilities
-    @Column private boolean mIsCapabilityEditPages;
-    @Column private boolean mIsCapabilityEditPosts;
-    @Column private boolean mIsCapabilityEditOthersPosts;
-    @Column private boolean mIsCapabilityEditOthersPages;
-    @Column private boolean mIsCapabilityDeletePosts;
-    @Column private boolean mIsCapabilityDeleteOthersPosts;
-    @Column private boolean mIsCapabilityEditThemeOptions;
-    @Column private boolean mIsCapabilityEditUsers;
-    @Column private boolean mIsCapabilityListUsers;
-    @Column private boolean mIsCapabilityManageCategories;
-    @Column private boolean mIsCapabilityManageOptions;
-    @Column private boolean mIsCapabilityActivateWordads;
-    @Column private boolean mIsCapabilityPromoteUsers;
-    @Column private boolean mIsCapabilityPublishPosts;
-    @Column private boolean mIsCapabilityUploadFiles;
-    @Column private boolean mIsCapabilityDeleteUser;
-    @Column private boolean mIsCapabilityRemoveUsers;
-    @Column private boolean mIsCapabilityViewStats;
+    @Column private boolean mHasCapabilityEditPages;
+    @Column private boolean mHasCapabilityEditPosts;
+    @Column private boolean mHasCapabilityEditOthersPosts;
+    @Column private boolean mHasCapabilityEditOthersPages;
+    @Column private boolean mHasCapabilityDeletePosts;
+    @Column private boolean mHasCapabilityDeleteOthersPosts;
+    @Column private boolean mHasCapabilityEditThemeOptions;
+    @Column private boolean mHasCapabilityEditUsers;
+    @Column private boolean mHasCapabilityListUsers;
+    @Column private boolean mHasCapabilityManageCategories;
+    @Column private boolean mHasCapabilityManageOptions;
+    @Column private boolean mHasCapabilityActivateWordads;
+    @Column private boolean mHasCapabilityPromoteUsers;
+    @Column private boolean mHasCapabilityPublishPosts;
+    @Column private boolean mHasCapabilityUploadFiles;
+    @Column private boolean mHasCapabilityDeleteUser;
+    @Column private boolean mHasCapabilityRemoveUsers;
+    @Column private boolean mHasCapabilityViewStats;
 
     @Override
     public int getId() {
@@ -204,148 +204,148 @@ public class SiteModel implements Identifiable, Payload, Serializable {
         mIsVideoPressSupported = videoPressSupported;
     }
 
-    public boolean isCapabilityEditPages() {
-        return mIsCapabilityEditPages;
+    public boolean getHasCapabilityEditPages() {
+        return mHasCapabilityEditPages;
     }
 
-    public void setIsCapabilityEditPages(boolean capabilityEditPages) {
-        mIsCapabilityEditPages = capabilityEditPages;
+    public void setHasCapabilityEditPages(boolean hasCapabilityEditPages) {
+        mHasCapabilityEditPages = hasCapabilityEditPages;
     }
 
-    public boolean isCapabilityEditPosts() {
-        return mIsCapabilityEditPosts;
+    public boolean getHasCapabilityEditPosts() {
+        return mHasCapabilityEditPosts;
     }
 
-    public void setIsCapabilityEditPosts(boolean capabilityEditPosts) {
-        mIsCapabilityEditPosts = capabilityEditPosts;
+    public void setHasCapabilityEditPosts(boolean capabilityEditPosts) {
+        mHasCapabilityEditPosts = capabilityEditPosts;
     }
 
-    public boolean isCapabilityEditOthersPosts() {
-        return mIsCapabilityEditOthersPosts;
+    public boolean getHasCapabilityEditOthersPosts() {
+        return mHasCapabilityEditOthersPosts;
     }
 
-    public void setIsCapabilityEditOthersPosts(boolean capabilityEditOthersPosts) {
-        mIsCapabilityEditOthersPosts = capabilityEditOthersPosts;
+    public void setHasCapabilityEditOthersPosts(boolean capabilityEditOthersPosts) {
+        mHasCapabilityEditOthersPosts = capabilityEditOthersPosts;
     }
 
-    public boolean isCapabilityEditOthersPages() {
-        return mIsCapabilityEditOthersPages;
+    public boolean getHasCapabilityEditOthersPages() {
+        return mHasCapabilityEditOthersPages;
     }
 
-    public void setIsCapabilityEditOthersPages(boolean capabilityEditOthersPages) {
-        mIsCapabilityEditOthersPages = capabilityEditOthersPages;
+    public void setHasCapabilityEditOthersPages(boolean capabilityEditOthersPages) {
+        mHasCapabilityEditOthersPages = capabilityEditOthersPages;
     }
 
-    public boolean isCapabilityDeletePosts() {
-        return mIsCapabilityDeletePosts;
+    public boolean getHasCapabilityDeletePosts() {
+        return mHasCapabilityDeletePosts;
     }
 
-    public void setIsCapabilityDeletePosts(boolean capabilityDeletePosts) {
-        mIsCapabilityDeletePosts = capabilityDeletePosts;
+    public void setHasCapabilityDeletePosts(boolean capabilityDeletePosts) {
+        mHasCapabilityDeletePosts = capabilityDeletePosts;
     }
 
-    public boolean isCapabilityDeleteOthersPosts() {
-        return mIsCapabilityDeleteOthersPosts;
+    public boolean getHasCapabilityDeleteOthersPosts() {
+        return mHasCapabilityDeleteOthersPosts;
     }
 
-    public void setIsCapabilityDeleteOthersPosts(boolean capabilityDeleteOthersPosts) {
-        mIsCapabilityDeleteOthersPosts = capabilityDeleteOthersPosts;
+    public void setHasCapabilityDeleteOthersPosts(boolean capabilityDeleteOthersPosts) {
+        mHasCapabilityDeleteOthersPosts = capabilityDeleteOthersPosts;
     }
 
-    public boolean isCapabilityEditThemeOptions() {
-        return mIsCapabilityEditThemeOptions;
+    public boolean getHasCapabilityEditThemeOptions() {
+        return mHasCapabilityEditThemeOptions;
     }
 
-    public void setIsCapabilityEditThemeOptions(boolean capabilityEditThemeOptions) {
-        mIsCapabilityEditThemeOptions = capabilityEditThemeOptions;
+    public void setHasCapabilityEditThemeOptions(boolean capabilityEditThemeOptions) {
+        mHasCapabilityEditThemeOptions = capabilityEditThemeOptions;
     }
 
-    public boolean isCapabilityEditUsers() {
-        return mIsCapabilityEditUsers;
+    public boolean getHasCapabilityEditUsers() {
+        return mHasCapabilityEditUsers;
     }
 
-    public void setIsCapabilityEditUsers(boolean capabilityEditUsers) {
-        mIsCapabilityEditUsers = capabilityEditUsers;
+    public void setHasCapabilityEditUsers(boolean capabilityEditUsers) {
+        mHasCapabilityEditUsers = capabilityEditUsers;
     }
 
-    public boolean isCapabilityListUsers() {
-        return mIsCapabilityListUsers;
+    public boolean getHasCapabilityListUsers() {
+        return mHasCapabilityListUsers;
     }
 
-    public void setIsCapabilityListUsers(boolean capabilityListUsers) {
-        mIsCapabilityListUsers = capabilityListUsers;
+    public void setHasCapabilityListUsers(boolean capabilityListUsers) {
+        mHasCapabilityListUsers = capabilityListUsers;
     }
 
-    public boolean isCapabilityManageCategories() {
-        return mIsCapabilityManageCategories;
+    public boolean getHasCapabilityManageCategories() {
+        return mHasCapabilityManageCategories;
     }
 
-    public void setIsCapabilityManageCategories(boolean capabilityManageCategories) {
-        mIsCapabilityManageCategories = capabilityManageCategories;
+    public void setHasCapabilityManageCategories(boolean capabilityManageCategories) {
+        mHasCapabilityManageCategories = capabilityManageCategories;
     }
 
-    public boolean isCapabilityManageOptions() {
-        return mIsCapabilityManageOptions;
+    public boolean getHasCapabilityManageOptions() {
+        return mHasCapabilityManageOptions;
     }
 
-    public void setIsCapabilityManageOptions(boolean capabilityManageOptions) {
-        mIsCapabilityManageOptions = capabilityManageOptions;
+    public void setHasCapabilityManageOptions(boolean capabilityManageOptions) {
+        mHasCapabilityManageOptions = capabilityManageOptions;
     }
 
-    public boolean isCapabilityActivateWordads() {
-        return mIsCapabilityActivateWordads;
+    public boolean getHasCapabilityActivateWordads() {
+        return mHasCapabilityActivateWordads;
     }
 
-    public void setIsCapabilityActivateWordads(boolean capabilityActivateWordads) {
-        mIsCapabilityActivateWordads = capabilityActivateWordads;
+    public void setHasCapabilityActivateWordads(boolean capabilityActivateWordads) {
+        mHasCapabilityActivateWordads = capabilityActivateWordads;
     }
 
-    public boolean isCapabilityPromoteUsers() {
-        return mIsCapabilityPromoteUsers;
+    public boolean getHasCapabilityPromoteUsers() {
+        return mHasCapabilityPromoteUsers;
     }
 
-    public void setIsCapabilityPromoteUsers(boolean capabilityPromoteUsers) {
-        mIsCapabilityPromoteUsers = capabilityPromoteUsers;
+    public void setHasCapabilityPromoteUsers(boolean capabilityPromoteUsers) {
+        mHasCapabilityPromoteUsers = capabilityPromoteUsers;
     }
 
-    public boolean isCapabilityPublishPosts() {
-        return mIsCapabilityPublishPosts;
+    public boolean getHasCapabilityPublishPosts() {
+        return mHasCapabilityPublishPosts;
     }
 
-    public void setIsCapabilityPublishPosts(boolean capabilityPublishPosts) {
-        mIsCapabilityPublishPosts = capabilityPublishPosts;
+    public void setHasCapabilityPublishPosts(boolean capabilityPublishPosts) {
+        mHasCapabilityPublishPosts = capabilityPublishPosts;
     }
 
-    public boolean isCapabilityUploadFiles() {
-        return mIsCapabilityUploadFiles;
+    public boolean getHasCapabilityUploadFiles() {
+        return mHasCapabilityUploadFiles;
     }
 
-    public void setIsCapabilityUploadFiles(boolean capabilityUploadFiles) {
-        mIsCapabilityUploadFiles = capabilityUploadFiles;
+    public void setHasCapabilityUploadFiles(boolean capabilityUploadFiles) {
+        mHasCapabilityUploadFiles = capabilityUploadFiles;
     }
 
-    public boolean isCapabilityDeleteUser() {
-        return mIsCapabilityDeleteUser;
+    public boolean getHasCapabilityDeleteUser() {
+        return mHasCapabilityDeleteUser;
     }
 
-    public void setIsCapabilityDeleteUser(boolean capabilityDeleteUser) {
-        mIsCapabilityDeleteUser = capabilityDeleteUser;
+    public void setHasCapabilityDeleteUser(boolean capabilityDeleteUser) {
+        mHasCapabilityDeleteUser = capabilityDeleteUser;
     }
 
-    public boolean isCapabilityRemoveUsers() {
-        return mIsCapabilityRemoveUsers;
+    public boolean getHasCapabilityRemoveUsers() {
+        return mHasCapabilityRemoveUsers;
     }
 
-    public void setIsCapabilityRemoveUsers(boolean capabilityRemoveUsers) {
-        mIsCapabilityRemoveUsers = capabilityRemoveUsers;
+    public void setHasCapabilityRemoveUsers(boolean capabilityRemoveUsers) {
+        mHasCapabilityRemoveUsers = capabilityRemoveUsers;
     }
 
-    public boolean isCapabilityViewStats() {
-        return mIsCapabilityViewStats;
+    public boolean getHasCapabilityViewStats() {
+        return mHasCapabilityViewStats;
     }
 
-    public void setIsCapabilityViewStats(boolean capabilityViewStats) {
-        mIsCapabilityViewStats = capabilityViewStats;
+    public void setHasCapabilityViewStats(boolean capabilityViewStats) {
+        mHasCapabilityViewStats = capabilityViewStats;
     }
 
     public String getTimezone() {
