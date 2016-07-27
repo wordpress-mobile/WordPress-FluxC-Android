@@ -16,7 +16,7 @@ public enum PostAction implements IAction {
     FETCHED_POSTS,
     @Action(payloadType = PostModel.class)
     UPDATE_POST,
-    @Action(payloadType = PostStore.DeletePostPayload.class)
+    @Action(payloadType = PostStore.ChangePostPayload.class)
     DELETE_POST,
     @Action(payloadType = PostModel.class)
     REMOVE_POST

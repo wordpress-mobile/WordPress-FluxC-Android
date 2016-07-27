@@ -121,7 +121,7 @@ public class MainExampleActivity extends AppCompatActivity {
                 SiteModel firstSite = mSiteStore.getSites().get(0);
                 List<PostModel> posts = mPostStore.getPostsForSite(firstSite);
                 if (!posts.isEmpty()) {
-                    PostStore.DeletePostPayload payload = new PostStore.DeletePostPayload(posts.get(0), firstSite);
+                    PostStore.ChangePostPayload payload = new PostStore.ChangePostPayload(posts.get(0), firstSite);
                     mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(payload));
                 }
             }
