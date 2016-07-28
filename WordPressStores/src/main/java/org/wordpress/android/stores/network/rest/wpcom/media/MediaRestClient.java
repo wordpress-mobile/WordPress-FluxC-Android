@@ -70,6 +70,31 @@ public class MediaRestClient extends BaseWPComRestClient {
         }
     }
 
+    public void deleteMedia(long siteId, List<MediaModel> media) {
+        if (media == null || media.isEmpty()) return;
+
+        final int count = media.size();
+        final ChangedMediaPayload payload = new ChangedMediaPayload(new ArrayList<MediaModel>(), new ArrayList<Exception>(), null);
+        for (MediaModel toDelete : media) {
+            String url = WPCOMREST.MEDIA_DELETE.getUrlV1_1(String.valueOf(siteId), String.valueOf(toDelete.getMediaId()));
+            add(new WPComGsonRequest<>(Request.Method.GET, url, null, MediaWPComRestResponse.class,
+                    new Response.Listener<MediaWPComRestResponse>() {
+                        @Override
+                        public void onResponse(MediaWPComRestResponse response) {
+                            MediaModel media = responseToMediaModel(response);
+                            onMediaResponse(payload, media, null, count);
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            onMediaResponse(payload, null, error, count);
+                        }
+                    }
+            ));
+        }
+    }
+
     private List<MediaModel> responseToMediaModelList(MediaWPComRestResponse.MultipleMediaResponse from) {
         List<MediaModel> media = new ArrayList<>();
         for (int i = 0; i < from.found; ++i) {

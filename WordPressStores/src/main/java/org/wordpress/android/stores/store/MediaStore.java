@@ -5,6 +5,7 @@ import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.Payload;
 import org.wordpress.android.stores.action.MediaAction;
 import org.wordpress.android.stores.annotations.action.Action;
+import org.wordpress.android.stores.generated.MediaActionBuilder;
 import org.wordpress.android.stores.model.MediaModel;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.rest.wpcom.media.MediaRestClient;
@@ -38,11 +39,9 @@ public class MediaStore extends Store {
     public static class ChangeMediaPayload implements Payload {
         public SiteModel site;
         public List<MediaModel> media;
-        public boolean remote;
-        public ChangeMediaPayload(SiteModel site, List<MediaModel> media, boolean remote) {
+        public ChangeMediaPayload(SiteModel site, List<MediaModel> media) {
             this.site = site;
             this.media = media;
-            this.remote = remote;
         }
     }
 
@@ -123,8 +122,13 @@ public class MediaStore extends Store {
             ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
         } else if (action.getType() == MediaAction.DELETE_MEDIA) {
             ChangeMediaPayload payload = (ChangeMediaPayload) action.getPayload();
+            mMediaRestClient.deleteMedia(payload.site.getSiteId(), payload.media);
         } else if (action.getType() == MediaAction.DELETED_MEDIA) {
             ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
+            final OnChanged changeEvent = payload.isError() ?
+                    new OnMediaError(MediaAction.DELETE_MEDIA, payload.error) :
+                    new OnMediaChanged(MediaAction.DELETE_MEDIA, payload.media);
+            emitChange(changeEvent);
         } else if (action.getType() == MediaAction.UPDATE_MEDIA) {
             ChangeMediaPayload payload = (ChangeMediaPayload) action.getPayload();
         } else if (action.getType() == MediaAction.UPDATED_MEDIA) {

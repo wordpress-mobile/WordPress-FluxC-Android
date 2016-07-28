@@ -36,6 +36,7 @@ import org.wordpress.android.stores.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
 import org.wordpress.android.stores.store.MediaStore;
 import org.wordpress.android.stores.store.MediaStore.FetchMediaPayload;
+import org.wordpress.android.stores.store.MediaStore.ChangeMediaPayload;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.NewSitePayload;
 import org.wordpress.android.stores.store.SiteStore.OnNewSiteCreated;
@@ -223,11 +224,30 @@ public class MainExampleActivity extends AppCompatActivity {
             List<Long> mediaIds = new ArrayList<>();
             for (String s : split) {
                 Long lVal = Long.valueOf(s);
-                if (lVal >= 0) mediaIds.add(Long.valueOf(s));
+                if (lVal >= 0) mediaIds.add(lVal);
             }
             if (!mediaIds.isEmpty()) {
                 FetchMediaPayload payload = new FetchMediaPayload(mSiteStore.getSites().get(0), mediaIds);
                 mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
+            }
+        }
+    }
+
+    private void deleteMediaItems(String commaSeparated) {
+        if (!TextUtils.isEmpty(commaSeparated)) {
+            String[] split = commaSeparated.split(",");
+            List<MediaModel> mediaIds = new ArrayList<>();
+            for (String s : split) {
+                Long lVal = Long.valueOf(s);
+                if (lVal >= 0) {
+                    MediaModel mediaModel = new MediaModel();
+                    mediaModel.setMediaId(lVal);
+                    mediaIds.add(mediaModel);
+                }
+            }
+            if (!mediaIds.isEmpty()) {
+                ChangeMediaPayload payload = new ChangeMediaPayload(mSiteStore.getSites().get(0), mediaIds);
+                mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(payload));
             }
         }
     }
@@ -237,7 +257,11 @@ public class MainExampleActivity extends AppCompatActivity {
         DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
             @Override
             public void onClick(String text1, String text2, String text3) {
-                fetchMediaItems(text1);
+                if (TextUtils.isEmpty(text2)) {
+                    fetchMediaItems(text1);
+                } else {
+                    deleteMediaItems(text1);
+                }
             }
         }, "Media Items (comma separated)", null, null);
         newFragment.show(ft, "dialog");
