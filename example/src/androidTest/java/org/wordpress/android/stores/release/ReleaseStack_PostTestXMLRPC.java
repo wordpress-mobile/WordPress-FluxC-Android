@@ -103,7 +103,66 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(false, latestPost.isLocallyChanged());
     }
 
-    // TEST overwriting local saved post with UPDATE
+    public void testChangingLocalDraft() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        mPost.setTitle("From testChangingLocalDraft");
+
+        // Save changes locally
+        savePost(mPost);
+
+        // Get the current copy of the post from the PostStore
+        mPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        mPost.setTitle("From testChangingLocalDraft, redux");
+        mPost.setDescription("Some new content");
+        mPost.setFeaturedImageId(7);
+
+        // Save new changes locally
+        savePost(mPost);
+
+        // Get the current copy of the post from the PostStore
+        mPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals("From testChangingLocalDraft, redux", mPost.getTitle());
+        assertEquals("Some new content", mPost.getDescription());
+        assertEquals(7, mPost.getFeaturedImageId());
+        assertEquals(false, mPost.isLocallyChanged());
+        assertEquals(true, mPost.isLocalDraft());
+    }
+
+    public void testMultipleLocalChangesToUploadedPost() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        uploadPost(mPost);
+
+        mPost.setTitle("From testMultipleLocalChangesToUploadedPost");
+        mPost.setIsLocallyChanged(true);
+
+        // Save changes locally
+        savePost(mPost);
+
+        // Get the current copy of the post from the PostStore
+        mPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        mPost.setTitle("From testMultipleLocalChangesToUploadedPost, redux");
+        mPost.setDescription("Some different content");
+        mPost.setFeaturedImageId(5);
+
+        // Save new changes locally
+        savePost(mPost);
+
+        // Get the current copy of the post from the PostStore
+        mPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals("From testMultipleLocalChangesToUploadedPost, redux", mPost.getTitle());
+        assertEquals("Some different content", mPost.getDescription());
+        assertEquals(5, mPost.getFeaturedImageId());
+        assertEquals(true, mPost.isLocallyChanged());
+        assertEquals(false, mPost.isLocalDraft());
+    }
 
     // TEST full set of post params assigned, uploaded, and verified after fetch
 
@@ -174,6 +233,15 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new PostStore.FetchPostPayload(post, mSite)));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void savePost(PostModel post) throws InterruptedException {
+        mNextEvent = TEST_EVENTS.POST_UPDATED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newUpdatePostAction(post));
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
