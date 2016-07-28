@@ -45,11 +45,11 @@ public class MediaRestClient extends BaseWPComRestClient {
         ));
     }
 
-    public void fetchMedia(long siteId, final List<Long> mediaIds) {
+    public void fetchMedia(long siteId, List<Long> mediaIds) {
         if (mediaIds == null || mediaIds.isEmpty()) return;
 
-        final List<MediaModel> responseMedia = new ArrayList<>();
-        final List<Exception> responseErrors = new ArrayList<>();
+        final int count = mediaIds.size();
+        final ChangedMediaPayload payload = new ChangedMediaPayload(new ArrayList<MediaModel>(), new ArrayList<Exception>(), null);
         for (final Long mediaId : mediaIds) {
             String url = WPCOMREST.MEDIA_ITEM.getUrlV1_1(String.valueOf(siteId), String.valueOf(mediaId));
             add(new WPComGsonRequest<>(Request.Method.GET, url, null, MediaWPComRestResponse.class,
@@ -57,23 +57,13 @@ public class MediaRestClient extends BaseWPComRestClient {
                         @Override
                         public void onResponse(MediaWPComRestResponse response) {
                             MediaModel media = responseToMediaModel(response);
-                            responseMedia.add(media);
-                            responseErrors.add(null);
-                            if (responseMedia.size() == mediaIds.size()) {
-                                ChangedMediaPayload payload = new ChangedMediaPayload(responseMedia, responseErrors, null);
-                                mDispatcher.dispatch(MediaActionBuilder.newFetchedMediaAction(payload));
-                            }
+                            onMediaResponse(payload, media, null, count);
                         }
                     },
                     new Response.ErrorListener() {
                         @Override
                         public void onErrorResponse(VolleyError error) {
-                            responseMedia.add(null);
-                            responseErrors.add(error);
-                            if (responseMedia.size() == mediaIds.size()) {
-                                ChangedMediaPayload payload = new ChangedMediaPayload(responseMedia, responseErrors, null);
-                                mDispatcher.dispatch(MediaActionBuilder.newFetchedMediaAction(payload));
-                            }
+                            onMediaResponse(payload, null, error, count);
                         }
                     }
             ));
@@ -111,5 +101,16 @@ public class MediaRestClient extends BaseWPComRestClient {
         media.setVideoPressProcessingDone(from.videopress_processing_done);
         // TODO: legacy fields
         return media;
+    }
+
+    /**
+     * Helper method used by fetchMedia to track response progress
+     */
+    private void onMediaResponse(ChangedMediaPayload payload, MediaModel media, Exception error, int count) {
+        payload.media.add(media);
+        payload.errors.add(error);
+        if (payload.media.size() == count) {
+            mDispatcher.dispatch(MediaActionBuilder.newFetchedMediaAction(payload));
+        }
     }
 }
