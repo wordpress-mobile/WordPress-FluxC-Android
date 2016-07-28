@@ -17,6 +17,7 @@ import org.wordpress.android.stores.network.rest.wpcom.account.AccountRestClient
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AppSecrets;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator;
+import org.wordpress.android.stores.network.rest.wpcom.media.MediaRestClient;
 import org.wordpress.android.stores.network.rest.wpcom.site.SiteRestClient;
 import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.stores.network.xmlrpc.site.SiteXMLRPCClient;
@@ -138,6 +139,14 @@ public class ReleaseNetworkModule {
                                                     AccessToken token,
                                                     UserAgent userAgent, HTTPAuthManager httpAuthManager) {
         return new SiteXMLRPCClient(dispatcher, requestQueue, token, userAgent, httpAuthManager);
+    }
+
+    @Singleton
+    @Provides
+    public MediaRestClient provideMediaRestClient(Dispatcher dispatcher,
+                                                  @Named("regular") RequestQueue requestQueue,
+                                                  AccessToken token, UserAgent userAgent) {
+        return new MediaRestClient(dispatcher, requestQueue, token, userAgent);
     }
 
     @Singleton

@@ -1,12 +1,15 @@
 package org.wordpress.android.stores.store;
 
+import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.action.MediaAction;
 import org.wordpress.android.stores.annotations.action.Action;
 import org.wordpress.android.stores.network.rest.wpcom.media.MediaRestClient;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class MediaStore extends Store {
     private MediaRestClient mMediaRestClient;
 
@@ -20,6 +23,7 @@ public class MediaStore extends Store {
         super(dispatcher);
     }
 
+    @Subscribe
     @Override
     public void onAction(Action action) {
         if (action.getType() == MediaAction.FETCH_ALL_MEDIA) {

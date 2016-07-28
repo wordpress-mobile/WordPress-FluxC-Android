@@ -35,6 +35,7 @@ import org.wordpress.android.stores.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.stores.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
+import org.wordpress.android.stores.store.MediaStore;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.NewSitePayload;
 import org.wordpress.android.stores.store.SiteStore.OnNewSiteCreated;
@@ -51,6 +52,7 @@ import javax.inject.Inject;
 
 public class MainExampleActivity extends AppCompatActivity {
     @Inject SiteStore mSiteStore;
+    @Inject MediaStore mMediaStore;
     @Inject AccountStore mAccountStore;
     @Inject Dispatcher mDispatcher;
     @Inject HTTPAuthManager mHTTPAuthManager;
