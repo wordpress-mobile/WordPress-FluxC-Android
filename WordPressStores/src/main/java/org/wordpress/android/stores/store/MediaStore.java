@@ -9,7 +9,9 @@ import org.wordpress.android.stores.generated.MediaActionBuilder;
 import org.wordpress.android.stores.model.MediaModel;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.rest.wpcom.media.MediaRestClient;
+import org.wordpress.android.stores.persistence.MediaSqlUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -131,16 +133,50 @@ public class MediaStore extends Store {
             emitChange(changeEvent);
         } else if (action.getType() == MediaAction.UPDATE_MEDIA) {
             ChangeMediaPayload payload = (ChangeMediaPayload) action.getPayload();
+            updateMedia(payload.media);
         } else if (action.getType() == MediaAction.UPDATED_MEDIA) {
             ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
+            final OnChanged changeEvent = payload.isError() ?
+                    new OnMediaError(MediaAction.UPDATE_MEDIA, payload.error) :
+                    new OnMediaChanged(MediaAction.UPDATE_MEDIA, payload.media);
+            emitChange(changeEvent);
         } else if (action.getType() == MediaAction.REMOVE_MEDIA) {
             ChangeMediaPayload payload = (ChangeMediaPayload) action.getPayload();
+            removeMedia(payload.media);
         } else if (action.getType() == MediaAction.REMOVED_MEDIA) {
             ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
+            final OnChanged changeEvent = payload.isError() ?
+                    new OnMediaError(MediaAction.REMOVE_MEDIA, payload.error) :
+                    new OnMediaChanged(MediaAction.REMOVE_MEDIA, payload.media);
+            emitChange(changeEvent);
         }
     }
 
     @Override
     public void onRegister() {
+    }
+
+    private void updateMedia(List<MediaModel> media) {
+        if (media == null || media.isEmpty()) return;
+
+        ChangedMediaPayload payload = new ChangedMediaPayload(new ArrayList<MediaModel>(), new ArrayList<Exception>(), null);
+        for (MediaModel mediaItem : media) {
+            if (MediaSqlUtils.insertOrUpdateMedia(mediaItem) > 0) {
+                payload.media.add(mediaItem);
+            }
+        }
+        mDispatcher.dispatch(MediaActionBuilder.newUpdatedMediaAction(payload));
+    }
+
+    private void removeMedia(List<MediaModel> media) {
+        if (media == null || media.isEmpty()) return;
+
+        ChangedMediaPayload payload = new ChangedMediaPayload(new ArrayList<MediaModel>(), new ArrayList<Exception>(), null);
+        for (MediaModel mediaItem : media) {
+            if (MediaSqlUtils.deleteMedia(mediaItem) > 0) {
+                payload.media.add(mediaItem);
+            }
+        }
+        mDispatcher.dispatch(MediaActionBuilder.newRemovedMediaAction(payload));
     }
 }
