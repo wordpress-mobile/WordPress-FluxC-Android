@@ -59,6 +59,8 @@ public class MediaModel implements Identifiable, Serializable {
     @Column private boolean mFeatured;
     @Column private boolean mFeaturedInPost;
 
+    private boolean mDeleted;
+
     @Override
     public void setId(int id) {
         mId = id;
@@ -275,5 +277,13 @@ public class MediaModel implements Identifiable, Serializable {
 
     public boolean getFeaturedInPost() {
         return mFeaturedInPost;
+    }
+
+    public void setDeleted(boolean deleted) {
+        mDeleted = deleted;
+    }
+
+    public boolean getDeleted() {
+        return mDeleted;
     }
 }

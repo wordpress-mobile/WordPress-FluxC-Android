@@ -99,6 +99,7 @@ public class MediaRestClient extends BaseWPComRestClient {
         media.setLength(from.length);
         media.setVideoPressGuid(from.videopress_guid);
         media.setVideoPressProcessingDone(from.videopress_processing_done);
+        media.setDeleted(MediaWPComRestResponse.DELETED_STATUS.equals(from.status));
         // TODO: legacy fields
         return media;
     }

@@ -11,6 +11,8 @@ import java.util.List;
  * https://developer.wordpress.com/docs/api/1.1/get/sites/%24site/media/%24media_ID/
  */
 public class MediaWPComRestResponse implements Payload, Response {
+    public static final String DELETED_STATUS = "deleted";
+
     public class MultipleMediaResponse {
         public List<MediaWPComRestResponse> media;
         public List<String> errors;
