@@ -6,6 +6,7 @@ import com.wellsql.generated.PostModelTable;
 import com.yarolegovich.wellsql.WellSql;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.Payload;
 import org.wordpress.android.stores.action.PostAction;
@@ -237,7 +238,7 @@ public class PostStore extends Store {
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     @Override
     public void onAction(Action action) {
         IAction actionType = action.getType();
