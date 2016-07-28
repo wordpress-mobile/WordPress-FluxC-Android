@@ -19,7 +19,12 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     @Inject Dispatcher mDispatcher;
     @Inject PostStore mPostStore;
 
-    CountDownLatch mCountDownLatch;
+    private static final String POST_DEFAULT_TITLE = "PostTextXMLRPC base post";
+    private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
+
+    private CountDownLatch mCountDownLatch;
+    private PostModel mPost;
+    private SiteModel mSite;
 
     enum TEST_EVENTS {
         NONE,
@@ -28,9 +33,6 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         POST_UPDATED
     }
     private TEST_EVENTS mNextEvent;
-
-    private PostModel mPost;
-    private SiteModel mSite;
 
     {
         mSite = new SiteModel();
@@ -55,26 +57,11 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     public void testUploadNewPost() throws InterruptedException {
         // Instantiate new post
-        mNextEvent = TEST_EVENTS.POST_INSTANTIATED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        PostStore.InstantiatePostPayload initPayload = new PostStore.InstantiatePostPayload(mSite, false);
-        mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(initPayload));
-
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        createNewPost();
+        setupPostAttributes();
 
         // Upload new post to site
-        mPost.setTitle("From testUploadNewPost");
-        mPost.setDescription("Hi there, I'm a post from FluxC!");
-        mPost.setFeaturedImageId(0);
-
-        mNextEvent = TEST_EVENTS.POST_UPLOADED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        PostStore.ChangePostPayload pushPayload = new PostStore.ChangePostPayload(mPost, mSite);
-        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
-
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        uploadPost(mPost);
 
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
@@ -84,10 +71,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     public void testEditingRemotePost() throws InterruptedException {
         createNewPost();
-
-        mPost.setTitle("PostTextXMLRPC base post");
-        mPost.setDescription("Hi there, I'm a post from FluxC!");
-        mPost.setFeaturedImageId(0);
+        setupPostAttributes();
 
         uploadPost(mPost);
 
@@ -102,28 +86,20 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     public void testRevertingLocallyChangedPost() throws InterruptedException {
         createNewPost();
-
-        mPost.setTitle("PostTextXMLRPC base post");
-        mPost.setDescription("Hi there, I'm a post from FluxC!");
-        mPost.setFeaturedImageId(0);
+        setupPostAttributes();
 
         uploadPost(mPost);
 
         mPost.setTitle("From testRevertingLocallyChangedPost");
         mPost.setIsLocallyChanged(true);
 
-        // Revert changes to post
-        mNextEvent = TEST_EVENTS.POST_UPDATED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new PostStore.FetchPostPayload(mPost, mSite)));
-
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // Revert changes to post by replacing it with a fresh copy from the server
+        fetchPost(mPost);
 
         // Get the current copy of the post from the PostStore
         PostModel latestPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals("PostTextXMLRPC base post", latestPost.getTitle());
+        assertEquals(POST_DEFAULT_TITLE, latestPost.getTitle());
         assertEquals(false, latestPost.isLocallyChanged());
     }
 
@@ -166,6 +142,12 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    private void setupPostAttributes() {
+        mPost.setTitle(POST_DEFAULT_TITLE);
+        mPost.setDescription(POST_DEFAULT_DESCRIPTION);
+        mPost.setFeaturedImageId(0);
+    }
+
     private void createNewPost() throws InterruptedException {
         // Instantiate new post
         mNextEvent = TEST_EVENTS.POST_INSTANTIATED;
@@ -181,8 +163,17 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TEST_EVENTS.POST_UPLOADED;
         mCountDownLatch = new CountDownLatch(1);
 
-        PostStore.ChangePostPayload pushPayload = new PostStore.ChangePostPayload(mPost, mSite);
+        PostStore.ChangePostPayload pushPayload = new PostStore.ChangePostPayload(post, mSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void fetchPost(PostModel post) throws InterruptedException {
+        mNextEvent = TEST_EVENTS.POST_UPDATED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new PostStore.FetchPostPayload(post, mSite)));
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
