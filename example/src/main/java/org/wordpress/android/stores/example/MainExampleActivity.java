@@ -36,7 +36,7 @@ import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.stores.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
 import org.wordpress.android.stores.store.PostStore;
-import org.wordpress.android.stores.store.PostStore.ChangePostPayload;
+import org.wordpress.android.stores.store.PostStore.ChangeRemotePostPayload;
 import org.wordpress.android.stores.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.stores.store.PostStore.InstantiatePostPayload;
 import org.wordpress.android.stores.store.PostStore.OnPostChanged;
@@ -135,7 +135,7 @@ public class MainExampleActivity extends AppCompatActivity {
                 SiteModel firstSite = mSiteStore.getSites().get(0);
                 List<PostModel> posts = mPostStore.getPostsForSite(firstSite);
                 if (!posts.isEmpty()) {
-                    PostStore.ChangePostPayload payload = new PostStore.ChangePostPayload(posts.get(0), firstSite);
+                    ChangeRemotePostPayload payload = new PostStore.ChangeRemotePostPayload(posts.get(0), firstSite);
                     mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(payload));
                 }
             }
@@ -462,7 +462,7 @@ public class MainExampleActivity extends AppCompatActivity {
         examplePost.setDescription("Hi there, I'm a post from WordPress-{Placeholder Name}-Android!");
         examplePost.setFeaturedImageId(0);
 
-        ChangePostPayload payload = new ChangePostPayload(examplePost, mSiteStore.getSites().get(0));
+        ChangeRemotePostPayload payload = new ChangeRemotePostPayload(examplePost, mSiteStore.getSites().get(0));
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
     }
 

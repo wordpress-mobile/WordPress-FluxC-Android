@@ -86,7 +86,7 @@ public class PostStore extends Store {
         }
     }
 
-    public static class ChangePostPayload implements Payload {
+    public static class ChangeRemotePostPayload implements Payload {
         public PostModel post;
         public SiteModel site;
         public UploadMode uploadMode = UploadMode.MEDIA_IN_PLACE;
@@ -95,7 +95,7 @@ public class PostStore extends Store {
             MEDIA_WITH_POST, MEDIA_IN_PLACE
         }
 
-        public ChangePostPayload(PostModel post, SiteModel site) {
+        public ChangeRemotePostPayload(PostModel post, SiteModel site) {
             this.post = post;
             this.site = site;
         }
@@ -311,7 +311,7 @@ public class PostStore extends Store {
 
             emitChange(new OnPostInstantiated(newPost));
         } else if (actionType == PostAction.PUSH_POST) {
-            ChangePostPayload payload = (ChangePostPayload) action.getPayload();
+            ChangeRemotePostPayload payload = (ChangeRemotePostPayload) action.getPayload();
             if (payload.site.isWPCom() || payload.site.isJetpack()) {
                 // TODO: Implement REST API post delete
             } else {
@@ -330,7 +330,7 @@ public class PostStore extends Store {
             onPostChanged.causeOfChange = PostAction.UPDATE_POST;
             emitChange(onPostChanged);
         } else if (actionType == PostAction.DELETE_POST) {
-            ChangePostPayload payload = (ChangePostPayload) action.getPayload();
+            ChangeRemotePostPayload payload = (ChangeRemotePostPayload) action.getPayload();
             if (payload.site.isWPCom() || payload.site.isJetpack()) {
                 // TODO: Implement REST API post delete
             } else {

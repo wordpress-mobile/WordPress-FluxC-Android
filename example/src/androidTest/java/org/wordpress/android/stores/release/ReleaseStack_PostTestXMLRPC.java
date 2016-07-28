@@ -9,6 +9,12 @@ import org.wordpress.android.stores.generated.PostActionBuilder;
 import org.wordpress.android.stores.model.PostModel;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.store.PostStore;
+import org.wordpress.android.stores.store.PostStore.ChangeRemotePostPayload;
+import org.wordpress.android.stores.store.PostStore.FetchPostPayload;
+import org.wordpress.android.stores.store.PostStore.InstantiatePostPayload;
+import org.wordpress.android.stores.store.PostStore.OnPostChanged;
+import org.wordpress.android.stores.store.PostStore.OnPostInstantiated;
+import org.wordpress.android.stores.store.PostStore.OnPostUploaded;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -167,7 +173,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     // TEST full set of post params assigned, uploaded, and verified after fetch
 
     @Subscribe
-    public void onPostChanged(PostStore.OnPostChanged event) {
+    public void onPostChanged(OnPostChanged event) {
         if (event.causeOfChange.equals(PostAction.UPDATE_POST)) {
             if (mCountDownLatch.getCount() > 0) {
                 assertEquals(TEST_EVENTS.POST_UPDATED, mNextEvent);
@@ -177,7 +183,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     }
 
     @Subscribe
-    public void OnPostInstantiated(PostStore.OnPostInstantiated event) {
+    public void OnPostInstantiated(OnPostInstantiated event) {
         assertEquals(TEST_EVENTS.POST_INSTANTIATED, mNextEvent);
 
         assertEquals(true, event.post.isLocalDraft());
@@ -190,7 +196,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     }
 
     @Subscribe
-    public void onPostUploaded(PostStore.OnPostUploaded event) {
+    public void onPostUploaded(OnPostUploaded event) {
         assertEquals(TEST_EVENTS.POST_UPLOADED, mNextEvent);
         assertEquals(false, event.post.isLocalDraft());
         assertEquals(false, event.post.isLocallyChanged());
@@ -212,7 +218,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TEST_EVENTS.POST_INSTANTIATED;
         mCountDownLatch = new CountDownLatch(1);
 
-        PostStore.InstantiatePostPayload initPayload = new PostStore.InstantiatePostPayload(mSite, false);
+        InstantiatePostPayload initPayload = new InstantiatePostPayload(mSite, false);
         mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(initPayload));
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -222,7 +228,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TEST_EVENTS.POST_UPLOADED;
         mCountDownLatch = new CountDownLatch(1);
 
-        PostStore.ChangePostPayload pushPayload = new PostStore.ChangePostPayload(post, mSite);
+        ChangeRemotePostPayload pushPayload = new ChangeRemotePostPayload(post, mSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -232,7 +238,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TEST_EVENTS.POST_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new PostStore.FetchPostPayload(post, mSite)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new FetchPostPayload(post, mSite)));
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

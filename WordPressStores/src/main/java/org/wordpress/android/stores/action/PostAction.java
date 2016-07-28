@@ -4,7 +4,7 @@ import org.wordpress.android.stores.annotations.Action;
 import org.wordpress.android.stores.annotations.ActionEnum;
 import org.wordpress.android.stores.annotations.action.IAction;
 import org.wordpress.android.stores.model.PostModel;
-import org.wordpress.android.stores.store.PostStore.ChangePostPayload;
+import org.wordpress.android.stores.store.PostStore.ChangeRemotePostPayload;
 import org.wordpress.android.stores.store.PostStore.FetchPostPayload;
 import org.wordpress.android.stores.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.stores.store.PostStore.FetchPostsResponsePayload;
@@ -22,13 +22,13 @@ public enum PostAction implements IAction {
     FETCH_POST,
     @Action(payloadType = InstantiatePostPayload.class)
     INSTANTIATE_POST,
-    @Action(payloadType = ChangePostPayload.class)
+    @Action(payloadType = ChangeRemotePostPayload.class)
     PUSH_POST,
     @Action(payloadType = PostModel.class)
     PUSHED_POST,
     @Action(payloadType = PostModel.class)
     UPDATE_POST,
-    @Action(payloadType = ChangePostPayload.class)
+    @Action(payloadType = ChangeRemotePostPayload.class)
     DELETE_POST,
     @Action(payloadType = PostModel.class)
     REMOVE_POST

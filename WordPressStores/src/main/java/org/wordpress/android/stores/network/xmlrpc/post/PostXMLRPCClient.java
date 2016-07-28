@@ -23,7 +23,7 @@ import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.stores.network.xmlrpc.XMLRPC;
 import org.wordpress.android.stores.network.xmlrpc.XMLRPCRequest;
-import org.wordpress.android.stores.store.PostStore.ChangePostPayload.UploadMode;
+import org.wordpress.android.stores.store.PostStore.ChangeRemotePostPayload.UploadMode;
 import org.wordpress.android.stores.store.PostStore.FetchPostsResponsePayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
