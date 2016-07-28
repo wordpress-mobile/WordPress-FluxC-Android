@@ -90,11 +90,6 @@ public class PostStore extends Store {
     public static class ChangeRemotePostPayload implements Payload {
         public PostModel post;
         public SiteModel site;
-        public UploadMode uploadMode = UploadMode.MEDIA_IN_PLACE;
-
-        public enum UploadMode {
-            MEDIA_WITH_POST, MEDIA_IN_PLACE
-        }
 
         public ChangeRemotePostPayload(PostModel post, SiteModel site) {
             this.post = post;

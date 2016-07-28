@@ -23,7 +23,6 @@ import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.stores.network.xmlrpc.XMLRPC;
 import org.wordpress.android.stores.network.xmlrpc.XMLRPCRequest;
-import org.wordpress.android.stores.store.PostStore.ChangeRemotePostPayload.UploadMode;
 import org.wordpress.android.stores.store.PostStore.FetchPostsResponsePayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -37,8 +36,6 @@ import java.util.Map;
 
 public class PostXMLRPCClient extends BaseXMLRPCClient {
     private static final int NUM_POSTS_TO_REQUEST = 20;
-
-    private int mFeaturedImageId;
 
     public PostXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken accessToken,
                             UserAgent userAgent, HTTPAuthManager httpAuthManager) {
@@ -144,27 +141,13 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         add(request);
     }
 
-    public void pushPost(final PostModel post, final SiteModel site, final UploadMode uploadMode) {
+    public void pushPost(final PostModel post, final SiteModel site) {
         if (TextUtils.isEmpty(post.getStatus())) {
             post.setStatus(PostStatus.toString(PostStatus.PUBLISHED));
         }
 
-        // TODO: Implement media processing, along with an upload progress event - the event recipient will also be responsible for tracking hasImage, hasVideo, etc for analytics
         String descriptionContent = post.getDescription();
-        //String descriptionContent = processPostMedia(post.getDescription());
-
-        String moreContent = "";
-        if (!TextUtils.isEmpty(post.getMoreText())) {
-            moreContent = post.getMoreText();
-            // TODO: Media processing
-            //moreContent = processPostMedia(post.getMoreText());
-        }
-
-        // TODO: Media processing
-        // If media file upload failed, let's stop here and prompt the user
-//        if (mIsMediaError) {
-//            return false;
-//        }
+        String moreContent = post.getMoreText();
 
         JSONArray categoriesJsonArray = post.getJSONCategories();
         String[] postCategories = null;
@@ -229,9 +212,9 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
             JSONObject remoteGeoLongitude = post.getCustomField("geo_longitude");
             JSONObject remoteGeoPublic = post.getCustomField("geo_public");
 
-            Map<Object, Object> hLatitude = new HashMap<Object, Object>();
-            Map<Object, Object> hLongitude = new HashMap<Object, Object>();
-            Map<Object, Object> hPublic = new HashMap<Object, Object>();
+            Map<Object, Object> hLatitude = new HashMap<>();
+            Map<Object, Object> hLongitude = new HashMap<>();
+            Map<Object, Object> hPublic = new HashMap<>();
 
             try {
                 if (remoteGeoLatitude != null) {
@@ -266,12 +249,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         }
 
         // Featured images
-        if (uploadMode.equals(UploadMode.MEDIA_WITH_POST)) {
-            // Support for legacy editor - images are identified as featured as they're being uploaded with the post
-            if (mFeaturedImageId != -1) {
-                contentStruct.put("wp_post_thumbnail", mFeaturedImageId);
-            }
-        } else if (post.featuredImageHasChanged()) {
+        if (post.featuredImageHasChanged()) {
             if (post.getFeaturedImageId() < 1 && !post.isLocalDraft()) {
                 // The featured image was removed from a live post
                 contentStruct.put("wp_post_thumbnail", "");
@@ -295,9 +273,6 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
 
         final XMLRPC method = (post.isLocalDraft() ? XMLRPC.NEW_POST : XMLRPC.EDIT_POST);
 
-        // TODO: Send PostUploadStarted event
-        //EventBus.getDefault().post(new PostUploadStarted(mPost.getLocalTableBlogId()));
-
         final XMLRPCRequest request = new XMLRPCRequest(site.getXmlRpcUrl(), method, params, new Listener() {
             @Override
             public void onResponse(Object response) {
@@ -308,8 +283,6 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                 post.setIsLocallyChanged(false);
 
                 mDispatcher.dispatch(PostActionBuilder.newPushedPostAction(post));
-
-                // TODO: Move analytics that were dropped to WPAndroid
 
                 // Request a fresh copy of the uploaded post from the server to ensure local copy matches server
                 getPost(post, site);
