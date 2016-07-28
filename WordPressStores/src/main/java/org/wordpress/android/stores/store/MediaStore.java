@@ -104,20 +104,13 @@ public class MediaStore extends Store {
             mMediaRestClient.fetchAllMedia(payload.site.getSiteId());
         } else if (action.getType() == MediaAction.FETCHED_ALL_MEDIA) {
             ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
-            final OnChanged changeEvent = payload.isError() ?
-                    new OnMediaError(MediaAction.FETCH_ALL_MEDIA, payload.error) :
-                    new OnMediaChanged(MediaAction.FETCH_ALL_MEDIA, payload.media);
-            emitChange(changeEvent);
+            emitChange(getErrorOrChangedEvent(MediaAction.FETCH_ALL_MEDIA, payload));
         } else if (action.getType() == MediaAction.FETCH_MEDIA) {
             FetchMediaPayload payload = (FetchMediaPayload) action.getPayload();
             mMediaRestClient.fetchMedia(payload.site.getSiteId(), payload.mediaIds);
         } else if (action.getType() == MediaAction.FETCHED_MEDIA) {
             ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
-            final OnChanged changeEvent = payload.isError() ?
-                    // TODO: not using correct error here
-                    new OnMediaError(MediaAction.FETCH_MEDIA, payload.error) :
-                    new OnMediaChanged(MediaAction.FETCH_MEDIA, payload.media);
-            emitChange(changeEvent);
+            emitChange(getErrorOrChangedEvent(MediaAction.FETCH_MEDIA, payload));
         } else if (action.getType() == MediaAction.PUSH_MEDIA) {
             ChangeMediaPayload payload = (ChangeMediaPayload) action.getPayload();
         } else if (action.getType() == MediaAction.PUSHED_MEDIA) {
@@ -127,28 +120,19 @@ public class MediaStore extends Store {
             mMediaRestClient.deleteMedia(payload.site.getSiteId(), payload.media);
         } else if (action.getType() == MediaAction.DELETED_MEDIA) {
             ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
-            final OnChanged changeEvent = payload.isError() ?
-                    new OnMediaError(MediaAction.DELETE_MEDIA, payload.error) :
-                    new OnMediaChanged(MediaAction.DELETE_MEDIA, payload.media);
-            emitChange(changeEvent);
+            emitChange(getErrorOrChangedEvent(MediaAction.DELETE_MEDIA, payload));
         } else if (action.getType() == MediaAction.UPDATE_MEDIA) {
             ChangeMediaPayload payload = (ChangeMediaPayload) action.getPayload();
             updateMedia(payload.media);
         } else if (action.getType() == MediaAction.UPDATED_MEDIA) {
             ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
-            final OnChanged changeEvent = payload.isError() ?
-                    new OnMediaError(MediaAction.UPDATE_MEDIA, payload.error) :
-                    new OnMediaChanged(MediaAction.UPDATE_MEDIA, payload.media);
-            emitChange(changeEvent);
+            emitChange(getErrorOrChangedEvent(MediaAction.UPDATE_MEDIA, payload));
         } else if (action.getType() == MediaAction.REMOVE_MEDIA) {
             ChangeMediaPayload payload = (ChangeMediaPayload) action.getPayload();
             removeMedia(payload.media);
         } else if (action.getType() == MediaAction.REMOVED_MEDIA) {
             ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
-            final OnChanged changeEvent = payload.isError() ?
-                    new OnMediaError(MediaAction.REMOVE_MEDIA, payload.error) :
-                    new OnMediaChanged(MediaAction.REMOVE_MEDIA, payload.media);
-            emitChange(changeEvent);
+            emitChange(getErrorOrChangedEvent(MediaAction.REMOVE_MEDIA, payload));
         }
     }
 
@@ -178,5 +162,10 @@ public class MediaStore extends Store {
             }
         }
         mDispatcher.dispatch(MediaActionBuilder.newRemovedMediaAction(payload));
+    }
+
+    private OnChanged getErrorOrChangedEvent(MediaAction cause, ChangedMediaPayload payload) {
+        return payload.isError() ? new OnMediaError(cause, payload.error) :
+                                   new OnMediaChanged(cause, payload.media);
     }
 }
