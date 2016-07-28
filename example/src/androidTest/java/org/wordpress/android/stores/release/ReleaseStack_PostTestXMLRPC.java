@@ -62,8 +62,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Upload new post to site
-        mPost.setTitle("From example activity");
-        mPost.setDescription("Hi there, I'm a post from WordPress-{Placeholder Name}-Android!");
+        mPost.setTitle("From testUploadNewPost");
+        mPost.setDescription("Hi there, I'm a post from FluxC!");
         mPost.setFeaturedImageId(0);
 
         mNextEvent = TEST_EVENTS.POST_UPLOADED;
@@ -73,12 +73,18 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertNotSame(0, uploadedPost.getRemotePostId());
+        assertEquals(false, uploadedPost.isLocalDraft());
     }
 
     @Subscribe
     public void OnPostInstantiated(PostStore.OnPostInstantiated event) {
         assertEquals(TEST_EVENTS.POST_INSTANTIATED, mNextEvent);
 
+        assertEquals(true, event.post.isLocalDraft());
         assertEquals(0, event.post.getRemotePostId());
         assertNotSame(0, event.post.getId());
         assertNotSame(0, event.post.getLocalSiteId());
@@ -92,6 +98,12 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     @Subscribe
     public void onPostUploaded(PostStore.OnPostUploaded event) {
         assertEquals(TEST_EVENTS.POST_UPLOADED, mNextEvent);
+        assertEquals(false, event.post.isLocalDraft());
+        assertEquals(false, event.post.isLocallyChanged());
+        assertNotSame(0, event.post.getRemotePostId());
+
+        mPost = event.post;
+
         mCountDownLatch.countDown();
     }
 }
