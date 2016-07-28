@@ -103,12 +103,16 @@ public class PostStore extends Store {
 
     // OnChanged events
     public class OnPostChanged extends OnChanged {
-        public int numFetched;
+        public int rowsAffected;
         public boolean canLoadMore;
         public PostAction causeOfChange;
 
-        public OnPostChanged(int numFetched, boolean canLoadMore) {
-            this.numFetched = numFetched;
+        public OnPostChanged(int rowsAffected) {
+            this.rowsAffected = rowsAffected;
+        }
+
+        public OnPostChanged(int rowsAffected, boolean canLoadMore) {
+            this.rowsAffected = rowsAffected;
             this.canLoadMore = canLoadMore;
         }
     }
@@ -271,12 +275,12 @@ public class PostStore extends Store {
                 PostSqlUtils.deleteUploadedPostsForSite(postsResponsePayload.site, postsResponsePayload.isPages);
             }
 
+            int rowsAffected = 0;
             for (PostModel post : postsResponsePayload.posts) {
-                PostSqlUtils.insertOrUpdatePostKeepingLocalChanges(post);
+                rowsAffected += PostSqlUtils.insertOrUpdatePostKeepingLocalChanges(post);
             }
 
-            OnPostChanged onPostChanged = new OnPostChanged(postsResponsePayload.posts.size(),
-                    postsResponsePayload.canLoadMore);
+            OnPostChanged onPostChanged = new OnPostChanged(rowsAffected, postsResponsePayload.canLoadMore);
             if (postsResponsePayload.isPages) {
                 onPostChanged.causeOfChange = PostAction.FETCH_PAGES;
             } else {
@@ -320,7 +324,11 @@ public class PostStore extends Store {
             PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges(uploadedPost);
             emitChange(new OnPostUploaded(uploadedPost));
         } else if (actionType == PostAction.UPDATE_POST) {
-            PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges((PostModel) action.getPayload());
+            int rowsAffected = PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges((PostModel) action.getPayload());
+
+            OnPostChanged onPostChanged = new OnPostChanged(rowsAffected);
+            onPostChanged.causeOfChange = PostAction.UPDATE_POST;
+            emitChange(onPostChanged);
         } else if (actionType == PostAction.DELETE_POST) {
             ChangePostPayload payload = (ChangePostPayload) action.getPayload();
             if (payload.site.isWPCom() || payload.site.isJetpack()) {
