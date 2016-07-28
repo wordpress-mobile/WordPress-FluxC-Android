@@ -70,11 +70,11 @@ public class MediaStore extends Store {
     //
 
     public class OnMediaChanged extends OnChanged {
-        public List<MediaModel> media;
         public MediaAction causeOfChange;
-        public OnMediaChanged(List<MediaModel> media, MediaAction cause) {
-            this.media = media;
+        public List<MediaModel> media;
+        public OnMediaChanged(MediaAction cause, List<MediaModel> media) {
             this.causeOfChange = cause;
+            this.media = media;
         }
     }
 
@@ -100,20 +100,23 @@ public class MediaStore extends Store {
     public void onAction(Action action) {
         if (action.getType() == MediaAction.FETCH_ALL_MEDIA) {
             FetchMediaPayload payload = (FetchMediaPayload) action.getPayload();
-            mMediaRestClient.fetchAllMedia(payload.site);
+            mMediaRestClient.fetchAllMedia(payload.site.getSiteId());
         } else if (action.getType() == MediaAction.FETCHED_ALL_MEDIA) {
             ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
-            if (payload.isError()) {
-                OnMediaError errorEvent = new OnMediaError(MediaAction.FETCH_ALL_MEDIA, payload.error);
-                emitChange(errorEvent);
-            } else {
-                OnMediaChanged changedEvent = new OnMediaChanged(payload.media, MediaAction.FETCH_ALL_MEDIA);
-                emitChange(changedEvent);
-            }
+            final OnChanged changeEvent = payload.isError() ?
+                    new OnMediaError(MediaAction.FETCH_ALL_MEDIA, payload.error) :
+                    new OnMediaChanged(MediaAction.FETCH_ALL_MEDIA, payload.media);
+            emitChange(changeEvent);
         } else if (action.getType() == MediaAction.FETCH_MEDIA) {
             FetchMediaPayload payload = (FetchMediaPayload) action.getPayload();
+            mMediaRestClient.fetchMedia(payload.site.getSiteId(), payload.mediaIds);
         } else if (action.getType() == MediaAction.FETCHED_MEDIA) {
             ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
+            final OnChanged changeEvent = payload.isError() ?
+                    // TODO: not using correct error here
+                    new OnMediaError(MediaAction.FETCH_MEDIA, payload.error) :
+                    new OnMediaChanged(MediaAction.FETCH_MEDIA, payload.media);
+            emitChange(changeEvent);
         } else if (action.getType() == MediaAction.PUSH_MEDIA) {
             ChangeMediaPayload payload = (ChangeMediaPayload) action.getPayload();
         } else if (action.getType() == MediaAction.PUSHED_MEDIA) {

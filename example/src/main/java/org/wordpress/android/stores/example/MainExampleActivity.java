@@ -16,7 +16,6 @@ import android.widget.TextView;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.stores.Dispatcher;
-import org.wordpress.android.stores.action.MediaAction;
 import org.wordpress.android.stores.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.stores.generated.AccountActionBuilder;
 import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
@@ -48,7 +47,9 @@ import org.wordpress.android.stores.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -70,6 +71,7 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mNewAccount;
     private Button mNewSite;
     private Button mFetchAllMedia;
+    private Button mFetchMedia;
 
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
@@ -153,6 +155,14 @@ public class MainExampleActivity extends AppCompatActivity {
             }
         });
 
+        mFetchMedia = (Button) findViewById(R.id.media);
+        mFetchMedia.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMediaItemInputDialog();
+            }
+        });
+
         mLogView = (TextView) findViewById(R.id.log);
 
         init();
@@ -204,6 +214,32 @@ public class MainExampleActivity extends AppCompatActivity {
                         }
                     }
                 }, certifString);
+        newFragment.show(ft, "dialog");
+    }
+
+    private void fetchMediaItems(String commaSeparated) {
+        if (!TextUtils.isEmpty(commaSeparated)) {
+            String[] split = commaSeparated.split(",");
+            List<Long> mediaIds = new ArrayList<>();
+            for (String s : split) {
+                Long lVal = Long.valueOf(s);
+                if (lVal >= 0) mediaIds.add(Long.valueOf(s));
+            }
+            if (!mediaIds.isEmpty()) {
+                FetchMediaPayload payload = new FetchMediaPayload(mSiteStore.getSites().get(0), mediaIds);
+                mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
+            }
+        }
+    }
+
+    private void showMediaItemInputDialog() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
+            @Override
+            public void onClick(String text1, String text2, String text3) {
+                fetchMediaItems(text1);
+            }
+        }, "Media Items (comma separated)", null, null);
         newFragment.show(ft, "dialog");
     }
 
@@ -417,20 +453,37 @@ public class MainExampleActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaChanged(MediaStore.OnMediaChanged event) {
-        if (event.causeOfChange == MediaAction.FETCH_ALL_MEDIA) {
-            prependToLog("Begin parsing FETCH_ALL_MEDIA response");
-            if (event.media != null) {
-                for (MediaModel media : event.media) {
-                    if (MediaUtils.isImageMimeType(media.getMimeType())) {
-                        prependToLog("Image - " + media.getTitle());
-                    } else if (MediaUtils.isVideoMimeType(media.getMimeType())) {
-                        prependToLog("Video - " + media.getTitle());
-                    } else {
-                        prependToLog(media.getTitle());
+        switch (event.causeOfChange) {
+            case FETCH_ALL_MEDIA:
+                prependToLog("Begin parsing FETCH_ALL_MEDIA response");
+                if (event.media != null) {
+                    for (MediaModel media : event.media) {
+                        if (MediaUtils.isImageMimeType(media.getMimeType())) {
+                            prependToLog("Image(" + media.getMediaId() + ") - " + media.getTitle());
+                        } else if (MediaUtils.isVideoMimeType(media.getMimeType())) {
+                            prependToLog("Video(" + media.getMediaId() + ") - " + media.getTitle());
+                        } else {
+                            prependToLog(media.getTitle());
+                        }
                     }
                 }
-            }
-            prependToLog("End parsing FETCH_ALL_MEDIA response");
+                prependToLog("End parsing FETCH_ALL_MEDIA response");
+                break;
+            case FETCH_MEDIA:
+                if (event.media != null && !event.media.isEmpty()) {
+                    for (MediaModel media : event.media) {
+                        if (media != null) {
+                            prependToLog("Fetched media(" + media.getMediaId() + ") - " + media.getTitle());
+                        } else {
+                            prependToLog("A media item failed to fetch. Does it exist?");
+                        }
+                    }
+                }
+                break;
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMediaError(MediaStore.OnMediaError event) {
     }
 }

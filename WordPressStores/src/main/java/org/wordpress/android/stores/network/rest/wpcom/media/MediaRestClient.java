@@ -8,7 +8,6 @@ import com.android.volley.VolleyError;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.generated.MediaActionBuilder;
 import org.wordpress.android.stores.model.MediaModel;
-import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.UserAgent;
 import org.wordpress.android.stores.network.rest.wpcom.BaseWPComRestClient;
 import org.wordpress.android.stores.network.rest.wpcom.WPCOMREST;
@@ -20,12 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MediaRestClient extends BaseWPComRestClient {
-    public MediaRestClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken accessToken, UserAgent userAgent) {
+    public MediaRestClient(Dispatcher dispatcher, RequestQueue requestQueue,
+                           AccessToken accessToken, UserAgent userAgent) {
         super(dispatcher, requestQueue, accessToken, userAgent);
     }
 
-    public void fetchAllMedia(final SiteModel site) {
-        String url = WPCOMREST.MEDIA_ALL.getUrlV1_1(String.valueOf(site.getSiteId()));
+    public void fetchAllMedia(long siteId) {
+        String url = WPCOMREST.MEDIA_ALL.getUrlV1_1(String.valueOf(siteId));
         add(new WPComGsonRequest<>(Request.Method.GET, url, null, MediaWPComRestResponse.MultipleMediaResponse.class,
                 new Response.Listener<MediaWPComRestResponse.MultipleMediaResponse>() {
                     @Override
@@ -43,6 +43,41 @@ public class MediaRestClient extends BaseWPComRestClient {
                     }
                 }
         ));
+    }
+
+    public void fetchMedia(long siteId, final List<Long> mediaIds) {
+        if (mediaIds == null || mediaIds.isEmpty()) return;
+
+        final List<MediaModel> responseMedia = new ArrayList<>();
+        final List<Exception> responseErrors = new ArrayList<>();
+        for (final Long mediaId : mediaIds) {
+            String url = WPCOMREST.MEDIA_ITEM.getUrlV1_1(String.valueOf(siteId), String.valueOf(mediaId));
+            add(new WPComGsonRequest<>(Request.Method.GET, url, null, MediaWPComRestResponse.class,
+                    new Response.Listener<MediaWPComRestResponse>() {
+                        @Override
+                        public void onResponse(MediaWPComRestResponse response) {
+                            MediaModel media = responseToMediaModel(response);
+                            responseMedia.add(media);
+                            responseErrors.add(null);
+                            if (responseMedia.size() == mediaIds.size()) {
+                                ChangedMediaPayload payload = new ChangedMediaPayload(responseMedia, responseErrors, null);
+                                mDispatcher.dispatch(MediaActionBuilder.newFetchedMediaAction(payload));
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            responseMedia.add(null);
+                            responseErrors.add(error);
+                            if (responseMedia.size() == mediaIds.size()) {
+                                ChangedMediaPayload payload = new ChangedMediaPayload(responseMedia, responseErrors, null);
+                                mDispatcher.dispatch(MediaActionBuilder.newFetchedMediaAction(payload));
+                            }
+                        }
+                    }
+            ));
+        }
     }
 
     private List<MediaModel> responseToMediaModelList(MediaWPComRestResponse.MultipleMediaResponse from) {
