@@ -5,13 +5,12 @@ import com.yarolegovich.wellsql.core.annotation.Column;
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey;
 import com.yarolegovich.wellsql.core.annotation.Table;
 
-import org.wordpress.android.stores.Payload;
 import org.wordpress.android.stores.utils.MediaUtils;
 
 import java.io.Serializable;
 
 @Table
-public class MediaModel implements Identifiable, Payload, Serializable {
+public class MediaModel implements Identifiable, Serializable {
     @PrimaryKey
     @Column private int mId;
 
