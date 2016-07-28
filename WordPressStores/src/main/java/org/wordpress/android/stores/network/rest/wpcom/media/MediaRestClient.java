@@ -6,7 +6,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
 import org.wordpress.android.stores.Dispatcher;
-import org.wordpress.android.stores.Payload;
 import org.wordpress.android.stores.generated.MediaActionBuilder;
 import org.wordpress.android.stores.model.MediaModel;
 import org.wordpress.android.stores.model.SiteModel;
@@ -15,25 +14,12 @@ import org.wordpress.android.stores.network.rest.wpcom.BaseWPComRestClient;
 import org.wordpress.android.stores.network.rest.wpcom.WPCOMREST;
 import org.wordpress.android.stores.network.rest.wpcom.WPComGsonRequest;
 import org.wordpress.android.stores.network.rest.wpcom.auth.AccessToken;
+import org.wordpress.android.stores.store.MediaStore.ChangedMediaPayload;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MediaRestClient extends BaseWPComRestClient {
-    public static class MediaFetchPayload implements Payload {
-        public SiteModel site;
-        public List<MediaModel> media;
-        public VolleyError error;
-        public MediaFetchPayload(SiteModel site, List<MediaModel> media, VolleyError error) {
-            this.site = site;
-            this.media = media;
-            this.error = error;
-        }
-        public boolean isError() {
-            return error != null;
-        }
-    }
-
     public MediaRestClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken accessToken, UserAgent userAgent) {
         super(dispatcher, requestQueue, accessToken, userAgent);
     }
@@ -45,15 +31,15 @@ public class MediaRestClient extends BaseWPComRestClient {
                     @Override
                     public void onResponse(MediaWPComRestResponse.MultipleMediaResponse response) {
                         List<MediaModel> mediaList = responseToMediaModelList(response);
-                        MediaFetchPayload payload = new MediaFetchPayload(site, mediaList, null);
-                        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
+                        ChangedMediaPayload payload = new ChangedMediaPayload(mediaList, null, null);
+                        mDispatcher.dispatch(MediaActionBuilder.newFetchedAllMediaAction(payload));
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        MediaFetchPayload payload = new MediaFetchPayload(site, null, error);
-                        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
+                        ChangedMediaPayload payload = new ChangedMediaPayload(null, null, error);
+                        mDispatcher.dispatch(MediaActionBuilder.newFetchedAllMediaAction(payload));
                     }
                 }
         ));

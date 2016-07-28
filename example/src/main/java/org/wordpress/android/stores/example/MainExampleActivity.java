@@ -22,11 +22,11 @@ import org.wordpress.android.stores.generated.AccountActionBuilder;
 import org.wordpress.android.stores.generated.AuthenticationActionBuilder;
 import org.wordpress.android.stores.generated.MediaActionBuilder;
 import org.wordpress.android.stores.generated.SiteActionBuilder;
+import org.wordpress.android.stores.model.MediaModel;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.HTTPAuthManager;
 import org.wordpress.android.stores.network.MemorizingTrustManager;
 import org.wordpress.android.stores.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
-import org.wordpress.android.stores.network.rest.wpcom.media.MediaRestClient;
 import org.wordpress.android.stores.store.AccountStore;
 import org.wordpress.android.stores.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.stores.store.AccountStore.AuthenticationError;
@@ -36,6 +36,7 @@ import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.stores.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
 import org.wordpress.android.stores.store.MediaStore;
+import org.wordpress.android.stores.store.MediaStore.FetchMediaPayload;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.NewSitePayload;
 import org.wordpress.android.stores.store.SiteStore.OnNewSiteCreated;
@@ -43,6 +44,7 @@ import org.wordpress.android.stores.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.stores.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.stores.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.stores.store.SiteStore.SiteVisibility;
+import org.wordpress.android.stores.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -322,7 +324,7 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void fetchAllMedia() {
-        MediaRestClient.MediaFetchPayload payload = new MediaRestClient.MediaFetchPayload(mSiteStore.getSites().get(0), null, null);
+        FetchMediaPayload payload = new FetchMediaPayload(mSiteStore.getSites().get(0), null);
         mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(payload));
     }
 
@@ -411,5 +413,24 @@ public class MainExampleActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteRemoved(OnSiteRemoved event) {
         mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMediaChanged(MediaStore.OnMediaChanged event) {
+        if (event.causeOfChange == MediaAction.FETCH_ALL_MEDIA) {
+            prependToLog("Begin parsing FETCH_ALL_MEDIA response");
+            if (event.media != null) {
+                for (MediaModel media : event.media) {
+                    if (MediaUtils.isImageMimeType(media.getMimeType())) {
+                        prependToLog("Image - " + media.getTitle());
+                    } else if (MediaUtils.isVideoMimeType(media.getMimeType())) {
+                        prependToLog("Video - " + media.getTitle());
+                    } else {
+                        prependToLog(media.getTitle());
+                    }
+                }
+            }
+            prependToLog("End parsing FETCH_ALL_MEDIA response");
+        }
     }
 }
