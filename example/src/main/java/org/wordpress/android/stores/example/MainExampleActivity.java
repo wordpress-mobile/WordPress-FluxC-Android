@@ -36,12 +36,12 @@ import org.wordpress.android.stores.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.stores.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.stores.store.AccountStore.PostAccountSettingsPayload;
 import org.wordpress.android.stores.store.PostStore;
-import org.wordpress.android.stores.store.PostStore.ChangeRemotePostPayload;
 import org.wordpress.android.stores.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.stores.store.PostStore.InstantiatePostPayload;
 import org.wordpress.android.stores.store.PostStore.OnPostChanged;
 import org.wordpress.android.stores.store.PostStore.OnPostInstantiated;
 import org.wordpress.android.stores.store.PostStore.OnPostUploaded;
+import org.wordpress.android.stores.store.PostStore.RemotePostPayload;
 import org.wordpress.android.stores.store.SiteStore;
 import org.wordpress.android.stores.store.SiteStore.NewSitePayload;
 import org.wordpress.android.stores.store.SiteStore.OnNewSiteCreated;
@@ -135,7 +135,7 @@ public class MainExampleActivity extends AppCompatActivity {
                 SiteModel firstSite = mSiteStore.getSites().get(0);
                 List<PostModel> posts = mPostStore.getPostsForSite(firstSite);
                 if (!posts.isEmpty()) {
-                    ChangeRemotePostPayload payload = new PostStore.ChangeRemotePostPayload(posts.get(0), firstSite);
+                    RemotePostPayload payload = new RemotePostPayload(posts.get(0), firstSite);
                     mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(payload));
                 }
             }
@@ -462,7 +462,7 @@ public class MainExampleActivity extends AppCompatActivity {
         examplePost.setDescription("Hi there, I'm a post from WordPress-{Placeholder Name}-Android!");
         examplePost.setFeaturedImageId(0);
 
-        ChangeRemotePostPayload payload = new ChangeRemotePostPayload(examplePost, mSiteStore.getSites().get(0));
+        RemotePostPayload payload = new RemotePostPayload(examplePost, mSiteStore.getSites().get(0));
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
     }
 

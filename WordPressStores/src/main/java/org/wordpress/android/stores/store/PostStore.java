@@ -58,11 +58,11 @@ public class PostStore extends Store {
         }
     }
 
-    public static class FetchPostPayload implements Payload {
+    public static class RemotePostPayload implements Payload {
         public PostModel post;
         public SiteModel site;
 
-        public FetchPostPayload(PostModel post, SiteModel site) {
+        public RemotePostPayload(PostModel post, SiteModel site) {
             this.post = post;
             this.site = site;
         }
@@ -84,16 +84,6 @@ public class PostStore extends Store {
             this.isPage = isPage;
             this.categories = categories;
             this.postFormat = postFormat;
-        }
-    }
-
-    public static class ChangeRemotePostPayload implements Payload {
-        public PostModel post;
-        public SiteModel site;
-
-        public ChangeRemotePostPayload(PostModel post, SiteModel site) {
-            this.post = post;
-            this.site = site;
         }
     }
 
@@ -285,7 +275,7 @@ public class PostStore extends Store {
 
             emitChange(onPostChanged);
         } else if (actionType == PostAction.FETCH_POST) {
-            FetchPostPayload payload = (FetchPostPayload) action.getPayload();
+            RemotePostPayload payload = (RemotePostPayload) action.getPayload();
             if (payload.site.isWPCom() || payload.site.isJetpack()) {
                 // TODO: Implement REST API pages fetch
             } else {
@@ -307,12 +297,12 @@ public class PostStore extends Store {
 
             emitChange(new OnPostInstantiated(newPost));
         } else if (actionType == PostAction.PUSH_POST) {
-            ChangeRemotePostPayload payload = (ChangeRemotePostPayload) action.getPayload();
+            RemotePostPayload payload = (RemotePostPayload) action.getPayload();
             if (payload.site.isWPCom() || payload.site.isJetpack()) {
                 // TODO: Implement REST API post delete
             } else {
                 // TODO: check for WP-REST-API plugin and use it here
-                mPostXMLRPCClient.pushPost(payload.post, payload.site, payload.uploadMode);
+                mPostXMLRPCClient.pushPost(payload.post, payload.site);
             }
             // TODO: Should call UPDATE_POST at this point, probably
         } else if (actionType == PostAction.PUSHED_POST) {
@@ -326,7 +316,7 @@ public class PostStore extends Store {
             onPostChanged.causeOfChange = PostAction.UPDATE_POST;
             emitChange(onPostChanged);
         } else if (actionType == PostAction.DELETE_POST) {
-            ChangeRemotePostPayload payload = (ChangeRemotePostPayload) action.getPayload();
+            RemotePostPayload payload = (RemotePostPayload) action.getPayload();
             if (payload.site.isWPCom() || payload.site.isJetpack()) {
                 // TODO: Implement REST API post delete
             } else {

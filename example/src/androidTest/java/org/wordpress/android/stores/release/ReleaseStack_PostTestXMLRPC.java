@@ -9,12 +9,11 @@ import org.wordpress.android.stores.generated.PostActionBuilder;
 import org.wordpress.android.stores.model.PostModel;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.store.PostStore;
-import org.wordpress.android.stores.store.PostStore.ChangeRemotePostPayload;
-import org.wordpress.android.stores.store.PostStore.FetchPostPayload;
 import org.wordpress.android.stores.store.PostStore.InstantiatePostPayload;
 import org.wordpress.android.stores.store.PostStore.OnPostChanged;
 import org.wordpress.android.stores.store.PostStore.OnPostInstantiated;
 import org.wordpress.android.stores.store.PostStore.OnPostUploaded;
+import org.wordpress.android.stores.store.PostStore.RemotePostPayload;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -228,7 +227,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TEST_EVENTS.POST_UPLOADED;
         mCountDownLatch = new CountDownLatch(1);
 
-        ChangeRemotePostPayload pushPayload = new ChangeRemotePostPayload(post, mSite);
+        RemotePostPayload pushPayload = new RemotePostPayload(post, mSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -238,7 +237,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TEST_EVENTS.POST_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new FetchPostPayload(post, mSite)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, mSite)));
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
