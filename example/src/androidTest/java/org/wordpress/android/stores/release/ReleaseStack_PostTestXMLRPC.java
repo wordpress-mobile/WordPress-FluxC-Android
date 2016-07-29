@@ -3,7 +3,6 @@ package org.wordpress.android.stores.release;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.TestUtils;
-import org.wordpress.android.stores.action.PostAction;
 import org.wordpress.android.stores.example.BuildConfig;
 import org.wordpress.android.stores.generated.PostActionBuilder;
 import org.wordpress.android.stores.model.PostModel;
@@ -14,6 +13,7 @@ import org.wordpress.android.stores.store.PostStore.OnPostChanged;
 import org.wordpress.android.stores.store.PostStore.OnPostInstantiated;
 import org.wordpress.android.stores.store.PostStore.OnPostUploaded;
 import org.wordpress.android.stores.store.PostStore.RemotePostPayload;
+import org.wordpress.android.util.AppLog;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -173,16 +173,19 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
-        if (event.causeOfChange.equals(PostAction.UPDATE_POST)) {
-            if (mCountDownLatch.getCount() > 0) {
-                assertEquals(TEST_EVENTS.POST_UPDATED, mNextEvent);
-                mCountDownLatch.countDown();
-            }
+        AppLog.i(AppLog.T.API, "Received OnPostChanged, causeOfChange: " + event.causeOfChange);
+        switch (event.causeOfChange) {
+            case UPDATE_POST:
+                if (mNextEvent.equals(TEST_EVENTS.POST_UPDATED)) {
+                    mCountDownLatch.countDown();
+                }
+                break;
         }
     }
 
     @Subscribe
     public void OnPostInstantiated(OnPostInstantiated event) {
+        AppLog.i(AppLog.T.API, "Received OnPostInstantiated");
         assertEquals(TEST_EVENTS.POST_INSTANTIATED, mNextEvent);
 
         assertEquals(true, event.post.isLocalDraft());
@@ -196,6 +199,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     @Subscribe
     public void onPostUploaded(OnPostUploaded event) {
+        AppLog.i(AppLog.T.API, "Received OnPostUploaded");
         assertEquals(TEST_EVENTS.POST_UPLOADED, mNextEvent);
         assertEquals(false, event.post.isLocalDraft());
         assertEquals(false, event.post.isLocallyChanged());
@@ -229,6 +233,11 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         RemotePostPayload pushPayload = new RemotePostPayload(post, mSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        mNextEvent = TEST_EVENTS.POST_UPDATED;
+        mCountDownLatch = new CountDownLatch(1);
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
