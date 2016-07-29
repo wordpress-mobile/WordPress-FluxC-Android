@@ -1,6 +1,7 @@
 package org.wordpress.android.stores.release;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.json.JSONArray;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.TestUtils;
 import org.wordpress.android.stores.example.BuildConfig;
@@ -206,7 +207,31 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertTrue(currentStoredPosts <= (PostXMLRPCClient.NUM_POSTS_TO_REQUEST * 2));
     }
 
-    // TEST full set of post params assigned, uploaded, and verified after fetch
+    public void testFullFeaturedPostUpload() throws InterruptedException {
+        createNewPost();
+
+        mPost.setTitle("A fully featured post");
+        mPost.setDescription("Some content here");
+        mPost.setMoreText("This is even more text! <strong>Bold text</strong>.");
+        mPost.setKeywords("FluxC, WP");
+
+        // TODO: This should be a non-default category when we have a specific shared site setup for tests
+        JSONArray categories = new JSONArray();
+        categories.put("Uncategorized");
+        mPost.setJSONCategories(categories);
+
+        uploadPost(mPost);
+
+        // Get the current copy of the post from the PostStore
+        PostModel newPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals("A fully featured post", newPost.getTitle());
+        assertEquals("Some content here", newPost.getDescription());
+        assertEquals("This is even more text! <strong>Bold text</strong>.", newPost.getMoreText());
+        assertEquals("FluxC, WP", newPost.getKeywords());
+        assertEquals("[\"Uncategorized\"]", newPost.getCategories());
+    }
+
 
     @Subscribe
     public void onPostChanged(OnPostChanged event) {

@@ -430,6 +430,10 @@ public class PostModel implements Identifiable, Payload {
         return jArray;
     }
 
+    public void setJSONCategories(JSONArray categories) {
+        this.mCategories = categories.toString();
+    }
+
     public JSONArray getJSONCustomFields() {
         if (mCustomFields == null) {
             return null;
