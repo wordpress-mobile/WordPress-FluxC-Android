@@ -306,9 +306,13 @@ public class PostStore extends Store {
             }
             // TODO: Should call UPDATE_POST at this point, probably
         } else if (actionType == PostAction.PUSHED_POST) {
-            PostModel uploadedPost = (PostModel) action.getPayload();
-            PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges(uploadedPost);
-            emitChange(new OnPostUploaded(uploadedPost));
+            RemotePostPayload payload = (RemotePostPayload) action.getPayload();
+            PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges(payload.post);
+
+            emitChange(new OnPostUploaded(payload.post));
+
+            // Request a fresh copy of the uploaded post from the server to ensure local copy matches server
+            mPostXMLRPCClient.getPost(payload.post, payload.site);
         } else if (actionType == PostAction.UPDATE_POST) {
             int rowsAffected = PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges((PostModel) action.getPayload());
 

@@ -23,7 +23,7 @@ public enum PostAction implements IAction {
     INSTANTIATE_POST,
     @Action(payloadType = RemotePostPayload.class)
     PUSH_POST,
-    @Action(payloadType = PostModel.class)
+    @Action(payloadType = RemotePostPayload.class)
     PUSHED_POST,
     @Action(payloadType = PostModel.class)
     UPDATE_POST,

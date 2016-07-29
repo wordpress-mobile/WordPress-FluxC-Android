@@ -24,6 +24,7 @@ import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.stores.network.xmlrpc.XMLRPC;
 import org.wordpress.android.stores.network.xmlrpc.XMLRPCRequest;
 import org.wordpress.android.stores.store.PostStore.FetchPostsResponsePayload;
+import org.wordpress.android.stores.store.PostStore.RemotePostPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 import org.wordpress.android.util.MapUtils;
@@ -282,10 +283,8 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                 post.setIsLocalDraft(false);
                 post.setIsLocallyChanged(false);
 
-                mDispatcher.dispatch(PostActionBuilder.newPushedPostAction(post));
-
-                // Request a fresh copy of the uploaded post from the server to ensure local copy matches server
-                getPost(post, site);
+                RemotePostPayload payload = new RemotePostPayload(post, site);
+                mDispatcher.dispatch(PostActionBuilder.newPushedPostAction(payload));
             }
         }, new ErrorListener() {
             @Override
