@@ -7,6 +7,7 @@ import org.wordpress.android.stores.example.BuildConfig;
 import org.wordpress.android.stores.generated.PostActionBuilder;
 import org.wordpress.android.stores.model.PostModel;
 import org.wordpress.android.stores.model.SiteModel;
+import org.wordpress.android.stores.network.xmlrpc.post.PostXMLRPCClient;
 import org.wordpress.android.stores.store.PostStore;
 import org.wordpress.android.stores.store.PostStore.InstantiatePostPayload;
 import org.wordpress.android.stores.store.PostStore.OnPostChanged;
@@ -14,6 +15,7 @@ import org.wordpress.android.stores.store.PostStore.OnPostInstantiated;
 import org.wordpress.android.stores.store.PostStore.OnPostUploaded;
 import org.wordpress.android.stores.store.PostStore.RemotePostPayload;
 import org.wordpress.android.util.AppLog;
+import org.wordpress.android.util.AppLog.T;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -31,11 +33,14 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     private PostModel mPost;
     private SiteModel mSite;
 
+    private boolean mCanLoadMorePosts;
+
     enum TEST_EVENTS {
         NONE,
         POST_INSTANTIATED,
         POST_UPLOADED,
-        POST_UPDATED
+        POST_UPDATED,
+        POSTS_FETCHED
     }
     private TEST_EVENTS mNextEvent;
 
@@ -58,6 +63,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TEST_EVENTS.NONE;
 
         mPost = null;
+        mCanLoadMorePosts = false;
     }
 
     public void testUploadNewPost() throws InterruptedException {
@@ -169,14 +175,52 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(false, mPost.isLocalDraft());
     }
 
+    // TODO: Can be improved by using a test site with a known number of posts (say, 35) and verifying that we get exactly that amount
+    public void testFetchPosts() throws InterruptedException {
+        mNextEvent = TEST_EVENTS.POSTS_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new PostStore.FetchPostsPayload(mSite, false)));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        int firstFetchPosts = mPostStore.getPostsCountForSite(mSite);
+
+        // Dangerous, will fail for a site with no posts, see to-do above
+        assertTrue(firstFetchPosts > 0 && firstFetchPosts <= PostXMLRPCClient.NUM_POSTS_TO_REQUEST);
+        assertEquals(mCanLoadMorePosts, firstFetchPosts == PostXMLRPCClient.NUM_POSTS_TO_REQUEST);
+
+        // Dependent on site having more than NUM_POSTS_TO_REQUEST posts
+        assertTrue(mCanLoadMorePosts);
+
+        mNextEvent = TEST_EVENTS.POSTS_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new PostStore.FetchPostsPayload(mSite, true)));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        int currentStoredPosts = mPostStore.getPostsCountForSite(mSite);
+
+        assertTrue(currentStoredPosts > firstFetchPosts);
+        assertTrue(currentStoredPosts <= (PostXMLRPCClient.NUM_POSTS_TO_REQUEST * 2));
+    }
+
     // TEST full set of post params assigned, uploaded, and verified after fetch
 
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
-        AppLog.i(AppLog.T.API, "Received OnPostChanged, causeOfChange: " + event.causeOfChange);
+        AppLog.i(T.API, "Received OnPostChanged, causeOfChange: " + event.causeOfChange);
         switch (event.causeOfChange) {
             case UPDATE_POST:
                 if (mNextEvent.equals(TEST_EVENTS.POST_UPDATED)) {
+                    mCountDownLatch.countDown();
+                }
+                break;
+            case FETCH_POSTS:
+                if (mNextEvent.equals(TEST_EVENTS.POSTS_FETCHED)) {
+                    AppLog.i(T.API, "Fetched " + event.rowsAffected + " posts, can load more: " + event.canLoadMore);
+                    mCanLoadMorePosts = event.canLoadMore;
                     mCountDownLatch.countDown();
                 }
                 break;
@@ -185,7 +229,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     @Subscribe
     public void OnPostInstantiated(OnPostInstantiated event) {
-        AppLog.i(AppLog.T.API, "Received OnPostInstantiated");
+        AppLog.i(T.API, "Received OnPostInstantiated");
         assertEquals(TEST_EVENTS.POST_INSTANTIATED, mNextEvent);
 
         assertEquals(true, event.post.isLocalDraft());
@@ -199,7 +243,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     @Subscribe
     public void onPostUploaded(OnPostUploaded event) {
-        AppLog.i(AppLog.T.API, "Received OnPostUploaded");
+        AppLog.i(T.API, "Received OnPostUploaded");
         assertEquals(TEST_EVENTS.POST_UPLOADED, mNextEvent);
         assertEquals(false, event.post.isLocalDraft());
         assertEquals(false, event.post.isLocallyChanged());

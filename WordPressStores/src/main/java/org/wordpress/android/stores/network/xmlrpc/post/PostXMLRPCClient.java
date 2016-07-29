@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 public class PostXMLRPCClient extends BaseXMLRPCClient {
-    private static final int NUM_POSTS_TO_REQUEST = 20;
+    public static final int NUM_POSTS_TO_REQUEST = 20;
 
     public PostXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken accessToken,
                             UserAgent userAgent, HTTPAuthManager httpAuthManager) {
