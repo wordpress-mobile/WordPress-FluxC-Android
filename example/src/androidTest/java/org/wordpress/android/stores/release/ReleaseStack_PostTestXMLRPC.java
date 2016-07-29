@@ -257,7 +257,6 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     private void setupPostAttributes() {
         mPost.setTitle(POST_DEFAULT_TITLE);
         mPost.setDescription(POST_DEFAULT_DESCRIPTION);
-        mPost.setFeaturedImageId(0);
     }
 
     private void createNewPost() throws InterruptedException {

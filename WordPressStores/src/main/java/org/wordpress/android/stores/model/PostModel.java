@@ -58,7 +58,7 @@ public class PostModel implements Identifiable, Payload {
     // XML-RPC only, needed to work around a bug with the API:
     // https://github.com/wordpress-mobile/WordPress-Android/pull/3425
     // We may be able to drop this if we switch to wp.editPost (and it doesn't have the same bug as metaWeblog.editPost)
-    @Column private long mLastKnownRemoteFeaturedImageId;
+    @Column private long mLastKnownRemoteFeaturedImageId = FEATURED_IMAGE_INIT_VALUE;
 
     public PostModel() {}
 
@@ -251,7 +251,7 @@ public class PostModel implements Identifiable, Payload {
 
     public void setFeaturedImageId(long featuredImageId) {
         if (mFeaturedImageId == FEATURED_IMAGE_INIT_VALUE) {
-            mLastKnownRemoteFeaturedImageId = featuredImageId;
+            mLastKnownRemoteFeaturedImageId = mFeaturedImageId;
         }
 
         mFeaturedImageId = featuredImageId;
