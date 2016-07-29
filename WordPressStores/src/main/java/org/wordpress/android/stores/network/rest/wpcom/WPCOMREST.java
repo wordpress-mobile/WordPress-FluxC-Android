@@ -1,5 +1,8 @@
 package org.wordpress.android.stores.network.rest.wpcom;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public enum WPCOMREST {
     // Me
     ME("/me/"),
@@ -7,13 +10,10 @@ public enum WPCOMREST {
     ME_SITES("/me/sites/"),
 
     // Posts
-    POSTS("/sites/$site/posts"),
+    POSTS("/sites/$site/posts/"),
     // TODO: Collapse into one?
-    POST_GET("/sites/$site/posts/$post_ID"),
-    POST_EDIT("/sites/$site/posts/$post_ID"),
     POST_NEW("/sites/$site/posts/new"),
     POST_DELETE("/sites/$site/posts/$post_ID/delete"),
-
 
     // Sites
     SITES("/sites/"),
@@ -39,8 +39,41 @@ public enum WPCOMREST {
         return mEndpoint;
     }
 
+    private String withParams(long... params) {
+        if (params == null || params.length == 0) {
+            return mEndpoint;
+        }
+        Pattern urlPattern = Pattern.compile("(\\$[^\\/]*)");
+        Matcher matcher = urlPattern.matcher(mEndpoint);
+        StringBuffer stringBuffer = new StringBuffer();
+        int lastMatch = 0;
+        while (matcher.find() && params.length > lastMatch) {
+            String replacement = Long.toString(params[lastMatch]);
+            matcher.appendReplacement(stringBuffer, replacement);
+            lastMatch++;
+        }
+        matcher.appendTail(stringBuffer);
+        return stringBuffer.toString();
+    }
+
+    public String withSiteId(long siteId) {
+        return withParams(siteId);
+    }
+
+    public String withSiteIdAndContentId(long siteId, long contentId) {
+        return withParams(siteId, contentId);
+    }
+
     public String getUrlV1() {
         return WPCOM_PREFIX_V1 + mEndpoint;
+    }
+
+    public String getUrlV1WithSiteId(long siteId) {
+        return WPCOM_PREFIX_V1 + withParams(siteId);
+    }
+
+    public String getUrlV1WithSiteIdAndContentId(long siteId, long contentId) {
+        return WPCOM_PREFIX_V1 + withParams(siteId, contentId);
     }
 
     public String getUrlV1_1() {
