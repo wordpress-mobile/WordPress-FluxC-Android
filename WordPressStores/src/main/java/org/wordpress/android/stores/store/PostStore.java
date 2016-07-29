@@ -327,7 +327,6 @@ public class PostStore extends Store {
                 // TODO: check for WP-REST-API plugin and use it here
                 mPostXMLRPCClient.deletePost(payload.post, payload.site);
             }
-            PostSqlUtils.deletePost(payload.post);
         } else if (actionType == PostAction.REMOVE_POST) {
             PostSqlUtils.deletePost((PostModel) action.getPayload());
         }
