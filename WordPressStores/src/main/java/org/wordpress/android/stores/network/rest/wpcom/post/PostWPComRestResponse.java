@@ -34,12 +34,6 @@ public class PostWPComRestResponse implements Payload, Response {
         public int height;
     }
 
-    public class GeoLocation {
-        public float latitude;
-        public float longitude;
-        public String address;
-    }
-
     public class Taxonomy {
         public long ID;
         public String name;
