@@ -229,27 +229,31 @@ public class PostStore extends Store {
         IAction actionType = action.getType();
         if (actionType == PostAction.FETCH_POSTS) {
             FetchPostsPayload payload = (FetchPostsPayload) action.getPayload();
+
+            int offset = 0;
+            if (payload.loadMore) {
+                offset = getUploadedPostsCountForSite(payload.site);
+            }
+
             if (payload.site.isWPCom() || payload.site.isJetpack()) {
-                // TODO: Implement REST API posts fetch
+                mPostRestClient.fetchPosts(payload.site, false, offset);
             } else {
                 // TODO: check for WP-REST-API plugin and use it here
-                if (payload.loadMore) {
-                    mPostXMLRPCClient.getPosts(payload.site, false, getUploadedPostsCountForSite(payload.site));
-                } else {
-                    mPostXMLRPCClient.getPosts(payload.site, false, 0);
-                }
+                mPostXMLRPCClient.fetchPosts(payload.site, false, offset);
             }
         } else if (actionType == PostAction.FETCH_PAGES) {
             FetchPostsPayload payload = (FetchPostsPayload) action.getPayload();
+
+            int offset = 0;
+            if (payload.loadMore) {
+                offset = getUploadedPostsCountForSite(payload.site);
+            }
+
             if (payload.site.isWPCom() || payload.site.isJetpack()) {
-                // TODO: Implement REST API pages fetch
+                mPostRestClient.fetchPosts(payload.site, true, offset);
             } else {
                 // TODO: check for WP-REST-API plugin and use it here
-                if (payload.loadMore) {
-                    mPostXMLRPCClient.getPosts(payload.site, true, getUploadedPagesCountForSite(payload.site));
-                } else {
-                    mPostXMLRPCClient.getPosts(payload.site, true, 0);
-                }
+                mPostXMLRPCClient.fetchPosts(payload.site, true, offset);
             }
         } else if (actionType == PostAction.FETCHED_POSTS) {
             FetchPostsResponsePayload postsResponsePayload = (FetchPostsResponsePayload) action.getPayload();
@@ -280,7 +284,7 @@ public class PostStore extends Store {
                 // TODO: Implement REST API pages fetch
             } else {
                 // TODO: check for WP-REST-API plugin and use it here
-                mPostXMLRPCClient.getPost(payload.post, payload.site);
+                mPostXMLRPCClient.fetchPost(payload.post, payload.site);
             }
         } else if (actionType == PostAction.INSTANTIATE_POST) {
             InstantiatePostPayload payload = (InstantiatePostPayload) action.getPayload();
@@ -312,7 +316,7 @@ public class PostStore extends Store {
             emitChange(new OnPostUploaded(payload.post));
 
             // Request a fresh copy of the uploaded post from the server to ensure local copy matches server
-            mPostXMLRPCClient.getPost(payload.post, payload.site);
+            mPostXMLRPCClient.fetchPost(payload.post, payload.site);
         } else if (actionType == PostAction.UPDATE_POST) {
             int rowsAffected = PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges((PostModel) action.getPayload());
 

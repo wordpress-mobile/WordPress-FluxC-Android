@@ -43,7 +43,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         super(dispatcher, requestQueue, accessToken, userAgent, httpAuthManager);
     }
 
-    public void getPost(final PostModel post, final SiteModel site) {
+    public void fetchPost(final PostModel post, final SiteModel site) {
         List<Object> params;
 
         if (post.isPage()) {
@@ -89,7 +89,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         add(request);
     }
 
-    public void getPosts(final SiteModel site, final boolean getPages, final int offset) {
+    public void fetchPosts(final SiteModel site, final boolean getPages, final int offset) {
         int numPostsToRequest = offset + NUM_POSTS_TO_REQUEST;
 
         List<Object> params = new ArrayList<>(4);

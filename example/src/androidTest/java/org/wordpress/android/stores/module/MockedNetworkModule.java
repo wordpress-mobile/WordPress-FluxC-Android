@@ -125,7 +125,7 @@ public class MockedNetworkModule {
     @Provides
     public PostRestClient providePostRestClient(Dispatcher dispatcher, RequestQueue requestQueue, AppSecrets appSecrets,
                                                 AccessToken token, UserAgent userAgent) {
-        return new PostRestClient(dispatcher, requestQueue, appSecrets, token, userAgent);
+        return new PostRestClient(dispatcher, requestQueue, token, userAgent);
     }
 
     @Singleton

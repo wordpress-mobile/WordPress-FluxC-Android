@@ -60,6 +60,11 @@ public class PostModel implements Identifiable, Payload {
     // We may be able to drop this if we switch to wp.editPost (and it doesn't have the same bug as metaWeblog.editPost)
     @Column private long mLastKnownRemoteFeaturedImageId = FEATURED_IMAGE_INIT_VALUE;
 
+    // WPCom capabilities
+    @Column private boolean mHasCapabilityPublishPost;
+    @Column private boolean mHasCapabilityEditPost;
+    @Column private boolean mHasCapabilityDeletePost;
+
     public PostModel() {}
 
     @Override
@@ -349,6 +354,30 @@ public class PostModel implements Identifiable, Payload {
 
     public void setLastKnownRemoteFeaturedImageId(long lastKnownRemoteFeaturedImageId) {
         mLastKnownRemoteFeaturedImageId = lastKnownRemoteFeaturedImageId;
+    }
+
+    public boolean getHasCapabilityPublishPost() {
+        return mHasCapabilityPublishPost;
+    }
+
+    public void setHasCapabilityPublishPost(boolean hasCapabilityPublishPost) {
+        mHasCapabilityPublishPost = hasCapabilityPublishPost;
+    }
+
+    public boolean getHasCapabilityEditPost() {
+        return mHasCapabilityEditPost;
+    }
+
+    public void setHasCapabilityEditPost(boolean hasCapabilityEditPost) {
+        mHasCapabilityEditPost = hasCapabilityEditPost;
+    }
+
+    public boolean getHasCapabilityDeletePost() {
+        return mHasCapabilityDeletePost;
+    }
+
+    public void setHasCapabilityDeletePost(boolean hasCapabilityDeletePost) {
+        mHasCapabilityDeletePost = hasCapabilityDeletePost;
     }
 
     @Override
