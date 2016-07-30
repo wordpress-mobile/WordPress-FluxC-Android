@@ -19,6 +19,7 @@ import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.ErrorListener;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.Listener;
 import org.wordpress.android.stores.network.rest.wpcom.auth.Authenticator.Token;
+import org.wordpress.android.stores.network.rest.wpcom.media.MediaRestClient;
 import org.wordpress.android.stores.network.rest.wpcom.site.SiteRestClient;
 import org.wordpress.android.stores.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.stores.network.xmlrpc.site.SiteXMLRPCClient;
@@ -110,6 +111,13 @@ public class MockedNetworkModule {
                                                 AppSecrets appSecrets,
                                                 AccessToken token, UserAgent userAgent) {
         return new SiteRestClient(dispatcher, requestQueue, appSecrets, token, userAgent);
+    }
+
+    @Singleton
+    @Provides
+    public MediaRestClient provideMediaRestClient(Dispatcher dispatcher, RequestQueue requestQueue,
+                                                  AccessToken token, UserAgent userAgent) {
+        return new MediaRestClient(dispatcher, requestQueue, token, userAgent);
     }
 
     @Singleton
