@@ -5,7 +5,6 @@ import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.Payload;
 import org.wordpress.android.stores.action.MediaAction;
 import org.wordpress.android.stores.annotations.action.Action;
-import org.wordpress.android.stores.generated.MediaActionBuilder;
 import org.wordpress.android.stores.model.MediaModel;
 import org.wordpress.android.stores.model.SiteModel;
 import org.wordpress.android.stores.network.rest.wpcom.media.MediaRestClient;
@@ -18,7 +17,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class MediaStore extends Store {
+public class MediaStore extends Store implements MediaRestClient.MediaRestListener {
     //
     // Payloads
     //
@@ -102,42 +101,29 @@ public class MediaStore extends Store {
         if (action.getType() == MediaAction.FETCH_ALL_MEDIA) {
             FetchMediaPayload payload = (FetchMediaPayload) action.getPayload();
             mMediaRestClient.fetchAllMedia(payload.site.getSiteId());
-        } else if (action.getType() == MediaAction.FETCHED_ALL_MEDIA) {
-            ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
-            emitChange(getErrorOrChangedEvent(MediaAction.FETCH_ALL_MEDIA, payload));
         } else if (action.getType() == MediaAction.FETCH_MEDIA) {
             FetchMediaPayload payload = (FetchMediaPayload) action.getPayload();
             mMediaRestClient.fetchMedia(payload.site.getSiteId(), payload.mediaIds);
-        } else if (action.getType() == MediaAction.FETCHED_MEDIA) {
-            ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
-            emitChange(getErrorOrChangedEvent(MediaAction.FETCH_MEDIA, payload));
         } else if (action.getType() == MediaAction.PUSH_MEDIA) {
             ChangeMediaPayload payload = (ChangeMediaPayload) action.getPayload();
-        } else if (action.getType() == MediaAction.PUSHED_MEDIA) {
-            ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
+//            mMediaRestClient.updateMedia(payload.site.getSiteId(), payload.media);
         } else if (action.getType() == MediaAction.DELETE_MEDIA) {
             ChangeMediaPayload payload = (ChangeMediaPayload) action.getPayload();
             mMediaRestClient.deleteMedia(payload.site.getSiteId(), payload.media);
-        } else if (action.getType() == MediaAction.DELETED_MEDIA) {
-            ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
-            emitChange(getErrorOrChangedEvent(MediaAction.DELETE_MEDIA, payload));
-        } else if (action.getType() == MediaAction.UPDATE_MEDIA) {
+        }else if (action.getType() == MediaAction.UPDATE_MEDIA) {
             ChangeMediaPayload payload = (ChangeMediaPayload) action.getPayload();
             updateMedia(payload.media);
-        } else if (action.getType() == MediaAction.UPDATED_MEDIA) {
-            ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
-            emitChange(getErrorOrChangedEvent(MediaAction.UPDATE_MEDIA, payload));
         } else if (action.getType() == MediaAction.REMOVE_MEDIA) {
             ChangeMediaPayload payload = (ChangeMediaPayload) action.getPayload();
             removeMedia(payload.media);
-        } else if (action.getType() == MediaAction.REMOVED_MEDIA) {
-            ChangedMediaPayload payload = (ChangedMediaPayload) action.getPayload();
-            emitChange(getErrorOrChangedEvent(MediaAction.REMOVE_MEDIA, payload));
+        } else if (action.getType() == MediaAction.UPLOAD_MEDIA) {
+            ChangeMediaPayload payload = (ChangeMediaPayload) action.getPayload();
         }
     }
 
     @Override
     public void onRegister() {
+        mMediaRestClient.setListener(this);
     }
 
     private void updateMedia(List<MediaModel> media) {
@@ -149,7 +135,8 @@ public class MediaStore extends Store {
                 payload.media.add(mediaItem);
             }
         }
-        mDispatcher.dispatch(MediaActionBuilder.newUpdatedMediaAction(payload));
+
+        // TODO: emit OnMediaChanged
     }
 
     private void removeMedia(List<MediaModel> media) {
@@ -161,7 +148,8 @@ public class MediaStore extends Store {
                 payload.media.add(mediaItem);
             }
         }
-        mDispatcher.dispatch(MediaActionBuilder.newRemovedMediaAction(payload));
+
+        // TODO: emit OnMediaChanged
     }
 
     private OnChanged getErrorOrChangedEvent(MediaAction cause, ChangedMediaPayload payload) {

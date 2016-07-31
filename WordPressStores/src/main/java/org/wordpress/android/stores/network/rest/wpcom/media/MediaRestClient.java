@@ -6,6 +6,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
 import org.wordpress.android.stores.Dispatcher;
+import org.wordpress.android.stores.action.MediaAction;
 import org.wordpress.android.stores.generated.MediaActionBuilder;
 import org.wordpress.android.stores.model.MediaModel;
 import org.wordpress.android.stores.network.UserAgent;
@@ -19,9 +20,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MediaRestClient extends BaseWPComRestClient {
+    public interface MediaRestListener {
+        void onMediaPulled(MediaAction cause, List<MediaModel> pulledMedia);
+        void onMediaPushed(MediaAction cause, List<MediaModel> pushedMedia);
+        void onMediaDeleted(MediaAction cause, List<MediaModel> deletedMedia);
+        void onMediaError(MediaAction cause, VolleyError error);
+    }
+
+    private MediaRestListener mListener;
+
     public MediaRestClient(Dispatcher dispatcher, RequestQueue requestQueue,
                            AccessToken accessToken, UserAgent userAgent) {
         super(dispatcher, requestQueue, accessToken, userAgent);
+    }
+
+    public void setListener(MediaRestListener listener) {
+        mListener = listener;
     }
 
     public void fetchAllMedia(long siteId) {
@@ -31,15 +45,13 @@ public class MediaRestClient extends BaseWPComRestClient {
                     @Override
                     public void onResponse(MediaWPComRestResponse.MultipleMediaResponse response) {
                         List<MediaModel> mediaList = responseToMediaModelList(response);
-                        ChangedMediaPayload payload = new ChangedMediaPayload(mediaList, null, null);
-                        mDispatcher.dispatch(MediaActionBuilder.newFetchedAllMediaAction(payload));
+                        notifyMediaPulled(MediaAction.FETCH_ALL_MEDIA, mediaList);
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        ChangedMediaPayload payload = new ChangedMediaPayload(null, null, error);
-                        mDispatcher.dispatch(MediaActionBuilder.newFetchedAllMediaAction(payload));
+                        notifyMediaError(MediaAction.FETCH_ALL_MEDIA, error);
                     }
                 }
         ));
@@ -88,7 +100,7 @@ public class MediaRestClient extends BaseWPComRestClient {
                     new Response.ErrorListener() {
                         @Override
                         public void onErrorResponse(VolleyError error) {
-                            onMediaResponse(payload, null, error, count);
+                            notifyMediaError(MediaAction.DELETE_MEDIA, error);
                         }
                     }
             ));
@@ -129,6 +141,30 @@ public class MediaRestClient extends BaseWPComRestClient {
         return media;
     }
 
+    private void notifyMediaPulled(MediaAction cause, List<MediaModel> pulledMedia) {
+        if (mListener != null) {
+            mListener.onMediaPulled(cause, pulledMedia);
+        }
+    }
+
+    private void notifyMediaPushed(MediaAction cause, List<MediaModel> pushedMedia) {
+        if (mListener != null) {
+            mListener.onMediaPushed(cause, pushedMedia);
+        }
+    }
+
+    private void notifyMediaDeleted(MediaAction cause, List<MediaModel> deletedMedia) {
+        if (mListener != null) {
+            mListener.onMediaDeleted(cause, deletedMedia);
+        }
+    }
+
+    private void notifyMediaError(MediaAction cause, VolleyError error) {
+        if (mListener != null) {
+            mListener.onMediaError(cause, error);
+        }
+    }
+
     /**
      * Helper method used by fetchMedia to track response progress
      */
@@ -136,7 +172,7 @@ public class MediaRestClient extends BaseWPComRestClient {
         payload.media.add(media);
         payload.errors.add(error);
         if (payload.media.size() == count) {
-            mDispatcher.dispatch(MediaActionBuilder.newFetchedMediaAction(payload));
+//            mDispatcher.dispatch(MediaActionBuilder.newFetchedMediaAction(payload));
         }
     }
 }
