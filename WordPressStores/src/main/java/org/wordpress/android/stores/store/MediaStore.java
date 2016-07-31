@@ -1,5 +1,7 @@
 package org.wordpress.android.stores.store;
 
+import com.wellsql.generated.MediaModelTable;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.stores.Dispatcher;
 import org.wordpress.android.stores.Payload;
@@ -146,6 +148,81 @@ public class MediaStore extends Store implements MediaRestClient.MediaRestListen
 
     @Override
     public void onMediaError(MediaAction cause, VolleyError error) {
+    }
+
+    public List<MediaModel> getAllSiteMedia(long siteId) {
+        return MediaSqlUtils.getAllSiteMedia(siteId);
+    }
+
+    public int getSiteMediaCount(long siteId) {
+        return getAllSiteMedia(siteId).size();
+    }
+
+    public boolean hasSiteMediaWithId(long siteId, long mediaId) {
+        return getSiteMediaWithId(siteId, mediaId) != null;
+    }
+
+    public MediaModel getSiteMediaWithId(long siteId, long mediaId) {
+        List<MediaModel> media = MediaSqlUtils.getSiteMediaWithId(siteId, mediaId);
+        return media.size() > 0 ? media.get(0) : null;
+    }
+
+    public List<MediaModel> getSiteMediaWithIds(long siteId, List<Long> mediaIds) {
+        return MediaSqlUtils.getSiteMediaWithIds(siteId, mediaIds);
+    }
+
+    public List<MediaModel> getSiteImages(long siteId) {
+        return MediaSqlUtils.getSiteImages(siteId);
+    }
+
+    public int getSiteImageCount(long siteId) {
+        return getSiteImages(siteId).size();
+    }
+
+    public List<MediaModel> getSiteImagesExcludingIds(long siteId, List<Long> filter) {
+        return MediaSqlUtils.getSiteImagesExcluding(siteId, filter);
+    }
+
+    public List<MediaModel> getUnattachedSiteMedia(long siteId) {
+        return MediaSqlUtils.matchSiteMedia(siteId, MediaModelTable.POST_ID, 0);
+    }
+
+    public int getUnattachedSiteMediaCount(long siteId) {
+        return getUnattachedSiteMedia(siteId).size();
+    }
+
+    public List<MediaModel> getLocalSiteMedia(long siteId) {
+        return MediaSqlUtils.matchSiteMedia(siteId, MediaModelTable.UPLOAD_DATE, null);
+    }
+
+    public String getUrlForSiteVideoWithVideoPressGuid(long siteId, String videoPressGuid) {
+        List<MediaModel> media =
+                MediaSqlUtils.matchSiteMedia(siteId, MediaModelTable.VIDEO_PRESS_GUID, videoPressGuid);
+        return media.size() > 0 ? media.get(0).getVideoPressGuid() : null;
+    }
+
+    public String getThumbnailUrlForSiteMediaWithId(long siteId, long mediaId) {
+        List<MediaModel> media = MediaSqlUtils.getSiteMediaWithId(siteId, mediaId);
+        return media.size() > 0 ? media.get(0).getThumbnailUrl() : null;
+    }
+
+    public List<MediaModel> searchSiteMediaByTitle(long siteId, String titleSearch) {
+        return MediaSqlUtils.searchSiteMedia(siteId, MediaModelTable.TITLE, titleSearch);
+    }
+
+    public MediaModel getPostMediaWithPath(long postId, String filePath) {
+        List<MediaModel> media = MediaSqlUtils.matchPostMedia(postId, MediaModelTable.FILE_PATH, filePath);
+        return media.size() > 0 ? media.get(0) : null;
+    }
+
+    public MediaModel getNextSiteMediaToDelete(long siteId) {
+        List<MediaModel> media = MediaSqlUtils.matchSiteMedia(siteId,
+                MediaModelTable.UPLOAD_STATE, MediaModel.UPLOAD_STATE.DELETE.toString());
+        return media.size() > 0 ? media.get(0) : null;
+    }
+
+    public boolean hasSiteMediaToDelete(long siteId) {
+        return getNextSiteMediaToDelete(siteId) != null;
     }
 
     private void updateMedia(List<MediaModel> media) {
