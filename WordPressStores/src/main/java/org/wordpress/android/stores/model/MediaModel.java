@@ -11,6 +11,24 @@ import java.io.Serializable;
 
 @Table
 public class MediaModel implements Identifiable, Serializable {
+    public enum UPLOAD_STATE {
+        QUEUED("queued"),
+        UPLOADING("uploading"),
+        DELETE("delete"),
+        DELETED("deleted"),
+        FAILED("failed"),
+        UPLOADED("uploaded");
+
+        private String mDescriptor;
+        UPLOAD_STATE(String descriptor) {
+            mDescriptor = descriptor;
+        }
+
+        public String toString() {
+            return mDescriptor;
+        }
+    }
+
     @PrimaryKey
     @Column private int mId;
 
@@ -50,8 +68,11 @@ public class MediaModel implements Identifiable, Serializable {
     @Column private String mVideoPressGuid;
     @Column private boolean mVideoPressProcessingDone;
 
+    // Local only
+    @Column private String mUploadState;
+
     //
-    // Legacy - local only fields
+    // Legacy
     //
     @Column private long mBlogId;
     @Column private int mHorizontalAlignment;
@@ -59,6 +80,7 @@ public class MediaModel implements Identifiable, Serializable {
     @Column private boolean mFeatured;
     @Column private boolean mFeaturedInPost;
 
+    // Set to true on a successful response to delete via WP.com REST API, not stored locally
     private boolean mDeleted;
 
     @Override
@@ -229,6 +251,14 @@ public class MediaModel implements Identifiable, Serializable {
 
     public boolean getVideoPressProcessingDone() {
         return mVideoPressProcessingDone;
+    }
+
+    public void setUploadState(String uploadState) {
+        mUploadState = uploadState;
+    }
+
+    public String getUploadState() {
+        return mUploadState;
     }
 
     //
