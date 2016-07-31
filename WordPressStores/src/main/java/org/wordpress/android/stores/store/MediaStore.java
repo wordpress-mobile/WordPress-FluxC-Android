@@ -126,6 +126,28 @@ public class MediaStore extends Store implements MediaRestClient.MediaRestListen
         mMediaRestClient.setListener(this);
     }
 
+    @Override
+    public void onMediaPulled(MediaAction cause, List<MediaModel> pulledMedia) {
+        if (cause == MediaAction.FETCH_ALL_MEDIA || cause == MediaAction.FETCH_MEDIA) {
+            emitChange(new OnMediaChanged(cause, pulledMedia));
+        }
+    }
+
+    @Override
+    public void onMediaPushed(MediaAction cause, List<MediaModel> pushedMedia) {
+    }
+
+    @Override
+    public void onMediaDeleted(MediaAction cause, List<MediaModel> deletedMedia) {
+        if (cause == MediaAction.DELETE_MEDIA) {
+            emitChange(new OnMediaChanged(cause, deletedMedia));
+        }
+    }
+
+    @Override
+    public void onMediaError(MediaAction cause, VolleyError error) {
+    }
+
     private void updateMedia(List<MediaModel> media) {
         if (media == null || media.isEmpty()) return;
 
