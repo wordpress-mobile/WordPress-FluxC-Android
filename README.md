@@ -1,10 +1,12 @@
-# WordPress-Stores-Android
+# WordPress-FluxC-Android
 
-[![Build Status](https://travis-ci.org/wordpress-mobile/WordPress-Stores-Android.svg?branch=develop)](https://travis-ci.org/wordpress-mobile/WordPress-Stores-Android)
+[![Build Status](https://travis-ci.org/wordpress-mobile/WordPress-FluxC-Android.svg?branch=develop)](https://travis-ci.org/wordpress-mobile/WordPress-FluxC-Android)
 
-WordPress-Stores-Android is a networking and persistence library that helps to connect and sync data from a WordPress site (self hosted, or wordpress.com site). It's not ready for prime time yet.
+WordPress-FluxC-Android is a networking and persistence library that helps to connect and sync data from a WordPress site (self hosted, or wordpress.com site). It's not ready for prime time yet.
 
 Based on the [Flux][1] pattern, we're using: [Dagger2][2] for dependency injection, [WellSql][3] for persistence.
+
+FluxC is pronounced ‘fluxy’, and stands for ‘Flux Capacitor’. This makes a double reference to the architecture model (since a capacitor is a kind of storage unit, or ‘store’). More importantly, a flux capacitor is the core component of the DeLorean time machine in [Back to the Future](https://en.wikipedia.org/wiki/Back_to_the_Future), which ‘makes time travel work.’
 
 ## Building the library
 
@@ -15,7 +17,7 @@ file and create the gradle.properties file. The easiest way is to copy
 our example:
 
     $ echo "sdk.dir=YOUR_SDK_DIR" > local.properties
-    $ ./gradlew WordPressStores:build
+    $ ./gradlew WordPressFluxC:build
 
 ## Building and running tests and the example app
 
@@ -57,11 +59,11 @@ Say hello on our [Slack][6] channel: `#mobile`.
 
 ## LICENSE
 
-WordPress-Stores-Android is an Open Source project covered by the [GNU General Public License version 2](LICENSE.md).
+WordPress-FluxC-Android is an Open Source project covered by the [GNU General Public License version 2](LICENSE.md).
 
 [1]: https://facebook.github.io/flux/docs/overview.html
 [2]: https://google.github.io/dagger/
 [3]: https://github.com/yarolegovich/wellsql
-[4]: https://github.com/wordpress-mobile/WordPress-Stores-Android/blob/52ffa86d604f3f2df1b46bc3e9f20f7552ceeea5/WordPressStores/src/main/java/org/wordpress/android/stores/store/SiteStore.java
+[4]: https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/52ffa86d604f3f2df1b46bc3e9f20f7552ceeea5/WordPressStores/src/main/java/org/wordpress/android/stores/store/SiteStore.java
 [5]: https://github.com/wordpress-mobile/WordPress-Stores-Android/blob/52ffa86d604f3f2df1b46bc3e9f20f7552ceeea5/WordPressStores/src/main/java/org/wordpress/android/stores/action/SiteAction.java
 [6]: https://make.wordpress.org/chat/
