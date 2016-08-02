@@ -1,20 +1,20 @@
-package org.wordpress.android.stores.release;
+package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.json.JSONArray;
-import org.wordpress.android.stores.Dispatcher;
-import org.wordpress.android.stores.TestUtils;
-import org.wordpress.android.stores.example.BuildConfig;
-import org.wordpress.android.stores.generated.PostActionBuilder;
-import org.wordpress.android.stores.model.PostModel;
-import org.wordpress.android.stores.model.SiteModel;
-import org.wordpress.android.stores.network.xmlrpc.post.PostXMLRPCClient;
-import org.wordpress.android.stores.store.PostStore;
-import org.wordpress.android.stores.store.PostStore.InstantiatePostPayload;
-import org.wordpress.android.stores.store.PostStore.OnPostChanged;
-import org.wordpress.android.stores.store.PostStore.OnPostInstantiated;
-import org.wordpress.android.stores.store.PostStore.OnPostUploaded;
-import org.wordpress.android.stores.store.PostStore.RemotePostPayload;
+import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.TestUtils;
+import org.wordpress.android.fluxc.example.BuildConfig;
+import org.wordpress.android.fluxc.generated.PostActionBuilder;
+import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.network.xmlrpc.post.PostXMLRPCClient;
+import org.wordpress.android.fluxc.store.PostStore;
+import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
+import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
+import org.wordpress.android.fluxc.store.PostStore.OnPostInstantiated;
+import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
+import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
