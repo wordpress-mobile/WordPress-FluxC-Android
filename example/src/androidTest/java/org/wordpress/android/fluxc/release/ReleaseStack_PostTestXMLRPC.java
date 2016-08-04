@@ -87,13 +87,23 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         uploadPost(mPost);
 
-        mPost.setTitle("From testEditingRemotePost");
-        mPost.setIsLocallyChanged(true);
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        final String dateCreated = uploadedPost.getDateCreated();
+
+        uploadedPost.setTitle("From testEditingRemotePost");
+        uploadedPost.setIsLocallyChanged(true);
 
         // Upload edited post
-        uploadPost(mPost);
+        uploadPost(uploadedPost);
 
-        assertEquals("From testEditingRemotePost", mPost.getTitle());
+        PostModel finalPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals("From testEditingRemotePost", finalPost.getTitle());
+
+        // The date created should not have been altered by the edits
+        assertFalse(finalPost.getDateCreated().isEmpty());
+        assertEquals(dateCreated, finalPost.getDateCreated());
     }
 
     public void testRevertingLocallyChangedPost() throws InterruptedException {
@@ -102,11 +112,13 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         uploadPost(mPost);
 
-        mPost.setTitle("From testRevertingLocallyChangedPost");
-        mPost.setIsLocallyChanged(true);
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        uploadedPost.setTitle("From testRevertingLocallyChangedPost");
+        uploadedPost.setIsLocallyChanged(true);
 
         // Revert changes to post by replacing it with a fresh copy from the server
-        fetchPost(mPost);
+        fetchPost(uploadedPost);
 
         // Get the current copy of the post from the PostStore
         PostModel latestPost = mPostStore.getPostByLocalPostId(mPost.getId());
@@ -149,6 +161,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         setupPostAttributes();
 
         uploadPost(mPost);
+
+        mPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         mPost.setTitle("From testMultipleLocalChangesToUploadedPost");
         mPost.setIsLocallyChanged(true);
@@ -273,8 +287,6 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(false, event.post.isLocalDraft());
         assertEquals(false, event.post.isLocallyChanged());
         assertNotSame(0, event.post.getRemotePostId());
-
-        mPost = event.post;
 
         mCountDownLatch.countDown();
     }
