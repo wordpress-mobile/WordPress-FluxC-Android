@@ -17,7 +17,7 @@ file and create the gradle.properties file. The easiest way is to copy
 our example:
 
     $ echo "sdk.dir=YOUR_SDK_DIR" > local.properties
-    $ ./gradlew WordPressFluxC:build
+    $ ./gradlew fluxc:build
 
 ## Building and running tests and the example app
 
@@ -66,6 +66,6 @@ WordPress-FluxC-Android is an Open Source project covered by the [GNU General Pu
 [1]: https://facebook.github.io/flux/docs/overview.html
 [2]: https://google.github.io/dagger/
 [3]: https://github.com/yarolegovich/wellsql
-[4]: https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/52ffa86d604f3f2df1b46bc3e9f20f7552ceeea5/WordPressStores/src/main/java/org/wordpress/android/stores/store/SiteStore.java
-[5]: https://github.com/wordpress-mobile/WordPress-Stores-Android/blob/52ffa86d604f3f2df1b46bc3e9f20f7552ceeea5/WordPressStores/src/main/java/org/wordpress/android/stores/action/SiteAction.java
+[4]: https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/ba9dd84c54b12d53e01dfdb8efb4a18ed8343311/fluxc/src/main/java/org/wordpress/android/fluxc/store/SiteStore.java
+[5]: https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/ba9dd84c54b12d53e01dfdb8efb4a18ed8343311/fluxc/src/main/java/org/wordpress/android/fluxc/action/SiteAction.java
 [6]: https://make.wordpress.org/chat/
