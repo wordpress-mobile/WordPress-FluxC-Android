@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
-import org.json.JSONArray;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -140,7 +139,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         mPost.setTitle("From testChangingLocalDraft, redux");
-        mPost.setDescription("Some new content");
+        mPost.setContent("Some new content");
         mPost.setFeaturedImageId(7);
 
         // Save new changes locally
@@ -150,7 +149,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         assertEquals("From testChangingLocalDraft, redux", mPost.getTitle());
-        assertEquals("Some new content", mPost.getDescription());
+        assertEquals("Some new content", mPost.getContent());
         assertEquals(7, mPost.getFeaturedImageId());
         assertEquals(false, mPost.isLocallyChanged());
         assertEquals(true, mPost.isLocalDraft());
@@ -174,7 +173,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         mPost.setTitle("From testMultipleLocalChangesToUploadedPost, redux");
-        mPost.setDescription("Some different content");
+        mPost.setContent("Some different content");
         mPost.setFeaturedImageId(5);
 
         // Save new changes locally
@@ -184,7 +183,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         assertEquals("From testMultipleLocalChangesToUploadedPost, redux", mPost.getTitle());
-        assertEquals("Some different content", mPost.getDescription());
+        assertEquals("Some different content", mPost.getContent());
         assertEquals(5, mPost.getFeaturedImageId());
         assertEquals(true, mPost.isLocallyChanged());
         assertEquals(false, mPost.isLocalDraft());
@@ -225,14 +224,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         createNewPost();
 
         mPost.setTitle("A fully featured post");
-        mPost.setDescription("Some content here");
-        mPost.setMoreText("This is even more text! <strong>Bold text</strong>.");
-        mPost.setKeywords("FluxC, WP");
+        mPost.setContent("Some content here! <strong>Bold text</strong>.");
 
         // TODO: This should be a non-default category when we have a specific shared site setup for tests
-        JSONArray categories = new JSONArray();
-        categories.put("Uncategorized");
-        mPost.setJSONCategories(categories);
 
         uploadPost(mPost);
 
@@ -240,10 +234,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         PostModel newPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         assertEquals("A fully featured post", newPost.getTitle());
-        assertEquals("Some content here", newPost.getDescription());
-        assertEquals("This is even more text! <strong>Bold text</strong>.", newPost.getMoreText());
-        assertEquals("FluxC, WP", newPost.getKeywords());
-        assertEquals("[\"Uncategorized\"]", newPost.getCategories());
+        assertEquals("Some content here! <strong>Bold text</strong>.", newPost.getContent());
     }
 
 
@@ -293,7 +284,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     private void setupPostAttributes() {
         mPost.setTitle(POST_DEFAULT_TITLE);
-        mPost.setDescription(POST_DEFAULT_DESCRIPTION);
+        mPost.setContent(POST_DEFAULT_DESCRIPTION);
     }
 
     private void createNewPost() throws InterruptedException {
