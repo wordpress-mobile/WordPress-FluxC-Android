@@ -494,7 +494,7 @@ public class MainExampleActivity extends AppCompatActivity {
     public void onPostInstantiated(OnPostInstantiated event) {
         PostModel examplePost = event.post;
         examplePost.setTitle("From example activity");
-        examplePost.setDescription("Hi there, I'm a post from WordPress-{Placeholder Name}-Android!");
+        examplePost.setContent("Hi there, I'm a post from WordPress-{Placeholder Name}-Android!");
         examplePost.setFeaturedImageId(0);
 
         RemotePostPayload payload = new RemotePostPayload(examplePost, mSiteStore.getSites().get(0));
