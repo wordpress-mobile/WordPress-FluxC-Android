@@ -205,8 +205,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         int firstFetchPosts = mPostStore.getPostsCountForSite(mSite);
 
         // Dangerous, will fail for a site with no posts, see to-do above
-        assertTrue(firstFetchPosts > 0 && firstFetchPosts <= PostXMLRPCClient.NUM_POSTS_TO_REQUEST);
-        assertEquals(mCanLoadMorePosts, firstFetchPosts == PostXMLRPCClient.NUM_POSTS_TO_REQUEST);
+        assertTrue(firstFetchPosts > 0 && firstFetchPosts <= PostStore.NUM_POSTS_PER_FETCH);
+        assertEquals(mCanLoadMorePosts, firstFetchPosts == PostStore.NUM_POSTS_PER_FETCH);
 
         // Dependent on site having more than NUM_POSTS_TO_REQUEST posts
         assertTrue(mCanLoadMorePosts);
@@ -221,7 +221,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         int currentStoredPosts = mPostStore.getPostsCountForSite(mSite);
 
         assertTrue(currentStoredPosts > firstFetchPosts);
-        assertTrue(currentStoredPosts <= (PostXMLRPCClient.NUM_POSTS_TO_REQUEST * 2));
+        assertTrue(currentStoredPosts <= (PostStore.NUM_POSTS_PER_FETCH * 2));
     }
 
     public void testFullFeaturedPostUpload() throws InterruptedException {
