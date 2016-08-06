@@ -18,7 +18,9 @@ import org.wordpress.android.fluxc.utils.DateTimeUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -231,6 +233,11 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mPost.setDateCreated(date);
 
         // TODO: This should be a non-default category when we have a specific shared site setup for tests
+        List<Long> categoryIds = new ArrayList<>(1);
+        categoryIds.add((long) 1);
+        mPost.setCategoryIdList(categoryIds);
+
+        // TODO: Add test for tags when we have a shared site setup for tests
 
         mPost.setFeaturedImageId(77);
 
@@ -242,6 +249,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals("A fully featured post", newPost.getTitle());
         assertEquals("Some content here! <strong>Bold text</strong>.", newPost.getContent());
         assertEquals(date, newPost.getDateCreated());
+
+        assertTrue(categoryIds.containsAll(newPost.getCategoryIdList()) &&
+                newPost.getCategoryIdList().containsAll(categoryIds));
 
         assertEquals(77, mPost.getFeaturedImageId());
     }
@@ -255,8 +265,6 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mPost.setContent("Some content here! <strong>Bold text</strong>.");
         String date = DateTimeUtils.iso8601UTCFromDate(new Date());
         mPost.setDateCreated(date);
-
-        // TODO: Test categories and posts
 
         mPost.setFeaturedImageId(77); // Not actually valid for pages
 
