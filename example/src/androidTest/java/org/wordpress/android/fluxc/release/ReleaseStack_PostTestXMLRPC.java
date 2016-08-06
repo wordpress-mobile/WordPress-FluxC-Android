@@ -6,8 +6,8 @@ import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.PostStatus;
 import org.wordpress.android.fluxc.model.SiteModel;
-import org.wordpress.android.fluxc.network.xmlrpc.post.PostXMLRPCClient;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
@@ -44,7 +44,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         POST_INSTANTIATED,
         POST_UPLOADED,
         POST_UPDATED,
-        POSTS_FETCHED
+        POSTS_FETCHED,
+        POST_DELETED
     }
     private TEST_EVENTS mNextEvent;
 
@@ -282,6 +283,26 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(0, newPage.getFeaturedImageId()); // The page should upload, but have the featured image stripped
     }
 
+    public void testDeleteRemotePost() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        uploadPost(mPost);
+
+        mNextEvent = TEST_EVENTS.POST_DELETED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(mPost, mSite)));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Note: It's possible to configure a site to permanently delete posts right away (instead of marking them as
+        // 'trashed', in which case this test will fail as the remote post won't be found
+        fetchPost(mPost);
+        mPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(PostStatus.TRASHED, PostStatus.fromPost(mPost));
+    }
 
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
@@ -296,6 +317,11 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
                 if (mNextEvent.equals(TEST_EVENTS.POSTS_FETCHED)) {
                     AppLog.i(T.API, "Fetched " + event.rowsAffected + " posts, can load more: " + event.canLoadMore);
                     mCanLoadMorePosts = event.canLoadMore;
+                    mCountDownLatch.countDown();
+                }
+                break;
+            case DELETE_POST:
+                if (mNextEvent.equals(TEST_EVENTS.POST_DELETED)) {
                     mCountDownLatch.countDown();
                 }
                 break;
