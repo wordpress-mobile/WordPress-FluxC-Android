@@ -6,7 +6,7 @@ WordPress-FluxC-Android is a networking and persistence library that helps to co
 
 Based on the [Flux][1] pattern, we're using: [Dagger2][2] for dependency injection, [WellSql][3] for persistence.
 
-FluxC is pronounced ‘fluxy’, and stands for ‘Flux Capacitor’. This makes a double reference to the architecture model (since a capacitor is a kind of storage unit, or ‘store’). More importantly, a flux capacitor is the core component of the DeLorean time machine in [Back to the Future](https://en.wikipedia.org/wiki/Back_to_the_Future), which ‘makes time travel work.’
+FluxC is pronounced ‘fluxy’, and stands for ‘Flux Capacitor’. This makes a double reference to the architecture model (since a capacitor is a kind of storage unit, or ‘store’). More importantly, a flux capacitor is the core component of the DeLorean time machine in [Back to the Future](https://en.wikipedia.org/wiki/Back_to_the_Future), which ‘makes time travel possible.’
 
 ## Building the library
 
