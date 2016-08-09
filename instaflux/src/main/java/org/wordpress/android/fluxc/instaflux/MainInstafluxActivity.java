@@ -6,7 +6,6 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -20,6 +19,7 @@ import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.util.AppLog;
 
 import javax.inject.Inject;
 
@@ -28,8 +28,6 @@ public class MainInstafluxActivity extends AppCompatActivity {
     @Inject Dispatcher mDispatcher;
     @Inject HTTPAuthManager mHTTPAuthManager;
     @Inject MemorizingTrustManager mMemorizingTrustManager;
-
-    private static String TAG = "MainInstafluxActivity";
 
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private SiteStore.RefreshSitesXMLRPCPayload mSelfhostedPayload;
@@ -143,18 +141,14 @@ public class MainInstafluxActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAccountChanged(AccountStore.OnAccountChanged event) {
         if (!mAccountStore.hasAccessToken()) {
-            Log.i(TAG, "Signed out!");
-        } else {
-            if (event.accountInfosChanged) {
-                Log.i(TAG, "Display Name: " + mAccountStore.getAccount().getDisplayName());
-            }
+            //Signed out!
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
         if (event.isError) {
-            Log.e(TAG, "Authentication error: " + event.errorType + " - " + event.errorMessage);
+            AppLog.e(AppLog.T.API, "Authentication error: " + event.errorType + " - " + event.errorMessage);
             if (event.errorType == AccountStore.AuthenticationError.HTTP_AUTH_ERROR) {
                 // Show a Dialog prompting for http username and password
                 showHTTPAuthDialog(mSelfhostedPayload.url);
@@ -168,7 +162,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDiscoverySucceeded(AccountStore.OnDiscoverySucceeded event) {
-        Log.i(TAG, "Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
+        AppLog.i(AppLog.T.API, "Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
         selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
     }
 
@@ -182,6 +176,6 @@ public class MainInstafluxActivity extends AppCompatActivity {
             mSelfhostedPayload.url = event.failedEndpoint;
             showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
         }
-        Log.e(TAG, "Discovery failed with error: " + event.error);
+        AppLog.e(AppLog.T.API, "Discovery failed with error: " + event.error);
     }
 }
