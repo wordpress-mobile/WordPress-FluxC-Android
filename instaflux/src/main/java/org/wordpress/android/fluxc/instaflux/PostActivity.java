@@ -30,8 +30,6 @@ public class PostActivity extends AppCompatActivity {
     @Inject Dispatcher mDispatcher;
     @Inject PostStore mPostStore;
 
-    private SiteModel mSelectedSite = null;
-
     private EditText mTitleText;
     private EditText mContentText;
 
@@ -95,6 +93,9 @@ public class PostActivity extends AppCompatActivity {
             return;
         }
 
+        PostStore.InstantiatePostPayload payload = new PostStore.InstantiatePostPayload(mSiteStore.getSites().get(0), false);
+        mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
+
         AppLog.i(AppLog.T.API, "Create a new post with title: " + title + " content: " + content);
     }
 
@@ -127,15 +128,18 @@ public class PostActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPostInstantiated(PostStore.OnPostInstantiated event) {
         // upload the post if there is no error
-                if (mSelectedSite != null && event.post != null) {
-                PostStore.RemotePostPayload payload = new PostStore.RemotePostPayload(event.post, mSelectedSite);
-                mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
-            }
+        if (mSiteStore.hasSite() && event.post != null) {
+            event.post.setTitle(mTitleText.getText().toString());
+            event.post.setContent(mContentText.getText().toString());
+            PostStore.RemotePostPayload payload = new PostStore.RemotePostPayload(event.post, mSiteStore.getSites().get(0));
+            mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
         }
+    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPostUploaded(PostStore.OnPostUploaded event) {
-        // TODO: Clear post EditTexts
-                ToastUtils.showToast(this, event.post.getTitle());
+        mTitleText.setText("");
+        mContentText.setText("");
+        ToastUtils.showToast(this, event.post.getTitle());
     }
 }
