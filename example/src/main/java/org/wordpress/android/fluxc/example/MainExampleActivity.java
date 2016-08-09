@@ -19,6 +19,8 @@ import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
+import org.wordpress.android.fluxc.generated.MediaActionBuilder;
+import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
@@ -32,6 +34,10 @@ import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.fluxc.store.AccountStore.PostAccountSettingsPayload;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.store.MediaStore;
+import org.wordpress.android.fluxc.store.MediaStore.FetchMediaPayload;
+import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
+import org.wordpress.android.fluxc.store.MediaStore.ChangeMediaPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.NewSitePayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnNewSiteCreated;
@@ -39,15 +45,20 @@ import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.fluxc.store.SiteStore.SiteVisibility;
+import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.inject.Inject;
 
 public class MainExampleActivity extends AppCompatActivity {
     @Inject SiteStore mSiteStore;
+    @Inject
+    MediaStore mMediaStore;
     @Inject AccountStore mAccountStore;
     @Inject Dispatcher mDispatcher;
     @Inject HTTPAuthManager mHTTPAuthManager;
@@ -62,6 +73,8 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mAccountSettings;
     private Button mNewAccount;
     private Button mNewSite;
+    private Button mFetchAllMedia;
+    private Button mFetchMedia;
 
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
@@ -136,6 +149,23 @@ public class MainExampleActivity extends AppCompatActivity {
                 showNewSiteDialog();
             }
         });
+
+        mFetchAllMedia = (Button) findViewById(R.id.all_media);
+        mFetchAllMedia.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fetchAllMedia();
+            }
+        });
+
+        mFetchMedia = (Button) findViewById(R.id.media);
+        mFetchMedia.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMediaItemInputDialog();
+            }
+        });
+
         mLogView = (TextView) findViewById(R.id.log);
 
         init();
@@ -187,6 +217,55 @@ public class MainExampleActivity extends AppCompatActivity {
                         }
                     }
                 }, certifString);
+        newFragment.show(ft, "dialog");
+    }
+
+    private void fetchMediaItems(String commaSeparated) {
+        if (!TextUtils.isEmpty(commaSeparated)) {
+            String[] split = commaSeparated.split(",");
+            List<Long> mediaIds = new ArrayList<>();
+            for (String s : split) {
+                Long lVal = Long.valueOf(s);
+                if (lVal >= 0) mediaIds.add(lVal);
+            }
+            if (!mediaIds.isEmpty()) {
+                FetchMediaPayload payload = new FetchMediaPayload(mSiteStore.getSites().get(0), mediaIds);
+                mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
+            }
+        }
+    }
+
+    private void deleteMediaItems(String commaSeparated) {
+        if (!TextUtils.isEmpty(commaSeparated)) {
+            String[] split = commaSeparated.split(",");
+            List<MediaModel> mediaIds = new ArrayList<>();
+            for (String s : split) {
+                Long lVal = Long.valueOf(s);
+                if (lVal >= 0) {
+                    MediaModel mediaModel = new MediaModel();
+                    mediaModel.setMediaId(lVal);
+                    mediaIds.add(mediaModel);
+                }
+            }
+            if (!mediaIds.isEmpty()) {
+                ChangeMediaPayload payload = new ChangeMediaPayload(mSiteStore.getSites().get(0), mediaIds);
+                mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(payload));
+            }
+        }
+    }
+
+    private void showMediaItemInputDialog() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
+            @Override
+            public void onClick(String text1, String text2, String text3) {
+                if (TextUtils.isEmpty(text2)) {
+                    fetchMediaItems(text1);
+                } else {
+                    deleteMediaItems(text1);
+                }
+            }
+        }, "Media Items (comma separated)", null, null);
         newFragment.show(ft, "dialog");
     }
 
@@ -306,6 +385,11 @@ public class MainExampleActivity extends AppCompatActivity {
         mDispatcher.dispatch(SiteActionBuilder.newCreateNewSiteAction(newSitePayload));
     }
 
+    private void fetchAllMedia() {
+        FetchMediaPayload payload = new FetchMediaPayload(mSiteStore.getSites().get(0), null);
+        mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(payload));
+    }
+
     // Event listeners
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -391,5 +475,41 @@ public class MainExampleActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteRemoved(OnSiteRemoved event) {
         mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMediaChanged(OnMediaChanged event) {
+        switch (event.causeOfChange) {
+            case FETCH_ALL_MEDIA:
+                prependToLog("Begin parsing FETCH_ALL_MEDIA response");
+                if (event.media != null) {
+                    for (MediaModel media : event.media) {
+                        if (MediaUtils.isImageMimeType(media.getMimeType())) {
+                            prependToLog("Image(" + media.getMediaId() + ") - " + media.getTitle());
+                        } else if (MediaUtils.isVideoMimeType(media.getMimeType())) {
+                            prependToLog("Video(" + media.getMediaId() + ") - " + media.getTitle());
+                        } else {
+                            prependToLog(media.getTitle());
+                        }
+                    }
+                }
+                prependToLog("End parsing FETCH_ALL_MEDIA response");
+                break;
+            case FETCH_MEDIA:
+                if (event.media != null && !event.media.isEmpty()) {
+                    for (MediaModel media : event.media) {
+                        if (media != null) {
+                            prependToLog("Fetched media(" + media.getMediaId() + ") - " + media.getTitle());
+                        } else {
+                            prependToLog("A media item failed to fetch. Does it exist?");
+                        }
+                    }
+                }
+                break;
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMediaError(MediaStore.OnMediaError event) {
     }
 }
