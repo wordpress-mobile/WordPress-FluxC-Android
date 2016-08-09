@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.instaflux;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
@@ -64,6 +66,19 @@ public class PostActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         mDispatcher.unregister(this);
+    }
+
+    @Override
+    public void onBackPressed() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Sign Out");
+        builder.setPositiveButton("SIGN OUT", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                signOutWpCom();
+            }});
+        builder.setNegativeButton("CANCEL", null);
+        builder.show();
     }
 
     private void post() {
