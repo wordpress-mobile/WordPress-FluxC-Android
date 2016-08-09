@@ -14,7 +14,9 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
+import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.ToastUtils;
 
@@ -22,6 +24,7 @@ import javax.inject.Inject;
 
 public class PostActivity extends AppCompatActivity {
     @Inject AccountStore mAccountStore;
+    @Inject SiteStore mSiteStore;
     @Inject Dispatcher mDispatcher;
 
     private EditText mTitleText;
@@ -46,12 +49,9 @@ public class PostActivity extends AppCompatActivity {
         signOutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                signOutWpCom();
+                signOut();
             }
         });
-        if (!mAccountStore.hasAccessToken()) {
-            signOutButton.setVisibility(View.GONE);
-        }
     }
 
     @Override
@@ -75,7 +75,7 @@ public class PostActivity extends AppCompatActivity {
         builder.setPositiveButton("SIGN OUT", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                signOutWpCom();
+                signOut();
             }});
         builder.setNegativeButton("CANCEL", null);
         builder.show();
@@ -93,15 +93,28 @@ public class PostActivity extends AppCompatActivity {
         AppLog.i(AppLog.T.API, "Create a new post with title: " + title + " content: " + content);
     }
 
-    private void signOutWpCom() {
-        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
-        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
+    private void signOut() {
+        if (mAccountStore.hasAccessToken()) {
+            mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
+            mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
+        } else {
+            SiteModel firstSite = mSiteStore.getSites().get(0);
+            mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(firstSite));
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAccountChanged(AccountStore.OnAccountChanged event) {
         if (!mAccountStore.hasAccessToken()) {
-            //Signed Out
+            // Signed Out
+            finish();
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSiteRemoved(SiteStore.OnSiteRemoved event) {
+        if (!mSiteStore.hasSite()) {
+            // Signed Out
             finish();
         }
     }
