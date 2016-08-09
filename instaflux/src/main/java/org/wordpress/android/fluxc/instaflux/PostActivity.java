@@ -17,6 +17,8 @@ import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.generated.PostActionBuilder;
+import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.ToastUtils;
 
@@ -26,6 +28,9 @@ public class PostActivity extends AppCompatActivity {
     @Inject AccountStore mAccountStore;
     @Inject SiteStore mSiteStore;
     @Inject Dispatcher mDispatcher;
+    @Inject PostStore mPostStore;
+
+    private SiteModel mSelectedSite = null;
 
     private EditText mTitleText;
     private EditText mContentText;
@@ -55,6 +60,19 @@ public class PostActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Sign Out");
+        builder.setPositiveButton("SIGN OUT", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                signOut();
+            }});
+        builder.setNegativeButton("CANCEL", null);
+        builder.show();
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
         // Order is important here since onRegister could fire onChanged events. "register(this)" should probably go
@@ -66,19 +84,6 @@ public class PostActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         mDispatcher.unregister(this);
-    }
-
-    @Override
-    public void onBackPressed() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Sign Out");
-        builder.setPositiveButton("SIGN OUT", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                signOut();
-            }});
-        builder.setNegativeButton("CANCEL", null);
-        builder.show();
     }
 
     private void post() {
@@ -117,5 +122,20 @@ public class PostActivity extends AppCompatActivity {
             // Signed Out
             finish();
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPostInstantiated(PostStore.OnPostInstantiated event) {
+        // upload the post if there is no error
+                if (mSelectedSite != null && event.post != null) {
+                PostStore.RemotePostPayload payload = new PostStore.RemotePostPayload(event.post, mSelectedSite);
+                mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
+            }
+        }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPostUploaded(PostStore.OnPostUploaded event) {
+        // TODO: Clear post EditTexts
+                ToastUtils.showToast(this, event.post.getTitle());
     }
 }
