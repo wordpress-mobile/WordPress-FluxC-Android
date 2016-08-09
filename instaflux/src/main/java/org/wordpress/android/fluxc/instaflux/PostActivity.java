@@ -7,10 +7,20 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.generated.AccountActionBuilder;
+import org.wordpress.android.fluxc.generated.SiteActionBuilder;
+import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.ToastUtils;
 
+import javax.inject.Inject;
+
 public class PostActivity extends AppCompatActivity {
+    @Inject AccountStore mAccountStore;
+    @Inject Dispatcher mDispatcher;
 
     private EditText mTitleText;
     private EditText mContentText;
@@ -30,6 +40,30 @@ public class PostActivity extends AppCompatActivity {
                 post();
             }
         });
+        Button signOutButton = (Button) findViewById(R.id.button_sign_out);
+        signOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                signOutWpCom();
+            }
+        });
+        if (!mAccountStore.hasAccessToken()) {
+            signOutButton.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Order is important here since onRegister could fire onChanged events. "register(this)" should probably go
+        // first everywhere.
+        mDispatcher.register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mDispatcher.unregister(this);
     }
 
     private void post() {
@@ -42,5 +76,18 @@ public class PostActivity extends AppCompatActivity {
         }
 
         AppLog.i(AppLog.T.API, "Create a new post with title: " + title + " content: " + content);
+    }
+
+    private void signOutWpCom() {
+        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
+        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onAccountChanged(AccountStore.OnAccountChanged event) {
+        if (!mAccountStore.hasAccessToken()) {
+            //Signed Out
+            finish();
+        }
     }
 }

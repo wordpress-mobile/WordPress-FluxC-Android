@@ -33,4 +33,10 @@
         android:layout_height="wrap_content"
         android:text="@string/post"/>
 
+    <Button
+        android:id="@+id/button_sign_out"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sign_out"/>
+
 </LinearLayout>
