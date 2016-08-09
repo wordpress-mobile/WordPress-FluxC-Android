@@ -25,6 +25,7 @@ import org.wordpress.android.util.AppLog;
 import javax.inject.Inject;
 
 public class MainInstafluxActivity extends AppCompatActivity {
+    @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
     @Inject Dispatcher mDispatcher;
     @Inject HTTPAuthManager mHTTPAuthManager;
@@ -39,7 +40,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
         ((InstafluxApp) getApplication()).component().inject(this);
 
         // if the user is already logged in switch to PostActivity immediately
-        if (mAccountStore.hasAccessToken()) {
+        if (mSiteStore.hasSite()) {
             Intent intent = new Intent(this, PostActivity.class);
             startActivity(intent);
         }
