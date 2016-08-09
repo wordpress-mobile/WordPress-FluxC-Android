@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.instaflux;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
@@ -36,6 +37,13 @@ public class MainInstafluxActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ((InstafluxApp) getApplication()).component().inject(this);
+
+        // if the user is already logged in switch to PostActivity immediately
+        if (mAccountStore.hasAccessToken()) {
+            Intent intent = new Intent(this, PostActivity.class);
+            startActivity(intent);
+        }
+
         setContentView(R.layout.activity_main);
 
         Button signInBtn = (Button) findViewById(R.id.sign_in_button);
