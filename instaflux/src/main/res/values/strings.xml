@@ -2,4 +2,9 @@
     <string name="app_name" translatable="false">Instaflux</string>
     <string name="sign_in">Sign In</string>
     <string name="trust_certificate_question">Do you want to trust the following certificate?</string>
+    <string name="title">Title</string>
+    <string name="post">Post</string>
+    <string name="content">Content</string>
+    <string name="error_no_title_or_content">Empty title or content</string>
+    <string name="sign_out">Sign Out</string>
 </resources>

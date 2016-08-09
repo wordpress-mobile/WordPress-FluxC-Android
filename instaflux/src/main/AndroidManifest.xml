@@ -16,6 +16,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="org.wordpress.android.fluxc.instaflux.PostActivity"
+            android:label="@string/post"/>
     </application>
 
 </manifest>
