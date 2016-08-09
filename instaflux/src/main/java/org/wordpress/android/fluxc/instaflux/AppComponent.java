@@ -20,4 +20,5 @@ import dagger.Component;
 public interface AppComponent {
     void inject(InstafluxApp application);
     void inject(MainInstafluxActivity homeActivity);
+    void inject(PostActivity postActivity);
 }

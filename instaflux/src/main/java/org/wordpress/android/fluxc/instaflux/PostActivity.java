@@ -8,5 +8,7 @@ public class PostActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ((InstafluxApp) getApplication()).component().inject(this);
+        setContentView(R.layout.activity_post);
     }
 }
