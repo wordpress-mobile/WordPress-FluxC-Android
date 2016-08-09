@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.instaflux;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
@@ -24,6 +25,7 @@ import org.wordpress.android.util.AppLog;
 import javax.inject.Inject;
 
 public class MainInstafluxActivity extends AppCompatActivity {
+    @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
     @Inject Dispatcher mDispatcher;
     @Inject HTTPAuthManager mHTTPAuthManager;
@@ -36,6 +38,12 @@ public class MainInstafluxActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ((InstafluxApp) getApplication()).component().inject(this);
+
+        // if the user is already logged in switch to PostActivity immediately
+        if (mSiteStore.hasSite()) {
+            launchPostActivity();
+        }
+
         setContentView(R.layout.activity_main);
 
         Button signInBtn = (Button) findViewById(R.id.sign_in_button);
@@ -136,6 +144,11 @@ public class MainInstafluxActivity extends AppCompatActivity {
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
     }
 
+    private void launchPostActivity() {
+        Intent intent = new Intent(this, PostActivity.class);
+        startActivity(intent);
+    }
+
     // Event listeners
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -177,5 +190,12 @@ public class MainInstafluxActivity extends AppCompatActivity {
             showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
         }
         AppLog.e(AppLog.T.API, "Discovery failed with error: " + event.error);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSiteChanged(SiteStore.OnSiteChanged event) {
+        if (mSiteStore.hasSite()) {
+            launchPostActivity();
+        }
     }
 }
