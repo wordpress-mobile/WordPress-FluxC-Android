@@ -17,6 +17,8 @@ import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.generated.PostActionBuilder;
+import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.ToastUtils;
 
@@ -26,6 +28,7 @@ public class PostActivity extends AppCompatActivity {
     @Inject AccountStore mAccountStore;
     @Inject SiteStore mSiteStore;
     @Inject Dispatcher mDispatcher;
+    @Inject PostStore mPostStore;
 
     private EditText mTitleText;
     private EditText mContentText;
@@ -55,6 +58,19 @@ public class PostActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Sign Out");
+        builder.setPositiveButton("SIGN OUT", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                signOut();
+            }});
+        builder.setNegativeButton("CANCEL", null);
+        builder.show();
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
         // Order is important here since onRegister could fire onChanged events. "register(this)" should probably go
@@ -68,19 +84,6 @@ public class PostActivity extends AppCompatActivity {
         mDispatcher.unregister(this);
     }
 
-    @Override
-    public void onBackPressed() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Sign Out");
-        builder.setPositiveButton("SIGN OUT", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                signOut();
-            }});
-        builder.setNegativeButton("CANCEL", null);
-        builder.show();
-    }
-
     private void post() {
         String title = mTitleText.getText().toString();
         String content = mContentText.getText().toString();
@@ -89,6 +92,9 @@ public class PostActivity extends AppCompatActivity {
             ToastUtils.showToast(this, R.string.error_no_title_or_content);
             return;
         }
+
+        PostStore.InstantiatePostPayload payload = new PostStore.InstantiatePostPayload(mSiteStore.getSites().get(0), false);
+        mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
 
         AppLog.i(AppLog.T.API, "Create a new post with title: " + title + " content: " + content);
     }
@@ -117,5 +123,23 @@ public class PostActivity extends AppCompatActivity {
             // Signed Out
             finish();
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPostInstantiated(PostStore.OnPostInstantiated event) {
+        // upload the post if there is no error
+        if (mSiteStore.hasSite() && event.post != null) {
+            event.post.setTitle(mTitleText.getText().toString());
+            event.post.setContent(mContentText.getText().toString());
+            PostStore.RemotePostPayload payload = new PostStore.RemotePostPayload(event.post, mSiteStore.getSites().get(0));
+            mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPostUploaded(PostStore.OnPostUploaded event) {
+        mTitleText.setText("");
+        mContentText.setText("");
+        ToastUtils.showToast(this, event.post.getTitle());
     }
 }
