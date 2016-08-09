@@ -7,10 +7,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
+import org.wordpress.android.fluxc.Dispatcher;
+
+import javax.inject.Inject;
+
 public class MainInstafluxActivity extends AppCompatActivity {
+    @Inject Dispatcher mDispatcher;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ((InstafluxApp) getApplication()).component().inject(this);
         setContentView(R.layout.activity_main);
 
         Button signInBtn = (Button) findViewById(R.id.sign_in_button);
@@ -20,6 +27,20 @@ public class MainInstafluxActivity extends AppCompatActivity {
                 showSignInDialog();
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Order is important here since onRegister could fire onChanged events. "register(this)" should probably go
+        // first everywhere.
+        mDispatcher.register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mDispatcher.unregister(this);
     }
 
     private void showSignInDialog() {
