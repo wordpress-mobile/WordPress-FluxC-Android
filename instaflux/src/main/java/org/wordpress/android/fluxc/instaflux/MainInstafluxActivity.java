@@ -41,8 +41,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
 
         // if the user is already logged in switch to PostActivity immediately
         if (mSiteStore.hasSite()) {
-            Intent intent = new Intent(this, PostActivity.class);
-            startActivity(intent);
+            launchPostActivity();
         }
 
         setContentView(R.layout.activity_main);
@@ -145,6 +144,11 @@ public class MainInstafluxActivity extends AppCompatActivity {
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
     }
 
+    private void launchPostActivity() {
+        Intent intent = new Intent(this, PostActivity.class);
+        startActivity(intent);
+    }
+
     // Event listeners
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -186,5 +190,12 @@ public class MainInstafluxActivity extends AppCompatActivity {
             showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
         }
         AppLog.e(AppLog.T.API, "Discovery failed with error: " + event.error);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSiteChanged(SiteStore.OnSiteChanged event) {
+        if (mSiteStore.hasSite()) {
+            launchPostActivity();
+        }
     }
 }
