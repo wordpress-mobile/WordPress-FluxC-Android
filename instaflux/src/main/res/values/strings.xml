@@ -4,4 +4,6 @@
     <string name="trust_certificate_question">Do you want to trust the following certificate?</string>
     <string name="title">Title</string>
     <string name="post">Post</string>
+    <string name="content">Content</string>
+    <string name="error_no_title_or_content">Empty title or content</string>
 </resources>
