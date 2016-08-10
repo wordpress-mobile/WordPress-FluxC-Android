@@ -20,7 +20,7 @@ android {
     buildToolsVersion "23.0.2"
 
     defaultConfig {
-        applicationId "org.wordpress.android.stores.example"
+        applicationId "org.wordpress.android.fluxc.example"
         minSdkVersion 15
         targetSdkVersion 23
         versionCode 1
@@ -62,7 +62,7 @@ android.buildTypes.all { buildType ->
 }
 
 dependencies {
-    compile project(":WordPressStores");
+    compile project(':fluxc');
 
     compile 'com.google.dagger:dagger:2.0.2'
     apt 'com.google.dagger:dagger-compiler:2.0.2'
