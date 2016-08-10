@@ -19,7 +19,7 @@
         </activity>
         <activity
             android:name="org.wordpress.android.fluxc.instaflux.PostActivity"
-            android:label="@string/post"
+            android:label="@string/create_post"
             android:theme="@style/Instaflux"/>
     </application>
 
