@@ -15,7 +15,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
-import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder;
@@ -36,8 +35,6 @@ public class MainInstafluxActivity extends AppCompatActivity {
 
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private SiteStore.RefreshSitesXMLRPCPayload mSelfhostedPayload;
-
-    private SiteModel mSelectedSite = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
