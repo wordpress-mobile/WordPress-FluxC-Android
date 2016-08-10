@@ -91,7 +91,11 @@ public class MainExampleActivity extends AppCompatActivity {
         mUpdateFirstSite.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(mSiteStore.getSites().get(0)));
+                SiteModel site = mSiteStore.getSites().get(0);
+                // Fetch site
+                mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(site));
+                // Fetch site's post formats
+                mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(site));
             }
         });
 

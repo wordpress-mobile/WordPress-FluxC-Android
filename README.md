@@ -6,7 +6,7 @@ WordPress-FluxC-Android is a networking and persistence library that helps to co
 
 Based on the [Flux][1] pattern, we're using: [Dagger2][2] for dependency injection, [WellSql][3] for persistence.
 
-FluxC is pronounced ‘fluxy’, and stands for ‘Flux Capacitor’. This makes a double reference to the architecture model (since a capacitor is a kind of storage unit, or ‘store’). More importantly, a flux capacitor is the core component of the DeLorean time machine in [Back to the Future](https://en.wikipedia.org/wiki/Back_to_the_Future), which ‘makes time travel work.’
+FluxC is pronounced ‘fluxy’, and stands for ‘Flux Capacitor’. This makes a double reference to the architecture model (since a capacitor is a kind of storage unit, or ‘store’). More importantly, a flux capacitor is the core component of the DeLorean time machine in [Back to the Future](https://en.wikipedia.org/wiki/Back_to_the_Future), which ‘makes time travel possible.’
 
 ## Building the library
 
@@ -17,7 +17,7 @@ file and create the gradle.properties file. The easiest way is to copy
 our example:
 
     $ echo "sdk.dir=YOUR_SDK_DIR" > local.properties
-    $ ./gradlew WordPressFluxC:build
+    $ ./gradlew fluxc:build
 
 ## Building and running tests and the example app
 
@@ -35,7 +35,7 @@ We have some tests connecting to real HTTP servers, URL and credentials are defi
 
 ### Actions
 
-Each store should have a corresponding enum defining actions for that store. For example, [SiteStore][4]`'s actions are defined in the [SiteAction][5] enum.
+Each store should have a corresponding enum defining actions for that store. For example, [SiteStore][4]'s actions are defined in the [SiteAction][5] enum.
 
 Action naming guide:
 
@@ -64,6 +64,6 @@ WordPress-FluxC-Android is an Open Source project covered by the [GNU General Pu
 [1]: https://facebook.github.io/flux/docs/overview.html
 [2]: https://google.github.io/dagger/
 [3]: https://github.com/yarolegovich/wellsql
-[4]: https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/52ffa86d604f3f2df1b46bc3e9f20f7552ceeea5/WordPressStores/src/main/java/org/wordpress/android/stores/store/SiteStore.java
-[5]: https://github.com/wordpress-mobile/WordPress-Stores-Android/blob/52ffa86d604f3f2df1b46bc3e9f20f7552ceeea5/WordPressStores/src/main/java/org/wordpress/android/stores/action/SiteAction.java
+[4]: https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/ba9dd84c54b12d53e01dfdb8efb4a18ed8343311/fluxc/src/main/java/org/wordpress/android/fluxc/store/SiteStore.java
+[5]: https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/ba9dd84c54b12d53e01dfdb8efb4a18ed8343311/fluxc/src/main/java/org/wordpress/android/fluxc/action/SiteAction.java
 [6]: https://make.wordpress.org/chat/
