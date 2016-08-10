@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <style name="Instaflux" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:background">@color/wp_blue</item>
+        <item name="buttonStyle">@style/FlatButtonStyle</item>
+    </style>
+
+    <style name="FlatButtonStyle" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+</resources>
