@@ -1,17 +1,21 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
+import org.wordpress.android.fluxc.model.PostFormatModel;
+import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
-import org.wordpress.android.fluxc.Dispatcher;
-import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -30,6 +34,7 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
     enum TEST_EVENTS {
         NONE,
         SITE_CHANGED,
+        POST_FORMATS_CHANGED,
         SITE_REMOVED
     }
     private TEST_EVENTS mExpectedEvent;
@@ -75,6 +80,37 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    public void testFetchPostFormats() throws InterruptedException {
+        // Authenticate a test user (actual credentials declared in gradle.properties)
+        AccountStore.AuthenticatePayload payload =
+                new AccountStore.AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                        BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        mCountDownLatch = new CountDownLatch(1);
+
+        // Correct user we should get an OnAuthenticationChanged message
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Fetch sites from REST API, and wait for onSiteChanged event
+        mCountDownLatch = new CountDownLatch(1);
+        mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Get the first site
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+
+        // Fetch post formats
+        mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(firstSite));
+        mExpectedEvent = TEST_EVENTS.POST_FORMATS_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Test fetched Post Formats
+        List<PostFormatModel> postFormats = mSiteStore.getPostFormats(firstSite);
+        assertNotSame(0, postFormats.size());
+    }
+
     @Subscribe
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
         assertEquals(false, event.isError);
@@ -97,6 +133,12 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
         assertEquals(false, mSiteStore.hasSite());
         assertEquals(false, mSiteStore.hasDotComSite());
         assertEquals(TEST_EVENTS.SITE_REMOVED, mExpectedEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @Subscribe
+    public void onPostFormatsChanged(OnPostFormatsChanged event) {
+        assertEquals(TEST_EVENTS.POST_FORMATS_CHANGED, mExpectedEvent);
         mCountDownLatch.countDown();
     }
 }
