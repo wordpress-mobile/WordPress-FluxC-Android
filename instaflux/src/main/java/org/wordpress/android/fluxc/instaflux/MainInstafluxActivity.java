@@ -156,6 +156,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
 
     // Event listeners
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAccountChanged(AccountStore.OnAccountChanged event) {
         if (!mAccountStore.hasAccessToken()) {
@@ -163,6 +164,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
         if (event.isError) {
@@ -178,12 +180,14 @@ public class MainInstafluxActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDiscoverySucceeded(AccountStore.OnDiscoverySucceeded event) {
         AppLog.i(AppLog.T.API, "Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
         selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDiscoveryFailed(AccountStore.OnDiscoveryFailed event) {
         if (event.error == SelfHostedEndpointFinder.DiscoveryError.WORDPRESS_COM_SITE) {
@@ -197,6 +201,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
         AppLog.e(AppLog.T.API, "Discovery failed with error: " + event.error);
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
         if (mSiteStore.hasSite()) {
