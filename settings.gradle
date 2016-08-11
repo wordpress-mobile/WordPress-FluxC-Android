@@ -1,2 +1,2 @@
-include ':WordPressStores', ':stores-processor', ':stores-annotations'
+include ':fluxc', ':fluxc-processor', ':fluxc-annotations'
 include ':example'

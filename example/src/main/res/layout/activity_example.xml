@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="org.wordpress.android.stores.example.MainExampleActivity">
+    tools:context="org.wordpress.android.fluxc.example.MainExampleActivity">
 
     <ScrollView
         android:layout_width="match_parent"
