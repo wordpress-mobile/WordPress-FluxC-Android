@@ -202,6 +202,8 @@ public class MainExampleActivity extends AppCompatActivity {
         }
         mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
         mFetchFirstSitePosts.setEnabled(mSiteStore.hasSite());
+        mCreatePostOnFirstSite.setEnabled(mSiteStore.hasSite());
+        mDeleteLatestPost.setEnabled(mSiteStore.hasSite());
         mNewSite.setEnabled(mAccountStore.hasAccessToken());
     }
 
@@ -487,10 +489,10 @@ public class MainExampleActivity extends AppCompatActivity {
                 SiteModel firstSite = mSiteStore.getSites().get(0);
                 prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.getName());
             }
-            mFetchFirstSitePosts.setEnabled(true);
+            mCreatePostOnFirstSite.setEnabled(true);
             mDeleteLatestPost.setEnabled(true);
         } else {
-            mFetchFirstSitePosts.setEnabled(false);
+            mCreatePostOnFirstSite.setEnabled(false);
             mDeleteLatestPost.setEnabled(false);
         }
     }
