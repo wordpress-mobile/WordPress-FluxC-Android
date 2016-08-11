@@ -66,8 +66,7 @@ public class MainExampleActivity extends AppCompatActivity {
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
 
     // used for 2fa
-    private String mLastUsername;
-    private String mLastPassword;
+    private AuthenticatePayload mDotComPayload;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -213,17 +212,16 @@ public class MainExampleActivity extends AppCompatActivity {
                     prependToLog("2FA code required to login");
                     return;
                 }
-                signIn2fa(mLastUsername, mLastPassword, text3);
+                signIn2fa(text3);
             }
         }, "", "", "2FA Code");
         newFragment.show(ft, "2fadialog");
     }
 
-    private void signIn2fa(String username, String password, String twoStepCode) {
-        AuthenticatePayload payload = new AuthenticatePayload(username, password);
-        payload.twoStepCode = twoStepCode;
-        payload.nextAction = SiteActionBuilder.newFetchSitesAction();
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+    private void signIn2fa(String twoStepCode) {
+        mDotComPayload.twoStepCode = twoStepCode;
+        mDotComPayload.nextAction = SiteActionBuilder.newFetchSitesAction();
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mDotComPayload));
     }
 
     private void showHTTPAuthDialog(final String url) {
@@ -247,8 +245,6 @@ public class MainExampleActivity extends AppCompatActivity {
      * depending if the user filled the URL field.
      */
     private void signInAction(final String username, final String password, final String url) {
-        mLastUsername = username;
-        mLastPassword = password;
         if (TextUtils.isEmpty(url)) {
             wpcomFetchSites(username, password);
         } else {
@@ -267,10 +263,10 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void wpcomFetchSites(String username, String password) {
-        AuthenticatePayload payload = new AuthenticatePayload(username, password);
+        mDotComPayload = new AuthenticatePayload(username, password);
         // Next action will be dispatched if authentication is successful
-        payload.nextAction = SiteActionBuilder.newFetchSitesAction();
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+        mDotComPayload.nextAction = SiteActionBuilder.newFetchSitesAction();
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mDotComPayload));
     }
 
     private void selfHostedFetchSites(String username, String password, String xmlrpcEndpoint) {
