@@ -4,16 +4,20 @@ import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
+import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
+import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.PostModel;
-import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.model.post.PostStatus;
+import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.fluxc.store.PostStore.OnPostInstantiated;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
+import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.utils.DateTimeUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -26,37 +30,30 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
+public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
     @Inject Dispatcher mDispatcher;
+    @Inject AccountStore mAccountStore;
     @Inject PostStore mPostStore;
+    @Inject SiteStore mSiteStore;
 
-    private static final String POST_DEFAULT_TITLE = "PostTestXMLRPC base post";
+    private static final String POST_DEFAULT_TITLE = "PostTestWPCOM base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
 
     private CountDownLatch mCountDownLatch;
     private PostModel mPost;
-    private SiteModel mSite;
+    private static SiteModel mSite;
 
     private boolean mCanLoadMorePosts;
 
     enum TEST_EVENTS {
         NONE,
+        SITE_CHANGED,
         POST_INSTANTIATED,
-        POST_UPLOADED,
         POST_UPDATED,
         POSTS_FETCHED,
         POST_DELETED
     }
     private TEST_EVENTS mNextEvent;
-
-    {
-        mSite = new SiteModel();
-        mSite.setId(1);
-        mSite.setDotOrgSiteId(0);
-        mSite.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE);
-        mSite.setPassword(BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE);
-        mSite.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
-    }
 
     @Override
     protected void setUp() throws Exception {
@@ -69,6 +66,15 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         mPost = null;
         mCanLoadMorePosts = false;
+
+        if (mAccountStore.getAccessToken().isEmpty()) {
+            authenticate();
+        }
+
+        if (mSite == null) {
+            fetchSites();
+            mSite = mSiteStore.getSites().get(0);
+        }
     }
 
     public void testUploadNewPost() throws InterruptedException {
@@ -106,10 +112,10 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         PostModel finalPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals("From testEditingRemotePost", finalPost.getTitle());
-
         assertEquals(1, mPostStore.getPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
+
+        assertEquals("From testEditingRemotePost", finalPost.getTitle());
 
         // The date created should not have been altered by the edits
         assertFalse(finalPost.getDateCreated().isEmpty());
@@ -266,7 +272,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals("A fully featured post", newPost.getTitle());
-        assertEquals("Some content here! <strong>Bold text</strong>.", newPost.getContent());
+        assertEquals("<p>Some content here! <strong>Bold text</strong>.</p>", newPost.getContent().trim());
         assertEquals(date, newPost.getDateCreated());
 
         assertTrue(categoryIds.containsAll(newPost.getCategoryIdList()) &&
@@ -298,7 +304,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertNotSame(0, newPage.getRemotePostId());
 
         assertEquals("A fully featured page", newPage.getTitle());
-        assertEquals("Some content here! <strong>Bold text</strong>.", newPage.getContent());
+        assertEquals("<p>Some content here! <strong>Bold text</strong>.</p>", newPage.getContent().trim());
         assertEquals(date, newPage.getDateCreated());
 
         assertEquals(0, newPage.getFeaturedImageId()); // The page should upload, but have the featured image stripped
@@ -310,22 +316,61 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         uploadPost(mPost);
 
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
         mNextEvent = TEST_EVENTS.POST_DELETED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(mPost, mSite)));
+        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(uploadedPost, mSite)));
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Note: It's possible to configure a site to permanently delete posts right away (instead of marking them as
         // 'trashed', in which case this test will fail as the remote post won't be found
-        fetchPost(mPost);
-        mPost = mPostStore.getPostByLocalPostId(mPost.getId());
+        fetchPost(uploadedPost);
+        PostModel trashedPost = mPostStore.getPostByLocalPostId(uploadedPost.getId());
 
         assertEquals(1, mPostStore.getPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
-        assertEquals(PostStatus.TRASHED, PostStatus.fromPost(mPost));
+        assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
+    }
+
+    public void authenticate() throws InterruptedException {
+        // Authenticate a test user (actual credentials declared in gradle.properties)
+        AccountStore.AuthenticatePayload payload =
+                new AccountStore.AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                        BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        mCountDownLatch = new CountDownLatch(1);
+
+        // Correct user we should get an OnAuthenticationChanged message
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void fetchSites() throws InterruptedException {
+        // Fetch sites from REST API, and wait for onSiteChanged event
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TEST_EVENTS.SITE_CHANGED;
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Subscribe
+    public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
+        assertEquals(false, event.isError);
+        mCountDownLatch.countDown();
+    }
+
+    @Subscribe
+    public void onSiteChanged(SiteStore.OnSiteChanged event) {
+        AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
+        assertEquals(true, mSiteStore.hasSite());
+        assertEquals(true, mSiteStore.hasDotComSite());
+        assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
+        mCountDownLatch.countDown();
     }
 
     @Subscribe
@@ -369,12 +414,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     @Subscribe
     public void onPostUploaded(OnPostUploaded event) {
         AppLog.i(T.API, "Received OnPostUploaded");
-        assertEquals(TEST_EVENTS.POST_UPLOADED, mNextEvent);
         assertEquals(false, event.post.isLocalDraft());
         assertEquals(false, event.post.isLocallyChanged());
         assertNotSame(0, event.post.getRemotePostId());
-
-        mCountDownLatch.countDown();
     }
 
     private void setupPostAttributes() {
@@ -394,16 +436,11 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     }
 
     private void uploadPost(PostModel post) throws InterruptedException {
-        mNextEvent = TEST_EVENTS.POST_UPLOADED;
+        mNextEvent = TEST_EVENTS.POST_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
 
         RemotePostPayload pushPayload = new RemotePostPayload(post, mSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
-
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        mNextEvent = TEST_EVENTS.POST_UPDATED;
-        mCountDownLatch = new CountDownLatch(1);
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
