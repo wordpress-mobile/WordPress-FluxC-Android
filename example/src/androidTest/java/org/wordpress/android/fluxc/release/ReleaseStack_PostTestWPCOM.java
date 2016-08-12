@@ -215,7 +215,6 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         assertEquals(false, mPost.isLocalDraft());
     }
 
-    // TODO: Can be improved by using a test site with a known number of posts (say, 35) and verifying that we get exactly that amount
     public void testFetchPosts() throws InterruptedException {
         mNextEvent = TEST_EVENTS.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
@@ -254,14 +253,9 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         String date = DateTimeUtils.iso8601UTCFromDate(new Date());
         mPost.setDateCreated(date);
 
-        // TODO: This should be a non-default category when we have a specific shared site setup for tests
         List<Long> categoryIds = new ArrayList<>(1);
         categoryIds.add((long) 1);
         mPost.setCategoryIdList(categoryIds);
-
-        // TODO: Add test for tags when we have a shared site setup for tests
-
-        mPost.setFeaturedImageId(77);
 
         uploadPost(mPost);
 
@@ -277,8 +271,6 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
 
         assertTrue(categoryIds.containsAll(newPost.getCategoryIdList()) &&
                 newPost.getCategoryIdList().containsAll(categoryIds));
-
-        assertEquals(77, mPost.getFeaturedImageId());
     }
 
     public void testFullFeaturedPageUpload() throws InterruptedException {
