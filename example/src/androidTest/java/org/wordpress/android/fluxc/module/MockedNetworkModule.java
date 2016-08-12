@@ -116,8 +116,8 @@ public class MockedNetworkModule {
     @Singleton
     @Provides
     public MediaRestClient provideMediaRestClient(Dispatcher dispatcher, RequestQueue requestQueue,
-                                                  AccessToken token, UserAgent userAgent) {
-        return new MediaRestClient(dispatcher, requestQueue, token, userAgent);
+                                                  OkHttpClient okClient, AccessToken token, UserAgent userAgent) {
+        return new MediaRestClient(dispatcher, requestQueue, okClient, token, userAgent);
     }
 
     @Singleton
