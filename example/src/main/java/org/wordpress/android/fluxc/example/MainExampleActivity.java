@@ -15,23 +15,22 @@ import android.widget.TextView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
+import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
-import org.wordpress.android.fluxc.store.AccountStore.AuthenticationError;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.fluxc.store.AccountStore.PostAccountSettingsPayload;
-import org.wordpress.android.fluxc.Dispatcher;
-import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.NewSitePayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnNewSiteCreated;
@@ -65,6 +64,9 @@ public class MainExampleActivity extends AppCompatActivity {
 
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
+
+    // used for 2fa
+    private AuthenticatePayload mDotComPayload;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -205,6 +207,27 @@ public class MainExampleActivity extends AppCompatActivity {
         newFragment.show(ft, "dialog");
     }
 
+    private void show2faDialog() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
+            @Override
+            public void onClick(String text1, String text2, String text3) {
+                if (TextUtils.isEmpty(text3)) {
+                    prependToLog("2FA code required to login");
+                    return;
+                }
+                signIn2fa(text3);
+            }
+        }, "", "", "2FA Code");
+        newFragment.show(ft, "2fadialog");
+    }
+
+    private void signIn2fa(String twoStepCode) {
+        mDotComPayload.twoStepCode = twoStepCode;
+        mDotComPayload.nextAction = SiteActionBuilder.newFetchSitesAction();
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mDotComPayload));
+    }
+
     private void showHTTPAuthDialog(final String url) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
@@ -244,10 +267,10 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void wpcomFetchSites(String username, String password) {
-        AuthenticatePayload payload = new AuthenticatePayload(username, password);
+        mDotComPayload = new AuthenticatePayload(username, password);
         // Next action will be dispatched if authentication is successful
-        payload.nextAction = SiteActionBuilder.newFetchSitesAction();
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+        mDotComPayload.nextAction = SiteActionBuilder.newFetchSitesAction();
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mDotComPayload));
     }
 
     private void selfHostedFetchSites(String username, String password, String xmlrpcEndpoint) {
@@ -330,13 +353,21 @@ public class MainExampleActivity extends AppCompatActivity {
         mNewSite.setEnabled(mAccountStore.hasAccessToken());
         if (event.isError) {
             prependToLog("Authentication error: " + event.errorType + " - " + event.errorMessage);
-            if (event.errorType == AuthenticationError.HTTP_AUTH_ERROR) {
-                // Show a Dialog prompting for http username and password
-                showHTTPAuthDialog(mSelfhostedPayload.url);
-            }
-            if (event.errorType == AuthenticationError.INVALID_SSL_CERTIFICATE) {
-                // Show a SSL Warning Dialog
-                showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
+
+            switch (event.errorType) {
+                case HTTP_AUTH_ERROR:
+                    // Show a Dialog prompting for http username and password
+                    showHTTPAuthDialog(mSelfhostedPayload.url);
+                    break;
+                case INVALID_SSL_CERTIFICATE:
+                    // Show a SSL Warning Dialog
+                    showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
+                    break;
+                case NEEDS_2FA:
+                    show2faDialog();
+                    break;
+                default:
+                    break;
             }
         }
     }
