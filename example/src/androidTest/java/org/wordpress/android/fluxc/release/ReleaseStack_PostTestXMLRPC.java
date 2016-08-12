@@ -30,7 +30,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     @Inject Dispatcher mDispatcher;
     @Inject PostStore mPostStore;
 
-    private static final String POST_DEFAULT_TITLE = "PostTextXMLRPC base post";
+    private static final String POST_DEFAULT_TITLE = "PostTestXMLRPC base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
 
     private CountDownLatch mCountDownLatch;
@@ -81,6 +81,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
+        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(mSite));
+
         assertNotSame(0, uploadedPost.getRemotePostId());
         assertEquals(false, uploadedPost.isLocalDraft());
     }
@@ -105,6 +108,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         assertEquals("From testEditingRemotePost", finalPost.getTitle());
 
+        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(mSite));
+
         // The date created should not have been altered by the edits
         assertFalse(finalPost.getDateCreated().isEmpty());
         assertEquals(dateCreated, finalPost.getDateCreated());
@@ -126,6 +132,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         // Get the current copy of the post from the PostStore
         PostModel latestPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals(POST_DEFAULT_TITLE, latestPost.getTitle());
         assertEquals(false, latestPost.isLocallyChanged());
@@ -152,6 +161,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         // Get the current copy of the post from the PostStore
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals("From testChangingLocalDraft, redux", mPost.getTitle());
         assertEquals("Some new content", mPost.getContent());
@@ -186,6 +198,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         // Get the current copy of the post from the PostStore
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals("From testMultipleLocalChangesToUploadedPost, redux", mPost.getTitle());
         assertEquals("Some different content", mPost.getContent());
@@ -247,6 +262,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         // Get the current copy of the post from the PostStore
         PostModel newPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
+        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(mSite));
+
         assertEquals("A fully featured post", newPost.getTitle());
         assertEquals("Some content here! <strong>Bold text</strong>.", newPost.getContent());
         assertEquals(date, newPost.getDateCreated());
@@ -274,6 +292,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         // Get the current copy of the page from the PostStore
         PostModel newPage = mPostStore.getPostByLocalPostId(mPost.getId());
 
+        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, mPostStore.getPagesCountForSite(mSite));
+
         assertNotSame(0, newPage.getRemotePostId());
 
         assertEquals("A fully featured post", newPage.getTitle());
@@ -300,6 +321,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         // 'trashed', in which case this test will fail as the remote post won't be found
         fetchPost(mPost);
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals(PostStatus.TRASHED, PostStatus.fromPost(mPost));
     }
