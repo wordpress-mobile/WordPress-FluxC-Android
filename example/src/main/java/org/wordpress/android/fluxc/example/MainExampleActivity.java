@@ -29,6 +29,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
+import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.fluxc.store.AccountStore.PostAccountSettingsPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
@@ -351,10 +352,10 @@ public class MainExampleActivity extends AppCompatActivity {
         mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
         mAccountSettings.setEnabled(mAccountStore.hasAccessToken());
         mNewSite.setEnabled(mAccountStore.hasAccessToken());
-        if (event.isError) {
-            prependToLog("Authentication error: " + event.errorType + " - " + event.errorMessage);
+        if (event.isError()) {
+            prependToLog("Authentication error: " + event.error);
 
-            switch (event.errorType) {
+            switch (event.error) {
                 case HTTP_AUTH_ERROR:
                     // Show a Dialog prompting for http username and password
                     showHTTPAuthDialog(mSelfhostedPayload.url);
@@ -373,23 +374,22 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDiscoverySucceeded(AccountStore.OnDiscoverySucceeded event) {
-        prependToLog("Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
-        selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDiscoveryFailed(AccountStore.OnDiscoveryFailed event) {
-        if (event.error == DiscoveryError.WORDPRESS_COM_SITE) {
-            wpcomFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password);
-        } else if (event.error == DiscoveryError.HTTP_AUTH_REQUIRED) {
-            showHTTPAuthDialog(event.failedEndpoint);
-        } else if (event.error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
-            mSelfhostedPayload.url = event.failedEndpoint;
-            showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
+    public void onDiscoveryFailed(OnDiscoveryResponse event) {
+        if (event.isError()) {
+            if (event.error == DiscoveryError.WORDPRESS_COM_SITE) {
+                wpcomFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password);
+            } else if (event.error == DiscoveryError.HTTP_AUTH_REQUIRED) {
+                showHTTPAuthDialog(event.failedEndpoint);
+            } else if (event.error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
+                mSelfhostedPayload.url = event.failedEndpoint;
+                showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
+            }
+            prependToLog("Discovery failed with error: " + event.error);
+            AppLog.e(T.API, "Discover error: " + event.error);
+        } else {
+            prependToLog("Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
+            selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
         }
-        prependToLog("Discovery failed with error: " + event.error);
-        AppLog.e(T.API, "Discover error: " + event.error);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -405,9 +405,9 @@ public class MainExampleActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNewUserValidated(OnNewUserCreated event) {
-        String message = event.dryRun ? "validated" : "created";
-        if (event.isError) {
-            prependToLog("New user " + message + ", error: " + event.errorMessage + " - " + event.errorType);
+        String message = event.dryRun ? "validation" : "creation";
+        if (event.isError()) {
+            prependToLog("New user " + message + ", error: " + event.error);
         } else {
             prependToLog("New user " + message + ": success!");
         }
