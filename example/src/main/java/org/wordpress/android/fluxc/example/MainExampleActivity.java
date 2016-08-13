@@ -233,7 +233,7 @@ public class MainExampleActivity extends AppCompatActivity {
             }
             if (!mediaIds.isEmpty()) {
                 FetchMediaPayload payload = new FetchMediaPayload(mSiteStore.getSites().get(0), mediaIds);
-                mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
+                mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(payload));
             }
         }
     }
@@ -390,7 +390,7 @@ public class MainExampleActivity extends AppCompatActivity {
 
     private void fetchAllMedia() {
         FetchMediaPayload payload = new FetchMediaPayload(mSiteStore.getSites().get(0), null);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(payload));
+        mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(payload));
     }
 
     // Event listeners
@@ -483,8 +483,8 @@ public class MainExampleActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaChanged(MediaStore.OnMediaChanged event) {
         switch (event.causeOfChange) {
-            case FETCH_ALL_MEDIA:
-                prependToLog("Begin parsing FETCH_ALL_MEDIA response");
+            case PULL_ALL_MEDIA:
+                prependToLog("Begin parsing PULL_ALL_MEDIA response");
                 if (event.media != null) {
                     for (MediaModel media : event.media) {
                         if (MediaUtils.isImageMimeType(media.getMimeType())) {
@@ -496,9 +496,9 @@ public class MainExampleActivity extends AppCompatActivity {
                         }
                     }
                 }
-                prependToLog("End parsing FETCH_ALL_MEDIA response");
+                prependToLog("End parsing PULL_ALL_MEDIA response");
                 break;
-            case FETCH_MEDIA:
+            case PULL_MEDIA:
                 if (event.media != null && !event.media.isEmpty()) {
                     for (MediaModel media : event.media) {
                         if (media != null) {
