@@ -32,6 +32,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         NONE,
         AUTHENTICATE,
         AUTHENTICATE_ERROR,
+        AUTHENTICATE_2FA_ERROR,
         FETCHED,
         POSTED,
     }
@@ -57,6 +58,11 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     public void testWPCOMAuthenticationError() throws InterruptedException {
         mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTHENTICATE_ERROR;
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_BAD_PASSWORD);
+    }
+
+    public void testWPCOM2faAuthentication() throws InterruptedException {
+        mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTHENTICATE_2FA_ERROR;
+        authenticate(BuildConfig.TEST_WPCOM_USERNAME_2FA, BuildConfig.TEST_WPCOM_PASSWORD_2FA);
     }
 
     public void testWPCOMFetch() throws InterruptedException {
@@ -89,7 +95,11 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         if (event.isError) {
-            assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTHENTICATE_ERROR);
+            if (event.errorType == AccountStore.AuthenticationError.NEEDS_2FA) {
+                assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTHENTICATE_2FA_ERROR);
+            } else if (event.errorType == AccountStore.AuthenticationError.INCORRECT_USERNAME_OR_PASSWORD) {
+                assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTHENTICATE_ERROR);
+            }
         } else {
             assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTHENTICATE);
         }
