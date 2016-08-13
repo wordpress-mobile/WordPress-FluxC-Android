@@ -28,7 +28,8 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
 
     enum TEST_EVENTS {
         FETCHED_ALL_MEDIA,
-        FETCHED_KNOWN_IMAGES
+        FETCHED_KNOWN_IMAGES,
+        UPLOADED_MEDIA
     }
 
     private TEST_EVENTS mExpectedEvent;
@@ -54,7 +55,7 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         MediaStore.FetchMediaPayload fetchPayload = new MediaStore.FetchMediaPayload(site, null);
         mExpectedEvent = TEST_EVENTS.FETCHED_ALL_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(fetchPayload));
+        mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(fetchPayload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -71,18 +72,20 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         MediaStore.FetchMediaPayload payload = new MediaStore.FetchMediaPayload(site, idList);
         mExpectedEvent = TEST_EVENTS.FETCHED_KNOWN_IMAGES;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
+        mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(payload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @Subscribe
     public void onMediaChanged(MediaStore.OnMediaChanged event) {
-        if (event.causeOfChange == MediaAction.FETCH_ALL_MEDIA) {
+        if (event.causeOfChange == MediaAction.PULL_ALL_MEDIA) {
             assertEquals(TEST_EVENTS.FETCHED_ALL_MEDIA, mExpectedEvent);
-        } else if (event.causeOfChange == MediaAction.FETCH_MEDIA) {
+        } else if (event.causeOfChange == MediaAction.PULL_MEDIA) {
             if (eventHasKnownImages(event)) {
                 assertEquals(TEST_EVENTS.FETCHED_KNOWN_IMAGES, mExpectedEvent);
             }
+        } else if (event.causeOfChange == MediaAction.UPLOAD_MEDIA) {
+            assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
         }
         mCountDownLatch.countDown();
     }
