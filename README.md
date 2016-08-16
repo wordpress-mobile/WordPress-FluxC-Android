@@ -46,9 +46,12 @@ Action naming guide:
 
 Each action enum should be annotated with `@ActionEnum`, with individual actions receiving an `@Action` annotation with an optional `payloadType` setting (see [SiteAction][5] for an example).
 
-### Events
+### On Changed Events
 
-Events naming guide:
+All On Changed Events extend the OnChanged class. They encapsulate an `error`
+field. Events can be checked for an error by calling `isError()`.
+
+On Changed Events naming guide:
 
     onXChanged(int rowsAffected) - Keep X singular even if multiple X were changed
     onXRemoved(int rowsAffected) - Keep X singular even if multiple X were removed
