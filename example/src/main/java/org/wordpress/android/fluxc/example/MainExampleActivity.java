@@ -417,8 +417,8 @@ public class MainExampleActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNewSiteCreated(OnNewSiteCreated event) {
         String message = event.dryRun ? "validated" : "created";
-        if (event.isError) {
-            prependToLog("New site " + message + ", error: " + event.errorMessage + " - " + event.errorType);
+        if (event.isError()) {
+            prependToLog("New site " + message + ", error: " + event.error.type + " - " + event.error.message);
         } else {
             prependToLog("New site " + message + ": success!");
         }
