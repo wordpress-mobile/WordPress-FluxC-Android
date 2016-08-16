@@ -353,9 +353,9 @@ public class MainExampleActivity extends AppCompatActivity {
         mAccountSettings.setEnabled(mAccountStore.hasAccessToken());
         mNewSite.setEnabled(mAccountStore.hasAccessToken());
         if (event.isError()) {
-            prependToLog("Authentication error: " + event.error);
+            prependToLog("Authentication error: " + event.error.type);
 
-            switch (event.error) {
+            switch (event.error.type) {
                 case HTTP_AUTH_ERROR:
                     // Show a Dialog prompting for http username and password
                     showHTTPAuthDialog(mSelfhostedPayload.url);
@@ -368,6 +368,7 @@ public class MainExampleActivity extends AppCompatActivity {
                     show2faDialog();
                     break;
                 default:
+                    // Show Toast "Network Error"?
                     break;
             }
         }
@@ -407,7 +408,7 @@ public class MainExampleActivity extends AppCompatActivity {
     public void onNewUserValidated(OnNewUserCreated event) {
         String message = event.dryRun ? "validation" : "creation";
         if (event.isError()) {
-            prependToLog("New user " + message + ", error: " + event.error);
+            prependToLog("New user " + message + ", error: " + event.error.type);
         } else {
             prependToLog("New user " + message + ": success!");
         }
