@@ -49,7 +49,7 @@ Each action enum should be annotated with `@ActionEnum`, with individual actions
 ### On Changed Events
 
 All On Changed Events extend the OnChanged class. They encapsulate an `error`
-field. Events can be checked for an error by calling `isError()`.
+field. Events can be checked for an error by calling `event.isError()`.
 
 On Changed Events naming guide:
 
