@@ -51,7 +51,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import static org.wordpress.android.fluxc.store.MediaStore.FetchMediaPayload;
+import static org.wordpress.android.fluxc.store.MediaStore.PullMediaPayload;
 import static org.wordpress.android.fluxc.store.MediaStore.ChangeMediaPayload;
 
 public class MainExampleActivity extends AppCompatActivity {
@@ -234,7 +234,7 @@ public class MainExampleActivity extends AppCompatActivity {
                 if (lVal >= 0) mediaIds.add(lVal);
             }
             if (!mediaIds.isEmpty()) {
-                FetchMediaPayload payload = new FetchMediaPayload(mSiteStore.getSites().get(0), mediaIds);
+                PullMediaPayload payload = new MediaStore.PullMediaPayload(mSiteStore.getSites().get(0), mediaIds);
                 mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(payload));
             }
         }
@@ -412,7 +412,7 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void fetchAllMedia() {
-        FetchMediaPayload payload = new FetchMediaPayload(mSiteStore.getSites().get(0), null);
+        PullMediaPayload payload = new PullMediaPayload(mSiteStore.getSites().get(0), null);
         mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(payload));
     }
 
