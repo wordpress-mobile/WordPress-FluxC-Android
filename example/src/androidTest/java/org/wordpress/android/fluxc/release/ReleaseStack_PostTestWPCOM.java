@@ -352,13 +352,17 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
 
     @Subscribe
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
-        assertEquals(false, event.isError);
+        assertEquals(false, event.isError());
         mCountDownLatch.countDown();
     }
 
     @Subscribe
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
+        if (event.isError()) {
+            AppLog.i(T.TESTS, "event error type: " + event.error.type);
+            return;
+        }
         assertEquals(true, mSiteStore.hasSite());
         assertEquals(true, mSiteStore.hasDotComSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
