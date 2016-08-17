@@ -1,14 +1,15 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
-import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.AccountAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
+import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
+import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.AccountStore.PostAccountSettingsPayload;
@@ -94,10 +95,10 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
-        if (event.isError) {
-            if (event.errorType == AccountStore.AuthenticationError.NEEDS_2FA) {
+        if (event.isError()) {
+            if (event.error.type == AuthenticationErrorType.NEEDS_2FA) {
                 assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTHENTICATE_2FA_ERROR);
-            } else if (event.errorType == AccountStore.AuthenticationError.INCORRECT_USERNAME_OR_PASSWORD) {
+            } else if (event.error.type == AuthenticationErrorType.INCORRECT_USERNAME_OR_PASSWORD) {
                 assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTHENTICATE_ERROR);
             }
         } else {

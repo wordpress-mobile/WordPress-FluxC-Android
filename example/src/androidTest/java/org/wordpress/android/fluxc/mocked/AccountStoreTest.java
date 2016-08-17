@@ -61,6 +61,6 @@ public class AccountStoreTest extends InstrumentationTestCase {
 
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
-        assertEquals(mIsError, event.isError);
+        assertEquals(mIsError, event.isError());
     }
 }
