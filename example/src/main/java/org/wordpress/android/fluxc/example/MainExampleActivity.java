@@ -412,7 +412,7 @@ public class MainExampleActivity extends AppCompatActivity {
     public void onNewUserValidated(OnNewUserCreated event) {
         String message = event.dryRun ? "validation" : "creation";
         if (event.isError()) {
-            prependToLog("New user " + message + ", error: " + event.error.type);
+            prependToLog("New user " + message + ": error: " + event.error.type + " - " + event.error.message);
         } else {
             prependToLog("New user " + message + ": success!");
         }
@@ -422,7 +422,7 @@ public class MainExampleActivity extends AppCompatActivity {
     public void onNewSiteCreated(OnNewSiteCreated event) {
         String message = event.dryRun ? "validated" : "created";
         if (event.isError()) {
-            prependToLog("New site " + message + ", error: " + event.error.type + " - " + event.error.message);
+            prependToLog("New site " + message + ": error: " + event.error.type + " - " + event.error.message);
         } else {
             prependToLog("New site " + message + ": success!");
         }
