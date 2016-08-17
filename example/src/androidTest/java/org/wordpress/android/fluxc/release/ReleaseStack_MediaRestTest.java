@@ -48,18 +48,18 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         super.tearDown();
     }
 
-    public void testFetchAllMedia() throws InterruptedException {
+    public void testPullAllMedia() throws InterruptedException {
         loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
         SiteModel site = mSiteStore.getSites().get(0);
-        MediaStore.FetchMediaPayload fetchPayload = new MediaStore.FetchMediaPayload(site, null);
+        MediaStore.PullMediaPayload fetchPayload = new MediaStore.PullMediaPayload(site, null);
         mExpectedEvent = TEST_EVENTS.FETCHED_ALL_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(fetchPayload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testFetchSpecificMedia() throws InterruptedException {
+    public void testPullSpecificMedia() throws InterruptedException {
         loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
         String knownImageIds = BuildConfig.TEST_WPCOM_IMAGE_IDS_TEST1;
@@ -69,7 +69,7 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
             idList.add(Long.valueOf(id));
         }
         SiteModel site = mSiteStore.getSites().get(0);
-        MediaStore.FetchMediaPayload payload = new MediaStore.FetchMediaPayload(site, idList);
+        MediaStore.PullMediaPayload payload = new MediaStore.PullMediaPayload(site, idList);
         mExpectedEvent = TEST_EVENTS.FETCHED_KNOWN_IMAGES;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(payload));
