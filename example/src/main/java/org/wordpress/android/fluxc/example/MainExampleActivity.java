@@ -395,6 +395,10 @@ public class MainExampleActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteChanged(OnSiteChanged event) {
+        if (event.isError()) {
+            prependToLog("SiteChanged error: " + event.error.type);
+            return;
+        }
         if (mSiteStore.hasSite()) {
             SiteModel firstSite = mSiteStore.getSites().get(0);
             prependToLog("First site name: " + firstSite.getName() + " - Total sites: " + mSiteStore.getSitesCount());
