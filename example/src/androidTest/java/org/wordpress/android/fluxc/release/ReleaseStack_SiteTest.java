@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticationError;
+import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
@@ -221,6 +222,10 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
     @Subscribe
     public void onSiteChanged(OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
+        if (event.isError()) {
+            AppLog.i(T.TESTS, "event error type: " + event.error.type);
+            return;
+        }
         assertEquals(true, mSiteStore.hasSite());
         assertEquals(true, mSiteStore.hasDotOrgSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
@@ -238,12 +243,12 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
 
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
-        if (event.isError) {
-            AppLog.i(T.TESTS, "error " + event.errorType + " - " + event.errorMessage);
-            if (event.errorType == AuthenticationError.HTTP_AUTH_ERROR) {
+        if (event.isError()) {
+            AppLog.i(T.TESTS, "error " + event.error.type + " - " + event.error.message);
+            if (event.error.type == AuthenticationErrorType.GENERIC_ERROR) {
                 assertEquals(TEST_EVENTS.HTTP_AUTH_ERROR, mNextEvent);
             }
-            if (event.errorType == AuthenticationError.INVALID_SSL_CERTIFICATE) {
+            if (event.error.type == AuthenticationErrorType.INVALID_SSL_CERTIFICATE) {
                 assertEquals(TEST_EVENTS.INVALID_SSL_CERTIFICATE, mNextEvent);
             }
         }
