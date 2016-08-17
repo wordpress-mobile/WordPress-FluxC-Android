@@ -375,7 +375,7 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDiscoveryFailed(OnDiscoveryResponse event) {
+    public void onDiscoveryResponse(OnDiscoveryResponse event) {
         if (event.isError()) {
             if (event.error == DiscoveryError.WORDPRESS_COM_SITE) {
                 wpcomFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password);
