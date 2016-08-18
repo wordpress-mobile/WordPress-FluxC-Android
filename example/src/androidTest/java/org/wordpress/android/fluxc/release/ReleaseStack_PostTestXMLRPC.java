@@ -45,6 +45,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         POST_UPLOADED,
         POST_UPDATED,
         POSTS_FETCHED,
+        PAGES_FETCHED,
         POST_DELETED
     }
     private TEST_EVENTS mNextEvent;
@@ -106,7 +107,13 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         PostModel finalPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
+        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(mSite));
+
         assertEquals("From testEditingRemotePost", finalPost.getTitle());
+
+        // The post should no longer be flagged as having local changes
+        assertFalse(finalPost.isLocallyChanged());
 
         assertEquals(1, mPostStore.getPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
@@ -219,7 +226,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         int firstFetchPosts = mPostStore.getPostsCountForSite(mSite);
 
-        // Dangerous, will fail for a site with no posts, see to-do above
+        // Dangerous, will fail for a site with no posts
         assertTrue(firstFetchPosts > 0 && firstFetchPosts <= PostStore.NUM_POSTS_PER_FETCH);
         assertEquals(mCanLoadMorePosts, firstFetchPosts == PostStore.NUM_POSTS_PER_FETCH);
 
@@ -237,6 +244,21 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         assertTrue(currentStoredPosts > firstFetchPosts);
         assertTrue(currentStoredPosts <= (PostStore.NUM_POSTS_PER_FETCH * 2));
+    }
+
+    public void testFetchPages() throws InterruptedException {
+        mNextEvent = TEST_EVENTS.PAGES_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newFetchPagesAction(new PostStore.FetchPostsPayload(mSite, false)));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        int firstFetchPosts = mPostStore.getPagesCountForSite(mSite);
+
+        // Dangerous, will fail for a site with no pages
+        assertTrue(firstFetchPosts > 0 && firstFetchPosts <= PostStore.NUM_POSTS_PER_FETCH);
+        assertEquals(mCanLoadMorePosts, firstFetchPosts == PostStore.NUM_POSTS_PER_FETCH);
     }
 
     public void testFullFeaturedPostUpload() throws InterruptedException {
@@ -302,22 +324,24 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         uploadPost(mPost);
 
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
         mNextEvent = TEST_EVENTS.POST_DELETED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(mPost, mSite)));
+        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(uploadedPost, mSite)));
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Note: It's possible to configure a site to permanently delete posts right away (instead of marking them as
         // 'trashed', in which case this test will fail as the remote post won't be found
-        fetchPost(mPost);
-        mPost = mPostStore.getPostByLocalPostId(mPost.getId());
+        fetchPost(uploadedPost);
+        PostModel trashedPost = mPostStore.getPostByLocalPostId(uploadedPost.getId());
 
         assertEquals(1, mPostStore.getPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
-        assertEquals(PostStatus.TRASHED, PostStatus.fromPost(mPost));
+        assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
     }
 
     @Subscribe
@@ -332,6 +356,13 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
             case FETCH_POSTS:
                 if (mNextEvent.equals(TEST_EVENTS.POSTS_FETCHED)) {
                     AppLog.i(T.API, "Fetched " + event.rowsAffected + " posts, can load more: " + event.canLoadMore);
+                    mCanLoadMorePosts = event.canLoadMore;
+                    mCountDownLatch.countDown();
+                }
+                break;
+            case FETCH_PAGES:
+                if (mNextEvent.equals(TEST_EVENTS.PAGES_FETCHED)) {
+                    AppLog.i(T.API, "Fetched " + event.rowsAffected + " pages, can load more: " + event.canLoadMore);
                     mCanLoadMorePosts = event.canLoadMore;
                     mCountDownLatch.countDown();
                 }

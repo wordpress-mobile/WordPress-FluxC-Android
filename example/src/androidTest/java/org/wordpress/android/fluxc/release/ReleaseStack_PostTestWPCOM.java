@@ -51,6 +51,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         POST_INSTANTIATED,
         POST_UPDATED,
         POSTS_FETCHED,
+        PAGES_FETCHED,
         POST_DELETED
     }
     private TEST_EVENTS mNextEvent;
@@ -116,6 +117,9 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals("From testEditingRemotePost", finalPost.getTitle());
+
+        // The post should no longer be flagged as having local changes
+        assertFalse(finalPost.isLocallyChanged());
 
         // The date created should not have been altered by the edits
         assertFalse(finalPost.getDateCreated().isEmpty());
@@ -225,7 +229,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
 
         int firstFetchPosts = mPostStore.getPostsCountForSite(mSite);
 
-        // Dangerous, will fail for a site with no posts, see to-do above
+        // Dangerous, will fail for a site with no posts
         assertTrue(firstFetchPosts > 0 && firstFetchPosts <= PostStore.NUM_POSTS_PER_FETCH);
         assertEquals(mCanLoadMorePosts, firstFetchPosts == PostStore.NUM_POSTS_PER_FETCH);
 
@@ -243,6 +247,21 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
 
         assertTrue(currentStoredPosts > firstFetchPosts);
         assertTrue(currentStoredPosts <= (PostStore.NUM_POSTS_PER_FETCH * 2));
+    }
+
+    public void testFetchPages() throws InterruptedException {
+        mNextEvent = TEST_EVENTS.PAGES_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newFetchPagesAction(new PostStore.FetchPostsPayload(mSite, false)));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        int firstFetchPosts = mPostStore.getPagesCountForSite(mSite);
+
+        // Dangerous, will fail for a site with no pages
+        assertTrue(firstFetchPosts > 0 && firstFetchPosts <= PostStore.NUM_POSTS_PER_FETCH);
+        assertEquals(mCanLoadMorePosts, firstFetchPosts == PostStore.NUM_POSTS_PER_FETCH);
     }
 
     public void testFullFeaturedPostUpload() throws InterruptedException {
@@ -381,6 +400,13 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
             case FETCH_POSTS:
                 if (mNextEvent.equals(TEST_EVENTS.POSTS_FETCHED)) {
                     AppLog.i(T.API, "Fetched " + event.rowsAffected + " posts, can load more: " + event.canLoadMore);
+                    mCanLoadMorePosts = event.canLoadMore;
+                    mCountDownLatch.countDown();
+                }
+                break;
+            case FETCH_PAGES:
+                if (mNextEvent.equals(TEST_EVENTS.PAGES_FETCHED)) {
+                    AppLog.i(T.API, "Fetched " + event.rowsAffected + " pages, can load more: " + event.canLoadMore);
                     mCanLoadMorePosts = event.canLoadMore;
                     mCountDownLatch.countDown();
                 }
