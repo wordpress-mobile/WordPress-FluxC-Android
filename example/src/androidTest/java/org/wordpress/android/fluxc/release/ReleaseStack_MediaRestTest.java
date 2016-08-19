@@ -8,10 +8,12 @@ import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
+import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.utils.MediaUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,6 +75,66 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         mExpectedEvent = TEST_EVENTS.FETCHED_KNOWN_IMAGES;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(payload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testUploadImage() throws InterruptedException {
+        loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        final String testTitle = "Test Title";
+        final String testDescription = "Test Description";
+        final String testCaption = "Test Caption";
+        final String testAlt = "Test Alt";
+
+        SiteModel site = mSiteStore.getSites().get(0);
+        MediaModel testMedia = new MediaModel();
+        String imagePath = BuildConfig.TEST_LOCAL_IMAGE;
+        testMedia.setFilePath(imagePath);
+        testMedia.setFileExtension(imagePath.substring(imagePath.lastIndexOf(".") + 1, imagePath.length()));
+        testMedia.setMimeType(MediaUtils.MIME_TYPE_IMAGE + testMedia.getFileExtension());
+        testMedia.setFileName(imagePath.substring(imagePath.lastIndexOf("/"), imagePath.length()));
+        testMedia.setTitle(testTitle);
+        testMedia.setDescription(testDescription);
+        testMedia.setCaption(testCaption);
+        testMedia.setAlt(testAlt);
+        testMedia.setBlogId(site.getDotOrgSiteId());
+
+        List<MediaModel> media = new ArrayList<>();
+        media.add(testMedia);
+        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testUploadVideo() throws InterruptedException {
+        loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        final String testTitle = "Test Title";
+        final String testDescription = "Test Description";
+        final String testCaption = "Test Caption";
+        final String testAlt = "Test Alt";
+
+        SiteModel site = mSiteStore.getSites().get(0);
+        MediaModel testMedia = new MediaModel();
+        String videoPath = BuildConfig.TEST_LOCAL_VIDEO;
+        testMedia.setFilePath(videoPath);
+        testMedia.setFileExtension(videoPath.substring(videoPath.lastIndexOf(".") + 1, videoPath.length()));
+        testMedia.setMimeType(MediaUtils.MIME_TYPE_VIDEO + testMedia.getFileExtension());
+        testMedia.setFileName(videoPath.substring(videoPath.lastIndexOf("/"), videoPath.length()));
+        testMedia.setTitle(testTitle);
+        testMedia.setDescription(testDescription);
+        testMedia.setCaption(testCaption);
+        testMedia.setAlt(testAlt);
+        testMedia.setBlogId(site.getDotOrgSiteId());
+
+        List<MediaModel> media = new ArrayList<>();
+        media.add(testMedia);
+        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
