@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.fluxc.store.PostStore.OnPostInstantiated;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
+import org.wordpress.android.fluxc.store.PostStore.PostErrorType;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.utils.DateTimeUtils;
@@ -52,7 +53,10 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         POST_UPDATED,
         POSTS_FETCHED,
         PAGES_FETCHED,
-        POST_DELETED
+        POST_DELETED,
+        ERROR_UNKNOWN_POST,
+        ERROR_UNKNOWN_POST_TYPE,
+        ERROR_GENERIC
     }
     private TEST_EVENTS mNextEvent;
 
@@ -95,7 +99,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         assertEquals(false, uploadedPost.isLocalDraft());
     }
 
-    public void testEditingRemotePost() throws InterruptedException {
+    public void testEditRemotePost() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
 
@@ -126,7 +130,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         assertEquals(dateCreated, finalPost.getDateCreated());
     }
 
-    public void testRevertingLocallyChangedPost() throws InterruptedException {
+    public void testRevertLocallyChangedPost() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
 
@@ -150,7 +154,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         assertEquals(false, latestPost.isLocallyChanged());
     }
 
-    public void testChangingLocalDraft() throws InterruptedException {
+    public void testChangeLocalDraft() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
 
@@ -347,7 +351,93 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
     }
 
-    public void authenticate() throws InterruptedException {
+    // Error handling tests
+
+    public void testFetchInvalidPost() throws InterruptedException {
+        PostModel post = new PostModel();
+        post.setRemotePostId(6420328);
+        post.setRemoteSiteId(mSite.getSiteId());
+
+        mNextEvent = TEST_EVENTS.ERROR_UNKNOWN_POST;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, mSite)));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testEditInvalidPost() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        uploadPost(mPost);
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        String dateCreated = uploadedPost.getDateCreated();
+
+        uploadedPost.setTitle("From testEditInvalidPost");
+        uploadedPost.setIsLocallyChanged(true);
+
+        savePost(uploadedPost);
+
+        uploadedPost.setRemotePostId(289385);
+
+        mNextEvent = TEST_EVENTS.ERROR_UNKNOWN_POST;
+        mCountDownLatch = new CountDownLatch(1);
+
+        // Upload edited post
+        RemotePostPayload pushPayload = new RemotePostPayload(uploadedPost, mSite);
+        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        PostModel persistedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(mSite));
+
+        // The locally saved post should still be marked as locally changed, and local changes should be preserved
+        assertEquals("From testEditInvalidPost", persistedPost.getTitle());
+        assertTrue(persistedPost.isLocallyChanged());
+
+        // The date created should not have been altered by the edit
+        assertFalse(persistedPost.getDateCreated().isEmpty());
+        assertEquals(dateCreated, persistedPost.getDateCreated());
+    }
+
+    public void testDeleteInvalidRemotePost() throws InterruptedException {
+        PostModel invalidPost = new PostModel();
+        invalidPost.setRemotePostId(6420328);
+        invalidPost.setRemoteSiteId(mSite.getSiteId());
+
+        mNextEvent = TEST_EVENTS.ERROR_UNKNOWN_POST;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(invalidPost, mSite)));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testFetchPostFromInvalidSite() throws InterruptedException {
+        PostModel post = new PostModel();
+        post.setRemotePostId(6420328);
+        post.setRemoteSiteId(99999999999L);
+
+        SiteModel site = new SiteModel();
+        site.setIsWPCom(true);
+        site.setSiteId(99999999999L);
+
+        // Expecting a generic 404 error (unknown blog)
+        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, site)));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void authenticate() throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
         AccountStore.AuthenticatePayload payload =
                 new AccountStore.AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
@@ -360,7 +450,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void fetchSites() throws InterruptedException {
+    private void fetchSites() throws InterruptedException {
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
@@ -391,6 +481,20 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
         AppLog.i(T.API, "Received OnPostChanged, causeOfChange: " + event.causeOfChange);
+        if (event.isError()) {
+            AppLog.i(T.API, "OnPostChanged has error: " + event.error.type + " - " + event.error.message);
+            if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST)) {
+                assertEquals(PostErrorType.UNKNOWN_POST, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST_TYPE)) {
+                assertEquals(PostErrorType.UNKNOWN_POST_TYPE, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
+                assertEquals(PostErrorType.GENERIC_ERROR, event.error.type);
+                mCountDownLatch.countDown();
+            }
+            return;
+        }
         switch (event.causeOfChange) {
             case UPDATE_POST:
                 if (mNextEvent.equals(TEST_EVENTS.POST_UPDATED)) {
