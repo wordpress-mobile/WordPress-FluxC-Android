@@ -261,7 +261,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     }
 
     private void checkSelfHostedHTTPAuthFetchForSite(String url, String username, String password, String auth_username,
-                                                    String auth_password) throws InterruptedException {
+                                                     String auth_password) throws InterruptedException {
         mPayload = new RefreshSitesXMLRPCPayload();
         mPayload.url = url;
         mPayload.username = username;
