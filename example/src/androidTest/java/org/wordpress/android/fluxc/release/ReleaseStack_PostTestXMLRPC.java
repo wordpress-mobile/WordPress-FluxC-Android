@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.fluxc.store.PostStore.OnPostInstantiated;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
+import org.wordpress.android.fluxc.store.PostStore.PostError;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
 import org.wordpress.android.fluxc.utils.DateTimeUtils;
 import org.wordpress.android.util.AppLog;
@@ -39,6 +40,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     private boolean mCanLoadMorePosts;
 
+    private PostError mLastPostError;
+
     enum TEST_EVENTS {
         NONE,
         POST_INSTANTIATED,
@@ -46,7 +49,10 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         POST_UPDATED,
         POSTS_FETCHED,
         PAGES_FETCHED,
-        POST_DELETED
+        POST_DELETED,
+        ERROR_UNKNOWN_POST,
+        ERROR_UNKNOWN_POST_TYPE,
+        ERROR_GENERIC
     }
     private TEST_EVENTS mNextEvent;
 
@@ -70,6 +76,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         mPost = null;
         mCanLoadMorePosts = false;
+
+        mLastPostError = null;
     }
 
     public void testUploadNewPost() throws InterruptedException {
@@ -89,7 +97,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(false, uploadedPost.isLocalDraft());
     }
 
-    public void testEditingRemotePost() throws InterruptedException {
+    public void testEditRemotePost() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
 
@@ -123,7 +131,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(dateCreated, finalPost.getDateCreated());
     }
 
-    public void testRevertingLocallyChangedPost() throws InterruptedException {
+    public void testRevertLocallyChangedPost() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
 
@@ -147,7 +155,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(false, latestPost.isLocallyChanged());
     }
 
-    public void testChangingLocalDraft() throws InterruptedException {
+    public void testChangeLocalDraft() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
 
@@ -344,9 +352,100 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
     }
 
+    public void testFetchInvalidPost() throws InterruptedException {
+        PostModel post = new PostModel();
+        post.setRemotePostId(6420328);
+
+        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, mSite)));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_POST error instead
+        // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
+        assertEquals("Invalid post ID.", mLastPostError.message);
+    }
+
+    public void testEditInvalidPost() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        uploadPost(mPost);
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        String dateCreated = uploadedPost.getDateCreated();
+
+        uploadedPost.setTitle("From testEditInvalidPost");
+        uploadedPost.setIsLocallyChanged(true);
+
+        savePost(uploadedPost);
+
+        uploadedPost.setRemotePostId(289385);
+
+        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mCountDownLatch = new CountDownLatch(1);
+
+        // Upload edited post
+        RemotePostPayload pushPayload = new RemotePostPayload(uploadedPost, mSite);
+        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        PostModel persistedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(mSite));
+
+        // The locally saved post should still be marked as locally changed, and local changes should be preserved
+        assertEquals("From testEditInvalidPost", persistedPost.getTitle());
+        assertTrue(persistedPost.isLocallyChanged());
+
+        // The date created should not have been altered by the edit
+        assertFalse(persistedPost.getDateCreated().isEmpty());
+        assertEquals(dateCreated, persistedPost.getDateCreated());
+
+        // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_POST error instead
+        // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
+        assertEquals("Invalid post ID.", mLastPostError.message);
+    }
+
+    public void testDeleteInvalidRemotePost() throws InterruptedException {
+        PostModel invalidPost = new PostModel();
+        invalidPost.setRemotePostId(6420328);
+
+        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(invalidPost, mSite)));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_POST error instead
+        // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
+        assertEquals("Invalid post ID.", mLastPostError.message);
+    }
+
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
         AppLog.i(T.API, "Received OnPostChanged, causeOfChange: " + event.causeOfChange);
+        if (event.isError()) {
+            AppLog.i(T.API, "OnPostChanged has error: " + event.error.type + " - " + event.error.message);
+            mLastPostError = event.error;
+            if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST)) {
+                assertEquals(PostStore.PostErrorType.UNKNOWN_POST, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST_TYPE)) {
+                assertEquals(PostStore.PostErrorType.UNKNOWN_POST_TYPE, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
+                assertEquals(PostStore.PostErrorType.GENERIC_ERROR, event.error.type);
+                mCountDownLatch.countDown();
+            }
+            return;
+        }
         switch (event.causeOfChange) {
             case UPDATE_POST:
                 if (mNextEvent.equals(TEST_EVENTS.POST_UPDATED)) {
