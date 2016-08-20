@@ -352,6 +352,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
     }
 
+    // Error handling tests
+
     public void testFetchInvalidPost() throws InterruptedException {
         PostModel post = new PostModel();
         post.setRemotePostId(6420328);
@@ -426,6 +428,246 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_POST error instead
         // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
         assertEquals("Invalid post ID.", mLastPostError.message);
+    }
+
+    public void testCreateNewPostWithInvalidCategory() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        List<Long> categories = new ArrayList<>();
+        categories.add((long) 999999);
+
+        mPost.setCategoryIdList(categories);
+
+        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mCountDownLatch = new CountDownLatch(1);
+
+        // Upload edited post
+        RemotePostPayload pushPayload = new RemotePostPayload(mPost, mSite);
+        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_TERM error instead
+        // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
+        assertEquals("Invalid term ID.", mLastPostError.message);
+    }
+
+    public void testCreateNewPostWithInvalidTag() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        List<Long> tags = new ArrayList<>();
+        tags.add((long) 999999);
+
+        mPost.setTagIdList(tags);
+
+        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mCountDownLatch = new CountDownLatch(1);
+
+        // Upload edited post
+        RemotePostPayload pushPayload = new RemotePostPayload(mPost, mSite);
+        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_TERM error instead
+        // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
+        assertEquals("Invalid term ID.", mLastPostError.message);
+    }
+
+    public void testEditPostWithInvalidTerm() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        uploadPost(mPost);
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        String dateCreated = uploadedPost.getDateCreated();
+
+        uploadedPost.setTitle("From testEditInvalidPost");
+        uploadedPost.setIsLocallyChanged(true);
+
+        savePost(uploadedPost);
+
+        List<Long> categories = new ArrayList<>();
+        categories.add((long) 999999);
+
+        uploadedPost.setCategoryIdList(categories);
+
+        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mCountDownLatch = new CountDownLatch(1);
+
+        // Upload edited post
+        RemotePostPayload pushPayload = new RemotePostPayload(uploadedPost, mSite);
+        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        PostModel persistedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(mSite));
+
+        // The locally saved post should still be marked as locally changed, and local changes should be preserved
+        assertEquals("From testEditInvalidPost", persistedPost.getTitle());
+        assertTrue(persistedPost.isLocallyChanged());
+
+        // The date created should not have been altered by the edit
+        assertFalse(persistedPost.getDateCreated().isEmpty());
+        assertEquals(dateCreated, persistedPost.getDateCreated());
+
+        // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_TERM error instead
+        // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
+        assertEquals("Invalid term ID.", mLastPostError.message);
+    }
+
+    public void testCreateNewPostWithInvalidFeaturedImage() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        mPost.setFeaturedImageId(999999);
+
+        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mCountDownLatch = new CountDownLatch(1);
+
+        // Upload edited post
+        RemotePostPayload pushPayload = new RemotePostPayload(mPost, mSite);
+        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_ATTACHMENT error instead
+        // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
+        assertEquals("Invalid attachment ID.", mLastPostError.message);
+    }
+
+    public void testEditPostWithInvalidFeaturedImage() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        uploadPost(mPost);
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        String dateCreated = uploadedPost.getDateCreated();
+
+        uploadedPost.setTitle("From testEditInvalidPost");
+        uploadedPost.setIsLocallyChanged(true);
+
+        savePost(uploadedPost);
+
+        uploadedPost.setFeaturedImageId(999999);
+
+        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mCountDownLatch = new CountDownLatch(1);
+
+        // Upload edited post
+        RemotePostPayload pushPayload = new RemotePostPayload(uploadedPost, mSite);
+        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        PostModel persistedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(mSite));
+
+        // The locally saved post should still be marked as locally changed, and local changes should be preserved
+        assertEquals("From testEditInvalidPost", persistedPost.getTitle());
+        assertTrue(persistedPost.isLocallyChanged());
+
+        // The date created should not have been altered by the edit
+        assertFalse(persistedPost.getDateCreated().isEmpty());
+        assertEquals(dateCreated, persistedPost.getDateCreated());
+
+        // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_ATTACHMENT error instead
+        // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
+        assertEquals("Invalid attachment ID.", mLastPostError.message);
+    }
+
+    public void testFetchPostBadCredentials() throws InterruptedException {
+        PostModel post = new PostModel();
+        post.setRemotePostId(10);
+
+        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mCountDownLatch = new CountDownLatch(1);
+
+        SiteModel badSite = new SiteModel();
+        badSite.setId(2);
+        badSite.setDotOrgSiteId(0);
+        badSite.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE);
+        badSite.setPassword("wrong");
+        badSite.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
+
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, badSite)));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals("Incorrect username or password.", mLastPostError.message);
+    }
+
+    public void testFetchPostBadUrl() throws InterruptedException {
+        PostModel post = new PostModel();
+        post.setRemotePostId(10);
+
+        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mCountDownLatch = new CountDownLatch(1);
+
+        SiteModel badSite = new SiteModel();
+        badSite.setId(2);
+        badSite.setDotOrgSiteId(0);
+        badSite.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE);
+        badSite.setPassword("wrong");
+        badSite.setXmlRpcUrl("http://www.android.com");
+
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, badSite)));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    // TODO: Test: Upload a page to a custom site that has pages disabled (should get a 403 'Invalid post type')
+
+    public void testCreatePostAsSubscriber() throws InterruptedException {
+        SiteModel subscriberSite = new SiteModel();
+        subscriberSite.setId(2);
+        subscriberSite.setDotOrgSiteId(0);
+        subscriberSite.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE_SUBSCRIBER);
+        subscriberSite.setPassword(BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE_SUBSCRIBER);
+        subscriberSite.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_SUBSCRIBER_ENDPOINT);
+
+        // Instantiate new post
+        mNextEvent = TEST_EVENTS.POST_INSTANTIATED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        InstantiatePostPayload initPayload = new InstantiatePostPayload(subscriberSite, false);
+        mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(initPayload));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        setupPostAttributes();
+
+        // Attempt to upload new post to site
+        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mCountDownLatch = new CountDownLatch(1);
+
+        RemotePostPayload pushPayload = new RemotePostPayload(mPost, subscriberSite);
+        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals("Sorry, you are not allowed to post on this site.", mLastPostError.message);
+
+        PostModel failedUploadPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        // Post should still exist locally, but not marked as uploaded
+        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(subscriberSite));
+        assertEquals(0, mPostStore.getUploadedPostsCountForSite(subscriberSite));
+
+        assertEquals(0, failedUploadPost.getRemotePostId());
+        assertEquals(true, failedUploadPost.isLocalDraft());
     }
 
     @Subscribe
