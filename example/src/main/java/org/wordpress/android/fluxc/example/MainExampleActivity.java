@@ -452,8 +452,10 @@ public class MainExampleActivity extends AppCompatActivity {
             SiteModel firstSite = mSiteStore.getSites().get(0);
             prependToLog("First site name: " + firstSite.getName() + " - Total sites: " + mSiteStore.getSitesCount());
             mUpdateFirstSite.setEnabled(true);
+            mFetchFirstSitePosts.setEnabled(true);
         } else {
             mUpdateFirstSite.setEnabled(false);
+            mFetchFirstSitePosts.setEnabled(false);
         }
     }
 
