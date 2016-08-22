@@ -57,7 +57,7 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         MediaStore.PullMediaPayload fetchPayload = new MediaStore.PullMediaPayload(site, null);
         mExpectedEvent = TEST_EVENTS.FETCHED_ALL_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(fetchPayload));
+        mDispatcher.dispatch(MediaActionBuilder.newPullAllMediaAction(fetchPayload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 

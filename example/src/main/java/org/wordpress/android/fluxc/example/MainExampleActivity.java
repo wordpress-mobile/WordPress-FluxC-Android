@@ -413,7 +413,7 @@ public class MainExampleActivity extends AppCompatActivity {
 
     private void fetchAllMedia() {
         PullMediaPayload payload = new PullMediaPayload(mSiteStore.getSites().get(0), null);
-        mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(payload));
+        mDispatcher.dispatch(MediaActionBuilder.newPullAllMediaAction(payload));
     }
 
     // Event listeners
