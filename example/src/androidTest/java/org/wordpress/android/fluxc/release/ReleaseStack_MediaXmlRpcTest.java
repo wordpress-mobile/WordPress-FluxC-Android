@@ -239,6 +239,23 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         pullSpecificMedia(site, mediaIds, TEST_EVENTS.NOT_FOUND_ERROR);
     }
 
+    /**
+     * Delete action on null media results in a null error.
+     */
+    public void testDeleteNullMedia() throws InterruptedException {
+        deleteMedia(mSiteStore.getSites().get(0), null, TEST_EVENTS.NULL_ERROR);
+    }
+
+    /**
+     * Delete action on media that doesn't exist should not result in an exception.
+     */
+    public void testDeleteMediaThatDoesNotExist() throws InterruptedException {
+        SiteModel site = mSiteStore.getSites().get(0);
+        MediaModel testMedia = new MediaModel();
+        testMedia.setMediaId(9999999L);
+        deleteMedia(site, testMedia, TEST_EVENTS.NOT_FOUND_ERROR);
+    }
+
     private String randomString() {
         return UUID.randomUUID().toString();
     }
