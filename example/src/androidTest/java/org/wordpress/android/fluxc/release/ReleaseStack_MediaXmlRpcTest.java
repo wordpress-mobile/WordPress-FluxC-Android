@@ -21,14 +21,11 @@ import org.wordpress.android.util.AppLog;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-/**
- */
 public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     private final String TEST_TITLE = "Test Title";
     private final String TEST_DESCRIPTION = "Test Description";
@@ -111,10 +108,10 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         final String mediaAlt = testMedia.getAlt();
 
         // update properties to test pushing changes
-        final String newTitle = mediaTitle + randomString();
-        final String newDescription = mediaDescription + randomString();
-        final String newCaption = mediaCaption + randomString();
-        final String newAlt = mediaAlt + randomString();
+        final String newTitle = mediaTitle + TestUtils.randomString(5);
+        final String newDescription = mediaDescription + TestUtils.randomString(5);
+        final String newCaption = mediaCaption + TestUtils.randomString(5);
+        final String newAlt = mediaAlt + TestUtils.randomString(5);
         testMedia.setTitle(newTitle);
         testMedia.setDescription(newDescription);
         testMedia.setCaption(newCaption);
@@ -153,7 +150,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     public void testPushNewMedia() throws InterruptedException {
         // create new media item for local image
         SiteModel site = mSiteStore.getSites().get(0);
-        final String TEST_ID = TEST_DESCRIPTION + randomString();
+        final String TEST_ID = TEST_DESCRIPTION + TestUtils.randomString(5);
         final MediaModel testMedia = getTestMedia(TEST_TITLE, TEST_ID, TEST_CAPTION, TEST_ALT);
         String imagePath = BuildConfig.TEST_LOCAL_IMAGE;
         testMedia.setFilePath(imagePath);
