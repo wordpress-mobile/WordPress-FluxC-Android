@@ -57,6 +57,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     private CountDownLatch mCountDownLatch;
     private AccountStore.OnDiscoverySucceeded mDiscovered;
     private List<Long> mExpectedIds;
+    private long mLastUploadedId = -1L;
 
     @Override
     protected void setUp() throws Exception {
@@ -274,8 +275,25 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         deleteMedia(site, testMedia, TEST_EVENTS.NOT_FOUND_ERROR);
     }
 
-    private String randomString() {
-        return UUID.randomUUID().toString();
+    /**
+     * Delete action on media that exists should result in no media on a pull request.
+     */
+    public void testDeleteMediaThatExists() throws InterruptedException {
+        // upload media
+        SiteModel site = mSiteStore.getSites().get(0);
+        List<MediaModel> media = new ArrayList<>();
+        MediaModel testMedia = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
+        String imagePath = BuildConfig.TEST_LOCAL_IMAGE;
+        testMedia.setFilePath(imagePath);
+        testMedia.setFileName(MediaUtils.getFileName(imagePath));
+        testMedia.setFileExtension(MediaUtils.getExtension(imagePath));
+        testMedia.setMimeType(MediaUtils.MIME_TYPE_IMAGE + testMedia.getFileExtension());
+        testMedia.setBlogId(site.getDotOrgSiteId());
+        media.add(testMedia);
+        uploadMedia(site, media);
+        assertTrue(mLastUploadedId > 0);
+        testMedia.setMediaId(mLastUploadedId);
+        deleteMedia(site, testMedia, TEST_EVENTS.DELETED_MEDIA);
     }
 
     private MediaModel getTestMedia(String title, String description, String caption, String alt) {
@@ -359,6 +377,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
             assertEquals(TEST_EVENTS.PULLED_ALL_MEDIA, mExpectedEvent);
         } else if (event.causeOfChange == MediaAction.UPLOAD_MEDIA) {
             assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
+            mLastUploadedId = event.media.get(0).getMediaId();
         } else if (event.causeOfChange == MediaAction.PUSH_MEDIA) {
             assertEquals(TEST_EVENTS.PUSHED_MEDIA, mExpectedEvent);
         } else if (event.causeOfChange == MediaAction.DELETE_MEDIA) {
