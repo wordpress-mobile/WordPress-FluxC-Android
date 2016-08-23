@@ -56,6 +56,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     private TEST_EVENTS mExpectedEvent;
     private CountDownLatch mCountDownLatch;
     private AccountStore.OnDiscoverySucceeded mDiscovered;
+    private List<Long> mExpectedIds;
 
     @Override
     protected void setUp() throws Exception {
@@ -237,6 +238,26 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     }
 
     /**
+     * Pull action should gather only media items whose ID is in the given filter.
+     */
+    public void testPullMediaThatExists() throws InterruptedException {
+        // get all site media
+        SiteModel site = mSiteStore.getSites().get(0);
+        pullAllMedia(site);
+
+        final List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(site.getSiteId());
+        assertFalse(siteMedia.isEmpty());
+
+        // pull half of the media
+        final int half = siteMedia.size() / 2;
+        final List<Long> halfMediaIds = new ArrayList<>(half);
+        for (int i = 0; i < half; ++i) {
+            halfMediaIds.add(siteMedia.get(i).getMediaId());
+        }
+        pullSpecificMedia(site, halfMediaIds, TEST_EVENTS.PULLED_MEDIA);
+    }
+
+    /**
      * Delete action on null media results in a null error.
      */
     public void testDeleteNullMedia() throws InterruptedException {
@@ -266,9 +287,9 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         return media;
     }
 
-    private void dispatchAction(TEST_EVENTS expectedEvent, Action action) throws InterruptedException {
+    private void dispatchAction(TEST_EVENTS expectedEvent, Action action, int count) throws InterruptedException {
         mExpectedEvent = expectedEvent;
-        mCountDownLatch = new CountDownLatch(1);
+        mCountDownLatch = new CountDownLatch(count);
         mDispatcher.dispatch(action);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -278,7 +299,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         discoverPayload.username = username;
         discoverPayload.password = password;
         discoverPayload.url = url;
-        dispatchAction(TEST_EVENTS.AUTHENTICATION_CHANGED, AuthenticationActionBuilder.newDiscoverEndpointAction(discoverPayload));
+        dispatchAction(TEST_EVENTS.AUTHENTICATION_CHANGED, AuthenticationActionBuilder.newDiscoverEndpointAction(discoverPayload), 1);
     }
 
     private void getSiteInfo(String username, String password, String endpoint) throws InterruptedException {
@@ -288,36 +309,37 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         payload.username = username;
         payload.password = password;
         payload.url = mDiscovered.xmlRpcEndpoint;
-        dispatchAction(TEST_EVENTS.SITE_CHANGED, SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+        dispatchAction(TEST_EVENTS.SITE_CHANGED, SiteActionBuilder.newFetchSitesXmlRpcAction(payload), 1);
     }
 
     private void pushMedia(SiteModel site, MediaModel media, TEST_EVENTS expectedEvent) throws InterruptedException {
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(media);
         MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, mediaList);
-        dispatchAction(expectedEvent, MediaActionBuilder.newPushMediaAction(payload));
+        dispatchAction(expectedEvent, MediaActionBuilder.newPushMediaAction(payload), 1);
     }
 
     private void uploadMedia(SiteModel site, List<MediaModel> media) throws InterruptedException {
         MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
-        dispatchAction(TEST_EVENTS.UPLOADED_MEDIA, MediaActionBuilder.newUploadMediaAction(payload));
+        dispatchAction(TEST_EVENTS.UPLOADED_MEDIA, MediaActionBuilder.newUploadMediaAction(payload), 1);
     }
 
     private void pullAllMedia(SiteModel site) throws InterruptedException {
         MediaStore.PullMediaPayload mediaPayload = new MediaStore.PullMediaPayload(site, null);
-        dispatchAction(TEST_EVENTS.PULLED_ALL_MEDIA, MediaActionBuilder.newPullAllMediaAction(mediaPayload));
+        dispatchAction(TEST_EVENTS.PULLED_ALL_MEDIA, MediaActionBuilder.newPullAllMediaAction(mediaPayload), 1);
     }
 
     private void pullSpecificMedia(SiteModel site, List<Long> mediaIds, TEST_EVENTS expectedEvent) throws InterruptedException {
+        mExpectedIds = mediaIds;
         MediaStore.PullMediaPayload mediaPayload = new MediaStore.PullMediaPayload(site, mediaIds);
-        dispatchAction(expectedEvent, MediaActionBuilder.newPullMediaAction(mediaPayload));
+        dispatchAction(expectedEvent, MediaActionBuilder.newPullMediaAction(mediaPayload), mExpectedIds.size());
     }
 
     private void deleteMedia(SiteModel site, MediaModel media, TEST_EVENTS expectedEvent) throws InterruptedException {
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(media);
         MediaStore.ChangeMediaPayload deletePayload = new MediaStore.ChangeMediaPayload(site, mediaList);
-        dispatchAction(expectedEvent, MediaActionBuilder.newDeleteMediaAction(deletePayload));
+        dispatchAction(expectedEvent, MediaActionBuilder.newDeleteMediaAction(deletePayload), 1);
     }
 
     @SuppressWarnings("unused")
@@ -343,6 +365,9 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
             assertEquals(TEST_EVENTS.DELETED_MEDIA, mExpectedEvent);
         } else if (event.causeOfChange == MediaAction.PULL_MEDIA) {
             assertEquals(TEST_EVENTS.PULLED_MEDIA, mExpectedEvent);
+            if (mExpectedIds != null) {
+                assertTrue(mExpectedIds.contains(event.media.get(0).getMediaId()));
+            }
         }
         mCountDownLatch.countDown();
     }
