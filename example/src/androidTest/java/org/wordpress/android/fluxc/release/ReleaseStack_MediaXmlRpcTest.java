@@ -222,6 +222,13 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     }
 
     /**
+     * Pull action with no media supplied results in a media exception.
+     */
+    public void testPullNullMedia() throws InterruptedException {
+        pullSpecificMedia(mSiteStore.getSites().get(0), null, TEST_EVENTS.NULL_ERROR);
+    }
+
+    /**
      * Pull action with media that does not exist results in a media not found exception.
      */
     public void testPullMediaThatDoesNotExist() throws InterruptedException {
