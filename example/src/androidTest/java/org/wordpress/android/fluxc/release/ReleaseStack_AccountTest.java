@@ -12,7 +12,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
-import org.wordpress.android.fluxc.store.AccountStore.PostAccountSettingsPayload;
+import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload;
 
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
@@ -84,7 +84,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         }
         mExpectedAction = ACCOUNT_TEST_ACTIONS.POSTED;
-        PostAccountSettingsPayload payload = new PostAccountSettingsPayload();
+        PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
         String newValue = String.valueOf(System.currentTimeMillis());
         mExpectAccountInfosChanged = true;
         payload.params = new HashMap<>();
@@ -110,7 +110,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         mExpectedAction = ACCOUNT_TEST_ACTIONS.POSTED;
-        PostAccountSettingsPayload payload = new PostAccountSettingsPayload();
+        PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
         String newValue = mAccountStore.getAccount().getAboutMe();
         mExpectAccountInfosChanged = false;
         payload.params = new HashMap<>();
@@ -136,7 +136,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         mExpectedAction = ACCOUNT_TEST_ACTIONS.POSTED;
-        PostAccountSettingsPayload payload = new PostAccountSettingsPayload();
+        PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
         String newValue = String.valueOf(mAccountStore.getAccount().getPrimarySiteId());
         mExpectAccountInfosChanged = false;
         payload.params = new HashMap<>();

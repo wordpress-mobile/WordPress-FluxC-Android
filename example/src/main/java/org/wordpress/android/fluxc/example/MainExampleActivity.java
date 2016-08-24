@@ -34,7 +34,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
-import org.wordpress.android.fluxc.store.AccountStore.PostAccountSettingsPayload;
+import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
@@ -341,7 +341,7 @@ public class MainExampleActivity extends AppCompatActivity {
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String displayName = edittext.getText().toString();
-                PostAccountSettingsPayload payload = new PostAccountSettingsPayload();
+                PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
                 payload.params = new HashMap<>();
                 payload.params.put("display_name", displayName);
                 mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
