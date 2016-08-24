@@ -97,7 +97,7 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         testMedia.setDescription(testDescription);
         testMedia.setCaption(testCaption);
         testMedia.setAlt(testAlt);
-        testMedia.setBlogId(site.getDotOrgSiteId());
+        testMedia.setBlogId(site.getSiteId());
 
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
@@ -127,7 +127,7 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         testMedia.setDescription(testDescription);
         testMedia.setCaption(testCaption);
         testMedia.setAlt(testAlt);
-        testMedia.setBlogId(site.getDotOrgSiteId());
+        testMedia.setBlogId(site.getSiteId());
 
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
