@@ -38,7 +38,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         POSTED,
     }
 
-    ACCOUNT_TEST_ACTIONS mExpectedAction;
+    private ACCOUNT_TEST_ACTIONS mExpectedAction;
+    private boolean mExpectAccountInfosChanged;
 
     @Override
     protected void setUp() throws Exception {
@@ -85,6 +86,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mExpectedAction = ACCOUNT_TEST_ACTIONS.POSTED;
         PostAccountSettingsPayload payload = new PostAccountSettingsPayload();
         String newValue = String.valueOf(System.currentTimeMillis());
+        mExpectAccountInfosChanged = true;
         payload.params = new HashMap<>();
         payload.params.put("description", newValue);
         mDispatcher.dispatch(AccountActionBuilder.newPostSettingsAction(payload));
@@ -94,7 +96,33 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(newValue, mAccountStore.getAccount().getAboutMe());
     }
 
-    public void testWPCOMPostPrimarySiteId() throws InterruptedException {
+    public void testWPCOMPostNoChange() throws InterruptedException {
+        if (!mAccountStore.hasAccessToken()) {
+            mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTHENTICATE;
+            authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        }
+
+        // First, fetch account settings
+        mExpectedAction = ACCOUNT_TEST_ACTIONS.FETCHED;
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
+        mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
+        mCountDownLatch = new CountDownLatch(2);
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        mExpectedAction = ACCOUNT_TEST_ACTIONS.POSTED;
+        PostAccountSettingsPayload payload = new PostAccountSettingsPayload();
+        String newValue = mAccountStore.getAccount().getAboutMe();
+        mExpectAccountInfosChanged = false;
+        payload.params = new HashMap<>();
+        payload.params.put("description", newValue);
+        mDispatcher.dispatch(AccountActionBuilder.newPostSettingsAction(payload));
+        mCountDownLatch = new CountDownLatch(1);
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(newValue, mAccountStore.getAccount().getAboutMe());
+    }
+
+    public void testWPCOMPostPrimarySiteIdNoChange() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
             mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTHENTICATE;
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
@@ -110,6 +138,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mExpectedAction = ACCOUNT_TEST_ACTIONS.POSTED;
         PostAccountSettingsPayload payload = new PostAccountSettingsPayload();
         String newValue = String.valueOf(mAccountStore.getAccount().getPrimaryBlogId());
+        mExpectAccountInfosChanged = false;
         payload.params = new HashMap<>();
         payload.params.put("primary_site_ID", newValue);
         mDispatcher.dispatch(AccountActionBuilder.newPostSettingsAction(payload));
@@ -143,6 +172,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
             assertEquals(BuildConfig.TEST_WPCOM_USERNAME_TEST1, mAccountStore.getAccount().getUserName());
         } else if (event.causeOfChange == AccountAction.POST_SETTINGS) {
             assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.POSTED);
+            assertEquals(mExpectAccountInfosChanged, event.accountInfosChanged);
         }
         mCountDownLatch.countDown();
     }
