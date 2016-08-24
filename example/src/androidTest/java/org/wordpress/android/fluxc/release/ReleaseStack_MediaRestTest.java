@@ -139,6 +139,11 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
     }
 
     @Subscribe
+    public void onMediaError(MediaStore.OnMediaError event) {
+        mCountDownLatch.countDown();
+    }
+
+    @Subscribe
     public void onMediaChanged(MediaStore.OnMediaChanged event) {
         if (event.causeOfChange == MediaAction.PULL_ALL_MEDIA) {
             assertEquals(TEST_EVENTS.FETCHED_ALL_MEDIA, mExpectedEvent);
