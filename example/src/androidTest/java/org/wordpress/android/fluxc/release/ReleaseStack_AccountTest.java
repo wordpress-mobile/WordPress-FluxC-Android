@@ -137,7 +137,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
         mExpectedAction = ACCOUNT_TEST_ACTIONS.POSTED;
         PostAccountSettingsPayload payload = new PostAccountSettingsPayload();
-        String newValue = String.valueOf(mAccountStore.getAccount().getPrimaryBlogId());
+        String newValue = String.valueOf(mAccountStore.getAccount().getPrimarySiteId());
         mExpectAccountInfosChanged = false;
         payload.params = new HashMap<>();
         payload.params.put("primary_site_ID", newValue);
@@ -145,7 +145,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(newValue, String.valueOf(mAccountStore.getAccount().getPrimaryBlogId()));
+        assertEquals(newValue, String.valueOf(mAccountStore.getAccount().getPrimarySiteId()));
     }
 
     @Subscribe
