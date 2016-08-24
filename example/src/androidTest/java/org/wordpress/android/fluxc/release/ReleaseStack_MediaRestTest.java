@@ -154,7 +154,7 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
 
     @Subscribe
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
-        assertEquals(false, event.isError);
+        assertEquals(false, event.isError());
         mCountDownLatch.countDown();
     }
 

@@ -32,12 +32,12 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     private final String TEST_CAPTION = "Test Caption";
     private final String TEST_ALT = "Test Alt";
 
+    @SuppressWarnings("unused") @Inject AccountStore mAccountStore;
+    @SuppressWarnings("unused") @Inject HTTPAuthManager mHTTPAuthManager;
+    @SuppressWarnings("unused") @Inject MemorizingTrustManager mMemorizingTrustManager;
     @Inject Dispatcher mDispatcher;
-    @Inject SiteStore mSiteStore;
-    @Inject AccountStore mAccountStore;
     @Inject MediaStore mMediaStore;
-    @Inject HTTPAuthManager mHTTPAuthManager;
-    @Inject MemorizingTrustManager mMemorizingTrustManager;
+    @Inject SiteStore mSiteStore;
 
     private enum TEST_EVENTS {
         NONE,
@@ -55,7 +55,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
 
     private TEST_EVENTS mExpectedEvent;
     private CountDownLatch mCountDownLatch;
-    private AccountStore.OnDiscoverySucceeded mDiscovered;
+    private AccountStore.OnDiscoveryResponse mDiscovered;
     private List<Long> mExpectedIds;
     private long mLastUploadedId = -1L;
 
@@ -349,8 +349,9 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
 
     private void pullSpecificMedia(SiteModel site, List<Long> mediaIds, TEST_EVENTS expectedEvent) throws InterruptedException {
         mExpectedIds = mediaIds;
+        int size = mExpectedIds == null ? 0 : mExpectedIds.size();
         MediaStore.PullMediaPayload mediaPayload = new MediaStore.PullMediaPayload(site, mediaIds);
-        dispatchAction(expectedEvent, MediaActionBuilder.newPullMediaAction(mediaPayload), mExpectedIds.size());
+        dispatchAction(expectedEvent, MediaActionBuilder.newPullMediaAction(mediaPayload), size);
     }
 
     private void deleteMedia(SiteModel site, MediaModel media, TEST_EVENTS expectedEvent) throws InterruptedException {
@@ -362,7 +363,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onDiscoverySucceeded(AccountStore.OnDiscoverySucceeded event) {
+    public void onDiscoverySucceeded(AccountStore.OnDiscoveryResponse event) {
         assertEquals(TEST_EVENTS.AUTHENTICATION_CHANGED, mExpectedEvent);
         mDiscovered = event;
         mCountDownLatch.countDown();
@@ -404,11 +405,11 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     @Subscribe
     public void onMediaError(MediaStore.OnMediaError event) {
         if (event.mediaError == MediaStore.MediaError.NULL_MEDIA_ARG) {
-            assertEquals(TEST_EVENTS.NULL_ERROR, mExpectedEvent);
+            assertEquals(mExpectedEvent, TEST_EVENTS.NULL_ERROR);
         } else if (event.mediaError == MediaStore.MediaError.MALFORMED_MEDIA_ARG) {
-            assertEquals(TEST_EVENTS.MALFORMED_ERROR, mExpectedEvent);
+            assertEquals(mExpectedEvent, TEST_EVENTS.MALFORMED_ERROR);
         } else if (event.mediaError == MediaStore.MediaError.MEDIA_NOT_FOUND) {
-            assertEquals(TEST_EVENTS.NOT_FOUND_ERROR, mExpectedEvent);
+            assertEquals(mExpectedEvent, TEST_EVENTS.NOT_FOUND_ERROR);
         }
         mCountDownLatch.countDown();
     }
