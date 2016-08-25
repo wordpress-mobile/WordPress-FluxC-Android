@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
@@ -31,6 +32,7 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
     enum TEST_EVENTS {
         FETCHED_ALL_MEDIA,
         FETCHED_KNOWN_IMAGES,
+        PUSHED_MEDIA,
         UPLOADED_MEDIA
     }
 
@@ -75,6 +77,24 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         mExpectedEvent = TEST_EVENTS.FETCHED_KNOWN_IMAGES;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(payload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testPushExistingMedia() throws InterruptedException {
+        loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        SiteModel site = mSiteStore.getSites().get(0);
+        MediaModel testMedia = new MediaModel();
+        // use existing media
+        testMedia.setMediaId(Long.parseLong(BuildConfig.TEST_WPCOM_IMAGE_ID_TO_CHANGE));
+        // create a random title
+        testMedia.setTitle(RandomStringUtils.randomAlphabetic(8));
+        List<MediaModel> media = new ArrayList<>();
+        media.add(testMedia);
+        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        mExpectedEvent = TEST_EVENTS.PUSHED_MEDIA;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -135,6 +155,8 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
             }
         } else if (event.causeOfChange == MediaAction.UPLOAD_MEDIA) {
             assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
+        } else if (event.causeOfChange == MediaAction.PUSH_MEDIA) {
+            assertEquals(TEST_EVENTS.PUSHED_MEDIA, mExpectedEvent);
         }
         mCountDownLatch.countDown();
     }
