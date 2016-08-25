@@ -81,24 +81,8 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
     public void testUploadImage() throws InterruptedException {
         loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
-        final String testTitle = "Test Title";
-        final String testDescription = "Test Description";
-        final String testCaption = "Test Caption";
-        final String testAlt = "Test Alt";
-
         SiteModel site = mSiteStore.getSites().get(0);
-        MediaModel testMedia = new MediaModel();
-        String imagePath = BuildConfig.TEST_LOCAL_IMAGE;
-        testMedia.setFilePath(imagePath);
-        testMedia.setFileExtension(imagePath.substring(imagePath.lastIndexOf(".") + 1, imagePath.length()));
-        testMedia.setMimeType(MediaUtils.MIME_TYPE_IMAGE + testMedia.getFileExtension());
-        testMedia.setFileName(imagePath.substring(imagePath.lastIndexOf("/"), imagePath.length()));
-        testMedia.setTitle(testTitle);
-        testMedia.setDescription(testDescription);
-        testMedia.setCaption(testCaption);
-        testMedia.setAlt(testAlt);
-        testMedia.setBlogId(site.getSiteId());
-
+        MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
         MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
@@ -111,24 +95,8 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
     public void testUploadVideo() throws InterruptedException {
         loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
-        final String testTitle = "Test Title";
-        final String testDescription = "Test Description";
-        final String testCaption = "Test Caption";
-        final String testAlt = "Test Alt";
-
         SiteModel site = mSiteStore.getSites().get(0);
-        MediaModel testMedia = new MediaModel();
-        String videoPath = BuildConfig.TEST_LOCAL_VIDEO;
-        testMedia.setFilePath(videoPath);
-        testMedia.setFileExtension(videoPath.substring(videoPath.lastIndexOf(".") + 1, videoPath.length()));
-        testMedia.setMimeType(MediaUtils.MIME_TYPE_VIDEO + testMedia.getFileExtension());
-        testMedia.setFileName(videoPath.substring(videoPath.lastIndexOf("/"), videoPath.length()));
-        testMedia.setTitle(testTitle);
-        testMedia.setDescription(testDescription);
-        testMedia.setCaption(testCaption);
-        testMedia.setAlt(testAlt);
-        testMedia.setBlogId(site.getSiteId());
-
+        MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_VIDEO, MediaUtils.MIME_TYPE_VIDEO);
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
         MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
@@ -190,5 +158,25 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
             if (!event.media.contains(Long.valueOf(id))) return false;
         }
         return true;
+    }
+
+    private MediaModel newMediaModel(SiteModel site, String mediaPath, String mimeType) {
+        final String testTitle = "Test Title";
+        final String testDescription = "Test Description";
+        final String testCaption = "Test Caption";
+        final String testAlt = "Test Alt";
+
+        MediaModel testMedia = new MediaModel();
+        testMedia.setFilePath(mediaPath);
+        testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1, mediaPath.length()));
+        testMedia.setMimeType(mimeType + testMedia.getFileExtension());
+        testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/"), mediaPath.length()));
+        testMedia.setTitle(testTitle);
+        testMedia.setDescription(testDescription);
+        testMedia.setCaption(testCaption);
+        testMedia.setAlt(testAlt);
+        testMedia.setBlogId(site.getSiteId());
+
+        return testMedia;
     }
 }
