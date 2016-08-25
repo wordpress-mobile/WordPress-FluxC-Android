@@ -78,6 +78,20 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    public void testPushNewMedia() throws InterruptedException {
+        loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        SiteModel site = mSiteStore.getSites().get(0);
+        MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        List<MediaModel> media = new ArrayList<>();
+        media.add(testMedia);
+        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     public void testUploadImage() throws InterruptedException {
         loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
