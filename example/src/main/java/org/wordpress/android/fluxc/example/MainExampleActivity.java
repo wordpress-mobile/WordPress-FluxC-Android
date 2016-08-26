@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.example;
 
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
@@ -26,7 +28,6 @@ import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
-import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
@@ -35,6 +36,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.fluxc.store.AccountStore.PostAccountSettingsPayload;
+import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.NewSitePayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnNewSiteCreated;
@@ -52,8 +54,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import static org.wordpress.android.fluxc.store.MediaStore.PullMediaPayload;
 import static org.wordpress.android.fluxc.store.MediaStore.ChangeMediaPayload;
+import static org.wordpress.android.fluxc.store.MediaStore.PullMediaPayload;
 
 public class MainExampleActivity extends AppCompatActivity {
     @Inject SiteStore mSiteStore;
@@ -62,6 +64,8 @@ public class MainExampleActivity extends AppCompatActivity {
     @Inject Dispatcher mDispatcher;
     @Inject HTTPAuthManager mHTTPAuthManager;
     @Inject MemorizingTrustManager mMemorizingTrustManager;
+
+    private final int RESULT_PICK_MEDIA = 1;
 
     private TextView mLogView;
     private Button mAccountInfos;
@@ -74,6 +78,7 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mNewSite;
     private Button mFetchAllMedia;
     private Button mFetchMedia;
+    private Button mUploadMedia;
 
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
@@ -172,6 +177,16 @@ public class MainExampleActivity extends AppCompatActivity {
             }
         });
 
+        mUploadMedia = (Button) findViewById(R.id.upload_media);
+        mUploadMedia.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType("image/*");
+                startActivityForResult(intent, RESULT_PICK_MEDIA);
+            }
+        });
+
         mLogView = (TextView) findViewById(R.id.log);
 
         init();
@@ -199,6 +214,18 @@ public class MainExampleActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         mDispatcher.unregister(this);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
+        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+
+        switch(requestCode) {
+            case RESULT_PICK_MEDIA:
+                if(resultCode == RESULT_OK){
+                    final Uri imageUri = imageReturnedIntent.getData();
+                }
+        }
     }
 
     // Private methods
@@ -550,5 +577,6 @@ public class MainExampleActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaError(MediaStore.OnMediaError event) {
+        prependToLog("Media error occurred: " + event.error.toString());
     }
 }
