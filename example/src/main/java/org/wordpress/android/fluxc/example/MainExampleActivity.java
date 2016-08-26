@@ -486,10 +486,11 @@ public class MainExampleActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPostChanged(OnPostChanged event) {
-        if (!mPostStore.getPosts().isEmpty()) {
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+
+        if (!mPostStore.getPostsForSite(firstSite).isEmpty()) {
             if (event.causeOfChange.equals(PostAction.FETCH_POSTS) ||
                     event.causeOfChange.equals(PostAction.FETCH_PAGES)) {
-                SiteModel firstSite = mSiteStore.getSites().get(0);
                 prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.getName());
             }
             mCreatePostOnFirstSite.setEnabled(true);

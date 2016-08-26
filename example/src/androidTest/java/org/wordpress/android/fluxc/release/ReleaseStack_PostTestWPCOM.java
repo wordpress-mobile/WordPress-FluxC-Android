@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.store.PostStore.PostErrorType;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.utils.DateTimeUtils;
+import org.wordpress.android.fluxc.utils.WellSqlUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -92,7 +93,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
 
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertNotSame(0, uploadedPost.getRemotePostId());
@@ -117,7 +118,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
 
         PostModel finalPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals("From testEditingRemotePost", finalPost.getTitle());
@@ -147,7 +148,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         // Get the current copy of the post from the PostStore
         PostModel latestPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals(POST_DEFAULT_TITLE, latestPost.getTitle());
@@ -176,7 +177,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         // Get the current copy of the post from the PostStore
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals("From testChangingLocalDraft, redux", mPost.getTitle());
@@ -213,7 +214,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         // Get the current copy of the post from the PostStore
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals("From testMultipleLocalChangesToUploadedPost, redux", mPost.getTitle());
@@ -285,7 +286,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         // Get the current copy of the post from the PostStore
         PostModel newPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals("A fully featured post", newPost.getTitle());
@@ -313,7 +314,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         // Get the current copy of the page from the PostStore
         PostModel newPage = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPagesCountForSite(mSite));
 
         assertNotSame(0, newPage.getRemotePostId());
@@ -345,7 +346,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         fetchPost(uploadedPost);
         PostModel trashedPost = mPostStore.getPostByLocalPostId(uploadedPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
@@ -394,7 +395,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
 
         PostModel persistedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         // The locally saved post should still be marked as locally changed, and local changes should be preserved

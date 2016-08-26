@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.PostError;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
 import org.wordpress.android.fluxc.utils.DateTimeUtils;
+import org.wordpress.android.fluxc.utils.WellSqlUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -90,7 +91,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertNotSame(0, uploadedPost.getRemotePostId());
@@ -115,7 +116,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         PostModel finalPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals("From testEditingRemotePost", finalPost.getTitle());
@@ -123,7 +124,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         // The post should no longer be flagged as having local changes
         assertFalse(finalPost.isLocallyChanged());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         // The date created should not have been altered by the edits
@@ -148,7 +149,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         // Get the current copy of the post from the PostStore
         PostModel latestPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals(POST_DEFAULT_TITLE, latestPost.getTitle());
@@ -177,7 +178,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         // Get the current copy of the post from the PostStore
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals("From testChangingLocalDraft, redux", mPost.getTitle());
@@ -214,7 +215,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         // Get the current copy of the post from the PostStore
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals("From testMultipleLocalChangesToUploadedPost, redux", mPost.getTitle());
@@ -286,7 +287,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         // Get the current copy of the post from the PostStore
         PostModel newPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals("A fully featured post", newPost.getTitle());
@@ -314,7 +315,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         // Get the current copy of the page from the PostStore
         PostModel newPage = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPagesCountForSite(mSite));
 
         assertNotSame(0, newPage.getRemotePostId());
@@ -346,7 +347,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         fetchPost(uploadedPost);
         PostModel trashedPost = mPostStore.getPostByLocalPostId(uploadedPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
@@ -398,7 +399,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         PostModel persistedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         // The locally saved post should still be marked as locally changed, and local changes should be preserved
@@ -507,7 +508,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         PostModel persistedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         // The locally saved post should still be marked as locally changed, and local changes should be preserved
@@ -571,7 +572,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         PostModel persistedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         // The locally saved post should still be marked as locally changed, and local changes should be preserved
@@ -662,7 +663,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         PostModel failedUploadPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         // Post should still exist locally, but not marked as uploaded
-        assertEquals(1, mPostStore.getPostsCount());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(subscriberSite));
         assertEquals(0, mPostStore.getUploadedPostsCountForSite(subscriberSite));
 
