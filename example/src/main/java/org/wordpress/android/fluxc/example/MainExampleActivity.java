@@ -52,6 +52,8 @@ import org.wordpress.android.fluxc.store.SiteStore.SiteVisibility;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -141,6 +143,12 @@ public class MainExampleActivity extends AppCompatActivity {
             public void onClick(View v) {
                 SiteModel firstSite = mSiteStore.getSites().get(0);
                 List<PostModel> posts = mPostStore.getPostsForSite(firstSite);
+                Collections.sort(posts, new Comparator<PostModel>() {
+                    @Override
+                    public int compare(PostModel lhs, PostModel rhs) {
+                        return (int) (rhs.getRemotePostId() - lhs.getRemotePostId());
+                    }
+                });
                 if (!posts.isEmpty()) {
                     RemotePostPayload payload = new RemotePostPayload(posts.get(0), firstSite);
                     mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(payload));
@@ -486,12 +494,18 @@ public class MainExampleActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPostChanged(OnPostChanged event) {
-        SiteModel firstSite = mSiteStore.getSites().get(0);
+        if (event.isError()) {
+            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type);
+            return;
+        }
 
+        SiteModel firstSite = mSiteStore.getSites().get(0);
         if (!mPostStore.getPostsForSite(firstSite).isEmpty()) {
             if (event.causeOfChange.equals(PostAction.FETCH_POSTS) ||
                     event.causeOfChange.equals(PostAction.FETCH_PAGES)) {
                 prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.getName());
+            } else if (event.causeOfChange.equals(PostAction.DELETE_POST)) {
+                prependToLog("Post deleted!");
             }
             mCreatePostOnFirstSite.setEnabled(true);
             mDeleteLatestPost.setEnabled(true);
@@ -505,7 +519,7 @@ public class MainExampleActivity extends AppCompatActivity {
     public void onPostInstantiated(OnPostInstantiated event) {
         PostModel examplePost = event.post;
         examplePost.setTitle("From example activity");
-        examplePost.setContent("Hi there, I'm a post from WordPress-{Placeholder Name}-Android!");
+        examplePost.setContent("Hi there, I'm a post from FluxC!");
         examplePost.setFeaturedImageId(0);
 
         RemotePostPayload payload = new RemotePostPayload(examplePost, mSiteStore.getSites().get(0));
