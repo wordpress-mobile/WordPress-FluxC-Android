@@ -63,6 +63,27 @@
                 android:text="Log Sites" />
 
             <Button
+                android:id="@+id/fetch_first_site_posts"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:text="Fetch posts from first site" />
+
+            <Button
+                android:id="@+id/create_new_post_first_site"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:text="Create a new post on first site" />
+
+            <Button
+                android:id="@+id/delete_a_post_from_first_site"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:text="Delete a post from first site" />
+
+            <Button
                 android:id="@+id/signout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

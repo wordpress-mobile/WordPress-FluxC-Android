@@ -40,9 +40,11 @@ Each store should have a corresponding enum defining actions for that store. For
 Action naming guide:
 
     FETCH_X - request data from the server
+    PUSH_X - send data to the server
     UPDATE_X - local change
     REMOVE_X - local remove
     DELETE_X - request deletion on the server
+    INSTANTIATE_X - request a new instance of X
 
 Each action enum should be annotated with `@ActionEnum`, with individual actions receiving an `@Action` annotation with an optional `payloadType` setting (see [SiteAction][5] for an example).
 
