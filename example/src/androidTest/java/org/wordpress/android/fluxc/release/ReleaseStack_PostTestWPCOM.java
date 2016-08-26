@@ -341,15 +341,10 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        // Note: It's possible to configure a site to permanently delete posts right away (instead of marking them as
-        // 'trashed', in which case this test will fail as the remote post won't be found
-        fetchPost(uploadedPost);
-        PostModel trashedPost = mPostStore.getPostByLocalPostId(uploadedPost.getId());
-
-        assertEquals(1, WellSqlUtils.getTotalPostsCount());
-        assertEquals(1, mPostStore.getPostsCountForSite(mSite));
-
-        assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
+        // The post should be removed from the db (regardless of whether it was deleted or just trashed on the server)
+        assertEquals(null, mPostStore.getPostByLocalPostId(uploadedPost.getId()));
+        assertEquals(0, WellSqlUtils.getTotalPostsCount());
+        assertEquals(0, mPostStore.getPostsCountForSite(mSite));
     }
 
     // Error handling tests
