@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.example;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -223,7 +224,18 @@ public class MainExampleActivity extends AppCompatActivity {
         switch(requestCode) {
             case RESULT_PICK_MEDIA:
                 if(resultCode == RESULT_OK){
-                    final Uri imageUri = imageReturnedIntent.getData();
+                    Uri selectedImage = imageReturnedIntent.getData();
+                    String mimeType = getContentResolver().getType(selectedImage);
+                    String[] filePathColumn = {android.provider.MediaStore.Images.Media.DATA};
+                    Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+                    if (cursor != null) {
+                        if (cursor.moveToFirst()) {
+                            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                            String filePath = cursor.getString(columnIndex);
+                            uploadMedia(filePath, mimeType);
+                        }
+                        cursor.close();
+                    }
                 }
         }
     }
@@ -442,6 +454,20 @@ public class MainExampleActivity extends AppCompatActivity {
     private void fetchAllMedia() {
         PullMediaPayload payload = new PullMediaPayload(mSiteStore.getSites().get(0), null);
         mDispatcher.dispatch(MediaActionBuilder.newPullAllMediaAction(payload));
+    }
+
+    private void uploadMedia(String imagePath, String mimeType) {
+        SiteModel site = mSiteStore.getSites().get(0);
+        MediaModel mediaModel = new MediaModel();
+        mediaModel.setFilePath(imagePath);
+        mediaModel.setFileExtension(imagePath.substring(imagePath.lastIndexOf(".") + 1, imagePath.length()));
+        mediaModel.setMimeType(mimeType);
+        mediaModel.setFileName(imagePath.substring(imagePath.lastIndexOf("/"), imagePath.length()));
+        mediaModel.setBlogId(site.getSiteId());
+        List<MediaModel> media = new ArrayList<>();
+        media.add(mediaModel);
+        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
     }
 
     // Event listeners
