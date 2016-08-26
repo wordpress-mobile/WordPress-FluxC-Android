@@ -457,6 +457,7 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void uploadMedia(String imagePath, String mimeType) {
+        prependToLog("Uploading new media...");
         SiteModel site = mSiteStore.getSites().get(0);
         MediaModel mediaModel = new MediaModel();
         mediaModel.setFilePath(imagePath);
@@ -598,7 +599,15 @@ public class MainExampleActivity extends AppCompatActivity {
                     }
                 }
                 break;
+            case UPLOAD_MEDIA:
+                prependToLog("Media uploaded!");
+                break;
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMediaProgress(MediaStore.OnMediaProgress mediaProgress) {
+        prependToLog("Media progress: " + mediaProgress.progress * 100 + "%");
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
