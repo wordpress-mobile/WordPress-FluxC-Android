@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
@@ -29,8 +30,10 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
     @Inject AccountStore mAccountStore;
 
     enum TEST_EVENTS {
+        DELETED_MEDIA,
         FETCHED_ALL_MEDIA,
         FETCHED_KNOWN_IMAGES,
+        PUSHED_MEDIA,
         UPLOADED_MEDIA
     }
 
@@ -48,6 +51,21 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
     public void tearDown() throws Exception {
         mDispatcher.unregister(this);
         super.tearDown();
+    }
+
+    public void testDeleteMedia() throws InterruptedException {
+        loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        // we first need to upload a new media to delete it
+        SiteModel site = mSiteStore.getSites().get(0);
+        MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        List<MediaModel> media = new ArrayList<>();
+        media.add(testMedia);
+        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        mExpectedEvent = TEST_EVENTS.DELETED_MEDIA;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testPullAllMedia() throws InterruptedException {
@@ -78,27 +96,43 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testUploadImage() throws InterruptedException {
+    public void testPushExistingMedia() throws InterruptedException {
         loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-
-        final String testTitle = "Test Title";
-        final String testDescription = "Test Description";
-        final String testCaption = "Test Caption";
-        final String testAlt = "Test Alt";
 
         SiteModel site = mSiteStore.getSites().get(0);
         MediaModel testMedia = new MediaModel();
-        String imagePath = BuildConfig.TEST_LOCAL_IMAGE;
-        testMedia.setFilePath(imagePath);
-        testMedia.setFileExtension(imagePath.substring(imagePath.lastIndexOf(".") + 1, imagePath.length()));
-        testMedia.setMimeType(MediaUtils.MIME_TYPE_IMAGE + testMedia.getFileExtension());
-        testMedia.setFileName(imagePath.substring(imagePath.lastIndexOf("/"), imagePath.length()));
-        testMedia.setTitle(testTitle);
-        testMedia.setDescription(testDescription);
-        testMedia.setCaption(testCaption);
-        testMedia.setAlt(testAlt);
-        testMedia.setBlogId(site.getSiteId());
+        // use existing media
+        testMedia.setMediaId(Long.parseLong(BuildConfig.TEST_WPCOM_IMAGE_ID_TO_CHANGE));
+        // create a random title
+        testMedia.setTitle(RandomStringUtils.randomAlphabetic(8));
+        List<MediaModel> media = new ArrayList<>();
+        media.add(testMedia);
+        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        mExpectedEvent = TEST_EVENTS.PUSHED_MEDIA;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
 
+    public void testPushNewMedia() throws InterruptedException {
+        loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        SiteModel site = mSiteStore.getSites().get(0);
+        MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        List<MediaModel> media = new ArrayList<>();
+        media.add(testMedia);
+        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testUploadImage() throws InterruptedException {
+        loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        SiteModel site = mSiteStore.getSites().get(0);
+        MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
         MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
@@ -111,24 +145,8 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
     public void testUploadVideo() throws InterruptedException {
         loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
-        final String testTitle = "Test Title";
-        final String testDescription = "Test Description";
-        final String testCaption = "Test Caption";
-        final String testAlt = "Test Alt";
-
         SiteModel site = mSiteStore.getSites().get(0);
-        MediaModel testMedia = new MediaModel();
-        String videoPath = BuildConfig.TEST_LOCAL_VIDEO;
-        testMedia.setFilePath(videoPath);
-        testMedia.setFileExtension(videoPath.substring(videoPath.lastIndexOf(".") + 1, videoPath.length()));
-        testMedia.setMimeType(MediaUtils.MIME_TYPE_VIDEO + testMedia.getFileExtension());
-        testMedia.setFileName(videoPath.substring(videoPath.lastIndexOf("/"), videoPath.length()));
-        testMedia.setTitle(testTitle);
-        testMedia.setDescription(testDescription);
-        testMedia.setCaption(testCaption);
-        testMedia.setAlt(testAlt);
-        testMedia.setBlogId(site.getSiteId());
-
+        MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_VIDEO, MediaUtils.MIME_TYPE_VIDEO);
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
         MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
@@ -152,7 +170,20 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
                 assertEquals(TEST_EVENTS.FETCHED_KNOWN_IMAGES, mExpectedEvent);
             }
         } else if (event.causeOfChange == MediaAction.UPLOAD_MEDIA) {
-            assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
+            // if we uploaded new media for delete test, continue with the delete
+            if (mExpectedEvent == TEST_EVENTS.DELETED_MEDIA) {
+                SiteModel site = mSiteStore.getSites().get(0);
+                MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, event.media);
+                mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(payload));
+                // don't count down, since we still need to complete the delete
+                return;
+            } else {
+                assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
+            }
+        } else if (event.causeOfChange == MediaAction.PUSH_MEDIA) {
+            assertEquals(TEST_EVENTS.PUSHED_MEDIA, mExpectedEvent);
+        } else if (event.causeOfChange == MediaAction.DELETE_MEDIA) {
+            assertEquals(TEST_EVENTS.DELETED_MEDIA, mExpectedEvent);
         }
         mCountDownLatch.countDown();
     }
@@ -190,5 +221,25 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
             if (!event.media.contains(Long.valueOf(id))) return false;
         }
         return true;
+    }
+
+    private MediaModel newMediaModel(SiteModel site, String mediaPath, String mimeType) {
+        final String testTitle = "Test Title";
+        final String testDescription = "Test Description";
+        final String testCaption = "Test Caption";
+        final String testAlt = "Test Alt";
+
+        MediaModel testMedia = new MediaModel();
+        testMedia.setFilePath(mediaPath);
+        testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1, mediaPath.length()));
+        testMedia.setMimeType(mimeType + testMedia.getFileExtension());
+        testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/"), mediaPath.length()));
+        testMedia.setTitle(testTitle);
+        testMedia.setDescription(testDescription);
+        testMedia.setCaption(testCaption);
+        testMedia.setAlt(testAlt);
+        testMedia.setBlogId(site.getSiteId());
+
+        return testMedia;
     }
 }

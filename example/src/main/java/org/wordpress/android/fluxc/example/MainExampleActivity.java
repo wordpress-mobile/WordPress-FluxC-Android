@@ -19,12 +19,15 @@ import android.widget.TextView;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.action.PostAction;
 import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
+import org.wordpress.android.fluxc.generated.PostActionBuilder;
+import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
@@ -36,8 +39,15 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
-import org.wordpress.android.fluxc.store.AccountStore.PostAccountSettingsPayload;
 import org.wordpress.android.fluxc.store.MediaStore;
+import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload;
+import org.wordpress.android.fluxc.store.PostStore;
+import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
+import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
+import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
+import org.wordpress.android.fluxc.store.PostStore.OnPostInstantiated;
+import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
+import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.NewSitePayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnNewSiteCreated;
@@ -50,6 +60,8 @@ import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -62,6 +74,7 @@ public class MainExampleActivity extends AppCompatActivity {
     @Inject SiteStore mSiteStore;
     @Inject MediaStore mMediaStore;
     @Inject AccountStore mAccountStore;
+    @Inject PostStore mPostStore;
     @Inject Dispatcher mDispatcher;
     @Inject HTTPAuthManager mHTTPAuthManager;
     @Inject MemorizingTrustManager mMemorizingTrustManager;
@@ -73,6 +86,9 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mListSites;
     private Button mLogSites;
     private Button mUpdateFirstSite;
+    private Button mFetchFirstSitePosts;
+    private Button mCreatePostOnFirstSite;
+    private Button mDeleteLatestPost;
     private Button mSignOut;
     private Button mAccountSettings;
     private Button mNewAccount;
@@ -117,6 +133,43 @@ public class MainExampleActivity extends AppCompatActivity {
                 mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(site));
                 // Fetch site's post formats
                 mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(site));
+            }
+        });
+
+        mFetchFirstSitePosts = (Button) findViewById(R.id.fetch_first_site_posts);
+        mFetchFirstSitePosts.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FetchPostsPayload payload = new FetchPostsPayload(mSiteStore.getSites().get(0));
+                mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
+            }
+        });
+
+        mCreatePostOnFirstSite = (Button) findViewById(R.id.create_new_post_first_site);
+        mCreatePostOnFirstSite.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PostStore.InstantiatePostPayload payload = new InstantiatePostPayload(mSiteStore.getSites().get(0), false);
+                mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
+            }
+        });
+
+        mDeleteLatestPost = (Button) findViewById(R.id.delete_a_post_from_first_site);
+        mDeleteLatestPost.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SiteModel firstSite = mSiteStore.getSites().get(0);
+                List<PostModel> posts = mPostStore.getPostsForSite(firstSite);
+                Collections.sort(posts, new Comparator<PostModel>() {
+                    @Override
+                    public int compare(PostModel lhs, PostModel rhs) {
+                        return (int) (rhs.getRemotePostId() - lhs.getRemotePostId());
+                    }
+                });
+                if (!posts.isEmpty()) {
+                    RemotePostPayload payload = new RemotePostPayload(posts.get(0), firstSite);
+                    mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(payload));
+                }
             }
         });
 
@@ -200,6 +253,9 @@ public class MainExampleActivity extends AppCompatActivity {
             prependToLog("You're signed in as: " + mAccountStore.getAccount().getUserName());
         }
         mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
+        mFetchFirstSitePosts.setEnabled(mSiteStore.hasSite());
+        mCreatePostOnFirstSite.setEnabled(mSiteStore.hasSite());
+        mDeleteLatestPost.setEnabled(mSiteStore.hasSite());
         mNewSite.setEnabled(mAccountStore.hasAccessToken());
     }
 
@@ -409,10 +465,10 @@ public class MainExampleActivity extends AppCompatActivity {
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String displayName = edittext.getText().toString();
-                PostAccountSettingsPayload payload = new PostAccountSettingsPayload();
+                PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
                 payload.params = new HashMap<>();
                 payload.params.put("display_name", displayName);
-                mDispatcher.dispatch(AccountActionBuilder.newPostSettingsAction(payload));
+                mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
             }
         });
         alert.show();
@@ -540,8 +596,10 @@ public class MainExampleActivity extends AppCompatActivity {
             SiteModel firstSite = mSiteStore.getSites().get(0);
             prependToLog("First site name: " + firstSite.getName() + " - Total sites: " + mSiteStore.getSitesCount());
             mUpdateFirstSite.setEnabled(true);
+            mFetchFirstSitePosts.setEnabled(true);
         } else {
             mUpdateFirstSite.setEnabled(false);
+            mFetchFirstSitePosts.setEnabled(false);
         }
     }
 
@@ -613,5 +671,43 @@ public class MainExampleActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaError(MediaStore.OnMediaError event) {
         prependToLog("Media error occurred: " + event.error.toString());
+    }
+
+    public void onPostChanged(OnPostChanged event) {
+        if (event.isError()) {
+            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type);
+            return;
+        }
+
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+        if (!mPostStore.getPostsForSite(firstSite).isEmpty()) {
+            if (event.causeOfChange.equals(PostAction.FETCH_POSTS) ||
+                    event.causeOfChange.equals(PostAction.FETCH_PAGES)) {
+                prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.getName());
+            } else if (event.causeOfChange.equals(PostAction.DELETE_POST)) {
+                prependToLog("Post deleted!");
+            }
+            mCreatePostOnFirstSite.setEnabled(true);
+            mDeleteLatestPost.setEnabled(true);
+        } else {
+            mCreatePostOnFirstSite.setEnabled(false);
+            mDeleteLatestPost.setEnabled(false);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPostInstantiated(OnPostInstantiated event) {
+        PostModel examplePost = event.post;
+        examplePost.setTitle("From example activity");
+        examplePost.setContent("Hi there, I'm a post from FluxC!");
+        examplePost.setFeaturedImageId(0);
+
+        RemotePostPayload payload = new RemotePostPayload(examplePost, mSiteStore.getSites().get(0));
+        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPostUploaded(OnPostUploaded event) {
+        prependToLog("Post uploaded! Remote post id: " + event.post.getRemotePostId());
     }
 }
