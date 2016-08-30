@@ -132,7 +132,8 @@ public class MainExampleActivity extends AppCompatActivity {
         mCreatePostOnFirstSite.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                PostStore.InstantiatePostPayload payload = new InstantiatePostPayload(mSiteStore.getSites().get(0), false);
+                PostStore.InstantiatePostPayload payload = new InstantiatePostPayload(mSiteStore.getSites().get(0),
+                        false);
                 mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
             }
         });
@@ -501,8 +502,8 @@ public class MainExampleActivity extends AppCompatActivity {
 
         SiteModel firstSite = mSiteStore.getSites().get(0);
         if (!mPostStore.getPostsForSite(firstSite).isEmpty()) {
-            if (event.causeOfChange.equals(PostAction.FETCH_POSTS) ||
-                    event.causeOfChange.equals(PostAction.FETCH_PAGES)) {
+            if (event.causeOfChange.equals(PostAction.FETCH_POSTS)
+                || event.causeOfChange.equals(PostAction.FETCH_PAGES)) {
                 prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.getName());
             } else if (event.causeOfChange.equals(PostAction.DELETE_POST)) {
                 prependToLog("Post deleted!");
