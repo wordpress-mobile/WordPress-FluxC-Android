@@ -159,7 +159,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         testMedia.setFileName(MediaUtils.getFileName(imagePath));
         testMedia.setFileExtension(MediaUtils.getExtension(imagePath));
         testMedia.setMimeType(MediaUtils.MIME_TYPE_IMAGE + testMedia.getFileExtension());
-        testMedia.setBlogId(site.getDotOrgSiteId());
+        testMedia.setSiteId(site.getDotOrgSiteId());
 
         // push media item, expecting an upload event to trigger
         pushMedia(site, testMedia, TEST_EVENTS.UPLOADED_MEDIA);
@@ -188,7 +188,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         testMedia.setFileName(MediaUtils.getFileName(imagePath));
         testMedia.setFileExtension(MediaUtils.getExtension(imagePath));
         testMedia.setMimeType(MediaUtils.MIME_TYPE_IMAGE + testMedia.getFileExtension());
-        testMedia.setBlogId(site.getDotOrgSiteId());
+        testMedia.setSiteId(site.getDotOrgSiteId());
         media.add(testMedia);
 
         uploadMedia(site, media);
@@ -207,7 +207,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         testMedia.setFileName(MediaUtils.getFileName(videoPath));
         testMedia.setFileExtension(MediaUtils.getExtension(videoPath));
         testMedia.setMimeType(MediaUtils.MIME_TYPE_VIDEO + testMedia.getFileExtension());
-        testMedia.setBlogId(site.getDotOrgSiteId());
+        testMedia.setSiteId(site.getDotOrgSiteId());
         media.add(testMedia);
 
         uploadMedia(site, media);
@@ -288,7 +288,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         testMedia.setFileName(MediaUtils.getFileName(imagePath));
         testMedia.setFileExtension(MediaUtils.getExtension(imagePath));
         testMedia.setMimeType(MediaUtils.MIME_TYPE_IMAGE + testMedia.getFileExtension());
-        testMedia.setBlogId(site.getDotOrgSiteId());
+        testMedia.setSiteId(site.getDotOrgSiteId());
         media.add(testMedia);
         uploadMedia(site, media);
         assertTrue(mLastUploadedId > 0);
