@@ -520,7 +520,7 @@ public class MainExampleActivity extends AppCompatActivity {
         mediaModel.setFileExtension(imagePath.substring(imagePath.lastIndexOf(".") + 1, imagePath.length()));
         mediaModel.setMimeType(mimeType);
         mediaModel.setFileName(imagePath.substring(imagePath.lastIndexOf("/"), imagePath.length()));
-        mediaModel.setBlogId(site.getSiteId());
+        mediaModel.setSiteId(site.getSiteId());
         List<MediaModel> media = new ArrayList<>();
         media.add(mediaModel);
         MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);

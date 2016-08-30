@@ -238,7 +238,7 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         testMedia.setDescription(testDescription);
         testMedia.setCaption(testCaption);
         testMedia.setAlt(testAlt);
-        testMedia.setBlogId(site.getSiteId());
+        testMedia.setSiteId(site.getSiteId());
 
         return testMedia;
     }
