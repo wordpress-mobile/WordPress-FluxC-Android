@@ -10,7 +10,6 @@ import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.store.AccountStore;
-import org.wordpress.android.fluxc.store.AccountStore.AuthenticationError;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
@@ -186,7 +185,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
 
         mNextEvent = TEST_EVENTS.SITE_REMOVED;
         mCountDownLatch = new CountDownLatch(1);
-        SiteModel dotOrgSite = mSiteStore.getDotOrgSites().get(0);
+        SiteModel dotOrgSite = mSiteStore.getSelfHostedSites().get(0);
         mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(dotOrgSite));
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -227,7 +226,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
             return;
         }
         assertEquals(true, mSiteStore.hasSite());
-        assertEquals(true, mSiteStore.hasDotOrgSite());
+        assertEquals(true, mSiteStore.hasSelfHostedSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
@@ -236,7 +235,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
     public void OnSiteRemoved(SiteStore.OnSiteRemoved event) {
         AppLog.e(T.TESTS, "site count " + mSiteStore.getSitesCount());
         assertEquals(false, mSiteStore.hasSite());
-        assertEquals(false, mSiteStore.hasDotOrgSite());
+        assertEquals(false, mSiteStore.hasSelfHostedSite());
         assertEquals(TEST_EVENTS.SITE_REMOVED, mNextEvent);
         mCountDownLatch.countDown();
     }

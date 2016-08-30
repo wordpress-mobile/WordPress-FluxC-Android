@@ -84,7 +84,7 @@ public class MainExampleActivity extends AppCompatActivity {
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
 
     // used for 2fa
-    private AuthenticatePayload mDotComPayload;
+    private AuthenticatePayload mAuthenticatePayload;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -282,9 +282,9 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void signIn2fa(String twoStepCode) {
-        mDotComPayload.twoStepCode = twoStepCode;
-        mDotComPayload.nextAction = SiteActionBuilder.newFetchSitesAction();
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mDotComPayload));
+        mAuthenticatePayload.twoStepCode = twoStepCode;
+        mAuthenticatePayload.nextAction = SiteActionBuilder.newFetchSitesAction();
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mAuthenticatePayload));
     }
 
     private void showHTTPAuthDialog(final String url) {
@@ -326,10 +326,10 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void wpcomFetchSites(String username, String password) {
-        mDotComPayload = new AuthenticatePayload(username, password);
+        mAuthenticatePayload = new AuthenticatePayload(username, password);
         // Next action will be dispatched if authentication is successful
-        mDotComPayload.nextAction = SiteActionBuilder.newFetchSitesAction();
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mDotComPayload));
+        mAuthenticatePayload.nextAction = SiteActionBuilder.newFetchSitesAction();
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mAuthenticatePayload));
     }
 
     private void selfHostedFetchSites(String username, String password, String xmlrpcEndpoint) {

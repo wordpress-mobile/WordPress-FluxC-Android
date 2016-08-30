@@ -6,7 +6,6 @@ import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.PostModel;
-import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
@@ -60,7 +59,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     {
         mSite = new SiteModel();
         mSite.setId(1);
-        mSite.setDotOrgSiteId(0);
+        mSite.setSelfHostedSiteId(0);
         mSite.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE);
         mSite.setPassword(BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE);
         mSite.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
@@ -592,7 +591,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         SiteModel badSite = new SiteModel();
         badSite.setId(2);
-        badSite.setDotOrgSiteId(0);
+        badSite.setSelfHostedSiteId(0);
         badSite.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE);
         badSite.setPassword("wrong");
         badSite.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
@@ -613,7 +612,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         SiteModel badSite = new SiteModel();
         badSite.setId(2);
-        badSite.setDotOrgSiteId(0);
+        badSite.setSelfHostedSiteId(0);
         badSite.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE);
         badSite.setPassword("wrong");
         badSite.setXmlRpcUrl("http://www.android.com");
@@ -628,7 +627,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     public void testCreatePostAsSubscriber() throws InterruptedException {
         SiteModel subscriberSite = new SiteModel();
         subscriberSite.setId(2);
-        subscriberSite.setDotOrgSiteId(0);
+        subscriberSite.setSelfHostedSiteId(0);
         subscriberSite.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE_SUBSCRIBER);
         subscriberSite.setPassword(BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE_SUBSCRIBER);
         subscriberSite.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_SUBSCRIBER_ENDPOINT);

@@ -307,7 +307,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     public void onSiteChanged(OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         assertEquals(true, mSiteStore.hasSite());
-        assertEquals(true, mSiteStore.hasDotOrgSite());
+        assertEquals(true, mSiteStore.hasSelfHostedSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
@@ -316,7 +316,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     public void OnSiteRemoved(SiteStore.OnSiteRemoved event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         assertEquals(false, mSiteStore.hasSite());
-        assertEquals(false, mSiteStore.hasDotOrgSite());
+        assertEquals(false, mSiteStore.hasSelfHostedSite());
         assertEquals(TEST_EVENTS.SITE_REMOVED, mNextEvent);
         mCountDownLatch.countDown();
     }
