@@ -1,6 +1,9 @@
 package org.wordpress.android.fluxc.example;
 
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
@@ -20,10 +23,12 @@ import org.wordpress.android.fluxc.action.PostAction;
 import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
-import org.wordpress.android.fluxc.generated.PostActionBuilder;
+import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
+import org.wordpress.android.fluxc.model.MediaModel;
+import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
@@ -34,12 +39,15 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
+import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
-import org.wordpress.android.fluxc.store.AccountStore.PostAccountSettingsPayload;
+import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload;
 import org.wordpress.android.fluxc.store.MediaStore;
-import org.wordpress.android.fluxc.store.MediaStore.FetchMediaPayload;
+import org.wordpress.android.fluxc.store.MediaStore.PullMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.ChangeMediaPayload;
+import org.wordpress.android.fluxc.store.MediaStore;
+import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
@@ -59,10 +67,15 @@ import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
 import javax.inject.Inject;
+
+import static org.wordpress.android.fluxc.store.MediaStore.ChangeMediaPayload;
+import static org.wordpress.android.fluxc.store.MediaStore.PullMediaPayload;
 
 public class MainExampleActivity extends AppCompatActivity {
     @Inject SiteStore mSiteStore;
@@ -73,6 +86,8 @@ public class MainExampleActivity extends AppCompatActivity {
     @Inject Dispatcher mDispatcher;
     @Inject HTTPAuthManager mHTTPAuthManager;
     @Inject MemorizingTrustManager mMemorizingTrustManager;
+
+    private final int RESULT_PICK_MEDIA = 1;
 
     private TextView mLogView;
     private Button mAccountInfos;
@@ -88,13 +103,13 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mNewSite;
     private Button mFetchAllMedia;
     private Button mFetchMedia;
+    private Button mUploadMedia;
 
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
 
     // used for 2fa
-    private String mLastUsername;
-    private String mLastPassword;
+    private AuthenticatePayload mDotComPayload;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,7 +136,11 @@ public class MainExampleActivity extends AppCompatActivity {
         mUpdateFirstSite.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(mSiteStore.getSites().get(0)));
+                SiteModel site = mSiteStore.getSites().get(0);
+                // Fetch site
+                mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(site));
+                // Fetch site's post formats
+                mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(site));
             }
         });
 
@@ -149,6 +168,12 @@ public class MainExampleActivity extends AppCompatActivity {
             public void onClick(View v) {
                 SiteModel firstSite = mSiteStore.getSites().get(0);
                 List<PostModel> posts = mPostStore.getPostsForSite(firstSite);
+                Collections.sort(posts, new Comparator<PostModel>() {
+                    @Override
+                    public int compare(PostModel lhs, PostModel rhs) {
+                        return (int) (rhs.getRemotePostId() - lhs.getRemotePostId());
+                    }
+                });
                 if (!posts.isEmpty()) {
                     RemotePostPayload payload = new RemotePostPayload(posts.get(0), firstSite);
                     mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(payload));
@@ -214,6 +239,16 @@ public class MainExampleActivity extends AppCompatActivity {
             }
         });
 
+        mUploadMedia = (Button) findViewById(R.id.upload_media);
+        mUploadMedia.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType("image/*");
+                startActivityForResult(intent, RESULT_PICK_MEDIA);
+            }
+        });
+
         mLogView = (TextView) findViewById(R.id.log);
 
         init();
@@ -228,6 +263,7 @@ public class MainExampleActivity extends AppCompatActivity {
         mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
         mFetchFirstSitePosts.setEnabled(mSiteStore.hasSite());
         mCreatePostOnFirstSite.setEnabled(mSiteStore.hasSite());
+        mDeleteLatestPost.setEnabled(mSiteStore.hasSite());
         mNewSite.setEnabled(mAccountStore.hasAccessToken());
     }
 
@@ -243,6 +279,29 @@ public class MainExampleActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         mDispatcher.unregister(this);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
+        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+
+        switch(requestCode) {
+            case RESULT_PICK_MEDIA:
+                if(resultCode == RESULT_OK){
+                    Uri selectedImage = imageReturnedIntent.getData();
+                    String mimeType = getContentResolver().getType(selectedImage);
+                    String[] filePathColumn = {android.provider.MediaStore.Images.Media.DATA};
+                    Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+                    if (cursor != null) {
+                        if (cursor.moveToFirst()) {
+                            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                            String filePath = cursor.getString(columnIndex);
+                            uploadMedia(filePath, mimeType);
+                        }
+                        cursor.close();
+                    }
+                }
+        }
     }
 
     // Private methods
@@ -279,8 +338,8 @@ public class MainExampleActivity extends AppCompatActivity {
                 if (lVal >= 0) mediaIds.add(lVal);
             }
             if (!mediaIds.isEmpty()) {
-                FetchMediaPayload payload = new FetchMediaPayload(mSiteStore.getSites().get(0), mediaIds);
-                mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
+                PullMediaPayload payload = new MediaStore.PullMediaPayload(mSiteStore.getSites().get(0), mediaIds);
+                mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(payload));
             }
         }
     }
@@ -339,17 +398,16 @@ public class MainExampleActivity extends AppCompatActivity {
                     prependToLog("2FA code required to login");
                     return;
                 }
-                signIn2fa(mLastUsername, mLastPassword, text3);
+                signIn2fa(text3);
             }
         }, "", "", "2FA Code");
         newFragment.show(ft, "2fadialog");
     }
 
-    private void signIn2fa(String username, String password, String twoStepCode) {
-        AuthenticatePayload payload = new AuthenticatePayload(username, password);
-        payload.twoStepCode = twoStepCode;
-        payload.nextAction = SiteActionBuilder.newFetchSitesAction();
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+    private void signIn2fa(String twoStepCode) {
+        mDotComPayload.twoStepCode = twoStepCode;
+        mDotComPayload.nextAction = SiteActionBuilder.newFetchSitesAction();
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mDotComPayload));
     }
 
     private void showHTTPAuthDialog(final String url) {
@@ -373,8 +431,6 @@ public class MainExampleActivity extends AppCompatActivity {
      * depending if the user filled the URL field.
      */
     private void signInAction(final String username, final String password, final String url) {
-        mLastUsername = username;
-        mLastPassword = password;
         if (TextUtils.isEmpty(url)) {
             wpcomFetchSites(username, password);
         } else {
@@ -393,10 +449,10 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void wpcomFetchSites(String username, String password) {
-        AuthenticatePayload payload = new AuthenticatePayload(username, password);
+        mDotComPayload = new AuthenticatePayload(username, password);
         // Next action will be dispatched if authentication is successful
-        payload.nextAction = SiteActionBuilder.newFetchSitesAction();
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+        mDotComPayload.nextAction = SiteActionBuilder.newFetchSitesAction();
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mDotComPayload));
     }
 
     private void selfHostedFetchSites(String username, String password, String xmlrpcEndpoint) {
@@ -417,7 +473,7 @@ public class MainExampleActivity extends AppCompatActivity {
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String displayName = edittext.getText().toString();
-                PostAccountSettingsPayload payload = new PostAccountSettingsPayload();
+                PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
                 payload.params = new HashMap<>();
                 payload.params.put("display_name", displayName);
                 mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
@@ -460,8 +516,23 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void fetchAllMedia() {
-        FetchMediaPayload payload = new FetchMediaPayload(mSiteStore.getSites().get(0), null);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(payload));
+        PullMediaPayload payload = new PullMediaPayload(mSiteStore.getSites().get(0), null);
+        mDispatcher.dispatch(MediaActionBuilder.newPullAllMediaAction(payload));
+    }
+
+    private void uploadMedia(String imagePath, String mimeType) {
+        prependToLog("Uploading new media...");
+        SiteModel site = mSiteStore.getSites().get(0);
+        MediaModel mediaModel = new MediaModel();
+        mediaModel.setFilePath(imagePath);
+        mediaModel.setFileExtension(imagePath.substring(imagePath.lastIndexOf(".") + 1, imagePath.length()));
+        mediaModel.setMimeType(mimeType);
+        mediaModel.setFileName(imagePath.substring(imagePath.lastIndexOf("/"), imagePath.length()));
+        mediaModel.setSiteId(site.getSiteId());
+        List<MediaModel> media = new ArrayList<>();
+        media.add(mediaModel);
+        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
     }
 
     // Event listeners
@@ -482,10 +553,10 @@ public class MainExampleActivity extends AppCompatActivity {
         mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
         mAccountSettings.setEnabled(mAccountStore.hasAccessToken());
         mNewSite.setEnabled(mAccountStore.hasAccessToken());
-        if (event.isError) {
-            prependToLog("Authentication error: " + event.errorType + " - " + event.errorMessage);
+        if (event.isError()) {
+            prependToLog("Authentication error: " + event.error.type);
 
-            switch (event.errorType) {
+            switch (event.error.type) {
                 case HTTP_AUTH_ERROR:
                     // Show a Dialog prompting for http username and password
                     showHTTPAuthDialog(mSelfhostedPayload.url);
@@ -498,47 +569,53 @@ public class MainExampleActivity extends AppCompatActivity {
                     show2faDialog();
                     break;
                 default:
+                    // Show Toast "Network Error"?
                     break;
             }
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDiscoverySucceeded(AccountStore.OnDiscoverySucceeded event) {
-        prependToLog("Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
-        selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDiscoveryFailed(AccountStore.OnDiscoveryFailed event) {
-        if (event.error == DiscoveryError.WORDPRESS_COM_SITE) {
-            wpcomFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password);
-        } else if (event.error == DiscoveryError.HTTP_AUTH_REQUIRED) {
-            showHTTPAuthDialog(event.failedEndpoint);
-        } else if (event.error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
-            mSelfhostedPayload.url = event.failedEndpoint;
-            showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
+    public void onDiscoveryResponse(OnDiscoveryResponse event) {
+        if (event.isError()) {
+            if (event.error == DiscoveryError.WORDPRESS_COM_SITE) {
+                wpcomFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password);
+            } else if (event.error == DiscoveryError.HTTP_AUTH_REQUIRED) {
+                showHTTPAuthDialog(event.failedEndpoint);
+            } else if (event.error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
+                mSelfhostedPayload.url = event.failedEndpoint;
+                showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
+            }
+            prependToLog("Discovery failed with error: " + event.error);
+            AppLog.e(T.API, "Discover error: " + event.error);
+        } else {
+            prependToLog("Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
+            selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
         }
-        prependToLog("Discovery failed with error: " + event.error);
-        AppLog.e(T.API, "Discover error: " + event.error);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteChanged(OnSiteChanged event) {
+        if (event.isError()) {
+            prependToLog("SiteChanged error: " + event.error.type);
+            return;
+        }
         if (mSiteStore.hasSite()) {
             SiteModel firstSite = mSiteStore.getSites().get(0);
             prependToLog("First site name: " + firstSite.getName() + " - Total sites: " + mSiteStore.getSitesCount());
             mUpdateFirstSite.setEnabled(true);
+            mFetchFirstSitePosts.setEnabled(true);
         } else {
             mUpdateFirstSite.setEnabled(false);
+            mFetchFirstSitePosts.setEnabled(false);
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNewUserValidated(OnNewUserCreated event) {
-        String message = event.dryRun ? "validated" : "created";
-        if (event.isError) {
-            prependToLog("New user " + message + ", error: " + event.errorMessage + " - " + event.errorType);
+        String message = event.dryRun ? "validation" : "creation";
+        if (event.isError()) {
+            prependToLog("New user " + message + ": error: " + event.error.type + " - " + event.error.message);
         } else {
             prependToLog("New user " + message + ": success!");
         }
@@ -547,8 +624,8 @@ public class MainExampleActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNewSiteCreated(OnNewSiteCreated event) {
         String message = event.dryRun ? "validated" : "created";
-        if (event.isError) {
-            prependToLog("New site " + message + ", error: " + event.errorMessage + " - " + event.errorType);
+        if (event.isError()) {
+            prependToLog("New site " + message + ": error: " + event.error.type + " - " + event.error.message);
         } else {
             prependToLog("New site " + message + ": success!");
         }
@@ -560,24 +637,10 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onPostChanged(OnPostChanged event) {
-        if (!mPostStore.getPosts().isEmpty()) {
-            if (event.causeOfChange.equals(PostAction.FETCH_POSTS) ||
-                    event.causeOfChange.equals(PostAction.FETCH_PAGES)) {
-                SiteModel firstSite = mSiteStore.getSites().get(0);
-                prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.getName());
-            }
-            mDeleteLatestPost.setEnabled(true);
-        } else {
-            mDeleteLatestPost.setEnabled(false);
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPostInstantiated(OnPostInstantiated event) {
         PostModel examplePost = event.post;
         examplePost.setTitle("From example activity");
-        examplePost.setContent("Hi there, I'm a post from WordPress-{Placeholder Name}-Android!");
+        examplePost.setContent("Hi there, I'm a post from FluxC!");
         examplePost.setFeaturedImageId(0);
 
         RemotePostPayload payload = new RemotePostPayload(examplePost, mSiteStore.getSites().get(0));
@@ -587,8 +650,8 @@ public class MainExampleActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaChanged(OnMediaChanged event) {
         switch (event.causeOfChange) {
-            case FETCH_ALL_MEDIA:
-                prependToLog("Begin parsing FETCH_ALL_MEDIA response");
+            case PULL_ALL_MEDIA:
+                prependToLog("Begin parsing PULL_ALL_MEDIA response");
                 if (event.media != null) {
                     for (MediaModel media : event.media) {
                         if (MediaUtils.isImageMimeType(media.getMimeType())) {
@@ -600,9 +663,9 @@ public class MainExampleActivity extends AppCompatActivity {
                         }
                     }
                 }
-                prependToLog("End parsing FETCH_ALL_MEDIA response");
+                prependToLog("End parsing PULL_ALL_MEDIA response");
                 break;
-            case FETCH_MEDIA:
+            case PULL_MEDIA:
                 if (event.media != null && !event.media.isEmpty()) {
                     for (MediaModel media : event.media) {
                         if (media != null) {
@@ -613,11 +676,43 @@ public class MainExampleActivity extends AppCompatActivity {
                     }
                 }
                 break;
+            case UPLOAD_MEDIA:
+                prependToLog("Media uploaded!");
+                break;
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMediaError(MediaStore.OnMediaError event){
+    public void onMediaProgress(MediaStore.OnMediaProgress mediaProgress) {
+        prependToLog("Media progress: " + mediaProgress.progress * 100 + "%");
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMediaError(MediaStore.OnMediaError event) {
+        prependToLog("Media error occurred: " + event.error.toString());
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPostChanged(OnPostChanged event) {
+        if (event.isError()) {
+            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type);
+            return;
+        }
+
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+        if (!mPostStore.getPostsForSite(firstSite).isEmpty()) {
+            if (event.causeOfChange.equals(PostAction.FETCH_POSTS) ||
+                    event.causeOfChange.equals(PostAction.FETCH_PAGES)) {
+                prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.getName());
+            } else if (event.causeOfChange.equals(PostAction.DELETE_POST)) {
+                prependToLog("Post deleted!");
+            }
+            mCreatePostOnFirstSite.setEnabled(true);
+            mDeleteLatestPost.setEnabled(true);
+        } else {
+            mCreatePostOnFirstSite.setEnabled(false);
+            mDeleteLatestPost.setEnabled(false);
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
