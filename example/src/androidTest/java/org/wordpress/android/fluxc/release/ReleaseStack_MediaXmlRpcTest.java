@@ -162,17 +162,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         testMedia.setSiteId(site.getDotOrgSiteId());
 
         // push media item, expecting an upload event to trigger
-        pushMedia(site, testMedia, TEST_EVENTS.UPLOADED_MEDIA);
-
-        // delete media
-        List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(site.getDotOrgSiteId());
-        assertNotNull(siteMedia);
-        assertFalse(siteMedia.isEmpty());
-        for (MediaModel media : siteMedia) {
-            if (TEST_ID.equals(media.getDescription())) {
-                deleteMedia(site, media, TEST_EVENTS.DELETED_MEDIA);
-            }
-        }
+        pushMedia(site, testMedia, TEST_EVENTS.NOT_FOUND_ERROR);
     }
 
     /**
@@ -180,16 +170,14 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
      */
     public void testUploadImage() throws InterruptedException {
         SiteModel site = mSiteStore.getSites().get(0);
-        List<MediaModel> media = new ArrayList<>();
 
-        MediaModel testMedia = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
+        MediaModel media = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
         String imagePath = BuildConfig.TEST_LOCAL_IMAGE;
-        testMedia.setFilePath(imagePath);
-        testMedia.setFileName(MediaUtils.getFileName(imagePath));
-        testMedia.setFileExtension(MediaUtils.getExtension(imagePath));
-        testMedia.setMimeType(MediaUtils.MIME_TYPE_IMAGE + testMedia.getFileExtension());
-        testMedia.setSiteId(site.getDotOrgSiteId());
-        media.add(testMedia);
+        media.setFilePath(imagePath);
+        media.setFileName(MediaUtils.getFileName(imagePath));
+        media.setFileExtension(MediaUtils.getExtension(imagePath));
+        media.setMimeType(MediaUtils.MIME_TYPE_IMAGE + media.getFileExtension());
+        media.setSiteId(site.getDotOrgSiteId());
 
         uploadMedia(site, media);
     }
@@ -199,16 +187,14 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
      */
     public void testUploadVideo() throws InterruptedException {
         SiteModel site = mSiteStore.getSites().get(0);
-        List<MediaModel> media = new ArrayList<>();
 
-        MediaModel testMedia = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
+        MediaModel media = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
         String videoPath = BuildConfig.TEST_LOCAL_VIDEO;
-        testMedia.setFilePath(videoPath);
-        testMedia.setFileName(MediaUtils.getFileName(videoPath));
-        testMedia.setFileExtension(MediaUtils.getExtension(videoPath));
-        testMedia.setMimeType(MediaUtils.MIME_TYPE_VIDEO + testMedia.getFileExtension());
-        testMedia.setSiteId(site.getDotOrgSiteId());
-        media.add(testMedia);
+        media.setFilePath(videoPath);
+        media.setFileName(MediaUtils.getFileName(videoPath));
+        media.setFileExtension(MediaUtils.getExtension(videoPath));
+        media.setMimeType(MediaUtils.MIME_TYPE_VIDEO + media.getFileExtension());
+        media.setSiteId(site.getDotOrgSiteId());
 
         uploadMedia(site, media);
     }
@@ -281,19 +267,18 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     public void testDeleteMediaThatExists() throws InterruptedException {
         // upload media
         SiteModel site = mSiteStore.getSites().get(0);
-        List<MediaModel> media = new ArrayList<>();
-        MediaModel testMedia = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
+        MediaModel media = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
         String imagePath = BuildConfig.TEST_LOCAL_IMAGE;
-        testMedia.setFilePath(imagePath);
-        testMedia.setFileName(MediaUtils.getFileName(imagePath));
-        testMedia.setFileExtension(MediaUtils.getExtension(imagePath));
-        testMedia.setMimeType(MediaUtils.MIME_TYPE_IMAGE + testMedia.getFileExtension());
-        testMedia.setSiteId(site.getDotOrgSiteId());
-        media.add(testMedia);
+        media.setFilePath(imagePath);
+        media.setFileName(MediaUtils.getFileName(imagePath));
+        media.setFileExtension(MediaUtils.getExtension(imagePath));
+        media.setMimeType(MediaUtils.MIME_TYPE_IMAGE + media.getFileExtension());
+        media.setSiteId(site.getDotOrgSiteId());
         uploadMedia(site, media);
         assertTrue(mLastUploadedId > 0);
-        testMedia.setMediaId(mLastUploadedId);
-        deleteMedia(site, testMedia, TEST_EVENTS.DELETED_MEDIA);
+
+        media.setMediaId(mLastUploadedId);
+        deleteMedia(site, media, TEST_EVENTS.DELETED_MEDIA);
     }
 
     private MediaModel getTestMedia(String title, String description, String caption, String alt) {
@@ -337,8 +322,8 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         dispatchAction(expectedEvent, MediaActionBuilder.newPushMediaAction(payload), 1);
     }
 
-    private void uploadMedia(SiteModel site, List<MediaModel> media) throws InterruptedException {
-        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+    private void uploadMedia(SiteModel site, MediaModel media) throws InterruptedException {
+        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(site, media);
         dispatchAction(TEST_EVENTS.UPLOADED_MEDIA, MediaActionBuilder.newUploadMediaAction(payload), 1);
     }
 
@@ -349,9 +334,20 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
 
     private void pullSpecificMedia(SiteModel site, List<Long> mediaIds, TEST_EVENTS expectedEvent) throws InterruptedException {
         mExpectedIds = mediaIds;
-        int size = mExpectedIds == null ? 0 : mExpectedIds.size();
-        MediaStore.PullMediaPayload mediaPayload = new MediaStore.PullMediaPayload(site, mediaIds);
-        dispatchAction(expectedEvent, MediaActionBuilder.newPullMediaAction(mediaPayload), size);
+        if (mExpectedIds == null) {
+            MediaStore.PullMediaPayload mediaPayload = new MediaStore.PullMediaPayload(site, null);
+            dispatchAction(expectedEvent, MediaActionBuilder.newPullMediaAction(mediaPayload), 1);
+        } else {
+            int size = mExpectedIds.size();
+            List<MediaModel> mediaList = new ArrayList<>();
+            for (Long id : mediaIds) {
+                MediaModel media = new MediaModel();
+                media.setMediaId(id);
+                mediaList.add(media);
+            }
+            MediaStore.PullMediaPayload mediaPayload = new MediaStore.PullMediaPayload(site, mediaList);
+            dispatchAction(expectedEvent, MediaActionBuilder.newPullMediaAction(mediaPayload), size);
+        }
     }
 
     private void deleteMedia(SiteModel site, MediaModel media, TEST_EVENTS expectedEvent) throws InterruptedException {
@@ -371,22 +367,39 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onMediaChanged(MediaStore.OnMediaChanged event) {
-        AppLog.d(AppLog.T.TESTS, "tests.onMediaChanged: " + event.causeOfChange);
-
-        if (event.causeOfChange == MediaAction.PULL_ALL_MEDIA) {
-            assertEquals(TEST_EVENTS.PULLED_ALL_MEDIA, mExpectedEvent);
-        } else if (event.causeOfChange == MediaAction.UPLOAD_MEDIA) {
+    public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
+        mLastUploadedId = event.media.getMediaId();
+        if (event.progress >= 1.f) {
             assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
-            mLastUploadedId = event.media.get(0).getMediaId();
-        } else if (event.causeOfChange == MediaAction.PUSH_MEDIA) {
-            assertEquals(TEST_EVENTS.PUSHED_MEDIA, mExpectedEvent);
-        } else if (event.causeOfChange == MediaAction.DELETE_MEDIA) {
-            assertEquals(TEST_EVENTS.DELETED_MEDIA, mExpectedEvent);
-        } else if (event.causeOfChange == MediaAction.PULL_MEDIA) {
-            assertEquals(TEST_EVENTS.PULLED_MEDIA, mExpectedEvent);
-            if (mExpectedIds != null) {
-                assertTrue(mExpectedIds.contains(event.media.get(0).getMediaId()));
+            mCountDownLatch.countDown();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onMediaChanged(MediaStore.OnMediaChanged event) {
+        AppLog.d(AppLog.T.TESTS, "tests.onMediaChanged: " + event.cause);
+
+        if (event.isError()) {
+            if (event.error.type == MediaStore.MediaErrorType.NULL_MEDIA_ARG) {
+                assertEquals(TEST_EVENTS.NULL_ERROR, mExpectedEvent);
+            } else if (event.error.type == MediaStore.MediaErrorType.MALFORMED_MEDIA_ARG) {
+                assertEquals(TEST_EVENTS.MALFORMED_ERROR, mExpectedEvent);
+            } else if (event.error.type == MediaStore.MediaErrorType.MEDIA_NOT_FOUND) {
+                assertEquals(TEST_EVENTS.NOT_FOUND_ERROR, mExpectedEvent);
+            }
+        } else {
+            if (event.cause == MediaAction.PULL_ALL_MEDIA) {
+                assertEquals(TEST_EVENTS.PULLED_ALL_MEDIA, mExpectedEvent);
+            } else if (event.cause == MediaAction.PULL_MEDIA) {
+                assertEquals(TEST_EVENTS.PULLED_MEDIA, mExpectedEvent);
+                if (mExpectedIds != null) {
+                    assertTrue(mExpectedIds.contains(event.media.get(0).getMediaId()));
+                }
+            } else if (event.cause == MediaAction.PUSH_MEDIA) {
+                assertEquals(TEST_EVENTS.PUSHED_MEDIA, mExpectedEvent);
+            } else if (event.cause == MediaAction.DELETE_MEDIA) {
+                assertEquals(TEST_EVENTS.DELETED_MEDIA, mExpectedEvent);
             }
         }
         mCountDownLatch.countDown();
@@ -398,19 +411,6 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         AppLog.i(AppLog.T.TESTS, "site count " + mSiteStore.getSitesCount());
         assertEquals(true, mSiteStore.hasDotOrgSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mExpectedEvent);
-        mCountDownLatch.countDown();
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe
-    public void onMediaError(MediaStore.OnMediaError event) {
-        if (event.mediaError == MediaStore.MediaError.NULL_MEDIA_ARG) {
-            assertEquals(mExpectedEvent, TEST_EVENTS.NULL_ERROR);
-        } else if (event.mediaError == MediaStore.MediaError.MALFORMED_MEDIA_ARG) {
-            assertEquals(mExpectedEvent, TEST_EVENTS.MALFORMED_ERROR);
-        } else if (event.mediaError == MediaStore.MediaError.MEDIA_NOT_FOUND) {
-            assertEquals(mExpectedEvent, TEST_EVENTS.NOT_FOUND_ERROR);
-        }
         mCountDownLatch.countDown();
     }
 }

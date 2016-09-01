@@ -476,7 +476,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
 
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
-        AppLog.i(T.API, "Received OnPostChanged, causeOfChange: " + event.causeOfChange);
+        AppLog.i(T.API, "Received OnPostChanged, cause: " + event.causeOfChange);
         if (event.isError()) {
             AppLog.i(T.API, "OnPostChanged has error: " + event.error.type + " - " + event.error.message);
             if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST)) {

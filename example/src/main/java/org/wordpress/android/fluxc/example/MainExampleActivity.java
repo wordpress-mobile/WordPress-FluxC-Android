@@ -324,13 +324,16 @@ public class MainExampleActivity extends AppCompatActivity {
     private void fetchMediaItems(String commaSeparated) {
         if (!TextUtils.isEmpty(commaSeparated)) {
             String[] split = commaSeparated.split(",");
-            List<Long> mediaIds = new ArrayList<>();
+            List<MediaModel> mediaList = new ArrayList<>();
             for (String s : split) {
                 Long lVal = Long.valueOf(s);
-                if (lVal >= 0) mediaIds.add(lVal);
+                if (lVal < 0) continue;
+                MediaModel media = new MediaModel();
+                media.setMediaId(lVal);
+                mediaList.add(media);
             }
-            if (!mediaIds.isEmpty()) {
-                PullMediaPayload payload = new MediaStore.PullMediaPayload(mSiteStore.getSites().get(0), mediaIds);
+            if (!mediaList.isEmpty()) {
+                PullMediaPayload payload = new MediaStore.PullMediaPayload(mSiteStore.getSites().get(0), mediaList);
                 mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(payload));
             }
         }
@@ -515,15 +518,13 @@ public class MainExampleActivity extends AppCompatActivity {
     private void uploadMedia(String imagePath, String mimeType) {
         prependToLog("Uploading new media...");
         SiteModel site = mSiteStore.getSites().get(0);
-        MediaModel mediaModel = new MediaModel();
-        mediaModel.setFilePath(imagePath);
-        mediaModel.setFileExtension(imagePath.substring(imagePath.lastIndexOf(".") + 1, imagePath.length()));
-        mediaModel.setMimeType(mimeType);
-        mediaModel.setFileName(imagePath.substring(imagePath.lastIndexOf("/"), imagePath.length()));
-        mediaModel.setSiteId(site.getSiteId());
-        List<MediaModel> media = new ArrayList<>();
-        media.add(mediaModel);
-        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        MediaModel media = new MediaModel();
+        media.setFilePath(imagePath);
+        media.setFileExtension(imagePath.substring(imagePath.lastIndexOf(".") + 1, imagePath.length()));
+        media.setMimeType(mimeType);
+        media.setFileName(imagePath.substring(imagePath.lastIndexOf("/"), imagePath.length()));
+        media.setSiteId(site.getSiteId());
+        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(site, media);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
     }
 
@@ -630,7 +631,12 @@ public class MainExampleActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaChanged(MediaStore.OnMediaChanged event) {
-        switch (event.causeOfChange) {
+        if (event.isError()) {
+            prependToLog("Media error occurred: " + event.error.toString());
+            return;
+        }
+
+        switch (event.cause) {
             case PULL_ALL_MEDIA:
                 prependToLog("Begin parsing PULL_ALL_MEDIA response");
                 if (event.media != null) {
@@ -664,15 +670,11 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMediaProgress(MediaStore.OnMediaProgress mediaProgress) {
+    public void onMediaUploaded(MediaStore.OnMediaUploaded mediaProgress) {
         prependToLog("Media progress: " + mediaProgress.progress * 100 + "%");
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMediaError(MediaStore.OnMediaError event) {
-        prependToLog("Media error occurred: " + event.error.toString());
-    }
-
     public void onPostChanged(OnPostChanged event) {
         if (event.isError()) {
             prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type);
