@@ -16,14 +16,20 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
+import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
+import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.ToastUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -99,6 +105,29 @@ public class PostActivity extends AppCompatActivity {
         mDispatcher.unregister(this);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
+        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+
+        switch(requestCode) {
+            case RESULT_PICK_MEDIA:
+                if(resultCode == RESULT_OK){
+                    Uri selectedImage = imageReturnedIntent.getData();
+                    String mimeType = getContentResolver().getType(selectedImage);
+                    String[] filePathColumn = {android.provider.MediaStore.Images.Media.DATA};
+                    Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+                    if (cursor != null) {
+                        if (cursor.moveToFirst()) {
+                            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                            String filePath = cursor.getString(columnIndex);
+                            uploadMedia(filePath, mimeType);
+                        }
+                        cursor.close();
+                    }
+                }
+        }
+    }
+
     private void post() {
         String title = mTitleText.getText().toString();
         String content = mContentText.getText().toString();
@@ -122,6 +151,20 @@ public class PostActivity extends AppCompatActivity {
             SiteModel firstSite = mSiteStore.getSites().get(0);
             mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(firstSite));
         }
+    }
+
+    private void uploadMedia(String imagePath, String mimeType) {
+        SiteModel site = mSiteStore.getSites().get(0);
+        MediaModel mediaModel = new MediaModel();
+        mediaModel.setFilePath(imagePath);
+        mediaModel.setFileExtension(imagePath.substring(imagePath.lastIndexOf(".") + 1, imagePath.length()));
+        mediaModel.setMimeType(mimeType);
+        mediaModel.setFileName(imagePath.substring(imagePath.lastIndexOf("/"), imagePath.length()));
+        mediaModel.setSiteId(site.getSiteId());
+        List<MediaModel> media = new ArrayList<>();
+        media.add(mediaModel);
+        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
     }
 
     @SuppressWarnings("unused")
