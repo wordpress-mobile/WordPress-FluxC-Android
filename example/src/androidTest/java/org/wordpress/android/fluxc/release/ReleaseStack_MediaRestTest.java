@@ -164,8 +164,8 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
         if (event.progress >= 1.f) {
             assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
+            mCountDownLatch.countDown();
         }
-        mCountDownLatch.countDown();
     }
 
     @Subscribe

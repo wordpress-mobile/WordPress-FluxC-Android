@@ -119,11 +119,11 @@ public class MockedNetworkModule {
 
     @Singleton
     @Provides
-    public MediaRestClient provideMediaRestClient(Dispatcher dispatcher,
+    public MediaRestClient provideMediaRestClient(Dispatcher dispatcher, Context appContext,
                                                   @Named("regular") RequestQueue requestQueue,
                                                   @Named("regular") OkHttpClient okHttpClient,
                                                   AccessToken token, UserAgent userAgent) {
-        return new MediaRestClient(dispatcher, requestQueue, okHttpClient, token, userAgent);
+        return new MediaRestClient(appContext, dispatcher, requestQueue, okHttpClient, token, userAgent);
     }
 
     @Singleton
