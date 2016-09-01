@@ -1,6 +1,9 @@
 package org.wordpress.android.fluxc.instaflux;
 
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -30,6 +33,8 @@ public class PostActivity extends AppCompatActivity {
     @Inject Dispatcher mDispatcher;
     @Inject PostStore mPostStore;
 
+    private final int RESULT_PICK_MEDIA = 1;
+
     private EditText mTitleText;
     private EditText mContentText;
 
@@ -55,6 +60,16 @@ public class PostActivity extends AppCompatActivity {
                 signOut();
             }
         });
+        Button imagePostButton = (Button) findViewById(R.id.image_post);
+        imagePostButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType("image/*");
+                startActivityForResult(intent, RESULT_PICK_MEDIA);
+            }
+        });
+
     }
 
     @Override
