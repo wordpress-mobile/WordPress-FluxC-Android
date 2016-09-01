@@ -68,7 +68,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import static org.wordpress.android.fluxc.store.MediaStore.ChangeMediaPayload;
-import static org.wordpress.android.fluxc.store.MediaStore.PullMediaPayload;
+import static org.wordpress.android.fluxc.store.MediaStore.FetchMediaPayload;
 
 public class MainExampleActivity extends AppCompatActivity {
     @Inject SiteStore mSiteStore;
@@ -333,8 +333,8 @@ public class MainExampleActivity extends AppCompatActivity {
                 mediaList.add(media);
             }
             if (!mediaList.isEmpty()) {
-                PullMediaPayload payload = new MediaStore.PullMediaPayload(mSiteStore.getSites().get(0), mediaList);
-                mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(payload));
+                MediaStore.FetchMediaPayload payload = new MediaStore.FetchMediaPayload(mSiteStore.getSites().get(0), mediaList);
+                mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
             }
         }
     }
@@ -511,8 +511,8 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void fetchAllMedia() {
-        PullMediaPayload payload = new PullMediaPayload(mSiteStore.getSites().get(0), null);
-        mDispatcher.dispatch(MediaActionBuilder.newPullAllMediaAction(payload));
+        FetchMediaPayload payload = new MediaStore.FetchMediaPayload(mSiteStore.getSites().get(0), null);
+        mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(payload));
     }
 
     private void uploadMedia(String imagePath, String mimeType) {
@@ -637,8 +637,8 @@ public class MainExampleActivity extends AppCompatActivity {
         }
 
         switch (event.cause) {
-            case PULL_ALL_MEDIA:
-                prependToLog("Begin parsing PULL_ALL_MEDIA response");
+            case FETCH_ALL_MEDIA:
+                prependToLog("Begin parsing FETCH_ALL_MEDIA response");
                 if (event.media != null) {
                     for (MediaModel media : event.media) {
                         if (MediaUtils.isImageMimeType(media.getMimeType())) {
@@ -650,9 +650,9 @@ public class MainExampleActivity extends AppCompatActivity {
                         }
                     }
                 }
-                prependToLog("End parsing PULL_ALL_MEDIA response");
+                prependToLog("End parsing FETCH_ALL_MEDIA response");
                 break;
-            case PULL_MEDIA:
+            case FETCH_MEDIA:
                 if (event.media != null && !event.media.isEmpty()) {
                     for (MediaModel media : event.media) {
                         if (media != null) {

@@ -44,8 +44,8 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         AUTHENTICATION_CHANGED,
         SITE_CHANGED,
         PUSHED_MEDIA,
-        PULLED_ALL_MEDIA,
-        PULLED_MEDIA,
+        FETCHED_ALL_MEDIA,
+        FETCHED_MEDIA,
         DELETED_MEDIA,
         UPLOADED_MEDIA,
         NULL_ERROR,
@@ -92,10 +92,10 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
      * not trigger an upload.
      */
     public void testPushMediaChanges() throws InterruptedException {
-        // pull site media
+        // fetch site media
         SiteModel site = mSiteStore.getSites().get(0);
         long siteId = site.getSiteId();
-        pullAllMedia(site);
+        fetchAllMedia(site);
 
         // some media is expected
         List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(siteId);
@@ -200,48 +200,48 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     }
 
     /**
-     * Pull all action should gather all media from a site.
+     * Fetch all action should gather all media from a site.
      */
-    public void testPullAllMedia() throws InterruptedException {
-        pullAllMedia(mSiteStore.getSites().get(0));
+    public void testFetchAllMedia() throws InterruptedException {
+        fetchAllMedia(mSiteStore.getSites().get(0));
     }
 
     /**
-     * Pull action with no media supplied results in a media exception.
+     * Fetch action with no media supplied results in a media exception.
      */
-    public void testPullNullMedia() throws InterruptedException {
-        pullSpecificMedia(mSiteStore.getSites().get(0), null, TEST_EVENTS.NULL_ERROR);
+    public void testFetchNullMedia() throws InterruptedException {
+        fetchSpecificMedia(mSiteStore.getSites().get(0), null, TEST_EVENTS.NULL_ERROR);
     }
 
     /**
-     * Pull action with media that does not exist results in a media not found exception.
+     * Fetch action with media that does not exist results in a media not found exception.
      */
-    public void testPullMediaThatDoesNotExist() throws InterruptedException {
+    public void testFetchMediaThatDoesNotExist() throws InterruptedException {
         SiteModel site = mSiteStore.getSites().get(0);
         List<Long> mediaIds = new ArrayList<>();
         mediaIds.add(9999999L);
         mediaIds.add(9999989L);
-        pullSpecificMedia(site, mediaIds, TEST_EVENTS.NOT_FOUND_ERROR);
+        fetchSpecificMedia(site, mediaIds, TEST_EVENTS.NOT_FOUND_ERROR);
     }
 
     /**
-     * Pull action should gather only media items whose ID is in the given filter.
+     * Fetch action should gather only media items whose ID is in the given filter.
      */
-    public void testPullMediaThatExists() throws InterruptedException {
+    public void testFetchMediaThatExists() throws InterruptedException {
         // get all site media
         SiteModel site = mSiteStore.getSites().get(0);
-        pullAllMedia(site);
+        fetchAllMedia(site);
 
         final List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(site.getSiteId());
         assertFalse(siteMedia.isEmpty());
 
-        // pull half of the media
+        // fetch half of the media
         final int half = siteMedia.size() / 2;
         final List<Long> halfMediaIds = new ArrayList<>(half);
         for (int i = 0; i < half; ++i) {
             halfMediaIds.add(siteMedia.get(i).getMediaId());
         }
-        pullSpecificMedia(site, halfMediaIds, TEST_EVENTS.PULLED_MEDIA);
+        fetchSpecificMedia(site, halfMediaIds, TEST_EVENTS.FETCHED_MEDIA);
     }
 
     /**
@@ -262,7 +262,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     }
 
     /**
-     * Delete action on media that exists should result in no media on a pull request.
+     * Delete action on media that exists should result in no media on a fetch request.
      */
     public void testDeleteMediaThatExists() throws InterruptedException {
         // upload media
@@ -327,16 +327,16 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         dispatchAction(TEST_EVENTS.UPLOADED_MEDIA, MediaActionBuilder.newUploadMediaAction(payload), 1);
     }
 
-    private void pullAllMedia(SiteModel site) throws InterruptedException {
-        MediaStore.PullMediaPayload mediaPayload = new MediaStore.PullMediaPayload(site, null);
-        dispatchAction(TEST_EVENTS.PULLED_ALL_MEDIA, MediaActionBuilder.newPullAllMediaAction(mediaPayload), 1);
+    private void fetchAllMedia(SiteModel site) throws InterruptedException {
+        MediaStore.FetchMediaPayload mediaPayload = new MediaStore.FetchMediaPayload(site, null);
+        dispatchAction(TEST_EVENTS.FETCHED_ALL_MEDIA, MediaActionBuilder.newFetchAllMediaAction(mediaPayload), 1);
     }
 
-    private void pullSpecificMedia(SiteModel site, List<Long> mediaIds, TEST_EVENTS expectedEvent) throws InterruptedException {
+    private void fetchSpecificMedia(SiteModel site, List<Long> mediaIds, TEST_EVENTS expectedEvent) throws InterruptedException {
         mExpectedIds = mediaIds;
         if (mExpectedIds == null) {
-            MediaStore.PullMediaPayload mediaPayload = new MediaStore.PullMediaPayload(site, null);
-            dispatchAction(expectedEvent, MediaActionBuilder.newPullMediaAction(mediaPayload), 1);
+            MediaStore.FetchMediaPayload mediaPayload = new MediaStore.FetchMediaPayload(site, null);
+            dispatchAction(expectedEvent, MediaActionBuilder.newFetchMediaAction(mediaPayload), 1);
         } else {
             int size = mExpectedIds.size();
             List<MediaModel> mediaList = new ArrayList<>();
@@ -345,8 +345,8 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
                 media.setMediaId(id);
                 mediaList.add(media);
             }
-            MediaStore.PullMediaPayload mediaPayload = new MediaStore.PullMediaPayload(site, mediaList);
-            dispatchAction(expectedEvent, MediaActionBuilder.newPullMediaAction(mediaPayload), size);
+            MediaStore.FetchMediaPayload mediaPayload = new MediaStore.FetchMediaPayload(site, mediaList);
+            dispatchAction(expectedEvent, MediaActionBuilder.newFetchMediaAction(mediaPayload), size);
         }
     }
 
@@ -389,10 +389,10 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
                 assertEquals(TEST_EVENTS.NOT_FOUND_ERROR, mExpectedEvent);
             }
         } else {
-            if (event.cause == MediaAction.PULL_ALL_MEDIA) {
-                assertEquals(TEST_EVENTS.PULLED_ALL_MEDIA, mExpectedEvent);
-            } else if (event.cause == MediaAction.PULL_MEDIA) {
-                assertEquals(TEST_EVENTS.PULLED_MEDIA, mExpectedEvent);
+            if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
+                assertEquals(TEST_EVENTS.FETCHED_ALL_MEDIA, mExpectedEvent);
+            } else if (event.cause == MediaAction.FETCH_MEDIA) {
+                assertEquals(TEST_EVENTS.FETCHED_MEDIA, mExpectedEvent);
                 if (mExpectedIds != null) {
                     assertTrue(mExpectedIds.contains(event.media.get(0).getMediaId()));
                 }

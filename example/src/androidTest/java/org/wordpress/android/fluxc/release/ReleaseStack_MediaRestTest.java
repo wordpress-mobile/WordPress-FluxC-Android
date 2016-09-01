@@ -75,18 +75,18 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testPullAllMedia() throws InterruptedException {
+    public void testFetchAllMedia() throws InterruptedException {
         loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
         SiteModel site = mSiteStore.getSites().get(0);
-        MediaStore.PullMediaPayload fetchPayload = new MediaStore.PullMediaPayload(site, null);
+        MediaStore.FetchMediaPayload fetchPayload = new MediaStore.FetchMediaPayload(site, null);
         mExpectedEvent = TEST_EVENTS.FETCHED_ALL_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newPullAllMediaAction(fetchPayload));
+        mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(fetchPayload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testPullSpecificMedia() throws InterruptedException {
+    public void testFetchSpecificMedia() throws InterruptedException {
         loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
         String knownImageIds = BuildConfig.TEST_WPCOM_IMAGE_IDS_TEST1;
@@ -97,10 +97,10 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
             media.setMediaId(Long.valueOf(id));
         }
         SiteModel site = mSiteStore.getSites().get(0);
-        MediaStore.PullMediaPayload payload = new MediaStore.PullMediaPayload(site, mediaList);
+        MediaStore.FetchMediaPayload payload = new MediaStore.FetchMediaPayload(site, mediaList);
         mExpectedEvent = TEST_EVENTS.FETCHED_KNOWN_IMAGES;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(payload));
+        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -170,9 +170,9 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
 
     @Subscribe
     public void onMediaChanged(MediaStore.OnMediaChanged event) {
-        if (event.cause == MediaAction.PULL_ALL_MEDIA) {
+        if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
             assertEquals(TEST_EVENTS.FETCHED_ALL_MEDIA, mExpectedEvent);
-        } else if (event.cause == MediaAction.PULL_MEDIA) {
+        } else if (event.cause == MediaAction.FETCH_MEDIA) {
             if (eventHasKnownImages(event)) {
                 assertEquals(TEST_EVENTS.FETCHED_KNOWN_IMAGES, mExpectedEvent);
             }
