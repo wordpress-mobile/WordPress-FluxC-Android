@@ -169,38 +169,42 @@ public class MainInstafluxActivity extends AppCompatActivity {
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
-        if (event.isError) {
-            AppLog.e(AppLog.T.API, "Authentication error: " + event.errorType + " - " + event.errorMessage);
-            if (event.errorType == AccountStore.AuthenticationError.HTTP_AUTH_ERROR) {
-                // Show a Dialog prompting for http username and password
-                showHTTPAuthDialog(mSelfhostedPayload.url);
+        if (event.isError()) {
+            switch (event.error.type) {
+                case HTTP_AUTH_ERROR:
+                    // Show a Dialog prompting for http username and password
+                    showHTTPAuthDialog(mSelfhostedPayload.url);
+                    break;
+                case INVALID_SSL_CERTIFICATE:
+                    // Show a SSL Warning Dialog
+                    showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
+                    break;
+                case NEEDS_2FA:
+                    //TODO: handle 2fa
+                    break;
+                default:
+                    // Show Toast "Network Error"?
+                    break;
             }
-            if (event.errorType == AccountStore.AuthenticationError.INVALID_SSL_CERTIFICATE) {
-                // Show a SSL Warning Dialog
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDiscoveryResponse(AccountStore.OnDiscoveryResponse event) {
+        if (event.isError()) {
+            if (event.error == SelfHostedEndpointFinder.DiscoveryError.WORDPRESS_COM_SITE) {
+                wpcomFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password);
+            } else if (event.error == SelfHostedEndpointFinder.DiscoveryError.HTTP_AUTH_REQUIRED) {
+                showHTTPAuthDialog(event.failedEndpoint);
+            } else if (event.error == SelfHostedEndpointFinder.DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
+                mSelfhostedPayload.url = event.failedEndpoint;
                 showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
             }
+            AppLog.e(AppLog.T.API, "Discover error: " + event.error);
+        } else {
+            AppLog.i(AppLog.T.API, "Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
+            selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
         }
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDiscoverySucceeded(AccountStore.OnDiscoverySucceeded event) {
-        AppLog.i(AppLog.T.API, "Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
-        selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDiscoveryFailed(AccountStore.OnDiscoveryFailed event) {
-        if (event.error == SelfHostedEndpointFinder.DiscoveryError.WORDPRESS_COM_SITE) {
-            wpcomFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password);
-        } else if (event.error == SelfHostedEndpointFinder.DiscoveryError.HTTP_AUTH_REQUIRED) {
-            showHTTPAuthDialog(event.failedEndpoint);
-        } else if (event.error == SelfHostedEndpointFinder.DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
-            mSelfhostedPayload.url = event.failedEndpoint;
-            showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
-        }
-        AppLog.e(AppLog.T.API, "Discovery failed with error: " + event.error);
     }
 
     @SuppressWarnings("unused")
