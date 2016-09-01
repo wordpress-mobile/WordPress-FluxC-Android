@@ -109,6 +109,7 @@ public class PostActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAccountChanged(AccountStore.OnAccountChanged event) {
         if (!mAccountStore.hasAccessToken()) {
@@ -117,6 +118,7 @@ public class PostActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteRemoved(SiteStore.OnSiteRemoved event) {
         if (!mSiteStore.hasSite()) {
@@ -125,6 +127,7 @@ public class PostActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPostInstantiated(PostStore.OnPostInstantiated event) {
         // upload the post if there is no error
@@ -136,6 +139,7 @@ public class PostActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPostUploaded(PostStore.OnPostUploaded event) {
         mTitleText.setText("");

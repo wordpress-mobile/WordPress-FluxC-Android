@@ -9,13 +9,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
-import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder;
@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.util.AppLog;
+import org.wordpress.android.util.ToastUtils;
 
 import javax.inject.Inject;
 
@@ -37,8 +38,6 @@ public class MainInstafluxActivity extends AppCompatActivity {
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private SiteStore.RefreshSitesXMLRPCPayload mSelfhostedPayload;
 
-    private SiteModel mSelectedSite = null;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,11 +50,25 @@ public class MainInstafluxActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        final TextView usernameField = (TextView) findViewById(R.id.username);
+        final TextView passwordField = (TextView) findViewById(R.id.password);
+        final TextView urlField = (TextView) findViewById(R.id.url);
         Button signInBtn = (Button) findViewById(R.id.sign_in_button);
         signInBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showSignInDialog();
+                String username = usernameField.getText().toString();
+                String password = passwordField.getText().toString();
+                String url = urlField.getText().toString();
+                if (TextUtils.isEmpty(username)) {
+                    usernameField.requestFocus();
+                    ToastUtils.showToast(MainInstafluxActivity.this, R.string.error_empty_username);
+                } else if (TextUtils.isEmpty(password)) {
+                    passwordField.requestFocus();
+                    ToastUtils.showToast(MainInstafluxActivity.this, R.string.error_empty_password);
+                } else {
+                    signInAction(username, password, url);
+                }
             }
         });
     }
@@ -72,17 +85,6 @@ public class MainInstafluxActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         mDispatcher.unregister(this);
-    }
-
-    private void showSignInDialog() {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        DialogFragment newFragment = ThreeEditTextDialog.newInstance(new ThreeEditTextDialog.Listener() {
-            @Override
-            public void onClick(String username, String password, String url) {
-                signInAction(username, password, url);
-            }
-        }, "Username", "Password", "XMLRPC Url");
-        newFragment.show(ft, "dialog");
     }
 
     private void showHTTPAuthDialog(final String url) {
@@ -156,6 +158,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
 
     // Event listeners
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAccountChanged(AccountStore.OnAccountChanged event) {
         if (!mAccountStore.hasAccessToken()) {
@@ -163,40 +166,48 @@ public class MainInstafluxActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
-        if (event.isError) {
-            AppLog.e(AppLog.T.API, "Authentication error: " + event.errorType + " - " + event.errorMessage);
-            if (event.errorType == AccountStore.AuthenticationError.HTTP_AUTH_ERROR) {
-                // Show a Dialog prompting for http username and password
-                showHTTPAuthDialog(mSelfhostedPayload.url);
+        if (event.isError()) {
+            switch (event.error.type) {
+                case HTTP_AUTH_ERROR:
+                    // Show a Dialog prompting for http username and password
+                    showHTTPAuthDialog(mSelfhostedPayload.url);
+                    break;
+                case INVALID_SSL_CERTIFICATE:
+                    // Show a SSL Warning Dialog
+                    showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
+                    break;
+                case NEEDS_2FA:
+                    //TODO: handle 2fa
+                    break;
+                default:
+                    // Show Toast "Network Error"?
+                    break;
             }
-            if (event.errorType == AccountStore.AuthenticationError.INVALID_SSL_CERTIFICATE) {
-                // Show a SSL Warning Dialog
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDiscoveryResponse(AccountStore.OnDiscoveryResponse event) {
+        if (event.isError()) {
+            if (event.error == SelfHostedEndpointFinder.DiscoveryError.WORDPRESS_COM_SITE) {
+                wpcomFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password);
+            } else if (event.error == SelfHostedEndpointFinder.DiscoveryError.HTTP_AUTH_REQUIRED) {
+                showHTTPAuthDialog(event.failedEndpoint);
+            } else if (event.error == SelfHostedEndpointFinder.DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
+                mSelfhostedPayload.url = event.failedEndpoint;
                 showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
             }
+            AppLog.e(AppLog.T.API, "Discover error: " + event.error);
+        } else {
+            AppLog.i(AppLog.T.API, "Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
+            selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDiscoverySucceeded(AccountStore.OnDiscoverySucceeded event) {
-        AppLog.i(AppLog.T.API, "Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
-        selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDiscoveryFailed(AccountStore.OnDiscoveryFailed event) {
-        if (event.error == SelfHostedEndpointFinder.DiscoveryError.WORDPRESS_COM_SITE) {
-            wpcomFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password);
-        } else if (event.error == SelfHostedEndpointFinder.DiscoveryError.HTTP_AUTH_REQUIRED) {
-            showHTTPAuthDialog(event.failedEndpoint);
-        } else if (event.error == SelfHostedEndpointFinder.DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
-            mSelfhostedPayload.url = event.failedEndpoint;
-            showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
-        }
-        AppLog.e(AppLog.T.API, "Discovery failed with error: " + event.error);
-    }
-
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
         if (mSiteStore.hasSite()) {

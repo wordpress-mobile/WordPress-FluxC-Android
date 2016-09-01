@@ -31,7 +31,7 @@ a WordPress.com OAuth2 ID and secret.
 
 We have some tests connecting to real HTTP servers, URL and credentials are defined in `example/tests.properties`, you must edit it or obtain the real file to run the tests. This is temporary.
 
-## Naming conventions for actions and events
+## Contributing
 
 ### Actions
 
@@ -48,9 +48,18 @@ Action naming guide:
 
 Each action enum should be annotated with `@ActionEnum`, with individual actions receiving an `@Action` annotation with an optional `payloadType` setting (see [SiteAction][5] for an example).
 
-### Events
+### Endpoints
 
-Events naming guide:
+Endpoints for each of the supported APIs are centralized in a generated endpoint file: `WPCOMREST.java` and `XMLRPC.java`.
+
+To add a new endpoint, first add it to the appropriate `fluxc/src/main/tools/*.txt` file, and then rebuild the project to update the generated (Java) endpoint file.
+
+### On Changed Events
+
+All On Changed Events extend the OnChanged class. They encapsulate an `error`
+field. Events can be checked for an error by calling `event.isError()`.
+
+On Changed Events naming guide:
 
     onXChanged(int rowsAffected) - Keep X singular even if multiple X were changed
     onXRemoved(int rowsAffected) - Keep X singular even if multiple X were removed
