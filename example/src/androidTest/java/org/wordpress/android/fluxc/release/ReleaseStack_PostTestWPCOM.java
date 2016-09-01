@@ -9,7 +9,6 @@ import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
-import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
@@ -469,7 +468,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
             return;
         }
         assertEquals(true, mSiteStore.hasSite());
-        assertEquals(true, mSiteStore.hasDotComSite());
+        assertEquals(true, mSiteStore.hasWPComSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }

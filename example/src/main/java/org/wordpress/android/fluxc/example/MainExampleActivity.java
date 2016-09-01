@@ -101,7 +101,7 @@ public class MainExampleActivity extends AppCompatActivity {
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
 
     // used for 2fa
-    private AuthenticatePayload mDotComPayload;
+    private AuthenticatePayload mAuthenticatePayload;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,7 +149,8 @@ public class MainExampleActivity extends AppCompatActivity {
         mCreatePostOnFirstSite.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                PostStore.InstantiatePostPayload payload = new InstantiatePostPayload(mSiteStore.getSites().get(0), false);
+                PostStore.InstantiatePostPayload payload = new InstantiatePostPayload(mSiteStore.getSites().get(0),
+                        false);
                 mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
             }
         });
@@ -400,9 +401,9 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void signIn2fa(String twoStepCode) {
-        mDotComPayload.twoStepCode = twoStepCode;
-        mDotComPayload.nextAction = SiteActionBuilder.newFetchSitesAction();
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mDotComPayload));
+        mAuthenticatePayload.twoStepCode = twoStepCode;
+        mAuthenticatePayload.nextAction = SiteActionBuilder.newFetchSitesAction();
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mAuthenticatePayload));
     }
 
     private void showHTTPAuthDialog(final String url) {
@@ -444,10 +445,10 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void wpcomFetchSites(String username, String password) {
-        mDotComPayload = new AuthenticatePayload(username, password);
+        mAuthenticatePayload = new AuthenticatePayload(username, password);
         // Next action will be dispatched if authentication is successful
-        mDotComPayload.nextAction = SiteActionBuilder.newFetchSitesAction();
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mDotComPayload));
+        mAuthenticatePayload.nextAction = SiteActionBuilder.newFetchSitesAction();
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mAuthenticatePayload));
     }
 
     private void selfHostedFetchSites(String username, String password, String xmlrpcEndpoint) {
@@ -683,8 +684,8 @@ public class MainExampleActivity extends AppCompatActivity {
 
         SiteModel firstSite = mSiteStore.getSites().get(0);
         if (!mPostStore.getPostsForSite(firstSite).isEmpty()) {
-            if (event.causeOfChange.equals(PostAction.FETCH_POSTS) ||
-                    event.causeOfChange.equals(PostAction.FETCH_PAGES)) {
+            if (event.causeOfChange.equals(PostAction.FETCH_POSTS)
+                || event.causeOfChange.equals(PostAction.FETCH_PAGES)) {
                 prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.getName());
             } else if (event.causeOfChange.equals(PostAction.DELETE_POST)) {
                 prependToLog("Post deleted!");

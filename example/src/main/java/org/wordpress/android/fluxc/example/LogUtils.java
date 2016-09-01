@@ -11,10 +11,10 @@ public class LogUtils {
         result.append(" Object {");
         result.append(newLine);
 
-        //determine fields declared in this class only (no fields of superclass)
+        // determine fields declared in this class only (no fields of superclass)
         Field[] fields = o.getClass().getDeclaredFields();
 
-        //print field names paired with their values
+        // print field names paired with their values
         for (Field field : fields) {
             result.append("  ");
             try {
@@ -23,7 +23,7 @@ public class LogUtils {
                 // Make the field public
                 Field f = o.getClass().getDeclaredField(field.getName());
                 f.setAccessible(true);
-                //requires access to private field:
+                // requires access to private field:
                 result.append(f.get(o));
             } catch (IllegalAccessException ex) {
                 // A panda just died

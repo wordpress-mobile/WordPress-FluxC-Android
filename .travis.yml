@@ -18,3 +18,4 @@ env:
 
 script:
   - ./gradlew build
+  - ./gradlew checkstyle
