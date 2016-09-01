@@ -196,7 +196,7 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
 
     @Subscribe
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
-        assertEquals(true, mSiteStore.hasDotComSite());
+        assertEquals(true, mSiteStore.hasWPComSite());
         mCountDownLatch.countDown();
     }
 

@@ -159,7 +159,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         testMedia.setFileName(MediaUtils.getFileName(imagePath));
         testMedia.setFileExtension(MediaUtils.getExtension(imagePath));
         testMedia.setMimeType(MediaUtils.MIME_TYPE_IMAGE + testMedia.getFileExtension());
-        testMedia.setSiteId(site.getDotOrgSiteId());
+        testMedia.setSiteId(site.getSelfHostedSiteId());
 
         // push media item, expecting an upload event to trigger
         pushMedia(site, testMedia, TEST_EVENTS.NOT_FOUND_ERROR);
@@ -177,7 +177,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         media.setFileName(MediaUtils.getFileName(imagePath));
         media.setFileExtension(MediaUtils.getExtension(imagePath));
         media.setMimeType(MediaUtils.MIME_TYPE_IMAGE + media.getFileExtension());
-        media.setSiteId(site.getDotOrgSiteId());
+        media.setSiteId(site.getSelfHostedSiteId());
 
         uploadMedia(site, media);
     }
@@ -194,7 +194,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         media.setFileName(MediaUtils.getFileName(videoPath));
         media.setFileExtension(MediaUtils.getExtension(videoPath));
         media.setMimeType(MediaUtils.MIME_TYPE_VIDEO + media.getFileExtension());
-        media.setSiteId(site.getDotOrgSiteId());
+        media.setSiteId(site.getSelfHostedSiteId());
 
         uploadMedia(site, media);
     }
@@ -273,7 +273,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         media.setFileName(MediaUtils.getFileName(imagePath));
         media.setFileExtension(MediaUtils.getExtension(imagePath));
         media.setMimeType(MediaUtils.MIME_TYPE_IMAGE + media.getFileExtension());
-        media.setSiteId(site.getDotOrgSiteId());
+        media.setSiteId(site.getSelfHostedSiteId());
         uploadMedia(site, media);
         assertTrue(mLastUploadedId > 0);
 
@@ -409,7 +409,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     @Subscribe
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
         AppLog.i(AppLog.T.TESTS, "site count " + mSiteStore.getSitesCount());
-        assertEquals(true, mSiteStore.hasDotOrgSite());
+        assertEquals(true, mSiteStore.hasSelfHostedSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mExpectedEvent);
         mCountDownLatch.countDown();
     }
