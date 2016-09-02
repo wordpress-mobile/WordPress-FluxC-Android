@@ -44,6 +44,7 @@ public class PostActivity extends AppCompatActivity {
     @Inject SiteStore mSiteStore;
     @Inject Dispatcher mDispatcher;
     @Inject PostStore mPostStore;
+    @Inject MediaStore mMediaStore;
 
     private final int MY_PERMISSIONS_READ_EXTERNAL_STORAGE = 1;
     private final int RESULT_PICK_MEDIA = 2;
