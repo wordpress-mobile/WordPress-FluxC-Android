@@ -307,8 +307,6 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         String date = DateTimeUtils.iso8601UTCFromDate(new Date());
         mPost.setDateCreated(date);
 
-        mPost.setFeaturedImageId(77); // Not actually valid for pages
-
         uploadPost(mPost);
 
         // Get the current copy of the page from the PostStore
@@ -322,8 +320,6 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals("A fully featured page", newPage.getTitle());
         assertEquals("Some content here! <strong>Bold text</strong>.", newPage.getContent());
         assertEquals(date, newPage.getDateCreated());
-
-        assertEquals(0, newPage.getFeaturedImageId()); // The page should upload, but have the featured image stripped
     }
 
     public void testDeleteRemotePost() throws InterruptedException {

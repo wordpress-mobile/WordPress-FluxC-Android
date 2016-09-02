@@ -272,7 +272,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         createNewPost();
 
         mPost.setTitle("A fully featured post");
-        mPost.setContent("Some content here! <strong>Bold text</strong>.");
+        mPost.setContent("Some content here! <strong>Bold text</strong>.\r\n\r\nA new paragraph.");
         String date = DateTimeUtils.iso8601UTCFromDate(new Date());
         mPost.setDateCreated(date);
 
@@ -289,7 +289,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         assertEquals("A fully featured post", newPost.getTitle());
-        assertEquals("<p>Some content here! <strong>Bold text</strong>.</p>", newPost.getContent().trim());
+        assertEquals("Some content here! <strong>Bold text</strong>.\r\n\r\nA new paragraph.", newPost.getContent());
         assertEquals(date, newPost.getDateCreated());
 
         assertTrue(categoryIds.containsAll(newPost.getCategoryIdList()) &&
@@ -302,7 +302,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         mPost.setIsPage(true);
 
         mPost.setTitle("A fully featured page");
-        mPost.setContent("Some content here! <strong>Bold text</strong>.");
+        mPost.setContent("Some content here! <strong>Bold text</strong>.\r\n\r\nA new paragraph.");
         String date = DateTimeUtils.iso8601UTCFromDate(new Date());
         mPost.setDateCreated(date);
 
@@ -319,7 +319,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         assertNotSame(0, newPage.getRemotePostId());
 
         assertEquals("A fully featured page", newPage.getTitle());
-        assertEquals("<p>Some content here! <strong>Bold text</strong>.</p>", newPage.getContent().trim());
+        assertEquals("Some content here! <strong>Bold text</strong>.\r\n\r\nA new paragraph.", newPage.getContent());
         assertEquals(date, newPage.getDateCreated());
 
         assertEquals(0, newPage.getFeaturedImageId()); // The page should upload, but have the featured image stripped
