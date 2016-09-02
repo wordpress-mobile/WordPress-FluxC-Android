@@ -52,6 +52,8 @@ public class PostActivity extends AppCompatActivity {
     private EditText mTitleText;
     private EditText mContentText;
 
+    private String mMediaUrl;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -174,10 +176,19 @@ public class PostActivity extends AppCompatActivity {
             return;
         }
 
+        mMediaUrl = null;
         PostStore.InstantiatePostPayload payload = new PostStore.InstantiatePostPayload(mSiteStore.getSites().get(0), false);
         mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
 
         AppLog.i(AppLog.T.API, "Create a new post with title: " + title + " content: " + content);
+    }
+
+    private void createMediaPost(String mediaUrl) {
+        mMediaUrl = mediaUrl;
+        PostStore.InstantiatePostPayload payload = new PostStore.InstantiatePostPayload(mSiteStore.getSites().get(0), false);
+        mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
+
+        AppLog.i(AppLog.T.API, "Create a new media post for " + mMediaUrl);
     }
 
     private void signOut() {
@@ -227,8 +238,14 @@ public class PostActivity extends AppCompatActivity {
     public void onPostInstantiated(PostStore.OnPostInstantiated event) {
         // upload the post if there is no error
         if (mSiteStore.hasSite() && event.post != null) {
-            event.post.setTitle(mTitleText.getText().toString());
-            event.post.setContent(mContentText.getText().toString());
+            if (mMediaUrl == null) {
+                // creating a text post
+                event.post.setTitle(mTitleText.getText().toString());
+                event.post.setContent(mContentText.getText().toString());
+            } else {
+                String post = "<img src=\"" + mMediaUrl + "\" />";
+                event.post.setContent(post);
+            }
             PostStore.RemotePostPayload payload = new PostStore.RemotePostPayload(event.post, mSiteStore.getSites().get(0));
             mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
         }
@@ -242,11 +259,16 @@ public class PostActivity extends AppCompatActivity {
         ToastUtils.showToast(this, event.post.getTitle());
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaChanged(MediaStore.OnMediaChanged event) {
         switch (event.causeOfChange) {
             case UPLOAD_MEDIA:
-                AppLog.i(AppLog.T.API, "Media uploaded!");
+                if (event.media.size() > 0) {
+                    AppLog.i(AppLog.T.API, "Media uploaded!");
+                    String url = event.media.get(0).getUrl();
+                    createMediaPost(url);
+                }
                 break;
         }
     }
