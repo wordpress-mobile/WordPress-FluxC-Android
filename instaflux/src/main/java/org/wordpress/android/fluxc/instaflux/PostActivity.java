@@ -71,9 +71,7 @@ public class PostActivity extends AppCompatActivity {
         imagePostButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                startActivityForResult(intent, RESULT_PICK_MEDIA);
+                pickMedia();
             }
         });
 
@@ -127,6 +125,12 @@ public class PostActivity extends AppCompatActivity {
                     }
                 }
         }
+    }
+
+    private void pickMedia() {
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, RESULT_PICK_MEDIA);
     }
 
     private void post() {
