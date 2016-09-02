@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.store.PostStore;
+import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.ToastUtils;
 
@@ -203,5 +204,14 @@ public class PostActivity extends AppCompatActivity {
         mTitleText.setText("");
         mContentText.setText("");
         ToastUtils.showToast(this, event.post.getTitle());
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMediaChanged(MediaStore.OnMediaChanged event) {
+        switch (event.causeOfChange) {
+            case UPLOAD_MEDIA:
+                AppLog.i(AppLog.T.API, "Media uploaded!");
+                break;
+        }
     }
 }
