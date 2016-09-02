@@ -1,10 +1,15 @@
 package org.wordpress.android.fluxc.instaflux;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -40,7 +45,8 @@ public class PostActivity extends AppCompatActivity {
     @Inject Dispatcher mDispatcher;
     @Inject PostStore mPostStore;
 
-    private final int RESULT_PICK_MEDIA = 1;
+    private final int MY_PERMISSIONS_READ_EXTERNAL_STORAGE = 1;
+    private final int RESULT_PICK_MEDIA = 2;
 
     private EditText mTitleText;
     private EditText mContentText;
@@ -110,7 +116,7 @@ public class PostActivity extends AppCompatActivity {
 
         switch(requestCode) {
             case RESULT_PICK_MEDIA:
-                if(resultCode == RESULT_OK){
+                if(resultCode == RESULT_OK) {
                     Uri selectedImage = imageReturnedIntent.getData();
                     String mimeType = getContentResolver().getType(selectedImage);
                     String[] filePathColumn = {android.provider.MediaStore.Images.Media.DATA};
@@ -124,13 +130,38 @@ public class PostActivity extends AppCompatActivity {
                         cursor.close();
                     }
                 }
+                break;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        switch (requestCode) {
+            case MY_PERMISSIONS_READ_EXTERNAL_STORAGE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    pickMedia();
+                }
+                break;
+            }
         }
     }
 
     private void pickMedia() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        startActivityForResult(intent, RESULT_PICK_MEDIA);
+        if (checkAndRequestPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            startActivityForResult(intent, RESULT_PICK_MEDIA);
+        }
+    }
+
+    private boolean checkAndRequestPermission(String permission) {
+        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{permission}, MY_PERMISSIONS_READ_EXTERNAL_STORAGE);
+            return false;
+        }
+        return true;
     }
 
     private void post() {
