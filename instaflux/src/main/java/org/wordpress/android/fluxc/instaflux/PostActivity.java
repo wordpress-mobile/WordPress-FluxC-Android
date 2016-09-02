@@ -184,7 +184,8 @@ public class PostActivity extends AppCompatActivity {
 
     private void createMediaPost(String mediaUrl) {
         mMediaUrl = mediaUrl;
-        PostStore.InstantiatePostPayload payload = new PostStore.InstantiatePostPayload(mSiteStore.getSites().get(0), false);
+        PostStore.InstantiatePostPayload payload = new PostStore.InstantiatePostPayload(mSiteStore.getSites().get(0),
+                false, null, "photo");
         mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
 
         AppLog.i(AppLog.T.API, "Create a new media post for " + mMediaUrl);
