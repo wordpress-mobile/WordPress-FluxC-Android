@@ -633,7 +633,7 @@ public class MainExampleActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaChanged(MediaStore.OnMediaChanged event) {
         if (event.isError()) {
-            prependToLog("Media error occurred: " + event.error.toString());
+            prependToLog("Media error occurred: " + event.error.type);
             return;
         }
 
@@ -671,8 +671,13 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMediaUploaded(MediaStore.OnMediaUploaded mediaProgress) {
-        prependToLog("Media progress: " + mediaProgress.progress * 100 + "%");
+    public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
+        if (event.isError()) {
+            prependToLog("Media upload error occurred: " + event.error.type);
+            return;
+        }
+
+        prependToLog("Media progress: " + event.progress * 100 + "%");
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
