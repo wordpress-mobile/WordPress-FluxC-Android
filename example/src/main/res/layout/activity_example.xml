@@ -93,12 +93,18 @@
         </LinearLayout>
     </ScrollView>
 
-    <TextView
-        android:id="@+id/log"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:fadeScrollbars="false"
         android:layout_gravity="bottom"
-        android:layout_margin="4dp"
-        android:layout_weight="3" />
+        android:layout_weight="3">
+
+        <TextView
+            android:id="@+id/log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"/>
+    </ScrollView>
 
 </LinearLayout>
