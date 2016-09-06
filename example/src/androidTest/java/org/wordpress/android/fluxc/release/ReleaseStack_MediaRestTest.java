@@ -34,7 +34,8 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         FETCHED_ALL_MEDIA,
         FETCHED_KNOWN_IMAGES,
         PUSHED_MEDIA,
-        UPLOADED_MEDIA
+        UPLOADED_MEDIA,
+        PUSH_ERROR
     }
 
     private TEST_EVENTS mExpectedEvent;
@@ -59,40 +60,47 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         // we first need to upload a new media to delete it
         SiteModel site = mSiteStore.getSites().get(0);
         MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
-        List<MediaModel> media = new ArrayList<>();
-        media.add(testMedia);
-        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
-        mExpectedEvent = TEST_EVENTS.DELETED_MEDIA;
+        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(site, testMedia);
+        mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
 
-    public void testPullAllMedia() throws InterruptedException {
-        loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-
-        SiteModel site = mSiteStore.getSites().get(0);
-        MediaStore.PullMediaPayload fetchPayload = new MediaStore.PullMediaPayload(site, null);
-        mExpectedEvent = TEST_EVENTS.FETCHED_ALL_MEDIA;
+        List<MediaModel> mediaList = new ArrayList<>();
+        mediaList.add(testMedia);
+        MediaStore.ChangeMediaPayload deletePayload = new MediaStore.ChangeMediaPayload(site, mediaList);
+        mExpectedEvent = TEST_EVENTS.DELETED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newPullAllMediaAction(fetchPayload));
+        mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testPullSpecificMedia() throws InterruptedException {
+    public void testFetchAllMedia() throws InterruptedException {
+        loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        SiteModel site = mSiteStore.getSites().get(0);
+        MediaStore.FetchMediaPayload fetchPayload = new MediaStore.FetchMediaPayload(site, null);
+        mExpectedEvent = TEST_EVENTS.FETCHED_ALL_MEDIA;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(fetchPayload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testFetchSpecificMedia() throws InterruptedException {
         loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
         String knownImageIds = BuildConfig.TEST_WPCOM_IMAGE_IDS_TEST1;
         String[] splitIds = knownImageIds.split(",");
-        List<Long> idList = new ArrayList<>();
+        List<MediaModel> mediaList = new ArrayList<>();
         for (String id : splitIds) {
-            idList.add(Long.valueOf(id));
+            MediaModel media = new MediaModel();
+            media.setMediaId(Long.valueOf(id));
         }
         SiteModel site = mSiteStore.getSites().get(0);
-        MediaStore.PullMediaPayload payload = new MediaStore.PullMediaPayload(site, idList);
+        MediaStore.FetchMediaPayload payload = new MediaStore.FetchMediaPayload(site, mediaList);
         mExpectedEvent = TEST_EVENTS.FETCHED_KNOWN_IMAGES;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(payload));
+        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -122,7 +130,7 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
         MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
-        mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
+        mExpectedEvent = TEST_EVENTS.PUSH_ERROR;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -132,10 +140,8 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
         SiteModel site = mSiteStore.getSites().get(0);
-        MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
-        List<MediaModel> media = new ArrayList<>();
-        media.add(testMedia);
-        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        MediaModel media = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(site, media);
         mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
@@ -146,10 +152,8 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
         SiteModel site = mSiteStore.getSites().get(0);
-        MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_VIDEO, MediaUtils.MIME_TYPE_VIDEO);
-        List<MediaModel> media = new ArrayList<>();
-        media.add(testMedia);
-        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        MediaModel media = newMediaModel(site, BuildConfig.TEST_LOCAL_VIDEO, MediaUtils.MIME_TYPE_VIDEO);
+        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(site, media);
         mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
@@ -157,32 +161,28 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
     }
 
     @Subscribe
-    public void onMediaError(MediaStore.OnMediaError event) {
-        mCountDownLatch.countDown();
+    public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
+        if (event.progress >= 1.f) {
+            assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
+            mCountDownLatch.countDown();
+        }
     }
 
     @Subscribe
     public void onMediaChanged(MediaStore.OnMediaChanged event) {
-        if (event.causeOfChange == MediaAction.PULL_ALL_MEDIA) {
+        if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
             assertEquals(TEST_EVENTS.FETCHED_ALL_MEDIA, mExpectedEvent);
-        } else if (event.causeOfChange == MediaAction.PULL_MEDIA) {
+        } else if (event.cause == MediaAction.FETCH_MEDIA) {
             if (eventHasKnownImages(event)) {
                 assertEquals(TEST_EVENTS.FETCHED_KNOWN_IMAGES, mExpectedEvent);
             }
-        } else if (event.causeOfChange == MediaAction.UPLOAD_MEDIA) {
-            // if we uploaded new media for delete test, continue with the delete
-            if (mExpectedEvent == TEST_EVENTS.DELETED_MEDIA) {
-                SiteModel site = mSiteStore.getSites().get(0);
-                MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, event.media);
-                mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(payload));
-                // don't count down, since we still need to complete the delete
-                return;
+        } else if (event.cause == MediaAction.PUSH_MEDIA) {
+            if (event.isError()) {
+                assertEquals(TEST_EVENTS.PUSH_ERROR, mExpectedEvent);
             } else {
-                assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
+                assertEquals(TEST_EVENTS.PUSHED_MEDIA, mExpectedEvent);
             }
-        } else if (event.causeOfChange == MediaAction.PUSH_MEDIA) {
-            assertEquals(TEST_EVENTS.PUSHED_MEDIA, mExpectedEvent);
-        } else if (event.causeOfChange == MediaAction.DELETE_MEDIA) {
+        } else if (event.cause == MediaAction.DELETE_MEDIA) {
             assertEquals(TEST_EVENTS.DELETED_MEDIA, mExpectedEvent);
         }
         mCountDownLatch.countDown();
@@ -196,7 +196,7 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
 
     @Subscribe
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
-        assertEquals(true, mSiteStore.hasDotComSite());
+        assertEquals(true, mSiteStore.hasWPComSite());
         mCountDownLatch.countDown();
     }
 

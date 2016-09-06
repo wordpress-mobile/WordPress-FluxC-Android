@@ -1,12 +1,17 @@
 package org.wordpress.android.fluxc.example;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -24,9 +29,9 @@ import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
+import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
-import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
@@ -41,9 +46,6 @@ import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload;
 import org.wordpress.android.fluxc.store.MediaStore;
-import org.wordpress.android.fluxc.store.MediaStore.PullMediaPayload;
-import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
-import org.wordpress.android.fluxc.store.MediaStore.ChangeMediaPayload;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
@@ -70,6 +72,9 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import static org.wordpress.android.fluxc.store.MediaStore.ChangeMediaPayload;
+import static org.wordpress.android.fluxc.store.MediaStore.FetchMediaPayload;
+
 public class MainExampleActivity extends AppCompatActivity {
     @Inject SiteStore mSiteStore;
     @Inject
@@ -80,6 +85,7 @@ public class MainExampleActivity extends AppCompatActivity {
     @Inject HTTPAuthManager mHTTPAuthManager;
     @Inject MemorizingTrustManager mMemorizingTrustManager;
 
+    private final int MY_PERMISSIONS_READ_EXTERNAL_STORAGE = 1;
     private final int RESULT_PICK_MEDIA = 1;
 
     private TextView mLogView;
@@ -102,7 +108,7 @@ public class MainExampleActivity extends AppCompatActivity {
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
 
     // used for 2fa
-    private AuthenticatePayload mDotComPayload;
+    private AuthenticatePayload mAuthenticatePayload;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,7 +156,8 @@ public class MainExampleActivity extends AppCompatActivity {
         mCreatePostOnFirstSite.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                PostStore.InstantiatePostPayload payload = new InstantiatePostPayload(mSiteStore.getSites().get(0), false);
+                PostStore.InstantiatePostPayload payload = new InstantiatePostPayload(mSiteStore.getSites().get(0),
+                        false);
                 mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
             }
         });
@@ -236,9 +243,7 @@ public class MainExampleActivity extends AppCompatActivity {
         mUploadMedia.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                startActivityForResult(intent, RESULT_PICK_MEDIA);
+                pickMedia();
             }
         });
 
@@ -297,7 +302,21 @@ public class MainExampleActivity extends AppCompatActivity {
         }
     }
 
-    // Private methods
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        switch (requestCode) {
+            case MY_PERMISSIONS_READ_EXTERNAL_STORAGE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    pickMedia();
+                }
+                break;
+            }
+        }
+    }
+
+        // Private methods
 
     private void prependToLog(final String s) {
         String output = s + "\n" + mLogView.getText();
@@ -325,14 +344,17 @@ public class MainExampleActivity extends AppCompatActivity {
     private void fetchMediaItems(String commaSeparated) {
         if (!TextUtils.isEmpty(commaSeparated)) {
             String[] split = commaSeparated.split(",");
-            List<Long> mediaIds = new ArrayList<>();
+            List<MediaModel> mediaList = new ArrayList<>();
             for (String s : split) {
                 Long lVal = Long.valueOf(s);
-                if (lVal >= 0) mediaIds.add(lVal);
+                if (lVal < 0) continue;
+                MediaModel media = new MediaModel();
+                media.setMediaId(lVal);
+                mediaList.add(media);
             }
-            if (!mediaIds.isEmpty()) {
-                PullMediaPayload payload = new MediaStore.PullMediaPayload(mSiteStore.getSites().get(0), mediaIds);
-                mDispatcher.dispatch(MediaActionBuilder.newPullMediaAction(payload));
+            if (!mediaList.isEmpty()) {
+                MediaStore.FetchMediaPayload payload = new MediaStore.FetchMediaPayload(mSiteStore.getSites().get(0), mediaList);
+                mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
             }
         }
     }
@@ -398,9 +420,9 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void signIn2fa(String twoStepCode) {
-        mDotComPayload.twoStepCode = twoStepCode;
-        mDotComPayload.nextAction = SiteActionBuilder.newFetchSitesAction();
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mDotComPayload));
+        mAuthenticatePayload.twoStepCode = twoStepCode;
+        mAuthenticatePayload.nextAction = SiteActionBuilder.newFetchSitesAction();
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mAuthenticatePayload));
     }
 
     private void showHTTPAuthDialog(final String url) {
@@ -442,10 +464,10 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void wpcomFetchSites(String username, String password) {
-        mDotComPayload = new AuthenticatePayload(username, password);
+        mAuthenticatePayload = new AuthenticatePayload(username, password);
         // Next action will be dispatched if authentication is successful
-        mDotComPayload.nextAction = SiteActionBuilder.newFetchSitesAction();
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mDotComPayload));
+        mAuthenticatePayload.nextAction = SiteActionBuilder.newFetchSitesAction();
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mAuthenticatePayload));
     }
 
     private void selfHostedFetchSites(String username, String password, String xmlrpcEndpoint) {
@@ -509,22 +531,36 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void fetchAllMedia() {
-        PullMediaPayload payload = new PullMediaPayload(mSiteStore.getSites().get(0), null);
-        mDispatcher.dispatch(MediaActionBuilder.newPullAllMediaAction(payload));
+        FetchMediaPayload payload = new MediaStore.FetchMediaPayload(mSiteStore.getSites().get(0), null);
+        mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(payload));
+    }
+
+    private void pickMedia() {
+        if (checkAndRequestPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            startActivityForResult(intent, RESULT_PICK_MEDIA);
+        }
+    }
+
+    private boolean checkAndRequestPermission(String permission) {
+        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{permission}, MY_PERMISSIONS_READ_EXTERNAL_STORAGE);
+            return false;
+        }
+        return true;
     }
 
     private void uploadMedia(String imagePath, String mimeType) {
         prependToLog("Uploading new media...");
         SiteModel site = mSiteStore.getSites().get(0);
-        MediaModel mediaModel = new MediaModel();
-        mediaModel.setFilePath(imagePath);
-        mediaModel.setFileExtension(imagePath.substring(imagePath.lastIndexOf(".") + 1, imagePath.length()));
-        mediaModel.setMimeType(mimeType);
-        mediaModel.setFileName(imagePath.substring(imagePath.lastIndexOf("/"), imagePath.length()));
-        mediaModel.setSiteId(site.getSiteId());
-        List<MediaModel> media = new ArrayList<>();
-        media.add(mediaModel);
-        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        MediaModel media = new MediaModel();
+        media.setFilePath(imagePath);
+        media.setFileExtension(imagePath.substring(imagePath.lastIndexOf(".") + 1, imagePath.length()));
+        media.setMimeType(mimeType);
+        media.setFileName(imagePath.substring(imagePath.lastIndexOf("/"), imagePath.length()));
+        media.setSiteId(site.getSiteId());
+        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(site, media);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
     }
 
@@ -641,10 +677,15 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMediaChanged(OnMediaChanged event) {
-        switch (event.causeOfChange) {
-            case PULL_ALL_MEDIA:
-                prependToLog("Begin parsing PULL_ALL_MEDIA response");
+    public void onMediaChanged(MediaStore.OnMediaChanged event) {
+        if (event.isError()) {
+            prependToLog("Media error occurred: " + event.error.type);
+            return;
+        }
+
+        switch (event.cause) {
+            case FETCH_ALL_MEDIA:
+                prependToLog("Begin parsing FETCH_ALL_MEDIA response");
                 if (event.media != null) {
                     for (MediaModel media : event.media) {
                         if (MediaUtils.isImageMimeType(media.getMimeType())) {
@@ -656,9 +697,9 @@ public class MainExampleActivity extends AppCompatActivity {
                         }
                     }
                 }
-                prependToLog("End parsing PULL_ALL_MEDIA response");
+                prependToLog("End parsing FETCH_ALL_MEDIA response");
                 break;
-            case PULL_MEDIA:
+            case FETCH_MEDIA:
                 if (event.media != null && !event.media.isEmpty()) {
                     for (MediaModel media : event.media) {
                         if (media != null) {
@@ -676,13 +717,13 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMediaProgress(MediaStore.OnMediaProgress mediaProgress) {
-        prependToLog("Media progress: " + mediaProgress.progress * 100 + "%");
-    }
+    public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
+        if (event.isError()) {
+            prependToLog("Media upload error occurred: " + event.error.type);
+            return;
+        }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMediaError(MediaStore.OnMediaError event) {
-        prependToLog("Media error occurred: " + event.error.toString());
+        prependToLog("Media progress: " + event.progress * 100 + "%");
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -694,8 +735,8 @@ public class MainExampleActivity extends AppCompatActivity {
 
         SiteModel firstSite = mSiteStore.getSites().get(0);
         if (!mPostStore.getPostsForSite(firstSite).isEmpty()) {
-            if (event.causeOfChange.equals(PostAction.FETCH_POSTS) ||
-                    event.causeOfChange.equals(PostAction.FETCH_PAGES)) {
+            if (event.causeOfChange.equals(PostAction.FETCH_POSTS)
+                || event.causeOfChange.equals(PostAction.FETCH_PAGES)) {
                 prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.getName());
             } else if (event.causeOfChange.equals(PostAction.DELETE_POST)) {
                 prependToLog("Post deleted!");

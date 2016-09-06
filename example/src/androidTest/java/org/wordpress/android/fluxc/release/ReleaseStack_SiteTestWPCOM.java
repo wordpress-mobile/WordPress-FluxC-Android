@@ -125,7 +125,7 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
             return;
         }
         assertEquals(true, mSiteStore.hasSite());
-        assertEquals(true, mSiteStore.hasDotComSite());
+        assertEquals(true, mSiteStore.hasWPComSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mExpectedEvent);
         mCountDownLatch.countDown();
     }
@@ -135,7 +135,7 @@ public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
         AppLog.e(T.TESTS, "site count " + mSiteStore.getSitesCount());
         assertEquals(mExpectedRowsAffected, event.mRowsAffected);
         assertEquals(false, mSiteStore.hasSite());
-        assertEquals(false, mSiteStore.hasDotComSite());
+        assertEquals(false, mSiteStore.hasWPComSite());
         assertEquals(TEST_EVENTS.SITE_REMOVED, mExpectedEvent);
         mCountDownLatch.countDown();
     }
