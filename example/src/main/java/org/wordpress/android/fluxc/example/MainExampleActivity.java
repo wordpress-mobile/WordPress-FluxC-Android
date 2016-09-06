@@ -1,12 +1,17 @@
 package org.wordpress.android.fluxc.example;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -24,9 +29,9 @@ import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
+import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
-import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
@@ -39,8 +44,8 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
-import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload;
+import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
@@ -79,6 +84,7 @@ public class MainExampleActivity extends AppCompatActivity {
     @Inject HTTPAuthManager mHTTPAuthManager;
     @Inject MemorizingTrustManager mMemorizingTrustManager;
 
+    private final int MY_PERMISSIONS_READ_EXTERNAL_STORAGE = 1;
     private final int RESULT_PICK_MEDIA = 1;
 
     private TextView mLogView;
@@ -236,9 +242,7 @@ public class MainExampleActivity extends AppCompatActivity {
         mUploadMedia.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                startActivityForResult(intent, RESULT_PICK_MEDIA);
+                pickMedia();
             }
         });
 
@@ -297,7 +301,21 @@ public class MainExampleActivity extends AppCompatActivity {
         }
     }
 
-    // Private methods
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        switch (requestCode) {
+            case MY_PERMISSIONS_READ_EXTERNAL_STORAGE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    pickMedia();
+                }
+                break;
+            }
+        }
+    }
+
+        // Private methods
 
     private void prependToLog(final String s) {
         String output = s + "\n" + mLogView.getText();
@@ -514,6 +532,22 @@ public class MainExampleActivity extends AppCompatActivity {
     private void fetchAllMedia() {
         FetchMediaPayload payload = new MediaStore.FetchMediaPayload(mSiteStore.getSites().get(0), null);
         mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(payload));
+    }
+
+    private void pickMedia() {
+        if (checkAndRequestPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            startActivityForResult(intent, RESULT_PICK_MEDIA);
+        }
+    }
+
+    private boolean checkAndRequestPermission(String permission) {
+        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{permission}, MY_PERMISSIONS_READ_EXTERNAL_STORAGE);
+            return false;
+        }
+        return true;
     }
 
     private void uploadMedia(String imagePath, String mimeType) {
