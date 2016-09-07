@@ -30,11 +30,9 @@ import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.store.PostStore;
+import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.ToastUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -205,13 +203,11 @@ public class PostActivity extends AppCompatActivity {
         SiteModel site = mSiteStore.getSites().get(0);
         MediaModel mediaModel = new MediaModel();
         mediaModel.setFilePath(imagePath);
-        mediaModel.setFileExtension(imagePath.substring(imagePath.lastIndexOf(".") + 1, imagePath.length()));
+        mediaModel.setFileExtension(MediaUtils.getExtension(imagePath));
         mediaModel.setMimeType(mimeType);
-        mediaModel.setFileName(imagePath.substring(imagePath.lastIndexOf("/"), imagePath.length()));
+        mediaModel.setFileName(MediaUtils.getFileName(imagePath));
         mediaModel.setSiteId(site.getSiteId());
-        List<MediaModel> media = new ArrayList<>();
-        media.add(mediaModel);
-        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(site, mediaModel);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
     }
 
