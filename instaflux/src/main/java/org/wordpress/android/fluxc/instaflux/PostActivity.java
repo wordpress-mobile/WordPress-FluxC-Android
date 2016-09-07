@@ -1,7 +1,15 @@
 package org.wordpress.android.fluxc.instaflux;
 
+import android.Manifest;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -13,12 +21,16 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
+import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
+import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.store.PostStore;
+import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.ToastUtils;
 
@@ -29,9 +41,15 @@ public class PostActivity extends AppCompatActivity {
     @Inject SiteStore mSiteStore;
     @Inject Dispatcher mDispatcher;
     @Inject PostStore mPostStore;
+    @Inject MediaStore mMediaStore;
+
+    private final int MY_PERMISSIONS_READ_EXTERNAL_STORAGE = 1;
+    private final int RESULT_PICK_MEDIA = 2;
 
     private EditText mTitleText;
     private EditText mContentText;
+
+    private String mMediaUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +73,14 @@ public class PostActivity extends AppCompatActivity {
                 signOut();
             }
         });
+        Button imagePostButton = (Button) findViewById(R.id.image_post);
+        imagePostButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                pickMedia();
+            }
+        });
+
     }
 
     @Override
@@ -84,6 +110,60 @@ public class PostActivity extends AppCompatActivity {
         mDispatcher.unregister(this);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
+        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+
+        switch(requestCode) {
+            case RESULT_PICK_MEDIA:
+                if(resultCode == RESULT_OK) {
+                    Uri selectedImage = imageReturnedIntent.getData();
+                    String mimeType = getContentResolver().getType(selectedImage);
+                    String[] filePathColumn = {android.provider.MediaStore.Images.Media.DATA};
+                    Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+                    if (cursor != null) {
+                        if (cursor.moveToFirst()) {
+                            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                            String filePath = cursor.getString(columnIndex);
+                            uploadMedia(filePath, mimeType);
+                        }
+                        cursor.close();
+                    }
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        switch (requestCode) {
+            case MY_PERMISSIONS_READ_EXTERNAL_STORAGE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    pickMedia();
+                }
+                break;
+            }
+        }
+    }
+
+    private void pickMedia() {
+        if (checkAndRequestPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            startActivityForResult(intent, RESULT_PICK_MEDIA);
+        }
+    }
+
+    private boolean checkAndRequestPermission(String permission) {
+        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{permission}, MY_PERMISSIONS_READ_EXTERNAL_STORAGE);
+            return false;
+        }
+        return true;
+    }
+
     private void post() {
         String title = mTitleText.getText().toString();
         String content = mContentText.getText().toString();
@@ -93,10 +173,20 @@ public class PostActivity extends AppCompatActivity {
             return;
         }
 
+        mMediaUrl = null;
         PostStore.InstantiatePostPayload payload = new PostStore.InstantiatePostPayload(mSiteStore.getSites().get(0), false);
         mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
 
         AppLog.i(AppLog.T.API, "Create a new post with title: " + title + " content: " + content);
+    }
+
+    private void createMediaPost(String mediaUrl) {
+        mMediaUrl = mediaUrl;
+        PostStore.InstantiatePostPayload payload = new PostStore.InstantiatePostPayload(mSiteStore.getSites().get(0),
+                false, null, "photo");
+        mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
+
+        AppLog.i(AppLog.T.API, "Create a new media post for " + mMediaUrl);
     }
 
     private void signOut() {
@@ -107,6 +197,18 @@ public class PostActivity extends AppCompatActivity {
             SiteModel firstSite = mSiteStore.getSites().get(0);
             mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(firstSite));
         }
+    }
+
+    private void uploadMedia(String imagePath, String mimeType) {
+        SiteModel site = mSiteStore.getSites().get(0);
+        MediaModel mediaModel = new MediaModel();
+        mediaModel.setFilePath(imagePath);
+        mediaModel.setFileExtension(MediaUtils.getExtension(imagePath));
+        mediaModel.setMimeType(mimeType);
+        mediaModel.setFileName(MediaUtils.getFileName(imagePath));
+        mediaModel.setSiteId(site.getSiteId());
+        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(site, mediaModel);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
     }
 
     @SuppressWarnings("unused")
@@ -132,8 +234,14 @@ public class PostActivity extends AppCompatActivity {
     public void onPostInstantiated(PostStore.OnPostInstantiated event) {
         // upload the post if there is no error
         if (mSiteStore.hasSite() && event.post != null) {
-            event.post.setTitle(mTitleText.getText().toString());
-            event.post.setContent(mContentText.getText().toString());
+            if (mMediaUrl == null) {
+                // creating a text post
+                event.post.setTitle(mTitleText.getText().toString());
+                event.post.setContent(mContentText.getText().toString());
+            } else {
+                String post = "<img src=\"" + mMediaUrl + "\" />";
+                event.post.setContent(post);
+            }
             PostStore.RemotePostPayload payload = new PostStore.RemotePostPayload(event.post, mSiteStore.getSites().get(0));
             mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
         }
@@ -145,5 +253,23 @@ public class PostActivity extends AppCompatActivity {
         mTitleText.setText("");
         mContentText.setText("");
         ToastUtils.showToast(this, event.post.getTitle());
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMediaChanged(MediaStore.OnMediaChanged event) {
+        if (event.isError()) {
+            AppLog.w(AppLog.T.MEDIA, "OnMediaChanged error: " + event.error);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
+        if (event. progress >= 1.f && event.media != null) {
+            AppLog.i(AppLog.T.API, "Media uploaded: " + event.media.getTitle());
+            String url = event.media.getUrl();
+            createMediaPost(url);
+        }
     }
 }

@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         applicationId "org.wordpress.android.fluxc.instaflux"
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
