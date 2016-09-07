@@ -258,14 +258,18 @@ public class PostActivity extends AppCompatActivity {
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaChanged(MediaStore.OnMediaChanged event) {
-        switch (event.causeOfChange) {
-            case UPLOAD_MEDIA:
-                if (event.media.size() > 0) {
-                    AppLog.i(AppLog.T.API, "Media uploaded!");
-                    String url = event.media.get(0).getUrl();
-                    createMediaPost(url);
-                }
-                break;
+        if (event.isError()) {
+            AppLog.w(AppLog.T.MEDIA, "OnMediaChanged error: " + event.error);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
+        if (event. progress >= 1.f && event.media != null) {
+            AppLog.i(AppLog.T.API, "Media uploaded: " + event.media.getTitle());
+            String url = event.media.getUrl();
+            createMediaPost(url);
         }
     }
 }
