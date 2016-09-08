@@ -24,6 +24,7 @@ import android.widget.TextView;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.action.PostAction;
 import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
@@ -72,8 +73,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import static org.wordpress.android.fluxc.store.MediaStore.ChangeMediaPayload;
-import static org.wordpress.android.fluxc.store.MediaStore.FetchMediaPayload;
+import static org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
 
 public class MainExampleActivity extends AppCompatActivity {
     @Inject SiteStore mSiteStore;
@@ -352,7 +352,8 @@ public class MainExampleActivity extends AppCompatActivity {
                 mediaList.add(media);
             }
             if (!mediaList.isEmpty()) {
-                MediaStore.FetchMediaPayload payload = new MediaStore.FetchMediaPayload(mSiteStore.getSites().get(0), mediaList);
+                SiteModel site = mSiteStore.getSites().get(0);
+                MediaListPayload payload = new MediaListPayload(MediaAction.FETCH_MEDIA, site, mediaList);
                 mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
             }
         }
@@ -371,7 +372,8 @@ public class MainExampleActivity extends AppCompatActivity {
                 }
             }
             if (!mediaIds.isEmpty()) {
-                ChangeMediaPayload payload = new ChangeMediaPayload(mSiteStore.getSites().get(0), mediaIds);
+                SiteModel site = mSiteStore.getSites().get(0);
+                MediaListPayload payload = new MediaListPayload(MediaAction.DELETE_MEDIA, site, mediaIds);
                 mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(payload));
             }
         }
@@ -530,7 +532,8 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void fetchAllMedia() {
-        FetchMediaPayload payload = new MediaStore.FetchMediaPayload(mSiteStore.getSites().get(0), null);
+        SiteModel site = mSiteStore.getSites().get(0);
+        MediaListPayload payload = new MediaListPayload(MediaAction.FETCH_ALL_MEDIA, site, null);
         mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(payload));
     }
 
