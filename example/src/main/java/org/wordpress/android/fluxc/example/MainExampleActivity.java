@@ -103,6 +103,8 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mFetchMedia;
     private Button mUploadMedia;
 
+    private String mFileToUpload;
+
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
 
@@ -270,6 +272,11 @@ public class MainExampleActivity extends AppCompatActivity {
         // Order is important here since onRegister could fire onChanged events. "register(this)" should probably go
         // first everywhere.
         mDispatcher.register(this);
+
+        if (mFileToUpload != null) {
+            String mimeType = MediaUtils.getMimeTypeForExtension(MediaUtils.getExtension(mFileToUpload));
+            uploadMedia(mFileToUpload, mimeType);
+        }
     }
 
     @Override
@@ -286,14 +293,12 @@ public class MainExampleActivity extends AppCompatActivity {
             case RESULT_PICK_MEDIA:
                 if(resultCode == RESULT_OK){
                     Uri selectedImage = imageReturnedIntent.getData();
-                    String mimeType = getContentResolver().getType(selectedImage);
                     String[] filePathColumn = {android.provider.MediaStore.Images.Media.DATA};
                     Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
                     if (cursor != null) {
                         if (cursor.moveToFirst()) {
                             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                            String filePath = cursor.getString(columnIndex);
-                            uploadMedia(filePath, mimeType);
+                            mFileToUpload = cursor.getString(columnIndex);
                         }
                         cursor.close();
                     }
@@ -308,7 +313,9 @@ public class MainExampleActivity extends AppCompatActivity {
         switch (requestCode) {
             case MY_PERMISSIONS_READ_EXTERNAL_STORAGE: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    pickMedia();
+                    if (mFileToUpload != null) {
+                        uploadMedia(mFileToUpload, MediaUtils.getMimeTypeForExtension(MediaUtils.getExtension(mFileToUpload)));
+                    }
                 }
                 break;
             }
@@ -538,11 +545,9 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void pickMedia() {
-        if (checkAndRequestPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-            Intent intent = new Intent(Intent.ACTION_PICK);
-            intent.setType("image/*");
-            startActivityForResult(intent, RESULT_PICK_MEDIA);
-        }
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, RESULT_PICK_MEDIA);
     }
 
     private boolean checkAndRequestPermission(String permission) {
@@ -701,9 +706,6 @@ public class MainExampleActivity extends AppCompatActivity {
                     }
                 }
                 break;
-            case UPLOAD_MEDIA:
-                prependToLog("Media uploaded!");
-                break;
         }
     }
 
@@ -711,10 +713,23 @@ public class MainExampleActivity extends AppCompatActivity {
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
         if (event.isError()) {
             prependToLog("Media upload error occurred: " + event.error.type);
+            if (event.error.type == MediaStore.MediaErrorType.FS_READ_PERMISSION_DENIED) {
+                if (checkAndRequestPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                    uploadMedia(event.media.getFilePath(), event.media.getMimeType());
+                } else {
+                    mFileToUpload = event.media.getFilePath();
+                    prependToLog("Permission required to upload file...");
+                }
+            }
             return;
         }
 
-        prependToLog("Media progress: " + event.progress * 100 + "%");
+        if (event.completed) {
+            prependToLog("Media uploaded!");
+            mFileToUpload = null;
+        } else {
+            prependToLog("Media progress: " + event.progress * 100 + "%");
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
