@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-public class ReleaseStack_CommentTest extends ReleaseStack_WPComBase {
+public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Inject CommentStore mCommentStore;
 
     private enum TEST_EVENTS {
@@ -55,4 +55,5 @@ public class ReleaseStack_CommentTest extends ReleaseStack_WPComBase {
         assertEquals(TEST_EVENTS.COMMENT_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
+
 }
