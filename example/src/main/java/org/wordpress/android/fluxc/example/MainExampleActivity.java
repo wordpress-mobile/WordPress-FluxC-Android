@@ -593,6 +593,21 @@ public class MainExampleActivity extends AppCompatActivity {
             prependToLog("Authentication error: " + event.error.type);
 
             switch (event.error.type) {
+                case AUTHORIZATION_REQUIRED:
+                case ACCESS_DENIED:
+                    // You're not authorized to do that
+                    break;
+                case INVALID_CLIENT:
+                case INVALID_GRANT:
+                case UNSUPPORTED_GRANT_TYPE:
+                    // You should fix your gradle.properties
+                    break;
+                case UNKNOWN_TOKEN:
+                case INVALID_TOKEN:
+                case NOT_AUTHENTICATED:
+                case INCORRECT_USERNAME_OR_PASSWORD:
+                    showSigninDialog();
+                    break;
                 case HTTP_AUTH_ERROR:
                     // Show a Dialog prompting for http username and password
                     showHTTPAuthDialog(mSelfhostedPayload.url);
@@ -604,7 +619,11 @@ public class MainExampleActivity extends AppCompatActivity {
                 case NEEDS_2FA:
                     show2faDialog();
                     break;
-                default:
+                case INVALID_OTP:
+                    break;
+                case INVALID_REQUEST:
+                case UNSUPPORTED_RESPONSE_TYPE:
+                case GENERIC_ERROR:
                     // Show Toast "Network Error"?
                     break;
             }
