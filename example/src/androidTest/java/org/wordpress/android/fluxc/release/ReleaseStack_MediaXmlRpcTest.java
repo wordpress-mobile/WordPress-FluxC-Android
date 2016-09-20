@@ -318,7 +318,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     private void pushMedia(SiteModel site, MediaModel media, TEST_EVENTS expectedEvent) throws InterruptedException {
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(media);
-        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, mediaList);
+        MediaStore.MediaListPayload payload = new MediaStore.MediaListPayload(MediaAction.PUSH_MEDIA, site, mediaList);
         dispatchAction(expectedEvent, MediaActionBuilder.newPushMediaAction(payload), 1);
     }
 
@@ -328,14 +328,14 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     }
 
     private void fetchAllMedia(SiteModel site) throws InterruptedException {
-        MediaStore.FetchMediaPayload mediaPayload = new MediaStore.FetchMediaPayload(site, null);
+        MediaStore.MediaListPayload mediaPayload = new MediaStore.MediaListPayload(MediaAction.FETCH_ALL_MEDIA, site, null);
         dispatchAction(TEST_EVENTS.FETCHED_ALL_MEDIA, MediaActionBuilder.newFetchAllMediaAction(mediaPayload), 1);
     }
 
     private void fetchSpecificMedia(SiteModel site, List<Long> mediaIds, TEST_EVENTS expectedEvent) throws InterruptedException {
         mExpectedIds = mediaIds;
         if (mExpectedIds == null) {
-            MediaStore.FetchMediaPayload mediaPayload = new MediaStore.FetchMediaPayload(site, null);
+            MediaStore.MediaListPayload mediaPayload = new MediaStore.MediaListPayload(MediaAction.FETCH_MEDIA, site, null);
             dispatchAction(expectedEvent, MediaActionBuilder.newFetchMediaAction(mediaPayload), 1);
         } else {
             int size = mExpectedIds.size();
@@ -345,7 +345,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
                 media.setMediaId(id);
                 mediaList.add(media);
             }
-            MediaStore.FetchMediaPayload mediaPayload = new MediaStore.FetchMediaPayload(site, mediaList);
+            MediaStore.MediaListPayload mediaPayload = new MediaStore.MediaListPayload(MediaAction.FETCH_MEDIA, site, mediaList);
             dispatchAction(expectedEvent, MediaActionBuilder.newFetchMediaAction(mediaPayload), size);
         }
     }
@@ -353,7 +353,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     private void deleteMedia(SiteModel site, MediaModel media, TEST_EVENTS expectedEvent) throws InterruptedException {
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(media);
-        MediaStore.ChangeMediaPayload deletePayload = new MediaStore.ChangeMediaPayload(site, mediaList);
+        MediaStore.MediaListPayload deletePayload = new MediaStore.MediaListPayload(MediaAction.DELETE_MEDIA, site, mediaList);
         dispatchAction(expectedEvent, MediaActionBuilder.newDeleteMediaAction(deletePayload), 1);
     }
 
