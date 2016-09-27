@@ -423,7 +423,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         site.setIsWPCom(true);
         site.setSiteId(99999999999L);
 
-        // Expecting a generic 404 error (unknown blog)
+        // Expecting a generic 404 error (unknown site)
         mNextEvent = TEST_EVENTS.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
