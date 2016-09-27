@@ -19,6 +19,7 @@ import javax.inject.Inject;
 
 public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Inject CommentStore mCommentStore;
+    private List<CommentModel> mComments;
 
     private enum TEST_EVENTS {
         NONE,
@@ -46,16 +47,10 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     public void testEditValidComment() throws InterruptedException {
-        FetchCommentsPayload payload = new FetchCommentsPayload(mSite);
-        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
-        // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        fetchFirstComments();
 
         // Get first comment
-        List<CommentModel> comments = mCommentStore.getCommentsForSite(mSite);
-        CommentModel firstComment = comments.get(0);
+        CommentModel firstComment = mComments.get(0);
 
         // Edit the comment
         firstComment.setContent("If we could somehow harness this lightning... "
@@ -82,4 +77,18 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch.countDown();
     }
 
+    // Private methods
+
+    private void fetchFirstComments() throws InterruptedException {
+        if (mComments != null) {
+            return;
+        }
+        FetchCommentsPayload payload = new FetchCommentsPayload(mSite);
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        mComments = mCommentStore.getCommentsForSite(mSite);
+    }
 }

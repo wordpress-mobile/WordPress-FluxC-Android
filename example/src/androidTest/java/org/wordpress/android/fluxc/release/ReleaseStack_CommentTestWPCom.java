@@ -19,10 +19,12 @@ import javax.inject.Inject;
 
 public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     @Inject CommentStore mCommentStore;
+    private List<CommentModel> mComments;
 
     private enum TEST_EVENTS {
         NONE,
         COMMENT_CHANGED,
+        COMMENT_CHANGED_ERROR,
     }
     private TEST_EVENTS mNextEvent;
 
@@ -46,15 +48,10 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     }
 
     public void testEditValidComment() throws InterruptedException {
-        FetchCommentsPayload payload = new FetchCommentsPayload(mSite);
-        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        fetchFirstComments();
 
         // Get first comment
-        List<CommentModel> comments = mCommentStore.getCommentsForSite(mSite);
-        CommentModel firstComment = comments.get(0);
+        CommentModel firstComment = mComments.get(0);
 
         // Edit the comment
         firstComment.setContent("If we could somehow harness this lightning... "
@@ -74,6 +71,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         comment.setDatePublished("");
         comment.setStatus("approved");
         // Try to push the invalid comment
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_ERROR;
         PushCommentPayload pushCommentPayload = new PushCommentPayload(comment, mSite);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newPushCommentAction(pushCommentPayload));
@@ -85,11 +83,29 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         List<CommentModel> comments = mCommentStore.getCommentsForSite(mSite);
         if (event.isError()) {
             AppLog.i(T.TESTS, "event error type: " + event.error.type);
+            if (mNextEvent != TEST_EVENTS.COMMENT_CHANGED_ERROR) {
+                assertTrue("onCommentChanged Error", false);
+            }
+            mCountDownLatch.countDown();
             return;
         }
         AppLog.i(T.TESTS, "comments count " + comments.size());
         assertTrue(comments.size() != 0);
         assertEquals(TEST_EVENTS.COMMENT_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
+    }
+
+    // Private methods
+
+    private void fetchFirstComments() throws InterruptedException {
+        if (mComments != null) {
+            return;
+        }
+        FetchCommentsPayload payload = new FetchCommentsPayload(mSite);
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        mComments = mCommentStore.getCommentsForSite(mSite);
     }
 }
