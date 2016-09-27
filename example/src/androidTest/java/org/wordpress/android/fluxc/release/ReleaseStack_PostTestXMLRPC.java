@@ -42,7 +42,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     private PostError mLastPostError;
 
-    enum TEST_EVENTS {
+    private enum TEST_EVENTS {
         NONE,
         POST_INSTANTIATED,
         POST_UPLOADED,
@@ -724,6 +724,21 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     @Subscribe
     public void onPostUploaded(OnPostUploaded event) {
         AppLog.i(T.API, "Received OnPostUploaded");
+        if (event.isError()) {
+            AppLog.i(T.API, "OnPostUploaded has error: " + event.error.type + " - " + event.error.message);
+            mLastPostError = event.error;
+            if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST)) {
+                assertEquals(PostStore.PostErrorType.UNKNOWN_POST, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST_TYPE)) {
+                assertEquals(PostStore.PostErrorType.UNKNOWN_POST_TYPE, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
+                assertEquals(PostStore.PostErrorType.GENERIC_ERROR, event.error.type);
+                mCountDownLatch.countDown();
+            }
+            return;
+        }
         assertEquals(TEST_EVENTS.POST_UPLOADED, mNextEvent);
         assertEquals(false, event.post.isLocalDraft());
         assertEquals(false, event.post.isLocallyChanged());

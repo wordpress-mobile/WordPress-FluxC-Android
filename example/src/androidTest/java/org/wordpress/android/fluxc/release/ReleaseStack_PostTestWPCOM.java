@@ -46,7 +46,7 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
 
     private boolean mCanLoadMorePosts;
 
-    enum TEST_EVENTS {
+    private enum TEST_EVENTS {
         NONE,
         SITE_CHANGED,
         POST_INSTANTIATED,
@@ -535,6 +535,20 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
     @Subscribe
     public void onPostUploaded(OnPostUploaded event) {
         AppLog.i(T.API, "Received OnPostUploaded");
+        if (event.isError()) {
+            AppLog.i(T.API, "OnPostUploaded has error: " + event.error.type + " - " + event.error.message);
+            if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST)) {
+                assertEquals(PostErrorType.UNKNOWN_POST, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST_TYPE)) {
+                assertEquals(PostErrorType.UNKNOWN_POST_TYPE, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
+                assertEquals(PostErrorType.GENERIC_ERROR, event.error.type);
+                mCountDownLatch.countDown();
+            }
+            return;
+        }
         assertEquals(false, event.post.isLocalDraft());
         assertEquals(false, event.post.isLocallyChanged());
         assertNotSame(0, event.post.getRemotePostId());
