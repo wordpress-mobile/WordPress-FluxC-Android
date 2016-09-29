@@ -59,7 +59,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         firstComment.setStatus(CommentStatus.APPROVED.toString());
 
         // Push the edited comment
-        PushCommentPayload pushCommentPayload = new PushCommentPayload(firstComment, mSite);
+        PushCommentPayload pushCommentPayload = new PushCommentPayload(mSite, firstComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newPushCommentAction(pushCommentPayload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -72,7 +72,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         comment.setStatus("approved");
         // Try to push the invalid comment
         mNextEvent = TEST_EVENTS.COMMENT_CHANGED_ERROR;
-        PushCommentPayload pushCommentPayload = new PushCommentPayload(comment, mSite);
+        PushCommentPayload pushCommentPayload = new PushCommentPayload(mSite, comment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newPushCommentAction(pushCommentPayload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));

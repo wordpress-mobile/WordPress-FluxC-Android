@@ -6,6 +6,7 @@ import org.wordpress.android.fluxc.generated.CommentActionBuilder;
 import org.wordpress.android.fluxc.model.CommentModel;
 import org.wordpress.android.fluxc.model.CommentStatus;
 import org.wordpress.android.fluxc.store.CommentStore;
+import org.wordpress.android.fluxc.store.CommentStore.FetchCommentPayload;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
 import org.wordpress.android.fluxc.store.CommentStore.PushCommentPayload;
 import org.wordpress.android.util.AppLog;
@@ -46,6 +47,17 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    public void testFetchComment() throws InterruptedException {
+        fetchFirstComments();
+        // Get first comment
+        CommentModel firstComment = mComments.get(0);
+        // Pull the first comments
+        FetchCommentPayload fetchCommentPayload = new FetchCommentPayload(mSite, firstComment);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newFetchCommentAction(fetchCommentPayload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     public void testEditValidComment() throws InterruptedException {
         fetchFirstComments();
 
@@ -58,7 +70,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         firstComment.setStatus(CommentStatus.APPROVED.toString());
 
         // Push the edited comment
-        PushCommentPayload pushCommentPayload = new PushCommentPayload(firstComment, mSite);
+        PushCommentPayload pushCommentPayload = new PushCommentPayload(mSite, firstComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newPushCommentAction(pushCommentPayload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
