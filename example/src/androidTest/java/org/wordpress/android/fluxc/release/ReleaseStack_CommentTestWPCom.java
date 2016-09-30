@@ -7,7 +7,6 @@ import org.wordpress.android.fluxc.model.CommentModel;
 import org.wordpress.android.fluxc.model.CommentStatus;
 import org.wordpress.android.fluxc.store.CommentStore;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
-import org.wordpress.android.fluxc.store.CommentStore.PushCommentPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -59,7 +58,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         firstComment.setStatus(CommentStatus.APPROVED.toString());
 
         // Push the edited comment
-        PushCommentPayload pushCommentPayload = new PushCommentPayload(mSite, firstComment);
+        CommentStore.RemoteCommentPayload pushCommentPayload = new CommentStore.RemoteCommentPayload(mSite, firstComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newPushCommentAction(pushCommentPayload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -72,7 +71,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         comment.setStatus("approved");
         // Try to push the invalid comment
         mNextEvent = TEST_EVENTS.COMMENT_CHANGED_ERROR;
-        PushCommentPayload pushCommentPayload = new PushCommentPayload(mSite, comment);
+        CommentStore.RemoteCommentPayload pushCommentPayload = new CommentStore.RemoteCommentPayload(mSite, comment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newPushCommentAction(pushCommentPayload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
