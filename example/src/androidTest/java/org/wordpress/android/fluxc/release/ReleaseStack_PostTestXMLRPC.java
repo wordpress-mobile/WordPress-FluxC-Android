@@ -52,6 +52,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         POST_DELETED,
         ERROR_UNKNOWN_POST,
         ERROR_UNKNOWN_POST_TYPE,
+        ERROR_UNAUTHORIZED,
         ERROR_GENERIC
     }
     private TEST_EVENTS mNextEvent;
@@ -620,6 +621,23 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     // TODO: Test: Upload a page to a custom site that has pages disabled (should get a 403 'Invalid post type')
 
+    public void testFetchPostsAsSubscriber() throws InterruptedException {
+        SiteModel site = new SiteModel();
+        site.setId(2);
+        site.setSelfHostedSiteId(0);
+        site.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE_SUBSCRIBER);
+        site.setPassword(BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE_SUBSCRIBER);
+        site.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
+
+        // Expecting a 401 error (authorization required)
+        mNextEvent = TEST_EVENTS.ERROR_UNAUTHORIZED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new PostStore.FetchPostsPayload(site)));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     public void testCreatePostAsSubscriber() throws InterruptedException {
         SiteModel subscriberSite = new SiteModel();
         subscriberSite.setId(2);
@@ -640,7 +658,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         setupPostAttributes();
 
         // Attempt to upload new post to site
-        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mNextEvent = TEST_EVENTS.ERROR_UNAUTHORIZED;
         mCountDownLatch = new CountDownLatch(1);
 
         RemotePostPayload pushPayload = new RemotePostPayload(mPost, subscriberSite);
@@ -672,6 +690,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST_TYPE)) {
                 assertEquals(PostStore.PostErrorType.UNKNOWN_POST_TYPE, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNAUTHORIZED)) {
+                assertEquals(PostStore.PostErrorType.UNAUTHORIZED, event.error.type);
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
                 assertEquals(PostStore.PostErrorType.GENERIC_ERROR, event.error.type);
@@ -732,6 +753,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST_TYPE)) {
                 assertEquals(PostStore.PostErrorType.UNKNOWN_POST_TYPE, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNAUTHORIZED)) {
+                assertEquals(PostStore.PostErrorType.UNAUTHORIZED, event.error.type);
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
                 assertEquals(PostStore.PostErrorType.GENERIC_ERROR, event.error.type);
