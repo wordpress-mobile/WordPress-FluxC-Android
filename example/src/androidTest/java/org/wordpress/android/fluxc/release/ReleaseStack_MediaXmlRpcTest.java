@@ -94,11 +94,10 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     public void testPushMediaChanges() throws InterruptedException {
         // fetch site media
         SiteModel site = mSiteStore.getSites().get(0);
-        long siteId = site.getSiteId();
         fetchAllMedia(site);
 
         // some media is expected
-        List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(siteId);
+        List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(site);
         assertFalse(siteMedia.isEmpty());
 
         // store existing properties for restoration
@@ -123,7 +122,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         pushMedia(site, testMedia, TEST_EVENTS.PUSHED_MEDIA);
 
         // verify local media has changes
-        final MediaModel updatedMedia = mMediaStore.getSiteMediaWithId(siteId, testId);
+        final MediaModel updatedMedia = mMediaStore.getSiteMediaWithId(site, testId);
         assertNotNull(updatedMedia);
         assertEquals(updatedMedia.getTitle(), newTitle);
         assertEquals(updatedMedia.getDescription(), newDescription);
@@ -138,7 +137,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         pushMedia(site, testMedia, TEST_EVENTS.PUSHED_MEDIA);
 
         // verify restored media properties
-        final MediaModel restoredMedia = mMediaStore.getSiteMediaWithId(siteId, testId);
+        final MediaModel restoredMedia = mMediaStore.getSiteMediaWithId(site, testId);
         assertEquals(restoredMedia.getTitle(), mediaTitle);
         assertEquals(restoredMedia.getDescription(), mediaDescription);
         assertEquals(restoredMedia.getCaption(), mediaCaption);
@@ -232,7 +231,7 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
         SiteModel site = mSiteStore.getSites().get(0);
         fetchAllMedia(site);
 
-        final List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(site.getSiteId());
+        final List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(site);
         assertFalse(siteMedia.isEmpty());
 
         // fetch half of the media
