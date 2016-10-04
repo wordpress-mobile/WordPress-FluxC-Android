@@ -5,8 +5,10 @@ import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.CommentActionBuilder;
 import org.wordpress.android.fluxc.model.CommentModel;
 import org.wordpress.android.fluxc.model.CommentStatus;
+import org.wordpress.android.fluxc.persistence.CommentSqlUtils;
 import org.wordpress.android.fluxc.store.CommentStore;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
+import org.wordpress.android.fluxc.store.CommentStore.InstantiateCommentPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -19,9 +21,11 @@ import javax.inject.Inject;
 public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     @Inject CommentStore mCommentStore;
     private List<CommentModel> mComments;
+    private CommentModel mNewComment;
 
     private enum TEST_EVENTS {
         NONE,
+        COMMENT_INSTANTIATED,
         COMMENT_CHANGED,
         COMMENT_CHANGED_ERROR,
     }
@@ -35,6 +39,39 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         // Authenticate, fetch sites and initialize mSite.
         init();
         mNextEvent = TEST_EVENTS.NONE;
+    }
+
+    public void testInstantiateComment() throws InterruptedException {
+        InstantiateCommentPayload payload = new InstantiateCommentPayload(mSite);
+        mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(mSite);
+        assertEquals(mNewComment.getId(), comments.get(0).getId());
+    }
+
+    public void testInstantiateUpdateAndRemoveComment() throws InterruptedException {
+        // New Comment
+        InstantiateCommentPayload payload = new InstantiateCommentPayload(mSite);
+        mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Edit comment instance
+        mNewComment.setContent("You should send 1.21 gigawatts into the flux capacitor.");
+
+        // Update
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newUpdateCommentAction(mNewComment));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Check the one we get from the DB is the same
+        List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(mSite);
+        assertEquals(mNewComment.getContent(), comments.get(0).getContent());
     }
 
     public void testFetchComments() throws InterruptedException {
@@ -91,6 +128,14 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         AppLog.i(T.TESTS, "comments count " + comments.size());
         assertTrue(comments.size() != 0);
         assertEquals(TEST_EVENTS.COMMENT_CHANGED, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @Subscribe
+    public void onCommentInstantiated(CommentStore.OnCommentInstantiated event) {
+        mNewComment = event.comment;
+        assertTrue(event.comment.getId() != 0);
+        assertEquals(TEST_EVENTS.COMMENT_INSTANTIATED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
