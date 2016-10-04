@@ -41,6 +41,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TEST_EVENTS.NONE;
     }
 
+    // Note: This test is not specific to WPCOM (local changes only)
     public void testInstantiateComment() throws InterruptedException {
         InstantiateCommentPayload payload = new InstantiateCommentPayload(mSite);
         mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
@@ -52,6 +53,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(mNewComment.getId(), comments.get(0).getId());
     }
 
+    // Note: This test is not specific to WPCOM (local changes only)
     public void testInstantiateUpdateAndRemoveComment() throws InterruptedException {
         // New Comment
         InstantiateCommentPayload payload = new InstantiateCommentPayload(mSite);
@@ -69,9 +71,18 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mDispatcher.dispatch(CommentActionBuilder.newUpdateCommentAction(mNewComment));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        // Check the one we get from the DB is the same
+        // Check the last comment we get from the DB is the same
         List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(mSite);
         assertEquals(mNewComment.getContent(), comments.get(0).getContent());
+
+        // Remove that comment
+        mDispatcher.dispatch(CommentActionBuilder.newRemoveCommentAction(mNewComment));
+
+        // Check the last comment we get from the DB is different
+        comments = CommentSqlUtils.getCommentsForSite(mSite);
+        if (comments.size() != 0) {
+            assertNotSame(mNewComment.getId(), comments.get(0).getId());
+        }
     }
 
     public void testFetchComments() throws InterruptedException {
