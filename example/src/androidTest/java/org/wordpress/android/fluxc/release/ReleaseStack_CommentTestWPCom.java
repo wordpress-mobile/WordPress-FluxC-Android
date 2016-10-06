@@ -48,19 +48,46 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
         // Authenticate, fetch sites and initialize mSite.
         init();
+        // Fetch first posts
+        fetchFirstPosts();
+        // Init mNextEvent
         mNextEvent = TEST_EVENTS.NONE;
     }
 
     // Note: This test is not specific to WPCOM (local changes only)
     public void testInstantiateComment() throws InterruptedException {
+        // New Comment
         InstantiateCommentPayload payload = new InstantiateCommentPayload(mSite);
         mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
+        // Verify it was inserted in the DB
         List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(mSite);
         assertEquals(mNewComment.getId(), comments.get(0).getId());
+    }
+
+    // Note: This test is not specific to WPCOM (local changes only)
+    public void testInstantiateAndPushComment() throws InterruptedException {
+        // New Comment
+        InstantiateCommentPayload payload1 = new InstantiateCommentPayload(mSite);
+        mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload1));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Edit comment instance
+        mNewComment.setContent("1.21 gigawatts.");
+
+        // Create new Comment
+        RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mPosts.get(0), mNewComment);
+        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Check comment has been modified in the DB
+        CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertEquals(comment.getContent(), mNewComment.getContent());
     }
 
     // Note: This test is not specific to WPCOM (local changes only)
@@ -116,7 +143,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         firstComment.setStatus(CommentStatus.APPROVED.toString());
 
         // Push the edited comment
-        CommentStore.RemoteCommentPayload pushCommentPayload = new CommentStore.RemoteCommentPayload(mSite, firstComment);
+        RemoteCommentPayload pushCommentPayload = new RemoteCommentPayload(mSite, firstComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newPushCommentAction(pushCommentPayload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -129,7 +156,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         comment.setStatus("approved");
         // Try to push the invalid comment
         mNextEvent = TEST_EVENTS.COMMENT_CHANGED_ERROR;
-        CommentStore.RemoteCommentPayload pushCommentPayload = new CommentStore.RemoteCommentPayload(mSite, comment);
+        RemoteCommentPayload pushCommentPayload = new RemoteCommentPayload(mSite, comment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newPushCommentAction(pushCommentPayload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
