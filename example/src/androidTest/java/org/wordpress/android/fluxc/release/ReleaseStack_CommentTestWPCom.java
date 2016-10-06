@@ -3,12 +3,18 @@ package org.wordpress.android.fluxc.release;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.CommentActionBuilder;
+import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.CommentModel;
 import org.wordpress.android.fluxc.model.CommentStatus;
+import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.persistence.CommentSqlUtils;
 import org.wordpress.android.fluxc.store.CommentStore;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
 import org.wordpress.android.fluxc.store.CommentStore.InstantiateCommentPayload;
+import org.wordpress.android.fluxc.store.CommentStore.RemoteCommentPayload;
+import org.wordpress.android.fluxc.store.CommentStore.RemoteCreateCommentPayload;
+import org.wordpress.android.fluxc.store.PostStore;
+import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -20,11 +26,15 @@ import javax.inject.Inject;
 
 public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     @Inject CommentStore mCommentStore;
+    @Inject PostStore mPostStore;
+
+    private List<PostModel> mPosts;
     private List<CommentModel> mComments;
     private CommentModel mNewComment;
 
     private enum TEST_EVENTS {
         NONE,
+        POSTS_FETCHED,
         COMMENT_INSTANTIATED,
         COMMENT_CHANGED,
         COMMENT_CHANGED_ERROR,
@@ -150,6 +160,13 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch.countDown();
     }
 
+    @Subscribe
+    public void onPostChanged(OnPostChanged event) {
+        mPosts = mPostStore.getPostsForSite(mSite);
+        assertEquals(mNextEvent, TEST_EVENTS.POSTS_FETCHED);
+        mCountDownLatch.countDown();
+    }
+
     // Private methods
 
     private void fetchFirstComments() throws InterruptedException {
@@ -162,5 +179,12 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         mComments = mCommentStore.getCommentsForSite(mSite);
+    }
+
+    private void fetchFirstPosts() throws InterruptedException {
+        mNextEvent = TEST_EVENTS.POSTS_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new PostStore.FetchPostsPayload(mSite, false)));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
