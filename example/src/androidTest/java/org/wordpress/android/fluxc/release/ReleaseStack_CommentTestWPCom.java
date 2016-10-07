@@ -12,12 +12,14 @@ import org.wordpress.android.fluxc.store.CommentStore;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
 import org.wordpress.android.fluxc.store.CommentStore.InstantiateCommentPayload;
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCommentPayload;
+import org.wordpress.android.fluxc.store.CommentStore.RemoteCreateCommentPayload;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -66,7 +68,32 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(mSite);
         assertEquals(mNewComment.getId(), comments.get(0).getId());
     }
-    
+
+    public void testErrorDuplicatedComment() throws InterruptedException {
+        // New Comment
+        InstantiateCommentPayload payload1 = new InstantiateCommentPayload(mSite);
+        mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload1));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Edit comment instance
+        mNewComment.setContent("Trying with: " + (new Random()).nextFloat() * 10 + " gigawatts");
+
+        // Create new Comment
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
+        RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mPosts.get(0), mNewComment);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.SECONDS));
+
+        // Dispatch the same payload (with the same comment), we should get a 409 error "comment_duplicate"
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_ERROR;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.SECONDS));
+    }
+
     // Note: This test is not specific to WPCOM (local changes only)
     public void testInstantiateUpdateAndRemoveComment() throws InterruptedException {
         // New Comment
