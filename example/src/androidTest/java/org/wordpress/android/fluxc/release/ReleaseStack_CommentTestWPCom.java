@@ -69,6 +69,29 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(mNewComment.getId(), comments.get(0).getId());
     }
 
+    public void testInstantiateAndCreateNewComment() throws InterruptedException {
+        // New Comment
+        InstantiateCommentPayload payload1 = new InstantiateCommentPayload(mSite);
+        mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload1));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Edit comment instance
+        mNewComment.setContent("Trying with: " + (new Random()).nextFloat() * 10 + " gigawatts");
+
+        // Create new Comment
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
+        RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mPosts.get(0), mNewComment);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.SECONDS));
+
+        // Check comment has been modified in the DB
+        CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertEquals(mNewComment.getContent(), comment.getContent());
+    }
+
     public void testErrorDuplicatedComment() throws InterruptedException {
         // New Comment
         InstantiateCommentPayload payload1 = new InstantiateCommentPayload(mSite);
