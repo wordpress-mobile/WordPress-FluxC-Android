@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.model.CommentModel;
 import org.wordpress.android.fluxc.model.CommentStatus;
 import org.wordpress.android.fluxc.store.CommentStore;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
+import org.wordpress.android.fluxc.store.CommentStore.RemoteCommentPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -50,8 +51,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // Get first comment
         CommentModel firstComment = mComments.get(0);
         // Pull the first comments
-        org.wordpress.android.fluxc.store.CommentStore.RemoteCommentPayload
-                fetchCommentPayload = new org.wordpress.android.fluxc.store.CommentStore.RemoteCommentPayload(mSite, firstComment);
+        RemoteCommentPayload fetchCommentPayload = new RemoteCommentPayload(mSite, firstComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentAction(fetchCommentPayload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -69,7 +69,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         firstComment.setStatus(CommentStatus.APPROVED.toString());
 
         // Push the edited comment
-        CommentStore.RemoteCommentPayload pushCommentPayload = new CommentStore.RemoteCommentPayload(mSite, firstComment);
+        RemoteCommentPayload pushCommentPayload = new RemoteCommentPayload(mSite, firstComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newPushCommentAction(pushCommentPayload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));

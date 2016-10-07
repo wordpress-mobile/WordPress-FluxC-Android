@@ -85,7 +85,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mPosts.get(0), mNewComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.SECONDS));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
