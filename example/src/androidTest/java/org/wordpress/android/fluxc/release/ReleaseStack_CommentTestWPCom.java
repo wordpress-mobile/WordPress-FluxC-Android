@@ -12,7 +12,6 @@ import org.wordpress.android.fluxc.store.CommentStore;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
 import org.wordpress.android.fluxc.store.CommentStore.InstantiateCommentPayload;
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCommentPayload;
-import org.wordpress.android.fluxc.store.CommentStore.RemoteCreateCommentPayload;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.util.AppLog;
@@ -67,29 +66,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(mSite);
         assertEquals(mNewComment.getId(), comments.get(0).getId());
     }
-
-    // Note: This test is not specific to WPCOM (local changes only)
-    public void testInstantiateAndPushComment() throws InterruptedException {
-        // New Comment
-        InstantiateCommentPayload payload1 = new InstantiateCommentPayload(mSite);
-        mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload1));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        // Edit comment instance
-        mNewComment.setContent("1.21 gigawatts.");
-
-        // Create new Comment
-        RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mPosts.get(0), mNewComment);
-        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        // Check comment has been modified in the DB
-        CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
-        assertEquals(comment.getContent(), mNewComment.getContent());
-    }
-
+    
     // Note: This test is not specific to WPCOM (local changes only)
     public void testInstantiateUpdateAndRemoveComment() throws InterruptedException {
         // New Comment
