@@ -77,7 +77,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Subscribe
     public void onCommentChanged(CommentStore.OnCommentChanged event) {
-        List<CommentModel> comments = mCommentStore.getCommentsForSite(mSite);
+        List<CommentModel> comments = mCommentStore.getCommentsForSite(mSite, CommentStatus.ALL);
         if (event.isError()) {
             AppLog.i(T.TESTS, "event error type: " + event.error.type);
             return;
@@ -100,6 +100,6 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
         // Wait for a network response / onChanged event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        mComments = mCommentStore.getCommentsForSite(mSite);
+        mComments = mCommentStore.getCommentsForSite(mSite, CommentStatus.ALL);
     }
 }

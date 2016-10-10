@@ -65,7 +65,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Verify it was inserted in the DB
-        List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(mSite);
+        List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(mSite, CommentStatus.ALL);
         assertEquals(mNewComment.getId(), comments.get(0).getId());
     }
 
@@ -88,14 +88,14 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check the last comment we get from the DB is the same
-        List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(mSite);
+        List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(mSite, CommentStatus.ALL);
         assertEquals(mNewComment.getContent(), comments.get(0).getContent());
 
         // Remove that comment
         mDispatcher.dispatch(CommentActionBuilder.newRemoveCommentAction(mNewComment));
 
         // Check the last comment we get from the DB is different
-        comments = CommentSqlUtils.getCommentsForSite(mSite);
+        comments = CommentSqlUtils.getCommentsForSite(mSite, CommentStatus.ALL);
         if (comments.size() != 0) {
             assertNotSame(mNewComment.getId(), comments.get(0).getId());
         }
@@ -316,7 +316,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
     @Subscribe
     public void onCommentChanged(CommentStore.OnCommentChanged event) {
-        List<CommentModel> comments = mCommentStore.getCommentsForSite(mSite);
+        List<CommentModel> comments = mCommentStore.getCommentsForSite(mSite, CommentStatus.ALL);
         if (event.isError()) {
             AppLog.i(T.TESTS, "event error type: " + event.error.type);
             if (mNextEvent != TEST_EVENTS.COMMENT_CHANGED_ERROR) {
@@ -356,7 +356,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        mComments = mCommentStore.getCommentsForSite(mSite);
+        mComments = mCommentStore.getCommentsForSite(mSite, CommentStatus.ALL);
     }
 
     private void fetchFirstPosts() throws InterruptedException {
