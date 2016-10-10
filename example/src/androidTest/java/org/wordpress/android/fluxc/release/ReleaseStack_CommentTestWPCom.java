@@ -253,7 +253,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     }
 
     public void testFetchComments() throws InterruptedException {
-        FetchCommentsPayload payload = new FetchCommentsPayload(mSite);
+        FetchCommentsPayload payload = new FetchCommentsPayload(mSite, 10, 0);
         mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
@@ -351,7 +351,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         if (mComments != null) {
             return;
         }
-        FetchCommentsPayload payload = new FetchCommentsPayload(mSite);
+        FetchCommentsPayload payload = new FetchCommentsPayload(mSite, 10, 0);
         mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
