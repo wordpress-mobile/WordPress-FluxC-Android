@@ -101,6 +101,19 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         }
     }
 
+    public void testRemoveAllComments() throws InterruptedException {
+        fetchFirstComments();
+
+        int count = mCommentStore.getNumberOfCommentsForSite(mSite, CommentStatus.ALL);
+        assertNotSame(0, count); // Only work if the site has at least one comment.
+
+        // Remove all comments for this site
+        mDispatcher.dispatch(CommentActionBuilder.newRemoveCommentsAction(mSite));
+
+        count = mCommentStore.getNumberOfCommentsForSite(mSite, CommentStatus.ALL);
+        assertEquals(0, count);
+    }
+
     public void testInstantiateAndCreateNewComment() throws InterruptedException {
         // New Comment
         InstantiateCommentPayload payload1 = new InstantiateCommentPayload(mSite);
