@@ -69,6 +69,38 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(mNewComment.getId(), comments.get(0).getId());
     }
 
+    // Note: This test is not specific to WPCOM (local changes only)
+    public void testInstantiateUpdateAndRemoveComment() throws InterruptedException {
+        // New Comment
+        InstantiateCommentPayload payload = new InstantiateCommentPayload(mSite);
+        mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Edit comment instance
+        mNewComment.setContent("You should send 1.21 gigawatts into the flux capacitor.");
+
+        // Update
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newUpdateCommentAction(mNewComment));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Check the last comment we get from the DB is the same
+        List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(mSite);
+        assertEquals(mNewComment.getContent(), comments.get(0).getContent());
+
+        // Remove that comment
+        mDispatcher.dispatch(CommentActionBuilder.newRemoveCommentAction(mNewComment));
+
+        // Check the last comment we get from the DB is different
+        comments = CommentSqlUtils.getCommentsForSite(mSite);
+        if (comments.size() != 0) {
+            assertNotSame(mNewComment.getId(), comments.get(0).getId());
+        }
+    }
+
     public void testInstantiateAndCreateNewComment() throws InterruptedException {
         // New Comment
         InstantiateCommentPayload payload1 = new InstantiateCommentPayload(mSite);
@@ -92,7 +124,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(comment.getContent().contains(mNewComment.getContent()));
     }
 
-    public void testDeleteOnceComment() throws InterruptedException {
+    public void testDeleteCommentOnce() throws InterruptedException {
         // New Comment
         InstantiateCommentPayload payload1 = new InstantiateCommentPayload(mSite);
         mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
@@ -126,7 +158,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(CommentStatus.TRASH.toString(), comment.getStatus());
     }
 
-    public void testDeleteTwiceComment() throws InterruptedException {
+    public void testDeleteCommentTwice() throws InterruptedException {
         // New Comment
         InstantiateCommentPayload payload1 = new InstantiateCommentPayload(mSite);
         mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
@@ -220,43 +252,23 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertNotSame(mNewComment.getRemoteSiteId(), comment.getRemoteSiteId());
     }
 
-    // Note: This test is not specific to WPCOM (local changes only)
-    public void testInstantiateUpdateAndRemoveComment() throws InterruptedException {
-        // New Comment
-        InstantiateCommentPayload payload = new InstantiateCommentPayload(mSite);
-        mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        // Edit comment instance
-        mNewComment.setContent("You should send 1.21 gigawatts into the flux capacitor.");
-
-        // Update
-        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(CommentActionBuilder.newUpdateCommentAction(mNewComment));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        // Check the last comment we get from the DB is the same
-        List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(mSite);
-        assertEquals(mNewComment.getContent(), comments.get(0).getContent());
-
-        // Remove that comment
-        mDispatcher.dispatch(CommentActionBuilder.newRemoveCommentAction(mNewComment));
-
-        // Check the last comment we get from the DB is different
-        comments = CommentSqlUtils.getCommentsForSite(mSite);
-        if (comments.size() != 0) {
-            assertNotSame(mNewComment.getId(), comments.get(0).getId());
-        }
-    }
-
     public void testFetchComments() throws InterruptedException {
         FetchCommentsPayload payload = new FetchCommentsPayload(mSite);
         mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testFetchComment() throws InterruptedException {
+        fetchFirstComments();
+        CommentModel firstComment = mComments.get(0);
+
+        RemoteCommentPayload payload = new RemoteCommentPayload(mSite, firstComment);
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newFetchCommentAction(payload));
         // Wait for a network response / onChanged event
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -268,8 +280,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         CommentModel firstComment = mComments.get(0);
 
         // Edit the comment
-        firstComment.setContent("If we could somehow harness this lightning... "
-                                + "channel it into the flux capacitor... it just might work.");
+        firstComment.setContent("If we could somehow harness this lightning: " + (new Random()).nextFloat() * 10);
         firstComment.setStatus(CommentStatus.APPROVED.toString());
 
         // Push the edited comment
@@ -277,6 +288,17 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newPushCommentAction(pushCommentPayload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Make sure it was edited
+        RemoteCommentPayload payload = new RemoteCommentPayload(mSite, firstComment);
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newFetchCommentAction(payload));
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        CommentModel updatedComment = CommentSqlUtils.getCommentByLocalCommentId(firstComment.getId());
+        assertTrue(updatedComment.getContent().contains(firstComment.getContent()));
     }
 
     public void testEditInvalidComment() throws InterruptedException {
