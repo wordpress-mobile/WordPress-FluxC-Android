@@ -96,6 +96,31 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(comment.getContent().contains(mNewComment.getContent()));
     }
 
+    public void testInstantiateAndCreateNewCommentDuplicate() throws InterruptedException {
+        // New Comment
+        InstantiateCommentPayload payload1 = new InstantiateCommentPayload(mSite);
+        mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload1));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Edit comment instance
+        mNewComment.setContent("Trying with: " + (new Random()).nextFloat() * 10 + " gigawatts");
+
+        // Create new Comment
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
+        RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mPosts.get(0), mNewComment);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Same comment again
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_ERROR;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     public void testEditValidComment() throws InterruptedException {
         fetchFirstComments();
 
@@ -121,6 +146,10 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         List<CommentModel> comments = mCommentStore.getCommentsForSite(mSite, CommentStatus.ALL);
         if (event.isError()) {
             AppLog.i(T.TESTS, "event error type: " + event.error.type);
+            if (mNextEvent != TEST_EVENTS.COMMENT_CHANGED_ERROR) {
+                assertTrue("onCommentChanged Error", false);
+            }
+            mCountDownLatch.countDown();
             return;
         }
         AppLog.i(T.TESTS, "comments count " + comments.size());
