@@ -170,6 +170,24 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(comment.getContent(), firstComment.getContent());
     }
 
+    public void testEditInvalidComment() throws InterruptedException {
+        fetchFirstComments();
+
+        // Get first comment
+        CommentModel firstComment = mComments.get(0);
+
+        // Edit the comment
+        firstComment.setContent("Trying with: " + (new Random()).nextFloat() * 10 + " gigawatts");
+        firstComment.setRemoteCommentId(-1); // set an incorrect id
+
+        // Push the edited comment
+        RemoteCommentPayload pushCommentPayload = new RemoteCommentPayload(mSite, firstComment);
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_ERROR;
+        mDispatcher.dispatch(CommentActionBuilder.newPushCommentAction(pushCommentPayload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     // OnChanged Events
 
     @Subscribe
