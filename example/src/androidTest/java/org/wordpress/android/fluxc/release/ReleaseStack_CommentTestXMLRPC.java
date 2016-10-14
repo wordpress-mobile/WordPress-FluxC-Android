@@ -156,15 +156,18 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         CommentModel firstComment = mComments.get(0);
 
         // Edit the comment
-        firstComment.setContent("If we could somehow harness this lightning... "
-                                + "channel it into the flux capacitor... it just might work.");
+        firstComment.setContent("Trying with: " + (new Random()).nextFloat() * 10 + " gigawatts");
         firstComment.setStatus(CommentStatus.APPROVED.toString());
 
         // Push the edited comment
         RemoteCommentPayload pushCommentPayload = new RemoteCommentPayload(mSite, firstComment);
         mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
         mDispatcher.dispatch(CommentActionBuilder.newPushCommentAction(pushCommentPayload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        CommentModel comment = mCommentStore.getCommentByLocalId(firstComment.getId());
+        assertEquals(comment.getContent(), firstComment.getContent());
     }
 
     // OnChanged Events
