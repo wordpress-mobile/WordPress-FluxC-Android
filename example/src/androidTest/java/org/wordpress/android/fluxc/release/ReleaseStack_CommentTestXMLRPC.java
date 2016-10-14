@@ -222,6 +222,45 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(CommentStatus.TRASH.toString(), comment.getStatus());
     }
 
+    public void testDeleteCommentTwice() throws InterruptedException {
+        // New Comment
+        InstantiateCommentPayload payload1 = new InstantiateCommentPayload(mSite);
+        mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload1));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Edit comment instance
+        mNewComment.setContent("Trying with: " + (new Random()).nextFloat() * 10 + " gigawatts");
+
+        // Create new Comment
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
+        RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mPosts.get(0), mNewComment);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Check comment has been modified in the DB
+        CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertTrue(comment.getContent().contains(mNewComment.getContent()));
+
+        // Delete once (ie. move to trash)
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
+        RemoteCommentPayload payload3 = new RemoteCommentPayload(mSite, comment);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newDeleteCommentAction(payload3));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Delete twice (ie. real delete)
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newDeleteCommentAction(payload3));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Make sure the comment was deleted (local test only, but should mean it was deleted correctly on the server)
+        comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertEquals(null, comment);
+    }
+
     // OnChanged Events
 
     @Subscribe
@@ -236,7 +275,6 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
             return;
         }
         AppLog.i(T.TESTS, "comments count " + comments.size());
-        assertTrue(comments.size() != 0);
         assertEquals(TEST_EVENTS.COMMENT_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
