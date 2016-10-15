@@ -431,7 +431,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         assertEquals(EXAMPLE_LONGITUDE, mPost.getPostLocation().getLongitude());
 
         // 3. Clear location data from the post and update
-        mPost.setPostLocation(null);
+        mPost.clearLocation();
         mPost.setIsLocallyChanged(true);
 
         uploadPost(mPost);
