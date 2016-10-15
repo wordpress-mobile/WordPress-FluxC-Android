@@ -373,7 +373,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(false, mPost.hasLocation());
 
         // 2. Modify the post, setting some location data
-        mPost.setPostLocation(EXAMPLE_LATITUDE, EXAMPLE_LONGITUDE);
+        mPost.setLocation(EXAMPLE_LATITUDE, EXAMPLE_LONGITUDE);
         mPost.setIsLocallyChanged(true);
 
         uploadPost(mPost);
@@ -383,8 +383,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         // The set location should be stored in the remote post
         assertEquals(true, mPost.hasLocation());
-        assertEquals(EXAMPLE_LATITUDE, mPost.getPostLocation().getLatitude());
-        assertEquals(EXAMPLE_LONGITUDE, mPost.getPostLocation().getLongitude());
+        assertEquals(EXAMPLE_LATITUDE, mPost.getLocation().getLatitude());
+        assertEquals(EXAMPLE_LONGITUDE, mPost.getLocation().getLongitude());
     }
 
     public void testUploadPostWithLocation() throws InterruptedException {
@@ -394,7 +394,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mPost.setTitle("A post with location");
         mPost.setContent("Some content");
 
-        mPost.setPostLocation(EXAMPLE_LATITUDE, EXAMPLE_LONGITUDE);
+        mPost.setLocation(EXAMPLE_LATITUDE, EXAMPLE_LONGITUDE);
 
         uploadPost(mPost);
 
@@ -409,8 +409,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         // The set location should be stored in the remote post
         assertEquals(true, mPost.hasLocation());
-        assertEquals(EXAMPLE_LATITUDE, mPost.getPostLocation().getLatitude());
-        assertEquals(EXAMPLE_LONGITUDE, mPost.getPostLocation().getLongitude());
+        assertEquals(EXAMPLE_LATITUDE, mPost.getLocation().getLatitude());
+        assertEquals(EXAMPLE_LONGITUDE, mPost.getLocation().getLongitude());
 
         // 2. Modify the post without changing the location data and update
         mPost.setTitle("A new title");
@@ -425,8 +425,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         // The location data should not have been altered
         assertEquals(true, mPost.hasLocation());
-        assertEquals(EXAMPLE_LATITUDE, mPost.getPostLocation().getLatitude());
-        assertEquals(EXAMPLE_LONGITUDE, mPost.getPostLocation().getLongitude());
+        assertEquals(EXAMPLE_LATITUDE, mPost.getLocation().getLatitude());
+        assertEquals(EXAMPLE_LONGITUDE, mPost.getLocation().getLongitude());
 
         // 3. Clear location data from the post and update
         mPost.clearLocation();
