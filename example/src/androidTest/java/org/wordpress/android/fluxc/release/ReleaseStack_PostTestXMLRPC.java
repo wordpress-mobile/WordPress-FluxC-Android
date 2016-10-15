@@ -34,6 +34,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     private static final String POST_DEFAULT_TITLE = "PostTestXMLRPC base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
+    private static final double EXAMPLE_LATITUDE = 44.8378;
+    private static final double EXAMPLE_LONGITUDE = 0.5792;
 
     private CountDownLatch mCountDownLatch;
     private PostModel mPost;
@@ -347,6 +349,96 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals("A fully featured page", newPage.getTitle());
         assertEquals("Some content here! <strong>Bold text</strong>.", newPage.getContent());
         assertEquals(date, newPage.getDateCreated());
+    }
+
+    public void testAddLocationToRemotePost() throws InterruptedException {
+        // 1. Upload a post with no location data
+        createNewPost();
+
+        mPost.setTitle("A post with location");
+        mPost.setContent("Some content");
+
+        uploadPost(mPost);
+
+        // Get the current copy of the post from the PostStore
+        mPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(mSite));
+
+        assertEquals("A post with location", mPost.getTitle());
+        assertEquals("Some content", mPost.getContent());
+
+        // The post should not have a location since we never set one
+        assertEquals(false, mPost.hasLocation());
+
+        // 2. Modify the post, setting some location data
+        mPost.setPostLocation(EXAMPLE_LATITUDE, EXAMPLE_LONGITUDE);
+        mPost.setIsLocallyChanged(true);
+
+        uploadPost(mPost);
+
+        // Get the current copy of the post from the PostStore
+        mPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        // The set location should be stored in the remote post
+        assertEquals(true, mPost.hasLocation());
+        assertEquals(EXAMPLE_LATITUDE, mPost.getPostLocation().getLatitude());
+        assertEquals(EXAMPLE_LONGITUDE, mPost.getPostLocation().getLongitude());
+    }
+
+    public void testUploadPostWithLocation() throws InterruptedException {
+        // 1. Upload a post with location data
+        createNewPost();
+
+        mPost.setTitle("A post with location");
+        mPost.setContent("Some content");
+
+        mPost.setPostLocation(EXAMPLE_LATITUDE, EXAMPLE_LONGITUDE);
+
+        uploadPost(mPost);
+
+        // Get the current copy of the post from the PostStore
+        mPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(mSite));
+
+        assertEquals("A post with location", mPost.getTitle());
+        assertEquals("Some content", mPost.getContent());
+
+        // The set location should be stored in the remote post
+        assertEquals(true, mPost.hasLocation());
+        assertEquals(EXAMPLE_LATITUDE, mPost.getPostLocation().getLatitude());
+        assertEquals(EXAMPLE_LONGITUDE, mPost.getPostLocation().getLongitude());
+
+        // 2. Modify the post without changing the location data and update
+        mPost.setTitle("A new title");
+        mPost.setIsLocallyChanged(true);
+
+        uploadPost(mPost);
+
+        // Get the current copy of the post from the PostStore
+        mPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals("A new title", mPost.getTitle());
+
+        // The location data should not have been altered
+        assertEquals(true, mPost.hasLocation());
+        assertEquals(EXAMPLE_LATITUDE, mPost.getPostLocation().getLatitude());
+        assertEquals(EXAMPLE_LONGITUDE, mPost.getPostLocation().getLongitude());
+
+        // 3. Clear location data from the post and update
+        mPost.setPostLocation(null);
+        mPost.setIsLocallyChanged(true);
+
+        uploadPost(mPost);
+
+        // Get the current copy of the post from the PostStore
+        mPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        // The post should not have a location anymore
+        assertEquals(false, mPost.hasLocation());
     }
 
     public void testDeleteRemotePost() throws InterruptedException {
