@@ -68,7 +68,7 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
 
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(testMedia);
-        MediaStore.ChangeMediaPayload deletePayload = new MediaStore.ChangeMediaPayload(site, mediaList);
+        MediaStore.MediaListPayload deletePayload = new MediaStore.MediaListPayload(MediaAction.DELETE_MEDIA, site, mediaList);
         mExpectedEvent = TEST_EVENTS.DELETED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
@@ -79,7 +79,7 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
         SiteModel site = mSiteStore.getSites().get(0);
-        MediaStore.FetchMediaPayload fetchPayload = new MediaStore.FetchMediaPayload(site, null);
+        MediaStore.MediaListPayload fetchPayload = new MediaStore.MediaListPayload(MediaAction.FETCH_ALL_MEDIA, site, null);
         mExpectedEvent = TEST_EVENTS.FETCHED_ALL_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(fetchPayload));
@@ -97,7 +97,7 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
             media.setMediaId(Long.valueOf(id));
         }
         SiteModel site = mSiteStore.getSites().get(0);
-        MediaStore.FetchMediaPayload payload = new MediaStore.FetchMediaPayload(site, mediaList);
+        MediaStore.MediaListPayload payload = new MediaStore.MediaListPayload(MediaAction.FETCH_MEDIA, site, mediaList);
         mExpectedEvent = TEST_EVENTS.FETCHED_KNOWN_IMAGES;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
@@ -115,7 +115,7 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         testMedia.setTitle(RandomStringUtils.randomAlphabetic(8));
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
-        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        MediaStore.MediaListPayload payload = new MediaStore.MediaListPayload(MediaAction.PUSH_MEDIA, site, media);
         mExpectedEvent = TEST_EVENTS.PUSHED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
@@ -129,7 +129,7 @@ public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
         MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
-        MediaStore.ChangeMediaPayload payload = new MediaStore.ChangeMediaPayload(site, media);
+        MediaStore.MediaListPayload payload = new MediaStore.MediaListPayload(MediaAction.PUSH_MEDIA, site, media);
         mExpectedEvent = TEST_EVENTS.PUSH_ERROR;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));

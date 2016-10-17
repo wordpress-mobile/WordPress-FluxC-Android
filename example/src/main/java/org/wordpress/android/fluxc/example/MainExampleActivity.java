@@ -24,6 +24,7 @@ import android.widget.TextView;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.action.PostAction;
 import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
@@ -72,8 +73,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import static org.wordpress.android.fluxc.store.MediaStore.ChangeMediaPayload;
-import static org.wordpress.android.fluxc.store.MediaStore.FetchMediaPayload;
+import static org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
 
 public class MainExampleActivity extends AppCompatActivity {
     @Inject SiteStore mSiteStore;
@@ -103,6 +103,8 @@ public class MainExampleActivity extends AppCompatActivity {
     private Button mFetchAllMedia;
     private Button mFetchMedia;
     private Button mUploadMedia;
+
+    private String mFileToUpload;
 
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
@@ -271,6 +273,11 @@ public class MainExampleActivity extends AppCompatActivity {
         // Order is important here since onRegister could fire onChanged events. "register(this)" should probably go
         // first everywhere.
         mDispatcher.register(this);
+
+        if (mFileToUpload != null) {
+            String mimeType = MediaUtils.getMimeTypeForExtension(MediaUtils.getExtension(mFileToUpload));
+            uploadMedia(mFileToUpload, mimeType);
+        }
     }
 
     @Override
@@ -287,14 +294,12 @@ public class MainExampleActivity extends AppCompatActivity {
             case RESULT_PICK_MEDIA:
                 if(resultCode == RESULT_OK){
                     Uri selectedImage = imageReturnedIntent.getData();
-                    String mimeType = getContentResolver().getType(selectedImage);
                     String[] filePathColumn = {android.provider.MediaStore.Images.Media.DATA};
                     Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
                     if (cursor != null) {
                         if (cursor.moveToFirst()) {
                             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                            String filePath = cursor.getString(columnIndex);
-                            uploadMedia(filePath, mimeType);
+                            mFileToUpload = cursor.getString(columnIndex);
                         }
                         cursor.close();
                     }
@@ -309,7 +314,9 @@ public class MainExampleActivity extends AppCompatActivity {
         switch (requestCode) {
             case MY_PERMISSIONS_READ_EXTERNAL_STORAGE: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    pickMedia();
+                    if (mFileToUpload != null) {
+                        uploadMedia(mFileToUpload, MediaUtils.getMimeTypeForExtension(MediaUtils.getExtension(mFileToUpload)));
+                    }
                 }
                 break;
             }
@@ -353,7 +360,8 @@ public class MainExampleActivity extends AppCompatActivity {
                 mediaList.add(media);
             }
             if (!mediaList.isEmpty()) {
-                MediaStore.FetchMediaPayload payload = new MediaStore.FetchMediaPayload(mSiteStore.getSites().get(0), mediaList);
+                SiteModel site = mSiteStore.getSites().get(0);
+                MediaListPayload payload = new MediaListPayload(MediaAction.FETCH_MEDIA, site, mediaList);
                 mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
             }
         }
@@ -372,7 +380,8 @@ public class MainExampleActivity extends AppCompatActivity {
                 }
             }
             if (!mediaIds.isEmpty()) {
-                ChangeMediaPayload payload = new ChangeMediaPayload(mSiteStore.getSites().get(0), mediaIds);
+                SiteModel site = mSiteStore.getSites().get(0);
+                MediaListPayload payload = new MediaListPayload(MediaAction.DELETE_MEDIA, site, mediaIds);
                 mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(payload));
             }
         }
@@ -531,16 +540,15 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void fetchAllMedia() {
-        FetchMediaPayload payload = new MediaStore.FetchMediaPayload(mSiteStore.getSites().get(0), null);
+        SiteModel site = mSiteStore.getSites().get(0);
+        MediaListPayload payload = new MediaListPayload(MediaAction.FETCH_ALL_MEDIA, site, null);
         mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(payload));
     }
 
     private void pickMedia() {
-        if (checkAndRequestPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-            Intent intent = new Intent(Intent.ACTION_PICK);
-            intent.setType("image/*");
-            startActivityForResult(intent, RESULT_PICK_MEDIA);
-        }
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, RESULT_PICK_MEDIA);
     }
 
     private boolean checkAndRequestPermission(String permission) {
@@ -586,6 +594,21 @@ public class MainExampleActivity extends AppCompatActivity {
             prependToLog("Authentication error: " + event.error.type);
 
             switch (event.error.type) {
+                case AUTHORIZATION_REQUIRED:
+                case ACCESS_DENIED:
+                    // You're not authorized to do that
+                    break;
+                case INVALID_CLIENT:
+                case INVALID_GRANT:
+                case UNSUPPORTED_GRANT_TYPE:
+                    // You should fix your gradle.properties
+                    break;
+                case UNKNOWN_TOKEN:
+                case INVALID_TOKEN:
+                case NOT_AUTHENTICATED:
+                case INCORRECT_USERNAME_OR_PASSWORD:
+                    showSigninDialog();
+                    break;
                 case HTTP_AUTH_ERROR:
                     // Show a Dialog prompting for http username and password
                     showHTTPAuthDialog(mSelfhostedPayload.url);
@@ -597,7 +620,11 @@ public class MainExampleActivity extends AppCompatActivity {
                 case NEEDS_2FA:
                     show2faDialog();
                     break;
-                default:
+                case INVALID_OTP:
+                    break;
+                case INVALID_REQUEST:
+                case UNSUPPORTED_RESPONSE_TYPE:
+                case GENERIC_ERROR:
                     // Show Toast "Network Error"?
                     break;
             }
@@ -710,9 +737,6 @@ public class MainExampleActivity extends AppCompatActivity {
                     }
                 }
                 break;
-            case UPLOAD_MEDIA:
-                prependToLog("Media uploaded!");
-                break;
         }
     }
 
@@ -720,10 +744,23 @@ public class MainExampleActivity extends AppCompatActivity {
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
         if (event.isError()) {
             prependToLog("Media upload error occurred: " + event.error.type);
+            if (event.error.type == MediaStore.MediaErrorType.FS_READ_PERMISSION_DENIED) {
+                if (checkAndRequestPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                    uploadMedia(event.media.getFilePath(), event.media.getMimeType());
+                } else {
+                    mFileToUpload = event.media.getFilePath();
+                    prependToLog("Permission required to upload file...");
+                }
+            }
             return;
         }
 
-        prependToLog("Media progress: " + event.progress * 100 + "%");
+        if (event.completed) {
+            prependToLog("Media uploaded!");
+            mFileToUpload = null;
+        } else {
+            prependToLog("Media progress: " + event.progress * 100 + "%");
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

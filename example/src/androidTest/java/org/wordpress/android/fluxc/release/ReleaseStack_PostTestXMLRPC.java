@@ -14,10 +14,10 @@ import org.wordpress.android.fluxc.store.PostStore.OnPostInstantiated;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.PostError;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
-import org.wordpress.android.fluxc.utils.DateTimeUtils;
 import org.wordpress.android.fluxc.utils.WellSqlUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
+import org.wordpress.android.util.DateTimeUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,7 +42,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     private PostError mLastPostError;
 
-    enum TEST_EVENTS {
+    private enum TEST_EVENTS {
         NONE,
         POST_INSTANTIATED,
         POST_UPLOADED,
@@ -52,6 +52,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         POST_DELETED,
         ERROR_UNKNOWN_POST,
         ERROR_UNKNOWN_POST_TYPE,
+        ERROR_UNAUTHORIZED,
         ERROR_GENERIC
     }
     private TEST_EVENTS mNextEvent;
@@ -307,8 +308,6 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         String date = DateTimeUtils.iso8601UTCFromDate(new Date());
         mPost.setDateCreated(date);
 
-        mPost.setFeaturedImageId(77); // Not actually valid for pages
-
         uploadPost(mPost);
 
         // Get the current copy of the page from the PostStore
@@ -322,8 +321,6 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals("A fully featured page", newPage.getTitle());
         assertEquals("Some content here! <strong>Bold text</strong>.", newPage.getContent());
         assertEquals(date, newPage.getDateCreated());
-
-        assertEquals(0, newPage.getFeaturedImageId()); // The page should upload, but have the featured image stripped
     }
 
     public void testDeleteRemotePost() throws InterruptedException {
@@ -624,6 +621,23 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     // TODO: Test: Upload a page to a custom site that has pages disabled (should get a 403 'Invalid post type')
 
+    public void testFetchPostsAsSubscriber() throws InterruptedException {
+        SiteModel site = new SiteModel();
+        site.setId(2);
+        site.setSelfHostedSiteId(0);
+        site.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE_SUBSCRIBER);
+        site.setPassword(BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE_SUBSCRIBER);
+        site.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
+
+        // Expecting a 401 error (authorization required)
+        mNextEvent = TEST_EVENTS.ERROR_UNAUTHORIZED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new PostStore.FetchPostsPayload(site)));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     public void testCreatePostAsSubscriber() throws InterruptedException {
         SiteModel subscriberSite = new SiteModel();
         subscriberSite.setId(2);
@@ -644,7 +658,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         setupPostAttributes();
 
         // Attempt to upload new post to site
-        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mNextEvent = TEST_EVENTS.ERROR_UNAUTHORIZED;
         mCountDownLatch = new CountDownLatch(1);
 
         RemotePostPayload pushPayload = new RemotePostPayload(mPost, subscriberSite);
@@ -676,6 +690,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST_TYPE)) {
                 assertEquals(PostStore.PostErrorType.UNKNOWN_POST_TYPE, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNAUTHORIZED)) {
+                assertEquals(PostStore.PostErrorType.UNAUTHORIZED, event.error.type);
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
                 assertEquals(PostStore.PostErrorType.GENERIC_ERROR, event.error.type);
@@ -728,6 +745,24 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     @Subscribe
     public void onPostUploaded(OnPostUploaded event) {
         AppLog.i(T.API, "Received OnPostUploaded");
+        if (event.isError()) {
+            AppLog.i(T.API, "OnPostUploaded has error: " + event.error.type + " - " + event.error.message);
+            mLastPostError = event.error;
+            if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST)) {
+                assertEquals(PostStore.PostErrorType.UNKNOWN_POST, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST_TYPE)) {
+                assertEquals(PostStore.PostErrorType.UNKNOWN_POST_TYPE, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNAUTHORIZED)) {
+                assertEquals(PostStore.PostErrorType.UNAUTHORIZED, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
+                assertEquals(PostStore.PostErrorType.GENERIC_ERROR, event.error.type);
+                mCountDownLatch.countDown();
+            }
+            return;
+        }
         assertEquals(TEST_EVENTS.POST_UPLOADED, mNextEvent);
         assertEquals(false, event.post.isLocalDraft());
         assertEquals(false, event.post.isLocallyChanged());
