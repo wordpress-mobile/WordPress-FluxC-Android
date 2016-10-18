@@ -74,7 +74,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE_CONTRIB;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE_CONTRIB;
-        payload.url = BuildConfig.TEST_WPORG_URL_SH_SIMPLE_CONTRIB;
+        payload.url = BuildConfig.TEST_WPORG_URL_SH_SIMPLE_CONTRIB_ENDPOINT;
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
@@ -86,7 +86,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_MULTISITE;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_MULTISITE;
-        payload.url = BuildConfig.TEST_WPORG_URL_SH_MULTISITE;
+        payload.url = BuildConfig.TEST_WPORG_URL_SH_MULTISITE_ENDPOINT;
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
