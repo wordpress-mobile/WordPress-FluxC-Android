@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
+public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
     private final String TEST_TITLE = "Test Title";
     private final String TEST_DESCRIPTION = "Test Description";
     private final String TEST_CAPTION = "Test Caption";
