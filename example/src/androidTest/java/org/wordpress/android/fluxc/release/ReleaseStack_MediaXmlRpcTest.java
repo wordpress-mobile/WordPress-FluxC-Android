@@ -145,26 +145,6 @@ public class ReleaseStack_MediaXmlRpcTest extends ReleaseStack_Base {
     }
 
     /**
-     * Push action that references media that does not exist remotely should trigger an upload of
-     * the new media.
-     */
-    public void testPushNewMedia() throws InterruptedException {
-        // create new media item for local image
-        SiteModel site = mSiteStore.getSites().get(0);
-        final String TEST_ID = TEST_DESCRIPTION + TestUtils.randomString(5);
-        final MediaModel testMedia = getTestMedia(TEST_TITLE, TEST_ID, TEST_CAPTION, TEST_ALT);
-        String imagePath = BuildConfig.TEST_LOCAL_IMAGE;
-        testMedia.setFilePath(imagePath);
-        testMedia.setFileName(MediaUtils.getFileName(imagePath));
-        testMedia.setFileExtension(MediaUtils.getExtension(imagePath));
-        testMedia.setMimeType(MediaUtils.MIME_TYPE_IMAGE + testMedia.getFileExtension());
-        testMedia.setSiteId(site.getSelfHostedSiteId());
-
-        // push media item, expecting an upload event to trigger
-        pushMedia(site, testMedia, TEST_EVENTS.NOT_FOUND_ERROR);
-    }
-
-    /**
      * Upload a local image.
      */
     public void testUploadImage() throws InterruptedException {
