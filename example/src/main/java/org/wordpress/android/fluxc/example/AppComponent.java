@@ -21,4 +21,9 @@ public interface AppComponent {
     void inject(ExampleApp object);
     void inject(MainExampleActivity object);
     void inject(SitesFragment object);
+    void inject(MainFragment object);
+    void inject(MediaFragment object);
+    void inject(CommentsFragment object);
+    void inject(PostsFragment object);
+    void inject(AccountFragment object);
 }

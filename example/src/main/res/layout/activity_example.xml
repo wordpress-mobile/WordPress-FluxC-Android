@@ -7,14 +7,10 @@
     tools:context="org.wordpress.android.fluxc.example.MainExampleActivity">
 
     <ScrollView
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1">
-
-        <fragment android:name="org.wordpress.android.fluxc.example.MainFragment"
-                  android:id="@+id/actions_fragment"
-                  android:layout_width="match_parent"
-                  android:layout_height="match_parent" />
 
     </ScrollView>
 
@@ -23,7 +19,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="bottom"
-        android:layout_margin="4dp"
-        android:layout_weight="3" />
+        android:layout_margin="0dp"
+        android:layout_weight="3"
+        android:background="@android:color/background_dark"
+
+        android:padding="4dp"
+        android:scrollbars="vertical"
+        android:textColor="@android:color/holo_green_light"
+        android:textSize="12sp"
+        android:typeface="monospace" />
 
 </LinearLayout>

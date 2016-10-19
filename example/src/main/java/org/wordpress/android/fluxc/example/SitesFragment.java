@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -30,10 +29,6 @@ public class SitesFragment extends Fragment {
     @Inject SiteStore mSiteStore;
     @Inject Dispatcher mDispatcher;
 
-    private Button mLogSites;
-    private Button mUpdateFirstSite;
-    private Button mNewSite;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,8 +41,7 @@ public class SitesFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_sites, container, false);
 
-        mUpdateFirstSite = (Button) view.findViewById(R.id.update_first_site);
-        mUpdateFirstSite.setOnClickListener(new OnClickListener() {
+        view.findViewById(R.id.update_first_site).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 SiteModel site = mSiteStore.getSites().get(0);
@@ -58,18 +52,17 @@ public class SitesFragment extends Fragment {
             }
         });
 
-
-        mLogSites = (Button) view.findViewById(R.id.log_sites);
-        mLogSites.setOnClickListener(new OnClickListener() {
+        view.findViewById(R.id.log_sites).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 for (SiteModel site : mSiteStore.getSites()) {
+                    prependToLog(site.getName());
                     AppLog.i(T.API, LogUtils.toString(site));
                 }
             }
         });
-        mNewSite = (Button) view.findViewById(R.id.new_site);
-        mNewSite.setOnClickListener(new OnClickListener() {
+
+        view.findViewById(R.id.new_site).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 showNewSiteDialog();
@@ -110,19 +103,16 @@ public class SitesFragment extends Fragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteChanged(OnSiteChanged event) {
+        prependToLog("OnSiteChanged");
         if (event.isError()) {
             AppLog.e(T.TESTS, "SiteChanged error: " + event.error.type);
             return;
-        }
-        if (mSiteStore.hasSite()) {
-            mUpdateFirstSite.setEnabled(true);
-        } else {
-            mUpdateFirstSite.setEnabled(false);
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNewSiteCreated(OnNewSiteCreated event) {
+        prependToLog("OnNewSiteCreated");
         String message = event.dryRun ? "validated" : "created";
         if (event.isError()) {
             prependToLog("New site " + message + ": error: " + event.error.type + " - " + event.error.message);
