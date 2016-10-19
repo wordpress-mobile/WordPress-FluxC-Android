@@ -264,10 +264,6 @@ public class MainFragment extends Fragment {
     public void onAccountChanged(OnAccountChanged event) {
         if (!mAccountStore.hasAccessToken()) {
             prependToLog("Signed Out");
-        } else {
-            if (event.accountInfosChanged) {
-                prependToLog("Display Name: " + mAccountStore.getAccount().getDisplayName());
-            }
         }
     }
 

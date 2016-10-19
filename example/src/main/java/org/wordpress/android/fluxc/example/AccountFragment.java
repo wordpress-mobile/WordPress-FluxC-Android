@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
@@ -13,9 +14,10 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
+import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
-import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 
 import java.util.HashMap;
 
@@ -23,6 +25,7 @@ import javax.inject.Inject;
 
 public class AccountFragment extends Fragment {
     @Inject SiteStore mSiteStore;
+    @Inject AccountStore mAccountStore;
     @Inject Dispatcher mDispatcher;
 
     @Override
@@ -36,6 +39,20 @@ public class AccountFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_account, container, false);
+        view.findViewById(R.id.account_settings).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                changeAccountSettings();
+            }
+        });
+
+        view.findViewById(R.id.account_infos_button).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
+                mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
+            }
+        });
         return view;
     }
 
@@ -52,9 +69,15 @@ public class AccountFragment extends Fragment {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onSiteChanged(OnSiteChanged event) {
+    public void onAccountChanged(OnAccountChanged event) {
+        if (!mAccountStore.hasAccessToken()) {
+            prependToLog("Signed Out");
+        } else {
+            if (event.accountInfosChanged) {
+                prependToLog("Display Name: " + mAccountStore.getAccount().getDisplayName());
+            }
+        }
     }
-
 
     private void changeAccountSettings() {
         AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
