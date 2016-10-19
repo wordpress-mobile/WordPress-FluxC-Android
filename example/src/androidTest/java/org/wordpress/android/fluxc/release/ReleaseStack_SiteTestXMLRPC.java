@@ -29,7 +29,7 @@ import javax.inject.Inject;
  * Tests with real credentials on real servers using the full release stack (no mock).
  * Skips self hosted site discovery, directly using the ENDPOINT URLs from tests.properties.
  */
-public class ReleaseStack_SiteTest extends ReleaseStack_Base {
+public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     @Inject Dispatcher mDispatcher;
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;

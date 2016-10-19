@@ -24,7 +24,7 @@ import javax.inject.Inject;
 /**
  * Tests with real credentials on real servers using the full release stack (no mock)
  */
-public class ReleaseStack_SiteTestWPCOM extends ReleaseStack_Base {
+public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     @Inject Dispatcher mDispatcher;
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
