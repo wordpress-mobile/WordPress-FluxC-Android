@@ -11,86 +11,11 @@
         android:layout_height="match_parent"
         android:layout_weight="1">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+        <fragment android:name="org.wordpress.android.fluxc.example.MainFragment"
+                  android:id="@+id/actions_fragment"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent" />
 
-            <Button
-                android:id="@+id/new_account"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Create New Account" />
-
-            <Button
-                android:id="@+id/new_site"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:text="Create New Site" />
-
-            <Button
-                android:id="@+id/sign_in_fetch_sites_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Sign In And Fetch Sites" />
-
-            <Button
-                android:id="@+id/account_settings"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Set Display Name"
-                android:enabled="false" />
-
-            <Button
-                android:id="@+id/account_infos_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:text="Fetch Account" />
-
-            <Button
-                android:id="@+id/update_first_site"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:text="Fetch first site" />
-
-            <Button
-                android:id="@+id/log_sites"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Log Sites" />
-
-            <Button
-                android:id="@+id/fetch_first_site_posts"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:text="Fetch posts from first site" />
-
-            <Button
-                android:id="@+id/create_new_post_first_site"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:text="Create a new post on first site" />
-
-            <Button
-                android:id="@+id/delete_a_post_from_first_site"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:text="Delete a post from first site" />
-
-            <Button
-                android:id="@+id/signout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Sign Out from WPCOM"
-                />
-
-        </LinearLayout>
     </ScrollView>
 
     <TextView

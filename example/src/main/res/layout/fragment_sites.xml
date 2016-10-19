@@ -1,0 +1,27 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             tools:context="org.wordpress.android.fluxc.example.SitesFragment">
+
+    <Button
+        android:id="@+id/new_site"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:text="Create New Site" />
+
+    <Button
+        android:id="@+id/update_first_site"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:text="Fetch first site" />
+
+    <Button
+        android:id="@+id/log_sites"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Log Sites" />
+
+</FrameLayout>

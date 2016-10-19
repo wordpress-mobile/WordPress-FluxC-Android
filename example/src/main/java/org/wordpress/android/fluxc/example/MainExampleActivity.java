@@ -1,11 +1,11 @@
 package org.wordpress.android.fluxc.example;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.DialogFragment;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -43,14 +43,12 @@ import org.wordpress.android.fluxc.store.PostStore.OnPostInstantiated;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
-import org.wordpress.android.fluxc.store.SiteStore.NewSitePayload;
-import org.wordpress.android.fluxc.store.SiteStore.OnNewSiteCreated;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
-import org.wordpress.android.fluxc.store.SiteStore.SiteVisibility;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
+import org.wordpress.android.util.ToastUtils;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -59,7 +57,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-public class MainExampleActivity extends AppCompatActivity {
+
+public class MainExampleActivity extends Activity {
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
     @Inject PostStore mPostStore;
@@ -68,17 +67,12 @@ public class MainExampleActivity extends AppCompatActivity {
     @Inject MemorizingTrustManager mMemorizingTrustManager;
 
     private TextView mLogView;
-    private Button mAccountInfos;
-    private Button mListSites;
-    private Button mLogSites;
-    private Button mUpdateFirstSite;
-    private Button mFetchFirstSitePosts;
+
     private Button mCreatePostOnFirstSite;
     private Button mDeleteLatestPost;
-    private Button mSignOut;
+    private Button mAccountInfos;
     private Button mAccountSettings;
-    private Button mNewAccount;
-    private Button mNewSite;
+    private Button mFetchFirstSitePosts;
 
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
     private RefreshSitesXMLRPCPayload mSelfhostedPayload;
@@ -91,14 +85,6 @@ public class MainExampleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ((ExampleApp) getApplication()).component().inject(this);
         setContentView(R.layout.activity_example);
-        mListSites = (Button) findViewById(R.id.sign_in_fetch_sites_button);
-        mListSites.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // show signin dialog
-                showSigninDialog();
-            }
-        });
         mAccountInfos = (Button) findViewById(R.id.account_infos_button);
         mAccountInfos.setOnClickListener(new OnClickListener() {
             @Override
@@ -107,27 +93,15 @@ public class MainExampleActivity extends AppCompatActivity {
                 mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
             }
         });
-        mUpdateFirstSite = (Button) findViewById(R.id.update_first_site);
-        mUpdateFirstSite.setOnClickListener(new OnClickListener() {
+
+        Button signIn = (Button) findViewById(R.id.sign_in_fetch_sites_button);
+        signIn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                SiteModel site = mSiteStore.getSites().get(0);
-                // Fetch site
-                mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(site));
-                // Fetch site's post formats
-                mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(site));
+                // show signin dialog
+                showSigninDialog();
             }
         });
-
-        mFetchFirstSitePosts = (Button) findViewById(R.id.fetch_first_site_posts);
-        mFetchFirstSitePosts.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FetchPostsPayload payload = new FetchPostsPayload(mSiteStore.getSites().get(0));
-                mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
-            }
-        });
-
         mCreatePostOnFirstSite = (Button) findViewById(R.id.create_new_post_first_site);
         mCreatePostOnFirstSite.setOnClickListener(new OnClickListener() {
             @Override
@@ -137,7 +111,14 @@ public class MainExampleActivity extends AppCompatActivity {
                 mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
             }
         });
-
+        mFetchFirstSitePosts = (Button) findViewById(R.id.fetch_first_site_posts);
+        mFetchFirstSitePosts.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FetchPostsPayload payload = new FetchPostsPayload(mSiteStore.getSites().get(0));
+                mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
+            }
+        });
         mDeleteLatestPost = (Button) findViewById(R.id.delete_a_post_from_first_site);
         mDeleteLatestPost.setOnClickListener(new OnClickListener() {
             @Override
@@ -165,39 +146,37 @@ public class MainExampleActivity extends AppCompatActivity {
             }
         });
 
-        mLogSites = (Button) findViewById(R.id.log_sites);
-        mLogSites.setOnClickListener(new OnClickListener() {
+        Button signOut = (Button) findViewById(R.id.signout);
+        signOut.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                for (SiteModel site : mSiteStore.getSites()) {
-                    AppLog.i(T.API, LogUtils.toString(site));
-                }
+                signOut();
             }
         });
 
-        mSignOut = (Button) findViewById(R.id.signout);
-        mSignOut.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                signOutWpCom();
-            }
-        });
-
-        mNewAccount = (Button) findViewById(R.id.new_account);
-        mNewAccount.setOnClickListener(new OnClickListener() {
+        Button newAccount = (Button) findViewById(R.id.new_account);
+        newAccount.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 showNewAccountDialog();
             }
         });
 
-        mNewSite = (Button) findViewById(R.id.new_site);
-        mNewSite.setOnClickListener(new OnClickListener() {
+        Button sites = (Button) findViewById(R.id.sites);
+        sites.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                showNewSiteDialog();
+                if (mSiteStore.getSitesCount() == 0 && !mAccountStore.hasAccessToken()) {
+                    ToastUtils.showToast(MainExampleActivity.this, "You must be logged in");
+                    return;
+                }
+                SitesFragment s = new SitesFragment();
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.actions_fragment, s)
+                        .commit();
             }
         });
+
         mLogView = (TextView) findViewById(R.id.log);
 
         init();
@@ -209,11 +188,9 @@ public class MainExampleActivity extends AppCompatActivity {
         if (mAccountStore.hasAccessToken()) {
             prependToLog("You're signed in as: " + mAccountStore.getAccount().getUserName());
         }
-        mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
-        mFetchFirstSitePosts.setEnabled(mSiteStore.hasSite());
+        // FIXME: mSites.setEnabled(mSiteStore.hasSite());
         mCreatePostOnFirstSite.setEnabled(mSiteStore.hasSite());
         mDeleteLatestPost.setEnabled(mSiteStore.hasSite());
-        mNewSite.setEnabled(mAccountStore.hasAccessToken());
     }
 
     @Override
@@ -230,15 +207,16 @@ public class MainExampleActivity extends AppCompatActivity {
         mDispatcher.unregister(this);
     }
 
-    // Private methods
-
-    private void prependToLog(final String s) {
+    public void prependToLog(final String s) {
         String output = s + "\n" + mLogView.getText();
         mLogView.setText(output);
     }
 
+
+    // Private methods
+
     private void showSSLWarningDialog(String certifString) {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
         SSLWarningDialog newFragment = SSLWarningDialog.newInstance(
                 new android.content.DialogInterface.OnClickListener() {
                     @Override
@@ -256,7 +234,7 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void showSigninDialog() {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
         DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
             @Override
             public void onClick(String username, String password, String url) {
@@ -267,7 +245,7 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void show2faDialog() {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
         DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
             @Override
             public void onClick(String text1, String text2, String text3) {
@@ -288,7 +266,7 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void showHTTPAuthDialog(final String url) {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
         DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
             @Override
             public void onClick(String username, String password, String unused) {
@@ -320,9 +298,13 @@ public class MainExampleActivity extends AppCompatActivity {
         }
     }
 
-    private void signOutWpCom() {
+    private void signOut() {
         mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
         mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
+        // Remove all remaining sites
+        for (SiteModel site : mSiteStore.getSites()) {
+            mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(site));
+        }
     }
 
     private void wpcomFetchSites(String username, String password) {
@@ -360,7 +342,7 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     private void showNewAccountDialog() {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
         DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
             @Override
             public void onClick(String username, String email, String password) {
@@ -373,23 +355,6 @@ public class MainExampleActivity extends AppCompatActivity {
     private void newAccountAction(String username, String email, String password) {
         NewAccountPayload newAccountPayload = new NewAccountPayload(username, password, email, true);
         mDispatcher.dispatch(AccountActionBuilder.newCreateNewAccountAction(newAccountPayload));
-    }
-
-    private void showNewSiteDialog() {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
-            @Override
-            public void onClick(String name, String title, String unused) {
-                newSiteAction(name, title);
-            }
-        }, "Site Name", "Site Title", "Unused");
-        newFragment.show(ft, "dialog");
-    }
-
-    private void newSiteAction(String name, String title) {
-        // Default language "en" (english)
-        NewSitePayload newSitePayload = new NewSitePayload(name, title, "en", SiteVisibility.PUBLIC, true);
-        mDispatcher.dispatch(SiteActionBuilder.newCreateNewSiteAction(newSitePayload));
     }
 
     // Event listeners
@@ -409,7 +374,6 @@ public class MainExampleActivity extends AppCompatActivity {
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         mAccountInfos.setEnabled(mAccountStore.hasAccessToken());
         mAccountSettings.setEnabled(mAccountStore.hasAccessToken());
-        mNewSite.setEnabled(mAccountStore.hasAccessToken());
         if (event.isError()) {
             prependToLog("Authentication error: " + event.error.type);
 
@@ -479,11 +443,9 @@ public class MainExampleActivity extends AppCompatActivity {
         if (mSiteStore.hasSite()) {
             SiteModel firstSite = mSiteStore.getSites().get(0);
             prependToLog("First site name: " + firstSite.getName() + " - Total sites: " + mSiteStore.getSitesCount());
-            mUpdateFirstSite.setEnabled(true);
-            mFetchFirstSitePosts.setEnabled(true);
+            // FIXME: mSites.setEnabled(true);
         } else {
-            mUpdateFirstSite.setEnabled(false);
-            mFetchFirstSitePosts.setEnabled(false);
+            // FIXME: mSites..setEnabled(false);
         }
     }
 
@@ -498,18 +460,8 @@ public class MainExampleActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onNewSiteCreated(OnNewSiteCreated event) {
-        String message = event.dryRun ? "validated" : "created";
-        if (event.isError()) {
-            prependToLog("New site " + message + ": error: " + event.error.type + " - " + event.error.message);
-        } else {
-            prependToLog("New site " + message + ": success!");
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteRemoved(OnSiteRemoved event) {
-        mUpdateFirstSite.setEnabled(mSiteStore.hasSite());
+        // FIXME: mSites.setEnabled(mSiteStore.hasSite());
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
