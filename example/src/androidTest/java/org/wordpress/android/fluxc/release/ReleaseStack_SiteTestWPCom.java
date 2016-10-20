@@ -52,7 +52,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mExpectedRowsAffected = 0;
     }
 
-    public void testWPCOMSiteFetchAndLogout() throws InterruptedException {
+    public void testWPComSiteFetchAndLogout() throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
         AccountStore.AuthenticatePayload payload =
                 new AccountStore.AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,

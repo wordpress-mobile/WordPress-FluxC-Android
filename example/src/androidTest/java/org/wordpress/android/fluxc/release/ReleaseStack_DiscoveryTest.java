@@ -89,7 +89,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testWordPressCOMUrlFetchSites() throws InterruptedException {
+    public void testWPComUrlFetchSites() throws InterruptedException {
         mPayload = new RefreshSitesXMLRPCPayload();
         mPayload.url = "mysite.wordpress.com";
         mPayload.username = BuildConfig.TEST_WPCOM_USERNAME_TEST1;
