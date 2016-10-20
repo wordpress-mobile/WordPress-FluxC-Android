@@ -53,6 +53,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         NOT_FOUND_ERROR
     }
 
+    private SiteModel mSite;
     private TEST_EVENTS mExpectedEvent;
     private TEST_EVENTS mNextExpectedEvent;
     private CountDownLatch mCountDownLatch;
@@ -77,15 +78,17 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
      * Push action attempted with null media.
      */
     public void testPushNullMedia() throws InterruptedException {
-        pushMedia(mSiteStore.getSites().get(0), null, TEST_EVENTS.NULL_ERROR);
+        mSite = mSiteStore.getSites().get(0);
+        pushMedia(mSite, null, TEST_EVENTS.NULL_ERROR);
     }
 
     /**
      * Push action that supplies media without required data should result in a malformed exception.
      */
     public void testPushMalformedMedia() throws InterruptedException {
+        mSite = mSiteStore.getSites().get(0);
         final MediaModel testMedia = getTestMedia(TEST_TITLE, null, null, null);
-        pushMedia(mSiteStore.getSites().get(0), testMedia, TEST_EVENTS.MALFORMED_ERROR);
+        pushMedia(mSite, testMedia, TEST_EVENTS.MALFORMED_ERROR);
     }
 
     /**
@@ -94,11 +97,11 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
      */
     public void testPushMediaChanges() throws InterruptedException {
         // fetch site media
-        SiteModel site = mSiteStore.getSites().get(0);
-        fetchAllMedia(site);
+        mSite = mSiteStore.getSites().get(0);
+        fetchAllMedia(mSite);
 
         // some media is expected
-        List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(site);
+        List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(mSite);
         assertFalse(siteMedia.isEmpty());
 
         // store existing properties for restoration
@@ -120,10 +123,10 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         testMedia.setAlt(newAlt);
 
         // push changes
-        pushMedia(site, testMedia, TEST_EVENTS.PUSHED_MEDIA);
+        pushMedia(mSite, testMedia, TEST_EVENTS.PUSHED_MEDIA);
 
         // verify local media has changes
-        final MediaModel updatedMedia = mMediaStore.getSiteMediaWithId(site, testId);
+        final MediaModel updatedMedia = mMediaStore.getSiteMediaWithId(mSite, testId);
         assertNotNull(updatedMedia);
         assertEquals(updatedMedia.getTitle(), newTitle);
         assertEquals(updatedMedia.getDescription(), newDescription);
@@ -135,10 +138,10 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         testMedia.setDescription(mediaDescription);
         testMedia.setCaption(mediaCaption);
         testMedia.setAlt(mediaAlt);
-        pushMedia(site, testMedia, TEST_EVENTS.PUSHED_MEDIA);
+        pushMedia(mSite, testMedia, TEST_EVENTS.PUSHED_MEDIA);
 
         // verify restored media properties
-        final MediaModel restoredMedia = mMediaStore.getSiteMediaWithId(site, testId);
+        final MediaModel restoredMedia = mMediaStore.getSiteMediaWithId(mSite, testId);
         assertEquals(restoredMedia.getTitle(), mediaTitle);
         assertEquals(restoredMedia.getDescription(), mediaDescription);
         assertEquals(restoredMedia.getCaption(), mediaCaption);
@@ -149,7 +152,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
      * Upload a local image.
      */
     public void testUploadImage() throws InterruptedException {
-        SiteModel site = mSiteStore.getSites().get(0);
+        mSite = mSiteStore.getSites().get(0);
 
         MediaModel media = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
         String imagePath = BuildConfig.TEST_LOCAL_IMAGE;
@@ -157,16 +160,16 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         media.setFileName(MediaUtils.getFileName(imagePath));
         media.setFileExtension(MediaUtils.getExtension(imagePath));
         media.setMimeType(MediaUtils.MIME_TYPE_IMAGE + media.getFileExtension());
-        media.setSiteId(site.getSelfHostedSiteId());
+        media.setSiteId(mSite.getSelfHostedSiteId());
 
-        uploadMedia(site, media);
+        uploadMedia(mSite, media);
     }
 
     /**
      * Upload a local video.
      */
     public void testUploadVideo() throws InterruptedException {
-        SiteModel site = mSiteStore.getSites().get(0);
+        mSite = mSiteStore.getSites().get(0);
 
         MediaModel media = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
         String videoPath = BuildConfig.TEST_LOCAL_VIDEO;
@@ -174,34 +177,36 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         media.setFileName(MediaUtils.getFileName(videoPath));
         media.setFileExtension(MediaUtils.getExtension(videoPath));
         media.setMimeType(MediaUtils.MIME_TYPE_VIDEO + media.getFileExtension());
-        media.setSiteId(site.getSelfHostedSiteId());
+        media.setSiteId(mSite.getSelfHostedSiteId());
 
-        uploadMedia(site, media);
+        uploadMedia(mSite, media);
     }
 
     /**
      * Fetch all action should gather all media from a site.
      */
     public void testFetchAllMedia() throws InterruptedException {
-        fetchAllMedia(mSiteStore.getSites().get(0));
+        mSite = mSiteStore.getSites().get(0);
+        fetchAllMedia(mSite);
     }
 
     /**
      * Fetch action with no media supplied results in a media exception.
      */
     public void testFetchNullMedia() throws InterruptedException {
-        fetchSpecificMedia(mSiteStore.getSites().get(0), null, TEST_EVENTS.NULL_ERROR);
+        mSite = mSiteStore.getSites().get(0);
+        fetchSpecificMedia(mSite, null, TEST_EVENTS.NULL_ERROR);
     }
 
     /**
      * Fetch action with media that does not exist results in a media not found exception.
      */
     public void testFetchMediaThatDoesNotExist() throws InterruptedException {
-        SiteModel site = mSiteStore.getSites().get(0);
+        mSite = mSiteStore.getSites().get(0);
         List<Long> mediaIds = new ArrayList<>();
         mediaIds.add(9999999L);
         mediaIds.add(9999989L);
-        fetchSpecificMedia(site, mediaIds, TEST_EVENTS.NOT_FOUND_ERROR);
+        fetchSpecificMedia(mSite, mediaIds, TEST_EVENTS.NOT_FOUND_ERROR);
     }
 
     /**
@@ -209,10 +214,10 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
      */
     public void testFetchMediaThatExists() throws InterruptedException {
         // get all site media
-        SiteModel site = mSiteStore.getSites().get(0);
-        fetchAllMedia(site);
+        mSite = mSiteStore.getSites().get(0);
+        fetchAllMedia(mSite);
 
-        final List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(site);
+        final List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(mSite);
         assertFalse(siteMedia.isEmpty());
 
         // fetch half of the media
@@ -221,24 +226,25 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         for (int i = 0; i < half; ++i) {
             halfMediaIds.add(siteMedia.get(i).getMediaId());
         }
-        fetchSpecificMedia(site, halfMediaIds, TEST_EVENTS.FETCHED_MEDIA);
+        fetchSpecificMedia(mSite, halfMediaIds, TEST_EVENTS.FETCHED_MEDIA);
     }
 
     /**
      * Delete action on null media results in a null error.
      */
     public void testDeleteNullMedia() throws InterruptedException {
-        deleteMedia(mSiteStore.getSites().get(0), null, TEST_EVENTS.NULL_ERROR, 1);
+        mSite = mSiteStore.getSites().get(0);
+        deleteMedia(mSite, null, TEST_EVENTS.NULL_ERROR, 1);
     }
 
     /**
      * Delete action on media that doesn't exist should not result in an exception.
      */
     public void testDeleteMediaThatDoesNotExist() throws InterruptedException {
-        SiteModel site = mSiteStore.getSites().get(0);
+        mSite = mSiteStore.getSites().get(0);
         MediaModel testMedia = new MediaModel();
         testMedia.setMediaId(9999999L);
-        deleteMedia(site, testMedia, TEST_EVENTS.NOT_FOUND_ERROR, 1);
+        deleteMedia(mSite, testMedia, TEST_EVENTS.NOT_FOUND_ERROR, 1);
     }
 
     /**
@@ -246,15 +252,15 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
      */
     public void testDeleteMediaThatExists() throws InterruptedException {
         // upload media
-        SiteModel site = mSiteStore.getSites().get(0);
+        mSite = mSiteStore.getSites().get(0);
         MediaModel media = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
         String imagePath = BuildConfig.TEST_LOCAL_IMAGE;
         media.setFilePath(imagePath);
         media.setFileName(MediaUtils.getFileName(imagePath));
         media.setFileExtension(MediaUtils.getExtension(imagePath));
         media.setMimeType(MediaUtils.MIME_TYPE_IMAGE + media.getFileExtension());
-        media.setSiteId(site.getSelfHostedSiteId());
-        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(site, media);
+        media.setSiteId(mSite.getSelfHostedSiteId());
+        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(mSite, media);
         mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
         mNextExpectedEvent = TEST_EVENTS.DELETED_MEDIA;
         mCountDownLatch = new CountDownLatch(2);
@@ -357,7 +363,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
             if (mNextExpectedEvent != null) {
                 if (mNextExpectedEvent == TEST_EVENTS.DELETED_MEDIA) {
                     event.media.setMediaId(mLastUploadedId);
-                    deleteMedia(mSiteStore.getSites().get(0), event.media, mNextExpectedEvent, -1);
+                    deleteMedia(mSite, event.media, mNextExpectedEvent, -1);
                     mNextExpectedEvent = null;
                 }
             } else {
