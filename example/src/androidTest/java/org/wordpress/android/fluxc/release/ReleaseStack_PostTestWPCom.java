@@ -32,13 +32,13 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
+public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
     @Inject Dispatcher mDispatcher;
     @Inject AccountStore mAccountStore;
     @Inject PostStore mPostStore;
     @Inject SiteStore mSiteStore;
 
-    private static final String POST_DEFAULT_TITLE = "PostTestWPCOM base post";
+    private static final String POST_DEFAULT_TITLE = "PostTestWPCom base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
 
     private CountDownLatch mCountDownLatch;

@@ -29,7 +29,7 @@ import javax.inject.Inject;
  * Tests with real credentials on real servers using the full release stack (no mock).
  * Skips self hosted site discovery, directly using the ENDPOINT URLs from tests.properties.
  */
-public class ReleaseStack_SiteTest extends ReleaseStack_Base {
+public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     @Inject Dispatcher mDispatcher;
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
@@ -58,7 +58,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         mNextEvent = TEST_EVENTS.NONE;
     }
 
-    public void testSelfHostedSimpleFetchSites() throws InterruptedException {
+    public void testXMLRPCSimpleFetchSites() throws InterruptedException {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
@@ -70,7 +70,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testSelfHostedSimpleContributorFetchSites() throws InterruptedException {
+    public void testXMLRPCSimpleContributorFetchSites() throws InterruptedException {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE_CONTRIB;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE_CONTRIB;
@@ -82,7 +82,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testSelfHostedMultiSiteFetchSites() throws InterruptedException {
+    public void testXMLRPCMultiSiteFetchSites() throws InterruptedException {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_MULTISITE;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_MULTISITE;
@@ -94,7 +94,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testSelfHostedSimpleHTTPSFetchSites() throws InterruptedException {
+    public void testXMLRPCSimpleHTTPSFetchSites() throws InterruptedException {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL;
@@ -106,7 +106,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testSelfHostedSelfSignedSSLFetchSites() throws InterruptedException {
+    public void testXMLRPCSelfSignedSSLFetchSites() throws InterruptedException {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SELFSIGNED_SSL;
@@ -130,7 +130,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         mMemorizingTrustManager.clearLocalTrustStore();
     }
 
-    public void testSelfHostedHTTPAuthFetchSites() throws InterruptedException {
+    public void testXMLRPCHTTPAuthFetchSites() throws InterruptedException {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH;
@@ -154,7 +154,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testSelfHostedHTTPAuthFetchSites2() throws InterruptedException {
+    public void testXMLRPCHTTPAuthFetchSites2() throws InterruptedException {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH;
@@ -172,7 +172,7 @@ public class ReleaseStack_SiteTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testSelfHostedFetchAndDeleteSite() throws InterruptedException {
+    public void testXMLRPCFetchAndDeleteSite() throws InterruptedException {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
