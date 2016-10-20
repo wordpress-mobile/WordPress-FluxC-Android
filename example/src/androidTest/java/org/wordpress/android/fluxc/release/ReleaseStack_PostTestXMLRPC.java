@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.fluxc.store.PostStore.OnPostInstantiated;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.PostError;
+import org.wordpress.android.fluxc.store.PostStore.PostErrorType;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
 import org.wordpress.android.fluxc.utils.WellSqlUtils;
 import org.wordpress.android.util.AppLog;
@@ -39,7 +40,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     private CountDownLatch mCountDownLatch;
     private PostModel mPost;
-    private SiteModel mSite;
+    private static SiteModel mSite;
 
     private boolean mCanLoadMorePosts;
 
@@ -126,9 +127,6 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         // The post should no longer be flagged as having local changes
         assertFalse(finalPost.isLocallyChanged());
-
-        assertEquals(1, WellSqlUtils.getTotalPostsCount());
-        assertEquals(1, mPostStore.getPostsCountForSite(mSite));
 
         // The date created should not have been altered by the edits
         assertFalse(finalPost.getDateCreated().isEmpty());
@@ -804,16 +802,16 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
             AppLog.i(T.API, "OnPostChanged has error: " + event.error.type + " - " + event.error.message);
             mLastPostError = event.error;
             if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST)) {
-                assertEquals(PostStore.PostErrorType.UNKNOWN_POST, event.error.type);
+                assertEquals(PostErrorType.UNKNOWN_POST, event.error.type);
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST_TYPE)) {
-                assertEquals(PostStore.PostErrorType.UNKNOWN_POST_TYPE, event.error.type);
+                assertEquals(PostErrorType.UNKNOWN_POST_TYPE, event.error.type);
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNAUTHORIZED)) {
-                assertEquals(PostStore.PostErrorType.UNAUTHORIZED, event.error.type);
+                assertEquals(PostErrorType.UNAUTHORIZED, event.error.type);
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
-                assertEquals(PostStore.PostErrorType.GENERIC_ERROR, event.error.type);
+                assertEquals(PostErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
             }
             return;
@@ -867,16 +865,16 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
             AppLog.i(T.API, "OnPostUploaded has error: " + event.error.type + " - " + event.error.message);
             mLastPostError = event.error;
             if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST)) {
-                assertEquals(PostStore.PostErrorType.UNKNOWN_POST, event.error.type);
+                assertEquals(PostErrorType.UNKNOWN_POST, event.error.type);
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST_TYPE)) {
-                assertEquals(PostStore.PostErrorType.UNKNOWN_POST_TYPE, event.error.type);
+                assertEquals(PostErrorType.UNKNOWN_POST_TYPE, event.error.type);
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNAUTHORIZED)) {
-                assertEquals(PostStore.PostErrorType.UNAUTHORIZED, event.error.type);
+                assertEquals(PostErrorType.UNAUTHORIZED, event.error.type);
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
-                assertEquals(PostStore.PostErrorType.GENERIC_ERROR, event.error.type);
+                assertEquals(PostErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
             }
             return;
