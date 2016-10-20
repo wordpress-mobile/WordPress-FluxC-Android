@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
@@ -223,6 +224,31 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(5, mPost.getFeaturedImageId());
         assertEquals(true, mPost.isLocallyChanged());
         assertEquals(false, mPost.isLocalDraft());
+    }
+
+    public void testChangePublishedPostToScheduled() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        uploadPost(mPost);
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        String futureDate = "2075-10-14T10:51:11+00:00";
+        uploadedPost.setDateCreated(futureDate);
+        uploadedPost.setIsLocallyChanged(true);
+
+        // Upload edited post
+        uploadPost(uploadedPost);
+
+        PostModel finalPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        // The post should no longer be flagged as having local changes
+        assertFalse(finalPost.isLocallyChanged());
+
+        // The post should now have a future created date and should have 'future' status
+        assertEquals(futureDate, finalPost.getDateCreated());
+        assertEquals(PostStatus.SCHEDULED, PostStatus.fromPost(finalPost));
     }
 
     public void testFetchPosts() throws InterruptedException {
@@ -627,7 +653,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         site.setSelfHostedSiteId(0);
         site.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE_SUBSCRIBER);
         site.setPassword(BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE_SUBSCRIBER);
-        site.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
+        site.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_SUBSCRIBER_ENDPOINT);
 
         // Expecting a 401 error (authorization required)
         mNextEvent = TEST_EVENTS.ERROR_UNAUTHORIZED;

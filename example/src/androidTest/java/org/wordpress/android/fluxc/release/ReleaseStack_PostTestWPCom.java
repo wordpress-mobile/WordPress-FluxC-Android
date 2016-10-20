@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
@@ -31,13 +32,13 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
+public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
     @Inject Dispatcher mDispatcher;
     @Inject AccountStore mAccountStore;
     @Inject PostStore mPostStore;
     @Inject SiteStore mSiteStore;
 
-    private static final String POST_DEFAULT_TITLE = "PostTestWPCOM base post";
+    private static final String POST_DEFAULT_TITLE = "PostTestWPCom base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
 
     private CountDownLatch mCountDownLatch;
@@ -221,6 +222,31 @@ public class ReleaseStack_PostTestWPCOM extends ReleaseStack_Base {
         assertEquals(5, mPost.getFeaturedImageId());
         assertEquals(true, mPost.isLocallyChanged());
         assertEquals(false, mPost.isLocalDraft());
+    }
+
+    public void testChangePublishedPostToScheduled() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        uploadPost(mPost);
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        String futureDate = "2075-10-14T10:51:11+00:00";
+        uploadedPost.setDateCreated(futureDate);
+        uploadedPost.setIsLocallyChanged(true);
+
+        // Upload edited post
+        uploadPost(uploadedPost);
+
+        PostModel finalPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        // The post should no longer be flagged as having local changes
+        assertFalse(finalPost.isLocallyChanged());
+
+        // The post should now have a future created date and should have 'future' status
+        assertEquals(futureDate, finalPost.getDateCreated());
+        assertEquals(PostStatus.SCHEDULED, PostStatus.fromPost(finalPost));
     }
 
     public void testFetchPosts() throws InterruptedException {

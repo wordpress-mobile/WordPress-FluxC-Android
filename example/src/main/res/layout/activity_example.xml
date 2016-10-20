@@ -87,7 +87,7 @@
                 android:id="@+id/signout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sign Out from WPCOM"
+                android:text="Sign Out from WP.com"
                 />
 
         </LinearLayout>
