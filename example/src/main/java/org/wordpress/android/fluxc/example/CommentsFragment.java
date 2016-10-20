@@ -37,8 +37,6 @@ public class CommentsFragment extends Fragment {
     @Inject CommentStore mCommentStore;
     @Inject Dispatcher mDispatcher;
 
-    private CommentModel mFirstComment;
-
     // Needed for instantiate action :/
     private CommentModel mNewComment;
     private CountDownLatch mCountDownLatch;
@@ -63,7 +61,7 @@ public class CommentsFragment extends Fragment {
         view.findViewById(R.id.reply_to_comment).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mFirstComment == null) {
+                if (getFirstComment() == null) {
                     ToastUtils.showToast(getActivity(), "Fetch comments first");
                     return;
                 }
@@ -89,6 +87,10 @@ public class CommentsFragment extends Fragment {
         return mSiteStore.getSites().get(0);
     }
 
+    private CommentModel getFirstComment() {
+        return mCommentStore.getCommentsForSite(getFirstSite(), CommentStatus.ALL).get(0);
+    }
+
     private void fetchCommentsFirstSite() {
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(
                 new FetchCommentsPayload(getFirstSite(), 5, 0)));
@@ -102,7 +104,7 @@ public class CommentsFragment extends Fragment {
             assertEquals(true, mCountDownLatch.await(2, TimeUnit.SECONDS));
             mNewComment.setContent("I'm a new comment from the FluxC example app.");
             mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(
-                    new RemoteCreateCommentPayload(getFirstSite(), mFirstComment, mNewComment)
+                    new RemoteCreateCommentPayload(getFirstSite(), getFirstComment(), mNewComment)
             ));
         } catch (Exception e) {
             // noop
@@ -119,9 +121,6 @@ public class CommentsFragment extends Fragment {
         } else {
             List<CommentModel> comments = mCommentStore.getCommentsForSite(getFirstSite(), CommentStatus.ALL);
             for (CommentModel comment : comments) {
-                if (mFirstComment == null) {
-                    mFirstComment = comment;
-                }
                 prependToLog(comment.getAuthorName() + " @" + comment.getDatePublished());
             }
         }
