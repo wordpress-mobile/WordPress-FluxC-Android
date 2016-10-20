@@ -653,7 +653,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         site.setSelfHostedSiteId(0);
         site.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE_SUBSCRIBER);
         site.setPassword(BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE_SUBSCRIBER);
-        site.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
+        site.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_SUBSCRIBER_ENDPOINT);
 
         // Expecting a 401 error (authorization required)
         mNextEvent = TEST_EVENTS.ERROR_UNAUTHORIZED;
