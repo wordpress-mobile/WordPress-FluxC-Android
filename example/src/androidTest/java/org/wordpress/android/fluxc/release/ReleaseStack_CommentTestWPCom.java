@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.CommentModel;
 import org.wordpress.android.fluxc.model.CommentStatus;
 import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.persistence.CommentSqlUtils;
 import org.wordpress.android.fluxc.store.CommentStore;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
@@ -29,9 +30,9 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     @Inject CommentStore mCommentStore;
     @Inject PostStore mPostStore;
 
-    private List<PostModel> mPosts;
     private List<CommentModel> mComments;
     private CommentModel mNewComment;
+    private PostModel mFirstPost;
 
     private enum TEST_EVENTS {
         NONE,
@@ -127,7 +128,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
         // Create new Comment
         mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
-        RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mPosts.get(0), mNewComment);
+        RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mFirstPost, mNewComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -150,7 +151,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
         // Create new Comment
         mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
-        RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mPosts.get(0), mNewComment);
+        RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mFirstPost, mNewComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -184,7 +185,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
         // Create new Comment
         mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
-        RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mPosts.get(0), mNewComment);
+        RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mFirstPost, mNewComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -223,7 +224,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
         // Create new Comment
         mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
-        RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mPosts.get(0), mNewComment);
+        RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mFirstPost, mNewComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -353,9 +354,19 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
-        mPosts = mPostStore.getPostsForSite(mSite);
+        List<PostModel> posts = mPostStore.getPostsForSite(mSite);
+        mFirstPost = getFirstPublishedPost(posts);
         assertEquals(mNextEvent, TEST_EVENTS.POSTS_FETCHED);
         mCountDownLatch.countDown();
+    }
+
+    private PostModel getFirstPublishedPost(List<PostModel> posts) {
+        for (PostModel post : posts) {
+            if (PostStatus.fromPost(post) == PostStatus.PUBLISHED) {
+                return post;
+            }
+        }
+        return null;
     }
 
     // Private methods
