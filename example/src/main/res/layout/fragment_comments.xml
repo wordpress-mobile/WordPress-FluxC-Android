@@ -5,5 +5,16 @@
               android:orientation="vertical"
               tools:context="org.wordpress.android.fluxc.example.CommentsFragment">
 
+    <Button
+        android:id="@+id/fetch_comments"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch comments from first site" />
+
+    <Button
+        android:id="@+id/reply_to_comment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reply to first comment" />
 
 </LinearLayout>
