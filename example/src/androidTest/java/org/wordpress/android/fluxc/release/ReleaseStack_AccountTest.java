@@ -51,22 +51,22 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mExpectedAction = ACCOUNT_TEST_ACTIONS.NONE;
     }
 
-    public void testWPCOMAuthenticationOK() throws InterruptedException {
+    public void testWPComAuthenticationOK() throws InterruptedException {
         mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTHENTICATE;
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
     }
 
-    public void testWPCOMAuthenticationError() throws InterruptedException {
+    public void testWPComAuthenticationError() throws InterruptedException {
         mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTHENTICATE_ERROR;
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_BAD_PASSWORD);
     }
 
-    public void testWPCOM2faAuthentication() throws InterruptedException {
+    public void testWPCom2faAuthentication() throws InterruptedException {
         mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTHENTICATE_2FA_ERROR;
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_2FA, BuildConfig.TEST_WPCOM_PASSWORD_2FA);
     }
 
-    public void testWPCOMFetch() throws InterruptedException {
+    public void testWPComFetch() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
             mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTHENTICATE;
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
@@ -78,7 +78,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testWPCOMPost() throws InterruptedException {
+    public void testWPComPost() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
             mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTHENTICATE;
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
@@ -96,7 +96,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(newValue, mAccountStore.getAccount().getAboutMe());
     }
 
-    public void testWPCOMPostNoChange() throws InterruptedException {
+    public void testWPComPostNoChange() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
             mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTHENTICATE;
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
@@ -122,7 +122,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(newValue, mAccountStore.getAccount().getAboutMe());
     }
 
-    public void testWPCOMPostPrimarySiteIdNoChange() throws InterruptedException {
+    public void testWPComPostPrimarySiteIdNoChange() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
             mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTHENTICATE;
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
