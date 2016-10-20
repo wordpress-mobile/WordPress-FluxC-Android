@@ -913,11 +913,6 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        mNextEvent = TEST_EVENTS.POST_UPDATED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchPost(PostModel post) throws InterruptedException {

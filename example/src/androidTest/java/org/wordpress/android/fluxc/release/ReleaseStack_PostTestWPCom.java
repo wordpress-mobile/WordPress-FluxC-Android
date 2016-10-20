@@ -53,6 +53,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         NONE,
         SITE_CHANGED,
         POST_INSTANTIATED,
+        POST_UPLOADED,
         POST_UPDATED,
         POSTS_FETCHED,
         PAGES_FETCHED,
@@ -667,9 +668,12 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
             }
             return;
         }
+        assertEquals(TEST_EVENTS.POST_UPLOADED, mNextEvent);
         assertEquals(false, event.post.isLocalDraft());
         assertEquals(false, event.post.isLocallyChanged());
         assertNotSame(0, event.post.getRemotePostId());
+
+        mCountDownLatch.countDown();
     }
 
     private void setupPostAttributes() {
@@ -689,7 +693,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
     }
 
     private void uploadPost(PostModel post) throws InterruptedException {
-        mNextEvent = TEST_EVENTS.POST_UPDATED;
+        mNextEvent = TEST_EVENTS.POST_UPLOADED;
         mCountDownLatch = new CountDownLatch(1);
 
         RemotePostPayload pushPayload = new RemotePostPayload(post, mSite);
