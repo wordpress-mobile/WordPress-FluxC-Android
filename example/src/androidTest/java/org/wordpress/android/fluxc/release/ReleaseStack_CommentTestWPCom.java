@@ -42,6 +42,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         COMMENT_CHANGED,
         COMMENT_CHANGED_ERROR,
         COMMENT_CHANGED_INVALID_COMMENT,
+        COMMENT_CHANGED_INVALID_POST,
     }
     private TEST_EVENTS mNextEvent;
 
@@ -232,7 +233,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Dispatch the same payload (with the same comment), we should get a 409 error "comment_duplicate"
-        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_ERROR;
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_INVALID_COMMENT;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -242,9 +243,9 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         CommentModel newComment = new CommentModel();
 
         PostModel fakePost = mFirstPost.clone();
-        fakePost.setRemotePostId(0);
+        fakePost.setRemotePostId(111111111111111111L);
 
-        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_INVALID_COMMENT;
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_INVALID_POST;
         RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(mSite, fakePost, newComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
@@ -364,6 +365,9 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
             }
             if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_INVALID_COMMENT) {
                 assertEquals(event.error.type, CommentErrorType.INVALID_COMMENT);
+            }
+            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_INVALID_POST) {
+                assertEquals(event.error.type, CommentErrorType.UNKNOWN_POST);
             }
             mCountDownLatch.countDown();
             return;
