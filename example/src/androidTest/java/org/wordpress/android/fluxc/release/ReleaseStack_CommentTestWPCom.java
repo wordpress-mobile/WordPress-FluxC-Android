@@ -43,6 +43,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         COMMENT_CHANGED_ERROR,
         COMMENT_CHANGED_UNKNOWN_COMMENT,
         COMMENT_CHANGED_UNKNOWN_POST,
+        COMMENT_CHANGED_DUPLICATE_COMMENT,
     }
     private TEST_EVENTS mNextEvent;
 
@@ -233,7 +234,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Dispatch the same payload (with the same comment), we should get a 409 error "comment_duplicate"
-        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_COMMENT;
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_DUPLICATE_COMMENT;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -368,6 +369,9 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
             }
             if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_POST) {
                 assertEquals(event.error.type, CommentErrorType.UNKNOWN_POST);
+            }
+            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_DUPLICATE_COMMENT) {
+                assertEquals(event.error.type, CommentErrorType.DUPLICATE_COMMENT);
             }
             mCountDownLatch.countDown();
             return;
