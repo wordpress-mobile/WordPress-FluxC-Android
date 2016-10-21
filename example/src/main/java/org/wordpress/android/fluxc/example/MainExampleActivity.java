@@ -15,9 +15,10 @@ public class MainExampleActivity extends Activity {
         ((ExampleApp) getApplication()).component().inject(this);
         setContentView(R.layout.activity_example);
 
-        MainFragment mf = new MainFragment();
-        getFragmentManager().beginTransaction().add(R.id.fragment_container, mf).commit();
-
+        if (savedInstanceState == null) {
+            MainFragment mf = new MainFragment();
+            getFragmentManager().beginTransaction().add(R.id.fragment_container, mf).commit();
+        }
         mLogView = (TextView) findViewById(R.id.log);
         mLogView.setMovementMethod(new ScrollingMovementMethod());
         prependToLog("I'll log stuff here.");

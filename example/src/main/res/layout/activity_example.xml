@@ -22,7 +22,7 @@
         android:layout_margin="0dp"
         android:layout_weight="3"
         android:background="@android:color/background_dark"
-
+        android:freezesText="true"
         android:padding="4dp"
         android:scrollbars="vertical"
         android:textColor="@android:color/holo_green_light"
