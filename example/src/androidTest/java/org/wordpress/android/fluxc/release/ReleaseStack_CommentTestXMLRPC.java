@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.model.CommentModel;
 import org.wordpress.android.fluxc.model.CommentStatus;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.store.CommentStore;
+import org.wordpress.android.fluxc.store.CommentStore.CommentErrorType;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
 import org.wordpress.android.fluxc.store.CommentStore.InstantiateCommentPayload;
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCommentPayload;
@@ -38,6 +39,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         COMMENT_INSTANTIATED,
         COMMENT_CHANGED,
         COMMENT_CHANGED_ERROR,
+        COMMENT_CHANGED_INVALID_COMMENT,
     }
     private TEST_EVENTS mNextEvent;
 
@@ -118,6 +120,22 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TEST_EVENTS.COMMENT_CHANGED_ERROR;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testReplyToAnUnknownComment() throws InterruptedException {
+        CommentModel fakeComment = new CommentModel();
+        CommentModel newComment = new CommentModel();
+        // Fake data
+        newComment.setAuthorName("test");
+        newComment.setAuthorEmail("test");
+        newComment.setContent("test");
+        newComment.setAuthorUrl("test");
+
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_INVALID_COMMENT;
+        RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(mSite, fakeComment, newComment);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -268,8 +286,11 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         List<CommentModel> comments = mCommentStore.getCommentsForSite(mSite, CommentStatus.ALL);
         if (event.isError()) {
             AppLog.i(T.TESTS, "event error type: " + event.error.type);
-            if (mNextEvent != TEST_EVENTS.COMMENT_CHANGED_ERROR) {
+            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED) {
                 assertTrue("onCommentChanged Error", false);
+            }
+            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_INVALID_COMMENT) {
+                assertEquals(event.error.type, CommentErrorType.GENERIC_ERROR);
             }
             mCountDownLatch.countDown();
             return;

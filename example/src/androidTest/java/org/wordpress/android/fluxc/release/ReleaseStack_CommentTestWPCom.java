@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.persistence.CommentSqlUtils;
 import org.wordpress.android.fluxc.store.CommentStore;
+import org.wordpress.android.fluxc.store.CommentStore.CommentErrorType;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
 import org.wordpress.android.fluxc.store.CommentStore.InstantiateCommentPayload;
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCommentPayload;
@@ -40,6 +41,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         COMMENT_INSTANTIATED,
         COMMENT_CHANGED,
         COMMENT_CHANGED_ERROR,
+        COMMENT_CHANGED_INVALID_COMMENT,
     }
     private TEST_EVENTS mNextEvent;
 
@@ -236,6 +238,17 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    public void testReplyToAnUnknownComment() throws InterruptedException {
+        CommentModel fakeComment = new CommentModel();
+        CommentModel newComment = new CommentModel();
+
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_INVALID_COMMENT;
+        RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(mSite, fakeComment, newComment);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     public void testInstantiateAndCreateReplyComment() throws InterruptedException {
         // New Comment
         InstantiateCommentPayload payload1 = new InstantiateCommentPayload(mSite);
@@ -333,8 +346,11 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         List<CommentModel> comments = mCommentStore.getCommentsForSite(mSite, CommentStatus.ALL);
         if (event.isError()) {
             AppLog.i(T.TESTS, "event error type: " + event.error.type);
-            if (mNextEvent != TEST_EVENTS.COMMENT_CHANGED_ERROR) {
+            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED) {
                 assertTrue("onCommentChanged Error", false);
+            }
+            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_INVALID_COMMENT) {
+                assertEquals(event.error.type, CommentErrorType.INVALID_COMMENT);
             }
             mCountDownLatch.countDown();
             return;
