@@ -41,8 +41,8 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         COMMENT_INSTANTIATED,
         COMMENT_CHANGED,
         COMMENT_CHANGED_ERROR,
-        COMMENT_CHANGED_INVALID_COMMENT,
-        COMMENT_CHANGED_INVALID_POST,
+        COMMENT_CHANGED_UNKNOWN_COMMENT,
+        COMMENT_CHANGED_UNKNOWN_POST,
     }
     private TEST_EVENTS mNextEvent;
 
@@ -233,7 +233,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Dispatch the same payload (with the same comment), we should get a 409 error "comment_duplicate"
-        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_INVALID_COMMENT;
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_COMMENT;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -245,7 +245,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         PostModel fakePost = mFirstPost.clone();
         fakePost.setRemotePostId(111111111111111111L);
 
-        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_INVALID_POST;
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_POST;
         RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(mSite, fakePost, newComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
@@ -256,7 +256,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         CommentModel fakeComment = new CommentModel();
         CommentModel newComment = new CommentModel();
 
-        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_INVALID_COMMENT;
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_COMMENT;
         RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(mSite, fakeComment, newComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
@@ -363,10 +363,10 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
             if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED) {
                 assertTrue("onCommentChanged Error", false);
             }
-            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_INVALID_COMMENT) {
-                assertEquals(event.error.type, CommentErrorType.INVALID_COMMENT);
+            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_COMMENT) {
+                assertEquals(event.error.type, CommentErrorType.UNKNOWN_COMMENT);
             }
-            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_INVALID_POST) {
+            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_POST) {
                 assertEquals(event.error.type, CommentErrorType.UNKNOWN_POST);
             }
             mCountDownLatch.countDown();

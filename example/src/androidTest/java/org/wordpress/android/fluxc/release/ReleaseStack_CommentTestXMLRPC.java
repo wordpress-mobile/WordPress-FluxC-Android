@@ -39,7 +39,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         COMMENT_INSTANTIATED,
         COMMENT_CHANGED,
         COMMENT_CHANGED_ERROR,
-        COMMENT_CHANGED_INVALID_COMMENT,
+        COMMENT_CHANGED_UNKNOWN_COMMENT,
     }
     private TEST_EVENTS mNextEvent;
 
@@ -132,7 +132,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         newComment.setContent("test");
         newComment.setAuthorUrl("test");
 
-        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_INVALID_COMMENT;
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_COMMENT;
         RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(mSite, fakeComment, newComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
@@ -289,7 +289,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
             if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED) {
                 assertTrue("onCommentChanged Error", false);
             }
-            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_INVALID_COMMENT) {
+            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_COMMENT) {
                 assertEquals(event.error.type, CommentErrorType.GENERIC_ERROR);
             }
             mCountDownLatch.countDown();
