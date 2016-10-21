@@ -238,6 +238,19 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    public void testNewCommentToAnUnknownPost() throws InterruptedException {
+        CommentModel newComment = new CommentModel();
+
+        PostModel fakePost = mFirstPost.clone();
+        fakePost.setRemotePostId(0);
+
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_INVALID_COMMENT;
+        RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(mSite, fakePost, newComment);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     public void testReplyToAnUnknownComment() throws InterruptedException {
         CommentModel fakeComment = new CommentModel();
         CommentModel newComment = new CommentModel();
