@@ -357,6 +357,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
     @SuppressWarnings("unused")
     @Subscribe
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) throws InterruptedException {
+        assertFalse(event.isError());
         mLastUploadedId = event.media.getMediaId();
         if (event.completed) {
             assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
