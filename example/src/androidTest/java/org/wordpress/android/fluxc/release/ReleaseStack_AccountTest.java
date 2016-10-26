@@ -169,8 +169,11 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onAccountChanged(OnAccountChanged event) {
+        // make sure no unexpected errors occurred
+        assertNull(event.error);
         if (event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
             assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.FETCHED);
             assertEquals(BuildConfig.TEST_WPCOM_USERNAME_TEST1, mAccountStore.getAccount().getUserName());
