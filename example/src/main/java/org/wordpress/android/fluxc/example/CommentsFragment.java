@@ -89,6 +89,11 @@ public class CommentsFragment extends Fragment {
     }
 
     private CommentModel getFirstComment() {
+        List<CommentModel> comments = mCommentStore.getCommentsForSite(getFirstSite(), CommentStatus.ALL);
+        if (comments.size() == 0) {
+            prependToLog("There is no comments on this site or comments haven't been fetched.");
+            return null;
+        }
         return mCommentStore.getCommentsForSite(getFirstSite(), CommentStatus.ALL).get(0);
     }
 
