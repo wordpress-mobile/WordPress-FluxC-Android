@@ -3,6 +3,8 @@ package org.wordpress.android.fluxc;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
+import java.util.UUID;
+
 public class TestUtils {
     public static int DEFAULT_TIMEOUT_MS = 30000;
 
@@ -16,6 +18,11 @@ public class TestUtils {
 
     public static void waitForNetworkCall() {
         waitFor(DEFAULT_TIMEOUT_MS);
+    }
+
+    public static String randomString(int length) {
+        String randomString = UUID.randomUUID().toString();
+        return length > randomString.length() ? randomString : randomString.substring(0, length);
     }
 }
 
