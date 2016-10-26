@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.persistence.CommentSqlUtils;
 import org.wordpress.android.fluxc.store.CommentStore;
+import org.wordpress.android.fluxc.store.CommentStore.CommentErrorType;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
 import org.wordpress.android.fluxc.store.CommentStore.InstantiateCommentPayload;
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCommentPayload;
@@ -40,6 +41,9 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         COMMENT_INSTANTIATED,
         COMMENT_CHANGED,
         COMMENT_CHANGED_ERROR,
+        COMMENT_CHANGED_UNKNOWN_COMMENT,
+        COMMENT_CHANGED_UNKNOWN_POST,
+        COMMENT_CHANGED_DUPLICATE_COMMENT,
     }
     private TEST_EVENTS mNextEvent;
 
@@ -230,9 +234,33 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Dispatch the same payload (with the same comment), we should get a 409 error "comment_duplicate"
-        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_ERROR;
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_DUPLICATE_COMMENT;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testNewCommentToAnUnknownPost() throws InterruptedException {
+        CommentModel newComment = new CommentModel();
+
+        PostModel fakePost = mFirstPost.clone();
+        fakePost.setRemotePostId(111111111111111111L);
+
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_POST;
+        RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(mSite, fakePost, newComment);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testReplyToAnUnknownComment() throws InterruptedException {
+        CommentModel fakeComment = new CommentModel();
+        CommentModel newComment = new CommentModel();
+
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_COMMENT;
+        RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(mSite, fakeComment, newComment);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -333,8 +361,17 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         List<CommentModel> comments = mCommentStore.getCommentsForSite(mSite, CommentStatus.ALL);
         if (event.isError()) {
             AppLog.i(T.TESTS, "event error type: " + event.error.type);
-            if (mNextEvent != TEST_EVENTS.COMMENT_CHANGED_ERROR) {
+            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED) {
                 assertTrue("onCommentChanged Error", false);
+            }
+            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_COMMENT) {
+                assertEquals(event.error.type, CommentErrorType.UNKNOWN_COMMENT);
+            }
+            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_POST) {
+                assertEquals(event.error.type, CommentErrorType.UNKNOWN_POST);
+            }
+            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_DUPLICATE_COMMENT) {
+                assertEquals(event.error.type, CommentErrorType.DUPLICATE_COMMENT);
             }
             mCountDownLatch.countDown();
             return;
