@@ -25,6 +25,7 @@ import org.wordpress.android.util.AppLog.T;
 import org.wordpress.android.util.ToastUtils;
 
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -102,7 +103,7 @@ public class CommentsFragment extends Fragment {
         mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload));
         try {
             assertEquals(true, mCountDownLatch.await(2, TimeUnit.SECONDS));
-            mNewComment.setContent("I'm a new comment from the FluxC example app.");
+            mNewComment.setContent("I'm a new comment id: " + new Random().nextLong() + " from FluxC Example App");
             mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(
                     new RemoteCreateCommentPayload(getFirstSite(), getFirstComment(), mNewComment)
             ));
