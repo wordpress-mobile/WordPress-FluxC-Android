@@ -159,8 +159,10 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
                 case AUTHENTICATE_ERROR:
                     assertEquals(event.error.type, AuthenticationErrorType.INCORRECT_USERNAME_OR_PASSWORD);
                     break;
+                default:
+                    assertFalse("Unexpected error occurred: " + event.error.type, event.isError());
+                    break;
             }
-            assertFalse("Unexpected error occurred: " + event.error.type, event.isError());
         } else {
             assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTHENTICATE);
         }
