@@ -381,9 +381,11 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onCommentInstantiated(CommentStore.OnCommentInstantiated event) {
         mNewComment = event.comment;
+        assertNotNull(mNewComment);
         assertTrue(event.comment.getId() != 0);
         assertEquals(TEST_EVENTS.COMMENT_INSTANTIATED, mNextEvent);
         mCountDownLatch.countDown();
