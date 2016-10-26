@@ -104,6 +104,7 @@ public class CommentsFragment extends Fragment {
 
     private void replyToFirstComment() {
         InstantiateCommentPayload payload = new InstantiateCommentPayload(getFirstSite());
+        // Count down latch used for waiting for the asynchronous Instantiate action.
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload));
         try {
