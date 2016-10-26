@@ -29,7 +29,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     CountDownLatch mCountDownLatch;
 
-    enum ACCOUNT_TEST_ACTIONS {
+    private enum ACCOUNT_TEST_ACTIONS {
         NONE,
         AUTHENTICATE,
         AUTHENTICATE_ERROR,
@@ -148,14 +148,19 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(newValue, String.valueOf(mAccountStore.getAccount().getPrimarySiteId()));
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         if (event.isError()) {
-            if (event.error.type == AuthenticationErrorType.NEEDS_2FA) {
-                assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTHENTICATE_2FA_ERROR);
-            } else if (event.error.type == AuthenticationErrorType.INCORRECT_USERNAME_OR_PASSWORD) {
-                assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTHENTICATE_ERROR);
+            switch (mExpectedAction) {
+                case AUTHENTICATE_2FA_ERROR:
+                    assertEquals(event.error.type, AuthenticationErrorType.NEEDS_2FA);
+                    break;
+                case AUTHENTICATE_ERROR:
+                    assertEquals(event.error.type, AuthenticationErrorType.INCORRECT_USERNAME_OR_PASSWORD);
+                    break;
             }
+            assertFalse("Unexpected error occurred: " + event.error.type, event.isError());
         } else {
             assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTHENTICATE);
         }
