@@ -19,12 +19,15 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.ErrorListener;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Listener;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Token;
-import org.wordpress.android.fluxc.network.rest.wpcom.post.PostRestClient;
+import org.wordpress.android.fluxc.network.rest.wpcom.media.MediaRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.SiteRestClient;
 import org.wordpress.android.fluxc.network.xmlrpc.BaseXMLRPCClient;
+import org.wordpress.android.fluxc.network.xmlrpc.media.MediaXMLRPCClient;
+import org.wordpress.android.fluxc.network.rest.wpcom.post.PostRestClient;
 import org.wordpress.android.fluxc.network.xmlrpc.post.PostXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.site.SiteXMLRPCClient;
 
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -112,6 +115,24 @@ public class MockedNetworkModule {
                                                 AppSecrets appSecrets,
                                                 AccessToken token, UserAgent userAgent) {
         return new SiteRestClient(appContext, dispatcher, requestQueue, appSecrets, token, userAgent);
+    }
+
+    @Singleton
+    @Provides
+    public MediaRestClient provideMediaRestClient(Dispatcher dispatcher, Context appContext,
+                                                  @Named("regular") RequestQueue requestQueue,
+                                                  @Named("regular") OkHttpClient okHttpClient,
+                                                  AccessToken token, UserAgent userAgent) {
+        return new MediaRestClient(appContext, dispatcher, requestQueue, okHttpClient, token, userAgent);
+    }
+
+    @Singleton
+    @Provides
+    public MediaXMLRPCClient provideMediaXMLRPCClient(Dispatcher dispatcher, OkHttpClient okClient,
+                                                      @Named("regular") RequestQueue requestQueue,
+                                                      AccessToken token, UserAgent userAgent,
+                                                      HTTPAuthManager httpAuthManager) {
+        return new MediaXMLRPCClient(dispatcher, requestQueue, okClient, token, userAgent, httpAuthManager);
     }
 
     @Singleton
