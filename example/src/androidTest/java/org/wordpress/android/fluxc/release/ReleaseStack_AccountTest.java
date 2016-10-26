@@ -32,7 +32,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     private enum ACCOUNT_TEST_ACTIONS {
         NONE,
         AUTHENTICATE,
-        AUTHENTICATE_ERROR,
+        INCORRECT_USERNAME_OR_PASSWORD_ERROR,
         AUTHENTICATE_2FA_ERROR,
         FETCHED,
         POSTED,
@@ -56,8 +56,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
     }
 
-    public void testWPComAuthenticationError() throws InterruptedException {
-        mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTHENTICATE_ERROR;
+    public void testWPComAuthenticationIncorrectUsernameOrPassword() throws InterruptedException {
+        mExpectedAction = ACCOUNT_TEST_ACTIONS.INCORRECT_USERNAME_OR_PASSWORD_ERROR;
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_BAD_PASSWORD);
     }
 
@@ -156,7 +156,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
                 case AUTHENTICATE_2FA_ERROR:
                     assertEquals(event.error.type, AuthenticationErrorType.NEEDS_2FA);
                     break;
-                case AUTHENTICATE_ERROR:
+                case INCORRECT_USERNAME_OR_PASSWORD_ERROR:
                     assertEquals(event.error.type, AuthenticationErrorType.INCORRECT_USERNAME_OR_PASSWORD);
                     break;
                 default:
