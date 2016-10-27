@@ -24,9 +24,12 @@ import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
+import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
+import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.fluxc.utils.MediaUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -152,6 +155,7 @@ public class MediaFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+
         switch(requestCode) {
             case RESULT_PICK_MEDIA:
                 if(resultCode == RESULT_OK){
@@ -200,6 +204,13 @@ public class MediaFragment extends Fragment {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMediaUploaded(OnMediaUploaded event) {
+        if (!event.isError()) {
+            prependToLog("Upload of " + event.media.getFilePath() + " successful!");
+        }
+    }
+
     private void prependToLog(final String s) {
         ((MainExampleActivity) getActivity()).prependToLog(s);
     }
@@ -226,6 +237,12 @@ public class MediaFragment extends Fragment {
 
     private void uploadMedia(@NonNull SiteModel site, @NonNull String mediaUri) {
         prependToLog("Uploading media to " + site.getName());
+
+        MediaModel media = new MediaModel();
+        media.setFilePath(mediaUri);
+        media.setMimeType(MediaUtils.getMimeTypeForExtension(MediaUtils.getExtension(mediaUri)));
+        UploadMediaPayload payload = new UploadMediaPayload(site, media);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
     }
 
     private void deleteMedia(@NonNull SiteModel site, @NonNull MediaModel media) {
