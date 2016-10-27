@@ -286,12 +286,10 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         List<CommentModel> comments = mCommentStore.getCommentsForSite(mSite, CommentStatus.ALL);
         if (event.isError()) {
             AppLog.i(T.TESTS, "event error type: " + event.error.type);
-            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED) {
-                assertTrue("onCommentChanged Error", false);
-            }
             if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_COMMENT) {
                 assertEquals(event.error.type, CommentErrorType.GENERIC_ERROR);
             }
+            assertTrue("Error occurred for event: " + mNextEvent + " with type: " + event.error.type, false);
             mCountDownLatch.countDown();
             return;
         }
