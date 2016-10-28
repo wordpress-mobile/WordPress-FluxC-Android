@@ -357,22 +357,20 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onCommentChanged(CommentStore.OnCommentChanged event) {
         List<CommentModel> comments = mCommentStore.getCommentsForSite(mSite, CommentStatus.ALL);
         if (event.isError()) {
             AppLog.i(T.TESTS, "event error type: " + event.error.type);
-            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED) {
-                assertTrue("onCommentChanged Error", false);
-            }
             if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_COMMENT) {
                 assertEquals(event.error.type, CommentErrorType.UNKNOWN_COMMENT);
-            }
-            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_POST) {
+            } else if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_POST) {
                 assertEquals(event.error.type, CommentErrorType.UNKNOWN_POST);
-            }
-            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_DUPLICATE_COMMENT) {
+            } else if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_DUPLICATE_COMMENT) {
                 assertEquals(event.error.type, CommentErrorType.DUPLICATE_COMMENT);
+            } else {
+                assertTrue("Error occurred for event: " + mNextEvent + " with type: " + event.error.type, false);
             }
             mCountDownLatch.countDown();
             return;
@@ -392,6 +390,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
         List<PostModel> posts = mPostStore.getPostsForSite(mSite);
