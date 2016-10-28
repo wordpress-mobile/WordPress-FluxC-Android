@@ -340,6 +340,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         CommentModel updatedComment = CommentSqlUtils.getCommentByLocalCommentId(firstComment.getId());
+        assertNotNull(updatedComment);
         assertTrue(updatedComment.getContent().contains(firstComment.getContent()));
     }
 
