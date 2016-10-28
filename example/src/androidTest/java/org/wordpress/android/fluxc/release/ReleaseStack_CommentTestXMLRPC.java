@@ -281,6 +281,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     // OnChanged Events
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onCommentChanged(CommentStore.OnCommentChanged event) {
         List<CommentModel> comments = mCommentStore.getCommentsForSite(mSite, CommentStatus.ALL);
@@ -288,8 +289,11 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
             AppLog.i(T.TESTS, "event error type: " + event.error.type);
             if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_COMMENT) {
                 assertEquals(event.error.type, CommentErrorType.GENERIC_ERROR);
+            } else if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_ERROR) {
+                assertEquals(event.error.type, CommentErrorType.GENERIC_ERROR);
+            } else {
+                assertTrue("Error occurred for event: " + mNextEvent + " with type: " + event.error.type, false);
             }
-            assertTrue("Error occurred for event: " + mNextEvent + " with type: " + event.error.type, false);
             mCountDownLatch.countDown();
             return;
         }
