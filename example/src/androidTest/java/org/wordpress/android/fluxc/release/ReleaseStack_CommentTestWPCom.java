@@ -369,6 +369,8 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
                 assertEquals(event.error.type, CommentErrorType.UNKNOWN_POST);
             } else if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_DUPLICATE_COMMENT) {
                 assertEquals(event.error.type, CommentErrorType.DUPLICATE_COMMENT);
+            } else if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_ERROR) {
+                assertEquals(event.error.type, CommentErrorType.UNKNOWN_COMMENT);
             } else {
                 assertTrue("Error occurred for event: " + mNextEvent + " with type: " + event.error.type, false);
             }
