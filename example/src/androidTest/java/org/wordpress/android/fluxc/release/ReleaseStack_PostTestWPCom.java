@@ -100,7 +100,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         assertEquals(1, mPostStore.getPostsCountForSite(sSite));
 
         assertNotSame(0, uploadedPost.getRemotePostId());
-        assertEquals(false, uploadedPost.isLocalDraft());
+        assertFalse(uploadedPost.isLocalDraft());
     }
 
     public void testEditRemotePost() throws InterruptedException {
@@ -155,7 +155,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         assertEquals(1, mPostStore.getPostsCountForSite(sSite));
 
         assertEquals(POST_DEFAULT_TITLE, latestPost.getTitle());
-        assertEquals(false, latestPost.isLocallyChanged());
+        assertFalse(latestPost.isLocallyChanged());
     }
 
     public void testChangeLocalDraft() throws InterruptedException {
@@ -186,8 +186,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         assertEquals("From testChangingLocalDraft, redux", mPost.getTitle());
         assertEquals("Some new content", mPost.getContent());
         assertEquals(7, mPost.getFeaturedImageId());
-        assertEquals(false, mPost.isLocallyChanged());
-        assertEquals(true, mPost.isLocalDraft());
+        assertFalse(mPost.isLocallyChanged());
+        assertTrue(mPost.isLocalDraft());
     }
 
     public void testMultipleLocalChangesToUploadedPost() throws InterruptedException {
@@ -223,8 +223,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         assertEquals("From testMultipleLocalChangesToUploadedPost, redux", mPost.getTitle());
         assertEquals("Some different content", mPost.getContent());
         assertEquals(5, mPost.getFeaturedImageId());
-        assertEquals(true, mPost.isLocallyChanged());
-        assertEquals(false, mPost.isLocalDraft());
+        assertTrue(mPost.isLocallyChanged());
+        assertFalse(mPost.isLocalDraft());
     }
 
     public void testChangePublishedPostToScheduled() throws InterruptedException {
@@ -258,7 +258,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new PostStore.FetchPostsPayload(sSite, false)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         int firstFetchPosts = mPostStore.getPostsCountForSite(sSite);
 
@@ -274,7 +274,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new PostStore.FetchPostsPayload(sSite, true)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         int currentStoredPosts = mPostStore.getPostsCountForSite(sSite);
 
@@ -288,7 +288,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPagesAction(new PostStore.FetchPostsPayload(sSite, false)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         int firstFetchPosts = mPostStore.getPagesCountForSite(sSite);
 
@@ -373,7 +373,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         assertEquals("Some content", mPost.getContent());
 
         // The post should not have a location since we never set one
-        assertEquals(false, mPost.hasLocation());
+        assertFalse(mPost.hasLocation());
 
         // 2. Modify the post, setting some location data
         mPost.setLocation(EXAMPLE_LATITUDE, EXAMPLE_LONGITUDE);
@@ -385,7 +385,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         // The set location should be stored in the remote post
-        assertEquals(true, mPost.hasLocation());
+        assertTrue(mPost.hasLocation());
         assertEquals(EXAMPLE_LATITUDE, mPost.getLocation().getLatitude());
         assertEquals(EXAMPLE_LONGITUDE, mPost.getLocation().getLongitude());
     }
@@ -411,7 +411,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         assertEquals("Some content", mPost.getContent());
 
         // The set location should be stored in the remote post
-        assertEquals(true, mPost.hasLocation());
+        assertTrue(mPost.hasLocation());
         assertEquals(EXAMPLE_LATITUDE, mPost.getLocation().getLatitude());
         assertEquals(EXAMPLE_LONGITUDE, mPost.getLocation().getLongitude());
 
@@ -427,7 +427,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         assertEquals("A new title", mPost.getTitle());
 
         // The location data should not have been altered
-        assertEquals(true, mPost.hasLocation());
+        assertTrue(mPost.hasLocation());
         assertEquals(EXAMPLE_LATITUDE, mPost.getLocation().getLatitude());
         assertEquals(EXAMPLE_LONGITUDE, mPost.getLocation().getLongitude());
 
@@ -441,7 +441,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         // The post should not have a location anymore
-        assertEquals(false, mPost.hasLocation());
+        assertFalse(mPost.hasLocation());
     }
 
     public void testDeleteRemotePost() throws InterruptedException {
@@ -457,7 +457,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
 
         mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(uploadedPost, sSite)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // The post should be removed from the db (regardless of whether it was deleted or just trashed on the server)
         assertEquals(null, mPostStore.getPostByLocalPostId(uploadedPost.getId()));
@@ -477,7 +477,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, sSite)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testEditInvalidPost() throws InterruptedException {
@@ -504,7 +504,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         RemotePostPayload pushPayload = new RemotePostPayload(uploadedPost, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         PostModel persistedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
@@ -530,7 +530,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
 
         mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(invalidPost, sSite)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testFetchPostFromInvalidSite() throws InterruptedException {
@@ -548,7 +548,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, site)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void authenticate() throws InterruptedException {
@@ -561,7 +561,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         // Correct user we should get an OnAuthenticationChanged message
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchSites() throws InterruptedException {
@@ -570,12 +570,12 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @Subscribe
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
-        assertEquals(false, event.isError());
+        assertFalse(event.isError());
         mCountDownLatch.countDown();
     }
 
@@ -585,8 +585,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("event error type: " + event.error.type);
         }
-        assertEquals(true, mSiteStore.hasSite());
-        assertEquals(true, mSiteStore.hasWPComSite());
+        assertTrue(mSiteStore.hasSite());
+        assertTrue(mSiteStore.hasWPComSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
@@ -646,7 +646,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         }
         assertEquals(TEST_EVENTS.POST_INSTANTIATED, mNextEvent);
 
-        assertEquals(true, event.post.isLocalDraft());
+        assertTrue(event.post.isLocalDraft());
         assertEquals(0, event.post.getRemotePostId());
         assertNotSame(0, event.post.getId());
         assertNotSame(0, event.post.getLocalSiteId());
@@ -671,13 +671,13 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
                 mCountDownLatch.countDown();
             } else {
                 // unexpected error
-                assertEquals(false, event.isError());
+                assertFalse(event.isError());
             }
             return;
         }
         assertEquals(TEST_EVENTS.POST_UPLOADED, mNextEvent);
-        assertEquals(false, event.post.isLocalDraft());
-        assertEquals(false, event.post.isLocallyChanged());
+        assertFalse(event.post.isLocalDraft());
+        assertFalse(event.post.isLocallyChanged());
         assertNotSame(0, event.post.getRemotePostId());
 
         mCountDownLatch.countDown();
@@ -696,7 +696,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         InstantiatePostPayload initPayload = new InstantiatePostPayload(sSite, false);
         mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(initPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void uploadPost(PostModel post) throws InterruptedException {
@@ -706,7 +706,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         RemotePostPayload pushPayload = new RemotePostPayload(post, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchPost(PostModel post) throws InterruptedException {
@@ -715,7 +715,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, sSite)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void savePost(PostModel post) throws InterruptedException {
@@ -724,6 +724,6 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
 
         mDispatcher.dispatch(PostActionBuilder.newUpdatePostAction(post));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
