@@ -292,7 +292,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
             } else if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_ERROR) {
                 assertEquals(event.error.type, CommentErrorType.GENERIC_ERROR);
             } else {
-                assertTrue("Error occurred for event: " + mNextEvent + " with type: " + event.error.type, false);
+                throw new AssertionError("Error occurred for event: " + mNextEvent + " with type: " + event.error.type);
             }
             mCountDownLatch.countDown();
             return;

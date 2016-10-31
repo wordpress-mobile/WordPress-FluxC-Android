@@ -372,7 +372,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
             } else if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_ERROR) {
                 assertEquals(event.error.type, CommentErrorType.UNKNOWN_COMMENT);
             } else {
-                assertTrue("Error occurred for event: " + mNextEvent + " with type: " + event.error.type, false);
+                throw new AssertionError("Error occurred for event: " + mNextEvent + " with type: " + event.error.type);
             }
             mCountDownLatch.countDown();
             return;
