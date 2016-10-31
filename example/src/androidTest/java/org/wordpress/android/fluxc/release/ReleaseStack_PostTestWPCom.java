@@ -582,10 +582,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
     @Subscribe
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
-        if (event.isError()) {
-            AppLog.i(T.TESTS, "event error type: " + event.error.type);
-            return;
-        }
+        assertEquals("event error type: " + event.error.type, false, event.isError());
         assertEquals(true, mSiteStore.hasSite());
         assertEquals(true, mSiteStore.hasWPComSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
@@ -606,6 +603,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
             } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
                 assertEquals(PostErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
+            } else {
+                // unexpected error
+                assertEquals(false, event.isError());
             }
             return;
         }
@@ -640,6 +640,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
     @Subscribe
     public void OnPostInstantiated(OnPostInstantiated event) {
         AppLog.i(T.API, "Received OnPostInstantiated");
+        assertEquals(event.isError(), false);
         assertEquals(TEST_EVENTS.POST_INSTANTIATED, mNextEvent);
 
         assertEquals(true, event.post.isLocalDraft());
@@ -665,6 +666,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
             } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
                 assertEquals(PostErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
+            } else {
+                // unexpected error
+                assertEquals(false, event.isError());
             }
             return;
         }
