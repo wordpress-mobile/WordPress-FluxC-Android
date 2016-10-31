@@ -582,7 +582,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
     @Subscribe
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
-        assertEquals("event error type: " + event.error.type, false, event.isError());
+        if (event.isError()) {
+            throw new AssertionError("event error type: " + event.error.type);
+        }
         assertEquals(true, mSiteStore.hasSite());
         assertEquals(true, mSiteStore.hasWPComSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
@@ -604,8 +606,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
                 assertEquals(PostErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
             } else {
-                // unexpected error
-                assertEquals(false, event.isError());
+                throw new AssertionError("Unexpected error with type: " + event.error.type);
             }
             return;
         }
@@ -640,7 +641,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
     @Subscribe
     public void OnPostInstantiated(OnPostInstantiated event) {
         AppLog.i(T.API, "Received OnPostInstantiated");
-        assertEquals(event.isError(), false);
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error with type: " + event.error.type);
+        }
         assertEquals(TEST_EVENTS.POST_INSTANTIATED, mNextEvent);
 
         assertEquals(true, event.post.isLocalDraft());
