@@ -75,7 +75,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
         mCountDownLatch = new CountDownLatch(2);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testWPComPost() throws InterruptedException {
@@ -91,7 +91,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         payload.params.put("description", newValue);
         mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         assertEquals(newValue, mAccountStore.getAccount().getAboutMe());
     }
@@ -107,7 +107,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
         mCountDownLatch = new CountDownLatch(2);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         mExpectedAction = ACCOUNT_TEST_ACTIONS.POSTED;
         PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
@@ -117,7 +117,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         payload.params.put("description", newValue);
         mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         assertEquals(newValue, mAccountStore.getAccount().getAboutMe());
     }
@@ -133,7 +133,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
         mCountDownLatch = new CountDownLatch(2);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         mExpectedAction = ACCOUNT_TEST_ACTIONS.POSTED;
         PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
@@ -143,7 +143,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         payload.params.put("primary_site_ID", newValue);
         mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         assertEquals(newValue, String.valueOf(mAccountStore.getAccount().getPrimarySiteId()));
     }
@@ -190,6 +190,6 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
