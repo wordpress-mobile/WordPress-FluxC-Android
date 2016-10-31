@@ -196,8 +196,6 @@ public class MediaFragment extends Fragment {
                 mMediaList.setAdapter(new MediaAdapter(getActivity(), R.layout.media_list_item, event.media));
             } else if (event.cause == MediaAction.FETCH_MEDIA) {
                 prependToLog(event.media.size() + " media items fetched.");
-            } else if (event.cause == MediaAction.UPLOAD_MEDIA) {
-                prependToLog("Successfully uploaded " + event.media.get(0).getFileName() + "!");
             } else if (event.cause == MediaAction.DELETE_MEDIA) {
                 prependToLog("Successfully deleted " + event.media.get(0).getTitle() + ".");
             }
@@ -207,7 +205,13 @@ public class MediaFragment extends Fragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaUploaded(OnMediaUploaded event) {
         if (!event.isError()) {
-            prependToLog("Upload of " + event.media.getFilePath() + " successful!");
+            if (!event.completed) {
+                prependToLog("Upload progress: " + event.progress * 100);
+            } else {
+                prependToLog("Successfully uploaded " + event.media.getFilePath() + "!");
+            }
+        } else {
+            prependToLog("Upload error: " + event.error.type + ", message: " +event.error.message);
         }
     }
 
