@@ -243,6 +243,7 @@ public class MediaFragment extends Fragment {
         prependToLog("Uploading media to " + site.getName());
 
         MediaModel media = new MediaModel();
+        media.setFileName(MediaUtils.getFileName(mediaUri));
         media.setFilePath(mediaUri);
         media.setMimeType(MediaUtils.getMimeTypeForExtension(MediaUtils.getExtension(mediaUri)));
         UploadMediaPayload payload = new UploadMediaPayload(site, media);
