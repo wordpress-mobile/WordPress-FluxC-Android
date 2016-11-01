@@ -38,7 +38,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
 
     CountDownLatch mCountDownLatch;
 
-    enum TEST_EVENTS {
+    private enum TEST_EVENTS {
         NONE,
         HTTP_AUTH_ERROR,
         INVALID_SSL_CERTIFICATE,
@@ -222,8 +222,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     public void onSiteChanged(OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         if (event.isError()) {
-            AppLog.i(T.TESTS, "event error type: " + event.error.type);
-            return;
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(true, mSiteStore.hasSite());
         assertEquals(true, mSiteStore.hasSelfHostedSite());
@@ -234,6 +233,9 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     @Subscribe
     public void OnSiteRemoved(SiteStore.OnSiteRemoved event) {
         AppLog.e(T.TESTS, "site count " + mSiteStore.getSitesCount());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
         assertEquals(false, mSiteStore.hasSite());
         assertEquals(false, mSiteStore.hasSelfHostedSite());
         assertEquals(TEST_EVENTS.SITE_REMOVED, mNextEvent);
@@ -246,9 +248,10 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
             AppLog.i(T.TESTS, "error " + event.error.type + " - " + event.error.message);
             if (event.error.type == AuthenticationErrorType.GENERIC_ERROR) {
                 assertEquals(TEST_EVENTS.HTTP_AUTH_ERROR, mNextEvent);
-            }
-            if (event.error.type == AuthenticationErrorType.INVALID_SSL_CERTIFICATE) {
+            } else if (event.error.type == AuthenticationErrorType.INVALID_SSL_CERTIFICATE) {
                 assertEquals(TEST_EVENTS.INVALID_SSL_CERTIFICATE, mNextEvent);
+            } else {
+                throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
         }
         mCountDownLatch.countDown();
@@ -256,6 +259,9 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
 
     @Subscribe
     public void onPostFormatsChanged(OnPostFormatsChanged event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
         assertEquals(TEST_EVENTS.POST_FORMATS_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
