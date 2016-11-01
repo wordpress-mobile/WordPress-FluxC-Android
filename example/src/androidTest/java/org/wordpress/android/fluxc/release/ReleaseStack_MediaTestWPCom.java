@@ -162,6 +162,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
 
     @Subscribe
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
         if (event.progress >= 1.f) {
             assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
             mCountDownLatch.countDown();
@@ -170,6 +173,13 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
 
     @Subscribe
     public void onMediaChanged(MediaStore.OnMediaChanged event) {
+        if (event.isError()) {
+            if (mExpectedEvent == TEST_EVENTS.PUSH_ERROR) {
+                assertEquals(event.cause, MediaAction.PUSH_MEDIA);
+            } else {
+                throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            }
+        }
         if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
             assertEquals(TEST_EVENTS.FETCHED_ALL_MEDIA, mExpectedEvent);
         } else if (event.cause == MediaAction.FETCH_MEDIA) {
@@ -177,11 +187,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
                 assertEquals(TEST_EVENTS.FETCHED_KNOWN_IMAGES, mExpectedEvent);
             }
         } else if (event.cause == MediaAction.PUSH_MEDIA) {
-            if (event.isError()) {
-                assertEquals(TEST_EVENTS.PUSH_ERROR, mExpectedEvent);
-            } else {
-                assertEquals(TEST_EVENTS.PUSHED_MEDIA, mExpectedEvent);
-            }
+            assertEquals(TEST_EVENTS.PUSHED_MEDIA, mExpectedEvent);
         } else if (event.cause == MediaAction.DELETE_MEDIA) {
             assertEquals(TEST_EVENTS.DELETED_MEDIA, mExpectedEvent);
         }
@@ -190,12 +196,17 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
 
     @Subscribe
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
-        assertEquals(false, event.isError());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
         mCountDownLatch.countDown();
     }
 
     @Subscribe
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
         assertEquals(true, mSiteStore.hasWPComSite());
         mCountDownLatch.countDown();
     }
