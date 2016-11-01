@@ -180,6 +180,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
             } else {
                 throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
+            mCountDownLatch.countDown();
+            return;
         }
         if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
             assertEquals(TEST_EVENTS.FETCHED_ALL_MEDIA, mExpectedEvent);
