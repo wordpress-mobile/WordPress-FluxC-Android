@@ -419,7 +419,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(true, mSiteStore.hasSelfHostedSite());
+        assertTrue(mSiteStore.hasSelfHostedSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mExpectedEvent);
         mCountDownLatch.countDown();
     }
