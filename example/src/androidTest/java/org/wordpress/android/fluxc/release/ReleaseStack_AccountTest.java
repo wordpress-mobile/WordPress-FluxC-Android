@@ -160,7 +160,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
                     assertEquals(event.error.type, AuthenticationErrorType.INCORRECT_USERNAME_OR_PASSWORD);
                     break;
                 default:
-                    throw new AssertionError("Unexpected error occurred: " + event.error.type);
+                    throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
         } else {
             assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTHENTICATE);
@@ -171,8 +171,9 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     @SuppressWarnings("unused")
     @Subscribe
     public void onAccountChanged(OnAccountChanged event) {
-        // make sure no unexpected errors occurred
-        assertNull(event.error);
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
         if (event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
             assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.FETCHED);
             assertEquals(BuildConfig.TEST_WPCOM_USERNAME_TEST1, mAccountStore.getAccount().getUserName());
