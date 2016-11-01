@@ -813,6 +813,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
             } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
                 assertEquals(PostErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
+            } else {
+                throw new AssertionError("Unexpected error with type: " + event.error.type);
             }
             return;
         }
@@ -847,6 +849,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     @Subscribe
     public void OnPostInstantiated(OnPostInstantiated event) {
         AppLog.i(T.API, "Received OnPostInstantiated");
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error with type: " + event.error.type);
+        }
         assertEquals(TEST_EVENTS.POST_INSTANTIATED, mNextEvent);
 
         assertEquals(true, event.post.isLocalDraft());
@@ -876,6 +881,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
             } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
                 assertEquals(PostErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
+            } else {
+                throw new AssertionError("Unexpected error with type: " + event.error.type);
             }
             return;
         }
