@@ -83,8 +83,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         if (event.isError()) {
-            AppLog.i(T.TESTS, "event error type: " + event.error.type);
-            return;
+            throw new AssertionError("event error type: " + event.error.type);
         }
         assertEquals(true, mSiteStore.hasSite());
         assertEquals(true, mSiteStore.hasWPComSite());
