@@ -95,6 +95,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         for (String id : splitIds) {
             MediaModel media = new MediaModel();
             media.setMediaId(Long.valueOf(id));
+            mediaList.add(media);
         }
         SiteModel site = mSiteStore.getSites().get(0);
         MediaStore.MediaListPayload payload = new MediaStore.MediaListPayload(MediaAction.FETCH_MEDIA, site, mediaList);
