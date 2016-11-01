@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.widget.TextView;
 
-
 public class MainExampleActivity extends Activity {
     private TextView mLogView;
 

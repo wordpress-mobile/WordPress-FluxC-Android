@@ -542,7 +542,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         site.setIsWPCom(true);
         site.setSiteId(99999999999L);
 
-        // Expecting a generic 404 error (unknown blog)
+        // Expecting a generic 404 error (unknown site)
         mNextEvent = TEST_EVENTS.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
@@ -593,7 +593,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
 
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
-        AppLog.i(T.API, "Received OnPostChanged, causeOfChange: " + event.causeOfChange);
+        AppLog.i(T.API, "Received OnPostChanged, cause: " + event.causeOfChange);
         if (event.isError()) {
             AppLog.i(T.API, "OnPostChanged has error: " + event.error.type + " - " + event.error.message);
             if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST)) {
