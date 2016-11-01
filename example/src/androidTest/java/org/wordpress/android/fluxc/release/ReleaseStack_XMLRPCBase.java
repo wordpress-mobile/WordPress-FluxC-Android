@@ -51,7 +51,7 @@ public class ReleaseStack_XMLRPCBase extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @Subscribe
@@ -60,8 +60,8 @@ public class ReleaseStack_XMLRPCBase extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("event error type: " + event.error.type);
         }
-        assertEquals(true, mSiteStore.hasSite());
-        assertEquals(true, mSiteStore.hasSelfHostedSite());
+        assertTrue(mSiteStore.hasSite());
+        assertTrue(mSiteStore.hasSelfHostedSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
