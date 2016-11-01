@@ -62,14 +62,14 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Correct user we should get an OnAuthenticationChanged message
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Clear WP.com sites, and wait for OnSiteRemoved event
         mCountDownLatch = new CountDownLatch(1);
@@ -77,7 +77,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mExpectedRowsAffected = mSiteStore.getSitesCount();
         mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testFetchPostFormats() throws InterruptedException {
@@ -89,13 +89,13 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
         // Correct user we should get an OnAuthenticationChanged message
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Get the first site
         SiteModel firstSite = mSiteStore.getSites().get(0);
@@ -104,7 +104,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(firstSite));
         mExpectedEvent = TEST_EVENTS.POST_FORMATS_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Test fetched Post Formats
         List<PostFormatModel> postFormats = mSiteStore.getPostFormats(firstSite);
@@ -125,8 +125,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(true, mSiteStore.hasSite());
-        assertEquals(true, mSiteStore.hasWPComSite());
+        assertTrue(mSiteStore.hasSite());
+        assertTrue(mSiteStore.hasWPComSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mExpectedEvent);
         mCountDownLatch.countDown();
     }
@@ -138,8 +138,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(mExpectedRowsAffected, event.mRowsAffected);
-        assertEquals(false, mSiteStore.hasSite());
-        assertEquals(false, mSiteStore.hasWPComSite());
+        assertFalse(mSiteStore.hasSite());
+        assertFalse(mSiteStore.hasWPComSite());
         assertEquals(TEST_EVENTS.SITE_REMOVED, mExpectedEvent);
         mCountDownLatch.countDown();
     }
