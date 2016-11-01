@@ -306,6 +306,9 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     @Subscribe
     public void onSiteChanged(OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type " + event.error.type);
+        }
         assertTrue(mSiteStore.hasSite());
         assertTrue(mSiteStore.hasSelfHostedSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
@@ -315,6 +318,9 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     @Subscribe
     public void OnSiteRemoved(SiteStore.OnSiteRemoved event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type " + event.error.type);
+        }
         assertFalse(mSiteStore.hasSite());
         assertFalse(mSiteStore.hasSelfHostedSite());
         assertEquals(TEST_EVENTS.SITE_REMOVED, mNextEvent);
