@@ -113,7 +113,9 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     @Subscribe
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
-        assertEquals(false, event.isError());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
         mCountDownLatch.countDown();
     }
 
@@ -121,8 +123,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     public void onSiteChanged(OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         if (event.isError()) {
-            AppLog.i(T.TESTS, "event error type: " + event.error.type);
-            return;
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(true, mSiteStore.hasSite());
         assertEquals(true, mSiteStore.hasWPComSite());
@@ -133,6 +134,9 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     @Subscribe
     public void OnSiteRemoved(SiteStore.OnSiteRemoved event) {
         AppLog.e(T.TESTS, "site count " + mSiteStore.getSitesCount());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
         assertEquals(mExpectedRowsAffected, event.mRowsAffected);
         assertEquals(false, mSiteStore.hasSite());
         assertEquals(false, mSiteStore.hasWPComSite());
@@ -142,6 +146,9 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     @Subscribe
     public void onPostFormatsChanged(OnPostFormatsChanged event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
         assertEquals(TEST_EVENTS.POST_FORMATS_CHANGED, mExpectedEvent);
         mCountDownLatch.countDown();
     }
