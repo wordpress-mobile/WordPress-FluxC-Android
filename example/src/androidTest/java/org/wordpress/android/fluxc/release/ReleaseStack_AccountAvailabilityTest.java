@@ -88,6 +88,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
 
         assertEquals("docbrown.com", mLastEvent.value);
         assertEquals(false, mLastEvent.isAvailable);
+        assertTrue(mLastEvent.suggestions.size() > 0);
 
         String unavailableDomain = "docbrown" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + ".com";
         mNextEvent = ACCOUNT_AVAILABILITY_TEST_ACTIONS.IS_AVAILABLE_DOMAIN;
@@ -98,6 +99,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
 
         assertEquals(unavailableDomain, mLastEvent.value);
         assertEquals(true, mLastEvent.isAvailable);
+        assertNull(mLastEvent.suggestions);
     }
 
     public void testIsAvailableDomainInvalid() throws InterruptedException {
