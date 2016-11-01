@@ -350,6 +350,9 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
     @SuppressWarnings("unused")
     @Subscribe
     public void onDiscoverySucceeded(AccountStore.OnDiscoveryResponse event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred: " + event.error);
+        }
         assertEquals(TEST_EVENTS.AUTHENTICATION_CHANGED, mExpectedEvent);
         mDiscovered = event;
         mCountDownLatch.countDown();
@@ -358,7 +361,9 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
     @SuppressWarnings("unused")
     @Subscribe
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) throws InterruptedException {
-        assertFalse(event.isError());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
         mLastUploadedId = event.media.getMediaId();
         if (event.completed) {
             assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
@@ -387,6 +392,8 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
                 assertEquals(TEST_EVENTS.MALFORMED_ERROR, mExpectedEvent);
             } else if (event.error.type == MediaStore.MediaErrorType.MEDIA_NOT_FOUND) {
                 assertEquals(TEST_EVENTS.NOT_FOUND_ERROR, mExpectedEvent);
+            } else {
+                throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
         } else {
             if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
@@ -409,6 +416,9 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
     @Subscribe
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
         AppLog.i(AppLog.T.TESTS, "site count " + mSiteStore.getSitesCount());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
         assertEquals(true, mSiteStore.hasSelfHostedSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mExpectedEvent);
         mCountDownLatch.countDown();
