@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-public class ReleaseStack_MediaRestTest extends ReleaseStack_Base {
+public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
     @Inject Dispatcher mDispatcher;
     @Inject MediaStore mMediaStore;
     @Inject SiteStore mSiteStore;

@@ -1,0 +1,38 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="org.wordpress.android.fluxc.example.MediaFragment">
+
+    <Button
+        android:id="@+id/fetch_all_media"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch All" />
+
+    <Button
+        android:id="@+id/fetch_specified_media"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch" />
+
+    <Button
+        android:id="@+id/upload_media"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Upload" />
+
+    <Button
+        android:id="@+id/delete_media"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Delete" />
+
+    <Spinner
+        android:id="@+id/media_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</LinearLayout>
