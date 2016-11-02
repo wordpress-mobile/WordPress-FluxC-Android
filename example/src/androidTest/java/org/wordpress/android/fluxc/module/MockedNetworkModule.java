@@ -20,7 +20,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.ErrorLi
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Listener;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Token;
 import org.wordpress.android.fluxc.network.rest.wpcom.media.MediaRestClient;
-import org.wordpress.android.fluxc.network.rest.wpcom.post.PostRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.SiteRestClient;
 import org.wordpress.android.fluxc.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.media.MediaXMLRPCClient;
