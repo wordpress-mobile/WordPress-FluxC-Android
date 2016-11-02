@@ -208,10 +208,10 @@ public class MediaFragment extends Fragment {
             if (!event.completed) {
                 prependToLog("Upload progress: " + event.progress * 100);
             } else {
-                prependToLog("Successfully uploaded " + event.media.getFilePath() + "!");
+                prependToLog("Successfully uploaded " + event.media.getUrl() + "!");
             }
         } else {
-            prependToLog("Upload error: " + event.error.type + ", message: " +event.error.message);
+            prependToLog("Upload error: " + event.error.type + ", message: " + event.error.message);
         }
     }
 
