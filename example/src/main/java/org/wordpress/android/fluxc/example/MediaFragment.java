@@ -39,7 +39,7 @@ import javax.inject.Inject;
 import static android.app.Activity.RESULT_OK;
 
 public class MediaFragment extends Fragment {
-    private final int RESULT_PICK_MEDIA = 1;
+    private static final int RESULT_PICK_MEDIA = 1;
 
     @Inject SiteStore mSiteStore;
     @Inject MediaStore mMediaStore;
@@ -156,9 +156,9 @@ public class MediaFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
-        switch(requestCode) {
+        switch (requestCode) {
             case RESULT_PICK_MEDIA:
-                if(resultCode == RESULT_OK){
+                if (resultCode == RESULT_OK) {
                     Uri selectedImage = imageReturnedIntent.getData();
                     String[] filePath = {android.provider.MediaStore.Images.Media.DATA};
                     Cursor cursor = getActivity().getContentResolver().query(selectedImage, filePath, null, null, null);
