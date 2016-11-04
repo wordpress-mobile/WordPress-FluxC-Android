@@ -26,4 +26,5 @@ public interface AppComponent {
     void inject(CommentsFragment object);
     void inject(PostsFragment object);
     void inject(AccountFragment object);
+    void inject(SignedOutActionsFragment object);
 }
