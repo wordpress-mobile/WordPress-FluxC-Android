@@ -797,7 +797,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
-        AppLog.i(T.API, "Received OnPostChanged, causeOfChange: " + event.causeOfChange);
+        AppLog.i(T.API, "Received OnPostChanged, cause: " + event.causeOfChange);
         if (event.isError()) {
             AppLog.i(T.API, "OnPostChanged has error: " + event.error.type + " - " + event.error.message);
             mLastPostError = event.error;

@@ -22,7 +22,10 @@ android {
     defaultConfig {
         applicationId "org.wordpress.android.fluxc.example"
         minSdkVersion 15
-        targetSdkVersion 24
+        // Keep the targetSdkVersion 22 so we don't need to grant runtime permissions to the tests and the example app
+        // An alternative would be granting the permissions via adb before running the test, like here:
+        // https://afterecho.uk/blog/granting-marshmallow-permissions-for-testing-flavoured-builds.html
+        targetSdkVersion 22
         versionCode 1
         versionName "1.0"
     }
