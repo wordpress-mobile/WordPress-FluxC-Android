@@ -375,7 +375,7 @@ public class MainFragment extends Fragment {
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAuthEmailSent(AccountStore.OnAuthEmailSent event) {
         if (event.isError()) {
             prependToLog("Error sending magic link: " + event.error.type + " - " + event.error.message);
