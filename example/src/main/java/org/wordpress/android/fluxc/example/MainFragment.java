@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.example;
 
+import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -10,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -107,6 +109,13 @@ public class MainFragment extends Fragment {
         view.findViewById(R.id.posts).setOnClickListener(getOnClickListener(new PostsFragment()));
         view.findViewById(R.id.comments).setOnClickListener(getOnClickListener(new CommentsFragment()));
         view.findViewById(R.id.media).setOnClickListener(getOnClickListener(new MediaFragment()));
+
+        view.findViewById(R.id.magic_link_email).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMagicLinkDialog();
+            }
+        });
 
         return view;
     }
@@ -258,6 +267,21 @@ public class MainFragment extends Fragment {
         mDispatcher.dispatch(AccountActionBuilder.newCreateNewAccountAction(newAccountPayload));
     }
 
+    private void showMagicLinkDialog() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+        final EditText editText = new EditText(getActivity());
+        editText.setSingleLine();
+        alert.setMessage("Send magic link login e-mail:");
+        alert.setView(editText);
+        alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String email = editText.getText().toString();
+                mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(email));
+            }
+        });
+        alert.show();
+    }
+
     // Event listeners
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -348,6 +372,15 @@ public class MainFragment extends Fragment {
             prependToLog("New user " + message + ": error: " + event.error.type + " - " + event.error.message);
         } else {
             prependToLog("New user " + message + ": success!");
+        }
+    }
+
+    @Subscribe
+    public void onAuthEmailSent(AccountStore.OnAuthEmailSent event) {
+        if (event.isError()) {
+            prependToLog("Error sending magic link: " + event.error.type + " - " + event.error.message);
+        } else {
+            prependToLog("Sent magic link e-mail!");
         }
     }
 

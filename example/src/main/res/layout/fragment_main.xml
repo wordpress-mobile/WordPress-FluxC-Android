@@ -71,4 +71,16 @@
         android:layout_height="wrap_content"
         android:text="Media" />
 
+    <ImageView
+        android:id="@+id/divider2"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/material_grey_600" />
+
+    <Button
+        android:id="@+id/magic_link_email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send Magic Link E-mail" />
+
 </LinearLayout>
