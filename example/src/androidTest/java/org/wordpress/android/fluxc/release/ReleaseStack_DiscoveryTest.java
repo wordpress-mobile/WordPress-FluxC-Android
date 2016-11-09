@@ -39,6 +39,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     enum TEST_EVENTS {
         NONE,
         DISCOVERY_SUCCEEDED,
+        INVALID_URL_ERROR,
         NO_SITE_ERROR,
         WORDPRESS_COM_SITE,
         ERRONEOUS_SSL_CERTIFICATE,
@@ -57,6 +58,21 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.register(this);
         // Reset expected test event
         mNextEvent = TEST_EVENTS.NONE;
+    }
+
+    public void testNoUrlFetchSites() throws InterruptedException {
+        mPayload = new RefreshSitesXMLRPCPayload();
+        mPayload.url = "";
+        mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
+        mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
+
+        mNextEvent = TEST_EVENTS.INVALID_URL_ERROR;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testInvalidUrlFetchSites() throws InterruptedException {
@@ -331,7 +347,9 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         if (event.isError()) {
             // ERROR :(
             AppLog.i(T.API, "Discovery error: " + event.error);
-            if (event.error == DiscoveryError.NO_SITE_ERROR) {
+            if (event.error == DiscoveryError.INVALID_URL) {
+                assertEquals(TEST_EVENTS.INVALID_URL_ERROR, mNextEvent);
+            } else if (event.error == DiscoveryError.NO_SITE_ERROR) {
                 assertEquals(TEST_EVENTS.NO_SITE_ERROR, mNextEvent);
             } else if (event.error == DiscoveryError.WORDPRESS_COM_SITE) {
                 assertEquals(TEST_EVENTS.WORDPRESS_COM_SITE, mNextEvent);
