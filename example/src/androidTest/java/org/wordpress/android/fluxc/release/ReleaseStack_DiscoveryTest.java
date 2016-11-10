@@ -268,6 +268,8 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     private void checkSelfHostedSelfSignedSSLFetchForSite(String url, String username, String password)
             throws InterruptedException {
+        mMemorizingTrustManager.clearLocalTrustStore();
+
         mPayload = new RefreshSitesXMLRPCPayload();
         mPayload.url = url;
         mPayload.username = username;
