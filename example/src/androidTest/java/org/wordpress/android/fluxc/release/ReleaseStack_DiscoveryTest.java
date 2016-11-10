@@ -134,7 +134,31 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL);
     }
 
+    public void testXMLRPCHTTPToHTTPRedirectFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTP_REDIRECT,
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTP_TO_HTTP_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTP_TO_HTTP_REDIRECT);
+    }
+
     public void testXMLRPCHTTPToHTTPSRedirectFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTPS_REDIRECT,
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTP_TO_HTTPS_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTP_TO_HTTPS_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPSToHTTPSRedirectFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTPS_REDIRECT,
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTPS_TO_HTTPS_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTPS_TO_HTTPS_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPSToHTTPRedirectFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTP_REDIRECT,
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTPS_TO_HTTP_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTPS_TO_HTTP_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPToHTTPSSameDomainRedirectFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT,
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL_REDIRECT);
@@ -154,7 +178,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 BuildConfig.TEST_WPORG_HTTPAUTH_PASSWORD_SH_HTTPAUTH);
     }
 
-    public void testXMLRPCHTTPToHTTPSRedirectWithEndpointFetchSites() throws InterruptedException {
+    public void testXMLRPCHTTPToHTTPSRedirectWithEndpointSameDomainFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT_ENDPOINT,
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL_REDIRECT);
@@ -174,7 +198,35 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL);
     }
 
+    public void testXMLRPCHTTPToHTTPNoProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(
+                UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTP_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTP_TO_HTTP_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTP_TO_HTTP_REDIRECT);
+    }
+
     public void testXMLRPCHTTPToHTTPSNoProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(
+                UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTPS_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTP_TO_HTTPS_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTP_TO_HTTPS_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPSToHTTPSNoProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(
+                UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTPS_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTPS_TO_HTTPS_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTPS_TO_HTTPS_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPSToHTTPNoProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(
+                UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTP_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTPS_TO_HTTP_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTPS_TO_HTTP_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPToHTTPSSameDomainNoProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT),
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL_REDIRECT);
@@ -208,7 +260,35 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL);
     }
 
-    public void testXMLRPCHTTPToHTTPSBadProtocolRedirectFetchSites() throws InterruptedException {
+    public void testXMLRPCHTTPToHTTPBadProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(
+                addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTP_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTP_TO_HTTP_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTP_TO_HTTP_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPToHTTPSBadProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(
+                addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTPS_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTP_TO_HTTPS_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTP_TO_HTTPS_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPSToHTTPSBadProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(
+                addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTPS_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTPS_TO_HTTPS_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTPS_TO_HTTPS_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPSToHTTPBadProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(
+                addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTP_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTPS_TO_HTTP_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTPS_TO_HTTP_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPToHTTPSSameDomainBadProtocolRedirectFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT),
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL_REDIRECT);
