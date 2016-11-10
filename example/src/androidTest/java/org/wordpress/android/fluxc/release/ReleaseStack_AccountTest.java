@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
@@ -8,11 +9,14 @@ import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.AccountStore.AuthEmailErrorType;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
+import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload;
+import org.wordpress.android.util.AppLog;
 
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
@@ -36,6 +40,9 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AUTHENTICATE_2FA_ERROR,
         FETCHED,
         POSTED,
+        SENT_AUTH_EMAIL,
+        AUTH_EMAIL_ERROR_INVALID,
+        AUTH_EMAIL_ERROR_NO_SUCH_USER
     }
 
     private ACCOUNT_TEST_ACTIONS mExpectedAction;
@@ -148,6 +155,28 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(newValue, String.valueOf(mAccountStore.getAccount().getPrimarySiteId()));
     }
 
+    public void testSendAuthEmail() throws InterruptedException {
+        mExpectedAction = ACCOUNT_TEST_ACTIONS.SENT_AUTH_EMAIL;
+        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(BuildConfig.TEST_WPCOM_EMAIL_TEST1));
+        mCountDownLatch = new CountDownLatch(1);
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testSendAuthEmailInvalid() throws InterruptedException {
+        mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTH_EMAIL_ERROR_INVALID;
+        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction("notanemail"));
+        mCountDownLatch = new CountDownLatch(1);
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testSendAuthEmailNoSuchUser() throws InterruptedException {
+        mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTH_EMAIL_ERROR_NO_SUCH_USER;
+        String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
+        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(unknownEmail));
+        mCountDownLatch = new CountDownLatch(1);
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         if (event.isError()) {
@@ -175,6 +204,26 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
             assertEquals(mExpectAccountInfosChanged, event.accountInfosChanged);
         }
         mCountDownLatch.countDown();
+    }
+
+    @Subscribe
+    public void onAuthEmailSent(OnAuthEmailSent event) {
+        AppLog.i(AppLog.T.API, "Received OnAuthEmailSent");
+        if (event.isError()) {
+            AppLog.i(AppLog.T.API, "OnAuthEmailSent has error: " + event.error.type + " - " + event.error.message);
+            if (event.error.type == AuthEmailErrorType.INVALID_INPUT) {
+                assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTH_EMAIL_ERROR_INVALID);
+                mCountDownLatch.countDown();
+            } else if (event.error.type == AuthEmailErrorType.NO_SUCH_USER) {
+                assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTH_EMAIL_ERROR_NO_SUCH_USER);
+                mCountDownLatch.countDown();
+            } else {
+                throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            }
+        } else {
+            assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.SENT_AUTH_EMAIL);
+            mCountDownLatch.countDown();
+        }
     }
 
     private void authenticate(String username, String password) throws InterruptedException {

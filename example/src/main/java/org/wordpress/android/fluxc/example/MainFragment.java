@@ -24,11 +24,9 @@ import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
-import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse;
-import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
@@ -95,10 +93,13 @@ public class MainFragment extends Fragment {
             }
         });
 
-        view.findViewById(R.id.new_account).setOnClickListener(new OnClickListener() {
+        view.findViewById(R.id.signed_out_actions).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                showNewAccountDialog();
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new SignedOutActionsFragment())
+                        .addToBackStack(null)
+                        .commit();
             }
         });
 
@@ -242,22 +243,6 @@ public class MainFragment extends Fragment {
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
     }
 
-    private void showNewAccountDialog() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
-            @Override
-            public void onClick(String username, String email, String password) {
-                newAccountAction(username, email, password);
-            }
-        }, "Username", "Email", "Password");
-        newFragment.show(ft, "dialog");
-    }
-
-    private void newAccountAction(String username, String email, String password) {
-        NewAccountPayload newAccountPayload = new NewAccountPayload(username, password, email, true);
-        mDispatcher.dispatch(AccountActionBuilder.newCreateNewAccountAction(newAccountPayload));
-    }
-
     // Event listeners
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -338,16 +323,6 @@ public class MainFragment extends Fragment {
         if (mSiteStore.hasSite()) {
             SiteModel firstSite = mSiteStore.getSites().get(0);
             prependToLog("First site name: " + firstSite.getName() + " - Total sites: " + mSiteStore.getSitesCount());
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onNewUserValidated(OnNewUserCreated event) {
-        String message = event.dryRun ? "validation" : "creation";
-        if (event.isError()) {
-            prependToLog("New user " + message + ": error: " + event.error.type + " - " + event.error.message);
-        } else {
-            prependToLog("New user " + message + ": success!");
         }
     }
 

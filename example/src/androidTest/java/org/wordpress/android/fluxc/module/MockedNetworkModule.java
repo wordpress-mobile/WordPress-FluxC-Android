@@ -64,8 +64,8 @@ public class MockedNetworkModule {
 
     @Singleton
     @Provides
-    public Authenticator provideAuthenticator(AppSecrets appSecrets, RequestQueue requestQueue) {
-        Authenticator authenticator = new Authenticator(requestQueue, appSecrets);
+    public Authenticator provideAuthenticator(Dispatcher dispatcher, AppSecrets appSecrets, RequestQueue requestQueue) {
+        Authenticator authenticator = new Authenticator(dispatcher, requestQueue, appSecrets);
         Authenticator spy = spy(authenticator);
 
         // Mock Authenticator with correct user: test/test
