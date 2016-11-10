@@ -30,7 +30,7 @@ public class ReleaseStack_XMLRPCBase extends ReleaseStack_Base {
     private TEST_EVENTS mNextEvent;
 
 
-    protected void init()  throws Exception {
+    protected void init() throws Exception {
         // Register
         mNextEvent = TEST_EVENTS.NONE;
 
@@ -44,9 +44,9 @@ public class ReleaseStack_XMLRPCBase extends ReleaseStack_Base {
 
     private void fetchSites() throws InterruptedException {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL;
-        payload.url = BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_ENDPOINT;
+        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
+        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
+        payload.url = BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT;
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
