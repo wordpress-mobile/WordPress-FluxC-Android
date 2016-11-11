@@ -44,6 +44,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         WORDPRESS_COM_SITE,
         ERRONEOUS_SSL_CERTIFICATE,
         HTTP_AUTH_REQUIRED,
+        XMLRPC_BLOCKED,
         SITE_CHANGED,
         SITE_REMOVED
     }
@@ -232,6 +233,21 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 BuildConfig.TEST_WPORG_PASSWORD_SH_RSD);
     }
 
+    public void testXMLRPCBlockedDiscovery() throws InterruptedException {
+        mPayload = new RefreshSitesXMLRPCPayload();
+        mPayload.url = BuildConfig.TEST_WPORG_URL_SH_BLOCKED;
+        mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_BLOCKED;
+        mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_BLOCKED;
+
+        mNextEvent = TEST_EVENTS.XMLRPC_BLOCKED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     private void checkSelfHostedSimpleFetchForSite(String url, String username, String password)
             throws InterruptedException {
         mPayload = new RefreshSitesXMLRPCPayload();
@@ -363,6 +379,8 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 assertEquals(TEST_EVENTS.HTTP_AUTH_REQUIRED, mNextEvent);
             } else if (event.error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
                 assertEquals(TEST_EVENTS.ERRONEOUS_SSL_CERTIFICATE, mNextEvent);
+            } else if (event.error == DiscoveryError.XMLRPC_BLOCKED) {
+                assertEquals(TEST_EVENTS.XMLRPC_BLOCKED, mNextEvent);
             } else {
                 throw new AssertionError("Didn't get the correct error, expected: " + mNextEvent + ", and got: "
                         + event.error);
