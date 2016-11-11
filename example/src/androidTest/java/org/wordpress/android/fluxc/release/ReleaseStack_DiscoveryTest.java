@@ -46,6 +46,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         HTTP_AUTH_REQUIRED,
         XMLRPC_BLOCKED,
         XMLRPC_FORBIDDEN,
+        MISSING_XMLRPC_METHOD,
         SITE_CHANGED,
         SITE_REMOVED
     }
@@ -350,6 +351,21 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    public void testXMLRPCMissingMethodDiscovery() throws InterruptedException {
+        mPayload = new RefreshSitesXMLRPCPayload();
+        mPayload.url = BuildConfig.TEST_WPORG_URL_SH_MISSING_METHODS;
+        mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_MISSING_METHODS;
+        mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_MISSING_METHODS;
+
+        mNextEvent = TEST_EVENTS.MISSING_XMLRPC_METHOD;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     private void checkSelfHostedSimpleFetchForSite(String url, String username, String password)
             throws InterruptedException {
         mPayload = new RefreshSitesXMLRPCPayload();
@@ -487,6 +503,8 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 assertEquals(TEST_EVENTS.XMLRPC_BLOCKED, mNextEvent);
             } else if (event.error == DiscoveryError.XMLRPC_FORBIDDEN) {
                 assertEquals(TEST_EVENTS.XMLRPC_FORBIDDEN, mNextEvent);
+            } else if (event.error == DiscoveryError.MISSING_XMLRPC_METHOD) {
+                assertEquals(TEST_EVENTS.MISSING_XMLRPC_METHOD, mNextEvent);
             } else {
                 throw new AssertionError("Didn't get the correct error, expected: " + mNextEvent + ", and got: "
                         + event.error);
