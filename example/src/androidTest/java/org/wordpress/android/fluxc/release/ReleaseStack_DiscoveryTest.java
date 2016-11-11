@@ -314,6 +314,12 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 BuildConfig.TEST_WPORG_PASSWORD_SH_RSD);
     }
 
+    public void testXMLRPCNoRsdFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_NO_RSD,
+                BuildConfig.TEST_WPORG_USERNAME_SH_NO_RSD,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_NO_RSD);
+    }
+
     public void testXMLRPCBlockedDiscovery() throws InterruptedException {
         mPayload = new RefreshSitesXMLRPCPayload();
         mPayload.url = BuildConfig.TEST_WPORG_URL_SH_BLOCKED;
