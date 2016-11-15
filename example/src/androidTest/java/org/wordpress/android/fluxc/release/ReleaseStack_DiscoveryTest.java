@@ -37,6 +37,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         NONE,
         DISCOVERY_SUCCEEDED_XMLRPC,
         DISCOVERY_SUCCEEDED_WPAPI,
+        DISCOVERY_SUCCEEDED_XMLRPC_ONLY,
         INVALID_URL_ERROR,
         NO_SITE_ERROR,
         WORDPRESS_COM_SITE,
@@ -414,6 +415,17 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         }
     }
 
+    public void testWPAPIMissingV2SimpleFetchSites() throws InterruptedException {
+        // If the wp/v2 namespace is unsupported, we don't expect a WP-API endpoint to be discovered
+        // (but an XML-RPC endpoint should be found)
+        if (org.wordpress.android.fluxc.BuildConfig.ENABLE_WPAPI) {
+            checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_WPAPI_MISSING_V2,
+                    BuildConfig.TEST_WPORG_USERNAME_SH_WPAPI_MISSING_V2,
+                    BuildConfig.TEST_WPORG_PASSWORD_SH_WPAPI_MISSING_V2,
+                    TestEvents.DISCOVERY_SUCCEEDED_XMLRPC_ONLY);
+        }
+    }
+
     private void checkSelfHostedSimpleFetchForSite(String url, String username, String password, TestEvents nextEvent)
             throws InterruptedException {
         mPayload = new RefreshSitesXMLRPCPayload();
@@ -580,6 +592,11 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TestEvents.DISCOVERY_SUCCEEDED_XMLRPC)) {
                 assertTrue(event.xmlRpcEndpoint != null && !event.xmlRpcEndpoint.isEmpty());
+                mPayload.url = event.xmlRpcEndpoint;
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TestEvents.DISCOVERY_SUCCEEDED_XMLRPC_ONLY)) {
+                assertTrue(event.xmlRpcEndpoint != null && !event.xmlRpcEndpoint.isEmpty());
+                assertTrue(event.wpRestEndpoint == null || event.wpRestEndpoint.isEmpty());
                 mPayload.url = event.xmlRpcEndpoint;
                 mCountDownLatch.countDown();
             }
