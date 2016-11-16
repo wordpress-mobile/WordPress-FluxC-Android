@@ -9,7 +9,9 @@ import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.TaxonomyModel;
 import org.wordpress.android.fluxc.model.TermModel;
 import org.wordpress.android.fluxc.store.TaxonomyStore;
+import org.wordpress.android.fluxc.store.TaxonomyStore.RemoteTermPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.TaxonomyError;
+import org.wordpress.android.fluxc.utils.WellSqlUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -33,6 +35,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_Base {
         CATEGORIES_FETCHED,
         TAGS_FETCHED,
         TERMS_FETCHED,
+        TERM_UPDATED,
         ERROR_INVALID_TAXONOMY,
         ERROR_UNAUTHORIZED,
         ERROR_GENERIC
@@ -101,6 +104,25 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_Base {
         assertEquals("Invalid taxonomy.", mLastTaxonomyError.message);
     }
 
+    public void testFetchSingleCategory() throws InterruptedException {
+        mNextEvent = TEST_EVENTS.TERM_UPDATED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        TermModel term = new TermModel();
+        term.setTaxonomy("category");
+        term.setSlug("uncategorized");
+        term.setRemoteTermId(1);
+        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermAction(new RemoteTermPayload(term, sSite)));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(1, WellSqlUtils.getTotalTermsCount());
+        TermModel fetchedTerm = mTaxonomyStore.getTermsForSite(sSite, "category").get(0);
+
+        assertEquals("uncategorized", fetchedTerm.getSlug());
+        assertNotSame(0, fetchedTerm.getRemoteTermId());
+    }
+
     @Subscribe
     public void onTaxonomyChanged(TaxonomyStore.OnTaxonomyChanged event) {
         AppLog.i(T.API, "Received OnTaxonomyChanged, causeOfChange: " + event.causeOfChange);
@@ -134,6 +156,12 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_Base {
                     AppLog.i(T.API, "Fetched " + event.rowsAffected + " " + event.taxonomyName + " terms");
                     mCountDownLatch.countDown();
                 }
+            case UPDATE_TERM:
+                if (mNextEvent.equals(TEST_EVENTS.TERM_UPDATED)) {
+                    AppLog.i(T.API, "Fetched " + event.rowsAffected + " term");
+                    mCountDownLatch.countDown();
+                }
+                break;
         }
     }
 }
