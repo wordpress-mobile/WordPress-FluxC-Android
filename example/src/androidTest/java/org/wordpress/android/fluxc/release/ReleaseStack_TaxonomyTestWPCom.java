@@ -14,7 +14,9 @@ import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.TaxonomyStore;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermsPayload;
+import org.wordpress.android.fluxc.store.TaxonomyStore.RemoteTermPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.TaxonomyErrorType;
+import org.wordpress.android.fluxc.utils.WellSqlUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -39,6 +41,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_Base {
         CATEGORIES_FETCHED,
         TAGS_FETCHED,
         TERMS_FETCHED,
+        TERM_UPDATED,
         ERROR_INVALID_TAXONOMY,
         ERROR_UNAUTHORIZED,
         ERROR_GENERIC
@@ -99,6 +102,24 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_Base {
         mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermsAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testFetchSingleCategory() throws InterruptedException {
+        mNextEvent = TEST_EVENTS.TERM_UPDATED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        TermModel term = new TermModel();
+        term.setTaxonomy("category");
+        term.setSlug("uncategorized");
+        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermAction(new RemoteTermPayload(term, sSite)));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(1, WellSqlUtils.getTotalTermsCount());
+        TermModel fetchedTerm = mTaxonomyStore.getTermsForSite(sSite, "category").get(0);
+
+        assertEquals("uncategorized", fetchedTerm.getSlug());
+        assertNotSame(0, fetchedTerm.getRemoteTermId());
     }
 
     private void authenticate() throws InterruptedException {
@@ -174,6 +195,13 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_Base {
                     AppLog.i(T.API, "Fetched " + event.rowsAffected + " " + event.taxonomyName + " terms");
                     mCountDownLatch.countDown();
                 }
+                break;
+            case UPDATE_TERM:
+                if (mNextEvent.equals(TEST_EVENTS.TERM_UPDATED)) {
+                    AppLog.i(T.API, "Fetched " + event.rowsAffected + " term");
+                    mCountDownLatch.countDown();
+                }
+                break;
         }
     }
 }
