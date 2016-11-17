@@ -670,8 +670,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
                 assertEquals(PostErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
             } else {
-                // unexpected error
-                assertFalse(event.isError());
+                throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
             return;
         }
