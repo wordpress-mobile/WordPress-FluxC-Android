@@ -250,24 +250,23 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
     /**
      * Delete action on media that exists should result in no media on a fetch request.
      */
-    // disabling this test for now, but it should be fixed fairly soon as part of another issue
-//    public void testDeleteMediaThatExists() throws InterruptedException {
-//        // upload media
-//        mSite = mSiteStore.getSites().get(0);
-//        MediaModel media = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
-//        String imagePath = BuildConfig.TEST_LOCAL_IMAGE;
-//        media.setFilePath(imagePath);
-//        media.setFileName(MediaUtils.getFileName(imagePath));
-//        media.setFileExtension(MediaUtils.getExtension(imagePath));
-//        media.setMimeType(MediaUtils.MIME_TYPE_IMAGE + media.getFileExtension());
-//        media.setSiteId(mSite.getSelfHostedSiteId());
-//        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(mSite, media);
-//        mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
-//        mNextExpectedEvent = TEST_EVENTS.DELETED_MEDIA;
-//        mCountDownLatch = new CountDownLatch(2);
-//        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
-//        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-//    }
+    public void testDeleteMediaThatExists() throws InterruptedException {
+        // upload media
+        mSite = mSiteStore.getSites().get(0);
+        MediaModel media = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
+        String imagePath = BuildConfig.TEST_LOCAL_IMAGE;
+        media.setFilePath(imagePath);
+        media.setFileName(MediaUtils.getFileName(imagePath));
+        media.setFileExtension(MediaUtils.getExtension(imagePath));
+        media.setMimeType(MediaUtils.MIME_TYPE_IMAGE + media.getFileExtension());
+        media.setSiteId(mSite.getSelfHostedSiteId());
+        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(mSite, media);
+        mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
+        mNextExpectedEvent = TEST_EVENTS.DELETED_MEDIA;
+        mCountDownLatch = new CountDownLatch(2);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
 
     private MediaModel getTestMedia(String title, String description, String caption, String alt) {
         MediaModel media = new MediaModel();
@@ -350,6 +349,9 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
     @SuppressWarnings("unused")
     @Subscribe
     public void onDiscoverySucceeded(AccountStore.OnDiscoveryResponse event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred: " + event.error);
+        }
         assertEquals(TEST_EVENTS.AUTHENTICATION_CHANGED, mExpectedEvent);
         mDiscovered = event;
         mCountDownLatch.countDown();
@@ -358,7 +360,9 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
     @SuppressWarnings("unused")
     @Subscribe
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) throws InterruptedException {
-        assertFalse(event.isError());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
         mLastUploadedId = event.media.getMediaId();
         if (event.completed) {
             assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
@@ -387,6 +391,8 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
                 assertEquals(TEST_EVENTS.MALFORMED_ERROR, mExpectedEvent);
             } else if (event.error.type == MediaStore.MediaErrorType.MEDIA_NOT_FOUND) {
                 assertEquals(TEST_EVENTS.NOT_FOUND_ERROR, mExpectedEvent);
+            } else {
+                throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
         } else {
             if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
@@ -409,7 +415,10 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
     @Subscribe
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
         AppLog.i(AppLog.T.TESTS, "site count " + mSiteStore.getSitesCount());
-        assertEquals(true, mSiteStore.hasSelfHostedSite());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertTrue(mSiteStore.hasSelfHostedSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mExpectedEvent);
         mCountDownLatch.countDown();
     }

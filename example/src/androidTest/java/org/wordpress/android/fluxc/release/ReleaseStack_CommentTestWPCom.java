@@ -67,7 +67,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Verify it was inserted in the DB
         List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(mSite, CommentStatus.ALL);
@@ -81,7 +81,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Edit comment instance
         mNewComment.setContent("You should send 1.21 gigawatts into the flux capacitor.");
@@ -90,7 +90,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newUpdateCommentAction(mNewComment));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check the last comment we get from the DB is the same
         List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(mSite, CommentStatus.ALL);
@@ -125,7 +125,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload1));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Edit comment instance
         mNewComment.setContent("Trying with: " + (new Random()).nextFloat() * 10 + " gigawatts");
@@ -135,7 +135,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mFirstPost, mNewComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
@@ -148,7 +148,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload1));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Edit comment instance
         mNewComment.setContent("Trying with: " + (new Random()).nextFloat() * 10 + " gigawatts");
@@ -158,7 +158,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mFirstPost, mNewComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
@@ -169,7 +169,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         RemoteCommentPayload payload3 = new RemoteCommentPayload(mSite, comment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newDeleteCommentAction(payload3));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Make sure the comment is still here but state changed
         comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
@@ -182,7 +182,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload1));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Edit comment instance
         mNewComment.setContent("Trying with: " + (new Random()).nextFloat() * 10 + " gigawatts");
@@ -192,7 +192,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mFirstPost, mNewComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
@@ -203,12 +203,12 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         RemoteCommentPayload payload3 = new RemoteCommentPayload(mSite, comment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newDeleteCommentAction(payload3));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Delete twice (ie. real delete)
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newDeleteCommentAction(payload3));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Make sure the comment was deleted (local test only, but should mean it was deleted correctly on the server)
         comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
@@ -221,7 +221,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload1));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Edit comment instance
         mNewComment.setContent("Trying with: " + (new Random()).nextFloat() * 10 + " gigawatts");
@@ -231,13 +231,13 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, mFirstPost, mNewComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Dispatch the same payload (with the same comment), we should get a 409 error "comment_duplicate"
         mNextEvent = TEST_EVENTS.COMMENT_CHANGED_DUPLICATE_COMMENT;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testNewCommentToAnUnknownPost() throws InterruptedException {
@@ -250,7 +250,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(mSite, fakePost, newComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testReplyToAnUnknownComment() throws InterruptedException {
@@ -261,7 +261,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(mSite, fakeComment, newComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testInstantiateAndCreateReplyComment() throws InterruptedException {
@@ -270,7 +270,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload1));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS , TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS , TimeUnit.MILLISECONDS));
 
         // Edit comment instance
         mNewComment.setContent("Trying with: " + (new Random()).nextFloat() * 10 + " gigawatts");
@@ -284,7 +284,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(mSite, firstComment, mNewComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload2));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
@@ -300,7 +300,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testFetchComment() throws InterruptedException {
@@ -312,7 +312,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentAction(payload));
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testEditValidComment() throws InterruptedException {
@@ -329,7 +329,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         RemoteCommentPayload pushCommentPayload = new RemoteCommentPayload(mSite, firstComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newPushCommentAction(pushCommentPayload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Make sure it was edited
         RemoteCommentPayload payload = new RemoteCommentPayload(mSite, firstComment);
@@ -337,9 +337,10 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentAction(payload));
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         CommentModel updatedComment = CommentSqlUtils.getCommentByLocalCommentId(firstComment.getId());
+        assertNotNull(updatedComment);
         assertTrue(updatedComment.getContent().contains(firstComment.getContent()));
     }
 
@@ -353,25 +354,25 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         RemoteCommentPayload pushCommentPayload = new RemoteCommentPayload(mSite, comment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newPushCommentAction(pushCommentPayload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onCommentChanged(CommentStore.OnCommentChanged event) {
         List<CommentModel> comments = mCommentStore.getCommentsForSite(mSite, CommentStatus.ALL);
         if (event.isError()) {
             AppLog.i(T.TESTS, "event error type: " + event.error.type);
-            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED) {
-                assertTrue("onCommentChanged Error", false);
-            }
             if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_COMMENT) {
                 assertEquals(event.error.type, CommentErrorType.UNKNOWN_COMMENT);
-            }
-            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_POST) {
+            } else if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_UNKNOWN_POST) {
                 assertEquals(event.error.type, CommentErrorType.UNKNOWN_POST);
-            }
-            if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_DUPLICATE_COMMENT) {
+            } else if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_DUPLICATE_COMMENT) {
                 assertEquals(event.error.type, CommentErrorType.DUPLICATE_COMMENT);
+            } else if (mNextEvent == TEST_EVENTS.COMMENT_CHANGED_ERROR) {
+                assertEquals(event.error.type, CommentErrorType.UNKNOWN_COMMENT);
+            } else {
+                throw new AssertionError("Error occurred for event: " + mNextEvent + " with type: " + event.error.type);
             }
             mCountDownLatch.countDown();
             return;
@@ -381,14 +382,17 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onCommentInstantiated(CommentStore.OnCommentInstantiated event) {
         mNewComment = event.comment;
+        assertNotNull(mNewComment);
         assertTrue(event.comment.getId() != 0);
         assertEquals(TEST_EVENTS.COMMENT_INSTANTIATED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
         List<PostModel> posts = mPostStore.getPostsForSite(mSite);
@@ -416,7 +420,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         mComments = mCommentStore.getCommentsForSite(mSite, CommentStatus.ALL);
     }
 
@@ -424,6 +428,6 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TEST_EVENTS.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new PostStore.FetchPostsPayload(mSite, false)));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }

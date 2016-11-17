@@ -64,7 +64,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(testMedia);
@@ -72,7 +72,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         mExpectedEvent = TEST_EVENTS.DELETED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testFetchAllMedia() throws InterruptedException {
@@ -83,7 +83,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         mExpectedEvent = TEST_EVENTS.FETCHED_ALL_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(fetchPayload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testFetchSpecificMedia() throws InterruptedException {
@@ -95,13 +95,14 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         for (String id : splitIds) {
             MediaModel media = new MediaModel();
             media.setMediaId(Long.valueOf(id));
+            mediaList.add(media);
         }
         SiteModel site = mSiteStore.getSites().get(0);
         MediaStore.MediaListPayload payload = new MediaStore.MediaListPayload(MediaAction.FETCH_MEDIA, site, mediaList);
         mExpectedEvent = TEST_EVENTS.FETCHED_KNOWN_IMAGES;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testPushExistingMedia() throws InterruptedException {
@@ -119,7 +120,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         mExpectedEvent = TEST_EVENTS.PUSHED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testPushNewMedia() throws InterruptedException {
@@ -133,7 +134,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         mExpectedEvent = TEST_EVENTS.PUSH_ERROR;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testUploadImage() throws InterruptedException {
@@ -145,7 +146,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testUploadVideo() throws InterruptedException {
@@ -157,19 +158,33 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
         if (event.progress >= 1.f) {
             assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
             mCountDownLatch.countDown();
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onMediaChanged(MediaStore.OnMediaChanged event) {
+        if (event.isError()) {
+            if (mExpectedEvent == TEST_EVENTS.PUSH_ERROR) {
+                assertEquals(event.cause, MediaAction.PUSH_MEDIA);
+            } else {
+                throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            }
+            mCountDownLatch.countDown();
+            return;
+        }
         if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
             assertEquals(TEST_EVENTS.FETCHED_ALL_MEDIA, mExpectedEvent);
         } else if (event.cause == MediaAction.FETCH_MEDIA) {
@@ -177,26 +192,29 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
                 assertEquals(TEST_EVENTS.FETCHED_KNOWN_IMAGES, mExpectedEvent);
             }
         } else if (event.cause == MediaAction.PUSH_MEDIA) {
-            if (event.isError()) {
-                assertEquals(TEST_EVENTS.PUSH_ERROR, mExpectedEvent);
-            } else {
-                assertEquals(TEST_EVENTS.PUSHED_MEDIA, mExpectedEvent);
-            }
+            assertEquals(TEST_EVENTS.PUSHED_MEDIA, mExpectedEvent);
         } else if (event.cause == MediaAction.DELETE_MEDIA) {
             assertEquals(TEST_EVENTS.DELETED_MEDIA, mExpectedEvent);
         }
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
-        assertEquals(false, event.isError());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
-        assertEquals(true, mSiteStore.hasWPComSite());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertTrue(mSiteStore.hasWPComSite());
         mCountDownLatch.countDown();
     }
 
@@ -206,11 +224,11 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
 
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private boolean eventHasKnownImages(MediaStore.OnMediaChanged event) {
