@@ -39,6 +39,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         TERM_INSTANTIATED,
         TERM_UPLOADED,
         ERROR_INVALID_TAXONOMY,
+        ERROR_DUPLICATE,
         ERROR_UNAUTHORIZED,
         ERROR_GENERIC
     }
@@ -183,6 +184,24 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(0, failedTerm.getRemoteTermId());
     }
 
+    public void testUploadNewCategoryDuplicate() throws InterruptedException {
+        // Instantiate new category
+        createNewCategory();
+        setupTermAttributes();
+
+        // Upload new term to site
+        uploadTerm(mTerm);
+
+        // Upload the same term again
+        mNextEvent = TestEvents.ERROR_DUPLICATE;
+        mCountDownLatch = new CountDownLatch(1);
+
+        RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
+        mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     // TODO: Add tests for existing custom taxonomies
 
     @Subscribe
@@ -192,6 +211,9 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
             AppLog.i(T.API, "OnTaxonomyChanged has error: " + event.error.type + " - " + event.error.message);
             if (mNextEvent.equals(TestEvents.ERROR_INVALID_TAXONOMY)) {
                 assertEquals(TaxonomyErrorType.INVALID_TAXONOMY, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TestEvents.ERROR_UNAUTHORIZED)) {
+                assertEquals(TaxonomyErrorType.UNAUTHORIZED, event.error.type);
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TestEvents.ERROR_GENERIC)) {
                 assertEquals(TaxonomyErrorType.GENERIC_ERROR, event.error.type);
@@ -234,6 +256,12 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
             AppLog.i(T.API, "OnTermUploaded has error: " + event.error.type + " - " + event.error.message);
             if (mNextEvent.equals(TestEvents.ERROR_INVALID_TAXONOMY)) {
                 assertEquals(TaxonomyErrorType.INVALID_TAXONOMY, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TestEvents.ERROR_DUPLICATE)) {
+                assertEquals(TaxonomyErrorType.DUPLICATE, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TestEvents.ERROR_UNAUTHORIZED)) {
+                assertEquals(TaxonomyErrorType.UNAUTHORIZED, event.error.type);
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TestEvents.ERROR_GENERIC)) {
                 assertEquals(TaxonomyErrorType.GENERIC_ERROR, event.error.type);

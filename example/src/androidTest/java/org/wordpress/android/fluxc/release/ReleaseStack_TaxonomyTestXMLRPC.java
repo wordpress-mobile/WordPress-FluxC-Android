@@ -40,6 +40,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         TERM_INSTANTIATED,
         TERM_UPLOADED,
         ERROR_INVALID_TAXONOMY,
+        ERROR_DUPLICATE,
         ERROR_UNAUTHORIZED,
         ERROR_GENERIC
     }
@@ -196,6 +197,28 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals("Invalid taxonomy.", mLastTaxonomyError.message);
     }
 
+    public void testUploadNewCategoryDuplicate() throws InterruptedException {
+        // Instantiate new category
+        createNewCategory();
+        setupTermAttributes();
+
+        // Upload new term to site
+        uploadTerm(mTerm);
+
+        // Upload the same term again
+        mNextEvent = TestEvents.ERROR_GENERIC;
+        mCountDownLatch = new CountDownLatch(1);
+
+        RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
+        mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // TODO: This will fail for non-English sites - we should be checking for a DUPLICATE error instead
+        // (once we make the fixes needed for TaxonomyXMLRPCClient to correctly identify taxonomy errors)
+        assertEquals("A term with the name provided already exists with this parent.", mLastTaxonomyError.message);
+    }
+
     @Subscribe
     public void onTaxonomyChanged(OnTaxonomyChanged event) {
         AppLog.i(T.API, "Received OnTaxonomyChanged, causeOfChange: " + event.causeOfChange);
@@ -204,6 +227,9 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
             mLastTaxonomyError = event.error;
             if (mNextEvent.equals(TestEvents.ERROR_INVALID_TAXONOMY)) {
                 assertEquals(TaxonomyErrorType.INVALID_TAXONOMY, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TestEvents.ERROR_UNAUTHORIZED)) {
+                assertEquals(TaxonomyErrorType.UNAUTHORIZED, event.error.type);
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TestEvents.ERROR_GENERIC)) {
                 assertEquals(TaxonomyErrorType.GENERIC_ERROR, event.error.type);
@@ -248,6 +274,12 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
             // TODO this case can't happen at the moment...but maybe should leave it in for future anyway
             if (mNextEvent.equals(TestEvents.ERROR_INVALID_TAXONOMY)) {
                 assertEquals(TaxonomyErrorType.INVALID_TAXONOMY, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TestEvents.ERROR_DUPLICATE)) {
+                assertEquals(TaxonomyErrorType.DUPLICATE, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TestEvents.ERROR_UNAUTHORIZED)) {
+                assertEquals(TaxonomyErrorType.UNAUTHORIZED, event.error.type);
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TestEvents.ERROR_GENERIC)) {
                 assertEquals(TaxonomyErrorType.GENERIC_ERROR, event.error.type);
