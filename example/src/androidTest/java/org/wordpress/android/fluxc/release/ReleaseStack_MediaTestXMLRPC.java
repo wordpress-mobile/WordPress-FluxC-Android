@@ -92,7 +92,8 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
     }
 
     /**
-     * Push action that references media that exists remotely should update remote properties.
+     * Push action that references media that exists remotely should update remote properties and
+     * not trigger an upload.
      */
     public void testPushMediaChanges() throws InterruptedException {
         // fetch site media
