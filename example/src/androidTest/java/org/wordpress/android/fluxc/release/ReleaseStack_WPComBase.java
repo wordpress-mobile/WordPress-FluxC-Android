@@ -8,7 +8,9 @@ import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -22,8 +24,8 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     @Inject AccountStore mAccountStore;
     @Inject SiteStore mSiteStore;
 
-    protected CountDownLatch mCountDownLatch;
-    protected SiteModel mSite;
+    CountDownLatch mCountDownLatch;
+    static SiteModel sSite;
 
     private enum TEST_EVENTS {
         NONE,
@@ -32,8 +34,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     }
     private TEST_EVENTS mNextEvent;
 
-
-    protected void init()  throws Exception {
+    protected void init() throws Exception {
         // Register
         mNextEvent = TEST_EVENTS.NONE;
 
@@ -43,12 +44,11 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
             authenticate();
         }
 
-        if (mSite == null) {
+        if (sSite == null) {
             fetchSites();
-            mSite = mSiteStore.getSites().get(0);
+            sSite = mSiteStore.getSites().get(0);
         }
     }
-
 
     private void authenticate() throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
@@ -74,7 +74,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
+    public void onAuthenticationChanged(OnAuthenticationChanged event) {
         assertFalse(event.isError());
         assertEquals(TEST_EVENTS.AUTHENTICATED, mNextEvent);
         mCountDownLatch.countDown();
@@ -82,7 +82,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onSiteChanged(SiteStore.OnSiteChanged event) {
+    public void onSiteChanged(OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         if (event.isError()) {
             throw new AssertionError("event error type: " + event.error.type);
