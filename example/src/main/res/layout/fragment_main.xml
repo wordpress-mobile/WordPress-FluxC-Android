@@ -26,10 +26,10 @@
             android:layout_alignParentEnd="true" />
 
         <Button
-            android:id="@+id/new_account"
+            android:id="@+id/signed_out_actions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Create New Account"
+            android:text="Signed Out Actions"
             android:layout_below="@+id/sign_in_fetch_sites_button"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
