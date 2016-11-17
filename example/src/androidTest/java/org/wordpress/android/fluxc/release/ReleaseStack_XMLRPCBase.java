@@ -1,17 +1,9 @@
 package org.wordpress.android.fluxc.release;
 
-import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.model.SiteModel;
 
-import java.util.concurrent.CountDownLatch;
-
-import javax.inject.Inject;
-
 public class ReleaseStack_XMLRPCBase extends ReleaseStack_Base {
-    @Inject Dispatcher mDispatcher;
-
-    CountDownLatch mCountDownLatch;
     static SiteModel sSite;
 
     {
@@ -21,9 +13,5 @@ public class ReleaseStack_XMLRPCBase extends ReleaseStack_Base {
         sSite.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE);
         sSite.setPassword(BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE);
         sSite.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
-    }
-
-    protected void init() throws Exception {
-        mDispatcher.register(this);
     }
 }

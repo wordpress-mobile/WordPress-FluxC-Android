@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.release;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
-import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.store.AccountStore;
@@ -20,10 +19,7 @@ import javax.inject.Inject;
  * Tests on real servers using the full release stack (no mock)
  */
 public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
-    @Inject Dispatcher mDispatcher;
     @Inject AccountStore mAccountStore;
-
-    CountDownLatch mCountDownLatch;
 
     private enum ACCOUNT_AVAILABILITY_TEST_ACTIONS {
         NONE,
@@ -43,7 +39,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         mReleaseStackAppComponent.inject(this);
 
         // Register
-        mDispatcher.register(this);
+        init();
         mNextEvent = ACCOUNT_AVAILABILITY_TEST_ACTIONS.NONE;
     }
 

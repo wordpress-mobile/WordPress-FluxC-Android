@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
-import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
@@ -25,11 +24,8 @@ import javax.inject.Inject;
  * Tests with real credentials on real servers using the full release stack (no mock)
  */
 public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
-    @Inject Dispatcher mDispatcher;
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
-
-    CountDownLatch mCountDownLatch;
 
     enum TEST_EVENTS {
         NONE,
@@ -46,7 +42,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
-        mDispatcher.register(this);
+        init();
         // Reset expected test event
         mExpectedEvent = TEST_EVENTS.NONE;
         mExpectedRowsAffected = 0;

@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
-import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
@@ -20,11 +19,9 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 public class ReleaseStack_WPComBase extends ReleaseStack_Base {
-    @Inject Dispatcher mDispatcher;
     @Inject AccountStore mAccountStore;
     @Inject SiteStore mSiteStore;
 
-    CountDownLatch mCountDownLatch;
     static SiteModel sSite;
 
     private enum TEST_EVENTS {
@@ -34,11 +31,10 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     }
     private TEST_EVENTS mNextEvent;
 
+    @Override
     protected void init() throws Exception {
-        // Register
+        super.init();
         mNextEvent = TEST_EVENTS.NONE;
-
-        mDispatcher.register(this);
 
         if (mAccountStore.getAccessToken().isEmpty()) {
             authenticate();

@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
-import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
@@ -31,13 +30,10 @@ import javax.inject.Inject;
  * Skips self hosted site discovery, directly using the ENDPOINT URLs from tests.properties.
  */
 public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
-    @Inject Dispatcher mDispatcher;
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
     @Inject HTTPAuthManager mHTTPAuthManager;
     @Inject MemorizingTrustManager mMemorizingTrustManager;
-
-    CountDownLatch mCountDownLatch;
 
     private enum TEST_EVENTS {
         NONE,
@@ -54,7 +50,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
-        mDispatcher.register(this);
+        init();
         // Reset expected test event
         mNextEvent = TEST_EVENTS.NONE;
     }
