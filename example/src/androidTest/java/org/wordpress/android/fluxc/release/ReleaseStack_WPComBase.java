@@ -72,6 +72,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
         assertFalse(event.isError());
@@ -79,6 +80,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());

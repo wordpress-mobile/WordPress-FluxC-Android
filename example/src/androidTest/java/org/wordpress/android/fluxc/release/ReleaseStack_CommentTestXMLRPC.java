@@ -302,6 +302,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onCommentInstantiated(CommentStore.OnCommentInstantiated event) {
         mNewComment = event.comment;
@@ -311,6 +312,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
         mPosts = mPostStore.getPostsForSite(mSite);

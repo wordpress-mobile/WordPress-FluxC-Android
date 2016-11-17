@@ -795,6 +795,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertTrue(failedUploadPost.isLocalDraft());
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
         AppLog.i(T.API, "Received OnPostChanged, cause: " + event.causeOfChange);
@@ -846,6 +847,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void OnPostInstantiated(OnPostInstantiated event) {
         AppLog.i(T.API, "Received OnPostInstantiated");
@@ -863,6 +865,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onPostUploaded(OnPostUploaded event) {
         AppLog.i(T.API, "Received OnPostUploaded");

@@ -218,6 +218,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         assertEquals(10, postFormats.size());
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onSiteChanged(OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
@@ -230,6 +231,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void OnSiteRemoved(SiteStore.OnSiteRemoved event) {
         AppLog.e(T.TESTS, "site count " + mSiteStore.getSitesCount());
@@ -242,6 +244,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         if (event.isError()) {
@@ -257,6 +260,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onPostFormatsChanged(OnPostFormatsChanged event) {
         if (event.isError()) {

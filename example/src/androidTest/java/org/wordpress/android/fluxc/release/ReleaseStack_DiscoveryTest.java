@@ -303,6 +303,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         return "hppt://" + UrlUtils.removeScheme(url);
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onSiteChanged(OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
@@ -315,6 +316,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void OnSiteRemoved(SiteStore.OnSiteRemoved event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
@@ -327,11 +329,13 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         throw new AssertionError("OnAuthenticationChanged called - that's not supposed to happen for discovery");
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onDiscoveryResponse(AccountStore.OnDiscoveryResponse event) {
         if (event.isError()) {

@@ -573,12 +573,14 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
         assertFalse(event.isError());
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
@@ -591,6 +593,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
         AppLog.i(T.API, "Received OnPostChanged, cause: " + event.causeOfChange);
@@ -638,6 +641,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void OnPostInstantiated(OnPostInstantiated event) {
         AppLog.i(T.API, "Received OnPostInstantiated");
@@ -655,6 +659,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onPostUploaded(OnPostUploaded event) {
         AppLog.i(T.API, "Received OnPostUploaded");

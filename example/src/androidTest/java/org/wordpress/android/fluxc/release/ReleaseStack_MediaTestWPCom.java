@@ -161,6 +161,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
         if (event.isError()) {
@@ -172,6 +173,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onMediaChanged(MediaStore.OnMediaChanged event) {
         if (event.isError()) {
@@ -197,6 +199,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
         if (event.isError()) {
@@ -205,6 +208,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
         if (event.isError()) {
