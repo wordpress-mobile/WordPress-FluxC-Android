@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
-import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
@@ -29,8 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
-    @Inject Dispatcher mDispatcher;
+public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Inject PostStore mPostStore;
 
     private static final String POST_DEFAULT_TITLE = "PostTestXMLRPC base post";
@@ -38,9 +36,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     private static final double EXAMPLE_LATITUDE = 44.8378;
     private static final double EXAMPLE_LONGITUDE = -0.5792;
 
-    private CountDownLatch mCountDownLatch;
     private PostModel mPost;
-    private static SiteModel sSite;
 
     private boolean mCanLoadMorePosts;
 
@@ -61,21 +57,14 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     }
     private TEST_EVENTS mNextEvent;
 
-    {
-        sSite = new SiteModel();
-        sSite.setId(1);
-        sSite.setSelfHostedSiteId(0);
-        sSite.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE);
-        sSite.setPassword(BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE);
-        sSite.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
-    }
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
-        // Register
-        mDispatcher.register(this);
+
+        // Register and initialize sSite
+        init();
+
         // Reset expected test event
         mNextEvent = TEST_EVENTS.NONE;
 
