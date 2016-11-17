@@ -1,16 +1,11 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
-import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
-import org.wordpress.android.fluxc.example.BuildConfig;
-import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
-import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
-import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
@@ -18,7 +13,6 @@ import org.wordpress.android.fluxc.store.PostStore.OnPostInstantiated;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.PostErrorType;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
-import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.utils.WellSqlUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -32,26 +26,19 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
-    @Inject Dispatcher mDispatcher;
-    @Inject AccountStore mAccountStore;
+public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     @Inject PostStore mPostStore;
-    @Inject SiteStore mSiteStore;
 
     private static final String POST_DEFAULT_TITLE = "PostTestWPCom base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
     private static final double EXAMPLE_LATITUDE = 44.8378;
     private static final double EXAMPLE_LONGITUDE = -0.5792;
 
-    private CountDownLatch mCountDownLatch;
     private PostModel mPost;
-    private static SiteModel sSite;
-
     private boolean mCanLoadMorePosts;
 
     private enum TEST_EVENTS {
         NONE,
-        SITE_CHANGED,
         POST_INSTANTIATED,
         POST_UPLOADED,
         POST_UPDATED,
@@ -68,22 +55,14 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
     protected void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
-        // Register
-        mDispatcher.register(this);
+
+        // Authenticate, fetch sites and initialize sSite
+        init();
         // Reset expected test event
         mNextEvent = TEST_EVENTS.NONE;
 
         mPost = null;
         mCanLoadMorePosts = false;
-
-        if (mAccountStore.getAccessToken().isEmpty()) {
-            authenticate();
-        }
-
-        if (sSite == null) {
-            fetchSites();
-            sSite = mSiteStore.getSites().get(0);
-        }
     }
 
     public void testUploadNewPost() throws InterruptedException {
@@ -549,48 +528,6 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_Base {
         mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, site)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    private void authenticate() throws InterruptedException {
-        // Authenticate a test user (actual credentials declared in gradle.properties)
-        AccountStore.AuthenticatePayload payload =
-                new AccountStore.AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
-                        BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-        mCountDownLatch = new CountDownLatch(1);
-
-        // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
-        // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    private void fetchSites() throws InterruptedException {
-        // Fetch sites from REST API, and wait for onSiteChanged event
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TEST_EVENTS.SITE_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe
-    public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
-        assertFalse(event.isError());
-        mCountDownLatch.countDown();
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe
-    public void onSiteChanged(SiteStore.OnSiteChanged event) {
-        AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
-        if (event.isError()) {
-            throw new AssertionError("event error type: " + event.error.type);
-        }
-        assertTrue(mSiteStore.hasSite());
-        assertTrue(mSiteStore.hasWPComSite());
-        assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
-        mCountDownLatch.countDown();
     }
 
     @SuppressWarnings("unused")
