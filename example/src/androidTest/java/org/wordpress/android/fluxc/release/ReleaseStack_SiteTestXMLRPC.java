@@ -249,7 +249,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         if (event.isError()) {
             AppLog.i(T.TESTS, "error " + event.error.type + " - " + event.error.message);
-            if (event.error.type == AuthenticationErrorType.GENERIC_ERROR) {
+            if (event.error.type == AuthenticationErrorType.HTTP_AUTH_ERROR) {
                 assertEquals(TEST_EVENTS.HTTP_AUTH_ERROR, mNextEvent);
             } else if (event.error.type == AuthenticationErrorType.INVALID_SSL_CERTIFICATE) {
                 assertEquals(TEST_EVENTS.INVALID_SSL_CERTIFICATE, mNextEvent);
