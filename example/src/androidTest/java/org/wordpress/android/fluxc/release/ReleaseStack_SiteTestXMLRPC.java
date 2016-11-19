@@ -226,7 +226,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     @SuppressWarnings("unused")
     @Subscribe
     public void onSiteChanged(OnSiteChanged event) {
-        AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
+        AppLog.i(T.TESTS, "Received OnSiteChanged, site count: " + mSiteStore.getSitesCount());
         if (event.isError()) {
             AppLog.i(T.TESTS, "OnSiteChanged has error: " + event.error.type);
             if (mNextEvent.equals(TEST_EVENTS.HTTP_AUTH_ERROR)) {
@@ -250,7 +250,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     @SuppressWarnings("unused")
     @Subscribe
     public void OnSiteRemoved(SiteStore.OnSiteRemoved event) {
-        AppLog.e(T.TESTS, "site count " + mSiteStore.getSitesCount());
+        AppLog.i(T.TESTS, "Received OnSiteRemoved, site count: " + mSiteStore.getSitesCount());
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -264,7 +264,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         if (event.isError()) {
-            AppLog.i(T.TESTS, "error " + event.error.type + " - " + event.error.message);
+            AppLog.i(T.TESTS, "OnAuthenticationChanged has error: " + event.error.type + " - " + event.error.message);
             if (event.error.type == AuthenticationErrorType.HTTP_AUTH_ERROR) {
                 assertEquals(TEST_EVENTS.HTTP_AUTH_ERROR, mNextEvent);
             } else if (event.error.type == AuthenticationErrorType.INVALID_SSL_CERTIFICATE) {
