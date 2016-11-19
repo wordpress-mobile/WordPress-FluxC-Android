@@ -108,6 +108,8 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     }
 
     public void testXMLRPCSelfSignedSSLFetchSites() throws InterruptedException {
+        mMemorizingTrustManager.clearLocalTrustStore();
+
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SELFSIGNED_SSL;
