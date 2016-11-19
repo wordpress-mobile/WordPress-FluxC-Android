@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
+import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -112,9 +113,11 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SELFSIGNED_SSL;
         payload.url = BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL_ENDPOINT;
 
-        //  We're expecting a SSL Warning event
+        // Expecting to receive an OnAuthenticationChanged event with error INVALID_SSL_CERTIFICATE, as well as an
+        // OnSiteChanged event with error GENERIC_ERROR
         mNextEvent = TEST_EVENTS.INVALID_SSL_CERTIFICATE;
-        mCountDownLatch = new CountDownLatch(1);
+        mCountDownLatch = new CountDownLatch(2);
+
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onAuthenticationChanged error event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -136,9 +139,11 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH;
         payload.url = BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH_ENDPOINT;
 
-        // We're expecting a HTTP_AUTH_ERROR
+        // Expecting to receive an OnAuthenticationChanged event with error HTTP_AUTH_ERROR, as well as an
+        // OnSiteChanged event with error GENERIC_ERROR
         mNextEvent = TEST_EVENTS.HTTP_AUTH_ERROR;
-        mCountDownLatch = new CountDownLatch(1);
+        mCountDownLatch = new CountDownLatch(2);
+
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onAuthenticationChanged error event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -223,7 +228,18 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     public void onSiteChanged(OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            AppLog.i(T.TESTS, "OnSiteChanged has error: " + event.error.type);
+            if (mNextEvent.equals(TEST_EVENTS.HTTP_AUTH_ERROR)) {
+                // SiteStore reports GENERIC_ERROR when it runs into authentication errors
+                assertEquals(SiteErrorType.GENERIC_ERROR, event.error.type);
+            } else if (mNextEvent.equals(TEST_EVENTS.INVALID_SSL_CERTIFICATE)) {
+                // SiteStore reports GENERIC_ERROR when it runs into authentication errors
+                assertEquals(SiteErrorType.GENERIC_ERROR, event.error.type);
+            } else {
+                throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            }
+            mCountDownLatch.countDown();
+            return;
         }
         assertTrue(mSiteStore.hasSite());
         assertTrue(mSiteStore.hasSelfHostedSite());
