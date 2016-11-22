@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.action.CommentAction;
 import org.wordpress.android.fluxc.generated.CommentActionBuilder;
 import org.wordpress.android.fluxc.model.CommentModel;
 import org.wordpress.android.fluxc.model.CommentStatus;
@@ -69,6 +70,16 @@ public class CommentsFragment extends Fragment {
                 replyToFirstComment();
             }
         });
+        view.findViewById(R.id.like_comment).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (getFirstComment() == null) {
+                    ToastUtils.showToast(getActivity(), "Fetch comments first");
+                    return;
+                }
+                likeFirstComment();
+            }
+        });
         return view;
     }
 
@@ -118,17 +129,26 @@ public class CommentsFragment extends Fragment {
         }
     }
 
+    private void likeFirstComment() {
+        mDispatcher.dispatch(CommentActionBuilder.newLikeCommentAction(
+                new CommentStore.RemoteLikeCommentPayload(getFirstSite(), getFirstComment(), true)));
+    }
+
     @Subscribe
     public void onCommentChanged(OnCommentChanged event) {
-        prependToLog("OnCommentChanged: rowsAffected=" + event.rowsAffected);
         if (event.isError()) {
             String error = "Error: " + event.error.type + " - " + event.error.message;
             prependToLog(error);
             AppLog.i(T.TESTS, error);
         } else {
-            List<CommentModel> comments = mCommentStore.getCommentsForSite(getFirstSite(), CommentStatus.ALL);
-            for (CommentModel comment : comments) {
-                prependToLog(comment.getAuthorName() + " @" + comment.getDatePublished());
+            if (event.causeOfChange == CommentAction.LIKE_COMMENT) {
+                prependToLog("Comment liked!");
+            } else {
+                prependToLog("OnCommentChanged: rowsAffected=" + event.rowsAffected);
+                List<CommentModel> comments = mCommentStore.getCommentsForSite(getFirstSite(), CommentStatus.ALL);
+                for (CommentModel comment : comments) {
+                    prependToLog(comment.getAuthorName() + " @" + comment.getDatePublished());
+                }
             }
         }
     }
