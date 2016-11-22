@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
 import org.wordpress.android.fluxc.store.CommentStore.InstantiateCommentPayload;
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCommentPayload;
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCreateCommentPayload;
+import org.wordpress.android.fluxc.store.CommentStore.RemoteLikeCommentPayload;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.util.AppLog;
@@ -140,6 +141,34 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
         assertTrue(comment.getContent().contains(mNewComment.getContent()));
+    }
+
+    public void testLikeAndUnlikeComment() throws InterruptedException {
+        // Fetch existing comments and get first comment
+        fetchFirstComments();
+        CommentModel firstComment = mComments.get(0);
+
+        // Like comment
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newLikeCommentAction(new RemoteLikeCommentPayload(mSite,
+                        firstComment, true)));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Check comment has been modified in the DB
+        CommentModel comment = mCommentStore.getCommentByLocalId(firstComment.getId());
+         assertTrue(comment.getILike());
+
+        // Unlike comment
+        mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newLikeCommentAction(new RemoteLikeCommentPayload(mSite,
+                firstComment, false)));
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Check comment has been modified in the DB
+        comment = mCommentStore.getCommentByLocalId(firstComment.getId());
+        assertFalse(comment.getILike());
     }
 
     public void testDeleteCommentOnce() throws InterruptedException {
