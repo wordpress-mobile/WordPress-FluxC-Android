@@ -59,7 +59,6 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
     private CountDownLatch mCountDownLatch;
     private AccountStore.OnDiscoveryResponse mDiscovered;
     private List<Long> mExpectedIds;
-    private long mLastUploadedId = -1L;
 
     @Override
     protected void setUp() throws Exception {
@@ -359,17 +358,15 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
     @Subscribe
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) throws InterruptedException {
         assertFalse(event.isError());
-        mLastUploadedId = event.media.getMediaId();
         if (event.completed) {
             assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
             if (mNextExpectedEvent != null) {
                 if (mNextExpectedEvent == TEST_EVENTS.DELETED_MEDIA) {
-                    event.media.setMediaId(mLastUploadedId);
                     deleteMedia(mSite, event.media, mNextExpectedEvent, -1);
                     mNextExpectedEvent = null;
                 }
             } else {
-                assertTrue(mLastUploadedId > 0);
+                assertTrue(event.media.getMediaId() > 0);
             }
         }
         mCountDownLatch.countDown();
