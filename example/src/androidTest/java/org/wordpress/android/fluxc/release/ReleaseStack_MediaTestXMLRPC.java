@@ -87,7 +87,8 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
      */
     public void testPushMalformedMedia() throws InterruptedException {
         mSite = mSiteStore.getSites().get(0);
-        final MediaModel testMedia = getTestMedia(TEST_TITLE, null, null, null);
+        final MediaModel testMedia = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
+        testMedia.setMediaId(-1);
         pushMedia(mSite, testMedia, TEST_EVENTS.MALFORMED_ERROR);
     }
 
