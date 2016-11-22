@@ -359,10 +359,6 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
     @SuppressWarnings("unused")
     @Subscribe
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) throws InterruptedException {
-        assertFalse(event.isError());
-        if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
-        }
         if (event.completed) {
             assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
             if (mNextExpectedEvent != null) {
@@ -373,8 +369,10 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
             } else {
                 assertTrue(event.media.getMediaId() > 0);
             }
+            mCountDownLatch.countDown();
+        } else if (event.isError()) {
+            mCountDownLatch.countDown();
         }
-        mCountDownLatch.countDown();
     }
 
     @SuppressWarnings("unused")
