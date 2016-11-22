@@ -71,7 +71,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
 
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testNonWordPressFetchSites() throws InterruptedException {
@@ -86,7 +86,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
 
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testWPComUrlFetchSites() throws InterruptedException {
@@ -101,7 +101,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
 
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testXMLRPCSimpleFetchSites() throws InterruptedException {
@@ -223,7 +223,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
 
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         fetchSites();
     }
@@ -241,7 +241,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
 
         // Wait for a network response / onAuthenticationChanged error event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Add an exception for the last certificate
         mMemorizingTrustManager.storeLastFailure();
@@ -253,7 +253,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
 
         // Wait for a network response / onAuthenticationChanged error event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         fetchSites();
 
@@ -273,7 +273,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
 
         // Wait for a network response / onAuthenticationChanged error event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Set known HTTP Auth credentials
         mHTTPAuthManager.addHTTPAuthCredentials(auth_username, auth_password, mPayload.url, null);
@@ -285,7 +285,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
 
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         fetchSites();
     }
@@ -296,36 +296,46 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(mPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private static String addBadProtocolToUrl(String url) {
         return "hppt://" + UrlUtils.removeScheme(url);
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onSiteChanged(OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
-        assertEquals(true, mSiteStore.hasSite());
-        assertEquals(true, mSiteStore.hasSelfHostedSite());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type " + event.error.type);
+        }
+        assertTrue(mSiteStore.hasSite());
+        assertTrue(mSiteStore.hasSelfHostedSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void OnSiteRemoved(SiteStore.OnSiteRemoved event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
-        assertEquals(false, mSiteStore.hasSite());
-        assertEquals(false, mSiteStore.hasSelfHostedSite());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type " + event.error.type);
+        }
+        assertFalse(mSiteStore.hasSite());
+        assertFalse(mSiteStore.hasSelfHostedSite());
         assertEquals(TEST_EVENTS.SITE_REMOVED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         throw new AssertionError("OnAuthenticationChanged called - that's not supposed to happen for discovery");
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onDiscoveryResponse(AccountStore.OnDiscoveryResponse event) {
         if (event.isError()) {
