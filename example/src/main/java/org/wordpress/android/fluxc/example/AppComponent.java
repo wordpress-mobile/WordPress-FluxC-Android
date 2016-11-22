@@ -27,4 +27,5 @@ public interface AppComponent {
     void inject(PostsFragment object);
     void inject(AccountFragment object);
     void inject(SignedOutActionsFragment object);
+    void inject(TaxonomiesFragment object);
 }
