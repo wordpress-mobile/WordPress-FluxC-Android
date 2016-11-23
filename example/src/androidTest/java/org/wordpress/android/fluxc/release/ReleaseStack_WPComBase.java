@@ -33,7 +33,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     private TEST_EVENTS mNextEvent;
 
 
-    protected void init()  throws Exception {
+    protected void init() throws Exception {
         // Register
         mNextEvent = TEST_EVENTS.NONE;
 

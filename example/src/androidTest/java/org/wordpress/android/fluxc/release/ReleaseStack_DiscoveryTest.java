@@ -39,10 +39,14 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     enum TEST_EVENTS {
         NONE,
         DISCOVERY_SUCCEEDED,
+        INVALID_URL_ERROR,
         NO_SITE_ERROR,
         WORDPRESS_COM_SITE,
         ERRONEOUS_SSL_CERTIFICATE,
         HTTP_AUTH_REQUIRED,
+        XMLRPC_BLOCKED,
+        XMLRPC_FORBIDDEN,
+        MISSING_XMLRPC_METHOD,
         SITE_CHANGED,
         SITE_REMOVED
     }
@@ -57,6 +61,21 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.register(this);
         // Reset expected test event
         mNextEvent = TEST_EVENTS.NONE;
+    }
+
+    public void testNoUrlFetchSites() throws InterruptedException {
+        mPayload = new RefreshSitesXMLRPCPayload();
+        mPayload.url = "";
+        mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
+        mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
+
+        mNextEvent = TEST_EVENTS.INVALID_URL_ERROR;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testInvalidUrlFetchSites() throws InterruptedException {
@@ -116,7 +135,31 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL);
     }
 
+    public void testXMLRPCHTTPToHTTPRedirectFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTP_REDIRECT,
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTP_TO_HTTP_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTP_TO_HTTP_REDIRECT);
+    }
+
     public void testXMLRPCHTTPToHTTPSRedirectFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTPS_REDIRECT,
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTP_TO_HTTPS_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTP_TO_HTTPS_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPSToHTTPSRedirectFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTPS_REDIRECT,
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTPS_TO_HTTPS_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTPS_TO_HTTPS_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPSToHTTPRedirectFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTP_REDIRECT,
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTPS_TO_HTTP_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTPS_TO_HTTP_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPToHTTPSSameDomainRedirectFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT,
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL_REDIRECT);
@@ -136,7 +179,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 BuildConfig.TEST_WPORG_HTTPAUTH_PASSWORD_SH_HTTPAUTH);
     }
 
-    public void testXMLRPCHTTPToHTTPSRedirectWithEndpointFetchSites() throws InterruptedException {
+    public void testXMLRPCHTTPToHTTPSRedirectWithEndpointSameDomainFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT_ENDPOINT,
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL_REDIRECT);
@@ -156,7 +199,35 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL);
     }
 
+    public void testXMLRPCHTTPToHTTPNoProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(
+                UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTP_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTP_TO_HTTP_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTP_TO_HTTP_REDIRECT);
+    }
+
     public void testXMLRPCHTTPToHTTPSNoProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(
+                UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTPS_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTP_TO_HTTPS_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTP_TO_HTTPS_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPSToHTTPSNoProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(
+                UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTPS_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTPS_TO_HTTPS_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTPS_TO_HTTPS_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPSToHTTPNoProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(
+                UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTP_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTPS_TO_HTTP_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTPS_TO_HTTP_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPToHTTPSSameDomainNoProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT),
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL_REDIRECT);
@@ -190,7 +261,35 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL);
     }
 
-    public void testXMLRPCHTTPToHTTPSBadProtocolRedirectFetchSites() throws InterruptedException {
+    public void testXMLRPCHTTPToHTTPBadProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(
+                addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTP_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTP_TO_HTTP_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTP_TO_HTTP_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPToHTTPSBadProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(
+                addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTPS_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTP_TO_HTTPS_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTP_TO_HTTPS_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPSToHTTPSBadProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(
+                addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTPS_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTPS_TO_HTTPS_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTPS_TO_HTTPS_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPSToHTTPBadProtocolFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(
+                addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTP_REDIRECT),
+                BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTPS_TO_HTTP_REDIRECT,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_HTTPS_TO_HTTP_REDIRECT);
+    }
+
+    public void testXMLRPCHTTPToHTTPSSameDomainBadProtocolRedirectFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT),
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL_REDIRECT);
@@ -208,6 +307,63 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 BuildConfig.TEST_WPORG_PASSWORD_SH_HTTPAUTH,
                 BuildConfig.TEST_WPORG_HTTPAUTH_USERNAME_SH_HTTPAUTH,
                 BuildConfig.TEST_WPORG_HTTPAUTH_PASSWORD_SH_HTTPAUTH);
+    }
+
+    public void testXMLRPCRsdFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_RSD,
+                BuildConfig.TEST_WPORG_USERNAME_SH_RSD,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_RSD);
+    }
+
+    public void testXMLRPCNoRsdFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_NO_RSD,
+                BuildConfig.TEST_WPORG_USERNAME_SH_NO_RSD,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_NO_RSD);
+    }
+
+    public void testXMLRPCBlockedDiscovery() throws InterruptedException {
+        mPayload = new RefreshSitesXMLRPCPayload();
+        mPayload.url = BuildConfig.TEST_WPORG_URL_SH_BLOCKED;
+        mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_BLOCKED;
+        mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_BLOCKED;
+
+        mNextEvent = TEST_EVENTS.XMLRPC_BLOCKED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testXMLRPCForbiddenDiscovery() throws InterruptedException {
+        mPayload = new RefreshSitesXMLRPCPayload();
+        mPayload.url = BuildConfig.TEST_WPORG_URL_SH_FORBIDDEN;
+        mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_FORBIDDEN;
+        mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_FORBIDDEN;
+
+        mNextEvent = TEST_EVENTS.XMLRPC_FORBIDDEN;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testXMLRPCMissingMethodDiscovery() throws InterruptedException {
+        mPayload = new RefreshSitesXMLRPCPayload();
+        mPayload.url = BuildConfig.TEST_WPORG_URL_SH_MISSING_METHODS;
+        mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_MISSING_METHODS;
+        mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_MISSING_METHODS;
+
+        mNextEvent = TEST_EVENTS.MISSING_XMLRPC_METHOD;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+
+        // Wait for a network response / onChanged event
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void checkSelfHostedSimpleFetchForSite(String url, String username, String password)
@@ -230,6 +386,8 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     private void checkSelfHostedSelfSignedSSLFetchForSite(String url, String username, String password)
             throws InterruptedException {
+        mMemorizingTrustManager.clearLocalTrustStore();
+
         mPayload = new RefreshSitesXMLRPCPayload();
         mPayload.url = url;
         mPayload.username = username;
@@ -341,7 +499,9 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         if (event.isError()) {
             // ERROR :(
             AppLog.i(T.API, "Discovery error: " + event.error);
-            if (event.error == DiscoveryError.NO_SITE_ERROR) {
+            if (event.error == DiscoveryError.INVALID_URL) {
+                assertEquals(TEST_EVENTS.INVALID_URL_ERROR, mNextEvent);
+            } else if (event.error == DiscoveryError.NO_SITE_ERROR) {
                 assertEquals(TEST_EVENTS.NO_SITE_ERROR, mNextEvent);
             } else if (event.error == DiscoveryError.WORDPRESS_COM_SITE) {
                 assertEquals(TEST_EVENTS.WORDPRESS_COM_SITE, mNextEvent);
@@ -349,6 +509,12 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 assertEquals(TEST_EVENTS.HTTP_AUTH_REQUIRED, mNextEvent);
             } else if (event.error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
                 assertEquals(TEST_EVENTS.ERRONEOUS_SSL_CERTIFICATE, mNextEvent);
+            } else if (event.error == DiscoveryError.XMLRPC_BLOCKED) {
+                assertEquals(TEST_EVENTS.XMLRPC_BLOCKED, mNextEvent);
+            } else if (event.error == DiscoveryError.XMLRPC_FORBIDDEN) {
+                assertEquals(TEST_EVENTS.XMLRPC_FORBIDDEN, mNextEvent);
+            } else if (event.error == DiscoveryError.MISSING_XMLRPC_METHOD) {
+                assertEquals(TEST_EVENTS.MISSING_XMLRPC_METHOD, mNextEvent);
             } else {
                 throw new AssertionError("Didn't get the correct error, expected: " + mNextEvent + ", and got: "
                         + event.error);
