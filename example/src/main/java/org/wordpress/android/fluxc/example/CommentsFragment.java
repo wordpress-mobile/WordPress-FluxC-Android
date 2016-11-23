@@ -77,7 +77,7 @@ public class CommentsFragment extends Fragment {
                     ToastUtils.showToast(getActivity(), "Fetch comments first");
                     return;
                 }
-                likeFirstComment();
+                likeOrUnlikeFirstComment();
             }
         });
         return view;
@@ -129,9 +129,10 @@ public class CommentsFragment extends Fragment {
         }
     }
 
-    private void likeFirstComment() {
+    private void likeOrUnlikeFirstComment() {
         mDispatcher.dispatch(CommentActionBuilder.newLikeCommentAction(
-                new CommentStore.RemoteLikeCommentPayload(getFirstSite(), getFirstComment(), true)));
+                new CommentStore.RemoteLikeCommentPayload(getFirstSite(), getFirstComment(),
+                        !getFirstComment().getILike())));
     }
 
     @Subscribe
@@ -142,7 +143,7 @@ public class CommentsFragment extends Fragment {
             AppLog.i(T.TESTS, error);
         } else {
             if (event.causeOfChange == CommentAction.LIKE_COMMENT) {
-                prependToLog("Comment liked!");
+                prependToLog("Comment " + (getFirstComment().getILike() ? "liked ツ" : "unliked (ಥ﹏ಥ)"));
             } else {
                 prependToLog("OnCommentChanged: rowsAffected=" + event.rowsAffected);
                 List<CommentModel> comments = mCommentStore.getCommentsForSite(getFirstSite(), CommentStatus.ALL);
