@@ -31,8 +31,6 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     @Inject HTTPAuthManager mHTTPAuthManager;
     @Inject MemorizingTrustManager mMemorizingTrustManager;
 
-    RefreshSitesXMLRPCPayload mPayload;
-
     enum TEST_EVENTS {
         NONE,
         DISCOVERY_SUCCEEDED,
@@ -47,8 +45,9 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         SITE_CHANGED,
         SITE_REMOVED
     }
-
     private TEST_EVENTS mNextEvent;
+
+    private RefreshSitesXMLRPCPayload mPayload;
 
     @Override
     protected void setUp() throws Exception {
@@ -72,7 +71,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
 
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testInvalidUrlFetchSites() throws InterruptedException {
@@ -330,7 +329,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
 
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testXMLRPCForbiddenDiscovery() throws InterruptedException {
@@ -345,7 +344,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
 
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testXMLRPCMissingMethodDiscovery() throws InterruptedException {
@@ -360,7 +359,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
 
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void checkSelfHostedSimpleFetchForSite(String url, String username, String password)

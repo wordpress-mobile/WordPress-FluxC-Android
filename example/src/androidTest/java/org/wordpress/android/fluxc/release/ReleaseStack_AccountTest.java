@@ -155,14 +155,14 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mExpectedAction = ACCOUNT_TEST_ACTIONS.SENT_AUTH_EMAIL;
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(BuildConfig.TEST_WPCOM_EMAIL_TEST1));
         mCountDownLatch = new CountDownLatch(1);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testSendAuthEmailInvalid() throws InterruptedException {
         mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTH_EMAIL_ERROR_INVALID;
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction("notanemail"));
         mCountDownLatch = new CountDownLatch(1);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testSendAuthEmailNoSuchUser() throws InterruptedException {
@@ -170,7 +170,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(unknownEmail));
         mCountDownLatch = new CountDownLatch(1);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @SuppressWarnings("unused")
