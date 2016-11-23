@@ -30,7 +30,7 @@ public class ReleaseStack_XMLRPCBase extends ReleaseStack_Base {
     private TEST_EVENTS mNextEvent;
 
 
-    protected void init()  throws Exception {
+    protected void init() throws Exception {
         // Register
         mNextEvent = TEST_EVENTS.NONE;
 
@@ -44,25 +44,25 @@ public class ReleaseStack_XMLRPCBase extends ReleaseStack_Base {
 
     private void fetchSites() throws InterruptedException {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL;
-        payload.url = BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_ENDPOINT;
+        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
+        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
+        payload.url = BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT;
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         if (event.isError()) {
-            AppLog.i(T.TESTS, "event error type: " + event.error.type);
-            return;
+            throw new AssertionError("event error type: " + event.error.type);
         }
-        assertEquals(true, mSiteStore.hasSite());
-        assertEquals(true, mSiteStore.hasSelfHostedSite());
+        assertTrue(mSiteStore.hasSite());
+        assertTrue(mSiteStore.hasSelfHostedSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }

@@ -33,10 +33,10 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     CountDownLatch mCountDownLatch;
 
-    enum ACCOUNT_TEST_ACTIONS {
+    private enum ACCOUNT_TEST_ACTIONS {
         NONE,
         AUTHENTICATE,
-        AUTHENTICATE_ERROR,
+        INCORRECT_USERNAME_OR_PASSWORD_ERROR,
         AUTHENTICATE_2FA_ERROR,
         FETCHED,
         POSTED,
@@ -63,8 +63,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
     }
 
-    public void testWPComAuthenticationError() throws InterruptedException {
-        mExpectedAction = ACCOUNT_TEST_ACTIONS.AUTHENTICATE_ERROR;
+    public void testWPComAuthenticationIncorrectUsernameOrPassword() throws InterruptedException {
+        mExpectedAction = ACCOUNT_TEST_ACTIONS.INCORRECT_USERNAME_OR_PASSWORD_ERROR;
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_BAD_PASSWORD);
     }
 
@@ -82,7 +82,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
         mCountDownLatch = new CountDownLatch(2);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testWPComPost() throws InterruptedException {
@@ -98,7 +98,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         payload.params.put("description", newValue);
         mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         assertEquals(newValue, mAccountStore.getAccount().getAboutMe());
     }
@@ -114,7 +114,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
         mCountDownLatch = new CountDownLatch(2);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         mExpectedAction = ACCOUNT_TEST_ACTIONS.POSTED;
         PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
@@ -124,7 +124,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         payload.params.put("description", newValue);
         mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         assertEquals(newValue, mAccountStore.getAccount().getAboutMe());
     }
@@ -140,7 +140,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
         mCountDownLatch = new CountDownLatch(2);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         mExpectedAction = ACCOUNT_TEST_ACTIONS.POSTED;
         PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
@@ -150,7 +150,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         payload.params.put("primary_site_ID", newValue);
         mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         assertEquals(newValue, String.valueOf(mAccountStore.getAccount().getPrimarySiteId()));
     }
@@ -177,13 +177,19 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         if (event.isError()) {
-            if (event.error.type == AuthenticationErrorType.NEEDS_2FA) {
-                assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTHENTICATE_2FA_ERROR);
-            } else if (event.error.type == AuthenticationErrorType.INCORRECT_USERNAME_OR_PASSWORD) {
-                assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTHENTICATE_ERROR);
+            switch (mExpectedAction) {
+                case AUTHENTICATE_2FA_ERROR:
+                    assertEquals(event.error.type, AuthenticationErrorType.NEEDS_2FA);
+                    break;
+                case INCORRECT_USERNAME_OR_PASSWORD_ERROR:
+                    assertEquals(event.error.type, AuthenticationErrorType.INCORRECT_USERNAME_OR_PASSWORD);
+                    break;
+                default:
+                    throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
         } else {
             assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.AUTHENTICATE);
@@ -191,8 +197,12 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onAccountChanged(OnAccountChanged event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
         if (event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
             assertEquals(mExpectedAction, ACCOUNT_TEST_ACTIONS.FETCHED);
             assertEquals(BuildConfig.TEST_WPCOM_USERNAME_TEST1, mAccountStore.getAccount().getUserName());
@@ -206,6 +216,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onAuthEmailSent(OnAuthEmailSent event) {
         AppLog.i(AppLog.T.API, "Received OnAuthEmailSent");
@@ -230,6 +241,6 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }

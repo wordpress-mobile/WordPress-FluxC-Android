@@ -33,7 +33,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     private TEST_EVENTS mNextEvent;
 
 
-    protected void init()  throws Exception {
+    protected void init() throws Exception {
         // Register
         mNextEvent = TEST_EVENTS.NONE;
 
@@ -60,7 +60,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         // Correct user we should get an OnAuthenticationChanged message
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchSites() throws InterruptedException {
@@ -69,25 +69,26 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         mNextEvent = TEST_EVENTS.SITE_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
-        assertEquals(false, event.isError());
+        assertFalse(event.isError());
         assertEquals(TEST_EVENTS.AUTHENTICATED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onSiteChanged(SiteStore.OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         if (event.isError()) {
-            AppLog.i(T.TESTS, "event error type: " + event.error.type);
-            return;
+            throw new AssertionError("event error type: " + event.error.type);
         }
-        assertEquals(true, mSiteStore.hasSite());
-        assertEquals(true, mSiteStore.hasWPComSite());
+        assertTrue(mSiteStore.hasSite());
+        assertTrue(mSiteStore.hasWPComSite());
         assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }

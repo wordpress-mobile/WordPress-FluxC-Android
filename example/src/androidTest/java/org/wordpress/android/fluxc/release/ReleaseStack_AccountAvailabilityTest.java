@@ -177,6 +177,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         assertEquals(false, mLastEvent.isAvailable);
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onAvailabilityChecked(OnAvailabilityChecked event) {
         mLastEvent = event;
