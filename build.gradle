@@ -1,0 +1,20 @@
+allprojects {
+    apply plugin: 'checkstyle'
+
+    repositories {
+        jcenter()
+    }
+
+    task checkstyle(type: Checkstyle) {
+        source 'src'
+        include '**/*.java'
+        exclude '**/gen/**'
+
+        classpath = files()
+    }
+
+    checkstyle {
+        toolVersion = '6.9'
+        configFile file("${project.rootDir}/config/checkstyle.xml")
+    }
+}
