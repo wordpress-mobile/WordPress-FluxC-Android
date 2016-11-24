@@ -8,6 +8,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.action.CommentAction;
 import org.wordpress.android.fluxc.generated.CommentActionBuilder;
@@ -135,7 +136,7 @@ public class CommentsFragment extends Fragment {
                         !getFirstComment().getILike())));
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onCommentChanged(OnCommentChanged event) {
         if (event.isError()) {
             String error = "Error: " + event.error.type + " - " + event.error.message;
@@ -154,7 +155,7 @@ public class CommentsFragment extends Fragment {
         }
     }
 
-    @Subscribe
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onCommentInstantiated(OnCommentInstantiated event) {
         mNewComment = event.comment;
         mCountDownLatch.countDown();
