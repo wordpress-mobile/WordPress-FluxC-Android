@@ -1,21 +1,22 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
-import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.annotations.action.Action;
 import org.wordpress.android.fluxc.example.BuildConfig;
-import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
-import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.MediaStore;
-import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.MediaStore.MediaErrorType;
+import org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
+import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
+import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
+import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
 
@@ -26,23 +27,19 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
-    private final String TEST_TITLE = "Test Title";
-    private final String TEST_DESCRIPTION = "Test Description";
-    private final String TEST_CAPTION = "Test Caption";
-    private final String TEST_ALT = "Test Alt";
+public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
+    private static final String TEST_TITLE = "Test Title";
+    private static final String TEST_DESCRIPTION = "Test Description";
+    private static final String TEST_CAPTION = "Test Caption";
+    private static final String TEST_ALT = "Test Alt";
 
     @SuppressWarnings("unused") @Inject AccountStore mAccountStore;
     @SuppressWarnings("unused") @Inject HTTPAuthManager mHTTPAuthManager;
     @SuppressWarnings("unused") @Inject MemorizingTrustManager mMemorizingTrustManager;
-    @Inject Dispatcher mDispatcher;
     @Inject MediaStore mMediaStore;
-    @Inject SiteStore mSiteStore;
 
-    private enum TEST_EVENTS {
+    private enum TestEvents {
         NONE,
-        AUTHENTICATION_CHANGED,
-        SITE_CHANGED,
         PUSHED_MEDIA,
         FETCHED_ALL_MEDIA,
         FETCHED_MEDIA,
@@ -53,11 +50,8 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         NOT_FOUND_ERROR
     }
 
-    private SiteModel mSite;
-    private TEST_EVENTS mExpectedEvent;
-    private TEST_EVENTS mNextExpectedEvent;
-    private CountDownLatch mCountDownLatch;
-    private AccountStore.OnDiscoveryResponse mDiscovered;
+    private TestEvents mNextEvent;
+    private TestEvents mNextExpectedEvent;
     private List<Long> mExpectedIds;
     private long mLastUploadedId = -1L;
 
@@ -65,30 +59,24 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
     protected void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
-        // Register
-        mDispatcher.register(this);
-        mExpectedEvent = TEST_EVENTS.NONE;
-
-        getSiteInfo(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
-                BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
-                BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
+        // Register and initialize sSite
+        init();
+        mNextEvent = TestEvents.NONE;
     }
 
     /**
      * Push action attempted with null media.
      */
     public void testPushNullMedia() throws InterruptedException {
-        mSite = mSiteStore.getSites().get(0);
-        pushMedia(mSite, null, TEST_EVENTS.NULL_ERROR);
+        pushMedia(sSite, null, TestEvents.NULL_ERROR);
     }
 
     /**
      * Push action that supplies media without required data should result in a malformed exception.
      */
     public void testPushMalformedMedia() throws InterruptedException {
-        mSite = mSiteStore.getSites().get(0);
         final MediaModel testMedia = getTestMedia(TEST_TITLE, null, null, null);
-        pushMedia(mSite, testMedia, TEST_EVENTS.MALFORMED_ERROR);
+        pushMedia(sSite, testMedia, TestEvents.MALFORMED_ERROR);
     }
 
     /**
@@ -97,11 +85,10 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
      */
     public void testPushMediaChanges() throws InterruptedException {
         // fetch site media
-        mSite = mSiteStore.getSites().get(0);
-        fetchAllMedia(mSite);
+        fetchAllMedia(sSite);
 
         // some media is expected
-        List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(mSite);
+        List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(sSite);
         assertFalse(siteMedia.isEmpty());
 
         // store existing properties for restoration
@@ -123,10 +110,10 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         testMedia.setAlt(newAlt);
 
         // push changes
-        pushMedia(mSite, testMedia, TEST_EVENTS.PUSHED_MEDIA);
+        pushMedia(sSite, testMedia, TestEvents.PUSHED_MEDIA);
 
         // verify local media has changes
-        final MediaModel updatedMedia = mMediaStore.getSiteMediaWithId(mSite, testId);
+        final MediaModel updatedMedia = mMediaStore.getSiteMediaWithId(sSite, testId);
         assertNotNull(updatedMedia);
         assertEquals(updatedMedia.getTitle(), newTitle);
         assertEquals(updatedMedia.getDescription(), newDescription);
@@ -138,10 +125,10 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         testMedia.setDescription(mediaDescription);
         testMedia.setCaption(mediaCaption);
         testMedia.setAlt(mediaAlt);
-        pushMedia(mSite, testMedia, TEST_EVENTS.PUSHED_MEDIA);
+        pushMedia(sSite, testMedia, TestEvents.PUSHED_MEDIA);
 
         // verify restored media properties
-        final MediaModel restoredMedia = mMediaStore.getSiteMediaWithId(mSite, testId);
+        final MediaModel restoredMedia = mMediaStore.getSiteMediaWithId(sSite, testId);
         assertEquals(restoredMedia.getTitle(), mediaTitle);
         assertEquals(restoredMedia.getDescription(), mediaDescription);
         assertEquals(restoredMedia.getCaption(), mediaCaption);
@@ -152,61 +139,54 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
      * Upload a local image.
      */
     public void testUploadImage() throws InterruptedException {
-        mSite = mSiteStore.getSites().get(0);
-
         MediaModel media = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
         String imagePath = BuildConfig.TEST_LOCAL_IMAGE;
         media.setFilePath(imagePath);
         media.setFileName(MediaUtils.getFileName(imagePath));
         media.setFileExtension(MediaUtils.getExtension(imagePath));
         media.setMimeType(MediaUtils.MIME_TYPE_IMAGE + media.getFileExtension());
-        media.setSiteId(mSite.getSelfHostedSiteId());
+        media.setSiteId(sSite.getSelfHostedSiteId());
 
-        uploadMedia(mSite, media);
+        uploadMedia(sSite, media);
     }
 
     /**
      * Upload a local video.
      */
     public void testUploadVideo() throws InterruptedException {
-        mSite = mSiteStore.getSites().get(0);
-
         MediaModel media = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
         String videoPath = BuildConfig.TEST_LOCAL_VIDEO;
         media.setFilePath(videoPath);
         media.setFileName(MediaUtils.getFileName(videoPath));
         media.setFileExtension(MediaUtils.getExtension(videoPath));
         media.setMimeType(MediaUtils.MIME_TYPE_VIDEO + media.getFileExtension());
-        media.setSiteId(mSite.getSelfHostedSiteId());
+        media.setSiteId(sSite.getSelfHostedSiteId());
 
-        uploadMedia(mSite, media);
+        uploadMedia(sSite, media);
     }
 
     /**
      * Fetch all action should gather all media from a site.
      */
     public void testFetchAllMedia() throws InterruptedException {
-        mSite = mSiteStore.getSites().get(0);
-        fetchAllMedia(mSite);
+        fetchAllMedia(sSite);
     }
 
     /**
      * Fetch action with no media supplied results in a media exception.
      */
     public void testFetchNullMedia() throws InterruptedException {
-        mSite = mSiteStore.getSites().get(0);
-        fetchSpecificMedia(mSite, null, TEST_EVENTS.NULL_ERROR);
+        fetchSpecificMedia(sSite, null, TestEvents.NULL_ERROR);
     }
 
     /**
      * Fetch action with media that does not exist results in a media not found exception.
      */
     public void testFetchMediaThatDoesNotExist() throws InterruptedException {
-        mSite = mSiteStore.getSites().get(0);
         List<Long> mediaIds = new ArrayList<>();
         mediaIds.add(9999999L);
         mediaIds.add(9999989L);
-        fetchSpecificMedia(mSite, mediaIds, TEST_EVENTS.NOT_FOUND_ERROR);
+        fetchSpecificMedia(sSite, mediaIds, TestEvents.NOT_FOUND_ERROR);
     }
 
     /**
@@ -214,10 +194,9 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
      */
     public void testFetchMediaThatExists() throws InterruptedException {
         // get all site media
-        mSite = mSiteStore.getSites().get(0);
-        fetchAllMedia(mSite);
+        fetchAllMedia(sSite);
 
-        final List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(mSite);
+        final List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(sSite);
         assertFalse(siteMedia.isEmpty());
 
         // fetch half of the media
@@ -226,48 +205,44 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         for (int i = 0; i < half; ++i) {
             halfMediaIds.add(siteMedia.get(i).getMediaId());
         }
-        fetchSpecificMedia(mSite, halfMediaIds, TEST_EVENTS.FETCHED_MEDIA);
+        fetchSpecificMedia(sSite, halfMediaIds, TestEvents.FETCHED_MEDIA);
     }
 
     /**
      * Delete action on null media results in a null error.
      */
     public void testDeleteNullMedia() throws InterruptedException {
-        mSite = mSiteStore.getSites().get(0);
-        deleteMedia(mSite, null, TEST_EVENTS.NULL_ERROR, 1);
+        deleteMedia(sSite, null, TestEvents.NULL_ERROR, 1);
     }
 
     /**
      * Delete action on media that doesn't exist should not result in an exception.
      */
     public void testDeleteMediaThatDoesNotExist() throws InterruptedException {
-        mSite = mSiteStore.getSites().get(0);
         MediaModel testMedia = new MediaModel();
         testMedia.setMediaId(9999999L);
-        deleteMedia(mSite, testMedia, TEST_EVENTS.NOT_FOUND_ERROR, 1);
+        deleteMedia(sSite, testMedia, TestEvents.NOT_FOUND_ERROR, 1);
     }
 
     /**
      * Delete action on media that exists should result in no media on a fetch request.
      */
-    // disabling this test for now, but it should be fixed fairly soon as part of another issue
-//    public void testDeleteMediaThatExists() throws InterruptedException {
-//        // upload media
-//        mSite = mSiteStore.getSites().get(0);
-//        MediaModel media = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
-//        String imagePath = BuildConfig.TEST_LOCAL_IMAGE;
-//        media.setFilePath(imagePath);
-//        media.setFileName(MediaUtils.getFileName(imagePath));
-//        media.setFileExtension(MediaUtils.getExtension(imagePath));
-//        media.setMimeType(MediaUtils.MIME_TYPE_IMAGE + media.getFileExtension());
-//        media.setSiteId(mSite.getSelfHostedSiteId());
-//        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(mSite, media);
-//        mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
-//        mNextExpectedEvent = TEST_EVENTS.DELETED_MEDIA;
-//        mCountDownLatch = new CountDownLatch(2);
-//        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
-//        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-//    }
+    public void testDeleteMediaThatExists() throws InterruptedException {
+        // upload media
+        MediaModel media = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
+        String imagePath = BuildConfig.TEST_LOCAL_IMAGE;
+        media.setFilePath(imagePath);
+        media.setFileName(MediaUtils.getFileName(imagePath));
+        media.setFileExtension(MediaUtils.getExtension(imagePath));
+        media.setMimeType(MediaUtils.MIME_TYPE_IMAGE + media.getFileExtension());
+        media.setSiteId(sSite.getSelfHostedSiteId());
+        UploadMediaPayload payload = new UploadMediaPayload(sSite, media);
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
+        mNextExpectedEvent = TestEvents.DELETED_MEDIA;
+        mCountDownLatch = new CountDownLatch(2);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
 
     private MediaModel getTestMedia(String title, String description, String caption, String alt) {
         MediaModel media = new MediaModel();
@@ -278,8 +253,8 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         return media;
     }
 
-    private void dispatchAction(TEST_EVENTS expectedEvent, Action action, int count) throws InterruptedException {
-        mExpectedEvent = expectedEvent;
+    private void dispatchAction(TestEvents expectedEvent, Action action, int count) throws InterruptedException {
+        mNextEvent = expectedEvent;
         if (count > 0) {
             mCountDownLatch = new CountDownLatch(count);
         }
@@ -287,45 +262,30 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void discoverEndpoint(String username, String password, String url) throws InterruptedException {
-        SiteStore.RefreshSitesXMLRPCPayload discoverPayload = new SiteStore.RefreshSitesXMLRPCPayload();
-        discoverPayload.username = username;
-        discoverPayload.password = password;
-        discoverPayload.url = url;
-        dispatchAction(TEST_EVENTS.AUTHENTICATION_CHANGED, AuthenticationActionBuilder.newDiscoverEndpointAction(discoverPayload), 1);
-    }
-
-    private void getSiteInfo(String username, String password, String endpoint) throws InterruptedException {
-        if (mDiscovered == null) discoverEndpoint(username, password, endpoint);
-
-        SiteStore.RefreshSitesXMLRPCPayload payload = new SiteStore.RefreshSitesXMLRPCPayload();
-        payload.username = username;
-        payload.password = password;
-        payload.url = mDiscovered.xmlRpcEndpoint;
-        dispatchAction(TEST_EVENTS.SITE_CHANGED, SiteActionBuilder.newFetchSitesXmlRpcAction(payload), 1);
-    }
-
-    private void pushMedia(SiteModel site, MediaModel media, TEST_EVENTS expectedEvent) throws InterruptedException {
+    private void pushMedia(SiteModel site, MediaModel media, TestEvents expectedEvent) throws InterruptedException {
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(media);
-        MediaStore.MediaListPayload payload = new MediaStore.MediaListPayload(MediaAction.PUSH_MEDIA, site, mediaList);
+        MediaListPayload payload = new MediaListPayload(MediaAction.PUSH_MEDIA, site, mediaList);
         dispatchAction(expectedEvent, MediaActionBuilder.newPushMediaAction(payload), 1);
     }
 
     private void uploadMedia(SiteModel site, MediaModel media) throws InterruptedException {
-        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(site, media);
-        dispatchAction(TEST_EVENTS.UPLOADED_MEDIA, MediaActionBuilder.newUploadMediaAction(payload), 1);
+        UploadMediaPayload payload = new UploadMediaPayload(site, media);
+        dispatchAction(TestEvents.UPLOADED_MEDIA, MediaActionBuilder.newUploadMediaAction(payload), 1);
     }
 
     private void fetchAllMedia(SiteModel site) throws InterruptedException {
-        MediaStore.MediaListPayload mediaPayload = new MediaStore.MediaListPayload(MediaAction.FETCH_ALL_MEDIA, site, null);
-        dispatchAction(TEST_EVENTS.FETCHED_ALL_MEDIA, MediaActionBuilder.newFetchAllMediaAction(mediaPayload), 1);
+        MediaListPayload mediaPayload =
+                new MediaListPayload(MediaAction.FETCH_ALL_MEDIA, site, null);
+        dispatchAction(TestEvents.FETCHED_ALL_MEDIA, MediaActionBuilder.newFetchAllMediaAction(mediaPayload), 1);
     }
 
-    private void fetchSpecificMedia(SiteModel site, List<Long> mediaIds, TEST_EVENTS expectedEvent) throws InterruptedException {
+    private void fetchSpecificMedia(SiteModel site, List<Long> mediaIds, TestEvents expectedEvent)
+            throws InterruptedException {
         mExpectedIds = mediaIds;
         if (mExpectedIds == null) {
-            MediaStore.MediaListPayload mediaPayload = new MediaStore.MediaListPayload(MediaAction.FETCH_MEDIA, site, null);
+            MediaListPayload mediaPayload =
+                    new MediaListPayload(MediaAction.FETCH_MEDIA, site, null);
             dispatchAction(expectedEvent, MediaActionBuilder.newFetchMediaAction(mediaPayload), 1);
         } else {
             int size = mExpectedIds.size();
@@ -335,37 +295,34 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
                 media.setMediaId(id);
                 mediaList.add(media);
             }
-            MediaStore.MediaListPayload mediaPayload = new MediaStore.MediaListPayload(MediaAction.FETCH_MEDIA, site, mediaList);
+            MediaListPayload mediaPayload =
+                    new MediaListPayload(MediaAction.FETCH_MEDIA, site, mediaList);
             dispatchAction(expectedEvent, MediaActionBuilder.newFetchMediaAction(mediaPayload), size);
         }
     }
 
-    private void deleteMedia(SiteModel site, MediaModel media, TEST_EVENTS expectedEvent, int num) throws InterruptedException {
+    private void deleteMedia(SiteModel site, MediaModel media, TestEvents expectedEvent, int num)
+            throws InterruptedException {
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(media);
-        MediaStore.MediaListPayload deletePayload = new MediaStore.MediaListPayload(MediaAction.DELETE_MEDIA, site, mediaList);
+        MediaListPayload deletePayload =
+                new MediaListPayload(MediaAction.DELETE_MEDIA, site, mediaList);
         dispatchAction(expectedEvent, MediaActionBuilder.newDeleteMediaAction(deletePayload), num);
     }
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onDiscoverySucceeded(AccountStore.OnDiscoveryResponse event) {
-        assertEquals(TEST_EVENTS.AUTHENTICATION_CHANGED, mExpectedEvent);
-        mDiscovered = event;
-        mCountDownLatch.countDown();
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe
-    public void onMediaUploaded(MediaStore.OnMediaUploaded event) throws InterruptedException {
-        assertFalse(event.isError());
+    public void onMediaUploaded(OnMediaUploaded event) throws InterruptedException {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
         mLastUploadedId = event.media.getMediaId();
         if (event.completed) {
-            assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
+            assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
             if (mNextExpectedEvent != null) {
-                if (mNextExpectedEvent == TEST_EVENTS.DELETED_MEDIA) {
+                if (mNextExpectedEvent == TestEvents.DELETED_MEDIA) {
                     event.media.setMediaId(mLastUploadedId);
-                    deleteMedia(mSite, event.media, mNextExpectedEvent, -1);
+                    deleteMedia(sSite, event.media, mNextExpectedEvent, -1);
                     mNextExpectedEvent = null;
                 }
             } else {
@@ -377,40 +334,33 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onMediaChanged(MediaStore.OnMediaChanged event) {
+    public void onMediaChanged(OnMediaChanged event) {
         AppLog.d(AppLog.T.TESTS, "tests.onMediaChanged: " + event.cause);
 
         if (event.isError()) {
-            if (event.error.type == MediaStore.MediaErrorType.NULL_MEDIA_ARG) {
-                assertEquals(TEST_EVENTS.NULL_ERROR, mExpectedEvent);
-            } else if (event.error.type == MediaStore.MediaErrorType.MALFORMED_MEDIA_ARG) {
-                assertEquals(TEST_EVENTS.MALFORMED_ERROR, mExpectedEvent);
-            } else if (event.error.type == MediaStore.MediaErrorType.MEDIA_NOT_FOUND) {
-                assertEquals(TEST_EVENTS.NOT_FOUND_ERROR, mExpectedEvent);
+            if (event.error.type == MediaErrorType.NULL_MEDIA_ARG) {
+                assertEquals(TestEvents.NULL_ERROR, mNextEvent);
+            } else if (event.error.type == MediaErrorType.MALFORMED_MEDIA_ARG) {
+                assertEquals(TestEvents.MALFORMED_ERROR, mNextEvent);
+            } else if (event.error.type == MediaErrorType.MEDIA_NOT_FOUND) {
+                assertEquals(TestEvents.NOT_FOUND_ERROR, mNextEvent);
+            } else {
+                throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
         } else {
             if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
-                assertEquals(TEST_EVENTS.FETCHED_ALL_MEDIA, mExpectedEvent);
+                assertEquals(TestEvents.FETCHED_ALL_MEDIA, mNextEvent);
             } else if (event.cause == MediaAction.FETCH_MEDIA) {
-                assertEquals(TEST_EVENTS.FETCHED_MEDIA, mExpectedEvent);
+                assertEquals(TestEvents.FETCHED_MEDIA, mNextEvent);
                 if (mExpectedIds != null) {
                     assertTrue(mExpectedIds.contains(event.media.get(0).getMediaId()));
                 }
             } else if (event.cause == MediaAction.PUSH_MEDIA) {
-                assertEquals(TEST_EVENTS.PUSHED_MEDIA, mExpectedEvent);
+                assertEquals(TestEvents.PUSHED_MEDIA, mNextEvent);
             } else if (event.cause == MediaAction.DELETE_MEDIA) {
-                assertEquals(TEST_EVENTS.DELETED_MEDIA, mExpectedEvent);
+                assertEquals(TestEvents.DELETED_MEDIA, mNextEvent);
             }
         }
-        mCountDownLatch.countDown();
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe
-    public void onSiteChanged(SiteStore.OnSiteChanged event) {
-        AppLog.i(AppLog.T.TESTS, "site count " + mSiteStore.getSitesCount());
-        assertEquals(true, mSiteStore.hasSelfHostedSite());
-        assertEquals(TEST_EVENTS.SITE_CHANGED, mExpectedEvent);
         mCountDownLatch.countDown();
     }
 }

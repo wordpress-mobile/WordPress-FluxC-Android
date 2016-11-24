@@ -96,14 +96,18 @@
         <module name="PackageName"/>
         <module name="ParameterName"/>
         <module name="StaticVariableName"/>
-        <module name="TypeName"/>
+        <module name="TypeName">
+          <property name="format" value="^[A-Z][a-zA-Z0-9_]*$"/>
+        </module>
 
         <!-- Checks for imports                              -->
         <!-- See http://checkstyle.sf.net/config_import.html -->
         <module name="AvoidStarImport"/>
         <module name="IllegalImport"/> <!-- defaults to sun.* packages -->
         <module name="RedundantImport"/>
-        <module name="UnusedImports"/>
+        <module name="UnusedImports">
+            <property name="processJavadoc" value="true"/>
+        </module>
 
         <module name="ImportOrder">
             <property name="groups" value="android,com,junit,net,org,java,javax"/>
@@ -120,7 +124,7 @@
           <property name="max" value="120"/>
           <!-- ignore lines like "$File: //depot/... $" -->
           <property name="ignorePattern" value="\$File.*\$"/>
-          <property name="severity" value="info"/>
+          <property name="severity" value="error"/>
         </module>
         <module name="MethodLength">
           <property name="tokens" value="METHOD_DEF"/>

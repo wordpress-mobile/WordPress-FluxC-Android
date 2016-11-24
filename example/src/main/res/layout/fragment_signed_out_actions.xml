@@ -6,21 +6,15 @@
               tools:context="org.wordpress.android.fluxc.example.CommentsFragment">
 
     <Button
-        android:id="@+id/fetch_comments"
+        android:id="@+id/new_account"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Fetch comments from first site" />
+        android:text="Create New Account" />
 
     <Button
-        android:id="@+id/reply_to_comment"
+        android:id="@+id/magic_link_email"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Reply to first comment" />
-
-    <Button
-        android:id="@+id/like_comment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Like/Unlike first comment" />
+        android:text="Send Magic Link E-mail" />
 
 </LinearLayout>

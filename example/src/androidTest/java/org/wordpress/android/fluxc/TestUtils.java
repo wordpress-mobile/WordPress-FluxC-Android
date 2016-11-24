@@ -6,12 +6,12 @@ import org.wordpress.android.util.AppLog.T;
 import java.util.UUID;
 
 public class TestUtils {
-    public static int DEFAULT_TIMEOUT_MS = 30000;
+    public static final int DEFAULT_TIMEOUT_MS = 30000;
 
     public static void waitFor(long milliseconds) {
         try {
             Thread.sleep(milliseconds);
-        } catch(InterruptedException e) {
+        } catch (InterruptedException e) {
             AppLog.e(T.API, "Thread interrupted");
         }
     }

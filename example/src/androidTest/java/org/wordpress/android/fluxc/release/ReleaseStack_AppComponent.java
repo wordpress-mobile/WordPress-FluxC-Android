@@ -21,6 +21,7 @@ import dagger.Component;
 })
 public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_AccountTest test);
+    void inject(ReleaseStack_AccountAvailabilityTest test);
     void inject(ReleaseStack_DiscoveryTest test);
     void inject(ReleaseStack_PostTestWPCom test);
     void inject(ReleaseStack_PostTestXMLRPC test);

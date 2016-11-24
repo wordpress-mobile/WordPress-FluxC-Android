@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
-import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
@@ -9,6 +8,7 @@ import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.store.PostStore;
+import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.fluxc.store.PostStore.OnPostInstantiated;
@@ -29,8 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
-    @Inject Dispatcher mDispatcher;
+public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Inject PostStore mPostStore;
 
     private static final String POST_DEFAULT_TITLE = "PostTestXMLRPC base post";
@@ -38,15 +37,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     private static final double EXAMPLE_LATITUDE = 44.8378;
     private static final double EXAMPLE_LONGITUDE = -0.5792;
 
-    private CountDownLatch mCountDownLatch;
-    private PostModel mPost;
-    private static SiteModel sSite;
-
-    private boolean mCanLoadMorePosts;
-
-    private PostError mLastPostError;
-
-    private enum TEST_EVENTS {
+    private enum TestEvents {
         NONE,
         POST_INSTANTIATED,
         POST_UPLOADED,
@@ -59,25 +50,22 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         ERROR_UNAUTHORIZED,
         ERROR_GENERIC
     }
-    private TEST_EVENTS mNextEvent;
 
-    {
-        sSite = new SiteModel();
-        sSite.setId(1);
-        sSite.setSelfHostedSiteId(0);
-        sSite.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE);
-        sSite.setPassword(BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE);
-        sSite.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
-    }
+    private TestEvents mNextEvent;
+    private PostError mLastPostError;
+    private PostModel mPost;
+    private boolean mCanLoadMorePosts;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
-        // Register
-        mDispatcher.register(this);
+
+        // Register and initialize sSite
+        init();
+
         // Reset expected test event
-        mNextEvent = TEST_EVENTS.NONE;
+        mNextEvent = TestEvents.NONE;
 
         mPost = null;
         mCanLoadMorePosts = false;
@@ -99,7 +87,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(1, mPostStore.getPostsCountForSite(sSite));
 
         assertNotSame(0, uploadedPost.getRemotePostId());
-        assertEquals(false, uploadedPost.isLocalDraft());
+        assertFalse(uploadedPost.isLocalDraft());
     }
 
     public void testEditRemotePost() throws InterruptedException {
@@ -154,7 +142,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(1, mPostStore.getPostsCountForSite(sSite));
 
         assertEquals(POST_DEFAULT_TITLE, latestPost.getTitle());
-        assertEquals(false, latestPost.isLocallyChanged());
+        assertFalse(latestPost.isLocallyChanged());
     }
 
     public void testChangeLocalDraft() throws InterruptedException {
@@ -185,8 +173,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals("From testChangingLocalDraft, redux", mPost.getTitle());
         assertEquals("Some new content", mPost.getContent());
         assertEquals(7, mPost.getFeaturedImageId());
-        assertEquals(false, mPost.isLocallyChanged());
-        assertEquals(true, mPost.isLocalDraft());
+        assertFalse(mPost.isLocallyChanged());
+        assertTrue(mPost.isLocalDraft());
     }
 
     public void testMultipleLocalChangesToUploadedPost() throws InterruptedException {
@@ -222,8 +210,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals("From testMultipleLocalChangesToUploadedPost, redux", mPost.getTitle());
         assertEquals("Some different content", mPost.getContent());
         assertEquals(5, mPost.getFeaturedImageId());
-        assertEquals(true, mPost.isLocallyChanged());
-        assertEquals(false, mPost.isLocalDraft());
+        assertTrue(mPost.isLocallyChanged());
+        assertFalse(mPost.isLocalDraft());
     }
 
     public void testChangePublishedPostToScheduled() throws InterruptedException {
@@ -252,12 +240,12 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     }
 
     public void testFetchPosts() throws InterruptedException {
-        mNextEvent = TEST_EVENTS.POSTS_FETCHED;
+        mNextEvent = TestEvents.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new PostStore.FetchPostsPayload(sSite, false)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, false)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         int firstFetchPosts = mPostStore.getPostsCountForSite(sSite);
 
@@ -268,12 +256,12 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         // Dependent on site having more than NUM_POSTS_TO_REQUEST posts
         assertTrue(mCanLoadMorePosts);
 
-        mNextEvent = TEST_EVENTS.POSTS_FETCHED;
+        mNextEvent = TestEvents.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new PostStore.FetchPostsPayload(sSite, true)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, true)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         int currentStoredPosts = mPostStore.getPostsCountForSite(sSite);
 
@@ -282,12 +270,12 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
     }
 
     public void testFetchPages() throws InterruptedException {
-        mNextEvent = TEST_EVENTS.PAGES_FETCHED;
+        mNextEvent = TestEvents.PAGES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPagesAction(new PostStore.FetchPostsPayload(sSite, false)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPagesAction(new FetchPostsPayload(sSite, false)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         int firstFetchPosts = mPostStore.getPagesCountForSite(sSite);
 
@@ -320,8 +308,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals("Some content here! <strong>Bold text</strong>.", newPost.getContent());
         assertEquals(date, newPost.getDateCreated());
 
-        assertTrue(categoryIds.containsAll(newPost.getCategoryIdList()) &&
-                newPost.getCategoryIdList().containsAll(categoryIds));
+        assertTrue(categoryIds.containsAll(newPost.getCategoryIdList())
+                && newPost.getCategoryIdList().containsAll(categoryIds));
     }
 
     public void testFullFeaturedPageUpload() throws InterruptedException {
@@ -368,7 +356,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals("Some content", mPost.getContent());
 
         // The post should not have a location since we never set one
-        assertEquals(false, mPost.hasLocation());
+        assertFalse(mPost.hasLocation());
 
         // 2. Modify the post, setting some location data
         mPost.setLocation(EXAMPLE_LATITUDE, EXAMPLE_LONGITUDE);
@@ -380,7 +368,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         // The set location should be stored in the remote post
-        assertEquals(true, mPost.hasLocation());
+        assertTrue(mPost.hasLocation());
         assertEquals(EXAMPLE_LATITUDE, mPost.getLocation().getLatitude());
         assertEquals(EXAMPLE_LONGITUDE, mPost.getLocation().getLongitude());
     }
@@ -406,7 +394,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals("Some content", mPost.getContent());
 
         // The set location should be stored in the remote post
-        assertEquals(true, mPost.hasLocation());
+        assertTrue(mPost.hasLocation());
         assertEquals(EXAMPLE_LATITUDE, mPost.getLocation().getLatitude());
         assertEquals(EXAMPLE_LONGITUDE, mPost.getLocation().getLongitude());
 
@@ -422,7 +410,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals("A new title", mPost.getTitle());
 
         // The location data should not have been altered
-        assertEquals(true, mPost.hasLocation());
+        assertTrue(mPost.hasLocation());
         assertEquals(EXAMPLE_LATITUDE, mPost.getLocation().getLatitude());
         assertEquals(EXAMPLE_LONGITUDE, mPost.getLocation().getLongitude());
 
@@ -436,7 +424,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         // The post should not have a location anymore
-        assertEquals(false, mPost.hasLocation());
+        assertFalse(mPost.hasLocation());
     }
 
     public void testDeleteRemotePost() throws InterruptedException {
@@ -447,12 +435,12 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        mNextEvent = TEST_EVENTS.POST_DELETED;
+        mNextEvent = TestEvents.POST_DELETED;
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(uploadedPost, sSite)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // The post should be removed from the db (regardless of whether it was deleted or just trashed on the server)
         assertEquals(null, mPostStore.getPostByLocalPostId(uploadedPost.getId()));
@@ -466,12 +454,12 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         PostModel post = new PostModel();
         post.setRemotePostId(6420328);
 
-        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, sSite)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_POST error instead
         // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
@@ -495,14 +483,14 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         uploadedPost.setRemotePostId(289385);
 
-        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
         // Upload edited post
         RemotePostPayload pushPayload = new RemotePostPayload(uploadedPost, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         PostModel persistedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
@@ -526,12 +514,12 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         PostModel invalidPost = new PostModel();
         invalidPost.setRemotePostId(6420328);
 
-        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(invalidPost, sSite)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_POST error instead
         // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
@@ -547,14 +535,14 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         mPost.setCategoryIdList(categories);
 
-        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
         // Upload edited post
         RemotePostPayload pushPayload = new RemotePostPayload(mPost, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_TERM error instead
         // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
@@ -570,14 +558,14 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         mPost.setTagIdList(tags);
 
-        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
         // Upload edited post
         RemotePostPayload pushPayload = new RemotePostPayload(mPost, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_TERM error instead
         // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
@@ -604,14 +592,14 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         uploadedPost.setCategoryIdList(categories);
 
-        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
         // Upload edited post
         RemotePostPayload pushPayload = new RemotePostPayload(uploadedPost, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         PostModel persistedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
@@ -637,14 +625,14 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         mPost.setFeaturedImageId(999999);
 
-        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
         // Upload edited post
         RemotePostPayload pushPayload = new RemotePostPayload(mPost, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_ATTACHMENT error instead
         // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
@@ -668,14 +656,14 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         uploadedPost.setFeaturedImageId(999999);
 
-        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
         // Upload edited post
         RemotePostPayload pushPayload = new RemotePostPayload(uploadedPost, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         PostModel persistedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
@@ -699,7 +687,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         PostModel post = new PostModel();
         post.setRemotePostId(10);
 
-        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
         SiteModel badSite = new SiteModel();
@@ -711,7 +699,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, badSite)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         assertEquals("Incorrect username or password.", mLastPostError.message);
     }
@@ -720,7 +708,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         PostModel post = new PostModel();
         post.setRemotePostId(10);
 
-        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
         SiteModel badSite = new SiteModel();
@@ -732,7 +720,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, badSite)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     // TODO: Test: Upload a page to a custom site that has pages disabled (should get a 403 'Invalid post type')
@@ -746,12 +734,12 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         site.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_SUBSCRIBER_ENDPOINT);
 
         // Expecting a 401 error (authorization required)
-        mNextEvent = TEST_EVENTS.ERROR_UNAUTHORIZED;
+        mNextEvent = TestEvents.ERROR_UNAUTHORIZED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new PostStore.FetchPostsPayload(site)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(site)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testCreatePostAsSubscriber() throws InterruptedException {
@@ -763,24 +751,24 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         subscriberSite.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_SUBSCRIBER_ENDPOINT);
 
         // Instantiate new post
-        mNextEvent = TEST_EVENTS.POST_INSTANTIATED;
+        mNextEvent = TestEvents.POST_INSTANTIATED;
         mCountDownLatch = new CountDownLatch(1);
 
         InstantiatePostPayload initPayload = new InstantiatePostPayload(subscriberSite, false);
         mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(initPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         setupPostAttributes();
 
         // Attempt to upload new post to site
-        mNextEvent = TEST_EVENTS.ERROR_UNAUTHORIZED;
+        mNextEvent = TestEvents.ERROR_UNAUTHORIZED;
         mCountDownLatch = new CountDownLatch(1);
 
         RemotePostPayload pushPayload = new RemotePostPayload(mPost, subscriberSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         assertEquals("Sorry, you are not allowed to post on this site.", mLastPostError.message);
 
@@ -792,64 +780,71 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(0, mPostStore.getUploadedPostsCountForSite(subscriberSite));
 
         assertEquals(0, failedUploadPost.getRemotePostId());
-        assertEquals(true, failedUploadPost.isLocalDraft());
+        assertTrue(failedUploadPost.isLocalDraft());
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
         AppLog.i(T.API, "Received OnPostChanged, cause: " + event.causeOfChange);
         if (event.isError()) {
             AppLog.i(T.API, "OnPostChanged has error: " + event.error.type + " - " + event.error.message);
             mLastPostError = event.error;
-            if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST)) {
+            if (mNextEvent.equals(TestEvents.ERROR_UNKNOWN_POST)) {
                 assertEquals(PostErrorType.UNKNOWN_POST, event.error.type);
                 mCountDownLatch.countDown();
-            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST_TYPE)) {
+            } else if (mNextEvent.equals(TestEvents.ERROR_UNKNOWN_POST_TYPE)) {
                 assertEquals(PostErrorType.UNKNOWN_POST_TYPE, event.error.type);
                 mCountDownLatch.countDown();
-            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNAUTHORIZED)) {
+            } else if (mNextEvent.equals(TestEvents.ERROR_UNAUTHORIZED)) {
                 assertEquals(PostErrorType.UNAUTHORIZED, event.error.type);
                 mCountDownLatch.countDown();
-            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
+            } else if (mNextEvent.equals(TestEvents.ERROR_GENERIC)) {
                 assertEquals(PostErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
+            } else {
+                throw new AssertionError("Unexpected error with type: " + event.error.type);
             }
             return;
         }
         switch (event.causeOfChange) {
             case UPDATE_POST:
-                if (mNextEvent.equals(TEST_EVENTS.POST_UPDATED)) {
+                if (mNextEvent.equals(TestEvents.POST_UPDATED)) {
                     mCountDownLatch.countDown();
                 }
                 break;
             case FETCH_POSTS:
-                if (mNextEvent.equals(TEST_EVENTS.POSTS_FETCHED)) {
+                if (mNextEvent.equals(TestEvents.POSTS_FETCHED)) {
                     AppLog.i(T.API, "Fetched " + event.rowsAffected + " posts, can load more: " + event.canLoadMore);
                     mCanLoadMorePosts = event.canLoadMore;
                     mCountDownLatch.countDown();
                 }
                 break;
             case FETCH_PAGES:
-                if (mNextEvent.equals(TEST_EVENTS.PAGES_FETCHED)) {
+                if (mNextEvent.equals(TestEvents.PAGES_FETCHED)) {
                     AppLog.i(T.API, "Fetched " + event.rowsAffected + " pages, can load more: " + event.canLoadMore);
                     mCanLoadMorePosts = event.canLoadMore;
                     mCountDownLatch.countDown();
                 }
                 break;
             case DELETE_POST:
-                if (mNextEvent.equals(TEST_EVENTS.POST_DELETED)) {
+                if (mNextEvent.equals(TestEvents.POST_DELETED)) {
                     mCountDownLatch.countDown();
                 }
                 break;
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
-    public void OnPostInstantiated(OnPostInstantiated event) {
+    public void onPostInstantiated(OnPostInstantiated event) {
         AppLog.i(T.API, "Received OnPostInstantiated");
-        assertEquals(TEST_EVENTS.POST_INSTANTIATED, mNextEvent);
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.POST_INSTANTIATED, mNextEvent);
 
-        assertEquals(true, event.post.isLocalDraft());
+        assertTrue(event.post.isLocalDraft());
         assertEquals(0, event.post.getRemotePostId());
         assertNotSame(0, event.post.getId());
         assertNotSame(0, event.post.getLocalSiteId());
@@ -858,30 +853,33 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onPostUploaded(OnPostUploaded event) {
         AppLog.i(T.API, "Received OnPostUploaded");
         if (event.isError()) {
             AppLog.i(T.API, "OnPostUploaded has error: " + event.error.type + " - " + event.error.message);
             mLastPostError = event.error;
-            if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST)) {
+            if (mNextEvent.equals(TestEvents.ERROR_UNKNOWN_POST)) {
                 assertEquals(PostErrorType.UNKNOWN_POST, event.error.type);
                 mCountDownLatch.countDown();
-            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST_TYPE)) {
+            } else if (mNextEvent.equals(TestEvents.ERROR_UNKNOWN_POST_TYPE)) {
                 assertEquals(PostErrorType.UNKNOWN_POST_TYPE, event.error.type);
                 mCountDownLatch.countDown();
-            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNAUTHORIZED)) {
+            } else if (mNextEvent.equals(TestEvents.ERROR_UNAUTHORIZED)) {
                 assertEquals(PostErrorType.UNAUTHORIZED, event.error.type);
                 mCountDownLatch.countDown();
-            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
+            } else if (mNextEvent.equals(TestEvents.ERROR_GENERIC)) {
                 assertEquals(PostErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
+            } else {
+                throw new AssertionError("Unexpected error with type: " + event.error.type);
             }
             return;
         }
-        assertEquals(TEST_EVENTS.POST_UPLOADED, mNextEvent);
-        assertEquals(false, event.post.isLocalDraft());
-        assertEquals(false, event.post.isLocallyChanged());
+        assertEquals(TestEvents.POST_UPLOADED, mNextEvent);
+        assertFalse(event.post.isLocalDraft());
+        assertFalse(event.post.isLocallyChanged());
         assertNotSame(0, event.post.getRemotePostId());
 
         mCountDownLatch.countDown();
@@ -894,40 +892,40 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
 
     private void createNewPost() throws InterruptedException {
         // Instantiate new post
-        mNextEvent = TEST_EVENTS.POST_INSTANTIATED;
+        mNextEvent = TestEvents.POST_INSTANTIATED;
         mCountDownLatch = new CountDownLatch(1);
 
         InstantiatePostPayload initPayload = new InstantiatePostPayload(sSite, false);
         mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(initPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void uploadPost(PostModel post) throws InterruptedException {
-        mNextEvent = TEST_EVENTS.POST_UPLOADED;
+        mNextEvent = TestEvents.POST_UPLOADED;
         mCountDownLatch = new CountDownLatch(1);
 
         RemotePostPayload pushPayload = new RemotePostPayload(post, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchPost(PostModel post) throws InterruptedException {
-        mNextEvent = TEST_EVENTS.POST_UPDATED;
+        mNextEvent = TestEvents.POST_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, sSite)));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void savePost(PostModel post) throws InterruptedException {
-        mNextEvent = TEST_EVENTS.POST_UPDATED;
+        mNextEvent = TestEvents.POST_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newUpdatePostAction(post));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
