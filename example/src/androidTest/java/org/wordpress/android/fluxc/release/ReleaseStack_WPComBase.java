@@ -25,17 +25,17 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     protected CountDownLatch mCountDownLatch;
     protected SiteModel mSite;
 
-    private enum TEST_EVENTS {
+    private enum TestEvents {
         NONE,
         AUTHENTICATED,
         SITE_CHANGED,
     }
-    private TEST_EVENTS mNextEvent;
+    private TestEvents mNextEvent;
 
 
     protected void init() throws Exception {
         // Register
-        mNextEvent = TEST_EVENTS.NONE;
+        mNextEvent = TestEvents.NONE;
 
         mDispatcher.register(this);
 
@@ -66,7 +66,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     private void fetchSites() throws InterruptedException {
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TEST_EVENTS.SITE_CHANGED;
+        mNextEvent = TestEvents.SITE_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -76,7 +76,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     @Subscribe
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
         assertFalse(event.isError());
-        assertEquals(TEST_EVENTS.AUTHENTICATED, mNextEvent);
+        assertEquals(TestEvents.AUTHENTICATED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -89,7 +89,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         }
         assertTrue(mSiteStore.hasSite());
         assertTrue(mSiteStore.hasWPComSite());
-        assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
+        assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 }
