@@ -37,7 +37,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     private PostModel mPost;
     private boolean mCanLoadMorePosts;
 
-    private enum TEST_EVENTS {
+    private enum TestEvents {
         NONE,
         POST_INSTANTIATED,
         POST_UPLOADED,
@@ -49,7 +49,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         ERROR_UNKNOWN_POST_TYPE,
         ERROR_GENERIC
     }
-    private TEST_EVENTS mNextEvent;
+    private TestEvents mNextEvent;
 
     @Override
     protected void setUp() throws Exception {
@@ -59,7 +59,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         // Authenticate, fetch sites and initialize sSite
         init();
         // Reset expected test event
-        mNextEvent = TEST_EVENTS.NONE;
+        mNextEvent = TestEvents.NONE;
 
         mPost = null;
         mCanLoadMorePosts = false;
@@ -232,7 +232,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     }
 
     public void testFetchPosts() throws InterruptedException {
-        mNextEvent = TEST_EVENTS.POSTS_FETCHED;
+        mNextEvent = TestEvents.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new PostStore.FetchPostsPayload(sSite, false)));
@@ -248,7 +248,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         // Dependent on site having more than NUM_POSTS_TO_REQUEST posts
         assertTrue(mCanLoadMorePosts);
 
-        mNextEvent = TEST_EVENTS.POSTS_FETCHED;
+        mNextEvent = TestEvents.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new PostStore.FetchPostsPayload(sSite, true)));
@@ -262,7 +262,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     }
 
     public void testFetchPages() throws InterruptedException {
-        mNextEvent = TEST_EVENTS.PAGES_FETCHED;
+        mNextEvent = TestEvents.PAGES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPagesAction(new PostStore.FetchPostsPayload(sSite, false)));
@@ -300,8 +300,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals("Some content here! <strong>Bold text</strong>.\r\n\r\nA new paragraph.", newPost.getContent());
         assertEquals(date, newPost.getDateCreated());
 
-        assertTrue(categoryIds.containsAll(newPost.getCategoryIdList()) &&
-                newPost.getCategoryIdList().containsAll(categoryIds));
+        assertTrue(categoryIds.containsAll(newPost.getCategoryIdList())
+                   && newPost.getCategoryIdList().containsAll(categoryIds));
     }
 
     public void testFullFeaturedPageUpload() throws InterruptedException {
@@ -431,7 +431,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        mNextEvent = TEST_EVENTS.POST_DELETED;
+        mNextEvent = TestEvents.POST_DELETED;
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(uploadedPost, sSite)));
@@ -451,7 +451,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         post.setRemotePostId(6420328);
         post.setRemoteSiteId(sSite.getSiteId());
 
-        mNextEvent = TEST_EVENTS.ERROR_UNKNOWN_POST;
+        mNextEvent = TestEvents.ERROR_UNKNOWN_POST;
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, sSite)));
@@ -476,7 +476,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         uploadedPost.setRemotePostId(289385);
 
-        mNextEvent = TEST_EVENTS.ERROR_UNKNOWN_POST;
+        mNextEvent = TestEvents.ERROR_UNKNOWN_POST;
         mCountDownLatch = new CountDownLatch(1);
 
         // Upload edited post
@@ -504,7 +504,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         invalidPost.setRemotePostId(6420328);
         invalidPost.setRemoteSiteId(sSite.getSiteId());
 
-        mNextEvent = TEST_EVENTS.ERROR_UNKNOWN_POST;
+        mNextEvent = TestEvents.ERROR_UNKNOWN_POST;
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(invalidPost, sSite)));
@@ -522,7 +522,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         site.setSiteId(99999999999L);
 
         // Expecting a generic 404 error (unknown site)
-        mNextEvent = TEST_EVENTS.ERROR_GENERIC;
+        mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, site)));
@@ -536,13 +536,13 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         AppLog.i(T.API, "Received OnPostChanged, cause: " + event.causeOfChange);
         if (event.isError()) {
             AppLog.i(T.API, "OnPostChanged has error: " + event.error.type + " - " + event.error.message);
-            if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST)) {
+            if (mNextEvent.equals(TestEvents.ERROR_UNKNOWN_POST)) {
                 assertEquals(PostErrorType.UNKNOWN_POST, event.error.type);
                 mCountDownLatch.countDown();
-            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST_TYPE)) {
+            } else if (mNextEvent.equals(TestEvents.ERROR_UNKNOWN_POST_TYPE)) {
                 assertEquals(PostErrorType.UNKNOWN_POST_TYPE, event.error.type);
                 mCountDownLatch.countDown();
-            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
+            } else if (mNextEvent.equals(TestEvents.ERROR_GENERIC)) {
                 assertEquals(PostErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
             } else {
@@ -552,26 +552,26 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         }
         switch (event.causeOfChange) {
             case UPDATE_POST:
-                if (mNextEvent.equals(TEST_EVENTS.POST_UPDATED)) {
+                if (mNextEvent.equals(TestEvents.POST_UPDATED)) {
                     mCountDownLatch.countDown();
                 }
                 break;
             case FETCH_POSTS:
-                if (mNextEvent.equals(TEST_EVENTS.POSTS_FETCHED)) {
+                if (mNextEvent.equals(TestEvents.POSTS_FETCHED)) {
                     AppLog.i(T.API, "Fetched " + event.rowsAffected + " posts, can load more: " + event.canLoadMore);
                     mCanLoadMorePosts = event.canLoadMore;
                     mCountDownLatch.countDown();
                 }
                 break;
             case FETCH_PAGES:
-                if (mNextEvent.equals(TEST_EVENTS.PAGES_FETCHED)) {
+                if (mNextEvent.equals(TestEvents.PAGES_FETCHED)) {
                     AppLog.i(T.API, "Fetched " + event.rowsAffected + " pages, can load more: " + event.canLoadMore);
                     mCanLoadMorePosts = event.canLoadMore;
                     mCountDownLatch.countDown();
                 }
                 break;
             case DELETE_POST:
-                if (mNextEvent.equals(TEST_EVENTS.POST_DELETED)) {
+                if (mNextEvent.equals(TestEvents.POST_DELETED)) {
                     mCountDownLatch.countDown();
                 }
                 break;
@@ -580,12 +580,12 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void OnPostInstantiated(OnPostInstantiated event) {
+    public void onPostInstantiated(OnPostInstantiated event) {
         AppLog.i(T.API, "Received OnPostInstantiated");
         if (event.isError()) {
             throw new AssertionError("Unexpected error with type: " + event.error.type);
         }
-        assertEquals(TEST_EVENTS.POST_INSTANTIATED, mNextEvent);
+        assertEquals(TestEvents.POST_INSTANTIATED, mNextEvent);
 
         assertTrue(event.post.isLocalDraft());
         assertEquals(0, event.post.getRemotePostId());
@@ -602,13 +602,13 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         AppLog.i(T.API, "Received OnPostUploaded");
         if (event.isError()) {
             AppLog.i(T.API, "OnPostUploaded has error: " + event.error.type + " - " + event.error.message);
-            if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST)) {
+            if (mNextEvent.equals(TestEvents.ERROR_UNKNOWN_POST)) {
                 assertEquals(PostErrorType.UNKNOWN_POST, event.error.type);
                 mCountDownLatch.countDown();
-            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_UNKNOWN_POST_TYPE)) {
+            } else if (mNextEvent.equals(TestEvents.ERROR_UNKNOWN_POST_TYPE)) {
                 assertEquals(PostErrorType.UNKNOWN_POST_TYPE, event.error.type);
                 mCountDownLatch.countDown();
-            } else if (mNextEvent.equals(TEST_EVENTS.ERROR_GENERIC)) {
+            } else if (mNextEvent.equals(TestEvents.ERROR_GENERIC)) {
                 assertEquals(PostErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
             } else {
@@ -616,7 +616,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
             }
             return;
         }
-        assertEquals(TEST_EVENTS.POST_UPLOADED, mNextEvent);
+        assertEquals(TestEvents.POST_UPLOADED, mNextEvent);
         assertFalse(event.post.isLocalDraft());
         assertFalse(event.post.isLocallyChanged());
         assertNotSame(0, event.post.getRemotePostId());
@@ -631,7 +631,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     private void createNewPost() throws InterruptedException {
         // Instantiate new post
-        mNextEvent = TEST_EVENTS.POST_INSTANTIATED;
+        mNextEvent = TestEvents.POST_INSTANTIATED;
         mCountDownLatch = new CountDownLatch(1);
 
         InstantiatePostPayload initPayload = new InstantiatePostPayload(sSite, false);
@@ -641,7 +641,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private void uploadPost(PostModel post) throws InterruptedException {
-        mNextEvent = TEST_EVENTS.POST_UPLOADED;
+        mNextEvent = TestEvents.POST_UPLOADED;
         mCountDownLatch = new CountDownLatch(1);
 
         RemotePostPayload pushPayload = new RemotePostPayload(post, sSite);
@@ -651,7 +651,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private void fetchPost(PostModel post) throws InterruptedException {
-        mNextEvent = TEST_EVENTS.POST_UPDATED;
+        mNextEvent = TestEvents.POST_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, sSite)));
@@ -660,7 +660,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private void savePost(PostModel post) throws InterruptedException {
-        mNextEvent = TEST_EVENTS.POST_UPDATED;
+        mNextEvent = TestEvents.POST_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newUpdatePostAction(post));
