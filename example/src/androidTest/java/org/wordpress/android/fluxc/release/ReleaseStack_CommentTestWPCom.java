@@ -99,7 +99,9 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(mNewComment.getContent(), comments.get(0).getContent());
 
         // Remove that comment
+        mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newRemoveCommentAction(mNewComment));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check the last comment we get from the DB is different
         comments = CommentSqlUtils.getCommentsForSite(mSite, CommentStatus.ALL);
@@ -115,7 +117,9 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertNotSame(0, count); // Only work if the site has at least one comment.
 
         // Remove all comments for this site
+        mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newRemoveCommentsAction(mSite));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         count = mCommentStore.getNumberOfCommentsForSite(mSite, CommentStatus.ALL);
         assertEquals(0, count);
