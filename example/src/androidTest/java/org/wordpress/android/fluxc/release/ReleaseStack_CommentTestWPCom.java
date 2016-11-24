@@ -46,6 +46,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         COMMENT_CHANGED_UNKNOWN_POST,
         COMMENT_CHANGED_DUPLICATE_COMMENT,
     }
+
     private TEST_EVENTS mNextEvent;
 
     @Override
@@ -152,12 +153,12 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newLikeCommentAction(new RemoteLikeCommentPayload(mSite,
-                        firstComment, true)));
+                firstComment, true)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(firstComment.getId());
-         assertTrue(comment.getILike());
+        assertTrue(comment.getILike());
 
         // Unlike comment
         mNextEvent = TEST_EVENTS.COMMENT_CHANGED;
@@ -299,7 +300,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TEST_EVENTS.COMMENT_INSTANTIATED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload1));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS , TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Edit comment instance
         mNewComment.setContent("Trying with: " + (new Random()).nextFloat() * 10 + " gigawatts");
