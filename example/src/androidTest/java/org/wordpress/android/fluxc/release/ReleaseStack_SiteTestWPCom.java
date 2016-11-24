@@ -31,13 +31,13 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     CountDownLatch mCountDownLatch;
 
-    enum TEST_EVENTS {
+    enum TestEvents {
         NONE,
         SITE_CHANGED,
         POST_FORMATS_CHANGED,
         SITE_REMOVED
     }
-    private TEST_EVENTS mExpectedEvent;
+    private TestEvents mExpectedEvent;
 
     private int mExpectedRowsAffected;
 
@@ -48,7 +48,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Register
         mDispatcher.register(this);
         // Reset expected test event
-        mExpectedEvent = TEST_EVENTS.NONE;
+        mExpectedEvent = TestEvents.NONE;
         mExpectedRowsAffected = 0;
     }
 
@@ -66,14 +66,14 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
-        mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
+        mExpectedEvent = TestEvents.SITE_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Clear WP.com sites, and wait for OnSiteRemoved event
         mCountDownLatch = new CountDownLatch(1);
-        mExpectedEvent = TEST_EVENTS.SITE_REMOVED;
+        mExpectedEvent = TestEvents.SITE_REMOVED;
         mExpectedRowsAffected = mSiteStore.getSitesCount();
         mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
 
@@ -93,7 +93,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
-        mExpectedEvent = TEST_EVENTS.SITE_CHANGED;
+        mExpectedEvent = TestEvents.SITE_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -102,7 +102,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
         // Fetch post formats
         mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(firstSite));
-        mExpectedEvent = TEST_EVENTS.POST_FORMATS_CHANGED;
+        mExpectedEvent = TestEvents.POST_FORMATS_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -129,13 +129,13 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         }
         assertTrue(mSiteStore.hasSite());
         assertTrue(mSiteStore.hasWPComSite());
-        assertEquals(TEST_EVENTS.SITE_CHANGED, mExpectedEvent);
+        assertEquals(TestEvents.SITE_CHANGED, mExpectedEvent);
         mCountDownLatch.countDown();
     }
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void OnSiteRemoved(SiteStore.OnSiteRemoved event) {
+    public void onSiteRemoved(SiteStore.OnSiteRemoved event) {
         AppLog.e(T.TESTS, "site count " + mSiteStore.getSitesCount());
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
@@ -143,7 +143,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertEquals(mExpectedRowsAffected, event.mRowsAffected);
         assertFalse(mSiteStore.hasSite());
         assertFalse(mSiteStore.hasWPComSite());
-        assertEquals(TEST_EVENTS.SITE_REMOVED, mExpectedEvent);
+        assertEquals(TestEvents.SITE_REMOVED, mExpectedEvent);
         mCountDownLatch.countDown();
     }
 
@@ -153,7 +153,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TEST_EVENTS.POST_FORMATS_CHANGED, mExpectedEvent);
+        assertEquals(TestEvents.POST_FORMATS_CHANGED, mExpectedEvent);
         mCountDownLatch.countDown();
     }
 }

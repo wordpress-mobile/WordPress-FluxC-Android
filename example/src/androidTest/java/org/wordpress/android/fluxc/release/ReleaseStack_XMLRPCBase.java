@@ -23,16 +23,16 @@ public class ReleaseStack_XMLRPCBase extends ReleaseStack_Base {
     protected CountDownLatch mCountDownLatch;
     protected SiteModel mSite;
 
-    private enum TEST_EVENTS {
+    private enum TestEvents {
         NONE,
         SITE_CHANGED,
     }
-    private TEST_EVENTS mNextEvent;
+    private TestEvents mNextEvent;
 
 
     protected void init() throws Exception {
         // Register
-        mNextEvent = TEST_EVENTS.NONE;
+        mNextEvent = TestEvents.NONE;
 
         mDispatcher.register(this);
 
@@ -47,7 +47,7 @@ public class ReleaseStack_XMLRPCBase extends ReleaseStack_Base {
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
         payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
         payload.url = BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT;
-        mNextEvent = TEST_EVENTS.SITE_CHANGED;
+        mNextEvent = TestEvents.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onChanged event
@@ -63,7 +63,7 @@ public class ReleaseStack_XMLRPCBase extends ReleaseStack_Base {
         }
         assertTrue(mSiteStore.hasSite());
         assertTrue(mSiteStore.hasSelfHostedSite());
-        assertEquals(TEST_EVENTS.SITE_CHANGED, mNextEvent);
+        assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 }
