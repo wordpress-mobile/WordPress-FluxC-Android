@@ -10,8 +10,10 @@ import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
+import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -472,7 +474,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onSiteRemoved(SiteStore.OnSiteRemoved event) {
+    public void onSiteRemoved(OnSiteRemoved event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type " + event.error.type);
@@ -491,7 +493,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onDiscoveryResponse(AccountStore.OnDiscoveryResponse event) {
+    public void onDiscoveryResponse(OnDiscoveryResponse event) {
         if (event.isError()) {
             // ERROR :(
             AppLog.i(T.API, "Discovery error: " + event.error);

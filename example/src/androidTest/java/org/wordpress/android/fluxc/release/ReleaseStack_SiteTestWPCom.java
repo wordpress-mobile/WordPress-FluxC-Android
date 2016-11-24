@@ -8,9 +8,12 @@ import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.PostFormatModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
+import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -50,9 +53,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     public void testWPComSiteFetchAndLogout() throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
-        AccountStore.AuthenticatePayload payload =
-                new AccountStore.AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
-                        BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        AuthenticatePayload payload = new AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         mCountDownLatch = new CountDownLatch(1);
 
         // Correct user we should get an OnAuthenticationChanged message
@@ -78,9 +80,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     public void testFetchPostFormats() throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
-        AccountStore.AuthenticatePayload payload =
-                new AccountStore.AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
-                        BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        AuthenticatePayload payload = new AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         mCountDownLatch = new CountDownLatch(1);
 
         // Correct user we should get an OnAuthenticationChanged message
@@ -109,7 +110,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
+    public void onAuthenticationChanged(OnAuthenticationChanged event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -131,7 +132,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onSiteRemoved(SiteStore.OnSiteRemoved event) {
+    public void onSiteRemoved(OnSiteRemoved event) {
         AppLog.e(T.TESTS, "site count " + mSiteStore.getSitesCount());
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);

@@ -12,6 +12,11 @@ import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.MediaStore;
+import org.wordpress.android.fluxc.store.MediaStore.MediaErrorType;
+import org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
+import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
+import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
+import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
 
@@ -231,7 +236,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         media.setFileExtension(MediaUtils.getExtension(imagePath));
         media.setMimeType(MediaUtils.MIME_TYPE_IMAGE + media.getFileExtension());
         media.setSiteId(sSite.getSelfHostedSiteId());
-        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(sSite, media);
+        UploadMediaPayload payload = new UploadMediaPayload(sSite, media);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         mNextExpectedEvent = TestEvents.DELETED_MEDIA;
         mCountDownLatch = new CountDownLatch(2);
@@ -260,18 +265,18 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     private void pushMedia(SiteModel site, MediaModel media, TestEvents expectedEvent) throws InterruptedException {
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(media);
-        MediaStore.MediaListPayload payload = new MediaStore.MediaListPayload(MediaAction.PUSH_MEDIA, site, mediaList);
+        MediaListPayload payload = new MediaListPayload(MediaAction.PUSH_MEDIA, site, mediaList);
         dispatchAction(expectedEvent, MediaActionBuilder.newPushMediaAction(payload), 1);
     }
 
     private void uploadMedia(SiteModel site, MediaModel media) throws InterruptedException {
-        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(site, media);
+        UploadMediaPayload payload = new UploadMediaPayload(site, media);
         dispatchAction(TestEvents.UPLOADED_MEDIA, MediaActionBuilder.newUploadMediaAction(payload), 1);
     }
 
     private void fetchAllMedia(SiteModel site) throws InterruptedException {
-        MediaStore.MediaListPayload mediaPayload =
-                new MediaStore.MediaListPayload(MediaAction.FETCH_ALL_MEDIA, site, null);
+        MediaListPayload mediaPayload =
+                new MediaListPayload(MediaAction.FETCH_ALL_MEDIA, site, null);
         dispatchAction(TestEvents.FETCHED_ALL_MEDIA, MediaActionBuilder.newFetchAllMediaAction(mediaPayload), 1);
     }
 
@@ -279,8 +284,8 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
             throws InterruptedException {
         mExpectedIds = mediaIds;
         if (mExpectedIds == null) {
-            MediaStore.MediaListPayload mediaPayload =
-                    new MediaStore.MediaListPayload(MediaAction.FETCH_MEDIA, site, null);
+            MediaListPayload mediaPayload =
+                    new MediaListPayload(MediaAction.FETCH_MEDIA, site, null);
             dispatchAction(expectedEvent, MediaActionBuilder.newFetchMediaAction(mediaPayload), 1);
         } else {
             int size = mExpectedIds.size();
@@ -290,8 +295,8 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
                 media.setMediaId(id);
                 mediaList.add(media);
             }
-            MediaStore.MediaListPayload mediaPayload =
-                    new MediaStore.MediaListPayload(MediaAction.FETCH_MEDIA, site, mediaList);
+            MediaListPayload mediaPayload =
+                    new MediaListPayload(MediaAction.FETCH_MEDIA, site, mediaList);
             dispatchAction(expectedEvent, MediaActionBuilder.newFetchMediaAction(mediaPayload), size);
         }
     }
@@ -300,14 +305,14 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
             throws InterruptedException {
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(media);
-        MediaStore.MediaListPayload deletePayload =
-                new MediaStore.MediaListPayload(MediaAction.DELETE_MEDIA, site, mediaList);
+        MediaListPayload deletePayload =
+                new MediaListPayload(MediaAction.DELETE_MEDIA, site, mediaList);
         dispatchAction(expectedEvent, MediaActionBuilder.newDeleteMediaAction(deletePayload), num);
     }
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onMediaUploaded(MediaStore.OnMediaUploaded event) throws InterruptedException {
+    public void onMediaUploaded(OnMediaUploaded event) throws InterruptedException {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -329,15 +334,15 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onMediaChanged(MediaStore.OnMediaChanged event) {
+    public void onMediaChanged(OnMediaChanged event) {
         AppLog.d(AppLog.T.TESTS, "tests.onMediaChanged: " + event.cause);
 
         if (event.isError()) {
-            if (event.error.type == MediaStore.MediaErrorType.NULL_MEDIA_ARG) {
+            if (event.error.type == MediaErrorType.NULL_MEDIA_ARG) {
                 assertEquals(TestEvents.NULL_ERROR, mNextEvent);
-            } else if (event.error.type == MediaStore.MediaErrorType.MALFORMED_MEDIA_ARG) {
+            } else if (event.error.type == MediaErrorType.MALFORMED_MEDIA_ARG) {
                 assertEquals(TestEvents.MALFORMED_ERROR, mNextEvent);
-            } else if (event.error.type == MediaStore.MediaErrorType.MEDIA_NOT_FOUND) {
+            } else if (event.error.type == MediaErrorType.MEDIA_NOT_FOUND) {
                 assertEquals(TestEvents.NOT_FOUND_ERROR, mNextEvent);
             } else {
                 throw new AssertionError("Unexpected error occurred with type: " + event.error.type);

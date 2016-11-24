@@ -10,6 +10,8 @@ import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
+import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
+import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 
@@ -131,7 +133,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
+    public void onMediaUploaded(OnMediaUploaded event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -143,7 +145,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onMediaChanged(MediaStore.OnMediaChanged event) {
+    public void onMediaChanged(OnMediaChanged event) {
         if (event.isError()) {
             if (mNextEvent == TestEvents.PUSH_ERROR) {
                 assertEquals(event.cause, MediaAction.PUSH_MEDIA);
@@ -167,7 +169,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch.countDown();
     }
 
-    private boolean eventHasKnownImages(MediaStore.OnMediaChanged event) {
+    private boolean eventHasKnownImages(OnMediaChanged event) {
         if (event == null || event.media == null || event.media.isEmpty()) return false;
         String[] splitIds = BuildConfig.TEST_WPCOM_IMAGE_IDS_TEST1.split(",");
         if (splitIds.length != event.media.size()) return false;
