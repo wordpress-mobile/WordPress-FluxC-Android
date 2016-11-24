@@ -1,18 +1,19 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
-import org.wordpress.android.fluxc.network.MemorizingTrustManager;
-import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
-import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
+import org.wordpress.android.fluxc.network.MemorizingTrustManager;
+import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
+import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -27,16 +28,12 @@ import javax.inject.Inject;
  * Tests with real credentials on real servers using the full release stack (no mock)
  */
 public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
-    @Inject Dispatcher mDispatcher;
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
     @Inject HTTPAuthManager mHTTPAuthManager;
     @Inject MemorizingTrustManager mMemorizingTrustManager;
 
-    RefreshSitesXMLRPCPayload mPayload;
-    CountDownLatch mCountDownLatch;
-
-    enum TestEvents {
+    private enum TestEvents {
         NONE,
         DISCOVERY_SUCCEEDED,
         INVALID_URL_ERROR,
@@ -52,13 +49,14 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     }
 
     private TestEvents mNextEvent;
+    private RefreshSitesXMLRPCPayload mPayload;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
-        mDispatcher.register(this);
+        init();
         // Reset expected test event
         mNextEvent = TestEvents.NONE;
     }
@@ -75,7 +73,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
 
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testInvalidUrlFetchSites() throws InterruptedException {
@@ -333,7 +331,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
 
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testXMLRPCForbiddenDiscovery() throws InterruptedException {
@@ -348,7 +346,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
 
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testXMLRPCMissingMethodDiscovery() throws InterruptedException {
@@ -363,7 +361,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
 
         // Wait for a network response / onChanged event
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void checkSelfHostedSimpleFetchForSite(String url, String username, String password)
@@ -476,7 +474,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onSiteRemoved(SiteStore.OnSiteRemoved event) {
+    public void onSiteRemoved(OnSiteRemoved event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type " + event.error.type);
@@ -495,7 +493,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onDiscoveryResponse(AccountStore.OnDiscoveryResponse event) {
+    public void onDiscoveryResponse(OnDiscoveryResponse event) {
         if (event.isError()) {
             // ERROR :(
             AppLog.i(T.API, "Discovery error: " + event.error);

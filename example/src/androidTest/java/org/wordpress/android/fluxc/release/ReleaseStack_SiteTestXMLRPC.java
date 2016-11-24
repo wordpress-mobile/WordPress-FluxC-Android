@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
-import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
@@ -15,6 +14,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
 import org.wordpress.android.util.AppLog;
@@ -31,13 +31,10 @@ import javax.inject.Inject;
  * Skips self hosted site discovery, directly using the ENDPOINT URLs from tests.properties.
  */
 public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
-    @Inject Dispatcher mDispatcher;
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
     @Inject HTTPAuthManager mHTTPAuthManager;
     @Inject MemorizingTrustManager mMemorizingTrustManager;
-
-    CountDownLatch mCountDownLatch;
 
     private enum TestEvents {
         NONE,
@@ -47,6 +44,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         POST_FORMATS_CHANGED,
         SITE_REMOVED
     }
+
     private TestEvents mNextEvent;
 
     @Override
@@ -54,7 +52,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
-        mDispatcher.register(this);
+        init();
         // Reset expected test event
         mNextEvent = TestEvents.NONE;
     }
@@ -251,7 +249,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onSiteRemoved(SiteStore.OnSiteRemoved event) {
+    public void onSiteRemoved(OnSiteRemoved event) {
         AppLog.i(T.TESTS, "Received OnSiteRemoved, site count: " + mSiteStore.getSitesCount());
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);

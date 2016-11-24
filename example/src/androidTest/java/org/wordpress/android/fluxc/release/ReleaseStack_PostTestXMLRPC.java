@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
-import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
@@ -9,6 +8,7 @@ import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.store.PostStore;
+import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.fluxc.store.PostStore.OnPostInstantiated;
@@ -29,22 +29,13 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
-    @Inject Dispatcher mDispatcher;
+public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Inject PostStore mPostStore;
 
     private static final String POST_DEFAULT_TITLE = "PostTestXMLRPC base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
     private static final double EXAMPLE_LATITUDE = 44.8378;
     private static final double EXAMPLE_LONGITUDE = -0.5792;
-
-    private CountDownLatch mCountDownLatch;
-    private PostModel mPost;
-    private static SiteModel sSite;
-
-    private boolean mCanLoadMorePosts;
-
-    private PostError mLastPostError;
 
     private enum TestEvents {
         NONE,
@@ -59,23 +50,20 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         ERROR_UNAUTHORIZED,
         ERROR_GENERIC
     }
-    private TestEvents mNextEvent;
 
-    {
-        sSite = new SiteModel();
-        sSite.setId(1);
-        sSite.setSelfHostedSiteId(0);
-        sSite.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE);
-        sSite.setPassword(BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE);
-        sSite.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
-    }
+    private TestEvents mNextEvent;
+    private PostError mLastPostError;
+    private PostModel mPost;
+    private boolean mCanLoadMorePosts;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
-        // Register
-        mDispatcher.register(this);
+
+        // Register and initialize sSite
+        init();
+
         // Reset expected test event
         mNextEvent = TestEvents.NONE;
 
@@ -255,7 +243,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TestEvents.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new PostStore.FetchPostsPayload(sSite, false)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, false)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -271,7 +259,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TestEvents.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new PostStore.FetchPostsPayload(sSite, true)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, true)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -285,7 +273,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TestEvents.PAGES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPagesAction(new PostStore.FetchPostsPayload(sSite, false)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPagesAction(new FetchPostsPayload(sSite, false)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -321,7 +309,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         assertEquals(date, newPost.getDateCreated());
 
         assertTrue(categoryIds.containsAll(newPost.getCategoryIdList())
-                   && newPost.getCategoryIdList().containsAll(categoryIds));
+                && newPost.getCategoryIdList().containsAll(categoryIds));
     }
 
     public void testFullFeaturedPageUpload() throws InterruptedException {
@@ -749,7 +737,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TestEvents.ERROR_UNAUTHORIZED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new PostStore.FetchPostsPayload(site)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(site)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
