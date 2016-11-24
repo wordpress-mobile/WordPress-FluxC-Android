@@ -17,4 +17,10 @@
         android:layout_height="wrap_content"
         android:text="Reply to first comment" />
 
+    <Button
+        android:id="@+id/like_comment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Like/Unlike first comment" />
+
 </LinearLayout>
