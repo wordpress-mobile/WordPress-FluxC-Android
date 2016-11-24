@@ -395,6 +395,24 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    public void testWPAPISimpleFetchSites() throws InterruptedException {
+        if (org.wordpress.android.fluxc.BuildConfig.ENABLE_WPAPI) {
+            mPayload = new RefreshSitesXMLRPCPayload();
+            mPayload.url = BuildConfig.TEST_WPORG_URL_SH_WPAPI_SIMPLE;
+            mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_WPAPI_SIMPLE;
+            mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_WPAPI_SIMPLE;
+
+            mNextEvent = TestEvents.DISCOVERY_SUCCEEDED_WPAPI;
+            mCountDownLatch = new CountDownLatch(1);
+
+            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+
+            // Wait for a network response / onChanged event
+            assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+            // TODO: Fetch site (and migrate this test to use checkSelfHostedSimpleFetchForSite)
+        }
+    }
 
     private void checkSelfHostedSimpleFetchForSite(String url, String username, String password, TestEvents nextEvent)
             throws InterruptedException {
