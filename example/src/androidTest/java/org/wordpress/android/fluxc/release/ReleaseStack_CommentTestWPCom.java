@@ -153,7 +153,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newLikeCommentAction(new RemoteLikeCommentPayload(mSite,
                         firstComment, true)));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(firstComment.getId());
@@ -164,7 +164,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newLikeCommentAction(new RemoteLikeCommentPayload(mSite,
                 firstComment, false)));
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check comment has been modified in the DB
         comment = mCommentStore.getCommentByLocalId(firstComment.getId());
