@@ -45,7 +45,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         NOT_FOUND_ERROR
     }
 
-    private TestEvents mExpectedEvent;
+    private TestEvents mNextEvent;
     private TestEvents mNextExpectedEvent;
     private List<Long> mExpectedIds;
     private long mLastUploadedId = -1L;
@@ -56,7 +56,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mReleaseStackAppComponent.inject(this);
         // Register and initialize sSite
         init();
-        mExpectedEvent = TestEvents.NONE;
+        mNextEvent = TestEvents.NONE;
     }
 
     /**
@@ -232,7 +232,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         media.setMimeType(MediaUtils.MIME_TYPE_IMAGE + media.getFileExtension());
         media.setSiteId(sSite.getSelfHostedSiteId());
         MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(sSite, media);
-        mExpectedEvent = TestEvents.UPLOADED_MEDIA;
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
         mNextExpectedEvent = TestEvents.DELETED_MEDIA;
         mCountDownLatch = new CountDownLatch(2);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
@@ -249,7 +249,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     private void dispatchAction(TestEvents expectedEvent, Action action, int count) throws InterruptedException {
-        mExpectedEvent = expectedEvent;
+        mNextEvent = expectedEvent;
         if (count > 0) {
             mCountDownLatch = new CountDownLatch(count);
         }
@@ -313,7 +313,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         }
         mLastUploadedId = event.media.getMediaId();
         if (event.completed) {
-            assertEquals(TestEvents.UPLOADED_MEDIA, mExpectedEvent);
+            assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
             if (mNextExpectedEvent != null) {
                 if (mNextExpectedEvent == TestEvents.DELETED_MEDIA) {
                     event.media.setMediaId(mLastUploadedId);
@@ -334,26 +334,26 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         if (event.isError()) {
             if (event.error.type == MediaStore.MediaErrorType.NULL_MEDIA_ARG) {
-                assertEquals(TestEvents.NULL_ERROR, mExpectedEvent);
+                assertEquals(TestEvents.NULL_ERROR, mNextEvent);
             } else if (event.error.type == MediaStore.MediaErrorType.MALFORMED_MEDIA_ARG) {
-                assertEquals(TestEvents.MALFORMED_ERROR, mExpectedEvent);
+                assertEquals(TestEvents.MALFORMED_ERROR, mNextEvent);
             } else if (event.error.type == MediaStore.MediaErrorType.MEDIA_NOT_FOUND) {
-                assertEquals(TestEvents.NOT_FOUND_ERROR, mExpectedEvent);
+                assertEquals(TestEvents.NOT_FOUND_ERROR, mNextEvent);
             } else {
                 throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
         } else {
             if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
-                assertEquals(TestEvents.FETCHED_ALL_MEDIA, mExpectedEvent);
+                assertEquals(TestEvents.FETCHED_ALL_MEDIA, mNextEvent);
             } else if (event.cause == MediaAction.FETCH_MEDIA) {
-                assertEquals(TestEvents.FETCHED_MEDIA, mExpectedEvent);
+                assertEquals(TestEvents.FETCHED_MEDIA, mNextEvent);
                 if (mExpectedIds != null) {
                     assertTrue(mExpectedIds.contains(event.media.get(0).getMediaId()));
                 }
             } else if (event.cause == MediaAction.PUSH_MEDIA) {
-                assertEquals(TestEvents.PUSHED_MEDIA, mExpectedEvent);
+                assertEquals(TestEvents.PUSHED_MEDIA, mNextEvent);
             } else if (event.cause == MediaAction.DELETE_MEDIA) {
-                assertEquals(TestEvents.DELETED_MEDIA, mExpectedEvent);
+                assertEquals(TestEvents.DELETED_MEDIA, mNextEvent);
             }
         }
         mCountDownLatch.countDown();

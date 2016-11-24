@@ -34,7 +34,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         SITE_REMOVED
     }
 
-    private TestEvents mExpectedEvent;
+    private TestEvents mNextEvent;
     private int mExpectedRowsAffected;
 
     @Override
@@ -44,7 +44,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Register
         init();
         // Reset expected test event
-        mExpectedEvent = TestEvents.NONE;
+        mNextEvent = TestEvents.NONE;
         mExpectedRowsAffected = 0;
     }
 
@@ -62,14 +62,14 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
-        mExpectedEvent = TestEvents.SITE_CHANGED;
+        mNextEvent = TestEvents.SITE_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Clear WP.com sites, and wait for OnSiteRemoved event
         mCountDownLatch = new CountDownLatch(1);
-        mExpectedEvent = TestEvents.SITE_REMOVED;
+        mNextEvent = TestEvents.SITE_REMOVED;
         mExpectedRowsAffected = mSiteStore.getSitesCount();
         mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
 
@@ -89,7 +89,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
-        mExpectedEvent = TestEvents.SITE_CHANGED;
+        mNextEvent = TestEvents.SITE_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -98,7 +98,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
         // Fetch post formats
         mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(firstSite));
-        mExpectedEvent = TestEvents.POST_FORMATS_CHANGED;
+        mNextEvent = TestEvents.POST_FORMATS_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -125,7 +125,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         }
         assertTrue(mSiteStore.hasSite());
         assertTrue(mSiteStore.hasWPComSite());
-        assertEquals(TestEvents.SITE_CHANGED, mExpectedEvent);
+        assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -139,7 +139,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertEquals(mExpectedRowsAffected, event.mRowsAffected);
         assertFalse(mSiteStore.hasSite());
         assertFalse(mSiteStore.hasWPComSite());
-        assertEquals(TestEvents.SITE_REMOVED, mExpectedEvent);
+        assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -149,7 +149,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TestEvents.POST_FORMATS_CHANGED, mExpectedEvent);
+        assertEquals(TestEvents.POST_FORMATS_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 }

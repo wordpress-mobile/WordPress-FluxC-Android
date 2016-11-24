@@ -29,7 +29,7 @@ import javax.inject.Inject;
 public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     @Inject AccountStore mAccountStore;
 
-    private enum AccountTestActions {
+    private enum TestEvents {
         NONE,
         AUTHENTICATE,
         INCORRECT_USERNAME_OR_PASSWORD_ERROR,
@@ -41,7 +41,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AUTH_EMAIL_ERROR_NO_SUCH_USER
     }
 
-    private AccountTestActions mExpectedAction;
+    private TestEvents mNextEvent;
     private boolean mExpectAccountInfosChanged;
 
     @Override
@@ -51,30 +51,30 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
         // Register
         init();
-        mExpectedAction = AccountTestActions.NONE;
+        mNextEvent = TestEvents.NONE;
     }
 
     public void testWPComAuthenticationOK() throws InterruptedException {
-        mExpectedAction = AccountTestActions.AUTHENTICATE;
+        mNextEvent = TestEvents.AUTHENTICATE;
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
     }
 
     public void testWPComAuthenticationIncorrectUsernameOrPassword() throws InterruptedException {
-        mExpectedAction = AccountTestActions.INCORRECT_USERNAME_OR_PASSWORD_ERROR;
+        mNextEvent = TestEvents.INCORRECT_USERNAME_OR_PASSWORD_ERROR;
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_BAD_PASSWORD);
     }
 
     public void testWPCom2faAuthentication() throws InterruptedException {
-        mExpectedAction = AccountTestActions.AUTHENTICATE_2FA_ERROR;
+        mNextEvent = TestEvents.AUTHENTICATE_2FA_ERROR;
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_2FA, BuildConfig.TEST_WPCOM_PASSWORD_2FA);
     }
 
     public void testWPComFetch() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
-            mExpectedAction = AccountTestActions.AUTHENTICATE;
+            mNextEvent = TestEvents.AUTHENTICATE;
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         }
-        mExpectedAction = AccountTestActions.FETCHED;
+        mNextEvent = TestEvents.FETCHED;
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
         mCountDownLatch = new CountDownLatch(2);
@@ -83,10 +83,10 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     public void testWPComPost() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
-            mExpectedAction = AccountTestActions.AUTHENTICATE;
+            mNextEvent = TestEvents.AUTHENTICATE;
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         }
-        mExpectedAction = AccountTestActions.POSTED;
+        mNextEvent = TestEvents.POSTED;
         PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
         String newValue = String.valueOf(System.currentTimeMillis());
         mExpectAccountInfosChanged = true;
@@ -101,18 +101,18 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     public void testWPComPostNoChange() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
-            mExpectedAction = AccountTestActions.AUTHENTICATE;
+            mNextEvent = TestEvents.AUTHENTICATE;
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         }
 
         // First, fetch account settings
-        mExpectedAction = AccountTestActions.FETCHED;
+        mNextEvent = TestEvents.FETCHED;
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
         mCountDownLatch = new CountDownLatch(2);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        mExpectedAction = AccountTestActions.POSTED;
+        mNextEvent = TestEvents.POSTED;
         PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
         String newValue = mAccountStore.getAccount().getAboutMe();
         mExpectAccountInfosChanged = false;
@@ -127,18 +127,18 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     public void testWPComPostPrimarySiteIdNoChange() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
-            mExpectedAction = AccountTestActions.AUTHENTICATE;
+            mNextEvent = TestEvents.AUTHENTICATE;
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         }
 
         // First, fetch account settings
-        mExpectedAction = AccountTestActions.FETCHED;
+        mNextEvent = TestEvents.FETCHED;
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
         mCountDownLatch = new CountDownLatch(2);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        mExpectedAction = AccountTestActions.POSTED;
+        mNextEvent = TestEvents.POSTED;
         PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
         String newValue = String.valueOf(mAccountStore.getAccount().getPrimarySiteId());
         mExpectAccountInfosChanged = false;
@@ -152,21 +152,21 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     }
 
     public void testSendAuthEmail() throws InterruptedException {
-        mExpectedAction = AccountTestActions.SENT_AUTH_EMAIL;
+        mNextEvent = TestEvents.SENT_AUTH_EMAIL;
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(BuildConfig.TEST_WPCOM_EMAIL_TEST1));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testSendAuthEmailInvalid() throws InterruptedException {
-        mExpectedAction = AccountTestActions.AUTH_EMAIL_ERROR_INVALID;
+        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_INVALID;
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction("notanemail"));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testSendAuthEmailNoSuchUser() throws InterruptedException {
-        mExpectedAction = AccountTestActions.AUTH_EMAIL_ERROR_NO_SUCH_USER;
+        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER;
         String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(unknownEmail));
         mCountDownLatch = new CountDownLatch(1);
@@ -177,7 +177,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         if (event.isError()) {
-            switch (mExpectedAction) {
+            switch (mNextEvent) {
                 case AUTHENTICATE_2FA_ERROR:
                     assertEquals(event.error.type, AuthenticationErrorType.NEEDS_2FA);
                     break;
@@ -188,7 +188,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
                     throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
         } else {
-            assertEquals(mExpectedAction, AccountTestActions.AUTHENTICATE);
+            assertEquals(mNextEvent, TestEvents.AUTHENTICATE);
         }
         mCountDownLatch.countDown();
     }
@@ -200,13 +200,13 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         if (event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
-            assertEquals(mExpectedAction, AccountTestActions.FETCHED);
+            assertEquals(mNextEvent, TestEvents.FETCHED);
             assertEquals(BuildConfig.TEST_WPCOM_USERNAME_TEST1, mAccountStore.getAccount().getUserName());
         } else if (event.causeOfChange == AccountAction.FETCH_SETTINGS) {
-            assertEquals(mExpectedAction, AccountTestActions.FETCHED);
+            assertEquals(mNextEvent, TestEvents.FETCHED);
             assertEquals(BuildConfig.TEST_WPCOM_USERNAME_TEST1, mAccountStore.getAccount().getUserName());
         } else if (event.causeOfChange == AccountAction.PUSH_SETTINGS) {
-            assertEquals(mExpectedAction, AccountTestActions.POSTED);
+            assertEquals(mNextEvent, TestEvents.POSTED);
             assertEquals(mExpectAccountInfosChanged, event.accountInfosChanged);
         }
         mCountDownLatch.countDown();
@@ -219,16 +219,16 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         if (event.isError()) {
             AppLog.i(AppLog.T.API, "OnAuthEmailSent has error: " + event.error.type + " - " + event.error.message);
             if (event.error.type == AuthEmailErrorType.INVALID_INPUT) {
-                assertEquals(mExpectedAction, AccountTestActions.AUTH_EMAIL_ERROR_INVALID);
+                assertEquals(mNextEvent, TestEvents.AUTH_EMAIL_ERROR_INVALID);
                 mCountDownLatch.countDown();
             } else if (event.error.type == AuthEmailErrorType.NO_SUCH_USER) {
-                assertEquals(mExpectedAction, AccountTestActions.AUTH_EMAIL_ERROR_NO_SUCH_USER);
+                assertEquals(mNextEvent, TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER);
                 mCountDownLatch.countDown();
             } else {
                 throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
         } else {
-            assertEquals(mExpectedAction, AccountTestActions.SENT_AUTH_EMAIL);
+            assertEquals(mNextEvent, TestEvents.SENT_AUTH_EMAIL);
             mCountDownLatch.countDown();
         }
     }

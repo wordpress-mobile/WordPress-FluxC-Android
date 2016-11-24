@@ -21,7 +21,7 @@ import javax.inject.Inject;
 public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     @Inject AccountStore mAccountStore;
 
-    private enum AccountAvailabilityTestActions {
+    private enum TestEvents {
         NONE,
         IS_AVAILABLE_BLOG,
         IS_AVAILABLE_DOMAIN,
@@ -30,7 +30,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         ERROR_INVALID
     }
 
-    private AccountAvailabilityTestActions mNextEvent;
+    private TestEvents mNextEvent;
     private OnAvailabilityChecked mLastEvent;
 
     @Override
@@ -40,11 +40,11 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
 
         // Register
         init();
-        mNextEvent = AccountAvailabilityTestActions.NONE;
+        mNextEvent = TestEvents.NONE;
     }
 
     public void testIsAvailableBlog() throws InterruptedException {
-        mNextEvent = AccountAvailabilityTestActions.IS_AVAILABLE_BLOG;
+        mNextEvent = TestEvents.IS_AVAILABLE_BLOG;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableBlogAction("wordpress"));
 
@@ -54,7 +54,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         assertFalse(mLastEvent.isAvailable);
 
         String unavailableBlog = "docbrown" + RandomStringUtils.randomAlphanumeric(8).toLowerCase();
-        mNextEvent = AccountAvailabilityTestActions.IS_AVAILABLE_BLOG;
+        mNextEvent = TestEvents.IS_AVAILABLE_BLOG;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableBlogAction(unavailableBlog));
 
@@ -65,7 +65,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     }
 
     public void testIsAvailableBlogInvalid() throws InterruptedException {
-        mNextEvent = AccountAvailabilityTestActions.ERROR_INVALID;
+        mNextEvent = TestEvents.ERROR_INVALID;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableBlogAction("notavalidname#"));
 
@@ -76,7 +76,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     }
 
     public void testIsAvailableDomain() throws InterruptedException {
-        mNextEvent = AccountAvailabilityTestActions.IS_AVAILABLE_DOMAIN;
+        mNextEvent = TestEvents.IS_AVAILABLE_DOMAIN;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableDomainAction("docbrown.com"));
 
@@ -87,7 +87,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         assertTrue(mLastEvent.suggestions.size() > 0);
 
         String unavailableDomain = "docbrown" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + ".com";
-        mNextEvent = AccountAvailabilityTestActions.IS_AVAILABLE_DOMAIN;
+        mNextEvent = TestEvents.IS_AVAILABLE_DOMAIN;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableDomainAction(unavailableDomain));
 
@@ -99,7 +99,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     }
 
     public void testIsAvailableDomainInvalid() throws InterruptedException {
-        mNextEvent = AccountAvailabilityTestActions.ERROR_INVALID;
+        mNextEvent = TestEvents.ERROR_INVALID;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableDomainAction("notavaliddomain#"));
 
@@ -110,7 +110,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     }
 
     public void testIsAvailableEmail() throws InterruptedException {
-        mNextEvent = AccountAvailabilityTestActions.IS_AVAILABLE_EMAIL;
+        mNextEvent = TestEvents.IS_AVAILABLE_EMAIL;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableEmailAction("mobile@automattic.com"));
 
@@ -120,7 +120,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         assertFalse(mLastEvent.isAvailable);
 
         String unavailableEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
-        mNextEvent = AccountAvailabilityTestActions.IS_AVAILABLE_EMAIL;
+        mNextEvent = TestEvents.IS_AVAILABLE_EMAIL;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableEmailAction(unavailableEmail));
 
@@ -131,7 +131,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     }
 
     public void testIsAvailableEmailInvalid() throws InterruptedException {
-        mNextEvent = AccountAvailabilityTestActions.ERROR_INVALID;
+        mNextEvent = TestEvents.ERROR_INVALID;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableEmailAction("notanemail"));
 
@@ -142,7 +142,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     }
 
     public void testIsAvailableUsername() throws InterruptedException {
-        mNextEvent = AccountAvailabilityTestActions.IS_AVAILABLE_USERNAME;
+        mNextEvent = TestEvents.IS_AVAILABLE_USERNAME;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableUsernameAction("mobile"));
 
@@ -152,7 +152,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         assertFalse(mLastEvent.isAvailable);
 
         String unavailableUsername = "fluxc" + RandomStringUtils.randomAlphanumeric(8).toLowerCase();
-        mNextEvent = AccountAvailabilityTestActions.IS_AVAILABLE_USERNAME;
+        mNextEvent = TestEvents.IS_AVAILABLE_USERNAME;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableUsernameAction(unavailableUsername));
 
@@ -163,7 +163,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     }
 
     public void testIsAvailableUsernameInvalid() throws InterruptedException {
-        mNextEvent = AccountAvailabilityTestActions.ERROR_INVALID;
+        mNextEvent = TestEvents.ERROR_INVALID;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableUsernameAction("invalidusername#"));
 
@@ -180,7 +180,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
 
         if (event.isError()) {
             AppLog.d(T.API, "OnAvailabilityChecked has error: " + event.error.type + " - " + event.error.message);
-            if (mNextEvent.equals(AccountAvailabilityTestActions.ERROR_INVALID)) {
+            if (mNextEvent.equals(TestEvents.ERROR_INVALID)) {
                 assertEquals(IsAvailableErrorType.INVALID, event.error.type);
                 mCountDownLatch.countDown();
             }
@@ -188,19 +188,19 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         }
         switch (event.type) {
             case BLOG:
-                assertEquals(mNextEvent, AccountAvailabilityTestActions.IS_AVAILABLE_BLOG);
+                assertEquals(mNextEvent, TestEvents.IS_AVAILABLE_BLOG);
                 mCountDownLatch.countDown();
                 break;
             case DOMAIN:
-                assertEquals(mNextEvent, AccountAvailabilityTestActions.IS_AVAILABLE_DOMAIN);
+                assertEquals(mNextEvent, TestEvents.IS_AVAILABLE_DOMAIN);
                 mCountDownLatch.countDown();
                 break;
             case EMAIL:
-                assertEquals(mNextEvent, AccountAvailabilityTestActions.IS_AVAILABLE_EMAIL);
+                assertEquals(mNextEvent, TestEvents.IS_AVAILABLE_EMAIL);
                 mCountDownLatch.countDown();
                 break;
             case USERNAME:
-                assertEquals(mNextEvent, AccountAvailabilityTestActions.IS_AVAILABLE_USERNAME);
+                assertEquals(mNextEvent, TestEvents.IS_AVAILABLE_USERNAME);
                 mCountDownLatch.countDown();
                 break;
         }

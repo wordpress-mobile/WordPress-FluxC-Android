@@ -23,7 +23,7 @@ import javax.inject.Inject;
 public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Inject MediaStore mMediaStore;
 
-    enum TestEvents {
+    private enum TestEvents {
         DELETED_MEDIA,
         FETCHED_ALL_MEDIA,
         FETCHED_KNOWN_IMAGES,
@@ -32,7 +32,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         PUSH_ERROR
     }
 
-    private TestEvents mExpectedEvent;
+    private TestEvents mNextEvent;
 
     @Override
     protected void setUp() throws Exception {
@@ -47,7 +47,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         // we first need to upload a new media to delete it
         MediaModel testMedia = newMediaModel(sSite, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         UploadMediaPayload payload = new UploadMediaPayload(sSite, testMedia);
-        mExpectedEvent = TestEvents.UPLOADED_MEDIA;
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -55,7 +55,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(testMedia);
         MediaListPayload deletePayload = new MediaListPayload(MediaAction.DELETE_MEDIA, sSite, mediaList);
-        mExpectedEvent = TestEvents.DELETED_MEDIA;
+        mNextEvent = TestEvents.DELETED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -63,7 +63,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     public void testFetchAllMedia() throws InterruptedException {
         MediaListPayload fetchPayload = new MediaListPayload(MediaAction.FETCH_ALL_MEDIA, sSite, null);
-        mExpectedEvent = TestEvents.FETCHED_ALL_MEDIA;
+        mNextEvent = TestEvents.FETCHED_ALL_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -79,7 +79,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             mediaList.add(media);
         }
         MediaListPayload payload = new MediaListPayload(MediaAction.FETCH_MEDIA, sSite, mediaList);
-        mExpectedEvent = TestEvents.FETCHED_KNOWN_IMAGES;
+        mNextEvent = TestEvents.FETCHED_KNOWN_IMAGES;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -94,7 +94,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
         MediaListPayload payload = new MediaListPayload(MediaAction.PUSH_MEDIA, sSite, media);
-        mExpectedEvent = TestEvents.PUSHED_MEDIA;
+        mNextEvent = TestEvents.PUSHED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -105,7 +105,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
         MediaListPayload payload = new MediaListPayload(MediaAction.PUSH_MEDIA, sSite, media);
-        mExpectedEvent = TestEvents.PUSH_ERROR;
+        mNextEvent = TestEvents.PUSH_ERROR;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -114,7 +114,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     public void testUploadImage() throws InterruptedException {
         MediaModel media = newMediaModel(sSite, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         UploadMediaPayload payload = new UploadMediaPayload(sSite, media);
-        mExpectedEvent = TestEvents.UPLOADED_MEDIA;
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -123,7 +123,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     public void testUploadVideo() throws InterruptedException {
         MediaModel media = newMediaModel(sSite, BuildConfig.TEST_LOCAL_VIDEO, MediaUtils.MIME_TYPE_VIDEO);
         UploadMediaPayload payload = new UploadMediaPayload(sSite, media);
-        mExpectedEvent = TestEvents.UPLOADED_MEDIA;
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -136,7 +136,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         if (event.progress >= 1.f) {
-            assertEquals(TestEvents.UPLOADED_MEDIA, mExpectedEvent);
+            assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
             mCountDownLatch.countDown();
         }
     }
@@ -145,7 +145,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Subscribe
     public void onMediaChanged(MediaStore.OnMediaChanged event) {
         if (event.isError()) {
-            if (mExpectedEvent == TestEvents.PUSH_ERROR) {
+            if (mNextEvent == TestEvents.PUSH_ERROR) {
                 assertEquals(event.cause, MediaAction.PUSH_MEDIA);
             } else {
                 throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
@@ -154,15 +154,15 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             return;
         }
         if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
-            assertEquals(TestEvents.FETCHED_ALL_MEDIA, mExpectedEvent);
+            assertEquals(TestEvents.FETCHED_ALL_MEDIA, mNextEvent);
         } else if (event.cause == MediaAction.FETCH_MEDIA) {
             if (eventHasKnownImages(event)) {
-                assertEquals(TestEvents.FETCHED_KNOWN_IMAGES, mExpectedEvent);
+                assertEquals(TestEvents.FETCHED_KNOWN_IMAGES, mNextEvent);
             }
         } else if (event.cause == MediaAction.PUSH_MEDIA) {
-            assertEquals(TestEvents.PUSHED_MEDIA, mExpectedEvent);
+            assertEquals(TestEvents.PUSHED_MEDIA, mNextEvent);
         } else if (event.cause == MediaAction.DELETE_MEDIA) {
-            assertEquals(TestEvents.DELETED_MEDIA, mExpectedEvent);
+            assertEquals(TestEvents.DELETED_MEDIA, mNextEvent);
         }
         mCountDownLatch.countDown();
     }

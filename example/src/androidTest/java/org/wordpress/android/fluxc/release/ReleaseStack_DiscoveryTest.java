@@ -31,7 +31,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     @Inject HTTPAuthManager mHTTPAuthManager;
     @Inject MemorizingTrustManager mMemorizingTrustManager;
 
-    enum TestEvents {
+    private enum TestEvents {
         NONE,
         DISCOVERY_SUCCEEDED,
         INVALID_URL_ERROR,
