@@ -43,6 +43,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         POST_FORMATS_CHANGED,
         SITE_REMOVED
     }
+
     private TestEvents mNextEvent;
 
     @Override

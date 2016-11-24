@@ -34,9 +34,6 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     private static final double EXAMPLE_LATITUDE = 44.8378;
     private static final double EXAMPLE_LONGITUDE = -0.5792;
 
-    private PostModel mPost;
-    private boolean mCanLoadMorePosts;
-
     private enum TestEvents {
         NONE,
         POST_INSTANTIATED,
@@ -49,7 +46,10 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         ERROR_UNKNOWN_POST_TYPE,
         ERROR_GENERIC
     }
+
     private TestEvents mNextEvent;
+    private PostModel mPost;
+    private boolean mCanLoadMorePosts;
 
     @Override
     protected void setUp() throws Exception {

@@ -32,10 +32,6 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     @Inject CommentStore mCommentStore;
     @Inject PostStore mPostStore;
 
-    private List<CommentModel> mComments;
-    private CommentModel mNewComment;
-    private PostModel mFirstPost;
-
     private enum TestEvents {
         NONE,
         POSTS_FETCHED,
@@ -46,7 +42,11 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         COMMENT_CHANGED_UNKNOWN_POST,
         COMMENT_CHANGED_DUPLICATE_COMMENT,
     }
+
     private TestEvents mNextEvent;
+    private List<CommentModel> mComments;
+    private CommentModel mNewComment;
+    private PostModel mFirstPost;
 
     @Override
     protected void setUp() throws Exception {

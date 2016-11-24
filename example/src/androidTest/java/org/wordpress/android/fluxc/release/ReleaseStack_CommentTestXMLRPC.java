@@ -29,10 +29,6 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Inject CommentStore mCommentStore;
     @Inject PostStore mPostStore;
 
-    private List<PostModel> mPosts;
-    private List<CommentModel> mComments;
-    private CommentModel mNewComment;
-
     private enum TestEvents {
         NONE,
         POSTS_FETCHED,
@@ -41,7 +37,11 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         COMMENT_CHANGED_ERROR,
         COMMENT_CHANGED_UNKNOWN_COMMENT,
     }
+
     private TestEvents mNextEvent;
+    private List<PostModel> mPosts;
+    private List<CommentModel> mComments;
+    private CommentModel mNewComment;
 
     @Override
     protected void setUp() throws Exception {

@@ -33,8 +33,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         POST_FORMATS_CHANGED,
         SITE_REMOVED
     }
-    private TestEvents mExpectedEvent;
 
+    private TestEvents mExpectedEvent;
     private int mExpectedRowsAffected;
 
     @Override

@@ -29,6 +29,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         AUTHENTICATED,
         SITE_CHANGED,
     }
+
     private TestEvents mNextEvent;
 
     @Override

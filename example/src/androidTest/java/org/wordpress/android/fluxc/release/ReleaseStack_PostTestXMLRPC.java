@@ -36,12 +36,6 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
     private static final double EXAMPLE_LATITUDE = 44.8378;
     private static final double EXAMPLE_LONGITUDE = -0.5792;
 
-    private PostModel mPost;
-
-    private boolean mCanLoadMorePosts;
-
-    private PostError mLastPostError;
-
     private enum TestEvents {
         NONE,
         POST_INSTANTIATED,
@@ -55,7 +49,11 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         ERROR_UNAUTHORIZED,
         ERROR_GENERIC
     }
+
     private TestEvents mNextEvent;
+    private PostError mLastPostError;
+    private PostModel mPost;
+    private boolean mCanLoadMorePosts;
 
     @Override
     protected void setUp() throws Exception {

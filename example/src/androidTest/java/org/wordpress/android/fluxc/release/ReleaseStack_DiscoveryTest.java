@@ -47,7 +47,6 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     }
 
     private TestEvents mNextEvent;
-
     private RefreshSitesXMLRPCPayload mPayload;
 
     @Override
