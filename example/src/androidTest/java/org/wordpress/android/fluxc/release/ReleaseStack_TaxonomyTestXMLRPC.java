@@ -172,6 +172,30 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
 
+    public void testUploadTermForInvalidTaxonomy() throws InterruptedException {
+        TaxonomyModel taxonomyModel = new TaxonomyModel();
+        taxonomyModel.setName("roads");
+
+        // Instantiate new term
+        createNewTerm(taxonomyModel);
+        setupTermAttributes();
+
+        mNextEvent = TestEvents.ERROR_GENERIC;
+        mCountDownLatch = new CountDownLatch(1);
+
+        RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
+        mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
+
+        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        TermModel failedTerm = mTaxonomyStore.getTermsForSite(sSite, "roads").get(0);
+        assertEquals(0, failedTerm.getRemoteTermId());
+
+        // TODO: This will fail for non-English sites - we should be checking for an INVALID_TAXONOMY error instead
+        // (once we make the fixes needed for TaxonomyXMLRPCClient to correctly identify taxonomy errors)
+        assertEquals("Invalid taxonomy.", mLastTaxonomyError.message);
+    }
+
     @Subscribe
     public void onTaxonomyChanged(OnTaxonomyChanged event) {
         AppLog.i(T.API, "Received OnTaxonomyChanged, causeOfChange: " + event.causeOfChange);
