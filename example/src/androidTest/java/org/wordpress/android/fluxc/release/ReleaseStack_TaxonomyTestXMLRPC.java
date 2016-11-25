@@ -108,7 +108,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
 
         TermModel term = new TermModel();
-        term.setTaxonomy("category");
+        term.setTaxonomy(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
         term.setSlug("uncategorized");
         term.setRemoteTermId(1);
         mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermAction(new RemoteTermPayload(term, sSite)));
@@ -116,7 +116,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         assertEquals(1, WellSqlUtils.getTotalTermsCount());
-        TermModel fetchedTerm = mTaxonomyStore.getTermsForSite(sSite, "category").get(0);
+        TermModel fetchedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
 
         assertEquals("uncategorized", fetchedTerm.getSlug());
         assertNotSame(0, fetchedTerm.getRemoteTermId());
@@ -130,10 +130,10 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // Upload new term to site
         uploadTerm(mTerm);
 
-        TermModel uploadedTerm = mTaxonomyStore.getTermsForSite(sSite, "category").get(0);
+        TermModel uploadedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
 
         assertEquals(1, WellSqlUtils.getTotalTermsCount());
-        assertEquals(1, mTaxonomyStore.getTermsForSite(sSite, "category").size());
+        assertEquals(1, mTaxonomyStore.getCategoriesForSite(sSite).size());
 
         assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
@@ -146,17 +146,17 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // Upload new term to site
         uploadTerm(mTerm);
 
-        TermModel uploadedTerm = mTaxonomyStore.getTermsForSite(sSite, "post_tag").get(0);
+        TermModel uploadedTerm = mTaxonomyStore.getTagsForSite(sSite).get(0);
 
         assertEquals(1, WellSqlUtils.getTotalTermsCount());
-        assertEquals(1, mTaxonomyStore.getTermsForSite(sSite, "post_tag").size());
+        assertEquals(1, mTaxonomyStore.getTagsForSite(sSite).size());
 
         assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
 
     public void testUploadNewCategoryAsTerm() throws InterruptedException {
         TaxonomyModel taxonomyModel = new TaxonomyModel();
-        taxonomyModel.setName("category");
+        taxonomyModel.setName(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
 
         // Instantiate new term
         createNewTerm(taxonomyModel);
@@ -165,10 +165,10 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // Upload new term to site
         uploadTerm(mTerm);
 
-        TermModel uploadedTerm = mTaxonomyStore.getTermsForSite(sSite, "category").get(0);
+        TermModel uploadedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
 
         assertEquals(1, WellSqlUtils.getTotalTermsCount());
-        assertEquals(1, mTaxonomyStore.getTermsForSite(sSite, "category").size());
+        assertEquals(1, mTaxonomyStore.getCategoriesForSite(sSite).size());
 
         assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
@@ -271,7 +271,6 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         if (event.isError()) {
             AppLog.i(T.API, "OnTermUploaded has error: " + event.error.type + " - " + event.error.message);
             mLastTaxonomyError = event.error;
-            // TODO this case can't happen at the moment...but maybe should leave it in for future anyway
             if (mNextEvent.equals(TestEvents.ERROR_INVALID_TAXONOMY)) {
                 assertEquals(TaxonomyErrorType.INVALID_TAXONOMY, event.error.type);
                 mCountDownLatch.countDown();
