@@ -60,6 +60,9 @@ public class PostActivity extends AppCompatActivity {
         ((InstafluxApp) getApplication()).component().inject(this);
         setContentView(R.layout.activity_post);
 
+        PostStore.FetchPostsPayload payload = new PostStore.FetchPostsPayload(mSiteStore.getSites().get(0));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
+
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
