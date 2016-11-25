@@ -12,17 +12,21 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.action.PostAction;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
+import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.MediaStore;
@@ -31,6 +35,9 @@ import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.ToastUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -44,6 +51,7 @@ public class PostActivity extends AppCompatActivity {
     private final int MY_PERMISSIONS_READ_EXTERNAL_STORAGE = 1;
     private final int RESULT_PICK_MEDIA = 2;
 
+    private RecyclerView mRecyclerView;
     private String mMediaUrl;
 
     @Override
@@ -51,6 +59,9 @@ public class PostActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ((InstafluxApp) getApplication()).component().inject(this);
         setContentView(R.layout.activity_post);
+
+        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         Button signOutButton = (Button) findViewById(R.id.button_sign_out);
         signOutButton.setOnClickListener(new View.OnClickListener() {
@@ -209,6 +220,24 @@ public class PostActivity extends AppCompatActivity {
 
             PostStore.RemotePostPayload payload = new PostStore.RemotePostPayload(event.post, mSiteStore.getSites().get(0));
             mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPostChanged(PostStore.OnPostChanged event) {
+        if (event.isError()) {
+            AppLog.e(AppLog.T.POSTS, "Error from " + event.causeOfChange + " - error: " + event.error.type);
+            return;
+        }
+
+        if (event.causeOfChange.equals(PostAction.FETCH_POSTS)) {
+            SiteModel firstSite = mSiteStore.getSites().get(0);
+            ArrayList<String> postFormat = new ArrayList<>();
+            postFormat.add("image");
+            List<PostModel> postList = mPostStore.getPostsForSiteWithFormat(firstSite, postFormat);
+            PostAdapter postAdapter = new PostAdapter(this, postList);
+            mRecyclerView.setAdapter(postAdapter);
         }
     }
 
