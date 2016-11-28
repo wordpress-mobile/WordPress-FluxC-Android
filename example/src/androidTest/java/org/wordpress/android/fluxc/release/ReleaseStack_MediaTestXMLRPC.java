@@ -26,6 +26,42 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+/**
+ PUSH_MEDIA
+    1. Pushing a null media list results in error of type NULL_MEDIA_ARG
+        {@link #testPushNullMedia()}
+    2. Pushing a media list in which not all media has required data results in error of type MALFORMED_MEDIA_ARG
+        {@link #testPushMalformedMedia()}
+    3. Pushing changes to existing remote media results in OnMediaChanged caused by PUSH_MEDIA
+        {@link #testPushMediaChanges()}
+
+ UPLOAD_MEDIA
+    1. Uploading an image results in OnMediaUploaded caused by UPLOAD_MEDIA
+        {@link #testUploadImage()}
+    2. Uploading a video results in OnMediaUploaded caused by UPLOAD_MEDIA
+        {@link #testUploadVideo()}
+
+ FETCH_ALL_MEDIA
+    1. Fetching all media results in OnMediaChanged caused by FETCH_ALL_MEDIA
+        {@link #testFetchAllMedia()}
+
+ FETCH_MEDIA
+    1. Fetching a null media list results in error of type NULL_MEDIA_ARG
+        {@link #testFetchNullMedia()}
+    2. Fetching media that doesn't exist remotely results in error of type MEDIA_NOT_FOUND
+        {@link #testFetchMediaThatDoesNotExist()}
+    3. Fetching valid media results in OnMediaChanged caused by FETCH_MEDIA
+        {@link #testFetchMediaThatExists()}
+
+ DELETE_MEDIA
+    1. Deleting a null media list results in error of type NULL_MEDIA_ARG
+        {@link #testDeleteNullMedia()}
+    2. Deleting media that doesn't exist remotely results in error of type MEDIA_NOT_FOUND
+        {@link #testDeleteMediaThatDoesNotExist()}
+    3. Deleting valid media results in OnMediaChanged caused by DELETE_MEDIA
+        {@link #testDeleteMediaThatExists()}
+ */
+
 public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
     private final String TEST_TITLE = "Test Title";
     private final String TEST_DESCRIPTION = "Test Description";
@@ -73,17 +109,11 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
                 BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
     }
 
-    /**
-     * Push action attempted with null media.
-     */
     public void testPushNullMedia() throws InterruptedException {
         mSite = mSiteStore.getSites().get(0);
         pushMedia(mSite, null, TEST_EVENTS.NULL_ERROR);
     }
 
-    /**
-     * Push action that supplies media without required data should result in a malformed exception.
-     */
     public void testPushMalformedMedia() throws InterruptedException {
         mSite = mSiteStore.getSites().get(0);
         final MediaModel testMedia = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
@@ -91,9 +121,6 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         pushMedia(mSite, testMedia, TEST_EVENTS.MALFORMED_ERROR);
     }
 
-    /**
-     * Push action that references media that exists remotely should update remote properties.
-     */
     public void testPushMediaChanges() throws InterruptedException {
         // fetch site media
         mSite = mSiteStore.getSites().get(0);
@@ -147,9 +174,6 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         assertEquals(restoredMedia.getAlt(), mediaAlt);
     }
 
-    /**
-     * Upload a local image.
-     */
     public void testUploadImage() throws InterruptedException {
         mSite = mSiteStore.getSites().get(0);
 
@@ -164,9 +188,6 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         uploadMedia(mSite, media);
     }
 
-    /**
-     * Upload a local video.
-     */
     public void testUploadVideo() throws InterruptedException {
         mSite = mSiteStore.getSites().get(0);
 
@@ -181,25 +202,16 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         uploadMedia(mSite, media);
     }
 
-    /**
-     * Fetch all action should gather all media from a site.
-     */
     public void testFetchAllMedia() throws InterruptedException {
         mSite = mSiteStore.getSites().get(0);
         fetchAllMedia(mSite);
     }
 
-    /**
-     * Fetch action with no media supplied results in a media exception.
-     */
     public void testFetchNullMedia() throws InterruptedException {
         mSite = mSiteStore.getSites().get(0);
         fetchSpecificMedia(mSite, null, TEST_EVENTS.NULL_ERROR);
     }
 
-    /**
-     * Fetch action with media that does not exist results in a media not found exception.
-     */
     public void testFetchMediaThatDoesNotExist() throws InterruptedException {
         mSite = mSiteStore.getSites().get(0);
         List<Long> mediaIds = new ArrayList<>();
@@ -208,9 +220,6 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         fetchSpecificMedia(mSite, mediaIds, TEST_EVENTS.NOT_FOUND_ERROR);
     }
 
-    /**
-     * Fetch action should gather only media items whose ID is in the given filter.
-     */
     public void testFetchMediaThatExists() throws InterruptedException {
         // get all site media
         mSite = mSiteStore.getSites().get(0);
@@ -228,17 +237,11 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         fetchSpecificMedia(mSite, halfMediaIds, TEST_EVENTS.FETCHED_MEDIA);
     }
 
-    /**
-     * Delete action on null media results in a null error.
-     */
     public void testDeleteNullMedia() throws InterruptedException {
         mSite = mSiteStore.getSites().get(0);
         deleteMedia(mSite, null, TEST_EVENTS.NULL_ERROR, 1);
     }
 
-    /**
-     * Delete action on media that doesn't exist should not result in an exception.
-     */
     public void testDeleteMediaThatDoesNotExist() throws InterruptedException {
         mSite = mSiteStore.getSites().get(0);
         MediaModel testMedia = new MediaModel();
@@ -246,9 +249,6 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
         deleteMedia(mSite, testMedia, TEST_EVENTS.NOT_FOUND_ERROR, 1);
     }
 
-    /**
-     * Delete action on media that exists should result in no media on a fetch request.
-     */
     public void testDeleteMediaThatExists() throws InterruptedException {
         // upload media
         mSite = mSiteStore.getSites().get(0);
