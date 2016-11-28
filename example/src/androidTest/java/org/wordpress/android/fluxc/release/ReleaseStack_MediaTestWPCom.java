@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.Dispatcher;
@@ -29,7 +30,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
 
-    enum TEST_EVENTS {
+    private enum TEST_EVENTS {
         DELETED_MEDIA,
         FETCHED_ALL_MEDIA,
         FETCHED_KNOWN_IMAGES,
@@ -239,8 +240,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         if (event == null || event.media == null || event.media.isEmpty()) return false;
         String[] splitIds = BuildConfig.TEST_WPCOM_IMAGE_IDS_TEST1.split(",");
         if (splitIds.length != event.media.size()) return false;
-        for (String id : splitIds) {
-            if (!event.media.contains(Long.valueOf(id))) return false;
+        for (MediaModel mediaItem : event.media) {
+            if (!ArrayUtils.contains(splitIds, String.valueOf(mediaItem.getMediaId()))) return false;
         }
         return true;
     }
