@@ -7,7 +7,7 @@ android:
     - extra-android-support
     - platform-tools
     - tools
-    - build-tools-23.0.2
+    - build-tools-25.0.1
     - android-24
 
 env:
@@ -24,4 +24,4 @@ script:
   - ./gradlew assembleDebug assembleRelease
   - ./gradlew lint || (grep -A20 -B2 'severity="Error"' */build/outputs/*.xml; exit 1)
   - ./gradlew checkstyle
-  - find . -iname "*XMLRPCClient*java" | xargs grep getSiteId && (echo "You should not use _getSiteId_ in a XMLRPClient, did you mean _selfHostedId_?" && exit 1)
+  - find . -iname "*XMLRPCClient*java" | xargs grep getSiteId && (echo "You should not use _getSiteId_ in a XMLRPClient, did you mean _selfHostedId_?" && exit 1) || return 0
