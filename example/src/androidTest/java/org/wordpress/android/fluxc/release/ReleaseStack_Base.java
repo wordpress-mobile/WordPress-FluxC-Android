@@ -5,8 +5,13 @@ import android.test.InstrumentationTestCase;
 
 import com.yarolegovich.wellsql.WellSql;
 
+import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.module.AppContextModule;
 import org.wordpress.android.fluxc.persistence.WellSqlConfig;
+
+import java.util.concurrent.CountDownLatch;
+
+import javax.inject.Inject;
 
 /**
  * NOTE:
@@ -20,8 +25,11 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig;
  *  methods/properties from the AccountStore are never explicitly invoked.
  */
 public class ReleaseStack_Base extends InstrumentationTestCase {
+    @Inject Dispatcher mDispatcher;
+
     Context mAppContext;
     ReleaseStack_AppComponent mReleaseStackAppComponent;
+    CountDownLatch mCountDownLatch;
 
     @Override
     protected void setUp() throws Exception {
@@ -36,5 +44,9 @@ public class ReleaseStack_Base extends InstrumentationTestCase {
         WellSqlConfig config = new WellSqlConfig(mAppContext);
         WellSql.init(config);
         config.reset();
+    }
+
+    protected void init() throws Exception {
+        mDispatcher.register(this);
     }
 }
