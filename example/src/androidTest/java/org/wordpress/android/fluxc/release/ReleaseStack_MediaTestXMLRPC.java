@@ -282,7 +282,9 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
             mCountDownLatch = new CountDownLatch(count);
         }
         mDispatcher.dispatch(action);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        if (count > 0) {
+            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        }
     }
 
     private void discoverEndpoint(String username, String password, String url) throws InterruptedException {
@@ -361,11 +363,9 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_Base {
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) throws InterruptedException {
         if (event.completed) {
             assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
-            if (mNextExpectedEvent != null) {
-                if (mNextExpectedEvent == TEST_EVENTS.DELETED_MEDIA) {
-                    deleteMedia(mSite, event.media, mNextExpectedEvent, -1);
-                    mNextExpectedEvent = null;
-                }
+            if (mNextExpectedEvent == TEST_EVENTS.DELETED_MEDIA) {
+                deleteMedia(mSite, event.media, mNextExpectedEvent, -1);
+                mNextExpectedEvent = null;
             } else {
                 assertTrue(event.media.getMediaId() > 0);
             }

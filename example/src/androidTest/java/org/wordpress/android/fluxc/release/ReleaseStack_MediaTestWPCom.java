@@ -40,6 +40,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
 
     private TEST_EVENTS mExpectedEvent;
     private CountDownLatch mCountDownLatch;
+    private long mLastUploadedId = -1L;
 
     @Override
     protected void setUp() throws Exception {
@@ -66,6 +67,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
+        assertTrue(mLastUploadedId >= 0);
+        testMedia.setMediaId(mLastUploadedId);
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(testMedia);
         MediaStore.MediaListPayload deletePayload = new MediaStore.MediaListPayload(MediaAction.DELETE_MEDIA, site, mediaList);
@@ -167,8 +170,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        if (event.progress >= 1.f) {
+        if (event.completed) {
             assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
+            mLastUploadedId = event.media.getMediaId();
             mCountDownLatch.countDown();
         }
     }
