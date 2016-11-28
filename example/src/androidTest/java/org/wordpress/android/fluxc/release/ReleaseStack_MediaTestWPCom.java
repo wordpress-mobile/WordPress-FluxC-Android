@@ -14,6 +14,8 @@ import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.MediaStore;
+import org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
+import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 
@@ -25,10 +27,10 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
+    @SuppressWarnings("unused") @Inject MediaStore mMediaStore;
+    @SuppressWarnings("unused") @Inject AccountStore mAccountStore;
     @Inject Dispatcher mDispatcher;
-    @Inject MediaStore mMediaStore;
     @Inject SiteStore mSiteStore;
-    @Inject AccountStore mAccountStore;
 
     private enum TEST_EVENTS {
         DELETED_MEDIA,
@@ -62,7 +64,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         // we first need to upload a new media to delete it
         SiteModel site = mSiteStore.getSites().get(0);
         MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
-        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(site, testMedia);
+        UploadMediaPayload payload = new UploadMediaPayload(site, testMedia);
         mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
@@ -72,7 +74,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         testMedia.setMediaId(mLastUploadedId);
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(testMedia);
-        MediaStore.MediaListPayload deletePayload = new MediaStore.MediaListPayload(MediaAction.DELETE_MEDIA, site, mediaList);
+        MediaListPayload deletePayload = new MediaListPayload(MediaAction.DELETE_MEDIA, site, mediaList);
         mExpectedEvent = TEST_EVENTS.DELETED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
@@ -83,7 +85,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
         SiteModel site = mSiteStore.getSites().get(0);
-        MediaStore.MediaListPayload fetchPayload = new MediaStore.MediaListPayload(MediaAction.FETCH_ALL_MEDIA, site, null);
+        MediaListPayload fetchPayload = new MediaListPayload(MediaAction.FETCH_ALL_MEDIA, site, null);
         mExpectedEvent = TEST_EVENTS.FETCHED_ALL_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(fetchPayload));
@@ -102,7 +104,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
             mediaList.add(media);
         }
         SiteModel site = mSiteStore.getSites().get(0);
-        MediaStore.MediaListPayload payload = new MediaStore.MediaListPayload(MediaAction.FETCH_MEDIA, site, mediaList);
+        MediaListPayload payload = new MediaListPayload(MediaAction.FETCH_MEDIA, site, mediaList);
         mExpectedEvent = TEST_EVENTS.FETCHED_KNOWN_IMAGES;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
@@ -120,7 +122,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         testMedia.setTitle(RandomStringUtils.randomAlphabetic(8));
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
-        MediaStore.MediaListPayload payload = new MediaStore.MediaListPayload(MediaAction.PUSH_MEDIA, site, media);
+        MediaListPayload payload = new MediaListPayload(MediaAction.PUSH_MEDIA, site, media);
         mExpectedEvent = TEST_EVENTS.PUSHED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
@@ -134,7 +136,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
-        MediaStore.MediaListPayload payload = new MediaStore.MediaListPayload(MediaAction.PUSH_MEDIA, site, media);
+        MediaListPayload payload = new MediaListPayload(MediaAction.PUSH_MEDIA, site, media);
         mExpectedEvent = TEST_EVENTS.PUSH_ERROR;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
@@ -146,7 +148,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
 
         SiteModel site = mSiteStore.getSites().get(0);
         MediaModel media = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
-        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(site, media);
+        UploadMediaPayload payload = new UploadMediaPayload(site, media);
         mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
@@ -158,7 +160,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
 
         SiteModel site = mSiteStore.getSites().get(0);
         MediaModel media = newMediaModel(site, BuildConfig.TEST_LOCAL_VIDEO, MediaUtils.MIME_TYPE_VIDEO);
-        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(site, media);
+        UploadMediaPayload payload = new UploadMediaPayload(site, media);
         mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
