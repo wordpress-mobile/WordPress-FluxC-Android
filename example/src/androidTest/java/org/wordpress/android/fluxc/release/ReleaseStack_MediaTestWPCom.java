@@ -3,20 +3,17 @@ package org.wordpress.android.fluxc.release;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
-import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
-import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
-import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
-import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.MediaStore;
+import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
+import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
 import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
-import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 
 import java.util.ArrayList;
@@ -26,13 +23,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
+public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @SuppressWarnings("unused") @Inject MediaStore mMediaStore;
-    @SuppressWarnings("unused") @Inject AccountStore mAccountStore;
-    @Inject Dispatcher mDispatcher;
-    @Inject SiteStore mSiteStore;
 
-    private enum TEST_EVENTS {
+    private enum TestEvents {
         DELETED_MEDIA,
         FETCHED_ALL_MEDIA,
         FETCHED_KNOWN_IMAGES,
@@ -41,31 +35,24 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         PUSH_ERROR
     }
 
-    private TEST_EVENTS mExpectedEvent;
-    private CountDownLatch mCountDownLatch;
+    private TestEvents mNextEvent;
     private long mLastUploadedId = -1L;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
-        mDispatcher.register(this);
-    }
 
-    @Override
-    public void tearDown() throws Exception {
-        mDispatcher.unregister(this);
-        super.tearDown();
+        // Authenticate, fetch sites and initialize sSite
+        init();
     }
 
     public void testDeleteMedia() throws InterruptedException {
-        loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-
         // we first need to upload a new media to delete it
-        SiteModel site = mSiteStore.getSites().get(0);
+        SiteModel site = sSite;
         MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         UploadMediaPayload payload = new UploadMediaPayload(site, testMedia);
-        mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -75,26 +62,22 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(testMedia);
         MediaListPayload deletePayload = new MediaListPayload(MediaAction.DELETE_MEDIA, site, mediaList);
-        mExpectedEvent = TEST_EVENTS.DELETED_MEDIA;
+        mNextEvent = TestEvents.DELETED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testFetchAllMedia() throws InterruptedException {
-        loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-
-        SiteModel site = mSiteStore.getSites().get(0);
+        SiteModel site = sSite;
         MediaListPayload fetchPayload = new MediaListPayload(MediaAction.FETCH_ALL_MEDIA, site, null);
-        mExpectedEvent = TEST_EVENTS.FETCHED_ALL_MEDIA;
+        mNextEvent = TestEvents.FETCHED_ALL_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testFetchSpecificMedia() throws InterruptedException {
-        loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-
         String knownImageIds = BuildConfig.TEST_WPCOM_IMAGE_IDS_TEST1;
         String[] splitIds = knownImageIds.split(",");
         List<MediaModel> mediaList = new ArrayList<>();
@@ -103,18 +86,16 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
             media.setMediaId(Long.valueOf(id));
             mediaList.add(media);
         }
-        SiteModel site = mSiteStore.getSites().get(0);
+        SiteModel site = sSite;
         MediaListPayload payload = new MediaListPayload(MediaAction.FETCH_MEDIA, site, mediaList);
-        mExpectedEvent = TEST_EVENTS.FETCHED_KNOWN_IMAGES;
+        mNextEvent = TestEvents.FETCHED_KNOWN_IMAGES;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testPushExistingMedia() throws InterruptedException {
-        loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-
-        SiteModel site = mSiteStore.getSites().get(0);
+        SiteModel site = sSite;
         MediaModel testMedia = new MediaModel();
         // use existing media
         testMedia.setMediaId(Long.parseLong(BuildConfig.TEST_WPCOM_IMAGE_ID_TO_CHANGE));
@@ -123,45 +104,39 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
         MediaListPayload payload = new MediaListPayload(MediaAction.PUSH_MEDIA, site, media);
-        mExpectedEvent = TEST_EVENTS.PUSHED_MEDIA;
+        mNextEvent = TestEvents.PUSHED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testPushNewMedia() throws InterruptedException {
-        loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-
-        SiteModel site = mSiteStore.getSites().get(0);
+        SiteModel site = sSite;
         MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
         MediaListPayload payload = new MediaListPayload(MediaAction.PUSH_MEDIA, site, media);
-        mExpectedEvent = TEST_EVENTS.PUSH_ERROR;
+        mNextEvent = TestEvents.PUSH_ERROR;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testUploadImage() throws InterruptedException {
-        loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-
-        SiteModel site = mSiteStore.getSites().get(0);
+        SiteModel site = sSite;
         MediaModel media = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         UploadMediaPayload payload = new UploadMediaPayload(site, media);
-        mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testUploadVideo() throws InterruptedException {
-        loginAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-
-        SiteModel site = mSiteStore.getSites().get(0);
+        SiteModel site = sSite;
         MediaModel media = newMediaModel(site, BuildConfig.TEST_LOCAL_VIDEO, MediaUtils.MIME_TYPE_VIDEO);
         UploadMediaPayload payload = new UploadMediaPayload(site, media);
-        mExpectedEvent = TEST_EVENTS.UPLOADED_MEDIA;
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -169,12 +144,12 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
+    public void onMediaUploaded(OnMediaUploaded event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         if (event.completed) {
-            assertEquals(TEST_EVENTS.UPLOADED_MEDIA, mExpectedEvent);
+            assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
             mLastUploadedId = event.media.getMediaId();
             mCountDownLatch.countDown();
         }
@@ -184,7 +159,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
     @Subscribe
     public void onMediaChanged(MediaStore.OnMediaChanged event) {
         if (event.isError()) {
-            if (mExpectedEvent == TEST_EVENTS.PUSH_ERROR) {
+            if (mNextEvent == TestEvents.PUSH_ERROR) {
                 assertEquals(event.cause, MediaAction.PUSH_MEDIA);
             } else {
                 throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
@@ -193,52 +168,20 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_Base {
             return;
         }
         if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
-            assertEquals(TEST_EVENTS.FETCHED_ALL_MEDIA, mExpectedEvent);
+            assertEquals(TestEvents.FETCHED_ALL_MEDIA, mNextEvent);
         } else if (event.cause == MediaAction.FETCH_MEDIA) {
             if (eventHasKnownImages(event)) {
-                assertEquals(TEST_EVENTS.FETCHED_KNOWN_IMAGES, mExpectedEvent);
+                assertEquals(TestEvents.FETCHED_KNOWN_IMAGES, mNextEvent);
             }
         } else if (event.cause == MediaAction.PUSH_MEDIA) {
-            assertEquals(TEST_EVENTS.PUSHED_MEDIA, mExpectedEvent);
+            assertEquals(TestEvents.PUSHED_MEDIA, mNextEvent);
         } else if (event.cause == MediaAction.DELETE_MEDIA) {
-            assertEquals(TEST_EVENTS.DELETED_MEDIA, mExpectedEvent);
+            assertEquals(TestEvents.DELETED_MEDIA, mNextEvent);
         }
         mCountDownLatch.countDown();
     }
 
-    @SuppressWarnings("unused")
-    @Subscribe
-    public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
-        if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
-        }
-        mCountDownLatch.countDown();
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe
-    public void onSiteChanged(SiteStore.OnSiteChanged event) {
-        if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
-        }
-        assertTrue(mSiteStore.hasWPComSite());
-        mCountDownLatch.countDown();
-    }
-
-    private void loginAndFetchSites(String username, String password) throws InterruptedException {
-        AccountStore.AuthenticatePayload payload =
-                new AccountStore.AuthenticatePayload(username, password);
-
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    private boolean eventHasKnownImages(MediaStore.OnMediaChanged event) {
+    private boolean eventHasKnownImages(OnMediaChanged event) {
         if (event == null || event.media == null || event.media.isEmpty()) return false;
         String[] splitIds = BuildConfig.TEST_WPCOM_IMAGE_IDS_TEST1.split(",");
         if (splitIds.length != event.media.size()) return false;
