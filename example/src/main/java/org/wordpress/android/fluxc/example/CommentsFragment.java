@@ -155,7 +155,7 @@ public class CommentsFragment extends Fragment {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onCommentInstantiated(OnCommentInstantiated event) {
         mNewComment = event.comment;
         mCountDownLatch.countDown();
