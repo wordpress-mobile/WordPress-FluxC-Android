@@ -128,7 +128,7 @@ public class TaxonomiesFragment extends Fragment {
     }
 
     @SuppressWarnings("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onTermInstantiated(OnTermInstantiated event) {
         mNewTerm = event.term;
         mCountDownLatch.countDown();
