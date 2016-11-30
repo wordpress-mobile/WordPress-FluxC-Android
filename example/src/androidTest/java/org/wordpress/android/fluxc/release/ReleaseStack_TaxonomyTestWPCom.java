@@ -204,6 +204,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
 
     // TODO: Add tests for existing custom taxonomies
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onTaxonomyChanged(OnTaxonomyChanged event) {
         AppLog.i(T.API, "Received OnTaxonomyChanged, causeOfChange: " + event.causeOfChange);
@@ -249,6 +250,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onTermUploaded(OnTermUploaded event) {
         AppLog.i(T.API, "Received OnTermUploaded");
@@ -275,6 +277,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onTermInstantiated(OnTermInstantiated event) {
         AppLog.i(T.API, "Received OnTermInstantiated");

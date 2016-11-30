@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.store.TaxonomyStore;
 import org.wordpress.android.fluxc.store.TaxonomyStore.OnTaxonomyChanged;
 import org.wordpress.android.fluxc.store.TaxonomyStore.OnTermInstantiated;
 import org.wordpress.android.fluxc.store.TaxonomyStore.OnTermUploaded;
+import org.wordpress.android.fluxc.store.TaxonomyStore.RemoteTermPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -103,13 +104,14 @@ public class TaxonomiesFragment extends Fragment {
             assertTrue(mCountDownLatch.await(2, TimeUnit.SECONDS));
             mNewTerm.setName("FluxC-category-" + new Random().nextLong());
             mNewTerm.setDescription("From FluxC example app");
-            TaxonomyStore.RemoteTermPayload payload = new TaxonomyStore.RemoteTermPayload(mNewTerm, getFirstSite());
+            RemoteTermPayload payload = new RemoteTermPayload(mNewTerm, getFirstSite());
             mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(payload));
         } catch (Exception e) {
             // noop
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTaxonomyChanged(OnTaxonomyChanged event) {
         AppLog.i(T.API, "OnTaxonomyChanged: rowsAffected=" + event.rowsAffected);
@@ -125,14 +127,16 @@ public class TaxonomiesFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTermInstantiated(OnTermInstantiated event) {
         mNewTerm = event.term;
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onCategoryUploaded(OnTermUploaded event) {
+    public void onTermUploaded(OnTermUploaded event) {
         prependToLog("Term uploaded! Remote category id: " + event.term.getRemoteTermId());
     }
 

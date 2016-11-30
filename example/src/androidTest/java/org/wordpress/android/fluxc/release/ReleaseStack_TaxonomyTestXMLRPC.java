@@ -219,6 +219,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals("A term with the name provided already exists with this parent.", mLastTaxonomyError.message);
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onTaxonomyChanged(OnTaxonomyChanged event) {
         AppLog.i(T.API, "Received OnTaxonomyChanged, causeOfChange: " + event.causeOfChange);
@@ -265,6 +266,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onTermUploaded(OnTermUploaded event) {
         AppLog.i(T.API, "Received OnTermUploaded");
@@ -292,6 +294,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe
     public void onTermInstantiated(OnTermInstantiated event) {
         AppLog.i(T.API, "Received OnTermInstantiated");
