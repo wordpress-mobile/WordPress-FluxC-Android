@@ -187,7 +187,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         TermModel failedTerm = mTaxonomyStore.getTermsForSite(sSite, "roads").get(0);
         assertEquals(0, failedTerm.getRemoteTermId());
@@ -212,7 +212,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // TODO: This will fail for non-English sites - we should be checking for a DUPLICATE error instead
         // (once we make the fixes needed for TaxonomyXMLRPCClient to correctly identify taxonomy errors)
@@ -317,7 +317,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         mDispatcher.dispatch(TaxonomyActionBuilder.newInstantiateCategoryAction(sSite));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void createNewTag() throws InterruptedException {
@@ -327,7 +327,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         mDispatcher.dispatch(TaxonomyActionBuilder.newInstantiateTagAction(sSite));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void createNewTerm(TaxonomyModel taxonomy) throws InterruptedException {
@@ -338,7 +338,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         InstantiateTermPayload payload = new InstantiateTermPayload(sSite, taxonomy);
         mDispatcher.dispatch(TaxonomyActionBuilder.newInstantiateTermAction(payload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void uploadTerm(TermModel term) throws InterruptedException {
@@ -348,6 +348,6 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }

@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 public class TaxonomiesFragment extends Fragment {
     @Inject SiteStore mSiteStore;
@@ -100,7 +100,7 @@ public class TaxonomiesFragment extends Fragment {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(TaxonomyActionBuilder.newInstantiateCategoryAction(getFirstSite()));
         try {
-            assertEquals(true, mCountDownLatch.await(2, TimeUnit.SECONDS));
+            assertTrue(mCountDownLatch.await(2, TimeUnit.SECONDS));
             mNewTerm.setName("FluxC-category-" + new Random().nextLong());
             mNewTerm.setDescription("From FluxC example app");
             TaxonomyStore.RemoteTermPayload payload = new TaxonomyStore.RemoteTermPayload(mNewTerm, getFirstSite());

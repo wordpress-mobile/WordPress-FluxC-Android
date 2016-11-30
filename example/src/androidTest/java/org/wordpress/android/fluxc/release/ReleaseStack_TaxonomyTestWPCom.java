@@ -178,7 +178,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         TermModel failedTerm = mTaxonomyStore.getTermsForSite(sSite, "roads").get(0);
         assertEquals(0, failedTerm.getRemoteTermId());
@@ -199,7 +199,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     // TODO: Add tests for existing custom taxonomies
@@ -300,7 +300,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
 
         mDispatcher.dispatch(TaxonomyActionBuilder.newInstantiateCategoryAction(sSite));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void createNewTag() throws InterruptedException {
@@ -310,7 +310,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
 
         mDispatcher.dispatch(TaxonomyActionBuilder.newInstantiateTagAction(sSite));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void createNewTerm(TaxonomyModel taxonomy) throws InterruptedException {
@@ -321,7 +321,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         InstantiateTermPayload payload = new InstantiateTermPayload(sSite, taxonomy);
         mDispatcher.dispatch(TaxonomyActionBuilder.newInstantiateTermAction(payload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void uploadTerm(TermModel term) throws InterruptedException {
@@ -331,6 +331,6 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
-        assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
