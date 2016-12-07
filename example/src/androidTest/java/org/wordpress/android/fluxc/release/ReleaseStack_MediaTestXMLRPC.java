@@ -7,7 +7,6 @@ import org.wordpress.android.fluxc.annotations.action.Action;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
-import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.store.AccountStore;
@@ -100,18 +99,18 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     public void testPushNullMedia() throws InterruptedException {
-        pushMedia(sSite, null, TestEvents.NULL_ERROR);
+        pushMedia(null, TestEvents.NULL_ERROR);
     }
 
     public void testPushMalformedMedia() throws InterruptedException {
         final MediaModel testMedia = getTestMedia(TEST_TITLE, TEST_DESCRIPTION, TEST_CAPTION, TEST_ALT);
         testMedia.setMediaId(-1);
-        pushMedia(sSite, testMedia, TestEvents.MALFORMED_ERROR);
+        pushMedia(testMedia, TestEvents.MALFORMED_ERROR);
     }
 
     public void testPushMediaChanges() throws InterruptedException {
         // fetch site media
-        fetchAllMedia(sSite);
+        fetchAllMedia();
 
         // some media is expected
         List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(sSite);
@@ -136,7 +135,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         testMedia.setAlt(newAlt);
 
         // push changes
-        pushMedia(sSite, testMedia, TestEvents.PUSHED_MEDIA);
+        pushMedia(testMedia, TestEvents.PUSHED_MEDIA);
 
         // verify local media has changes
         final MediaModel updatedMedia = mMediaStore.getSiteMediaWithId(sSite, testId);
@@ -151,7 +150,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         testMedia.setDescription(mediaDescription);
         testMedia.setCaption(mediaCaption);
         testMedia.setAlt(mediaAlt);
-        pushMedia(sSite, testMedia, TestEvents.PUSHED_MEDIA);
+        pushMedia(testMedia, TestEvents.PUSHED_MEDIA);
 
         // verify restored media properties
         final MediaModel restoredMedia = mMediaStore.getSiteMediaWithId(sSite, testId);
@@ -170,7 +169,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         media.setMimeType(MediaUtils.MIME_TYPE_IMAGE + media.getFileExtension());
         media.setSiteId(sSite.getSelfHostedSiteId());
 
-        uploadMedia(sSite, media);
+        uploadMedia(media);
     }
 
     public void testUploadVideo() throws InterruptedException {
@@ -182,27 +181,27 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         media.setMimeType(MediaUtils.MIME_TYPE_VIDEO + media.getFileExtension());
         media.setSiteId(sSite.getSelfHostedSiteId());
 
-        uploadMedia(sSite, media);
+        uploadMedia(media);
     }
 
     public void testFetchAllMedia() throws InterruptedException {
-        fetchAllMedia(sSite);
+        fetchAllMedia();
     }
 
     public void testFetchNullMedia() throws InterruptedException {
-        fetchSpecificMedia(sSite, null, TestEvents.NULL_ERROR);
+        fetchSpecificMedia(null, TestEvents.NULL_ERROR);
     }
 
     public void testFetchMediaThatDoesNotExist() throws InterruptedException {
         List<Long> mediaIds = new ArrayList<>();
         mediaIds.add(9999999L);
         mediaIds.add(9999989L);
-        fetchSpecificMedia(sSite, mediaIds, TestEvents.NOT_FOUND_ERROR);
+        fetchSpecificMedia(mediaIds, TestEvents.NOT_FOUND_ERROR);
     }
 
     public void testFetchMediaThatExists() throws InterruptedException {
         // get all site media
-        fetchAllMedia(sSite);
+        fetchAllMedia();
 
         final List<MediaModel> siteMedia = mMediaStore.getAllSiteMedia(sSite);
         assertFalse(siteMedia.isEmpty());
@@ -213,17 +212,17 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         for (int i = 0; i < half; ++i) {
             halfMediaIds.add(siteMedia.get(i).getMediaId());
         }
-        fetchSpecificMedia(sSite, halfMediaIds, TestEvents.FETCHED_MEDIA);
+        fetchSpecificMedia(halfMediaIds, TestEvents.FETCHED_MEDIA);
     }
 
     public void testDeleteNullMedia() throws InterruptedException {
-        deleteMedia(sSite, null, TestEvents.NULL_ERROR, 1);
+        deleteMedia(null, TestEvents.NULL_ERROR, 1);
     }
 
     public void testDeleteMediaThatDoesNotExist() throws InterruptedException {
         MediaModel testMedia = new MediaModel();
         testMedia.setMediaId(9999999L);
-        deleteMedia(sSite, testMedia, TestEvents.NOT_FOUND_ERROR, 1);
+        deleteMedia(testMedia, TestEvents.NOT_FOUND_ERROR, 1);
     }
 
     public void testDeleteMediaThatExists() throws InterruptedException {
@@ -249,7 +248,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         if (event.completed) {
             assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
             if (mNextExpectedEvent == TestEvents.DELETED_MEDIA) {
-                deleteMedia(sSite, event.media, mNextExpectedEvent, -1);
+                deleteMedia(event.media, mNextExpectedEvent, -1);
                 mNextExpectedEvent = null;
             } else {
                 assertTrue(event.media.getMediaId() > 0);
@@ -312,28 +311,28 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         }
     }
 
-    private void pushMedia(SiteModel site, MediaModel media, TestEvents expectedEvent) throws InterruptedException {
+    private void pushMedia(MediaModel media, TestEvents expectedEvent) throws InterruptedException {
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(media);
-        MediaListPayload payload = new MediaListPayload(MediaAction.PUSH_MEDIA, site, mediaList);
+        MediaListPayload payload = new MediaListPayload(MediaAction.PUSH_MEDIA, sSite, mediaList);
         dispatchAction(expectedEvent, MediaActionBuilder.newPushMediaAction(payload), 1);
     }
 
-    private void uploadMedia(SiteModel site, MediaModel media) throws InterruptedException {
-        UploadMediaPayload payload = new UploadMediaPayload(site, media);
+    private void uploadMedia(MediaModel media) throws InterruptedException {
+        UploadMediaPayload payload = new UploadMediaPayload(sSite, media);
         dispatchAction(TestEvents.UPLOADED_MEDIA, MediaActionBuilder.newUploadMediaAction(payload), 1);
     }
 
-    private void fetchAllMedia(SiteModel site) throws InterruptedException {
-        MediaListPayload mediaPayload = new MediaListPayload(MediaAction.FETCH_ALL_MEDIA, site, null);
+    private void fetchAllMedia() throws InterruptedException {
+        MediaListPayload mediaPayload = new MediaListPayload(MediaAction.FETCH_ALL_MEDIA, sSite, null);
         dispatchAction(TestEvents.FETCHED_ALL_MEDIA, MediaActionBuilder.newFetchAllMediaAction(mediaPayload), 1);
     }
 
-    private void fetchSpecificMedia(SiteModel site, List<Long> mediaIds, TestEvents expectedEvent)
+    private void fetchSpecificMedia(List<Long> mediaIds, TestEvents expectedEvent)
             throws InterruptedException {
         mExpectedIds = mediaIds;
         if (mExpectedIds == null) {
-            MediaListPayload mediaPayload = new MediaListPayload(MediaAction.FETCH_MEDIA, site, null);
+            MediaListPayload mediaPayload = new MediaListPayload(MediaAction.FETCH_MEDIA, sSite, null);
             dispatchAction(expectedEvent, MediaActionBuilder.newFetchMediaAction(mediaPayload), 1);
         } else {
             int size = mExpectedIds.size();
@@ -343,16 +342,16 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
                 media.setMediaId(id);
                 mediaList.add(media);
             }
-            MediaListPayload mediaPayload = new MediaListPayload(MediaAction.FETCH_MEDIA, site, mediaList);
+            MediaListPayload mediaPayload = new MediaListPayload(MediaAction.FETCH_MEDIA, sSite, mediaList);
             dispatchAction(expectedEvent, MediaActionBuilder.newFetchMediaAction(mediaPayload), size);
         }
     }
 
-    private void deleteMedia(SiteModel site, MediaModel media, TestEvents expectedEvent, int num)
+    private void deleteMedia(MediaModel media, TestEvents expectedEvent, int num)
             throws InterruptedException {
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(media);
-        MediaListPayload deletePayload = new MediaListPayload(MediaAction.DELETE_MEDIA, site, mediaList);
+        MediaListPayload deletePayload = new MediaListPayload(MediaAction.DELETE_MEDIA, sSite, mediaList);
         dispatchAction(expectedEvent, MediaActionBuilder.newDeleteMediaAction(deletePayload), num);
     }
 }

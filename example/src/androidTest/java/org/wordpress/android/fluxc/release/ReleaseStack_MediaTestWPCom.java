@@ -8,7 +8,6 @@ import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
-import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
@@ -49,9 +48,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     public void testDeleteMedia() throws InterruptedException {
         // we first need to upload a new media to delete it
-        SiteModel site = sSite;
-        MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
-        UploadMediaPayload payload = new UploadMediaPayload(site, testMedia);
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        UploadMediaPayload payload = new UploadMediaPayload(sSite, testMedia);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
@@ -61,7 +59,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         testMedia.setMediaId(mLastUploadedId);
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(testMedia);
-        MediaListPayload deletePayload = new MediaListPayload(MediaAction.DELETE_MEDIA, site, mediaList);
+        MediaListPayload deletePayload = new MediaListPayload(MediaAction.DELETE_MEDIA, sSite, mediaList);
         mNextEvent = TestEvents.DELETED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
@@ -69,8 +67,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     public void testFetchAllMedia() throws InterruptedException {
-        SiteModel site = sSite;
-        MediaListPayload fetchPayload = new MediaListPayload(MediaAction.FETCH_ALL_MEDIA, site, null);
+        MediaListPayload fetchPayload = new MediaListPayload(MediaAction.FETCH_ALL_MEDIA, sSite, null);
         mNextEvent = TestEvents.FETCHED_ALL_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(fetchPayload));
@@ -86,8 +83,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             media.setMediaId(Long.valueOf(id));
             mediaList.add(media);
         }
-        SiteModel site = sSite;
-        MediaListPayload payload = new MediaListPayload(MediaAction.FETCH_MEDIA, site, mediaList);
+        MediaListPayload payload = new MediaListPayload(MediaAction.FETCH_MEDIA, sSite, mediaList);
         mNextEvent = TestEvents.FETCHED_KNOWN_IMAGES;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
@@ -95,7 +91,6 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     public void testPushExistingMedia() throws InterruptedException {
-        SiteModel site = sSite;
         MediaModel testMedia = new MediaModel();
         // use existing media
         testMedia.setMediaId(Long.parseLong(BuildConfig.TEST_WPCOM_IMAGE_ID_TO_CHANGE));
@@ -103,7 +98,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         testMedia.setTitle(RandomStringUtils.randomAlphabetic(8));
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
-        MediaListPayload payload = new MediaListPayload(MediaAction.PUSH_MEDIA, site, media);
+        MediaListPayload payload = new MediaListPayload(MediaAction.PUSH_MEDIA, sSite, media);
         mNextEvent = TestEvents.PUSHED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
@@ -111,11 +106,10 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     public void testPushNewMedia() throws InterruptedException {
-        SiteModel site = sSite;
-        MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
-        MediaListPayload payload = new MediaListPayload(MediaAction.PUSH_MEDIA, site, media);
+        MediaListPayload payload = new MediaListPayload(MediaAction.PUSH_MEDIA, sSite, media);
         mNextEvent = TestEvents.PUSH_ERROR;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
@@ -123,9 +117,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     public void testUploadImage() throws InterruptedException {
-        SiteModel site = sSite;
-        MediaModel media = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
-        UploadMediaPayload payload = new UploadMediaPayload(site, media);
+        MediaModel media = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        UploadMediaPayload payload = new UploadMediaPayload(sSite, media);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
@@ -133,9 +126,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     public void testUploadVideo() throws InterruptedException {
-        SiteModel site = sSite;
-        MediaModel media = newMediaModel(site, BuildConfig.TEST_LOCAL_VIDEO, MediaUtils.MIME_TYPE_VIDEO);
-        UploadMediaPayload payload = new UploadMediaPayload(site, media);
+        MediaModel media = newMediaModel(BuildConfig.TEST_LOCAL_VIDEO, MediaUtils.MIME_TYPE_VIDEO);
+        UploadMediaPayload payload = new UploadMediaPayload(sSite, media);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
@@ -191,7 +183,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         return true;
     }
 
-    private MediaModel newMediaModel(SiteModel site, String mediaPath, String mimeType) {
+    private MediaModel newMediaModel(String mediaPath, String mimeType) {
         final String testTitle = "Test Title";
         final String testDescription = "Test Description";
         final String testCaption = "Test Caption";
@@ -206,7 +198,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         testMedia.setDescription(testDescription);
         testMedia.setCaption(testCaption);
         testMedia.setAlt(testAlt);
-        testMedia.setSiteId(site.getSiteId());
+        testMedia.setSiteId(sSite.getSiteId());
 
         return testMedia;
     }
