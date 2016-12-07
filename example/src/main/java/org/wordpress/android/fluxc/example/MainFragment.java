@@ -108,6 +108,7 @@ public class MainFragment extends Fragment {
         view.findViewById(R.id.posts).setOnClickListener(getOnClickListener(new PostsFragment()));
         view.findViewById(R.id.comments).setOnClickListener(getOnClickListener(new CommentsFragment()));
         view.findViewById(R.id.media).setOnClickListener(getOnClickListener(new MediaFragment()));
+        view.findViewById(R.id.taxonomies).setOnClickListener(getOnClickListener(new TaxonomiesFragment()));
 
         return view;
     }
