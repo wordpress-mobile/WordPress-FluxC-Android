@@ -6,6 +6,7 @@ import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
+import org.wordpress.android.fluxc.persistence.PostSqlUtils;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
@@ -43,6 +44,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         POSTS_FETCHED,
         PAGES_FETCHED,
         POST_DELETED,
+        POST_REMOVED,
         ERROR_UNKNOWN_POST,
         ERROR_UNKNOWN_POST_TYPE,
         ERROR_GENERIC
@@ -64,6 +66,19 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         mPost = null;
         mCanLoadMorePosts = false;
+    }
+
+    // Note: This test is not specific to WPCOM (local changes only)
+    public void testRemoveLocalDraft() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        mNextEvent = TestEvents.POST_REMOVED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PostActionBuilder.newRemovePostAction(mPost));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(0, PostSqlUtils.getPostsForSite(sSite, false).size());
     }
 
     public void testUploadNewPost() throws InterruptedException {
@@ -573,6 +588,11 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
                 break;
             case DELETE_POST:
                 if (mNextEvent.equals(TestEvents.POST_DELETED)) {
+                    mCountDownLatch.countDown();
+                }
+                break;
+            case REMOVE_POST:
+                if (mNextEvent.equals(TestEvents.POST_REMOVED)) {
                     mCountDownLatch.countDown();
                 }
                 break;
