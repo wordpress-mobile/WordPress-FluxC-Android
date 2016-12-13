@@ -7,15 +7,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.squareup.picasso.Picasso;
+
 import org.wordpress.android.fluxc.model.PostModel;
 
 import java.util.List;
 
-public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<PostModel> postList;
     private Context mContext;
 
-    public PostAdapter(Context context, List<PostModel> postList) {
+    PostAdapter(Context context, List<PostModel> postList) {
         this.postList = postList;
         this.mContext = context;
     }
@@ -28,9 +30,13 @@ public class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        PostViewHolder postViewHolder = (PostViewHolder) holder;
         PostModel postModel = postList.get(position);
 
-        // render image
+        String imageUrl = ImageUtils.getLargestImage(postModel.getContent());
+        if (imageUrl != null) {
+            Picasso.with(mContext).load(imageUrl).into(postViewHolder.imageView);
+        }
     }
 
     @Override

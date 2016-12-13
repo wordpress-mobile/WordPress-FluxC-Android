@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
  * Stolen from https://github.com/wordpress-mobile/WordPress-Android/blob/develop/WordPress/src/main/java/org/wordpress/android/ui/reader/utils/ReaderImageScanner.java
  * Originally developed by @nbradbury, ty!
  */
-public class ImageUtils {
+class ImageUtils {
     private static final Pattern IMG_TAG_PATTERN = Pattern.compile(
             "<img(\\s+.*?)(?:src\\s*=\\s*(?:'|\")(.*?)(?:'|\"))(.*?)>",
             Pattern.DOTALL| Pattern.CASE_INSENSITIVE);
@@ -30,13 +30,13 @@ public class ImageUtils {
      * used when a post doesn't have a featured image assigned, searches post's content
      * for an image that may be large enough to be suitable as a featured image
      */
-    public String getLargestImage(String content, int minImageWidth) {
+    static String getLargestImage(String content) {
         if (content == null || !content.contains("<img")) {
             return null;
         }
 
         String currentImageUrl = null;
-        int currentMaxWidth = minImageWidth;
+        int currentMaxWidth = 0;
 
         Matcher imgMatcher = IMG_TAG_PATTERN.matcher(content);
         while (imgMatcher.find()) {
