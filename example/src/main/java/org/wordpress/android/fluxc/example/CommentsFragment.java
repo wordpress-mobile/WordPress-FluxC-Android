@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 public class CommentsFragment extends Fragment {
     @Inject SiteStore mSiteStore;
@@ -120,7 +120,7 @@ public class CommentsFragment extends Fragment {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload));
         try {
-            assertEquals(true, mCountDownLatch.await(2, TimeUnit.SECONDS));
+            assertTrue(mCountDownLatch.await(2, TimeUnit.SECONDS));
             mNewComment.setContent("I'm a new comment id: " + new Random().nextLong() + " from FluxC Example App");
             mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(
                     new RemoteCreateCommentPayload(getFirstSite(), getFirstComment(), mNewComment)
@@ -155,7 +155,7 @@ public class CommentsFragment extends Fragment {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.ASYNC)
     public void onCommentInstantiated(OnCommentInstantiated event) {
         mNewComment = event.comment;
         mCountDownLatch.countDown();

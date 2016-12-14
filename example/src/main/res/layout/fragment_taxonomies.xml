@@ -1,0 +1,26 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              tools:context="org.wordpress.android.fluxc.example.TaxonomiesFragment">
+
+    <Button
+        android:id="@+id/fetch_categories"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch categories from first site" />
+
+    <Button
+        android:id="@+id/fetch_tags"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch tags from first site" />
+
+    <Button
+        android:id="@+id/create_category"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create new category on first site" />
+
+</LinearLayout>
