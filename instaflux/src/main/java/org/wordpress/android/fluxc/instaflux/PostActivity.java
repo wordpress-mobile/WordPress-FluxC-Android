@@ -17,8 +17,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -174,7 +172,7 @@ public class PostActivity extends AppCompatActivity {
     private void createMediaPost(String mediaUrl) {
         mMediaUrl = mediaUrl;
         PostStore.InstantiatePostPayload payload = new PostStore.InstantiatePostPayload(mSiteStore.getSites().get(0),
-                false, null, "photo");
+                false, null, "image");
         mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
 
         AppLog.i(AppLog.T.API, "Create a new media post for " + mMediaUrl);
@@ -254,7 +252,8 @@ public class PostActivity extends AppCompatActivity {
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPostUploaded(PostStore.OnPostUploaded event) {
-        ToastUtils.showToast(this, event.post.getTitle());
+        ToastUtils.showToast(this, "Post uploaded!");
+
     }
 
     @SuppressWarnings("unused")
