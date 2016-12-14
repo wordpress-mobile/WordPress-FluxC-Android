@@ -12,6 +12,7 @@ import com.squareup.picasso.Picasso;
 
 import org.wordpress.android.fluxc.model.PostModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -19,7 +20,12 @@ class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context mContext;
 
     PostAdapter(Context context, List<PostModel> postList) {
-        this.postList = postList;
+        this.postList = new ArrayList<>();
+        for (PostModel postModel : postList) {
+            if (ImageUtils.hasImageInContent(postModel.getContent())) {
+                this.postList.add(postModel);
+            }
+        }
         this.mContext = context;
     }
 

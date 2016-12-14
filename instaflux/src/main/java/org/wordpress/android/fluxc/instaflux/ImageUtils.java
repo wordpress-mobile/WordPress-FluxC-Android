@@ -31,7 +31,7 @@ class ImageUtils {
      * for an image that may be large enough to be suitable as a featured image
      */
     static String getLargestImage(String content) {
-        if (content == null || !content.contains("<img")) {
+        if (!ImageUtils.hasImageInContent(content)) {
             return null;
         }
 
@@ -51,6 +51,10 @@ class ImageUtils {
         }
 
         return currentImageUrl;
+    }
+
+    static boolean hasImageInContent(String content) {
+        return content != null && content.contains("<img");
     }
 
     /*
