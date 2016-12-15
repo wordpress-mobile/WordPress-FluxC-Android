@@ -45,20 +45,6 @@ android.buildTypes.all { buildType ->
                     "\"${property.value}\""
         }
     }
-
-    // Load test properties and add them to BuildConfig
-    Properties testProperties = new Properties()
-    File testFile = file("tests.properties")
-    if (testFile.exists()) {
-        testProperties.load(new FileInputStream(testFile))
-    } else {
-        // Load defaults
-        println("WARNING: you're using the instaflux instaflux/tests.properties-instaflux file - tests won't pass")
-        testProperties.load(new FileInputStream(file("tests.properties-instaflux")))
-    }
-    testProperties.any { property ->
-        buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(), "\"${property.value}\""
-    }
 }
 
 dependencies {
@@ -69,13 +55,6 @@ dependencies {
     compile 'com.android.support:support-v4:25.0.1'
     compile 'com.android.support:recyclerview-v7:25.0.1'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:1.10.19'
-    testCompile 'org.robolectric:robolectric:3.0'
-    androidTestCompile 'com.google.dexmaker:dexmaker:1.2'
-    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.2'
-    androidTestCompile 'org.mockito:mockito-core:1.10.19'
-    androidTestApt 'com.google.dagger:dagger-compiler:2.0'
     apt 'com.google.dagger:dagger-compiler:2.0.2'
     provided 'org.glassfish:javax.annotation:10.0-b28'
 }

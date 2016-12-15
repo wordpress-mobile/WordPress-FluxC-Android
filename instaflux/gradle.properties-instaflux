@@ -1,3 +1,0 @@
-# We should use test credentials
-wp.OAUTH.APP.ID = wp
-wp.OAUTH.APP.SECRET = wp
