@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.instaflux;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,7 +41,10 @@ class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         PostViewHolder postViewHolder = (PostViewHolder) holder;
         PostModel postModel = postList.get(position);
 
+        String title = postModel.getTitle();
+        postViewHolder.titleTextView.setVisibility(TextUtils.isEmpty(title) ? View.GONE : View.VISIBLE);
         postViewHolder.titleTextView.setText(postModel.getTitle());
+
         String imageUrl = ImageUtils.getLargestImage(postModel.getContent());
         if (imageUrl != null) {
             Picasso.with(mContext).load(imageUrl).into(postViewHolder.imageView);
