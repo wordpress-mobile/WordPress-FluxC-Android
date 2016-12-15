@@ -17,6 +17,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -53,6 +55,7 @@ public class PostActivity extends AppCompatActivity {
     private final int RESULT_PICK_MEDIA = 2;
 
     private RecyclerView mRecyclerView;
+    private ProgressBar mProgressBar;
     private MediaModel mMedia;
 
     @Override
@@ -70,6 +73,9 @@ public class PostActivity extends AppCompatActivity {
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
                 layoutManager.getOrientation());
         mRecyclerView.addItemDecoration(dividerItemDecoration);
+
+        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        hideProgress();
     }
 
     @Override
@@ -189,6 +195,7 @@ public class PostActivity extends AppCompatActivity {
     }
 
     private void uploadMedia(String imagePath, String mimeType) {
+        showProgress();
         SiteModel site = mSiteStore.getSites().get(0);
         MediaModel mediaModel = new MediaModel();
         mediaModel.setFilePath(imagePath);
@@ -232,12 +239,15 @@ public class PostActivity extends AppCompatActivity {
 
             PostStore.RemotePostPayload payload = new PostStore.RemotePostPayload(event.post, mSiteStore.getSites().get(0));
             mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
+        } else {
+            hideProgress();
         }
     }
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPostChanged(PostStore.OnPostChanged event) {
+        hideProgress();
         if (event.isError()) {
             AppLog.e(AppLog.T.POSTS, "Error from " + event.causeOfChange + " - error: " + event.error.type);
             return;
@@ -275,5 +285,13 @@ public class PostActivity extends AppCompatActivity {
             AppLog.i(AppLog.T.API, "Media uploaded: " + event.media.getTitle());
             createMediaPost(event.media);
         }
+    }
+
+    private void showProgress() {
+        mProgressBar.setVisibility(View.VISIBLE);
+    }
+
+    private void hideProgress() {
+        mProgressBar.setVisibility(View.GONE);
     }
 }
