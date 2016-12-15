@@ -36,7 +36,7 @@ class ImageUtils {
         }
 
         String currentImageUrl = null;
-        int currentMaxWidth = 0;
+        int currentMaxWidth = -1;
 
         Matcher imgMatcher = IMG_TAG_PATTERN.matcher(content);
         while (imgMatcher.find()) {
