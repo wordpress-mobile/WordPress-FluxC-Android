@@ -64,8 +64,7 @@ public class PostActivity extends AppCompatActivity {
         ((InstafluxApp) getApplication()).component().inject(this);
         setContentView(R.layout.activity_post);
 
-        PostStore.FetchPostsPayload payload = new PostStore.FetchPostsPayload(mSiteStore.getSites().get(0));
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
+        fetchPosts();
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -247,7 +246,6 @@ public class PostActivity extends AppCompatActivity {
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPostChanged(PostStore.OnPostChanged event) {
-        hideProgress();
         if (event.isError()) {
             AppLog.e(AppLog.T.POSTS, "Error from " + event.causeOfChange + " - error: " + event.error.type);
             return;
@@ -267,7 +265,8 @@ public class PostActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPostUploaded(PostStore.OnPostUploaded event) {
         ToastUtils.showToast(this, "Post uploaded!");
-
+        hideProgress();
+        fetchPosts();
     }
 
     @SuppressWarnings("unused")
@@ -285,6 +284,11 @@ public class PostActivity extends AppCompatActivity {
             AppLog.i(AppLog.T.API, "Media uploaded: " + event.media.getTitle());
             createMediaPost(event.media);
         }
+    }
+
+    private void fetchPosts() {
+        PostStore.FetchPostsPayload payload = new PostStore.FetchPostsPayload(mSiteStore.getSites().get(0));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
     }
 
     private void showProgress() {
