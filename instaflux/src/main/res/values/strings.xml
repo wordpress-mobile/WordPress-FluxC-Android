@@ -4,7 +4,6 @@
     <string name="trust_certificate_question">Do you want to trust the following certificate?</string>
     <string name="title">Title</string>
     <string name="post">Post</string>
-    <string name="create_post">Create Post</string>
     <string name="content">Content</string>
     <string name="sign_out">Sign Out</string>
     <string name="username">Username</string>
