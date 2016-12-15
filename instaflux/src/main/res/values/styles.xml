@@ -3,7 +3,6 @@
 <resources>
 
     <style name="Instaflux" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="android:background">@color/wp_blue</item>
         <item name="buttonStyle">@style/FlatButtonStyle</item>
         <item name="android:textViewStyle">@style/TextStyle</item>
         <item name="editTextStyle">@style/EditTextStyle</item>
