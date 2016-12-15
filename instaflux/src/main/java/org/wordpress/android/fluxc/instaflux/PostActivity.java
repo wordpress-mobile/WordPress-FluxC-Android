@@ -53,7 +53,7 @@ public class PostActivity extends AppCompatActivity {
     private final int RESULT_PICK_MEDIA = 2;
 
     private RecyclerView mRecyclerView;
-    private String mMediaUrl;
+    private MediaModel mMedia;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -169,13 +169,13 @@ public class PostActivity extends AppCompatActivity {
         return true;
     }
 
-    private void createMediaPost(String mediaUrl) {
-        mMediaUrl = mediaUrl;
+    private void createMediaPost(MediaModel media) {
+        mMedia = media;
         PostStore.InstantiatePostPayload payload = new PostStore.InstantiatePostPayload(mSiteStore.getSites().get(0),
                 false, null, "image");
         mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
 
-        AppLog.i(AppLog.T.API, "Create a new media post for " + mMediaUrl);
+        AppLog.i(AppLog.T.API, "Create a new media post for " + mMedia.getUrl());
     }
 
     private void signOut() {
@@ -223,7 +223,11 @@ public class PostActivity extends AppCompatActivity {
     public void onPostInstantiated(PostStore.OnPostInstantiated event) {
         // upload the post if there is no error
         if (mSiteStore.hasSite() && event.post != null) {
-            String post = "<img src=\"" + mMediaUrl + "\" />";
+            String post = "<img src=\"" + mMedia.getUrl()
+                    + "\" width=\""
+                    + mMedia.getWidth()
+                    + "\" height=\""
+                    + mMedia.getHeight() + "\" />";
             event.post.setContent(post);
 
             PostStore.RemotePostPayload payload = new PostStore.RemotePostPayload(event.post, mSiteStore.getSites().get(0));
@@ -269,8 +273,7 @@ public class PostActivity extends AppCompatActivity {
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
         if (event. progress >= 1.f && event.media != null) {
             AppLog.i(AppLog.T.API, "Media uploaded: " + event.media.getTitle());
-            String url = event.media.getUrl();
-            createMediaPost(url);
+            createMediaPost(event.media);
         }
     }
 }
