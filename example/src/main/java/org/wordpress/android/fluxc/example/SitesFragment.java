@@ -41,6 +41,13 @@ public class SitesFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_sites, container, false);
 
+        view.findViewById(R.id.new_site).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showNewSiteDialog();
+            }
+        });
+
         view.findViewById(R.id.update_first_site).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -59,13 +66,6 @@ public class SitesFragment extends Fragment {
                     prependToLog(site.getName());
                     AppLog.i(T.API, LogUtils.toString(site));
                 }
-            }
-        });
-
-        view.findViewById(R.id.new_site).setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showNewSiteDialog();
             }
         });
 
