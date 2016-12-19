@@ -55,6 +55,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         // Correct user we should get an OnAuthenticationChanged message
+        mNextEvent = TestEvents.AUTHENTICATED;
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
