@@ -101,12 +101,12 @@ public class CommentsFragment extends Fragment {
     }
 
     private CommentModel getFirstComment() {
-        List<CommentModel> comments = mCommentStore.getCommentsForSite(getFirstSite(), CommentStatus.ALL);
+        List<CommentModel> comments = mCommentStore.getCommentsForSite(getFirstSite(), false, CommentStatus.ALL);
         if (comments.size() == 0) {
             prependToLog("There is no comments on this site or comments haven't been fetched.");
             return null;
         }
-        return mCommentStore.getCommentsForSite(getFirstSite(), CommentStatus.ALL).get(0);
+        return mCommentStore.getCommentsForSite(getFirstSite(), false, CommentStatus.ALL).get(0);
     }
 
     private void fetchCommentsFirstSite() {
@@ -147,7 +147,8 @@ public class CommentsFragment extends Fragment {
                 prependToLog("Comment " + (getFirstComment().getILike() ? "liked ツ" : "unliked (ಥ﹏ಥ)"));
             } else {
                 prependToLog("OnCommentChanged: rowsAffected=" + event.rowsAffected);
-                List<CommentModel> comments = mCommentStore.getCommentsForSite(getFirstSite(), CommentStatus.ALL);
+                List<CommentModel> comments = mCommentStore.getCommentsForSite(getFirstSite(), false,
+                        CommentStatus.ALL);
                 for (CommentModel comment : comments) {
                     prependToLog(comment.getAuthorName() + " @" + comment.getDatePublished());
                 }
