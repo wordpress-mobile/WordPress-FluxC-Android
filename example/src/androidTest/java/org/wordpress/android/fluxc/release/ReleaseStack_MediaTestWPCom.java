@@ -105,7 +105,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testPushNewMedia() throws InterruptedException {
+    public void testPushNonexistentMediaError() throws InterruptedException {
         MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         List<MediaModel> media = new ArrayList<>();
         media.add(testMedia);
