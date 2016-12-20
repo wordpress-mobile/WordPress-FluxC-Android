@@ -17,17 +17,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    private List<PostModel> postList;
+    private List<PostModel> mPostList;
     private Context mContext;
 
     PostAdapter(Context context, List<PostModel> postList) {
-        this.postList = new ArrayList<>();
+        mPostList = new ArrayList<>();
         for (PostModel postModel : postList) {
             if (ImageUtils.hasImageInContent(postModel.getContent())) {
-                this.postList.add(postModel);
+                mPostList.add(postModel);
             }
         }
-        this.mContext = context;
+        mContext = context;
     }
 
     @Override
@@ -39,7 +39,7 @@ class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         PostViewHolder postViewHolder = (PostViewHolder) holder;
-        PostModel postModel = postList.get(position);
+        PostModel postModel = mPostList.get(position);
 
         String title = postModel.getTitle();
         postViewHolder.titleTextView.setVisibility(TextUtils.isEmpty(title) ? View.GONE : View.VISIBLE);
@@ -53,7 +53,7 @@ class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return (postList != null ? postList.size() : 0);
+        return (mPostList != null ? mPostList.size() : 0);
     }
 
     private class PostViewHolder extends RecyclerView.ViewHolder {
