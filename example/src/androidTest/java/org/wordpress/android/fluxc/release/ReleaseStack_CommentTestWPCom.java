@@ -305,6 +305,10 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     }
 
     public void testInstantiateAndCreateReplyComment() throws InterruptedException {
+        // Fetch existing comments and get first comment
+        fetchFirstComments();
+        CommentModel firstComment = mComments.get(0);
+
         // New Comment
         InstantiateCommentPayload payload1 = new InstantiateCommentPayload(sSite);
         mNextEvent = TestEvents.COMMENT_INSTANTIATED;
@@ -315,10 +319,6 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         // Edit comment instance
         mNewComment.setContent("Trying with: " + (new Random()).nextFloat() * 10 + " gigawatts");
 
-        // Fetch existing comments and get first comment
-        fetchFirstComments();
-        CommentModel firstComment = mComments.get(0);
-
         // Create new Reply to that first comment
         mNextEvent = TestEvents.COMMENT_CHANGED;
         RemoteCreateCommentPayload payload2 = new RemoteCreateCommentPayload(sSite, firstComment, mNewComment);
@@ -328,6 +328,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+
         // Using .contains() in the assert below because server might wrap the response in <p>
         assertTrue(comment.getContent().contains(mNewComment.getContent()));
         assertNotSame(mNewComment.getRemoteCommentId(), comment.getRemoteCommentId());
