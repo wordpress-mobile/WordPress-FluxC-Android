@@ -8,7 +8,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Stolen from https://github.com/wordpress-mobile/WordPress-Android/blob/develop/WordPress/src/main/java/org/wordpress/android/ui/reader/utils/ReaderImageScanner.java
+ * Stolen from https://github.com/wordpress-mobile/WordPress-Android/blob/develop/
+ * WordPress/src/main/java/org/wordpress/android/ui/reader/utils/ReaderImageScanner.java
  * Originally developed by @nbradbury, ty!
  */
 class ImageUtils {

@@ -145,7 +145,8 @@ public class PostActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions
+            , @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         switch (requestCode) {
@@ -236,7 +237,8 @@ public class PostActivity extends AppCompatActivity {
                     + mMedia.getHeight() + "\" />";
             event.post.setContent(post);
 
-            PostStore.RemotePostPayload payload = new PostStore.RemotePostPayload(event.post, mSiteStore.getSites().get(0));
+            PostStore.RemotePostPayload payload = new PostStore
+                    .RemotePostPayload(event.post, mSiteStore.getSites().get(0));
             mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
         } else {
             hideProgress();
