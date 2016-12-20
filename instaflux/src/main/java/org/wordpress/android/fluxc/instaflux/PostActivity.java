@@ -102,7 +102,7 @@ public class PostActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 signOut();
             }
-        } );
+        });
         builder.setNegativeButton("CANCEL", null);
         builder.show();
     }
@@ -146,17 +146,16 @@ public class PostActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions
-            , @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         switch (requestCode) {
-            case MY_PERMISSIONS_READ_EXTERNAL_STORAGE: {
+            case MY_PERMISSIONS_READ_EXTERNAL_STORAGE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     pickMedia();
                 }
                 break;
-            }
         }
     }
 
@@ -283,7 +282,7 @@ public class PostActivity extends AppCompatActivity {
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
-        if (event. progress >= 1.f && event.media != null) {
+        if (event.progress >= 1.f && event.media != null) {
             AppLog.i(AppLog.T.API, "Media uploaded: " + event.media.getTitle());
             createMediaPost(event.media);
         }
