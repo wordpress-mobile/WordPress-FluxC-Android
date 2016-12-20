@@ -17,9 +17,7 @@ import org.wordpress.android.fluxc.model.CommentStatus;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.CommentStore;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
-import org.wordpress.android.fluxc.store.CommentStore.InstantiateCommentPayload;
 import org.wordpress.android.fluxc.store.CommentStore.OnCommentChanged;
-import org.wordpress.android.fluxc.store.CommentStore.OnCommentInstantiated;
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCreateCommentPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.util.AppLog;
@@ -28,21 +26,13 @@ import org.wordpress.android.util.ToastUtils;
 
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
-
-import static junit.framework.Assert.assertTrue;
 
 public class CommentsFragment extends Fragment {
     @Inject SiteStore mSiteStore;
     @Inject CommentStore mCommentStore;
     @Inject Dispatcher mDispatcher;
-
-    // Needed for instantiate action :/
-    private CommentModel mNewComment;
-    private CountDownLatch mCountDownLatch;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -115,19 +105,12 @@ public class CommentsFragment extends Fragment {
     }
 
     private void replyToFirstComment() {
-        InstantiateCommentPayload payload = new InstantiateCommentPayload(getFirstSite());
-        // Count down latch used for waiting for the asynchronous Instantiate action.
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(CommentActionBuilder.newInstantiateCommentAction(payload));
-        try {
-            assertTrue(mCountDownLatch.await(2, TimeUnit.SECONDS));
-            mNewComment.setContent("I'm a new comment id: " + new Random().nextLong() + " from FluxC Example App");
-            mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(
-                    new RemoteCreateCommentPayload(getFirstSite(), getFirstComment(), mNewComment)
-            ));
-        } catch (Exception e) {
-            // noop
-        }
+        CommentModel comment = new CommentModel();
+        comment.setRemoteSiteId(getFirstSite().getSiteId());
+        comment.setContent("I'm a new comment id: " + new Random().nextLong() + " from FluxC Example App");
+        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(
+                new RemoteCreateCommentPayload(getFirstSite(), getFirstComment(), comment)
+        ));
     }
 
     private void likeOrUnlikeFirstComment() {
@@ -154,12 +137,6 @@ public class CommentsFragment extends Fragment {
                 }
             }
         }
-    }
-
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    public void onCommentInstantiated(OnCommentInstantiated event) {
-        mNewComment = event.comment;
-        mCountDownLatch.countDown();
     }
 
     private void prependToLog(final String s) {
