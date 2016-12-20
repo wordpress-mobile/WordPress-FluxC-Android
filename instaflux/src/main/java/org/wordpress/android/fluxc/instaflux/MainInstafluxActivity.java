@@ -162,7 +162,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAccountChanged(AccountStore.OnAccountChanged event) {
         if (!mAccountStore.hasAccessToken()) {
-            //Signed out!
+            // Signed out!
         }
     }
 
@@ -180,7 +180,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
                     showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
                     break;
                 case NEEDS_2FA:
-                    //TODO: handle 2fa
+                    // TODO: handle 2fa
                     break;
                 default:
                     // Show Toast "Network Error"?

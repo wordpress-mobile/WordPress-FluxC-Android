@@ -101,7 +101,8 @@ public class PostActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 signOut();
-            }});
+            }
+        } );
         builder.setNegativeButton("CANCEL", null);
         builder.show();
     }
@@ -124,9 +125,9 @@ public class PostActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
 
-        switch(requestCode) {
+        switch (requestCode) {
             case RESULT_PICK_MEDIA:
-                if(resultCode == RESULT_OK) {
+                if (resultCode == RESULT_OK) {
                     Uri selectedImage = imageReturnedIntent.getData();
                     String mimeType = getContentResolver().getType(selectedImage);
                     String[] filePathColumn = {android.provider.MediaStore.Images.Media.DATA};
