@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import com.yarolegovich.wellsql.SelectQuery;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.CommentActionBuilder;
@@ -74,7 +76,8 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Verify it was inserted in the DB
-        List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(sSite, CommentStatus.ALL);
+        List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(sSite, SelectQuery.ORDER_ASCENDING,
+                CommentStatus.ALL);
         assertEquals(mNewComment.getId(), comments.get(0).getId());
     }
 
@@ -97,7 +100,8 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check the last comment we get from the DB is the same
-        List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(sSite, CommentStatus.ALL);
+        List<CommentModel> comments = CommentSqlUtils.getCommentsForSite(sSite, SelectQuery.ORDER_ASCENDING,
+                CommentStatus.ALL);
         assertEquals(mNewComment.getContent(), comments.get(0).getContent());
 
         // Remove that comment
@@ -106,7 +110,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check the last comment we get from the DB is different
-        comments = CommentSqlUtils.getCommentsForSite(sSite, CommentStatus.ALL);
+        comments = CommentSqlUtils.getCommentsForSite(sSite, SelectQuery.ORDER_ASCENDING, CommentStatus.ALL);
         if (comments.size() != 0) {
             assertNotSame(mNewComment.getId(), comments.get(0).getId());
         }
@@ -396,7 +400,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     @SuppressWarnings("unused")
     @Subscribe
     public void onCommentChanged(OnCommentChanged event) {
-        List<CommentModel> comments = mCommentStore.getCommentsForSite(sSite, CommentStatus.ALL);
+        List<CommentModel> comments = mCommentStore.getCommentsForSite(sSite, true, CommentStatus.ALL);
         if (event.isError()) {
             AppLog.i(T.TESTS, "event error type: " + event.error.type);
             if (mNextEvent == TestEvents.COMMENT_CHANGED_UNKNOWN_COMMENT) {
@@ -457,7 +461,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        mComments = mCommentStore.getCommentsForSite(sSite, CommentStatus.ALL);
+        mComments = mCommentStore.getCommentsForSite(sSite, true, CommentStatus.ALL);
     }
 
     private void fetchFirstPosts() throws InterruptedException {
