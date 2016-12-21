@@ -15,17 +15,17 @@ import java.util.regex.Pattern;
 class ImageUtils {
     private static final Pattern IMG_TAG_PATTERN = Pattern.compile(
             "<img(\\s+.*?)(?:src\\s*=\\s*(?:'|\")(.*?)(?:'|\"))(.*?)>",
-            Pattern.DOTALL| Pattern.CASE_INSENSITIVE);
+            Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     // regex for matching src attributes in tags
     private static final Pattern SRC_ATTR_PATTERN = Pattern.compile(
             "src\\s*=\\s*(?:'|\")(.*?)(?:'|\")",
-            Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+            Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     // regex for matching width attributes in tags
     private static final Pattern WIDTH_ATTR_PATTERN = Pattern.compile(
             "width\\s*=\\s*(?:'|\")(.*?)(?:'|\")",
-            Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+            Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     /*
      * used when a post doesn't have a featured image assigned, searches post's content

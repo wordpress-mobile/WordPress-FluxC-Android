@@ -51,8 +51,8 @@ public class PostActivity extends AppCompatActivity {
     @Inject PostStore mPostStore;
     @Inject MediaStore mMediaStore;
 
-    private final int MY_PERMISSIONS_READ_EXTERNAL_STORAGE = 1;
-    private final int RESULT_PICK_MEDIA = 2;
+    private static final int MY_PERMISSIONS_READ_EXTERNAL_STORAGE = 1;
+    private static final int RESULT_PICK_MEDIA = 2;
 
     private RecyclerView mRecyclerView;
     private ProgressBar mProgressBar;

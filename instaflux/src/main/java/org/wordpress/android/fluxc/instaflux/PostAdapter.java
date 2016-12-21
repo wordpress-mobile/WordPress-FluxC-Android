@@ -57,8 +57,8 @@ class PostAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     private class PostViewHolder extends RecyclerView.ViewHolder {
-        ImageView imageView;
-        TextView titleTextView;
+        public final ImageView imageView;
+        public final TextView titleTextView;
 
         PostViewHolder(View view) {
             super(view);
