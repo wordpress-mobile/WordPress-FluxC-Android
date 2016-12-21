@@ -10,8 +10,7 @@
         android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
         <activity
             android:name="org.wordpress.android.fluxc.instaflux.MainInstafluxActivity"
-            android:label="@string/app_name"
-            android:theme="@style/Instaflux">
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -19,8 +18,7 @@
         </activity>
         <activity
             android:name="org.wordpress.android.fluxc.instaflux.PostActivity"
-            android:label="@string/app_name"
-            android:theme="@style/Instaflux"/>
+            android:label="@string/app_name"/>
     </application>
 
 </manifest>
