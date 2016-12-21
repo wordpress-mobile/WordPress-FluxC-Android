@@ -57,12 +57,21 @@ public class PostActivity extends AppCompatActivity {
     private RecyclerView mRecyclerView;
     private ProgressBar mProgressBar;
     private MediaModel mMedia;
+    private SiteModel mSite;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ((InstafluxApp) getApplication()).component().inject(this);
         setContentView(R.layout.activity_post);
+
+        // Pick the first site.
+        if (mSiteStore.getSitesCount() == 0) {
+            // We can't do anything if the user doesn't have sites.
+            ToastUtils.showToast(this, "Die");
+            finish();
+        }
+        mSite = mSiteStore.getSites().get(0);
 
         fetchPosts();
 
@@ -177,10 +186,8 @@ public class PostActivity extends AppCompatActivity {
 
     private void createMediaPost(MediaModel media) {
         mMedia = media;
-        PostStore.InstantiatePostPayload payload = new PostStore.InstantiatePostPayload(mSiteStore.getSites().get(0),
-                false, null, "image");
+        PostStore.InstantiatePostPayload payload = new PostStore.InstantiatePostPayload(mSite, false, null, "image");
         mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
-
         AppLog.i(AppLog.T.API, "Create a new media post for " + mMedia.getUrl());
     }
 
@@ -189,21 +196,19 @@ public class PostActivity extends AppCompatActivity {
             mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
             mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
         } else {
-            SiteModel firstSite = mSiteStore.getSites().get(0);
-            mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(firstSite));
+            mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(mSite));
         }
     }
 
     private void uploadMedia(String imagePath, String mimeType) {
         showProgress();
-        SiteModel site = mSiteStore.getSites().get(0);
         MediaModel mediaModel = new MediaModel();
         mediaModel.setFilePath(imagePath);
         mediaModel.setFileExtension(MediaUtils.getExtension(imagePath));
         mediaModel.setMimeType(mimeType);
         mediaModel.setFileName(MediaUtils.getFileName(imagePath));
-        mediaModel.setSiteId(site.getSiteId());
-        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(site, mediaModel);
+        mediaModel.setSiteId(mSite.getSiteId());
+        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(mSite, mediaModel);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
     }
 
@@ -229,7 +234,7 @@ public class PostActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPostInstantiated(PostStore.OnPostInstantiated event) {
         // upload the post if there is no error
-        if (mSiteStore.hasSite() && event.post != null) {
+        if (event.post != null) {
             String post = "<img src=\"" + mMedia.getUrl()
                     + "\" width=\""
                     + mMedia.getWidth()
@@ -237,8 +242,7 @@ public class PostActivity extends AppCompatActivity {
                     + mMedia.getHeight() + "\" />";
             event.post.setContent(post);
 
-            PostStore.RemotePostPayload payload = new PostStore
-                    .RemotePostPayload(event.post, mSiteStore.getSites().get(0));
+            PostStore.RemotePostPayload payload = new PostStore.RemotePostPayload(event.post, mSite);
             mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
         } else {
             hideProgress();
@@ -254,10 +258,9 @@ public class PostActivity extends AppCompatActivity {
         }
 
         if (event.causeOfChange.equals(PostAction.FETCH_POSTS)) {
-            SiteModel firstSite = mSiteStore.getSites().get(0);
             ArrayList<String> postFormat = new ArrayList<>();
             postFormat.add("image");
-            List<PostModel> postList = mPostStore.getPostsForSiteWithFormat(firstSite, postFormat);
+            List<PostModel> postList = mPostStore.getPostsForSiteWithFormat(mSite, postFormat);
             PostAdapter postAdapter = new PostAdapter(this, postList);
             mRecyclerView.setAdapter(postAdapter);
         }
@@ -282,14 +285,15 @@ public class PostActivity extends AppCompatActivity {
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
-        if (event.progress >= 1.f && event.media != null) {
-            AppLog.i(AppLog.T.API, "Media uploaded: " + event.media.getTitle());
-            createMediaPost(event.media);
+        if (event.completed && event.media != null) {
+            MediaModel media = mMediaStore.getSiteMediaWithId(mSite, event.media.getMediaId());
+            AppLog.i(AppLog.T.API, "Media uploaded: " + media.getTitle());
+            createMediaPost(media);
         }
     }
 
     private void fetchPosts() {
-        PostStore.FetchPostsPayload payload = new PostStore.FetchPostsPayload(mSiteStore.getSites().get(0));
+        PostStore.FetchPostsPayload payload = new PostStore.FetchPostsPayload(mSite);
         mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
     }
 
