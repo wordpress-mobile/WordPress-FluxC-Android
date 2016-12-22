@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <color name="wp_blue">#0087be</color>
+    <color name="hint_color">#a8bece</color>
+    <color name="black">#000000</color>
+    <color name="transparent_black">#33000000</color>
+
+</resources>
