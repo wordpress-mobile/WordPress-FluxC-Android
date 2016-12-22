@@ -1,0 +1,60 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.3'
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+    }
+}
+
+repositories {
+    jcenter()
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'com.neenbedankt.android-apt'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
+
+    defaultConfig {
+        applicationId "org.wordpress.android.fluxc.instaflux"
+        minSdkVersion 16
+        targetSdkVersion 22
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    lintOptions {
+        warning 'InvalidPackage'
+    }
+}
+
+android.buildTypes.all { buildType ->
+    // Add properties named "wp.xxx" to our BuildConfig
+    project.properties.any { property ->
+        if (property.key.toLowerCase().startsWith("wp.")) {
+            buildType.buildConfigField "String", property.key.replace("wp.", "").replace(".", "_").toUpperCase(),
+                    "\"${property.value}\""
+        }
+    }
+}
+
+dependencies {
+    compile project(':fluxc');
+
+    compile 'com.google.dagger:dagger:2.0.2'
+    compile 'com.android.support:appcompat-v7:25.1.0'
+    compile 'com.android.support:support-v4:25.1.0'
+    compile 'com.android.support:recyclerview-v7:25.1.0'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    apt 'com.google.dagger:dagger-compiler:2.0.2'
+    provided 'org.glassfish:javax.annotation:10.0-b28'
+}
