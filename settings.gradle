@@ -1,2 +1,3 @@
 include ':fluxc', ':fluxc-processor', ':fluxc-annotations'
 include ':example'
+include ':instaflux'
