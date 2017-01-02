@@ -23,7 +23,6 @@ import android.widget.ProgressBar;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
-import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.action.PostAction;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
@@ -34,7 +33,6 @@ import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.MediaStore;
-import org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.utils.MediaUtils;
@@ -60,7 +58,6 @@ public class PostActivity extends AppCompatActivity {
     private ProgressBar mProgressBar;
     private MediaModel mMedia;
     private SiteModel mSite;
-    private boolean mCreatePost;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -187,15 +184,6 @@ public class PostActivity extends AppCompatActivity {
         return true;
     }
 
-    private void fetchMedia(SiteModel site, long mediaId) {
-        List<MediaModel> mediaList = new ArrayList<>();
-        MediaModel media = new MediaModel();
-        media.setMediaId(mediaId);
-        mediaList.add(media);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(new MediaListPayload(MediaAction.FETCH_MEDIA, site,
-                mediaList)));
-    }
-
     private void createMediaPost(MediaModel media) {
         mMedia = media;
         PostStore.InstantiatePostPayload payload = new PostStore.InstantiatePostPayload(mSite, false, null, "image");
@@ -292,18 +280,15 @@ public class PostActivity extends AppCompatActivity {
         if (event.isError()) {
             AppLog.w(AppLog.T.MEDIA, "OnMediaChanged error: " + event.error);
         }
-        if (mCreatePost) {
-            mCreatePost = false;
-            createMediaPost(event.media.get(0));
-        }
     }
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
         if (event.completed && event.media != null) {
-            fetchMedia(mSite, event.media.getMediaId());
-            mCreatePost = true;
+            MediaModel media = mMediaStore.getSiteMediaWithId(mSite, event.media.getMediaId());
+            AppLog.i(AppLog.T.API, "Media uploaded: " + media.getTitle());
+            createMediaPost(media);
         }
     }
 
