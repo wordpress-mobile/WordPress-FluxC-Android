@@ -155,12 +155,29 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     public void testChangeLocalDraft() throws InterruptedException {
         createNewPost();
+
+        // Wait one sec
+        Thread.sleep(1000);
+        Date testStartDate = DateTimeUtils.localDateToUTC(new Date());
+
+        // Check local change date is set and before "right now"
+        assertNotNull(mPost.getDateLocallyChanged());
+        Date postDate1 = DateTimeUtils.dateFromIso8601(mPost.getDateLocallyChanged());
+        assertTrue(testStartDate.after(postDate1));
+
         setupPostAttributes();
 
         mPost.setTitle("From testChangingLocalDraft");
 
+        // Wait one sec
+        Thread.sleep(1000);
+
         // Save changes locally
         savePost(mPost);
+
+        // Check the locallyChanged date actually changed after the post update
+        Date postDate2 = DateTimeUtils.dateFromIso8601(mPost.getDateLocallyChanged());
+        assertTrue(postDate2.after(postDate1));
 
         // Get the current copy of the post from the PostStore
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
@@ -169,8 +186,15 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mPost.setContent("Some new content");
         mPost.setFeaturedImageId(7);
 
+        // Wait one sec
+        Thread.sleep(1000);
+
         // Save new changes locally
         savePost(mPost);
+
+        // Check the locallyChanged date actually changed after the post update
+        Date postDate3 = DateTimeUtils.dateFromIso8601(mPost.getDateLocallyChanged());
+        assertTrue(postDate3.after(postDate2));
 
         // Get the current copy of the post from the PostStore
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
