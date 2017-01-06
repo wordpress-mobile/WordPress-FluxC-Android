@@ -47,6 +47,9 @@ public class MediaFragment extends Fragment {
 
     private SiteModel mSite;
     private Spinner mMediaList;
+    private View mCancelButton;
+
+    private MediaModel mCurrentUpload;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -64,6 +67,23 @@ public class MediaFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_media, container, false);
 
         mMediaList = (Spinner) view.findViewById(R.id.media_list);
+
+        mCancelButton = view.findViewById(R.id.cancel_upload);
+        mCancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!isAdded()) {
+                    return;
+                }
+
+                if (mCurrentUpload == null) {
+                    mCancelButton.setEnabled(false);
+                    return;
+                }
+
+                cancelMediaUpload(mSite, mCurrentUpload);
+            }
+        });
 
         view.findViewById(R.id.fetch_all_media).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -205,13 +225,20 @@ public class MediaFragment extends Fragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaUploaded(OnMediaUploaded event) {
         if (!event.isError()) {
-            if (!event.completed) {
-                prependToLog("Upload progress: " + event.progress * 100);
-            } else {
+            if (event.progress < 0.f) {
+                prependToLog("Upload canceled: " + event.media.getFileName());
+                mCancelButton.setEnabled(false);
+                mCurrentUpload = null;
+            } else if (event.completed) {
                 prependToLog("Successfully uploaded " + event.media.getUrl() + "!");
+                mCancelButton.setEnabled(false);
+                mCurrentUpload = null;
+            } else {
+                prependToLog("Upload progress: " + event.progress * 100);
             }
         } else {
             prependToLog("Upload error: " + event.error.type + ", message: " + event.error.message);
+            mCurrentUpload = null;
         }
     }
 
@@ -242,12 +269,13 @@ public class MediaFragment extends Fragment {
     private void uploadMedia(@NonNull SiteModel site, @NonNull String mediaUri) {
         prependToLog("Uploading media to " + site.getName());
 
-        MediaModel media = new MediaModel();
-        media.setFileName(MediaUtils.getFileName(mediaUri));
-        media.setFilePath(mediaUri);
-        media.setMimeType(MediaUtils.getMimeTypeForExtension(MediaUtils.getExtension(mediaUri)));
-        UploadMediaPayload payload = new UploadMediaPayload(site, media);
+        mCurrentUpload = new MediaModel();
+        mCurrentUpload.setFileName(MediaUtils.getFileName(mediaUri));
+        mCurrentUpload.setFilePath(mediaUri);
+        mCurrentUpload.setMimeType(MediaUtils.getMimeTypeForExtension(MediaUtils.getExtension(mediaUri)));
+        UploadMediaPayload payload = new UploadMediaPayload(site, mCurrentUpload);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        mCancelButton.setEnabled(true);
     }
 
     private void deleteMedia(@NonNull SiteModel site, @NonNull MediaModel media) {
@@ -255,6 +283,12 @@ public class MediaFragment extends Fragment {
 
         MediaListPayload payload = new MediaListPayload(MediaAction.DELETE_MEDIA, site, mediaListForSingleItem(media));
         mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(payload));
+    }
+
+    private void cancelMediaUpload(@NonNull SiteModel site, @NonNull MediaModel media) {
+        List<MediaModel> mediaList = mediaListForSingleItem(media);
+        MediaListPayload payload = new MediaListPayload(MediaAction.CANCEL_MEDIA_UPLOAD, site, mediaList);
+        mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(payload));
     }
 
     private class MediaAdapter extends ArrayAdapter<MediaModel> {
