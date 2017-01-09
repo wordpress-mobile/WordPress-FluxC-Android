@@ -310,7 +310,11 @@ public class MainFragment extends Fragment {
             prependToLog("Discovery failed with error: " + event.error);
             AppLog.e(T.API, "Discover error: " + event.error);
         } else {
-            prependToLog("Discovery succeeded, endpoint: " + event.xmlRpcEndpoint);
+            if (event.wpRestEndpoint != null && !event.wpRestEndpoint.isEmpty()) {
+                prependToLog("Discovery succeeded, found WP-API endpoint: " + event.wpRestEndpoint);
+            } else {
+                prependToLog("Discovery succeeded, found XML-RPC endpoint: " + event.xmlRpcEndpoint);
+            }
             selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
         }
     }
