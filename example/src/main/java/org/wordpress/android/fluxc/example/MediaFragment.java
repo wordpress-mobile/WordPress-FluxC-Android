@@ -23,15 +23,14 @@ import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.MediaStore;
+import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
-import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -111,15 +110,12 @@ public class MediaFragment extends Fragment {
                             return;
                         }
 
-                        List<MediaModel> mediaList = new ArrayList<>();
                         String[] ids = text1.split(",");
                         for (String id : ids) {
                             MediaModel media = new MediaModel();
                             media.setMediaId(Long.valueOf(id));
-                            mediaList.add(media);
+                            fetchMedia(mSite, media);
                         }
-
-                        fetchMedia(mSite, mediaList);
                     }
                 }, "comma-separate media IDs", null, null);
                 dialog.show(getFragmentManager(), "media-ids-dialog");
@@ -196,10 +192,12 @@ public class MediaFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteChanged(OnSiteChanged event) {
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaError(OnMediaChanged event) {
         if (event.isError()) {
@@ -207,6 +205,7 @@ public class MediaFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaChanged(OnMediaChanged event) {
         if (!event.isError()) {
@@ -222,6 +221,7 @@ public class MediaFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaUploaded(OnMediaUploaded event) {
         if (!event.isError()) {
@@ -246,23 +246,17 @@ public class MediaFragment extends Fragment {
         ((MainExampleActivity) getActivity()).prependToLog(s);
     }
 
-    private List<MediaModel> mediaListForSingleItem(MediaModel media) {
-        List<MediaModel> mediaList = new ArrayList<>();
-        mediaList.add(media);
-        return mediaList;
-    }
-
     private void fetchAllMedia(@NonNull SiteModel site) {
         prependToLog("Fetching all media from " + site.getName());
 
-        MediaListPayload payload = new MediaListPayload(MediaAction.FETCH_ALL_MEDIA, site, null);
+        MediaListPayload payload = new MediaListPayload(site, null, null);
         mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(payload));
     }
 
-    private void fetchMedia(@NonNull final SiteModel site, @NonNull List<MediaModel> media) {
+    private void fetchMedia(@NonNull final SiteModel site, @NonNull MediaModel media) {
         prependToLog("Fetching requested media from" + site.getName());
 
-        MediaListPayload payload = new MediaListPayload(MediaAction.FETCH_MEDIA, mSite, media);
+        MediaPayload payload = new MediaPayload(mSite, media);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
     }
 
@@ -273,7 +267,7 @@ public class MediaFragment extends Fragment {
         mCurrentUpload.setFileName(MediaUtils.getFileName(mediaUri));
         mCurrentUpload.setFilePath(mediaUri);
         mCurrentUpload.setMimeType(MediaUtils.getMimeTypeForExtension(MediaUtils.getExtension(mediaUri)));
-        UploadMediaPayload payload = new UploadMediaPayload(site, mCurrentUpload);
+        MediaPayload payload = new MediaPayload(site, mCurrentUpload);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         mCancelButton.setEnabled(true);
     }
@@ -281,13 +275,12 @@ public class MediaFragment extends Fragment {
     private void deleteMedia(@NonNull SiteModel site, @NonNull MediaModel media) {
         prependToLog("Deleting requested media from " + site.getName());
 
-        MediaListPayload payload = new MediaListPayload(MediaAction.DELETE_MEDIA, site, mediaListForSingleItem(media));
+        MediaPayload payload = new MediaPayload(site, media);
         mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(payload));
     }
 
     private void cancelMediaUpload(@NonNull SiteModel site, @NonNull MediaModel media) {
-        List<MediaModel> mediaList = mediaListForSingleItem(media);
-        MediaListPayload payload = new MediaListPayload(MediaAction.CANCEL_MEDIA_UPLOAD, site, mediaList);
+        MediaPayload payload = new MediaPayload(site, media);
         mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(payload));
     }
 
