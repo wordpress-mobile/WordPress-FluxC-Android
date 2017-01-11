@@ -98,6 +98,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         assertNotSame(0, uploadedPost.getRemotePostId());
         assertFalse(uploadedPost.isLocalDraft());
+
+        // The site should automatically assign the post the default category
+        assertFalse(uploadedPost.getCategoryIdList().isEmpty());
     }
 
     public void testEditRemotePost() throws InterruptedException {
