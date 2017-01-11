@@ -22,6 +22,7 @@ import org.wordpress.android.util.AppLog.T;
 import org.wordpress.android.util.DateTimeUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -97,6 +98,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         assertNotSame(0, uploadedPost.getRemotePostId());
         assertFalse(uploadedPost.isLocalDraft());
+
+        // The site should automatically assign the post the default category
+        assertFalse(uploadedPost.getCategoryIdList().isEmpty());
     }
 
     public void testEditRemotePost() throws InterruptedException {
@@ -356,6 +360,39 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(date, newPage.getDateCreated());
 
         assertEquals(0, newPage.getFeaturedImageId()); // The page should upload, but have the featured image stripped
+    }
+
+    public void testClearTagsFromPost() throws InterruptedException {
+        createNewPost();
+
+        mPost.setTitle("A post with tags");
+        mPost.setContent("Some content here! <strong>Bold text</strong>.");
+
+        List<Long> categoryIds = new ArrayList<>(1);
+        categoryIds.add((long) 1);
+        mPost.setCategoryIdList(categoryIds);
+
+        List<String> tags = new ArrayList<>(2);
+        tags.add("fluxc");
+        tags.add("generated-" + RandomStringUtils.randomAlphanumeric(8));
+        mPost.setTagNameList(tags);
+
+        uploadPost(mPost);
+
+        // Get the current copy of the post from the PostStore
+        PostModel newPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertFalse(newPost.getTagNameList().isEmpty());
+
+        newPost.setTagNameList(Collections.<String>emptyList());
+        newPost.setIsLocallyChanged(true);
+
+        // Upload edited post
+        uploadPost(newPost);
+
+        PostModel finalPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertTrue(finalPost.getTagNameList().isEmpty());
     }
 
     public void testAddLocationToRemotePost() throws InterruptedException {
