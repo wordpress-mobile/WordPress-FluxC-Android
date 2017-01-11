@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
@@ -304,6 +305,11 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         categoryIds.add((long) 1);
         mPost.setCategoryIdList(categoryIds);
 
+        List<String> tags = new ArrayList<>(2);
+        tags.add("fluxc");
+        tags.add("generated-" + RandomStringUtils.randomAlphanumeric(8));
+        mPost.setTagNameList(tags);
+
         uploadPost(mPost);
 
         // Get the current copy of the post from the PostStore
@@ -318,6 +324,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         assertTrue(categoryIds.containsAll(newPost.getCategoryIdList())
                 && newPost.getCategoryIdList().containsAll(categoryIds));
+
+        assertTrue(tags.containsAll(newPost.getTagNameList())
+                && newPost.getTagNameList().containsAll(tags));
     }
 
     public void testFullFeaturedPageUpload() throws InterruptedException {

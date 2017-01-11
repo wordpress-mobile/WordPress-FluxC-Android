@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -296,6 +297,11 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         categoryIds.add((long) 1);
         mPost.setCategoryIdList(categoryIds);
 
+        List<String> tags = new ArrayList<>(2);
+        tags.add("fluxc");
+        tags.add("generated-" + RandomStringUtils.randomAlphanumeric(8));
+        mPost.setTagNameList(tags);
+
         uploadPost(mPost);
 
         // Get the current copy of the post from the PostStore
@@ -310,6 +316,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         assertTrue(categoryIds.containsAll(newPost.getCategoryIdList())
                 && newPost.getCategoryIdList().containsAll(categoryIds));
+
+        assertTrue(tags.containsAll(newPost.getTagNameList())
+                && newPost.getTagNameList().containsAll(tags));
     }
 
     public void testFullFeaturedPageUpload() throws InterruptedException {
@@ -534,29 +543,6 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         categories.add((long) 999999);
 
         mPost.setCategoryIdList(categories);
-
-        mNextEvent = TestEvents.ERROR_GENERIC;
-        mCountDownLatch = new CountDownLatch(1);
-
-        // Upload edited post
-        RemotePostPayload pushPayload = new RemotePostPayload(mPost, sSite);
-        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_TERM error instead
-        // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
-        assertEquals("Invalid term ID.", mLastPostError.message);
-    }
-
-    public void testCreateNewPostWithInvalidTag() throws InterruptedException {
-        createNewPost();
-        setupPostAttributes();
-
-        List<Long> tags = new ArrayList<>();
-        tags.add((long) 999999);
-
-        mPost.setTagIdList(tags);
 
         mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
