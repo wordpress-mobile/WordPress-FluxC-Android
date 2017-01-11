@@ -9,13 +9,12 @@ import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.store.MediaStore;
+import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
-import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
-    @SuppressWarnings("unused") @Inject MediaStore mMediaStore;
+    @Inject MediaStore mMediaStore;
 
     private enum TestEvents {
         DELETED_MEDIA,
@@ -31,7 +30,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         FETCHED_KNOWN_IMAGES,
         PUSHED_MEDIA,
         UPLOADED_MEDIA,
-        PUSH_ERROR
+        PUSH_ERROR,
+        REMOVED_MEDIA,
     }
 
     private TestEvents mNextEvent;
@@ -47,91 +47,141 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     public void testDeleteMedia() throws InterruptedException {
-        // we first need to upload a new media to delete it
+        // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
-        UploadMediaPayload payload = new UploadMediaPayload(sSite, testMedia);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        uploadMedia(testMedia);
 
+        // verify and set media ID
         assertTrue(mLastUploadedId >= 0);
         testMedia.setMediaId(mLastUploadedId);
-        List<MediaModel> mediaList = new ArrayList<>();
-        mediaList.add(testMedia);
-        MediaListPayload deletePayload = new MediaListPayload(MediaAction.DELETE_MEDIA, sSite, mediaList);
+        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+
+        // delete media and verify it's not in the store
         mNextEvent = TestEvents.DELETED_MEDIA;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        deleteMedia(testMedia);
+        assertNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
     }
 
     public void testFetchAllMedia() throws InterruptedException {
-        MediaListPayload fetchPayload = new MediaListPayload(MediaAction.FETCH_ALL_MEDIA, sSite, null);
-        mNextEvent = TestEvents.FETCHED_ALL_MEDIA;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(fetchPayload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    public void testFetchSpecificMedia() throws InterruptedException {
-        String knownImageIds = BuildConfig.TEST_WPCOM_IMAGE_IDS_TEST1;
-        String[] splitIds = knownImageIds.split(",");
-        List<MediaModel> mediaList = new ArrayList<>();
-        for (String id : splitIds) {
-            MediaModel media = new MediaModel();
-            media.setMediaId(Long.valueOf(id));
-            mediaList.add(media);
-        }
-        MediaListPayload payload = new MediaListPayload(MediaAction.FETCH_MEDIA, sSite, mediaList);
-        mNextEvent = TestEvents.FETCHED_KNOWN_IMAGES;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    public void testPushExistingMedia() throws InterruptedException {
-        MediaModel testMedia = new MediaModel();
-        // use existing media
-        testMedia.setMediaId(Long.parseLong(BuildConfig.TEST_WPCOM_IMAGE_ID_TO_CHANGE));
-        // create a random title
-        testMedia.setTitle(RandomStringUtils.randomAlphabetic(8));
-        List<MediaModel> media = new ArrayList<>();
-        media.add(testMedia);
-        MediaListPayload payload = new MediaListPayload(MediaAction.PUSH_MEDIA, sSite, media);
-        mNextEvent = TestEvents.PUSHED_MEDIA;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    public void testPushNonexistentMediaError() throws InterruptedException {
+        // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
-        List<MediaModel> media = new ArrayList<>();
-        media.add(testMedia);
-        MediaListPayload payload = new MediaListPayload(MediaAction.PUSH_MEDIA, sSite, media);
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
+        uploadMedia(testMedia);
+
+        // verify and set media ID
+        assertTrue(mLastUploadedId >= 0);
+        testMedia.setMediaId(mLastUploadedId);
+        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+
+        // remove all local media and verify store is empty
+        mNextEvent = TestEvents.REMOVED_MEDIA;
+        removeAllSiteMedia();
+        assertTrue(mMediaStore.getAllSiteMedia(sSite).isEmpty());
+
+        // fetch all media and verify store is not empty
+        mNextEvent = TestEvents.FETCHED_ALL_MEDIA;
+        fetchAllMedia();
+        assertFalse(mMediaStore.getAllSiteMedia(sSite).isEmpty());
+
+        // delete test image
+        mNextEvent = TestEvents.DELETED_MEDIA;
+        deleteMedia(testMedia);
+    }
+
+    public void testFetchMedia() throws InterruptedException {
+        // upload media to guarantee media exists
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
+        uploadMedia(testMedia);
+
+        // verify and set media ID
+        assertTrue(mLastUploadedId >= 0);
+        testMedia.setMediaId(mLastUploadedId);
+        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+
+        // remove local media and verify it's not in the store
+        mNextEvent = TestEvents.REMOVED_MEDIA;
+        removeMedia(testMedia);
+        assertNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+
+        // fetch test media from remote and verify it's in the store
+        mNextEvent = TestEvents.FETCHED_KNOWN_IMAGES;
+        fetchMedia(testMedia);
+        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+
+        // delete test image
+        mNextEvent = TestEvents.DELETED_MEDIA;
+        deleteMedia(testMedia);
+    }
+
+    public void testEditMedia() throws InterruptedException {
+        // upload media to guarantee media exists
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
+        uploadMedia(testMedia);
+
+        // verify and set media ID
+        assertTrue(mLastUploadedId >= 0);
+        testMedia.setMediaId(mLastUploadedId);
+        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+
+        // create a random title and push changes
+        testMedia.setTitle(RandomStringUtils.randomAlphabetic(8));
+        mNextEvent = TestEvents.PUSHED_MEDIA;
+        pushMedia(testMedia);
+
+        // verify store media has been updated
+        MediaModel storeMedia = mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId());
+        assertNotNull(storeMedia);
+        assertEquals(testMedia.getTitle(), storeMedia.getTitle());
+
+        // delete test image
+        mNextEvent = TestEvents.DELETED_MEDIA;
+        deleteMedia(testMedia);
+    }
+
+    public void testEditNonexistentMedia() throws InterruptedException {
+        // create media with invalid ID
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        testMedia.setMediaId(-1);
+
+        // push media and verify
         mNextEvent = TestEvents.PUSH_ERROR;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        pushMedia(testMedia);
+        assertNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
     }
 
     public void testUploadImage() throws InterruptedException {
-        MediaModel media = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
-        UploadMediaPayload payload = new UploadMediaPayload(sSite, media);
+        // upload media to guarantee media exists
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        uploadMedia(testMedia);
+
+        // verify and set media ID
+        assertTrue(mLastUploadedId >= 0);
+        testMedia.setMediaId(mLastUploadedId);
+        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+
+        // delete test image
+        mNextEvent = TestEvents.DELETED_MEDIA;
+        deleteMedia(testMedia);
     }
 
     public void testUploadVideo() throws InterruptedException {
-        MediaModel media = newMediaModel(BuildConfig.TEST_LOCAL_VIDEO, MediaUtils.MIME_TYPE_VIDEO);
-        UploadMediaPayload payload = new UploadMediaPayload(sSite, media);
+        // upload media to guarantee media exists
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_VIDEO, MediaUtils.MIME_TYPE_VIDEO);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        uploadMedia(testMedia);
+
+        // verify and set media ID
+        assertTrue(mLastUploadedId >= 0);
+        testMedia.setMediaId(mLastUploadedId);
+        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+
+        // delete test image
+        mNextEvent = TestEvents.DELETED_MEDIA;
+        deleteMedia(testMedia);
     }
 
     @SuppressWarnings("unused")
@@ -151,8 +201,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Subscribe
     public void onMediaChanged(MediaStore.OnMediaChanged event) {
         if (event.isError()) {
-            if (mNextEvent == TestEvents.PUSH_ERROR) {
-                assertEquals(event.cause, MediaAction.PUSH_MEDIA);
+            if (event.cause == MediaAction.PUSH_MEDIA) {
+                assertEquals(TestEvents.PUSH_ERROR, mNextEvent);
             } else {
                 throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
@@ -169,6 +219,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             assertEquals(TestEvents.PUSHED_MEDIA, mNextEvent);
         } else if (event.cause == MediaAction.DELETE_MEDIA) {
             assertEquals(TestEvents.DELETED_MEDIA, mNextEvent);
+        } else if (event.cause == MediaAction.REMOVE_MEDIA) {
+            assertEquals(TestEvents.REMOVED_MEDIA, mNextEvent);
         }
         mCountDownLatch.countDown();
     }
@@ -201,5 +253,55 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         testMedia.setSiteId(sSite.getSiteId());
 
         return testMedia;
+    }
+
+    private void pushMedia(MediaModel media) throws InterruptedException {
+        MediaPayload payload = new MediaPayload(sSite, media);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void fetchAllMedia() throws InterruptedException {
+        MediaListPayload fetchPayload = new MediaListPayload(sSite, null, null);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(fetchPayload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void fetchMedia(MediaModel media) throws InterruptedException {
+        MediaPayload fetchPayload = new MediaPayload(sSite, media, null);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(fetchPayload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void uploadMedia(MediaModel media) throws InterruptedException {
+        MediaPayload payload = new MediaPayload(sSite, media);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void deleteMedia(MediaModel media) throws InterruptedException {
+        MediaPayload deletePayload = new MediaPayload(sSite, media);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void removeMedia(MediaModel media) throws InterruptedException {
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newRemoveMediaAction(media));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void removeAllSiteMedia() throws InterruptedException {
+        List<MediaModel> allMedia = mMediaStore.getAllSiteMedia(sSite);
+        if (!allMedia.isEmpty()) {
+            for (MediaModel media : allMedia) {
+                removeMedia(media);
+            }
+        }
     }
 }
