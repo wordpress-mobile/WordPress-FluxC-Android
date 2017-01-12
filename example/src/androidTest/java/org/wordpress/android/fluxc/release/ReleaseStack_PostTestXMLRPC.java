@@ -388,6 +388,38 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(finalPost.getTagNameList().isEmpty());
     }
 
+    public void testClearFeaturedImageFromPost() throws InterruptedException {
+        createNewPost();
+
+        mPost.setTitle("A post with featured image");
+
+        long featuredImageId = Long.valueOf(BuildConfig.TEST_WPORG_IMAGE_IDS_TEST1);
+        mPost.setFeaturedImageId(featuredImageId);
+
+        uploadPost(mPost);
+
+        // Get the current copy of the post from the PostStore
+        PostModel newPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
+
+        assertTrue(newPost.hasFeaturedImage());
+        assertEquals(featuredImageId, newPost.getFeaturedImageId());
+
+        newPost.clearFeaturedImage();
+
+        uploadPost(newPost);
+
+        // Get the current copy of the post from the PostStore
+        PostModel finalPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
+
+        assertFalse(finalPost.hasFeaturedImage());
+    }
+
     public void testAddLocationToRemotePost() throws InterruptedException {
         // 1. Upload a post with no location data
         createNewPost();
