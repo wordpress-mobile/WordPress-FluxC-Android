@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.release;
 import org.apache.commons.lang.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
+import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
@@ -314,6 +315,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         tags.add("generated-" + RandomStringUtils.randomAlphanumeric(8));
         mPost.setTagNameList(tags);
 
+        long featuredImageId = Long.valueOf(BuildConfig.TEST_WPCOM_IMAGE_IDS_TEST1);
+        mPost.setFeaturedImageId(featuredImageId);
+
         uploadPost(mPost);
 
         // Get the current copy of the post from the PostStore
@@ -331,6 +335,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         assertTrue(tags.containsAll(newPost.getTagNameList())
                 && newPost.getTagNameList().containsAll(tags));
+
+        assertEquals(featuredImageId, newPost.getFeaturedImageId());
     }
 
     public void testFullFeaturedPageUpload() throws InterruptedException {
