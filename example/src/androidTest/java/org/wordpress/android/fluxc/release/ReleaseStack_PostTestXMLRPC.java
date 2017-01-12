@@ -306,6 +306,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         tags.add("generated-" + RandomStringUtils.randomAlphanumeric(8));
         mPost.setTagNameList(tags);
 
+        long featuredImageId = Long.valueOf(BuildConfig.TEST_WPORG_IMAGE_IDS_TEST1);
+        mPost.setFeaturedImageId(featuredImageId);
+
         uploadPost(mPost);
 
         // Get the current copy of the post from the PostStore
@@ -323,6 +326,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         assertTrue(tags.containsAll(newPost.getTagNameList())
                 && newPost.getTagNameList().containsAll(tags));
+
+        assertEquals(featuredImageId, newPost.getFeaturedImageId());
     }
 
     public void testFullFeaturedPageUpload() throws InterruptedException {
