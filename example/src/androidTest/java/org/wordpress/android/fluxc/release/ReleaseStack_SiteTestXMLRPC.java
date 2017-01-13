@@ -58,51 +58,27 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     }
 
     public void testXMLRPCSimpleFetchSites() throws InterruptedException {
-        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
-        payload.url = BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT;
-        mNextEvent = TestEvents.SITE_CHANGED;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
-        // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
     }
 
     public void testXMLRPCSimpleContributorFetchSites() throws InterruptedException {
-        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE_CONTRIB;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE_CONTRIB;
-        payload.url = BuildConfig.TEST_WPORG_URL_SH_SIMPLE_CONTRIB_ENDPOINT;
-        mNextEvent = TestEvents.SITE_CHANGED;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
-        // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE_CONTRIB,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE_CONTRIB,
+                BuildConfig.TEST_WPORG_URL_SH_SIMPLE_CONTRIB_ENDPOINT);
     }
 
     public void testXMLRPCMultiSiteFetchSites() throws InterruptedException {
-        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_MULTISITE;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_MULTISITE;
-        payload.url = BuildConfig.TEST_WPORG_URL_SH_MULTISITE_ENDPOINT;
-        mNextEvent = TestEvents.SITE_CHANGED;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
-        // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_MULTISITE,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_MULTISITE,
+                BuildConfig.TEST_WPORG_URL_SH_MULTISITE_ENDPOINT);
     }
 
     public void testXMLRPCSimpleHTTPSFetchSites() throws InterruptedException {
-        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL;
-        payload.url = BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_ENDPOINT;
-        mNextEvent = TestEvents.SITE_CHANGED;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
-        // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL,
+                BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_ENDPOINT);
     }
 
     public void testXMLRPCSelfSignedSSLFetchSites() throws InterruptedException {
@@ -178,15 +154,9 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     }
 
     public void testXMLRPCFetchAndDeleteSite() throws InterruptedException {
-        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
-        payload.url = BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT;
-        mNextEvent = TestEvents.SITE_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
-        mCountDownLatch = new CountDownLatch(1);
-        // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
 
         mNextEvent = TestEvents.SITE_REMOVED;
         mCountDownLatch = new CountDownLatch(1);
@@ -197,16 +167,9 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     }
 
     public void testFetchPostFormats() throws InterruptedException {
-        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
-        payload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
-        payload.url = BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT;
-        mNextEvent = TestEvents.SITE_CHANGED;
-
-        // Fetch sites
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
-        mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
 
         // Get the first site
         SiteModel firstSite = mSiteStore.getSites().get(0);
@@ -284,5 +247,19 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         }
         assertEquals(TestEvents.POST_FORMATS_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
+    }
+
+    private void fetchSites(String username, String password, String endpointUrl) throws InterruptedException {
+        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
+        payload.username = username;
+        payload.password = password;
+        payload.url = endpointUrl;
+
+        mNextEvent = TestEvents.SITE_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+
+        // Wait for a network response / onChanged event
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
