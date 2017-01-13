@@ -97,7 +97,8 @@ public class SignedOutActionsFragment extends Fragment {
         AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
         final EditText editText = new EditText(getActivity());
         editText.setSingleLine();
-        alert.setMessage("Check if the following URL is wpcom or jetpack (and can be contacted via wpcom credentials):");
+        alert.setMessage("Check if the following URL is wpcom or jetpack"
+                + " (and can be contacted via wpcom credentials):");
         alert.setView(editText);
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
