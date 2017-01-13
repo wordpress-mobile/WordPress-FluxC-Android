@@ -18,9 +18,11 @@ import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
+import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
+import org.wordpress.android.fluxc.store.SiteStore.OnURLChecked;
 
 import javax.inject.Inject;
 
@@ -51,6 +53,13 @@ public class SignedOutActionsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 showMagicLinkDialog();
+            }
+        });
+
+        view.findViewById(R.id.check_url_wpcom).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showCheckWPComUrlDialog();
             }
         });
         return view;
@@ -84,6 +93,21 @@ public class SignedOutActionsFragment extends Fragment {
         newFragment.show(ft, "dialog");
     }
 
+    private void showCheckWPComUrlDialog() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+        final EditText editText = new EditText(getActivity());
+        editText.setSingleLine();
+        alert.setMessage("Check if the following URL is wpcom or jetpack (and can be contacted via wpcom credentials):");
+        alert.setView(editText);
+        alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String url = editText.getText().toString();
+                mDispatcher.dispatch(SiteActionBuilder.newIsWpcomUrlAction(url));
+            }
+        });
+        alert.show();
+    }
+
     private void showMagicLinkDialog() {
         AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
         final EditText editText = new EditText(getActivity());
@@ -115,6 +139,16 @@ public class SignedOutActionsFragment extends Fragment {
             prependToLog("Error sending magic link: " + event.error.type + " - " + event.error.message);
         } else {
             prependToLog("Sent magic link e-mail!");
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onUrlChecked(OnURLChecked event) {
+        if (event.isError()) {
+            prependToLog("OnUrlChecked: error");
+        } else {
+            prependToLog("OnUrlChecked: " + event.url + (event.isWPCom ? " is" : " is not")
+                         + " accessible via WordPress.com API");
         }
     }
 
