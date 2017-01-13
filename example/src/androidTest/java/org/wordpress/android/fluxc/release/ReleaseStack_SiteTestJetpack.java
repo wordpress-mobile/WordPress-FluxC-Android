@@ -93,6 +93,24 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertEquals(1, nonJetpackSites.size());
     }
 
+    public void testWPComJetpackMultisiteSiteFetch() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_JETPACK_MULTISITE,
+                BuildConfig.TEST_WPCOM_PASSWORD_JETPACK_MULTISITE);
+
+        List<SiteModel> sites = mSiteStore.getSites();
+        List<SiteModel> nonJetpackSites = new ArrayList<>(1);
+
+        for (SiteModel site : sites) {
+            assertTrue(site.isWPCom());
+            if (!site.isJetpack()) {
+                nonJetpackSites.add(site);
+            }
+        }
+
+        // Only one non-Jetpack site exists, all the other fetched sites should be Jetpack sites
+        assertEquals(1, nonJetpackSites.size());
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
