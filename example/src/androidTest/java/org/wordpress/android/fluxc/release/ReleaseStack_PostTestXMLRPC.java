@@ -306,7 +306,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         tags.add("generated-" + RandomStringUtils.randomAlphanumeric(8));
         mPost.setTagNameList(tags);
 
-        long featuredImageId = Long.valueOf(BuildConfig.TEST_WPORG_IMAGE_IDS_TEST1);
+        String knownImageIds = BuildConfig.TEST_WPORG_IMAGE_IDS_TEST1;
+        long featuredImageId = Long.valueOf(knownImageIds.split(",")[0]);
         mPost.setFeaturedImageId(featuredImageId);
 
         uploadPost(mPost);
@@ -393,7 +394,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         mPost.setTitle("A post with featured image");
 
-        long featuredImageId = Long.valueOf(BuildConfig.TEST_WPORG_IMAGE_IDS_TEST1);
+        String knownImageIds = BuildConfig.TEST_WPORG_IMAGE_IDS_TEST1;
+        long featuredImageId = Long.valueOf(knownImageIds.split(",")[0]);
         mPost.setFeaturedImageId(featuredImageId);
 
         uploadPost(mPost);
