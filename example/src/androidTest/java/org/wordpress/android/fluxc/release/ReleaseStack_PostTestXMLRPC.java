@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -22,6 +23,7 @@ import org.wordpress.android.util.AppLog.T;
 import org.wordpress.android.util.DateTimeUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -88,6 +90,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         assertNotSame(0, uploadedPost.getRemotePostId());
         assertFalse(uploadedPost.isLocalDraft());
+
+        // The site should automatically assign the post the default category
+        assertFalse(uploadedPost.getCategoryIdList().isEmpty());
     }
 
     public void testEditRemotePost() throws InterruptedException {
@@ -147,12 +152,29 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     public void testChangeLocalDraft() throws InterruptedException {
         createNewPost();
+
+        // Wait one sec
+        Thread.sleep(1000);
+        Date testStartDate = DateTimeUtils.localDateToUTC(new Date());
+
+        // Check local change date is set and before "right now"
+        assertNotNull(mPost.getDateLocallyChanged());
+        Date postDate1 = DateTimeUtils.dateFromIso8601(mPost.getDateLocallyChanged());
+        assertTrue(testStartDate.after(postDate1));
+
         setupPostAttributes();
 
         mPost.setTitle("From testChangingLocalDraft");
 
+        // Wait one sec
+        Thread.sleep(1000);
+
         // Save changes locally
         savePost(mPost);
+
+        // Check the locallyChanged date actually changed after the post update
+        Date postDate2 = DateTimeUtils.dateFromIso8601(mPost.getDateLocallyChanged());
+        assertTrue(postDate2.after(postDate1));
 
         // Get the current copy of the post from the PostStore
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
@@ -161,8 +183,15 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mPost.setContent("Some new content");
         mPost.setFeaturedImageId(7);
 
+        // Wait one sec
+        Thread.sleep(1000);
+
         // Save new changes locally
         savePost(mPost);
+
+        // Check the locallyChanged date actually changed after the post update
+        Date postDate3 = DateTimeUtils.dateFromIso8601(mPost.getDateLocallyChanged());
+        assertTrue(postDate3.after(postDate2));
 
         // Get the current copy of the post from the PostStore
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
@@ -296,6 +325,11 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         categoryIds.add((long) 1);
         mPost.setCategoryIdList(categoryIds);
 
+        List<String> tags = new ArrayList<>(2);
+        tags.add("fluxc");
+        tags.add("generated-" + RandomStringUtils.randomAlphanumeric(8));
+        mPost.setTagNameList(tags);
+
         uploadPost(mPost);
 
         // Get the current copy of the post from the PostStore
@@ -310,6 +344,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         assertTrue(categoryIds.containsAll(newPost.getCategoryIdList())
                 && newPost.getCategoryIdList().containsAll(categoryIds));
+
+        assertTrue(tags.containsAll(newPost.getTagNameList())
+                && newPost.getTagNameList().containsAll(tags));
     }
 
     public void testFullFeaturedPageUpload() throws InterruptedException {
@@ -335,6 +372,39 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals("A fully featured page", newPage.getTitle());
         assertEquals("Some content here! <strong>Bold text</strong>.", newPage.getContent());
         assertEquals(date, newPage.getDateCreated());
+    }
+
+    public void testClearTagsFromPost() throws InterruptedException {
+        createNewPost();
+
+        mPost.setTitle("A post with tags");
+        mPost.setContent("Some content here! <strong>Bold text</strong>.");
+
+        List<Long> categoryIds = new ArrayList<>(1);
+        categoryIds.add((long) 1);
+        mPost.setCategoryIdList(categoryIds);
+
+        List<String> tags = new ArrayList<>(2);
+        tags.add("fluxc");
+        tags.add("generated-" + RandomStringUtils.randomAlphanumeric(8));
+        mPost.setTagNameList(tags);
+
+        uploadPost(mPost);
+
+        // Get the current copy of the post from the PostStore
+        PostModel newPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertFalse(newPost.getTagNameList().isEmpty());
+
+        newPost.setTagNameList(Collections.<String>emptyList());
+        newPost.setIsLocallyChanged(true);
+
+        // Upload edited post
+        uploadPost(newPost);
+
+        PostModel finalPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertTrue(finalPost.getTagNameList().isEmpty());
     }
 
     public void testAddLocationToRemotePost() throws InterruptedException {
@@ -534,29 +604,6 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         categories.add((long) 999999);
 
         mPost.setCategoryIdList(categories);
-
-        mNextEvent = TestEvents.ERROR_GENERIC;
-        mCountDownLatch = new CountDownLatch(1);
-
-        // Upload edited post
-        RemotePostPayload pushPayload = new RemotePostPayload(mPost, sSite);
-        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_TERM error instead
-        // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
-        assertEquals("Invalid term ID.", mLastPostError.message);
-    }
-
-    public void testCreateNewPostWithInvalidTag() throws InterruptedException {
-        createNewPost();
-        setupPostAttributes();
-
-        List<Long> tags = new ArrayList<>();
-        tags.add((long) 999999);
-
-        mPost.setTagIdList(tags);
 
         mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
