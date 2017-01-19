@@ -330,6 +330,10 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         tags.add("generated-" + RandomStringUtils.randomAlphanumeric(8));
         mPost.setTagNameList(tags);
 
+        String knownImageIds = BuildConfig.TEST_WPORG_IMAGE_IDS_TEST1;
+        long featuredImageId = Long.valueOf(knownImageIds.split(",")[0]);
+        mPost.setFeaturedImageId(featuredImageId);
+
         uploadPost(mPost);
 
         // Get the current copy of the post from the PostStore
@@ -347,6 +351,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         assertTrue(tags.containsAll(newPost.getTagNameList())
                 && newPost.getTagNameList().containsAll(tags));
+
+        assertEquals(featuredImageId, newPost.getFeaturedImageId());
     }
 
     public void testFullFeaturedPageUpload() throws InterruptedException {
@@ -405,6 +411,39 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         PostModel finalPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         assertTrue(finalPost.getTagNameList().isEmpty());
+    }
+
+    public void testClearFeaturedImageFromPost() throws InterruptedException {
+        createNewPost();
+
+        mPost.setTitle("A post with featured image");
+
+        String knownImageIds = BuildConfig.TEST_WPORG_IMAGE_IDS_TEST1;
+        long featuredImageId = Long.valueOf(knownImageIds.split(",")[0]);
+        mPost.setFeaturedImageId(featuredImageId);
+
+        uploadPost(mPost);
+
+        // Get the current copy of the post from the PostStore
+        PostModel newPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
+
+        assertTrue(newPost.hasFeaturedImage());
+        assertEquals(featuredImageId, newPost.getFeaturedImageId());
+
+        newPost.clearFeaturedImage();
+
+        uploadPost(newPost);
+
+        // Get the current copy of the post from the PostStore
+        PostModel finalPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
+
+        assertFalse(finalPost.hasFeaturedImage());
     }
 
     public void testAddLocationToRemotePost() throws InterruptedException {
