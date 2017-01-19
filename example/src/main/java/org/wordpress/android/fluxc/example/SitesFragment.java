@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.NewSitePayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnNewSiteCreated;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteDeleted;
 import org.wordpress.android.fluxc.store.SiteStore.SiteVisibility;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -66,6 +67,15 @@ public class SitesFragment extends Fragment {
                     prependToLog(site.getName());
                     AppLog.i(T.API, LogUtils.toString(site));
                 }
+            }
+        });
+
+        view.findViewById(R.id.delete_first_site).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SiteModel site = mSiteStore.getSites().get(0);
+                // Delete site
+                mDispatcher.dispatch(SiteActionBuilder.newDeleteSiteAction(site));
             }
         });
 
@@ -118,6 +128,16 @@ public class SitesFragment extends Fragment {
             prependToLog("New site " + message + ": error: " + event.error.type + " - " + event.error.message);
         } else {
             prependToLog("New site " + message + ": success!");
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSiteDeleted(OnSiteDeleted event) {
+        prependToLog("OnSiteDeleted");
+        if (event.isError()) {
+            prependToLog("Delete Site: error: " + event.error.type + " - " + event.error.message);
+        } else {
+            prependToLog("Delete Site: success!");
         }
     }
 
