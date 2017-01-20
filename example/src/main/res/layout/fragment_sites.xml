@@ -24,6 +24,12 @@
         android:text="Log Sites" />
 
     <Button
+        android:id="@+id/export_first_site"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Export First Site" />
+
+    <Button
         android:id="@+id/delete_first_site"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
