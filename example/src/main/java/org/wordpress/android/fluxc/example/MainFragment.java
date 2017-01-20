@@ -327,7 +327,8 @@ public class MainFragment extends Fragment {
         }
         if (mSiteStore.hasSite()) {
             SiteModel firstSite = mSiteStore.getSites().get(0);
-            prependToLog("First site name: " + firstSite.getName() + " - Total sites: " + mSiteStore.getSitesCount());
+            prependToLog("First site name: " + firstSite.getName() + " - Total sites: " + mSiteStore.getSitesCount()
+                         + " - rowsAffected: " + event.rowsAffected);
         }
     }
 
