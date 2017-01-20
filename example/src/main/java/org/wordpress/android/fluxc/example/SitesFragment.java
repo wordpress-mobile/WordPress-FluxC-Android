@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.store.SiteStore.NewSitePayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnNewSiteCreated;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteDeleted;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteExported;
 import org.wordpress.android.fluxc.store.SiteStore.SiteVisibility;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -79,6 +80,15 @@ public class SitesFragment extends Fragment {
             }
         });
 
+        view.findViewById(R.id.export_first_site).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SiteModel site = mSiteStore.getSites().get(0);
+                // Export site
+                mDispatcher.dispatch(SiteActionBuilder.newExportSiteAction(site));
+            }
+        });
+
         return view;
     }
 
@@ -133,11 +143,19 @@ public class SitesFragment extends Fragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteDeleted(OnSiteDeleted event) {
-        prependToLog("OnSiteDeleted");
         if (event.isError()) {
             prependToLog("Delete Site: error: " + event.error.type + " - " + event.error.message);
         } else {
             prependToLog("Delete Site: success!");
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSiteExported(OnSiteExported event) {
+        if (event.isError()) {
+            prependToLog("Export Site: error: " + event.error.type);
+        } else {
+            prependToLog("Export Site: success!");
         }
     }
 
