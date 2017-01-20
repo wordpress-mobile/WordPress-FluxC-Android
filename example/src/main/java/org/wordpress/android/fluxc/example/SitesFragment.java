@@ -60,6 +60,15 @@ public class SitesFragment extends Fragment {
             }
         });
 
+        view.findViewById(R.id.update_all_sites).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                for (SiteModel site: mSiteStore.getSites()) {
+                    mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(site));
+                }
+            }
+        });
+
         view.findViewById(R.id.log_sites).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
