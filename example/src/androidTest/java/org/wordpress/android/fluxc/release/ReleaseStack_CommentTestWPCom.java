@@ -116,7 +116,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         }
     }
 
-    public void testRemoveAllComments() throws InterruptedException {
+    public void testRemoveAllCommentsOfASite() throws InterruptedException {
         fetchFirstComments();
 
         int count = mCommentStore.getNumberOfCommentsForSite(sSite, CommentStatus.ALL);
