@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.CommentModel;
 import org.wordpress.android.fluxc.model.CommentStatus;
 import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.persistence.CommentSqlUtils;
 import org.wordpress.android.fluxc.store.CommentStore;
@@ -122,6 +123,14 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         int count = mCommentStore.getNumberOfCommentsForSite(sSite, CommentStatus.ALL);
         assertNotSame(0, count); // Only work if the site has at least one comment.
 
+        SiteModel secondSite = null;
+        if (mSiteStore.getSites().size() > 1) {
+            secondSite = mSiteStore.getSites().get(1);
+            fetchFirstComments(secondSite);
+            int secondSiteCommentCount = mCommentStore.getNumberOfCommentsForSite(secondSite, CommentStatus.ALL);
+            assertNotSame(0, secondSiteCommentCount); // Only work if the site has at least one comment.
+        }
+
         // Remove all comments for all sites
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newRemoveAllCommentsAction());
@@ -129,6 +138,11 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
         count = mCommentStore.getNumberOfCommentsForSite(sSite, CommentStatus.ALL);
         assertEquals(0, count);
+
+        if (secondSite != null) {
+            int secondSiteCommentCount = mCommentStore.getNumberOfCommentsForSite(sSite, CommentStatus.ALL);
+            assertEquals(0, secondSiteCommentCount);
+        }
     }
 
     public void testRemoveAllCommentsOfASite() throws InterruptedException {
@@ -472,12 +486,17 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         if (mComments != null) {
             return;
         }
-        FetchCommentsPayload payload = new FetchCommentsPayload(sSite, 10, 0);
+        fetchFirstComments(sSite);
+        mComments = mCommentStore.getCommentsForSite(sSite, true, CommentStatus.ALL);
+    }
+
+    private void fetchFirstComments(SiteModel siteModel) throws InterruptedException {
+        FetchCommentsPayload payload = new FetchCommentsPayload(siteModel, 10, 0);
         mNextEvent = TestEvents.COMMENT_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        mComments = mCommentStore.getCommentsForSite(sSite, true, CommentStatus.ALL);
+
     }
 
     private void fetchFirstPosts() throws InterruptedException {
