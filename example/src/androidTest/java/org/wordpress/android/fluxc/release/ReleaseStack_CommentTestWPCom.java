@@ -140,7 +140,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(0, count);
 
         if (secondSite != null) {
-            int secondSiteCommentCount = mCommentStore.getNumberOfCommentsForSite(sSite, CommentStatus.ALL);
+            int secondSiteCommentCount = mCommentStore.getNumberOfCommentsForSite(secondSite, CommentStatus.ALL);
             assertEquals(0, secondSiteCommentCount);
         }
     }
