@@ -113,6 +113,36 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertFalse(mSiteStore.hasJetpackSite());
     }
 
+    public void testXMLRPCNonJetpackSiteFetch() throws InterruptedException {
+        // Add a Jetpack-connected site as self-hosted
+        fetchSitesXMLRPC(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
+
+        // Fetch site details (including Jetpack status)
+        fetchSite(mSiteStore.getSites().get(0));
+
+        assertEquals(1, mSiteStore.getSitesCount());
+        assertEquals(0, mSiteStore.getWPComSitesCount());
+        assertEquals(1, mSiteStore.getSelfHostedSitesCount());
+        assertEquals(0, mSiteStore.getJetpackSitesCount());
+    }
+
+    public void testXMLRPCJetpackSiteFetch() throws InterruptedException {
+        // Add a Jetpack-connected site as self-hosted
+        fetchSitesXMLRPC(BuildConfig.TEST_WPORG_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPORG_PASSWORD_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPORG_URL_SINGLE_JETPACK_ONLY_ENDPOINT);
+
+        // Fetch site details (including Jetpack status)
+        fetchSite(mSiteStore.getSites().get(0));
+
+        assertEquals(1, mSiteStore.getSitesCount());
+        assertEquals(0, mSiteStore.getWPComSitesCount());
+        assertEquals(1, mSiteStore.getSelfHostedSitesCount());
+        assertEquals(1, mSiteStore.getJetpackSitesCount());
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
