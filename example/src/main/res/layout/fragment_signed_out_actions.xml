@@ -17,4 +17,10 @@
         android:layout_height="wrap_content"
         android:text="Send Magic Link E-mail" />
 
+    <Button
+        android:id="@+id/check_url_wpcom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Check if URL is WPCom site (or Jetpack)" />
+
 </LinearLayout>
