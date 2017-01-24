@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -30,7 +31,8 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
 
     enum TestEvents {
         NONE,
-        SITE_CHANGED
+        SITE_CHANGED,
+        SITE_REMOVED
     }
 
     private TestEvents mNextEvent;
@@ -49,12 +51,15 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
 
-        List<SiteModel> sites = mSiteStore.getSites();
+        assertEquals(1, mSiteStore.getSitesCount());
+        assertTrue(mSiteStore.hasWPComSite());
+        assertTrue(mSiteStore.hasJetpackSite());
 
-        assertEquals(1, sites.size());
+        signOutWPCom();
 
-        assertTrue(sites.get(0).isWPCom());
-        assertTrue(sites.get(0).isJetpack());
+        assertFalse(mSiteStore.hasSite());
+        assertFalse(mSiteStore.hasWPComSite());
+        assertFalse(mSiteStore.hasJetpackSite());
     }
 
     public void testWPComSingleJetpackSiteFetch() throws InterruptedException {
@@ -70,6 +75,12 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
 
         // Only one of the two sites is expected to be a Jetpack site
         assertTrue(sites.get(0).isJetpack() != sites.get(1).isJetpack());
+
+        signOutWPCom();
+
+        assertFalse(mSiteStore.hasSite());
+        assertFalse(mSiteStore.hasWPComSite());
+        assertFalse(mSiteStore.hasJetpackSite());
     }
 
     public void testWPComMultipleJetpackSiteFetch() throws InterruptedException {
@@ -91,6 +102,12 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
 
         assertEquals(2, jetpackSites.size());
         assertEquals(1, nonJetpackSites.size());
+
+        signOutWPCom();
+
+        assertFalse(mSiteStore.hasSite());
+        assertFalse(mSiteStore.hasWPComSite());
+        assertFalse(mSiteStore.hasJetpackSite());
     }
 
     public void testWPComJetpackMultisiteSiteFetch() throws InterruptedException {
@@ -109,6 +126,12 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
 
         // Only one non-Jetpack site exists, all the other fetched sites should be Jetpack sites
         assertEquals(1, nonJetpackSites.size());
+
+        signOutWPCom();
+
+        assertFalse(mSiteStore.hasSite());
+        assertFalse(mSiteStore.hasWPComSite());
+        assertFalse(mSiteStore.hasJetpackSite());
     }
 
     @SuppressWarnings("unused")
@@ -132,6 +155,17 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onSiteRemoved(OnSiteRemoved event) {
+        AppLog.e(T.TESTS, "site count " + mSiteStore.getSitesCount());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
     private void authenticateAndFetchSites(String username, String password) throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
@@ -146,6 +180,15 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void signOutWPCom() throws InterruptedException {
+        // Clear WP.com sites, and wait for OnSiteRemoved event
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.SITE_REMOVED;
+        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
