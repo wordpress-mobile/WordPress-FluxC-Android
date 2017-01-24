@@ -5,7 +5,6 @@ import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
-import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
@@ -15,8 +14,6 @@ import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -52,29 +49,26 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
 
         assertEquals(1, mSiteStore.getSitesCount());
-        assertTrue(mSiteStore.hasWPComSite());
-        assertTrue(mSiteStore.hasJetpackSite());
+        assertEquals(1, mSiteStore.getWPComSitesCount());
+        assertEquals(1, mSiteStore.getJetpackSitesCount());
+        assertEquals(0, mSiteStore.getSelfHostedSitesCount());
 
         signOutWPCom();
 
         assertFalse(mSiteStore.hasSite());
         assertFalse(mSiteStore.hasWPComSite());
         assertFalse(mSiteStore.hasJetpackSite());
+        assertFalse(mSiteStore.hasSelfHostedSite());
     }
 
     public void testWPComSingleJetpackSiteFetch() throws InterruptedException {
         authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_ONE_JETPACK,
                 BuildConfig.TEST_WPCOM_PASSWORD_ONE_JETPACK);
 
-        List<SiteModel> sites = mSiteStore.getSites();
-
-        assertEquals(2, sites.size());
-
-        assertTrue(sites.get(0).isWPCom());
-        assertTrue(sites.get(1).isWPCom());
-
-        // Only one of the two sites is expected to be a Jetpack site
-        assertTrue(sites.get(0).isJetpack() != sites.get(1).isJetpack());
+        assertEquals(2, mSiteStore.getSitesCount());
+        assertEquals(2, mSiteStore.getWPComSitesCount());
+        assertEquals(1, mSiteStore.getJetpackSitesCount());
+        assertEquals(0, mSiteStore.getSelfHostedSitesCount());
 
         signOutWPCom();
 
@@ -87,21 +81,10 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_MULTIPLE_JETPACK,
                 BuildConfig.TEST_WPCOM_PASSWORD_MULTIPLE_JETPACK);
 
-        List<SiteModel> sites = mSiteStore.getSites();
-        List<SiteModel> jetpackSites = new ArrayList<>(2);
-        List<SiteModel> nonJetpackSites = new ArrayList<>(1);
-
-        for (SiteModel site : sites) {
-            assertTrue(site.isWPCom());
-            if (site.isJetpack()) {
-                jetpackSites.add(site);
-            } else {
-                nonJetpackSites.add(site);
-            }
-        }
-
-        assertEquals(2, jetpackSites.size());
-        assertEquals(1, nonJetpackSites.size());
+        assertEquals(3, mSiteStore.getSitesCount());
+        assertEquals(3, mSiteStore.getWPComSitesCount());
+        assertEquals(2, mSiteStore.getJetpackSitesCount());
+        assertEquals(0, mSiteStore.getSelfHostedSitesCount());
 
         signOutWPCom();
 
@@ -114,18 +97,12 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_JETPACK_MULTISITE,
                 BuildConfig.TEST_WPCOM_PASSWORD_JETPACK_MULTISITE);
 
-        List<SiteModel> sites = mSiteStore.getSites();
-        List<SiteModel> nonJetpackSites = new ArrayList<>(1);
-
-        for (SiteModel site : sites) {
-            assertTrue(site.isWPCom());
-            if (!site.isJetpack()) {
-                nonJetpackSites.add(site);
-            }
-        }
+        int sitesCount = mSiteStore.getSitesCount();
 
         // Only one non-Jetpack site exists, all the other fetched sites should be Jetpack sites
-        assertEquals(1, nonJetpackSites.size());
+        assertEquals(sitesCount, mSiteStore.getWPComSitesCount());
+        assertEquals(sitesCount - 1, mSiteStore.getJetpackSitesCount());
+        assertEquals(0, mSiteStore.getSelfHostedSitesCount());
 
         signOutWPCom();
 
