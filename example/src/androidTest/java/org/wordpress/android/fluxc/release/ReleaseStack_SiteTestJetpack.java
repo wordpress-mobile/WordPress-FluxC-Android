@@ -5,12 +5,14 @@ import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
+import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
+import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -45,7 +47,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
     }
 
     public void testWPComJetpackOnlySiteFetch() throws InterruptedException {
-        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
 
         assertEquals(1, mSiteStore.getSitesCount());
@@ -62,7 +64,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
     }
 
     public void testWPComSingleJetpackSiteFetch() throws InterruptedException {
-        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_ONE_JETPACK,
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_ONE_JETPACK,
                 BuildConfig.TEST_WPCOM_PASSWORD_ONE_JETPACK);
 
         assertEquals(2, mSiteStore.getSitesCount());
@@ -78,7 +80,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
     }
 
     public void testWPComMultipleJetpackSiteFetch() throws InterruptedException {
-        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_MULTIPLE_JETPACK,
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_MULTIPLE_JETPACK,
                 BuildConfig.TEST_WPCOM_PASSWORD_MULTIPLE_JETPACK);
 
         assertEquals(3, mSiteStore.getSitesCount());
@@ -94,7 +96,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
     }
 
     public void testWPComJetpackMultisiteSiteFetch() throws InterruptedException {
-        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_JETPACK_MULTISITE,
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_JETPACK_MULTISITE,
                 BuildConfig.TEST_WPCOM_PASSWORD_JETPACK_MULTISITE);
 
         int sitesCount = mSiteStore.getSitesCount();
@@ -143,7 +145,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
-    private void authenticateAndFetchSites(String username, String password) throws InterruptedException {
+    private void authenticateWPComAndFetchSites(String username, String password) throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
         mCountDownLatch = new CountDownLatch(1);
@@ -167,6 +169,30 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.SITE_REMOVED;
         mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
 
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void fetchSitesXMLRPC(String username, String password, String endpointUrl)
+            throws InterruptedException {
+        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
+        payload.username = username;
+        payload.password = password;
+        payload.url = endpointUrl;
+
+        mNextEvent = TestEvents.SITE_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+
+        // Wait for a network response / onChanged event
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void fetchSite(SiteModel site) throws InterruptedException {
+        mNextEvent = TestEvents.SITE_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(site));
+        // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
