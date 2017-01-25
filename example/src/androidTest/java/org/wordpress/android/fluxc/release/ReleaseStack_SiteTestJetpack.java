@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
+import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -31,7 +32,8 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
     enum TestEvents {
         NONE,
         SITE_CHANGED,
-        SITE_REMOVED
+        SITE_REMOVED,
+        ERROR_DUPLICATE_SITE
     }
 
     private TestEvents mNextEvent;
@@ -143,6 +145,62 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertEquals(1, mSiteStore.getJetpackSitesCount());
     }
 
+    public void testWPComJetpackToXMLRPCDuplicateSiteFetch() throws InterruptedException {
+        // Authenticate as WP.com user with a single site, which is a Jetpack site
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
+
+        assertEquals(1, mSiteStore.getSitesCount());
+        assertTrue(mSiteStore.hasJetpackSite());
+        assertTrue(mSiteStore.hasWPComSite());
+        assertFalse(mSiteStore.hasSelfHostedSite());
+
+        // Attempt to add the same Jetpack site as a self-hosted site
+        RefreshSitesXMLRPCPayload xmlrpcPayload = new RefreshSitesXMLRPCPayload();
+        xmlrpcPayload.username = BuildConfig.TEST_WPORG_USERNAME_SINGLE_JETPACK_ONLY;
+        xmlrpcPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SINGLE_JETPACK_ONLY;
+        xmlrpcPayload.url = BuildConfig.TEST_WPORG_URL_SINGLE_JETPACK_ONLY_ENDPOINT;
+
+        // Expect a DUPLICATE_SITE error since we're already signed into this site with Jetpack
+        mNextEvent = TestEvents.ERROR_DUPLICATE_SITE;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(xmlrpcPayload));
+        // Wait for a network response / onChanged event
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Expect no DB changes
+        assertEquals(1, mSiteStore.getSitesCount());
+        assertTrue(mSiteStore.hasJetpackSite());
+        assertTrue(mSiteStore.hasWPComSite());
+        assertFalse(mSiteStore.hasSelfHostedSite());
+    }
+
+    public void testXMLRPCJetpackToWPComDuplicateSiteFetch() throws InterruptedException {
+        // Add a Jetpack-connected site as self-hosted
+        fetchSitesXMLRPC(BuildConfig.TEST_WPORG_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPORG_PASSWORD_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPORG_URL_SINGLE_JETPACK_ONLY_ENDPOINT);
+
+        // Fetch site details (including Jetpack status)
+        fetchSite(mSiteStore.getSites().get(0));
+
+        assertEquals(1, mSiteStore.getSitesCount());
+        assertTrue(mSiteStore.hasJetpackSite());
+        assertFalse(mSiteStore.hasWPComSite());
+        assertTrue(mSiteStore.hasSelfHostedSite());
+
+        // Authenticate as WP.com user with a single site, which is the Jetpack site we already added as self-hosted
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
+
+        // We expect the XML-RPC Jetpack site to be 'upgraded' to a WPcom Jetpack site
+        assertEquals(1, mSiteStore.getSitesCount());
+        assertTrue(mSiteStore.hasJetpackSite());
+        assertTrue(mSiteStore.hasWPComSite());
+        assertFalse(mSiteStore.hasSelfHostedSite());
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -157,6 +215,11 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
     public void onSiteChanged(OnSiteChanged event) {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         if (event.isError()) {
+            if (mNextEvent.equals(TestEvents.ERROR_DUPLICATE_SITE)) {
+                assertEquals(SiteErrorType.DUPLICATE_SITE, event.error.type);
+                mCountDownLatch.countDown();
+                return;
+            }
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertTrue(mSiteStore.hasSite());
