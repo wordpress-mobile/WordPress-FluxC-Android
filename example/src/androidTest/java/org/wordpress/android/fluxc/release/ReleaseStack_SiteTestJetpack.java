@@ -145,6 +145,21 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertEquals(1, mSiteStore.getJetpackSitesCount());
     }
 
+    public void testXMLRPCJetpackDisconnectedSiteFetch() throws InterruptedException {
+        // Add a Jetpack-connected site as self-hosted
+        fetchSitesXMLRPC(BuildConfig.TEST_WPORG_USERNAME_JETPACK_DISCONNECTED,
+                BuildConfig.TEST_WPORG_PASSWORD_JETPACK_DISCONNECTED,
+                BuildConfig.TEST_WPORG_URL_JETPACK_DISCONNECTED_ENDPOINT);
+
+        // Fetch site details (including Jetpack status)
+        fetchSite(mSiteStore.getSites().get(0));
+
+        assertEquals(1, mSiteStore.getSitesCount());
+        assertEquals(0, mSiteStore.getWPComSitesCount());
+        assertEquals(1, mSiteStore.getSelfHostedSitesCount());
+        assertEquals(0, mSiteStore.getJetpackSitesCount());
+    }
+
     public void testWPComJetpackToXMLRPCDuplicateSiteFetch() throws InterruptedException {
         // Authenticate as WP.com user with a single site, which is a Jetpack site
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
