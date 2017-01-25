@@ -174,6 +174,12 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertTrue(mSiteStore.hasJetpackSite());
         assertTrue(mSiteStore.hasWPComSite());
         assertFalse(mSiteStore.hasSelfHostedSite());
+
+        signOutWPCom();
+
+        assertFalse(mSiteStore.hasSite());
+        assertFalse(mSiteStore.hasWPComSite());
+        assertFalse(mSiteStore.hasJetpackSite());
     }
 
     public void testXMLRPCJetpackToWPComDuplicateSiteFetch() throws InterruptedException {
@@ -199,6 +205,12 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertTrue(mSiteStore.hasJetpackSite());
         assertTrue(mSiteStore.hasWPComSite());
         assertFalse(mSiteStore.hasSelfHostedSite());
+
+        signOutWPCom();
+
+        assertFalse(mSiteStore.hasSite());
+        assertFalse(mSiteStore.hasWPComSite());
+        assertFalse(mSiteStore.hasJetpackSite());
     }
 
     @SuppressWarnings("unused")
