@@ -128,6 +128,11 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertEquals(0, mSiteStore.getWPComSitesCount());
         assertEquals(1, mSiteStore.getSelfHostedSitesCount());
         assertEquals(0, mSiteStore.getJetpackSitesCount());
+
+        SiteModel site = mSiteStore.getSites().get(0);
+
+        assertFalse(site.isJetpack());
+        assertEquals(0, site.getSiteId());
     }
 
     public void testXMLRPCJetpackSiteFetch() throws InterruptedException {
@@ -143,6 +148,11 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertEquals(0, mSiteStore.getWPComSitesCount());
         assertEquals(1, mSiteStore.getSelfHostedSitesCount());
         assertEquals(1, mSiteStore.getJetpackSitesCount());
+
+        SiteModel site = mSiteStore.getSites().get(0);
+
+        assertTrue(site.isJetpack());
+        assertNotSame(0, site.getSiteId());
     }
 
     public void testXMLRPCJetpackDisconnectedSiteFetch() throws InterruptedException {
@@ -158,6 +168,11 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertEquals(0, mSiteStore.getWPComSitesCount());
         assertEquals(1, mSiteStore.getSelfHostedSitesCount());
         assertEquals(0, mSiteStore.getJetpackSitesCount());
+
+        SiteModel site = mSiteStore.getSites().get(0);
+
+        assertFalse(site.isJetpack());
+        assertEquals(0, site.getSiteId());
     }
 
     public void testWPComJetpackToXMLRPCDuplicateSiteFetch() throws InterruptedException {
