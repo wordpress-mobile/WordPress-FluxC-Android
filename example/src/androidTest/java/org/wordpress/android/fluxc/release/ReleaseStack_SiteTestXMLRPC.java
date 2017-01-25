@@ -166,6 +166,26 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    public void testXMLRPCFetchMultipleSites() throws InterruptedException {
+        fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
+
+        fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
+
+        // The second fetch for the same site should have replaced the first site
+        assertEquals(1, mSiteStore.getSitesCount());
+
+        fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL,
+                BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_ENDPOINT);
+
+        // We should have two unique sites
+        assertEquals(2, mSiteStore.getSitesCount());
+    }
+
     public void testFetchPostFormats() throws InterruptedException {
         fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
