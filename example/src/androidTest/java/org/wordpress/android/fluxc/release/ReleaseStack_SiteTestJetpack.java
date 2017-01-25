@@ -243,6 +243,38 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertFalse(mSiteStore.hasJetpackSite());
     }
 
+    public void testWPComToXMLRPCJetpackDifferentAccountsSiteFetch() throws InterruptedException {
+        // Authenticate as WP.com user with no Jetpack sites
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        int wpComSiteCount = mSiteStore.getSitesCount();
+
+        // Add a Jetpack-connected site as self-hosted (connected to a different WP.com account than the one above)
+        fetchSitesXMLRPC(BuildConfig.TEST_WPORG_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPORG_PASSWORD_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPORG_URL_SINGLE_JETPACK_ONLY_ENDPOINT);
+
+        // Fetch site details (including Jetpack status)
+        SiteModel selfHostedSite = mSiteStore.getSelfHostedSites().get(0);
+        fetchSite(selfHostedSite);
+
+        assertEquals(wpComSiteCount + 1, mSiteStore.getSitesCount());
+        assertEquals(wpComSiteCount, mSiteStore.getWPComSitesCount());
+        assertEquals(1, mSiteStore.getSelfHostedSitesCount());
+
+        assertTrue(selfHostedSite.isJetpack());
+        assertFalse(selfHostedSite.isWPCom());
+
+        signOutWPCom();
+
+        // Expect only WP.com sites to be removed
+        assertEquals(1, mSiteStore.getSitesCount());
+        assertEquals(0, mSiteStore.getWPComSitesCount());
+        assertEquals(1, mSiteStore.getJetpackSitesCount());
+        assertEquals(1, mSiteStore.getSelfHostedSitesCount());
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
