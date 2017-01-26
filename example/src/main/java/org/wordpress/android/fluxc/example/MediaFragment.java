@@ -31,6 +31,7 @@ import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -50,6 +51,8 @@ public class MediaFragment extends Fragment {
 
     private MediaModel mCurrentUpload;
 
+    private List<MediaModel> mMedia = new ArrayList<>();
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +62,7 @@ public class MediaFragment extends Fragment {
         }
     }
 
+    private int mNumFetched = 0;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -212,7 +216,8 @@ public class MediaFragment extends Fragment {
             prependToLog("Received successful response for " + event.cause + " event.");
             if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
                 prependToLog(event.media.size() + " media items fetched.");
-                mMediaList.setAdapter(new MediaAdapter(getActivity(), R.layout.media_list_item, event.media));
+                mMedia.addAll(event.media);
+                mMediaList.setAdapter(new MediaAdapter(getActivity(), R.layout.media_list_item, mMedia));
             } else if (event.cause == MediaAction.FETCH_MEDIA) {
                 prependToLog(event.media.size() + " media items fetched.");
             } else if (event.cause == MediaAction.DELETE_MEDIA) {
@@ -247,9 +252,13 @@ public class MediaFragment extends Fragment {
     }
 
     private void fetchAllMedia(@NonNull SiteModel site) {
-        prependToLog("Fetching all media from " + site.getName());
+        prependToLog("Fetching all media from " + site.getName() + ", offset=" + mNumFetched);
+        MediaStore.MediaFilter filter = new MediaStore.MediaFilter();
+        filter.offset = mNumFetched;
+        filter.number = 20;
+        mNumFetched += 20;
 
-        MediaListPayload payload = new MediaListPayload(site, null, null);
+        MediaListPayload payload = new MediaListPayload(site, null, filter);
         mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(payload));
     }
 
