@@ -61,6 +61,15 @@ public class SitesFragment extends Fragment {
             }
         });
 
+        view.findViewById(R.id.update_all_sites).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                for (SiteModel site: mSiteStore.getSites()) {
+                    mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(site));
+                }
+            }
+        });
+
         view.findViewById(R.id.log_sites).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -123,16 +132,16 @@ public class SitesFragment extends Fragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteChanged(OnSiteChanged event) {
-        prependToLog("OnSiteChanged");
         if (event.isError()) {
+            prependToLog("SiteChanged error: " + event.error.type);
             AppLog.e(T.TESTS, "SiteChanged error: " + event.error.type);
-            return;
+        } else {
+            prependToLog("SiteChanged: rowsAffected = " + event.rowsAffected);
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNewSiteCreated(OnNewSiteCreated event) {
-        prependToLog("OnNewSiteCreated");
         String message = event.dryRun ? "validated" : "created";
         if (event.isError()) {
             prependToLog("New site " + message + ": error: " + event.error.type + " - " + event.error.message);
