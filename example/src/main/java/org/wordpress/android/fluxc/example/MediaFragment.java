@@ -62,7 +62,6 @@ public class MediaFragment extends Fragment {
         }
     }
 
-    private int mNumFetched = 0;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -215,7 +214,7 @@ public class MediaFragment extends Fragment {
         if (!event.isError()) {
             prependToLog("Received successful response for " + event.cause + " event.");
             if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
-                prependToLog(event.media.size() + " media items fetched.");
+                prependToLog(event.media == null ? "0" : event.media.size() + " media items fetched.");
                 mMedia.addAll(event.media);
                 mMediaList.setAdapter(new MediaAdapter(getActivity(), R.layout.media_list_item, mMedia));
             } else if (event.cause == MediaAction.FETCH_MEDIA) {
@@ -252,13 +251,7 @@ public class MediaFragment extends Fragment {
     }
 
     private void fetchAllMedia(@NonNull SiteModel site) {
-        prependToLog("Fetching all media from " + site.getName() + ", offset=" + mNumFetched);
-        MediaStore.MediaFilter filter = new MediaStore.MediaFilter();
-        filter.offset = mNumFetched;
-        filter.number = 20;
-        mNumFetched += 20;
-
-        MediaListPayload payload = new MediaListPayload(site, null, filter);
+        MediaListPayload payload = new MediaListPayload(site, null, null);
         mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(payload));
     }
 
