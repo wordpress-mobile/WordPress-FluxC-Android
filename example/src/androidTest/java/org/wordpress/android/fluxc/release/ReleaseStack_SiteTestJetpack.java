@@ -116,7 +116,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
     }
 
     public void testXMLRPCNonJetpackSiteFetch() throws InterruptedException {
-        // Add a Jetpack-connected site as self-hosted
+        // Add a non-Jetpack self-hosted site
         fetchSitesXMLRPC(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
@@ -156,7 +156,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
     }
 
     public void testXMLRPCJetpackDisconnectedSiteFetch() throws InterruptedException {
-        // Add a Jetpack-connected site as self-hosted
+        // Add a self-hosted site with Jetpack installed and active but not connected to WP.com
         fetchSitesXMLRPC(BuildConfig.TEST_WPORG_USERNAME_JETPACK_DISCONNECTED,
                 BuildConfig.TEST_WPORG_PASSWORD_JETPACK_DISCONNECTED,
                 BuildConfig.TEST_WPORG_URL_JETPACK_DISCONNECTED_ENDPOINT);
