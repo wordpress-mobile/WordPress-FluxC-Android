@@ -261,7 +261,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         testMedia.setDescription(testDescription);
         testMedia.setCaption(testCaption);
         testMedia.setAlt(testAlt);
-        testMedia.setSiteId(sSite.getSiteId());
+        testMedia.setLocalSiteId(sSite.getId());
 
         return testMedia;
     }

@@ -250,7 +250,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         testMedia.setDescription(testDescription);
         testMedia.setCaption(testCaption);
         testMedia.setAlt(testAlt);
-        testMedia.setSiteId(sSite.getSiteId());
+        testMedia.setLocalSiteId(sSite.getId());
 
         return testMedia;
     }
