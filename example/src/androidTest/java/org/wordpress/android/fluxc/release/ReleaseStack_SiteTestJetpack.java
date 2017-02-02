@@ -135,7 +135,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertEquals(0, site.getSiteId());
     }
 
-    public void testXMLRPCJetpackSiteFetch() throws InterruptedException {
+    public void testXMLRPCJetpackConnectedSiteFetch() throws InterruptedException {
         // Add a Jetpack-connected site as self-hosted
         fetchSitesXMLRPC(BuildConfig.TEST_WPORG_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPORG_PASSWORD_SINGLE_JETPACK_ONLY,
