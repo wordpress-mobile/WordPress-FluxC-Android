@@ -29,6 +29,7 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_MediaTestXMLRPC test);
     void inject(ReleaseStack_PostTestWPCom test);
     void inject(ReleaseStack_PostTestXMLRPC test);
+    void inject(ReleaseStack_SiteTestJetpack test);
     void inject(ReleaseStack_SiteTestWPCom test);
     void inject(ReleaseStack_SiteTestXMLRPC test);
     void inject(ReleaseStack_TaxonomyTestWPCom test);
