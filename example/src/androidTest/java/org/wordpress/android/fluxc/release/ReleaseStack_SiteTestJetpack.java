@@ -131,7 +131,8 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
 
         SiteModel site = mSiteStore.getSites().get(0);
 
-        assertFalse(site.isJetpack());
+        assertFalse(site.isJetpackConnected());
+        assertFalse(site.isJetpackInstalled());
         assertEquals(0, site.getSiteId());
     }
 
@@ -145,13 +146,13 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         fetchSite(mSiteStore.getSites().get(0));
 
         assertEquals(1, mSiteStore.getSitesCount());
-        assertEquals(0, mSiteStore.getWPComSitesCount());
-        assertEquals(1, mSiteStore.getSelfHostedSitesCount());
+        assertEquals(1, mSiteStore.getWPComSitesCount());
+        assertEquals(0, mSiteStore.getSelfHostedSitesCount());
         assertEquals(1, mSiteStore.getJetpackSitesCount());
 
         SiteModel site = mSiteStore.getSites().get(0);
 
-        assertTrue(site.isJetpack());
+        assertTrue(site.isJetpackConnected());
         assertNotSame(0, site.getSiteId());
     }
 
@@ -171,7 +172,8 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
 
         SiteModel site = mSiteStore.getSites().get(0);
 
-        assertFalse(site.isJetpack());
+        assertFalse(site.isJetpackConnected());
+        assertTrue(site.isJetpackInstalled());
         assertEquals(0, site.getSiteId());
     }
 
@@ -223,8 +225,10 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
 
         assertEquals(1, mSiteStore.getSitesCount());
         assertTrue(mSiteStore.hasJetpackSite());
-        assertFalse(mSiteStore.hasWPComSite());
-        assertTrue(mSiteStore.hasSelfHostedSite());
+        // We added the site from an XMLRPC call, but it's accessible via the WPComREST API, so it's considered
+        // a WPCom site
+        assertTrue(mSiteStore.hasWPComSite());
+        assertFalse(mSiteStore.hasSelfHostedSite());
 
         // Authenticate as WP.com user with a single site, which is the Jetpack site we already added as self-hosted
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
@@ -260,19 +264,20 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         fetchSite(selfHostedSite);
 
         assertEquals(wpComSiteCount + 1, mSiteStore.getSitesCount());
-        assertEquals(wpComSiteCount, mSiteStore.getWPComSitesCount());
-        assertEquals(1, mSiteStore.getSelfHostedSitesCount());
+        // The site is connected to a different wpcom account but we don't make that difference yet.
+        assertEquals(wpComSiteCount + 1, mSiteStore.getWPComSitesCount());
+        assertEquals(0, mSiteStore.getSelfHostedSitesCount());
 
-        assertTrue(selfHostedSite.isJetpack());
-        assertFalse(selfHostedSite.isWPCom());
+        assertTrue(selfHostedSite.isJetpackConnected());
+        assertTrue(selfHostedSite.isWPCom());
 
         signOutWPCom();
 
-        // Expect only WP.com sites to be removed
-        assertEquals(1, mSiteStore.getSitesCount());
+        // Expect all WP.com sites to be removed (jetpack connected sites included)
+        assertEquals(0, mSiteStore.getSitesCount());
         assertEquals(0, mSiteStore.getWPComSitesCount());
-        assertEquals(1, mSiteStore.getJetpackSitesCount());
-        assertEquals(1, mSiteStore.getSelfHostedSitesCount());
+        assertEquals(0, mSiteStore.getJetpackSitesCount());
+        assertEquals(0, mSiteStore.getSelfHostedSitesCount());
     }
 
     @SuppressWarnings("unused")
