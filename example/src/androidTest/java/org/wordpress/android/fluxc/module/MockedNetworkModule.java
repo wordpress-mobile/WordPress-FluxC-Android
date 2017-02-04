@@ -21,10 +21,10 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.ErrorLi
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Listener;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Token;
 import org.wordpress.android.fluxc.network.rest.wpcom.media.MediaRestClient;
+import org.wordpress.android.fluxc.network.rest.wpcom.post.PostRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.SiteRestClient;
 import org.wordpress.android.fluxc.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.media.MediaXMLRPCClient;
-import org.wordpress.android.fluxc.network.rest.wpcom.post.PostRestClient;
 import org.wordpress.android.fluxc.network.xmlrpc.post.PostXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.site.SiteXMLRPCClient;
 
@@ -34,7 +34,6 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 import okhttp3.OkHttpClient;
-import okhttp3.OkUrlFactory;
 
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.any;
@@ -47,19 +46,13 @@ import static org.mockito.Mockito.spy;
 public class MockedNetworkModule {
     @Singleton
     @Provides
-    public OkHttpClient provideOkHttpClient() {
-        return new OkHttpClient();
+    public OkHttpClient.Builder provideOkHttpClient() {
+        return new OkHttpClient.Builder();
     }
 
     @Singleton
     @Provides
-    public OkUrlFactory provideOkUrlFactory(OkHttpClient okHttpClient) {
-        return new OkUrlFactory(okHttpClient);
-    }
-
-    @Singleton
-    @Provides
-    public RequestQueue provideRequestQueue(OkHttpClient okHttpClient, Context appContext) {
+    public RequestQueue provideRequestQueue(OkHttpClient.Builder okHttpClient, Context appContext) {
         return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClient));
     }
 
@@ -129,14 +122,14 @@ public class MockedNetworkModule {
     @Provides
     public MediaRestClient provideMediaRestClient(Dispatcher dispatcher, Context appContext,
                                                   @Named("regular") RequestQueue requestQueue,
-                                                  @Named("regular") OkHttpClient okHttpClient,
+                                                  @Named("regular") OkHttpClient.Builder okHttpClient,
                                                   AccessToken token, UserAgent userAgent) {
         return new MediaRestClient(appContext, dispatcher, requestQueue, okHttpClient, token, userAgent);
     }
 
     @Singleton
     @Provides
-    public MediaXMLRPCClient provideMediaXMLRPCClient(Dispatcher dispatcher, OkHttpClient okClient,
+    public MediaXMLRPCClient provideMediaXMLRPCClient(Dispatcher dispatcher, OkHttpClient.Builder okClient,
                                                       @Named("regular") RequestQueue requestQueue,
                                                       AccessToken token, UserAgent userAgent,
                                                       HTTPAuthManager httpAuthManager) {
