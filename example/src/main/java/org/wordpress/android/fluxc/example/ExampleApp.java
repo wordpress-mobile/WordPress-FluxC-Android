@@ -8,19 +8,23 @@ import org.wordpress.android.fluxc.module.AppContextModule;
 import org.wordpress.android.fluxc.persistence.WellSqlConfig;
 
 public class ExampleApp extends Application {
-    private AppComponent mComponent;
+    protected AppComponent mComponent;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        mComponent = DaggerAppComponent.builder()
-                .appContextModule(new AppContextModule(getApplicationContext()))
-                .build();
+        initDaggerComponent();
         component().inject(this);
         WellSql.init(new WellSqlConfig(getApplicationContext()));
     }
 
     public AppComponent component() {
         return mComponent;
+    }
+
+    protected void initDaggerComponent() {
+        mComponent = DaggerAppComponent.builder()
+                .appContextModule(new AppContextModule(getApplicationContext()))
+                .build();
     }
 }

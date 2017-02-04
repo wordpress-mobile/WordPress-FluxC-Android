@@ -67,8 +67,6 @@ android.buildTypes.all { buildType ->
 dependencies {
     compile project(':fluxc');
 
-
-
     compile 'com.google.dagger:dagger:2.0.2'
     compile 'com.android.support:appcompat-v7:25.1.0'
     compile 'com.android.support:support-v4:25.1.0'
@@ -81,4 +79,8 @@ dependencies {
     androidTestApt 'com.google.dagger:dagger-compiler:2.0'
     apt 'com.google.dagger:dagger-compiler:2.0.2'
     provided 'org.glassfish:javax.annotation:10.0-b28'
+
+    // Debug dependencies
+    debugCompile 'com.facebook.stetho:stetho:1.4.2'
+    debugCompile 'com.facebook.stetho:stetho-okhttp3:1.4.2'
 }

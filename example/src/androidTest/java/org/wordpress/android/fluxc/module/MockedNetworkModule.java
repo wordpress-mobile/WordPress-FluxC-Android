@@ -59,8 +59,8 @@ public class MockedNetworkModule {
 
     @Singleton
     @Provides
-    public RequestQueue provideRequestQueue(OkUrlFactory okUrlFactory, Context appContext) {
-        return Volley.newRequestQueue(appContext, new OkHttpStack(okUrlFactory));
+    public RequestQueue provideRequestQueue(OkHttpClient okHttpClient, Context appContext) {
+        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClient));
     }
 
     @Singleton
