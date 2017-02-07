@@ -53,11 +53,11 @@ android.buildTypes.all { buildType ->
     Properties testProperties = new Properties()
     File testFile = file("tests.properties")
     if (testFile.exists()) {
-        testProperties.load(new FileInputStream(testFile))
+        testProperties.load(new InputStreamReader(new FileInputStream(testFile), "utf-8"))
     } else {
         // Load defaults
         println("WARNING: you're using the example example/tests.properties-example file - tests won't pass")
-        testProperties.load(new FileInputStream(file("tests.properties-example")))
+        testProperties.load(new InputStreamReader(new FileInputStream(file("tests.properties-example")), "utf-8"))
     }
     testProperties.any { property ->
         buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(), "\"${property.value}\""
