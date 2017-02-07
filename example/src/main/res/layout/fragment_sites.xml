@@ -18,6 +18,12 @@
         android:text="Fetch first site" />
 
     <Button
+        android:id="@+id/update_all_sites"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch all sites" />
+
+    <Button
         android:id="@+id/log_sites"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
