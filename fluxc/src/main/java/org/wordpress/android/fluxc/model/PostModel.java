@@ -368,6 +368,7 @@ public class PostModel extends Payload implements Cloneable, Identifiable, Seria
                && getHasCapabilityEditPost() == otherPost.getHasCapabilityEditPost()
                && getHasCapabilityDeletePost() == otherPost.getHasCapabilityDeletePost()
                && getParentId() == otherPost.getParentId()
+               && getFeaturedImageId() == otherPost.getFeaturedImageId()
                && StringUtils.equals(getTitle(), otherPost.getTitle())
                && StringUtils.equals(getContent(), otherPost.getContent())
                && StringUtils.equals(getDateCreated(), otherPost.getDateCreated())

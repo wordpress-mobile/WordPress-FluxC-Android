@@ -519,18 +519,21 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
             }
         }
 
-        // Featured images
-        if (post.featuredImageHasChanged()) {
-            if (post.getFeaturedImageId() < 1 && !post.isLocalDraft()) {
-                // The featured image was removed from a live post
+        if (post.isLocalDraft()) {
+            // publishing a new post.
+            if (post.getFeaturedImageId() > 1) {
+                contentStruct.put("post_thumbnail", post.getFeaturedImageId());
+            }
+        } else if (post.featuredImageHasChanged()) {
+            // Live post
+            if (post.getFeaturedImageId() < 1) {
+                // Will remove any existing featured image if the empty string is sent
                 contentStruct.put("post_thumbnail", "");
             } else {
                 contentStruct.put("post_thumbnail", post.getFeaturedImageId());
             }
         }
-
         contentStruct.put("post_password", post.getPassword());
-
         return contentStruct;
     }
 }
