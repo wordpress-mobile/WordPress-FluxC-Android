@@ -22,13 +22,13 @@ import okhttp3.OkHttpClient;
 public class DebugOkHttpClientModule {
     @Provides
     @Named("regular")
-    public OkHttpClient.Builder provideOkHttpClient() {
+    public OkHttpClient.Builder provideOkHttpClientBuilder() {
         return new OkHttpClient.Builder().addNetworkInterceptor(new StethoInterceptor());
     }
 
     @Provides
     @Named("custom-ssl")
-    public OkHttpClient.Builder provideOkHttpClientCustomSSL(MemorizingTrustManager memorizingTrustManager) {
+    public OkHttpClient.Builder provideOkHttpClientBuilderCustomSSL(MemorizingTrustManager memorizingTrustManager) {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         try {
             final SSLContext sslContext = SSLContext.getInstance("TLS");

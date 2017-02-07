@@ -46,14 +46,14 @@ import static org.mockito.Mockito.spy;
 public class MockedNetworkModule {
     @Singleton
     @Provides
-    public OkHttpClient.Builder provideOkHttpClient() {
+    public OkHttpClient.Builder provideOkHttpClientBuilder() {
         return new OkHttpClient.Builder();
     }
 
     @Singleton
     @Provides
-    public RequestQueue provideRequestQueue(OkHttpClient.Builder okHttpClient, Context appContext) {
-        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClient));
+    public RequestQueue provideRequestQueue(OkHttpClient.Builder okHttpClientBuilder, Context appContext) {
+        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClientBuilder));
     }
 
     @Singleton
@@ -122,18 +122,18 @@ public class MockedNetworkModule {
     @Provides
     public MediaRestClient provideMediaRestClient(Dispatcher dispatcher, Context appContext,
                                                   @Named("regular") RequestQueue requestQueue,
-                                                  @Named("regular") OkHttpClient.Builder okHttpClient,
+                                                  @Named("regular") OkHttpClient.Builder okHttpClientBuilder,
                                                   AccessToken token, UserAgent userAgent) {
-        return new MediaRestClient(appContext, dispatcher, requestQueue, okHttpClient, token, userAgent);
+        return new MediaRestClient(appContext, dispatcher, requestQueue, okHttpClientBuilder, token, userAgent);
     }
 
     @Singleton
     @Provides
-    public MediaXMLRPCClient provideMediaXMLRPCClient(Dispatcher dispatcher, OkHttpClient.Builder okClient,
+    public MediaXMLRPCClient provideMediaXMLRPCClient(Dispatcher dispatcher, OkHttpClient.Builder okHttpClientBuilder,
                                                       @Named("regular") RequestQueue requestQueue,
                                                       AccessToken token, UserAgent userAgent,
                                                       HTTPAuthManager httpAuthManager) {
-        return new MediaXMLRPCClient(dispatcher, requestQueue, okClient, token, userAgent, httpAuthManager);
+        return new MediaXMLRPCClient(dispatcher, requestQueue, okHttpClientBuilder, token, userAgent, httpAuthManager);
     }
 
     @Singleton
