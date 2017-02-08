@@ -23,8 +23,8 @@ import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.MediaStore;
-import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
+import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.store.SiteStore;
@@ -265,10 +265,12 @@ public class MediaFragment extends Fragment {
     private void uploadMedia(@NonNull SiteModel site, @NonNull String mediaUri) {
         prependToLog("Uploading media to " + site.getName());
 
-        mCurrentUpload = new MediaModel();
+        mCurrentUpload = mMediaStore.instantiateMediaModel();
         mCurrentUpload.setFileName(MediaUtils.getFileName(mediaUri));
         mCurrentUpload.setFilePath(mediaUri);
         mCurrentUpload.setMimeType(MediaUtils.getMimeTypeForExtension(MediaUtils.getExtension(mediaUri)));
+
+        // Upload
         MediaPayload payload = new MediaPayload(site, mCurrentUpload);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         mCancelButton.setEnabled(true);
