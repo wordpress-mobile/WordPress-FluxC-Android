@@ -206,7 +206,7 @@ public class PostActivity extends AppCompatActivity {
     private void signOut() {
         if (mAccountStore.hasAccessToken()) {
             mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
-            mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
+            mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
         } else {
             mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(mSite));
         }
