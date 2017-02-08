@@ -252,7 +252,13 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
                 BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
-        int wpComSiteCount = mSiteStore.getSitesCount();
+        int wpComSiteCount = mSiteStore.getWPComSitesCount();
+        int totalSiteCount = mSiteStore.getSitesCount();
+        int jetpackSiteCount = mSiteStore.getJetpackSitesCount();
+        int selfhostedSiteCount = mSiteStore.getSelfHostedSitesCount();
+
+        assertEquals(0, selfhostedSiteCount);
+        assertEquals(totalSiteCount, wpComSiteCount + jetpackSiteCount);
 
         // Add a Jetpack-connected site as self-hosted (connected to a different WP.com account than the one above)
         fetchSitesXMLRPC(BuildConfig.TEST_WPORG_USERNAME_SINGLE_JETPACK_ONLY,
@@ -263,8 +269,10 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         SiteModel selfHostedSite = mSiteStore.getSelfHostedSites().get(0);
         fetchSite(selfHostedSite);
 
-        assertEquals(wpComSiteCount + 1, mSiteStore.getSitesCount());
+        assertEquals(totalSiteCount + 1, mSiteStore.getSitesCount());
         // The site is connected to a different wpcom account but we don't make that difference yet.
+        assertEquals(jetpackSiteCount + 1, mSiteStore.getJetpackSitesCount());
+        assertEquals(selfhostedSiteCount, mSiteStore.getSelfHostedSitesCount());
         assertEquals(wpComSiteCount, mSiteStore.getWPComSitesCount());
         assertEquals(0, mSiteStore.getSelfHostedSitesCount());
 
