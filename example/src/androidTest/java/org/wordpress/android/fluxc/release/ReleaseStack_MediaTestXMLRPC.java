@@ -208,11 +208,11 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @SuppressWarnings("unused")
     @Subscribe
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) throws InterruptedException {
-        if (event.completed) {
+        if (event.isError()) {
+            mCountDownLatch.countDown();
+        } else if (event.completed) {
             mLastUploadedId = event.media.getMediaId();
             assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
-            mCountDownLatch.countDown();
-        } else if (event.isError()) {
             mCountDownLatch.countDown();
         }
     }
@@ -261,7 +261,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         testMedia.setDescription(testDescription);
         testMedia.setCaption(testCaption);
         testMedia.setAlt(testAlt);
-        testMedia.setSiteId(sSite.getSiteId());
+        testMedia.setLocalSiteId(sSite.getId());
 
         return testMedia;
     }

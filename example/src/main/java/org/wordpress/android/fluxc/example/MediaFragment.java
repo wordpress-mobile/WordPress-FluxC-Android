@@ -215,7 +215,7 @@ public class MediaFragment extends Fragment {
             prependToLog("Received successful response for " + event.cause + " event.");
             if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
                 prependToLog(event.media == null ? "0" : event.media.size() + " media items fetched.");
-                mMedia.addAll(event.media);
+                mMedia = mMediaStore.getAllSiteMedia(mSite);
                 mMediaList.setAdapter(new MediaAdapter(getActivity(), R.layout.media_list_item, mMedia));
             } else if (event.cause == MediaAction.FETCH_MEDIA) {
                 prependToLog(event.media.size() + " media items fetched.");

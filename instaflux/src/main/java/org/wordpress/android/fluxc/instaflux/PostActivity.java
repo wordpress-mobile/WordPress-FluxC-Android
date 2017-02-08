@@ -202,7 +202,7 @@ public class PostActivity extends AppCompatActivity {
     private void signOut() {
         if (mAccountStore.hasAccessToken()) {
             mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
-            mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
+            mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
         } else {
             mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(mSite));
         }
@@ -215,7 +215,7 @@ public class PostActivity extends AppCompatActivity {
         mediaModel.setFileExtension(MediaUtils.getExtension(imagePath));
         mediaModel.setMimeType(mimeType);
         mediaModel.setFileName(MediaUtils.getFileName(imagePath));
-        mediaModel.setSiteId(mSite.getSiteId());
+        mediaModel.setLocalSiteId(mSite.getId());
         MediaPayload payload = new MediaPayload(mSite, mediaModel);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
     }

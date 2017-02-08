@@ -220,7 +220,7 @@ public class MainFragment extends Fragment {
 
     private void signOut() {
         mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
-        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
+        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
         // Remove all remaining sites
         for (SiteModel site : mSiteStore.getSites()) {
             mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(site));
