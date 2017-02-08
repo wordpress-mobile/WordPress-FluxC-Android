@@ -248,7 +248,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
     }
 
     public void testWPComToXMLRPCJetpackDifferentAccountsSiteFetch() throws InterruptedException {
-        // Authenticate as WP.com user with no Jetpack sites
+        // Authenticate as WP.com user
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
                 BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
