@@ -53,7 +53,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
 
         assertEquals(1, mSiteStore.getSitesCount());
-        assertEquals(1, mSiteStore.getWPComSitesCount());
+        assertEquals(0, mSiteStore.getWPComSitesCount());
         assertEquals(1, mSiteStore.getJetpackSitesCount());
         assertEquals(0, mSiteStore.getSelfHostedSitesCount());
 
@@ -70,7 +70,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
                 BuildConfig.TEST_WPCOM_PASSWORD_ONE_JETPACK);
 
         assertEquals(2, mSiteStore.getSitesCount());
-        assertEquals(2, mSiteStore.getWPComSitesCount());
+        assertEquals(1, mSiteStore.getWPComSitesCount());
         assertEquals(1, mSiteStore.getJetpackSitesCount());
         assertEquals(0, mSiteStore.getSelfHostedSitesCount());
 
@@ -86,7 +86,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
                 BuildConfig.TEST_WPCOM_PASSWORD_MULTIPLE_JETPACK);
 
         assertEquals(3, mSiteStore.getSitesCount());
-        assertEquals(3, mSiteStore.getWPComSitesCount());
+        assertEquals(1, mSiteStore.getWPComSitesCount());
         assertEquals(2, mSiteStore.getJetpackSitesCount());
         assertEquals(0, mSiteStore.getSelfHostedSitesCount());
 
@@ -104,7 +104,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         int sitesCount = mSiteStore.getSitesCount();
 
         // Only one non-Jetpack site exists, all the other fetched sites should be Jetpack sites
-        assertEquals(sitesCount, mSiteStore.getWPComSitesCount());
+        assertEquals(1, mSiteStore.getWPComSitesCount());
         assertEquals(sitesCount - 1, mSiteStore.getJetpackSitesCount());
         assertEquals(0, mSiteStore.getSelfHostedSitesCount());
 
@@ -146,7 +146,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         fetchSite(mSiteStore.getSites().get(0));
 
         assertEquals(1, mSiteStore.getSitesCount());
-        assertEquals(1, mSiteStore.getWPComSitesCount());
+        assertEquals(0, mSiteStore.getWPComSitesCount());
         assertEquals(0, mSiteStore.getSelfHostedSitesCount());
         assertEquals(1, mSiteStore.getJetpackSitesCount());
 
@@ -184,7 +184,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
 
         assertEquals(1, mSiteStore.getSitesCount());
         assertTrue(mSiteStore.hasJetpackSite());
-        assertTrue(mSiteStore.hasWPComSite());
+        assertFalse(mSiteStore.hasWPComSite());
         assertFalse(mSiteStore.hasSelfHostedSite());
 
         // Attempt to add the same Jetpack site as a self-hosted site
@@ -204,7 +204,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         // Expect no DB changes
         assertEquals(1, mSiteStore.getSitesCount());
         assertTrue(mSiteStore.hasJetpackSite());
-        assertTrue(mSiteStore.hasWPComSite());
+        assertFalse(mSiteStore.hasWPComSite());
         assertFalse(mSiteStore.hasSelfHostedSite());
 
         signOutWPCom();
@@ -224,10 +224,10 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         fetchSite(mSiteStore.getSites().get(0));
 
         assertEquals(1, mSiteStore.getSitesCount());
+        // We added the site from an XMLRPC call, but it's a Jetpack site accessible via the .com REST API, but
+        // not considered a .com site
         assertTrue(mSiteStore.hasJetpackSite());
-        // We added the site from an XMLRPC call, but it's accessible via the WPComREST API, so it's considered
-        // a WPCom site
-        assertTrue(mSiteStore.hasWPComSite());
+        assertFalse(mSiteStore.hasWPComSite());
         assertFalse(mSiteStore.hasSelfHostedSite());
 
         // Authenticate as WP.com user with a single site, which is the Jetpack site we already added as self-hosted
@@ -237,7 +237,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         // We expect the XML-RPC Jetpack site to be 'upgraded' to a WPcom Jetpack site
         assertEquals(1, mSiteStore.getSitesCount());
         assertTrue(mSiteStore.hasJetpackSite());
-        assertTrue(mSiteStore.hasWPComSite());
+        assertFalse(mSiteStore.hasWPComSite());
         assertFalse(mSiteStore.hasSelfHostedSite());
 
         signOutWPCom();
@@ -265,11 +265,11 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
 
         assertEquals(wpComSiteCount + 1, mSiteStore.getSitesCount());
         // The site is connected to a different wpcom account but we don't make that difference yet.
-        assertEquals(wpComSiteCount + 1, mSiteStore.getWPComSitesCount());
+        assertEquals(wpComSiteCount, mSiteStore.getWPComSitesCount());
         assertEquals(0, mSiteStore.getSelfHostedSitesCount());
 
         assertTrue(selfHostedSite.isJetpackConnected());
-        assertTrue(selfHostedSite.isWPCom());
+        assertFalse(selfHostedSite.isWPCom());
 
         signOutWPCom();
 
