@@ -194,8 +194,14 @@ public class PostActivity extends AppCompatActivity {
 
     private void createMediaPost(MediaModel media) {
         mMedia = media;
-        PostStore.InstantiatePostPayload payload = new PostStore.InstantiatePostPayload(mSite, false, null, "image");
-        mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
+        PostModel post = mPostStore.instantiatePostModel(mSite, false, null, "image");
+        String postContent = "<img src=\"" + mMedia.getUrl()
+                             + "\" width=\"" + mMedia.getWidth()
+                             + "\" height=\"" + mMedia.getHeight() + "\" />";
+        post.setContent(postContent);
+
+        PostStore.RemotePostPayload payload = new PostStore.RemotePostPayload(post, mSite);
+        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
         AppLog.i(AppLog.T.API, "Create a new media post for " + mMedia.getUrl());
     }
 
@@ -235,25 +241,6 @@ public class PostActivity extends AppCompatActivity {
         if (!mSiteStore.hasSite()) {
             // Signed Out
             finish();
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onPostInstantiated(PostStore.OnPostInstantiated event) {
-        // upload the post if there is no error
-        if (event.post != null) {
-            String post = "<img src=\"" + mMedia.getUrl()
-                    + "\" width=\""
-                    + mMedia.getWidth()
-                    + "\" height=\""
-                    + mMedia.getHeight() + "\" />";
-            event.post.setContent(post);
-
-            PostStore.RemotePostPayload payload = new PostStore.RemotePostPayload(event.post, mSite);
-            mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
-        } else {
-            hideProgress();
         }
     }
 
