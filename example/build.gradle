@@ -53,11 +53,11 @@ android.buildTypes.all { buildType ->
     Properties testProperties = new Properties()
     File testFile = file("tests.properties")
     if (testFile.exists()) {
-        testProperties.load(new FileInputStream(testFile))
+        testProperties.load(new InputStreamReader(new FileInputStream(testFile), "utf-8"))
     } else {
         // Load defaults
         println("WARNING: you're using the example example/tests.properties-example file - tests won't pass")
-        testProperties.load(new FileInputStream(file("tests.properties-example")))
+        testProperties.load(new InputStreamReader(new FileInputStream(file("tests.properties-example")), "utf-8"))
     }
     testProperties.any { property ->
         buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(), "\"${property.value}\""
@@ -66,8 +66,6 @@ android.buildTypes.all { buildType ->
 
 dependencies {
     compile project(':fluxc');
-
-
 
     compile 'com.google.dagger:dagger:2.0.2'
     compile 'com.android.support:appcompat-v7:25.1.0'
@@ -81,4 +79,8 @@ dependencies {
     androidTestApt 'com.google.dagger:dagger-compiler:2.0'
     apt 'com.google.dagger:dagger-compiler:2.0.2'
     provided 'org.glassfish:javax.annotation:10.0-b28'
+
+    // Debug dependencies
+    debugCompile 'com.facebook.stetho:stetho:1.4.2'
+    debugCompile 'com.facebook.stetho:stetho-okhttp3:1.4.2'
 }

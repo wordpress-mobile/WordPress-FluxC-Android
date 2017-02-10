@@ -351,6 +351,20 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    public void testIDNEmojiFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_IDN_EMOJI,
+                BuildConfig.TEST_WPORG_USERNAME_SH_IDN_EMOJI,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_IDN_EMOJI,
+                TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
+    }
+
+    public void testIDNJapaneseFetchSites() throws InterruptedException {
+        checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_IDN_JAPANESE,
+                BuildConfig.TEST_WPORG_USERNAME_SH_IDN_JAPANESE,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_IDN_JAPANESE,
+                TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
+    }
+
     public void testXMLRPCBlockedDiscovery() throws InterruptedException {
         mPayload = new RefreshSitesXMLRPCPayload();
         mPayload.url = BuildConfig.TEST_WPORG_URL_SH_BLOCKED;

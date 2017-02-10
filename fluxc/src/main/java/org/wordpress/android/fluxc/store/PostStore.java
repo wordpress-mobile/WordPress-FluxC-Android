@@ -335,11 +335,14 @@ public class PostStore extends Store {
             case REMOVE_POST:
                 removePost((PostModel) action.getPayload());
                 break;
+            case REMOVE_ALL_POSTS:
+                removeAllPosts();
+                break;
         }
     }
 
     private void deletePost(RemotePostPayload payload) {
-        if (payload.site.isWPCom()) {
+        if (payload.site.isWPCom() || payload.site.isJetpackConnected()) {
             mPostRestClient.deletePost(payload.post, payload.site);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
@@ -348,7 +351,7 @@ public class PostStore extends Store {
     }
 
     private void fetchPost(RemotePostPayload payload) {
-        if (payload.site.isWPCom()) {
+        if (payload.site.isWPCom() || payload.site.isJetpackConnected()) {
             mPostRestClient.fetchPost(payload.post, payload.site);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
@@ -362,7 +365,7 @@ public class PostStore extends Store {
             offset = getUploadedPostsCountForSite(payload.site);
         }
 
-        if (payload.site.isWPCom()) {
+        if (payload.site.isWPCom() || payload.site.isJetpackConnected()) {
             mPostRestClient.fetchPosts(payload.site, pages, DEFAULT_POST_STATUS_LIST, offset);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
@@ -442,7 +445,7 @@ public class PostStore extends Store {
             onPostUploaded.error = payload.error;
             emitChange(onPostUploaded);
         } else {
-            if (payload.site.isWPCom()) {
+            if (payload.site.isWPCom() || payload.site.isJetpackConnected()) {
                 // The WP.COM REST API response contains the modified post, so we're already in sync with the server
                 // All we need to do is store it and emit OnPostChanged
                 updatePost(payload.post, false);
@@ -475,7 +478,7 @@ public class PostStore extends Store {
     }
 
     private void pushPost(RemotePostPayload payload) {
-        if (payload.site.isWPCom()) {
+        if (payload.site.isWPCom() || payload.site.isJetpackConnected()) {
             mPostRestClient.pushPost(payload.post, payload.site);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
@@ -499,5 +502,12 @@ public class PostStore extends Store {
         OnPostChanged onPostChanged = new OnPostChanged(rowsAffected);
         onPostChanged.causeOfChange = PostAction.REMOVE_POST;
         emitChange(onPostChanged);
+    }
+
+    private void removeAllPosts() {
+        int rowsAffected = PostSqlUtils.deleteAllPosts();
+        OnPostChanged event = new OnPostChanged(rowsAffected);
+        event.causeOfChange = PostAction.REMOVE_ALL_POSTS;
+        emitChange(event);
     }
 }

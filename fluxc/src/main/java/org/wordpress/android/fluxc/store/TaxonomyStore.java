@@ -104,6 +104,10 @@ public class TaxonomyStore extends Store {
             this.rowsAffected = rowsAffected;
             this.taxonomyName = taxonomyName;
         }
+
+        public OnTaxonomyChanged(int rowsAffected) {
+            this.rowsAffected = rowsAffected;
+        }
     }
 
     public class OnTermInstantiated extends OnChanged<TaxonomyError> {
@@ -296,11 +300,14 @@ public class TaxonomyStore extends Store {
             case PUSHED_TERM:
                 handlePushTermCompleted((RemoteTermPayload) action.getPayload());
                 break;
+            case REMOVE_ALL_TERMS:
+                removeAllTerms();
+                break;
         }
     }
 
     private void fetchTerm(RemoteTermPayload payload) {
-        if (payload.site.isWPCom()) {
+        if (payload.site.isWPCom() || payload.site.isJetpackConnected()) {
             mTaxonomyRestClient.fetchTerm(payload.term, payload.site);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
@@ -310,7 +317,7 @@ public class TaxonomyStore extends Store {
 
     private void fetchTerms(SiteModel site, String taxonomyName) {
         // TODO: Support large number of terms (currently pulling 100 from REST, and ? from XML-RPC) - pagination?
-        if (site.isWPCom()) {
+        if (site.isWPCom() || site.isJetpackConnected()) {
             mTaxonomyRestClient.fetchTerms(site, taxonomyName);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
@@ -385,7 +392,7 @@ public class TaxonomyStore extends Store {
             onTermUploaded.error = payload.error;
             emitChange(onTermUploaded);
         } else {
-            if (payload.site.isWPCom()) {
+            if (payload.site.isWPCom() || payload.site.isJetpackConnected()) {
                 // The WP.COM REST API response contains the modified term, so we're already in sync with the server
                 // All we need to do is store it and emit OnTaxonomyChanged
                 updateTerm(payload.term);
@@ -411,7 +418,7 @@ public class TaxonomyStore extends Store {
     }
 
     private void pushTerm(RemoteTermPayload payload) {
-        if (payload.site.isWPCom()) {
+        if (payload.site.isWPCom() || payload.site.isJetpackConnected()) {
             mTaxonomyRestClient.pushTerm(payload.term, payload.site);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
@@ -424,6 +431,14 @@ public class TaxonomyStore extends Store {
 
         OnTaxonomyChanged onTaxonomyChanged = new OnTaxonomyChanged(rowsAffected, term.getTaxonomy());
         onTaxonomyChanged.causeOfChange = TaxonomyAction.UPDATE_TERM;
+        emitChange(onTaxonomyChanged);
+    }
+
+    private void removeAllTerms() {
+        int rowsAffected = TaxonomySqlUtils.deleteAllTerms();
+
+        OnTaxonomyChanged onTaxonomyChanged = new OnTaxonomyChanged(rowsAffected);
+        onTaxonomyChanged.causeOfChange = TaxonomyAction.REMOVE_ALL_TERMS;
         emitChange(onTaxonomyChanged);
     }
 }

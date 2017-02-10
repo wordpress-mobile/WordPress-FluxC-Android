@@ -247,6 +247,9 @@ public class MediaStore extends Store {
             case REMOVE_MEDIA:
                 removeMedia(((MediaListPayload) action.getPayload()).media);
                 break;
+            case REMOVE_ALL_MEDIA:
+                removeAllMedia();
+                break;
         }
     }
 
@@ -359,6 +362,12 @@ public class MediaStore extends Store {
         return getNextSiteMediaToDelete(siteModel) != null;
     }
 
+    private void removeAllMedia() {
+        MediaSqlUtils.deleteAllMedia();
+        OnMediaChanged event = new OnMediaChanged(MediaAction.REMOVE_ALL_MEDIA, null);
+        emitChange(event);
+    }
+
     //
     // Action implementations
     //
@@ -406,7 +415,7 @@ public class MediaStore extends Store {
             }
         }
 
-        if (payload.site.isWPCom()) {
+        if (payload.site.isWPCom() || payload.site.isJetpackConnected()) {
             mMediaRestClient.pushMedia(payload.site, payload.media);
         } else {
             mMediaXmlrpcClient.pushMedia(payload.site, payload.media);
@@ -427,7 +436,7 @@ public class MediaStore extends Store {
             }
         }
 
-        if (payload.site.isWPCom()) {
+        if (payload.site.isWPCom() || payload.site.isJetpackConnected()) {
             mMediaRestClient.uploadMedia(payload.site, payload.media);
         } else {
             mMediaXmlrpcClient.uploadMedia(payload.site, payload.media);
@@ -435,7 +444,7 @@ public class MediaStore extends Store {
     }
 
     private void performFetchAllMedia(MediaListPayload payload) {
-        if (payload.site.isWPCom()) {
+        if (payload.site.isWPCom() || payload.site.isJetpackConnected()) {
             mMediaRestClient.fetchAllMedia(payload.site, payload.filter);
         } else {
             mMediaXmlrpcClient.fetchAllMedia(payload.site, payload.filter);
@@ -449,7 +458,7 @@ public class MediaStore extends Store {
             return;
         }
 
-        if (payload.site.isWPCom()) {
+        if (payload.site.isWPCom() || payload.site.isJetpackConnected()) {
             mMediaRestClient.fetchMedia(payload.site, payload.media);
         } else {
             mMediaXmlrpcClient.fetchMedia(payload.site, payload.media);
@@ -462,7 +471,7 @@ public class MediaStore extends Store {
             return;
         }
 
-        if (payload.site.isWPCom()) {
+        if (payload.site.isWPCom() || payload.site.isJetpackConnected()) {
             mMediaRestClient.deleteMedia(payload.site, payload.media);
         } else {
             mMediaXmlrpcClient.deleteMedia(payload.site, payload.media);
