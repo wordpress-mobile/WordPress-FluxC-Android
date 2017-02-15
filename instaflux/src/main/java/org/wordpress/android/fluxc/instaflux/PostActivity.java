@@ -290,7 +290,7 @@ public class PostActivity extends AppCompatActivity {
         }
         if (mCreatePost) {
             mCreatePost = false;
-            createMediaPost(event.media.get(0));
+            createMediaPost(event.mediaList.get(0));
         }
     }
 
