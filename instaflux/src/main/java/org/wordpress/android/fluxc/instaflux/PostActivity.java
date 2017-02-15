@@ -23,7 +23,6 @@ import android.widget.ProgressBar;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
-import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.action.PostAction;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
@@ -34,7 +33,7 @@ import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.MediaStore;
-import org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
+import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.utils.MediaUtils;
@@ -188,12 +187,9 @@ public class PostActivity extends AppCompatActivity {
     }
 
     private void fetchMedia(SiteModel site, long mediaId) {
-        List<MediaModel> mediaList = new ArrayList<>();
         MediaModel media = new MediaModel();
         media.setMediaId(mediaId);
-        mediaList.add(media);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(new MediaListPayload(MediaAction.FETCH_MEDIA, site,
-                mediaList)));
+        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(new MediaPayload(site, media)));
     }
 
     private void createMediaPost(MediaModel media) {
@@ -219,8 +215,8 @@ public class PostActivity extends AppCompatActivity {
         mediaModel.setFileExtension(MediaUtils.getExtension(imagePath));
         mediaModel.setMimeType(mimeType);
         mediaModel.setFileName(MediaUtils.getFileName(imagePath));
-        mediaModel.setSiteId(mSite.getSiteId());
-        MediaStore.UploadMediaPayload payload = new MediaStore.UploadMediaPayload(mSite, mediaModel);
+        mediaModel.setLocalSiteId(mSite.getId());
+        MediaPayload payload = new MediaPayload(mSite, mediaModel);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
     }
 
@@ -294,7 +290,7 @@ public class PostActivity extends AppCompatActivity {
         }
         if (mCreatePost) {
             mCreatePost = false;
-            createMediaPost(event.media.get(0));
+            createMediaPost(event.mediaList.get(0));
         }
     }
 
