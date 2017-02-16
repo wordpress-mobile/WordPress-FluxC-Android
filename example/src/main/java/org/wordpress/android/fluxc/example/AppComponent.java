@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.example;
 
 import org.wordpress.android.fluxc.module.AppContextModule;
+import org.wordpress.android.fluxc.module.ReleaseOkHttpClientModule;
 import org.wordpress.android.fluxc.module.ReleaseBaseModule;
 import org.wordpress.android.fluxc.module.ReleaseNetworkModule;
 import org.wordpress.android.fluxc.module.ReleaseStoreModule;
@@ -13,6 +14,7 @@ import dagger.Component;
 @Component(modules = {
         AppContextModule.class,
         AppSecretsModule.class,
+        ReleaseOkHttpClientModule.class,
         ReleaseBaseModule.class,
         ReleaseNetworkModule.class,
         ReleaseStoreModule.class

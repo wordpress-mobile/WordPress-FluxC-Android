@@ -25,6 +25,13 @@
         android:text="Upload" />
 
     <Button
+        android:id="@+id/cancel_upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:text="Cancel" />
+
+    <Button
         android:id="@+id/delete_media"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

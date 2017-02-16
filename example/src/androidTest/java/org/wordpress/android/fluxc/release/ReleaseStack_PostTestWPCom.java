@@ -1,7 +1,9 @@
 package org.wordpress.android.fluxc.release;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
+import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
@@ -21,6 +23,7 @@ import org.wordpress.android.util.AppLog.T;
 import org.wordpress.android.util.DateTimeUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -96,6 +99,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         assertNotSame(0, uploadedPost.getRemotePostId());
         assertFalse(uploadedPost.isLocalDraft());
+
+        // The site should automatically assign the post the default category
+        assertFalse(uploadedPost.getCategoryIdList().isEmpty());
     }
 
     public void testEditRemotePost() throws InterruptedException {
@@ -155,12 +161,29 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     public void testChangeLocalDraft() throws InterruptedException {
         createNewPost();
+
+        // Wait one sec
+        Thread.sleep(1000);
+        Date testStartDate = DateTimeUtils.localDateToUTC(new Date());
+
+        // Check local change date is set and before "right now"
+        assertNotNull(mPost.getDateLocallyChanged());
+        Date postDate1 = DateTimeUtils.dateFromIso8601(mPost.getDateLocallyChanged());
+        assertTrue(testStartDate.after(postDate1));
+
         setupPostAttributes();
 
         mPost.setTitle("From testChangingLocalDraft");
 
+        // Wait one sec
+        Thread.sleep(1000);
+
         // Save changes locally
         savePost(mPost);
+
+        // Check the locallyChanged date actually changed after the post update
+        Date postDate2 = DateTimeUtils.dateFromIso8601(mPost.getDateLocallyChanged());
+        assertTrue(postDate2.after(postDate1));
 
         // Get the current copy of the post from the PostStore
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
@@ -169,8 +192,15 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mPost.setContent("Some new content");
         mPost.setFeaturedImageId(7);
 
+        // Wait one sec
+        Thread.sleep(1000);
+
         // Save new changes locally
         savePost(mPost);
+
+        // Check the locallyChanged date actually changed after the post update
+        Date postDate3 = DateTimeUtils.dateFromIso8601(mPost.getDateLocallyChanged());
+        assertTrue(postDate3.after(postDate2));
 
         // Get the current copy of the post from the PostStore
         mPost = mPostStore.getPostByLocalPostId(mPost.getId());
@@ -304,6 +334,15 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         categoryIds.add((long) 1);
         mPost.setCategoryIdList(categoryIds);
 
+        List<String> tags = new ArrayList<>(2);
+        tags.add("fluxc");
+        tags.add("generated-" + RandomStringUtils.randomAlphanumeric(8));
+        mPost.setTagNameList(tags);
+
+        String knownImageIds = BuildConfig.TEST_WPCOM_IMAGE_IDS_TEST1;
+        long featuredImageId = Long.valueOf(knownImageIds.split(",")[0]);
+        mPost.setFeaturedImageId(featuredImageId);
+
         uploadPost(mPost);
 
         // Get the current copy of the post from the PostStore
@@ -318,6 +357,11 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         assertTrue(categoryIds.containsAll(newPost.getCategoryIdList())
                 && newPost.getCategoryIdList().containsAll(categoryIds));
+
+        assertTrue(tags.containsAll(newPost.getTagNameList())
+                && newPost.getTagNameList().containsAll(tags));
+
+        assertEquals(featuredImageId, newPost.getFeaturedImageId());
     }
 
     public void testFullFeaturedPageUpload() throws InterruptedException {
@@ -347,6 +391,72 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(date, newPage.getDateCreated());
 
         assertEquals(0, newPage.getFeaturedImageId()); // The page should upload, but have the featured image stripped
+    }
+
+    public void testClearTagsFromPost() throws InterruptedException {
+        createNewPost();
+
+        mPost.setTitle("A post with tags");
+        mPost.setContent("Some content here! <strong>Bold text</strong>.");
+
+        List<Long> categoryIds = new ArrayList<>(1);
+        categoryIds.add((long) 1);
+        mPost.setCategoryIdList(categoryIds);
+
+        List<String> tags = new ArrayList<>(2);
+        tags.add("fluxc");
+        tags.add("generated-" + RandomStringUtils.randomAlphanumeric(8));
+        mPost.setTagNameList(tags);
+
+        uploadPost(mPost);
+
+        // Get the current copy of the post from the PostStore
+        PostModel newPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertFalse(newPost.getTagNameList().isEmpty());
+
+        newPost.setTagNameList(Collections.<String>emptyList());
+        newPost.setIsLocallyChanged(true);
+
+        // Upload edited post
+        uploadPost(newPost);
+
+        PostModel finalPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertTrue(finalPost.getTagNameList().isEmpty());
+    }
+
+    public void testClearFeaturedImageFromPost() throws InterruptedException {
+        createNewPost();
+
+        mPost.setTitle("A post with featured image");
+
+        String knownImageIds = BuildConfig.TEST_WPCOM_IMAGE_IDS_TEST1;
+        long featuredImageId = Long.valueOf(knownImageIds.split(",")[0]);
+        mPost.setFeaturedImageId(featuredImageId);
+
+        uploadPost(mPost);
+
+        // Get the current copy of the post from the PostStore
+        PostModel newPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
+
+        assertTrue(newPost.hasFeaturedImage());
+        assertEquals(featuredImageId, newPost.getFeaturedImageId());
+
+        newPost.clearFeaturedImage();
+
+        uploadPost(newPost);
+
+        // Get the current copy of the post from the PostStore
+        PostModel finalPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
+
+        assertFalse(finalPost.hasFeaturedImage());
     }
 
     public void testAddLocationToRemotePost() throws InterruptedException {

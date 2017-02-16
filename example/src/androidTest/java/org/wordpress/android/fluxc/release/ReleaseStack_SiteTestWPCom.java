@@ -52,47 +52,21 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     }
 
     public void testWPComSiteFetchAndLogout() throws InterruptedException {
-        // Authenticate a test user (actual credentials declared in gradle.properties)
-        AuthenticatePayload payload = new AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
                 BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-        mCountDownLatch = new CountDownLatch(1);
-
-        // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
-        // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        // Fetch sites from REST API, and wait for onSiteChanged event
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.SITE_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Clear WP.com sites, and wait for OnSiteRemoved event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_REMOVED;
         mExpectedRowsAffected = mSiteStore.getSitesCount();
-        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomSitesAction());
+        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testFetchPostFormats() throws InterruptedException {
-        // Authenticate a test user (actual credentials declared in gradle.properties)
-        AuthenticatePayload payload = new AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
                 BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-        mCountDownLatch = new CountDownLatch(1);
-
-        // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        // Fetch sites from REST API, and wait for onSiteChanged event
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.SITE_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Get the first site
         SiteModel firstSite = mSiteStore.getSites().get(0);
@@ -152,5 +126,23 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         }
         assertEquals(TestEvents.POST_FORMATS_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
+    }
+
+    private void authenticateAndFetchSites(String username, String password) throws InterruptedException {
+        // Authenticate a test user (actual credentials declared in gradle.properties)
+        AuthenticatePayload payload = new AuthenticatePayload(username, password);
+        mCountDownLatch = new CountDownLatch(1);
+
+        // Correct user we should get an OnAuthenticationChanged message
+        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+        // Wait for a network response / onChanged event
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Fetch sites from REST API, and wait for onSiteChanged event
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.SITE_CHANGED;
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
