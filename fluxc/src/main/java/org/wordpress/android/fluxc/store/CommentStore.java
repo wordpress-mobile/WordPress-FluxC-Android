@@ -136,7 +136,6 @@ public class CommentStore extends Store {
         public final CommentModel comment;
         public final CommentModel reply;
         public final PostModel post;
-        public CommentError error;
 
         public RemoteCreateCommentPayload(@NonNull SiteModel site, @NonNull PostModel post,
                                           @NonNull CommentModel comment) {
@@ -152,11 +151,6 @@ public class CommentStore extends Store {
             this.comment = comment;
             this.reply = reply;
             this.post = null;
-        }
-
-        @Override
-        public boolean isError() {
-            return error != null;
         }
     }
 
