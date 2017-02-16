@@ -281,14 +281,6 @@ public class PostActivity extends AppCompatActivity {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMediaChanged(MediaStore.OnMediaChanged event) {
-        if (event.isError()) {
-            AppLog.w(AppLog.T.MEDIA, "OnMediaChanged error: " + event.error);
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaUploaded(MediaStore.OnMediaUploaded event) {
         if (event.completed && event.media != null) {
             MediaModel media = mMediaStore.getSiteMediaWithId(mSite, event.media.getMediaId());
