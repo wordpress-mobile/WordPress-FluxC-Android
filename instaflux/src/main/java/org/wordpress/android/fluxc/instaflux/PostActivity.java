@@ -270,8 +270,12 @@ public class PostActivity extends AppCompatActivity {
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPostUploaded(PostStore.OnPostUploaded event) {
-        ToastUtils.showToast(this, "Post uploaded!");
         hideProgress();
+        if (event.isError()) {
+            AppLog.e(AppLog.T.POSTS, "Post upload failed with error" + event.error);
+            return;
+        }
+        ToastUtils.showToast(this, "Post uploaded!");
         fetchPosts();
     }
 
