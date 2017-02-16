@@ -290,6 +290,9 @@ public class PostActivity extends AppCompatActivity {
             MediaModel media = mMediaStore.getSiteMediaWithId(mSite, event.media.getMediaId());
             AppLog.i(AppLog.T.API, "Media uploaded: " + media.getTitle());
             createMediaPost(media);
+        } else {
+            AppLog.e(AppLog.T.API, "Media upload failed with error: " + event.error);
+            hideProgress();
         }
     }
 
