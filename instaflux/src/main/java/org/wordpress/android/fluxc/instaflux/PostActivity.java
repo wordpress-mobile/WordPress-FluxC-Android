@@ -29,6 +29,7 @@ import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
+import org.wordpress.android.fluxc.model.MediaModel.UploadState;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
@@ -38,6 +39,7 @@ import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
+import org.wordpress.android.util.DateTimeUtils;
 import org.wordpress.android.util.ToastUtils;
 
 import java.util.ArrayList;
@@ -132,13 +134,13 @@ public class PostActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
-        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
         switch (requestCode) {
             case RESULT_PICK_MEDIA:
                 if (resultCode == RESULT_OK) {
-                    Uri selectedImage = imageReturnedIntent.getData();
+                    Uri selectedImage = data.getData();
                     String mimeType = getContentResolver().getType(selectedImage);
                     String[] filePathColumn = {android.provider.MediaStore.Images.Media.DATA};
                     Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
@@ -203,12 +205,16 @@ public class PostActivity extends AppCompatActivity {
 
     private void uploadMedia(String imagePath, String mimeType) {
         showProgress();
-        MediaModel mediaModel = new MediaModel();
+        MediaModel mediaModel = mMediaStore.instantiateMediaModel();
         mediaModel.setFilePath(imagePath);
         mediaModel.setFileExtension(MediaUtils.getExtension(imagePath));
         mediaModel.setMimeType(mimeType);
         mediaModel.setFileName(MediaUtils.getFileName(imagePath));
         mediaModel.setLocalSiteId(mSite.getId());
+        mediaModel.setUploadState(UploadState.UPLOADING.toString());
+        mediaModel.setUploadDate(DateTimeUtils.iso8601UTCFromTimestamp(System.currentTimeMillis() / 1000));
+        mDispatcher.dispatch(MediaActionBuilder.newUpdateMediaAction(mediaModel));
+
         MediaPayload payload = new MediaPayload(mSite, mediaModel);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
     }
