@@ -10,9 +10,7 @@ import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
-import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
-import org.wordpress.android.fluxc.store.PostStore.OnPostInstantiated;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.PostError;
 import org.wordpress.android.fluxc.store.PostStore.PostErrorType;
@@ -840,11 +838,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.POST_INSTANTIATED;
         mCountDownLatch = new CountDownLatch(1);
 
-        InstantiatePostPayload initPayload = new InstantiatePostPayload(subscriberSite, false);
-        mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(initPayload));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
+        createNewPost();
         setupPostAttributes();
 
         // Attempt to upload new post to site
@@ -923,24 +917,6 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onPostInstantiated(OnPostInstantiated event) {
-        AppLog.i(T.API, "Received OnPostInstantiated");
-        if (event.isError()) {
-            throw new AssertionError("Unexpected error with type: " + event.error.type);
-        }
-        assertEquals(TestEvents.POST_INSTANTIATED, mNextEvent);
-
-        assertTrue(event.post.isLocalDraft());
-        assertEquals(0, event.post.getRemotePostId());
-        assertNotSame(0, event.post.getId());
-        assertNotSame(0, event.post.getLocalSiteId());
-
-        mPost = event.post;
-        mCountDownLatch.countDown();
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe
     public void onPostUploaded(OnPostUploaded event) {
         AppLog.i(T.API, "Received OnPostUploaded");
         if (event.isError()) {
@@ -976,15 +952,16 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mPost.setContent(POST_DEFAULT_DESCRIPTION);
     }
 
-    private void createNewPost() throws InterruptedException {
-        // Instantiate new post
-        mNextEvent = TestEvents.POST_INSTANTIATED;
-        mCountDownLatch = new CountDownLatch(1);
+    private PostModel createNewPost() throws InterruptedException {
+        PostModel post = mPostStore.instantiatePostModel(sSite, false);
 
-        InstantiatePostPayload initPayload = new InstantiatePostPayload(sSite, false);
-        mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(initPayload));
+        assertTrue(post.isLocalDraft());
+        assertEquals(0, post.getRemotePostId());
+        assertNotSame(0, post.getId());
+        assertNotSame(0, post.getLocalSiteId());
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        mPost = post;
+        return post;
     }
 
     private void uploadPost(PostModel post) throws InterruptedException {
