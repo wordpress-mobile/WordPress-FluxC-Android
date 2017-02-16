@@ -47,12 +47,6 @@ public class AccountRestClient extends BaseWPComRestClient {
             this.account = account;
             this.error = error;
         }
-
-        public boolean isError() {
-            return error != null;
-        }
-
-        public BaseNetworkError error;
     }
 
     public static class AccountPushSettingsResponsePayload extends Payload {
@@ -61,10 +55,6 @@ public class AccountRestClient extends BaseWPComRestClient {
         public AccountPushSettingsResponsePayload(BaseNetworkError error) {
             this.error = error;
         }
-        public boolean isError() {
-            return error != null;
-        }
-        public BaseNetworkError error;
     }
 
     public static class NewAccountResponsePayload extends Payload {
