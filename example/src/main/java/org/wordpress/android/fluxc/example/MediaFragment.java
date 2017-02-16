@@ -214,13 +214,13 @@ public class MediaFragment extends Fragment {
         if (!event.isError()) {
             prependToLog("Received successful response for " + event.cause + " event.");
             if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
-                prependToLog(event.media == null ? "0" : event.media.size() + " media items fetched.");
+                prependToLog(event.mediaList == null ? "0" : event.mediaList.size() + " media items fetched.");
                 mMedia = mMediaStore.getAllSiteMedia(mSite);
                 mMediaList.setAdapter(new MediaAdapter(getActivity(), R.layout.media_list_item, mMedia));
             } else if (event.cause == MediaAction.FETCH_MEDIA) {
-                prependToLog(event.media.size() + " media items fetched.");
+                prependToLog(event.mediaList.size() + " media items fetched.");
             } else if (event.cause == MediaAction.DELETE_MEDIA) {
-                prependToLog("Successfully deleted " + event.media.get(0).getTitle() + ".");
+                prependToLog("Successfully deleted " + event.mediaList.get(0).getTitle() + ".");
             }
         }
     }
