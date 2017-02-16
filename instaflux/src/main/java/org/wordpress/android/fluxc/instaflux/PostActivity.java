@@ -33,10 +33,7 @@ import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.MediaStore;
-<<<<<<< HEAD
-=======
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
->>>>>>> origin/develop
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.utils.MediaUtils;
