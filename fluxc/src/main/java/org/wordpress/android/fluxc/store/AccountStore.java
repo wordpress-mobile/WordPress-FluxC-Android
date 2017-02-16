@@ -57,11 +57,17 @@ public class AccountStore extends Store {
 
     public static class AuthenticateErrorPayload extends Payload {
         public AuthenticationError error;
+
         public AuthenticateErrorPayload(@NonNull AuthenticationError error) {
             this.error = error;
         }
         public AuthenticateErrorPayload(@NonNull AuthenticationErrorType errorType) {
             this.error = new AuthenticationError(errorType, "");
+        }
+
+        @Override
+        public boolean isError() {
+            return error != null;
         }
     }
 

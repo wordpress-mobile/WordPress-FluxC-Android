@@ -41,6 +41,8 @@ public class AccountRestClient extends BaseWPComRestClient {
     private final AppSecrets mAppSecrets;
 
     public static class AccountRestPayload extends Payload {
+        public AccountModel account;
+
         public AccountRestPayload(AccountModel account, BaseNetworkError error) {
             this.account = account;
             this.error = error;
@@ -51,10 +53,11 @@ public class AccountRestClient extends BaseWPComRestClient {
         }
 
         public BaseNetworkError error;
-        public AccountModel account;
     }
 
     public static class AccountPushSettingsResponsePayload extends Payload {
+        public Map<String, Object> settings;
+
         public AccountPushSettingsResponsePayload(BaseNetworkError error) {
             this.error = error;
         }
@@ -62,12 +65,16 @@ public class AccountRestClient extends BaseWPComRestClient {
             return error != null;
         }
         public BaseNetworkError error;
-        public Map<String, Object> settings;
     }
 
     public static class NewAccountResponsePayload extends Payload {
-        public NewUserError error;
         public boolean dryRun;
+        public NewUserError error;
+
+        @Override
+        public boolean isError() {
+            return error != null;
+        }
     }
 
     public static class IsAvailableResponsePayload extends Payload {

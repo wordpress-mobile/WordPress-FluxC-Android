@@ -76,6 +76,7 @@ public class CommentStore extends Store {
 
     public static class RemoteLikeCommentPayload extends RemoteCommentPayload {
         public final boolean like;
+
         public RemoteLikeCommentPayload(@NonNull SiteModel site, @NonNull CommentModel comment, boolean like) {
             super(site, comment);
             this.like = like;
@@ -109,13 +110,24 @@ public class CommentStore extends Store {
             this.number = number;
             this.offset = offset;
         }
+
+        @Override
+        public boolean isError() {
+            return error != null;
+        }
     }
 
     public static class RemoteCommentResponsePayload extends Payload {
         @Nullable public final CommentModel comment;
         public CommentError error;
+
         public RemoteCommentResponsePayload(@Nullable CommentModel comment) {
             this.comment = comment;
+        }
+
+        @Override
+        public boolean isError() {
+            return error != null;
         }
     }
 
@@ -124,8 +136,8 @@ public class CommentStore extends Store {
         public final CommentModel comment;
         public final CommentModel reply;
         public final PostModel post;
-
         public CommentError error;
+
         public RemoteCreateCommentPayload(@NonNull SiteModel site, @NonNull PostModel post,
                                           @NonNull CommentModel comment) {
             this.site = site;
@@ -140,6 +152,11 @@ public class CommentStore extends Store {
             this.comment = comment;
             this.reply = reply;
             this.post = null;
+        }
+
+        @Override
+        public boolean isError() {
+            return error != null;
         }
     }
 
