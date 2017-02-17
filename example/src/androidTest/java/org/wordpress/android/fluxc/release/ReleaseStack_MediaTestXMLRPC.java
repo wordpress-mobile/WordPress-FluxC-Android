@@ -83,7 +83,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         deleteMedia(testMedia);
     }
 
-    public void testFetchAllMedia() throws InterruptedException {
+    public void testFetchMediaList() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
@@ -99,7 +99,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         removeAllSiteMedia();
         assertTrue(mMediaStore.getAllSiteMedia(sSite).isEmpty());
 
-        // fetch all media and verify store is not empty
+        // fetch media list and verify store is not empty
         mNextEvent = TestEvents.FETCHED_MEDIA_LIST;
         fetchMediaList();
         assertFalse(mMediaStore.getAllSiteMedia(sSite).isEmpty());
