@@ -23,7 +23,7 @@ import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.MediaStore;
-import org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
+import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListPayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
@@ -94,7 +94,7 @@ public class MediaFragment extends Fragment {
                     prependToLog("Site is null, cannot request all media.");
                     return;
                 }
-                fetchAllMedia(mSite);
+                fetchMediaList(mSite);
             }
         });
 
@@ -213,7 +213,7 @@ public class MediaFragment extends Fragment {
     public void onMediaChanged(OnMediaChanged event) {
         if (!event.isError()) {
             prependToLog("Received successful response for " + event.cause + " event.");
-            if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
+            if (event.cause == MediaAction.FETCHED_MEDIA_LIST) {
                 prependToLog(event.mediaList == null ? "0" : event.mediaList.size() + " media items fetched.");
                 mMedia = mMediaStore.getAllSiteMedia(mSite);
                 mMediaList.setAdapter(new MediaAdapter(getActivity(), R.layout.media_list_item, mMedia));
@@ -250,9 +250,9 @@ public class MediaFragment extends Fragment {
         ((MainExampleActivity) getActivity()).prependToLog(s);
     }
 
-    private void fetchAllMedia(@NonNull SiteModel site) {
-        MediaListPayload payload = new MediaListPayload(site, null, null);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(payload));
+    private void fetchMediaList(@NonNull SiteModel site) {
+        FetchMediaListPayload payload = new FetchMediaListPayload(site, false);
+        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(payload));
     }
 
     private void fetchMedia(@NonNull final SiteModel site, @NonNull MediaModel media) {
