@@ -13,7 +13,7 @@ import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.MediaErrorType;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
-import org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
+import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListPayload;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
 
@@ -36,7 +36,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     private enum TestEvents {
         NONE,
         PUSHED_MEDIA,
-        FETCHED_ALL_MEDIA,
+        FETCHED_MEDIA_LIST,
         FETCHED_MEDIA,
         DELETED_MEDIA,
         UPLOADED_MEDIA,
@@ -100,8 +100,8 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(mMediaStore.getAllSiteMedia(sSite).isEmpty());
 
         // fetch all media and verify store is not empty
-        mNextEvent = TestEvents.FETCHED_ALL_MEDIA;
-        fetchAllMedia();
+        mNextEvent = TestEvents.FETCHED_MEDIA_LIST;
+        fetchMediaList();
         assertFalse(mMediaStore.getAllSiteMedia(sSite).isEmpty());
 
         // delete test image
@@ -233,8 +233,8 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
                 throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
         } else {
-            if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
-                assertEquals(TestEvents.FETCHED_ALL_MEDIA, mNextEvent);
+            if (event.cause == MediaAction.FETCH_MEDIA_LIST) {
+                assertEquals(TestEvents.FETCHED_MEDIA_LIST, mNextEvent);
             } else if (event.cause == MediaAction.FETCH_MEDIA) {
                 assertEquals(TestEvents.FETCHED_MEDIA, mNextEvent);
             } else if (event.cause == MediaAction.PUSH_MEDIA) {
@@ -273,10 +273,10 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void fetchAllMedia() throws InterruptedException {
-        MediaListPayload fetchPayload = new MediaListPayload(sSite, null, null);
+    private void fetchMediaList() throws InterruptedException {
+        FetchMediaListPayload fetchPayload = new FetchMediaListPayload(sSite, false);
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(fetchPayload));
+        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
