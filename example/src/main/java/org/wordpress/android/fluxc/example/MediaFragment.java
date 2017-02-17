@@ -87,11 +87,11 @@ public class MediaFragment extends Fragment {
             }
         });
 
-        view.findViewById(R.id.fetch_all_media).setOnClickListener(new View.OnClickListener() {
+        view.findViewById(R.id.fetch_media_list).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (mSite == null) {
-                    prependToLog("Site is null, cannot request all media.");
+                    prependToLog("Site is null, cannot request first media page.");
                     return;
                 }
                 fetchMediaList(mSite);
