@@ -56,29 +56,38 @@ public class SiteRestClient extends BaseWPComRestClient {
     private final AppSecrets mAppSecrets;
 
     public static class NewSiteResponsePayload extends Payload {
-        public NewSiteResponsePayload() {
-        }
-        public NewSiteError error;
         public boolean dryRun;
+        public NewSiteError error;
+
+        public NewSiteResponsePayload() {}
+
+        @Override
+        public boolean isError() {
+            return error != null;
+        }
     }
 
     public static class DeleteSiteResponsePayload extends Payload {
-        public DeleteSiteResponsePayload() {
-        }
         public SiteModel site;
         public DeleteSiteError error;
+
+        public DeleteSiteResponsePayload() {}
+
+        @Override
+        public boolean isError() {
+            return error != null;
+        }
     }
 
     public static class ExportSiteResponsePayload extends Payload {
-        public ExportSiteResponsePayload() {
-        }
+        public ExportSiteResponsePayload() {}
     }
 
     public static class IsWPComResponsePayload extends Payload {
-        public IsWPComResponsePayload() {
-        }
         public String url;
         public boolean isWPCom;
+
+        public IsWPComResponsePayload() {}
     }
 
     @Inject
