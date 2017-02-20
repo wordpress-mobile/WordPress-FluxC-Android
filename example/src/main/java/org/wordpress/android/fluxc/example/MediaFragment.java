@@ -234,7 +234,8 @@ public class MediaFragment extends Fragment {
                 mCancelButton.setEnabled(false);
                 mCurrentUpload = null;
             } else if (event.completed) {
-                prependToLog("Successfully uploaded " + event.media.getUrl() + "!");
+                prependToLog("Successfully uploaded localId=" + mCurrentUpload.getId()
+                             + " - url=" + event.media.getUrl());
                 mCancelButton.setEnabled(false);
                 mCurrentUpload = null;
             } else {
@@ -272,6 +273,8 @@ public class MediaFragment extends Fragment {
 
         // Upload
         MediaPayload payload = new MediaPayload(site, mCurrentUpload);
+        prependToLog("Dispatching upload event for media localId=" + mCurrentUpload.getId());
+
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         mCancelButton.setEnabled(true);
     }
