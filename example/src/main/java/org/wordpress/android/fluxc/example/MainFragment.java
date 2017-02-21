@@ -214,7 +214,7 @@ public class MainFragment extends Fragment {
             mSelfhostedPayload.username = username;
             mSelfhostedPayload.password = password;
 
-            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mSelfhostedPayload));
+            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(url));
         }
     }
 
