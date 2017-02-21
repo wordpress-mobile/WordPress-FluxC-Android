@@ -838,7 +838,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.POST_INSTANTIATED;
         mCountDownLatch = new CountDownLatch(1);
 
-        createNewPost();
+        createNewPost(subscriberSite);
         setupPostAttributes();
 
         // Attempt to upload new post to site
@@ -953,7 +953,14 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     private PostModel createNewPost() throws InterruptedException {
-        PostModel post = mPostStore.instantiatePostModel(sSite, false);
+        return createNewPost(null);
+    }
+
+    private PostModel createNewPost(SiteModel site) throws InterruptedException {
+        if (site == null) {
+            site = sSite;
+        }
+        PostModel post = mPostStore.instantiatePostModel(site, false);
 
         assertTrue(post.isLocalDraft());
         assertEquals(0, post.getRemotePostId());
