@@ -26,6 +26,7 @@ import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListPayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
+import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
@@ -227,7 +228,7 @@ public class MediaFragment extends Fragment {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMediaListFetched(OnMediaChanged event) {
+    public void onMediaListFetched(OnMediaListFetched event) {
         if (!event.isError()) {
             prependToLog("Received successful response for media list fetch.");
             prependToLog(event.mediaList == null ? "0" : event.mediaList.size() + " media items fetched.");
