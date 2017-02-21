@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.ToastUtils;
 
@@ -36,7 +37,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
     @Inject MemorizingTrustManager mMemorizingTrustManager;
 
     // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
-    private SiteStore.RefreshSitesXMLRPCPayload mSelfhostedPayload;
+    private RefreshSitesXMLRPCPayload mSelfhostedPayload;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,12 +126,12 @@ public class MainInstafluxActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(url)) {
             wpcomFetchSites(username, password);
         } else {
-            mSelfhostedPayload = new SiteStore.RefreshSitesXMLRPCPayload();
+            mSelfhostedPayload = new RefreshSitesXMLRPCPayload();
             mSelfhostedPayload.url = url;
             mSelfhostedPayload.username = username;
             mSelfhostedPayload.password = password;
 
-            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mSelfhostedPayload));
+            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(url));
         }
     }
 
@@ -142,7 +143,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
     }
 
     private void selfHostedFetchSites(String username, String password, String xmlrpcEndpoint) {
-        SiteStore.RefreshSitesXMLRPCPayload payload = new SiteStore.RefreshSitesXMLRPCPayload();
+        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = username;
         payload.password = password;
         payload.url = xmlrpcEndpoint;
