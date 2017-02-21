@@ -227,6 +227,18 @@ public class MediaFragment extends Fragment {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMediaListFetched(OnMediaChanged event) {
+        if (!event.isError()) {
+            prependToLog("Received successful response for media list fetch.");
+            prependToLog(event.mediaList == null ? "0" : event.mediaList.size() + " media items fetched.");
+            mMedia = mMediaStore.getAllSiteMedia(mSite);
+            mMediaList.setAdapter(new MediaAdapter(getActivity(), R.layout.media_list_item, mMedia));
+        }
+    }
+
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaUploaded(OnMediaUploaded event) {
         if (!event.isError()) {
             if (event.progress < 0.f) {
