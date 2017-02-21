@@ -16,9 +16,7 @@ import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
-import org.wordpress.android.fluxc.store.PostStore.InstantiatePostPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
-import org.wordpress.android.fluxc.store.PostStore.OnPostInstantiated;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
@@ -56,9 +54,12 @@ public class PostsFragment extends Fragment {
         view.findViewById(R.id.create_new_post_first_site).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                PostStore.InstantiatePostPayload payload = new InstantiatePostPayload(mSiteStore.getSites().get(0),
-                        false);
-                mDispatcher.dispatch(PostActionBuilder.newInstantiatePostAction(payload));
+                PostModel examplePost = mPostStore.instantiatePostModel(mSiteStore.getSites().get(0), false);
+                examplePost.setTitle("From example activity");
+                examplePost.setContent("Hi there, I'm a post from FluxC!");
+                examplePost.setFeaturedImageId(0);
+                RemotePostPayload payload = new RemotePostPayload(examplePost, mSiteStore.getSites().get(0));
+                mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
             }
         });
 
@@ -111,17 +112,6 @@ public class PostsFragment extends Fragment {
                 prependToLog("Post deleted!");
             }
         }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onPostInstantiated(OnPostInstantiated event) {
-        PostModel examplePost = event.post;
-        examplePost.setTitle("From example activity");
-        examplePost.setContent("Hi there, I'm a post from FluxC!");
-        examplePost.setFeaturedImageId(0);
-
-        RemotePostPayload payload = new RemotePostPayload(examplePost, mSiteStore.getSites().get(0));
-        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
