@@ -51,7 +51,9 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     }
 
     private TestEvents mNextEvent;
-    private RefreshSitesXMLRPCPayload mPayload;
+    private String mUrl;
+    private String mUsername;
+    private String mPassword;
 
     @Override
     protected void setUp() throws Exception {
@@ -64,60 +66,56 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     }
 
     public void testNoUrlFetchSites() throws InterruptedException {
-        mPayload = new RefreshSitesXMLRPCPayload();
-        mPayload.url = "";
-        mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
-        mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
+        mUrl = "";
+        mUsername = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
+        mPassword = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
 
         mNextEvent = TestEvents.INVALID_URL_ERROR;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testInvalidUrlFetchSites() throws InterruptedException {
-        mPayload = new RefreshSitesXMLRPCPayload();
-        mPayload.url = "notaurl&*@";
-        mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
-        mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
+        mUrl = "notaurl&*@";
+        mUsername = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
+        mPassword = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
 
         mNextEvent = TestEvents.NO_SITE_ERROR;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testNonWordPressFetchSites() throws InterruptedException {
-        mPayload = new RefreshSitesXMLRPCPayload();
-        mPayload.url = "example.com";
-        mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
-        mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
+        mUrl = "example.com";
+        mUsername = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
+        mPassword = BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE;
 
         mNextEvent = TestEvents.NO_SITE_ERROR;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testWPComUrlFetchSites() throws InterruptedException {
-        mPayload = new RefreshSitesXMLRPCPayload();
-        mPayload.url = "mysite.wordpress.com";
-        mPayload.username = BuildConfig.TEST_WPCOM_USERNAME_TEST1;
-        mPayload.password = BuildConfig.TEST_WPCOM_PASSWORD_TEST1;
+        mUrl = "mysite.wordpress.com";
+        mUsername = BuildConfig.TEST_WPCOM_USERNAME_TEST1;
+        mPassword = BuildConfig.TEST_WPCOM_PASSWORD_TEST1;
 
         mNextEvent = TestEvents.WORDPRESS_COM_SITE;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -366,45 +364,42 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     }
 
     public void testXMLRPCBlockedDiscovery() throws InterruptedException {
-        mPayload = new RefreshSitesXMLRPCPayload();
-        mPayload.url = BuildConfig.TEST_WPORG_URL_SH_BLOCKED;
-        mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_BLOCKED;
-        mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_BLOCKED;
+        mUrl = BuildConfig.TEST_WPORG_URL_SH_BLOCKED;
+        mUsername = BuildConfig.TEST_WPORG_USERNAME_SH_BLOCKED;
+        mPassword = BuildConfig.TEST_WPORG_PASSWORD_SH_BLOCKED;
 
         mNextEvent = TestEvents.XMLRPC_BLOCKED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testXMLRPCForbiddenDiscovery() throws InterruptedException {
-        mPayload = new RefreshSitesXMLRPCPayload();
-        mPayload.url = BuildConfig.TEST_WPORG_URL_SH_FORBIDDEN;
-        mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_FORBIDDEN;
-        mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_FORBIDDEN;
+        mUrl = BuildConfig.TEST_WPORG_URL_SH_FORBIDDEN;
+        mUsername = BuildConfig.TEST_WPORG_USERNAME_SH_FORBIDDEN;
+        mPassword = BuildConfig.TEST_WPORG_PASSWORD_SH_FORBIDDEN;
 
         mNextEvent = TestEvents.XMLRPC_FORBIDDEN;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testXMLRPCMissingMethodDiscovery() throws InterruptedException {
-        mPayload = new RefreshSitesXMLRPCPayload();
-        mPayload.url = BuildConfig.TEST_WPORG_URL_SH_MISSING_METHODS;
-        mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_MISSING_METHODS;
-        mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_MISSING_METHODS;
+        mUrl = BuildConfig.TEST_WPORG_URL_SH_MISSING_METHODS;
+        mUsername = BuildConfig.TEST_WPORG_USERNAME_SH_MISSING_METHODS;
+        mPassword = BuildConfig.TEST_WPORG_PASSWORD_SH_MISSING_METHODS;
 
         mNextEvent = TestEvents.MISSING_XMLRPC_METHOD;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -412,15 +407,14 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     public void testWPAPISimpleFetchSites() throws InterruptedException {
         if (org.wordpress.android.fluxc.BuildConfig.ENABLE_WPAPI) {
-            mPayload = new RefreshSitesXMLRPCPayload();
-            mPayload.url = BuildConfig.TEST_WPORG_URL_SH_WPAPI_SIMPLE;
-            mPayload.username = BuildConfig.TEST_WPORG_USERNAME_SH_WPAPI_SIMPLE;
-            mPayload.password = BuildConfig.TEST_WPORG_PASSWORD_SH_WPAPI_SIMPLE;
+            mUrl = BuildConfig.TEST_WPORG_URL_SH_WPAPI_SIMPLE;
+            mUsername = BuildConfig.TEST_WPORG_USERNAME_SH_WPAPI_SIMPLE;
+            mPassword = BuildConfig.TEST_WPORG_PASSWORD_SH_WPAPI_SIMPLE;
 
             mNextEvent = TestEvents.DISCOVERY_SUCCEEDED_WPAPI;
             mCountDownLatch = new CountDownLatch(1);
 
-            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
             // Wait for a network response / onChanged event
             assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -442,15 +436,14 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     private void checkSelfHostedSimpleFetchForSite(String url, String username, String password, TestEvents nextEvent)
             throws InterruptedException {
-        mPayload = new RefreshSitesXMLRPCPayload();
-        mPayload.url = url;
-        mPayload.username = username;
-        mPayload.password = password;
+        mUrl = url;
+        mUsername = username;
+        mPassword = password;
 
         mNextEvent = nextEvent;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -462,15 +455,14 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                                                           TestEvents nextEvent) throws InterruptedException {
         mMemorizingTrustManager.clearLocalTrustStore();
 
-        mPayload = new RefreshSitesXMLRPCPayload();
-        mPayload.url = url;
-        mPayload.username = username;
-        mPayload.password = password;
+        mUrl = url;
+        mUsername = username;
+        mPassword = password;
 
         mNextEvent = TestEvents.ERRONEOUS_SSL_CERTIFICATE;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onAuthenticationChanged error event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -482,7 +474,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = nextEvent;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onAuthenticationChanged error event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -495,27 +487,26 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     private void checkSelfHostedHTTPAuthFetchForSite(String url, String username, String password, String authUsername,
                                                      String authPassword, TestEvents nextEvent)
             throws InterruptedException {
-        mPayload = new RefreshSitesXMLRPCPayload();
-        mPayload.url = url;
-        mPayload.username = username;
-        mPayload.password = password;
+        mUrl = url;
+        mUsername = username;
+        mPassword = password;
 
         mNextEvent = TestEvents.HTTP_AUTH_REQUIRED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onAuthenticationChanged error event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Set known HTTP Auth credentials
-        mHTTPAuthManager.addHTTPAuthCredentials(authUsername, authPassword, mPayload.url, null);
+        mHTTPAuthManager.addHTTPAuthCredentials(authUsername, authPassword, mUrl, null);
 
         // Retry endpoint discovery, and attempt to fetch sites
         mNextEvent = nextEvent;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mPayload));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -527,7 +518,12 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(mPayload));
+        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
+        payload.url = mUrl;
+        payload.username = mUsername;
+        payload.password = mPassword;
+
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -594,7 +590,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 throw new AssertionError("Didn't get the correct error, expected: " + mNextEvent + ", and got: "
                         + event.error);
             }
-            mPayload.url = event.failedEndpoint;
+            mUrl = event.failedEndpoint;
             mCountDownLatch.countDown();
         } else {
             // SUCCESS :)
@@ -602,16 +598,16 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                     + event.wpRestEndpoint);
             if (mNextEvent.equals(TestEvents.DISCOVERY_SUCCEEDED_WPAPI)) {
                 assertTrue(event.wpRestEndpoint != null && !event.wpRestEndpoint.isEmpty());
-                mPayload.url = event.wpRestEndpoint;
+                mUrl = event.wpRestEndpoint;
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TestEvents.DISCOVERY_SUCCEEDED_XMLRPC)) {
                 assertTrue(event.xmlRpcEndpoint != null && !event.xmlRpcEndpoint.isEmpty());
-                mPayload.url = event.xmlRpcEndpoint;
+                mUrl = event.xmlRpcEndpoint;
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TestEvents.DISCOVERY_SUCCEEDED_XMLRPC_ONLY)) {
                 assertTrue(event.xmlRpcEndpoint != null && !event.xmlRpcEndpoint.isEmpty());
                 assertTrue(event.wpRestEndpoint == null || event.wpRestEndpoint.isEmpty());
-                mPayload.url = event.xmlRpcEndpoint;
+                mUrl = event.xmlRpcEndpoint;
                 mCountDownLatch.countDown();
             }
         }
