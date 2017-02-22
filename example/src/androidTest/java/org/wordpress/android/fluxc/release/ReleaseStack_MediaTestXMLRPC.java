@@ -227,7 +227,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
                 assertEquals(TestEvents.NULL_ERROR, mNextEvent);
             } else if (event.error.type == MediaErrorType.MALFORMED_MEDIA_ARG) {
                 assertEquals(TestEvents.MALFORMED_ERROR, mNextEvent);
-            } else if (event.error.type == MediaErrorType.MEDIA_NOT_FOUND) {
+            } else if (event.error.type == MediaErrorType.NOT_FOUND) {
                 assertEquals(TestEvents.NOT_FOUND_ERROR, mNextEvent);
             } else {
                 throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
