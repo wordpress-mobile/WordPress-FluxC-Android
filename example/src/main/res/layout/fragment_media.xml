@@ -7,10 +7,10 @@
     tools:context="org.wordpress.android.fluxc.example.MediaFragment">
 
     <Button
-        android:id="@+id/fetch_all_media"
+        android:id="@+id/fetch_media_list"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Fetch All" />
+        android:text="Fetch First Page" />
 
     <Button
         android:id="@+id/fetch_specified_media"

@@ -10,9 +10,9 @@ import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
+import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
-import org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 
 import java.util.List;
@@ -26,7 +26,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     private enum TestEvents {
         DELETED_MEDIA,
-        FETCHED_ALL_MEDIA,
+        FETCHED_MEDIA_LIST,
         FETCHED_KNOWN_IMAGES,
         PUSHED_MEDIA,
         UPLOADED_MEDIA,
@@ -63,7 +63,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
     }
 
-    public void testFetchAllMedia() throws InterruptedException {
+    public void testFetchMediaList() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
@@ -79,9 +79,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         removeAllSiteMedia();
         assertTrue(mMediaStore.getAllSiteMedia(sSite).isEmpty());
 
-        // fetch all media and verify store is not empty
-        mNextEvent = TestEvents.FETCHED_ALL_MEDIA;
-        fetchAllMedia();
+        // fetch media list and verify store is not empty
+        mNextEvent = TestEvents.FETCHED_MEDIA_LIST;
+        fetchMediaList();
         assertFalse(mMediaStore.getAllSiteMedia(sSite).isEmpty());
 
         // delete test image
@@ -209,8 +209,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             mCountDownLatch.countDown();
             return;
         }
-        if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
-            assertEquals(TestEvents.FETCHED_ALL_MEDIA, mNextEvent);
+        if (event.cause == MediaAction.FETCHED_MEDIA_LIST) {
+            assertEquals(TestEvents.FETCHED_MEDIA_LIST, mNextEvent);
         } else if (event.cause == MediaAction.FETCH_MEDIA) {
             if (eventHasKnownImages(event)) {
                 assertEquals(TestEvents.FETCHED_KNOWN_IMAGES, mNextEvent);
@@ -222,6 +222,16 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         } else if (event.cause == MediaAction.REMOVE_MEDIA) {
             assertEquals(TestEvents.REMOVED_MEDIA, mNextEvent);
         }
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onMediaListFetched(MediaStore.OnMediaListFetched event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.FETCHED_MEDIA_LIST, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -262,10 +272,10 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void fetchAllMedia() throws InterruptedException {
-        MediaListPayload fetchPayload = new MediaListPayload(sSite, null, null);
+    private void fetchMediaList() throws InterruptedException {
+        FetchMediaListPayload fetchPayload = new FetchMediaListPayload(sSite, false);
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(fetchPayload));
+        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 

@@ -23,9 +23,10 @@ import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.MediaStore;
-import org.wordpress.android.fluxc.store.MediaStore.MediaListPayload;
+import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListPayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
+import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
@@ -87,14 +88,14 @@ public class MediaFragment extends Fragment {
             }
         });
 
-        view.findViewById(R.id.fetch_all_media).setOnClickListener(new View.OnClickListener() {
+        view.findViewById(R.id.fetch_media_list).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (mSite == null) {
-                    prependToLog("Site is null, cannot request all media.");
+                    prependToLog("Site is null, cannot request first media page.");
                     return;
                 }
-                fetchAllMedia(mSite);
+                fetchMediaList(mSite);
             }
         });
 
@@ -202,28 +203,29 @@ public class MediaFragment extends Fragment {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMediaError(OnMediaChanged event) {
-        if (event.isError()) {
+    public void onMediaChanged(OnMediaChanged event) {
+        if (!event.isError()) {
+            prependToLog("Received successful response for " + event.cause + " event.");
+            if (event.cause == MediaAction.FETCH_MEDIA) {
+                prependToLog(event.mediaList.size() + " media items fetched.");
+            } else if (event.cause == MediaAction.DELETE_MEDIA) {
+                prependToLog("Successfully deleted " + event.mediaList.get(0).getTitle() + ".");
+            }
+        } else {
             prependToLog(event.error.message);
         }
     }
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMediaChanged(OnMediaChanged event) {
+    public void onMediaListFetched(OnMediaListFetched event) {
         if (!event.isError()) {
-            prependToLog("Received successful response for " + event.cause + " event.");
-            if (event.cause == MediaAction.FETCH_ALL_MEDIA) {
-                prependToLog(event.mediaList == null ? "0" : event.mediaList.size() + " media items fetched.");
-                mMedia = mMediaStore.getAllSiteMedia(mSite);
-                mMediaList.setAdapter(new MediaAdapter(getActivity(), R.layout.media_list_item, mMedia));
-            } else if (event.cause == MediaAction.FETCH_MEDIA) {
-                prependToLog(event.mediaList.size() + " media items fetched.");
-            } else if (event.cause == MediaAction.DELETE_MEDIA) {
-                prependToLog("Successfully deleted " + event.mediaList.get(0).getTitle() + ".");
-            }
+            prependToLog("Received successful response for media list fetch.");
+            mMedia = mMediaStore.getAllSiteMedia(mSite);
+            mMediaList.setAdapter(new MediaAdapter(getActivity(), R.layout.media_list_item, mMedia));
         }
     }
+
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -251,9 +253,9 @@ public class MediaFragment extends Fragment {
         ((MainExampleActivity) getActivity()).prependToLog(s);
     }
 
-    private void fetchAllMedia(@NonNull SiteModel site) {
-        MediaListPayload payload = new MediaListPayload(site, null, null);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchAllMediaAction(payload));
+    private void fetchMediaList(@NonNull SiteModel site) {
+        FetchMediaListPayload payload = new FetchMediaListPayload(site, false);
+        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(payload));
     }
 
     private void fetchMedia(@NonNull final SiteModel site, @NonNull MediaModel media) {
