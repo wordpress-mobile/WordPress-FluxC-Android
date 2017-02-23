@@ -225,6 +225,16 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onMediaListFetched(MediaStore.OnMediaListFetched event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.FETCHED_MEDIA_LIST, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
     private boolean eventHasKnownImages(OnMediaChanged event) {
         if (event == null || event.mediaList == null || event.mediaList.isEmpty()) return false;
         String[] splitIds = BuildConfig.TEST_WPCOM_IMAGE_IDS_TEST1.split(",");
