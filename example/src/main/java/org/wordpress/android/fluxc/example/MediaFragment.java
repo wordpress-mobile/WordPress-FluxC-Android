@@ -203,14 +203,6 @@ public class MediaFragment extends Fragment {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMediaError(OnMediaChanged event) {
-        if (event.isError()) {
-            prependToLog(event.error.message);
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaChanged(OnMediaChanged event) {
         if (!event.isError()) {
             prependToLog("Received successful response for " + event.cause + " event.");
@@ -219,6 +211,8 @@ public class MediaFragment extends Fragment {
             } else if (event.cause == MediaAction.DELETE_MEDIA) {
                 prependToLog("Successfully deleted " + event.mediaList.get(0).getTitle() + ".");
             }
+        } else {
+            prependToLog(event.error.message);
         }
     }
 
