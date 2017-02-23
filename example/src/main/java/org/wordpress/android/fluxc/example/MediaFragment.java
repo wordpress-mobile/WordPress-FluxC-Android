@@ -231,7 +231,6 @@ public class MediaFragment extends Fragment {
     public void onMediaListFetched(OnMediaListFetched event) {
         if (!event.isError()) {
             prependToLog("Received successful response for media list fetch.");
-            prependToLog(event.mediaList == null ? "0" : event.mediaList.size() + " media items fetched.");
             mMedia = mMediaStore.getAllSiteMedia(mSite);
             mMediaList.setAdapter(new MediaAdapter(getActivity(), R.layout.media_list_item, mMedia));
         }
