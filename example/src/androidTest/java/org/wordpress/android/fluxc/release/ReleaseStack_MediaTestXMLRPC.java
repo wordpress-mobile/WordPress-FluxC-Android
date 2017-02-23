@@ -233,9 +233,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
                 throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
         } else {
-            if (event.cause == MediaAction.FETCH_MEDIA_LIST) {
-                assertEquals(TestEvents.FETCHED_MEDIA_LIST, mNextEvent);
-            } else if (event.cause == MediaAction.FETCH_MEDIA) {
+            if (event.cause == MediaAction.FETCH_MEDIA) {
                 assertEquals(TestEvents.FETCHED_MEDIA, mNextEvent);
             } else if (event.cause == MediaAction.PUSH_MEDIA) {
                 assertEquals(TestEvents.PUSHED_MEDIA, mNextEvent);
@@ -243,6 +241,16 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
                 assertEquals(TestEvents.DELETED_MEDIA, mNextEvent);
             }
         }
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onMediaListFetched(MediaStore.OnMediaListFetched event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.FETCHED_MEDIA_LIST, mNextEvent);
         mCountDownLatch.countDown();
     }
 
