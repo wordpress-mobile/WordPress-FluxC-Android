@@ -214,11 +214,7 @@ public class MediaFragment extends Fragment {
     public void onMediaChanged(OnMediaChanged event) {
         if (!event.isError()) {
             prependToLog("Received successful response for " + event.cause + " event.");
-            if (event.cause == MediaAction.FETCHED_MEDIA_LIST) {
-                prependToLog(event.mediaList == null ? "0" : event.mediaList.size() + " media items fetched.");
-                mMedia = mMediaStore.getAllSiteMedia(mSite);
-                mMediaList.setAdapter(new MediaAdapter(getActivity(), R.layout.media_list_item, mMedia));
-            } else if (event.cause == MediaAction.FETCH_MEDIA) {
+            if (event.cause == MediaAction.FETCH_MEDIA) {
                 prependToLog(event.mediaList.size() + " media items fetched.");
             } else if (event.cause == MediaAction.DELETE_MEDIA) {
                 prependToLog("Successfully deleted " + event.mediaList.get(0).getTitle() + ".");
