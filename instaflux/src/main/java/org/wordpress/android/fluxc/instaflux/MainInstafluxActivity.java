@@ -20,8 +20,12 @@ import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder;
 import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
+import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
+import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.ToastUtils;
@@ -161,7 +165,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onAccountChanged(AccountStore.OnAccountChanged event) {
+    public void onAccountChanged(OnAccountChanged event) {
         if (!mAccountStore.hasAccessToken()) {
             // Signed out!
         }
@@ -169,7 +173,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
+    public void onAuthenticationChanged(OnAuthenticationChanged event) {
         if (event.isError()) {
             switch (event.error.type) {
                 case HTTP_AUTH_ERROR:
@@ -191,7 +195,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDiscoveryResponse(AccountStore.OnDiscoveryResponse event) {
+    public void onDiscoveryResponse(OnDiscoveryResponse event) {
         if (event.isError()) {
             if (event.error == SelfHostedEndpointFinder.DiscoveryError.WORDPRESS_COM_SITE) {
                 wpcomFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password);
@@ -210,7 +214,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onSiteChanged(SiteStore.OnSiteChanged event) {
+    public void onSiteChanged(OnSiteChanged event) {
         if (mSiteStore.hasSite()) {
             launchPostActivity();
         }
