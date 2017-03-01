@@ -96,6 +96,7 @@ public class PostsFragment extends Fragment {
     }
 
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPostChanged(OnPostChanged event) {
         if (event.isError()) {
@@ -114,6 +115,7 @@ public class PostsFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPostUploaded(OnPostUploaded event) {
         prependToLog("Post uploaded! Remote post id: " + event.post.getRemotePostId());

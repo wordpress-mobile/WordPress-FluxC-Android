@@ -125,6 +125,7 @@ public class SignedOutActionsFragment extends Fragment {
         alert.show();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNewUserValidated(OnNewUserCreated event) {
         String message = event.dryRun ? "validation" : "creation";
@@ -135,6 +136,7 @@ public class SignedOutActionsFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAuthEmailSent(OnAuthEmailSent event) {
         if (event.isError()) {
@@ -144,6 +146,7 @@ public class SignedOutActionsFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUrlChecked(OnURLChecked event) {
         if (event.isError()) {

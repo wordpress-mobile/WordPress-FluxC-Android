@@ -119,6 +119,7 @@ public class CommentsFragment extends Fragment {
                         !getFirstComment().getILike())));
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onCommentChanged(OnCommentChanged event) {
         if (event.isError()) {

@@ -130,6 +130,7 @@ public class SitesFragment extends Fragment {
         newFragment.show(ft, "dialog");
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteChanged(OnSiteChanged event) {
         if (event.isError()) {
@@ -140,6 +141,7 @@ public class SitesFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNewSiteCreated(OnNewSiteCreated event) {
         String message = event.dryRun ? "validated" : "created";
@@ -150,6 +152,7 @@ public class SitesFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteDeleted(OnSiteDeleted event) {
         if (event.isError()) {
@@ -159,6 +162,7 @@ public class SitesFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteExported(OnSiteExported event) {
         if (event.isError()) {

@@ -194,6 +194,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDiscoveryResponse(OnDiscoveryResponse event) {
         if (event.isError()) {
