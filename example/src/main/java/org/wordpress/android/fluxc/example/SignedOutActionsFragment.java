@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
+import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.fluxc.store.SiteStore.OnURLChecked;
 
@@ -124,6 +125,7 @@ public class SignedOutActionsFragment extends Fragment {
         alert.show();
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNewUserValidated(OnNewUserCreated event) {
         String message = event.dryRun ? "validation" : "creation";
@@ -134,8 +136,9 @@ public class SignedOutActionsFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onAuthEmailSent(AccountStore.OnAuthEmailSent event) {
+    public void onAuthEmailSent(OnAuthEmailSent event) {
         if (event.isError()) {
             prependToLog("Error sending magic link: " + event.error.type + " - " + event.error.message);
         } else {
@@ -143,6 +146,7 @@ public class SignedOutActionsFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onUrlChecked(OnURLChecked event) {
         if (event.isError()) {

@@ -246,6 +246,7 @@ public class MainFragment extends Fragment {
 
     // Event listeners
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAccountChanged(OnAccountChanged event) {
         if (!mAccountStore.hasAccessToken()) {
@@ -253,6 +254,7 @@ public class MainFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         if (event.isError()) {
@@ -296,6 +298,7 @@ public class MainFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDiscoveryResponse(OnDiscoveryResponse event) {
         if (event.isError()) {
@@ -319,6 +322,7 @@ public class MainFragment extends Fragment {
         }
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteChanged(OnSiteChanged event) {
         if (event.isError()) {

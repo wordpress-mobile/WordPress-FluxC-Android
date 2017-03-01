@@ -68,6 +68,7 @@ public class AccountFragment extends Fragment {
         mDispatcher.unregister(this);
     }
 
+    @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAccountChanged(OnAccountChanged event) {
         if (!mAccountStore.hasAccessToken()) {
