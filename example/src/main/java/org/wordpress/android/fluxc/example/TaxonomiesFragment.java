@@ -16,7 +16,6 @@ import org.wordpress.android.fluxc.model.TermModel;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.TaxonomyStore;
 import org.wordpress.android.fluxc.store.TaxonomyStore.OnTaxonomyChanged;
-import org.wordpress.android.fluxc.store.TaxonomyStore.OnTermInstantiated;
 import org.wordpress.android.fluxc.store.TaxonomyStore.OnTermUploaded;
 import org.wordpress.android.fluxc.store.TaxonomyStore.RemoteTermPayload;
 import org.wordpress.android.util.AppLog;
@@ -24,21 +23,13 @@ import org.wordpress.android.util.AppLog.T;
 
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
-
-import static junit.framework.Assert.assertTrue;
 
 public class TaxonomiesFragment extends Fragment {
     @Inject SiteStore mSiteStore;
     @Inject TaxonomyStore mTaxonomyStore;
     @Inject Dispatcher mDispatcher;
-
-    // Needed for instantiate action :/
-    private TermModel mNewTerm;
-    private CountDownLatch mCountDownLatch;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -97,18 +88,12 @@ public class TaxonomiesFragment extends Fragment {
     }
 
     private void createCategory() {
-        // Count down latch used for waiting for the asynchronous Instantiate action.
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(TaxonomyActionBuilder.newInstantiateCategoryAction(getFirstSite()));
-        try {
-            assertTrue(mCountDownLatch.await(2, TimeUnit.SECONDS));
-            mNewTerm.setName("FluxC-category-" + new Random().nextLong());
-            mNewTerm.setDescription("From FluxC example app");
-            RemoteTermPayload payload = new RemoteTermPayload(mNewTerm, getFirstSite());
-            mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(payload));
-        } catch (Exception e) {
-            // noop
-        }
+        TermModel newCategory = mTaxonomyStore.instantiateCategory(getFirstSite());
+        newCategory.setName("FluxC-category-" + new Random().nextLong());
+        newCategory.setDescription("From FluxC example app");
+
+        RemoteTermPayload payload = new RemoteTermPayload(newCategory, getFirstSite());
+        mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(payload));
     }
 
     @SuppressWarnings("unused")
@@ -125,13 +110,6 @@ public class TaxonomiesFragment extends Fragment {
                 prependToLog(event.taxonomyName + " " + term.getRemoteTermId() + ": " + term.getName());
             }
         }
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe(threadMode = ThreadMode.ASYNC)
-    public void onTermInstantiated(OnTermInstantiated event) {
-        mNewTerm = event.term;
-        mCountDownLatch.countDown();
     }
 
     @SuppressWarnings("unused")
