@@ -44,7 +44,6 @@ Action naming guide:
     UPDATE_X - local change
     REMOVE_X - local remove
     DELETE_X - request deletion on the server
-    INSTANTIATE_X - request a new instance of X
 
 Each action enum should be annotated with `@ActionEnum`, with individual actions receiving an `@Action` annotation with an optional `payloadType` setting (see [SiteAction][5] for an example).
 

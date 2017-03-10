@@ -8,9 +8,7 @@ import org.wordpress.android.fluxc.model.TaxonomyModel;
 import org.wordpress.android.fluxc.model.TermModel;
 import org.wordpress.android.fluxc.store.TaxonomyStore;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermsPayload;
-import org.wordpress.android.fluxc.store.TaxonomyStore.InstantiateTermPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.OnTaxonomyChanged;
-import org.wordpress.android.fluxc.store.TaxonomyStore.OnTermInstantiated;
 import org.wordpress.android.fluxc.store.TaxonomyStore.OnTermUploaded;
 import org.wordpress.android.fluxc.store.TaxonomyStore.RemoteTermPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.TaxonomyErrorType;
@@ -36,7 +34,6 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         TAGS_FETCHED,
         TERMS_FETCHED,
         TERM_UPDATED,
-        TERM_INSTANTIATED,
         TERM_UPLOADED,
         ERROR_INVALID_TAXONOMY,
         ERROR_DUPLICATE,
@@ -277,54 +274,42 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch.countDown();
     }
 
-    @SuppressWarnings("unused")
-    @Subscribe
-    public void onTermInstantiated(OnTermInstantiated event) {
-        AppLog.i(T.API, "Received OnTermInstantiated");
-        assertEquals(TestEvents.TERM_INSTANTIATED, mNextEvent);
-
-        assertEquals(0, event.term.getRemoteTermId());
-        assertNotSame(0, event.term.getId());
-        assertNotSame(0, event.term.getLocalSiteId());
-
-        mTerm = event.term;
-        mCountDownLatch.countDown();
-    }
-
     private void setupTermAttributes() {
         mTerm.setName(TERM_DEFAULT_NAME + "-" + RandomStringUtils.randomAlphanumeric(4));
         mTerm.setDescription(TERM_DEFAULT_DESCRIPTION);
     }
 
-    private void createNewCategory() throws InterruptedException {
-        // Instantiate new category
-        mNextEvent = TestEvents.TERM_INSTANTIATED;
-        mCountDownLatch = new CountDownLatch(1);
+    private TermModel createNewCategory() {
+        TermModel term = mTaxonomyStore.instantiateCategory(sSite);
 
-        mDispatcher.dispatch(TaxonomyActionBuilder.newInstantiateCategoryAction(sSite));
+        assertEquals(0, term.getRemoteTermId());
+        assertNotSame(0, term.getId());
+        assertNotSame(0, term.getLocalSiteId());
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        mTerm = term;
+        return term;
     }
 
-    private void createNewTag() throws InterruptedException {
-        // Instantiate new tag
-        mNextEvent = TestEvents.TERM_INSTANTIATED;
-        mCountDownLatch = new CountDownLatch(1);
+    private TermModel createNewTag() {
+        TermModel term = mTaxonomyStore.instantiateTag(sSite);
 
-        mDispatcher.dispatch(TaxonomyActionBuilder.newInstantiateTagAction(sSite));
+        assertEquals(0, term.getRemoteTermId());
+        assertNotSame(0, term.getId());
+        assertNotSame(0, term.getLocalSiteId());
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        mTerm = term;
+        return term;
     }
 
-    private void createNewTerm(TaxonomyModel taxonomy) throws InterruptedException {
-        // Instantiate new term
-        mNextEvent = TestEvents.TERM_INSTANTIATED;
-        mCountDownLatch = new CountDownLatch(1);
+    private TermModel createNewTerm(TaxonomyModel taxonomy) {
+        TermModel term = mTaxonomyStore.instantiateTerm(sSite, taxonomy);
 
-        InstantiateTermPayload payload = new InstantiateTermPayload(sSite, taxonomy);
-        mDispatcher.dispatch(TaxonomyActionBuilder.newInstantiateTermAction(payload));
+        assertEquals(0, term.getRemoteTermId());
+        assertNotSame(0, term.getId());
+        assertNotSame(0, term.getLocalSiteId());
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        mTerm = term;
+        return term;
     }
 
     private void uploadTerm(TermModel term) throws InterruptedException {
