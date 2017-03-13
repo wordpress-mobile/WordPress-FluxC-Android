@@ -78,7 +78,7 @@ public class ReleaseStack_FluxCImageLoaderTest extends ReleaseStack_Base {
                             @Override
                             public void onErrorResponse(VolleyError error) {
                                 AppLog.e(T.TESTS, "Failed to download image: " + error.getMessage());
-                                throw new AssertionError("Image request failed!");
+                                fail("Image request failed!");
                             }
                         }
                 );
