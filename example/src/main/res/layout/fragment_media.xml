@@ -19,10 +19,16 @@
         android:text="Fetch" />
 
     <Button
-        android:id="@+id/upload_media"
+        android:id="@+id/upload_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Upload" />
+        android:text="Upload Image" />
+
+    <Button
+        android:id="@+id/upload_video"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Upload Video" />
 
     <Button
         android:id="@+id/cancel_upload"

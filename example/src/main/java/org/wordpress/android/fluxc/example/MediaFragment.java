@@ -126,16 +126,17 @@ public class MediaFragment extends Fragment {
             }
         });
 
-        view.findViewById(R.id.upload_media).setOnClickListener(new View.OnClickListener() {
+        view.findViewById(R.id.upload_image).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mSite == null) {
-                    prependToLog("Site is null, cannot request upload media.");
-                    return;
-                }
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                startActivityForResult(intent, RESULT_PICK_MEDIA);
+                uploadMedia(false);
+            }
+        });
+
+        view.findViewById(R.id.upload_video).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                uploadMedia(true);
             }
         });
 
@@ -247,6 +248,16 @@ public class MediaFragment extends Fragment {
             prependToLog("Upload error: " + event.error.type + ", message: " + event.error.message);
             mCurrentUpload = null;
         }
+    }
+
+    private void uploadMedia(boolean isVideo) {
+        if (mSite == null) {
+            prependToLog("Site is null, cannot request upload media.");
+            return;
+        }
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType(isVideo ? "video/*" : "image/*");
+        startActivityForResult(intent, RESULT_PICK_MEDIA);
     }
 
     private void prependToLog(final String s) {
