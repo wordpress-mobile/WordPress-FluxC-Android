@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -31,12 +32,15 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         FETCHED_KNOWN_IMAGES,
         PUSHED_MEDIA,
         UPLOADED_MEDIA,
+        UPLOADED_MUTIPLE_MEDIA,
         PUSH_ERROR,
         REMOVED_MEDIA,
     }
 
     private TestEvents mNextEvent;
     private long mLastUploadedId = -1L;
+
+    private ArrayList mUploadedIds = new ArrayList();
 
     @Override
     protected void setUp() throws Exception {
@@ -169,6 +173,30 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         deleteMedia(testMedia);
     }
 
+
+    public void testUploadMultipleImages() throws InterruptedException {
+        // upload media to guarantee media exists
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        mNextEvent = TestEvents.UPLOADED_MUTIPLE_MEDIA;
+
+
+        // try to upload it 5 times
+        uploadMedia(testMedia);
+        uploadMedia(testMedia);
+        uploadMedia(testMedia);
+        uploadMedia(testMedia);
+        uploadMedia(testMedia);
+
+        // verify and set media ID after all processed
+        assertTrue(mUploadedIds.size() >= 5);
+        testMedia.setMediaId((Long)mUploadedIds.get(mUploadedIds.size()-1));
+        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+
+        // delete test image
+        mNextEvent = TestEvents.DELETED_MEDIA;
+        deleteMedia(testMedia);
+    }
+
     public void testUploadVideo() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_VIDEO, MediaUtils.MIME_TYPE_VIDEO);
@@ -192,8 +220,14 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         if (event.completed) {
-            assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
-            mLastUploadedId = event.media.getMediaId();
+            if (mNextEvent == TestEvents.UPLOADED_MUTIPLE_MEDIA) {
+                assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA, mNextEvent);
+                Long mediaId = new Long(event.media.getMediaId());
+                mUploadedIds.add(mediaId);
+            } else {
+                assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
+                mLastUploadedId = event.media.getMediaId();
+            }
             mCountDownLatch.countDown();
         }
     }
