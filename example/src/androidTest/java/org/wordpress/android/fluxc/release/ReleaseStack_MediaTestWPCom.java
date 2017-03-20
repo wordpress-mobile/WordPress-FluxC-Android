@@ -176,11 +176,10 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     public void testUploadMultipleImages() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         mNextEvent = TestEvents.UPLOADED_MUTIPLE_MEDIA;
 
-
         // try to upload it 5 times
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         uploadMedia(testMedia);
         uploadMedia(testMedia);
         uploadMedia(testMedia);
@@ -189,8 +188,12 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         // verify and set media ID after all processed
         assertTrue(mUploadedIds.size() >= 5);
-        testMedia.setMediaId((Long)mUploadedIds.get(mUploadedIds.size()-1));
-        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+
+        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, (Long)mUploadedIds.get(0)));
+        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, (Long)mUploadedIds.get(1)));
+        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, (Long)mUploadedIds.get(2)));
+        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, (Long)mUploadedIds.get(3)));
+        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, (Long)mUploadedIds.get(4)));
 
         // delete test image
         mNextEvent = TestEvents.DELETED_MEDIA;
