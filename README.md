@@ -31,6 +31,16 @@ a WordPress.com OAuth2 ID and secret.
 
 We have some tests connecting to real HTTP servers, URL and credentials are defined in `example/tests.properties`, you must edit it or obtain the real file to run the tests. This is temporary.
 
+## Setting up Checkstyle
+
+The FluxC project uses [Checkstyle](http://checkstyle.sourceforge.net/). You can run checkstyle using `./gradlew checkstyle`.
+
+You can also install the Checkstyle plugin for Android Studio, which will allow checkstyle errors and warnings to be displayed in the editor in realtime. Once installed, you can configure the checkstyle plugin here:
+
+`Preferences > Other Settings > Checkstyle`
+
+From there, add and enable the configuration file for FluxC, located [here](https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/develop/config/checkstyle.xml).
+
 ## Contributing
 
 ### Actions
