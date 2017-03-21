@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import android.util.Log;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
@@ -33,6 +35,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         PUSHED_MEDIA,
         UPLOADED_MEDIA,
         UPLOADED_MUTIPLE_MEDIA,
+        UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL,
         PUSH_ERROR,
         REMOVED_MEDIA,
     }
@@ -175,7 +178,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     public void testUploadMultipleImages() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        mUploadedIds = new ArrayList();
         mNextEvent = TestEvents.UPLOADED_MUTIPLE_MEDIA;
 
         ArrayList<MediaModel> mediaModels = new ArrayList<>();
@@ -186,7 +189,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         mediaModels.add(newMediaModel("Test media 5", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
 
         // upload media, dispatching all at a time (not waiting for each to finish)
-        uploadMultipleMedia(mediaModels);
+        uploadMultipleMedia(mediaModels, false);
 
         // verify all have been uploaded
         assertTrue(mUploadedIds.size() == mediaModels.size());
@@ -204,6 +207,25 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             MediaModel media = mediaModels.get(i);
             deleteMedia(media);
         }
+    }
+
+    public void testUploadMultipleImagesAndCancel() throws InterruptedException {
+        // upload media to guarantee media exists
+        mUploadedIds = new ArrayList();
+        mNextEvent = TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL;
+
+        ArrayList<MediaModel> mediaModels = new ArrayList<>();
+        mediaModels.add(newMediaModel("Test media 1", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel("Test media 2", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel("Test media 3", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel("Test media 4", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel("Test media 5", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+
+        // upload media, dispatching all at a time (not waiting for each to finish)
+        uploadMultipleMedia(mediaModels, true);
+
+        // verify none have been uploaded
+        assertTrue(mUploadedIds.size() == 0);
     }
 
     public void testUploadVideo() throws InterruptedException {
@@ -228,10 +250,16 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
+        if (event.canceled) {
+            assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL, mNextEvent);
+            mCountDownLatch.countDown();
+        }
+        else
         if (event.completed) {
             if (mNextEvent == TestEvents.UPLOADED_MUTIPLE_MEDIA) {
                 assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA, mNextEvent);
                 Long mediaId = new Long(event.media.getMediaId());
+                Log.d("TEST", "mediaId is: " + mediaId);
                 mUploadedIds.add(mediaId);
             } else {
                 assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
@@ -340,12 +368,23 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void uploadMultipleMedia(List<MediaModel> mediaList) throws InterruptedException {
+    private void uploadMultipleMedia(List<MediaModel> mediaList, boolean cancel) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(mediaList.size());
         for (MediaModel media : mediaList) {
             MediaPayload payload = new MediaPayload(sSite, media);
             mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         }
+
+        if (cancel) {
+            // wait a bit and issue the cancel command
+            TestUtils.waitFor(5000);
+
+            for (MediaModel media : mediaList) {
+                MediaPayload payload = new MediaPayload(sSite, media);
+                mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(payload));
+            }
+        }
+
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
