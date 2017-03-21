@@ -17,4 +17,10 @@
         android:layout_height="wrap_content"
         android:text="Fetch Account" />
 
+    <Button
+        android:id="@+id/account_email_verification"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send Verification Email" />
+
 </LinearLayout>
