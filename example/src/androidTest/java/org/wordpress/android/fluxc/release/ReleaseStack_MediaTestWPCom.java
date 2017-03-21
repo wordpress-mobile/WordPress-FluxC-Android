@@ -173,31 +173,37 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         deleteMedia(testMedia);
     }
 
-
     public void testUploadMultipleImages() throws InterruptedException {
         // upload media to guarantee media exists
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         mNextEvent = TestEvents.UPLOADED_MUTIPLE_MEDIA;
 
-        // try to upload it 5 times
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
-        uploadMedia(testMedia);
-        uploadMedia(testMedia);
-        uploadMedia(testMedia);
-        uploadMedia(testMedia);
-        uploadMedia(testMedia);
+        ArrayList<MediaModel> mediaModels = new ArrayList<>();
+        mediaModels.add(newMediaModel("Test media 1", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel("Test media 2", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel("Test media 3", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel("Test media 4", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel("Test media 5", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
 
-        // verify and set media ID after all processed
-        assertTrue(mUploadedIds.size() >= 5);
+        // upload media, dispatching all at a time (not waiting for each to finish)
+        uploadMultipleMedia(mediaModels);
 
-        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, (Long)mUploadedIds.get(0)));
-        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, (Long)mUploadedIds.get(1)));
-        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, (Long)mUploadedIds.get(2)));
-        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, (Long)mUploadedIds.get(3)));
-        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, (Long)mUploadedIds.get(4)));
+        // verify all have been uploaded
+        assertTrue(mUploadedIds.size() == mediaModels.size());
 
-        // delete test image
+        // now set media ID to each one, verify they exist in the MediaStore
+        for (int i=0; i < mediaModels.size(); i++) {
+            MediaModel media = mediaModels.get(i);
+            media.setMediaId((Long)mUploadedIds.get(i));
+            assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
+        }
+
+        // delete test images (bear in mind this is done sequentially)
         mNextEvent = TestEvents.DELETED_MEDIA;
-        deleteMedia(testMedia);
+        for (int i=0; i < mediaModels.size(); i++) {
+            MediaModel media = mediaModels.get(i);
+            deleteMedia(media);
+        }
     }
 
     public void testUploadVideo() throws InterruptedException {
@@ -284,7 +290,10 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private MediaModel newMediaModel(String mediaPath, String mimeType) {
-        final String testTitle = "Test Title";
+        return newMediaModel("Test Title", mediaPath, mimeType);
+    }
+
+    private MediaModel newMediaModel(String testTitle, String mediaPath, String mimeType) {
         final String testDescription = "Test Description";
         final String testCaption = "Test Caption";
         final String testAlt = "Test Alt";
@@ -328,6 +337,15 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         MediaPayload payload = new MediaPayload(sSite, media);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void uploadMultipleMedia(List<MediaModel> mediaList) throws InterruptedException {
+        mCountDownLatch = new CountDownLatch(mediaList.size());
+        for (MediaModel media : mediaList) {
+            MediaPayload payload = new MediaPayload(sSite, media);
+            mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        }
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
