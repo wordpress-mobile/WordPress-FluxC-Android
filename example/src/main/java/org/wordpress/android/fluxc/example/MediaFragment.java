@@ -232,7 +232,7 @@ public class MediaFragment extends Fragment {
     public void onMediaUploaded(OnMediaUploaded event) {
         if (!event.isError()) {
             if (event.canceled) {
-                prependToLog("Upload cancelled");
+                prependToLog("Upload canceled");
                 mCancelButton.setEnabled(false);
                 mCurrentUpload = null;
             } else if (event.progress < 0.f) {

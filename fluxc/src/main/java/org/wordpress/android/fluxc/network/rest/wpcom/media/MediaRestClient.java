@@ -303,7 +303,7 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
             @Override
             public void onFailure(Call call, IOException e) {
                 if (mCurrentUploadCall != null && mCurrentUploadCall.isCanceled()) {
-                    // Do not report errors since the upload was cancelled
+                    // Do not report errors since the upload was canceled
                     mCurrentUploadCall = null;
                     return;
                 }
