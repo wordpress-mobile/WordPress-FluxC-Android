@@ -91,7 +91,6 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
         }
 
         String url = WPCOMREST.sites.site(site.getSiteId()).media.item(media.getMediaId()).getUrlV1_1();
-
         add(WPComGsonRequest.buildPostRequest(url, getEditRequestParams(media),
                 MediaWPComRestResponse.class, new Listener<MediaWPComRestResponse>() {
             @Override

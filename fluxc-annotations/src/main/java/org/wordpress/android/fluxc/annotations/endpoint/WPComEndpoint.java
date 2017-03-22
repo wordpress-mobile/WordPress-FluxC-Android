@@ -26,23 +26,27 @@ public class WPComEndpoint {
         return mEndpoint;
     }
 
+    public String getFEndpoint() {
+        return mEndpoint.replaceAll("/$", "");
+    }
+
     public String getUrlV1() {
-        return WPCOM_PREFIX_V1 + mEndpoint;
+        return WPCOM_PREFIX_V1 + getFEndpoint();
     }
 
     public String getUrlV1_1() {
-        return WPCOM_PREFIX_V1_1 + mEndpoint;
+        return WPCOM_PREFIX_V1_1 + getFEndpoint();
     }
 
     public String getUrlV1_2() {
-        return WPCOM_PREFIX_V1_2 + mEndpoint;
+        return WPCOM_PREFIX_V1_2 + getFEndpoint();
     }
 
     public String getUrlV1_3() {
-        return WPCOM_PREFIX_V1_3 + mEndpoint;
+        return WPCOM_PREFIX_V1_3 + getFEndpoint();
     }
 
     public String getUrlV0() {
-        return WPCOM_PREFIX_V0 + mEndpoint;
+        return WPCOM_PREFIX_V0 + getFEndpoint();
     }
 }
