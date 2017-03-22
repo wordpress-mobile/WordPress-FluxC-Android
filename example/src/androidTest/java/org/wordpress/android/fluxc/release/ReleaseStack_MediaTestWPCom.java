@@ -219,12 +219,13 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         ArrayList<MediaModel> mediaModels = new ArrayList<>();
         mediaModels.add(newMediaModel("Test media 1", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mediaModels.add(newMediaModel("Test media 2", BuildConfig.TEST_LOCAL_IMAGE_2, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel("Test media 2", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
         mediaModels.add(newMediaModel("Test media 3", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
         mediaModels.add(newMediaModel("Test media 4", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
         mediaModels.add(newMediaModel("Test media 5", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
 
-        int amountToCancel = 1;
+        // use this variable to test cancelling 1, 2, 3, 4 or all 5 uploads
+        int amountToCancel = 4;
 
         // upload media, dispatching all at a time (not waiting for each to finish)
         // also cancel the first n=`amountToCancel` media uploads
@@ -414,7 +415,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             // wait a bit and issue the cancel command
             TestUtils.waitFor(5000);
 
-            // we'e only cancelling the firt howManyFirstToCancel uploads
+            // we'e only cancelling the first n=howManyFirstToCancel uploads
             for (int i=0; i < howManyFirstToCancel; i++) {
                 AppLog.d(AppLog.T.MEDIA, "TEST - dispatching cancel upload action");
                 MediaModel media = mediaList.get(i);
