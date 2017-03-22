@@ -193,6 +193,12 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
 
             @Override
             public void onFailure(Call call, IOException e) {
+                if (mCurrentUploadCall != null && mCurrentUploadCall.isCanceled()) {
+                    // Do not report errors since the upload was cancelled
+                    mCurrentUploadCall = null;
+                    return;
+                }
+
                 AppLog.w(T.MEDIA, "media upload failed: " + e);
                 MediaStore.MediaError error = new MediaError(MediaErrorType.GENERIC_ERROR);
                 error.message = e.getLocalizedMessage();
@@ -329,7 +335,6 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
         // cancel in-progress upload if necessary
         if (mCurrentUploadCall != null && mCurrentUploadCall.isExecuted() && !mCurrentUploadCall.isCanceled()) {
             mCurrentUploadCall.cancel();
-            mCurrentUploadCall = null;
         }
         // always report without error
         notifyMediaUploadCanceled(media);
