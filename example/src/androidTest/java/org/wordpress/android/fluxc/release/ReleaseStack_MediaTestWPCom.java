@@ -34,8 +34,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         FETCHED_KNOWN_IMAGES,
         PUSHED_MEDIA,
         UPLOADED_MEDIA,
-        UPLOADED_MUTIPLE_MEDIA,
-        UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL,
+        UPLOADED_MUTIPLE_MEDIA, // these don't exist in FluxC, but are an artifact to wait for all
+                                // uploads to finish
+        UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL, // same as above
         PUSH_ERROR,
         REMOVED_MEDIA,
     }
