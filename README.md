@@ -61,9 +61,11 @@ Each action enum should be annotated with `@ActionEnum`, with individual actions
 
 ### Endpoints
 
-Endpoints for each of the supported APIs are centralized in a generated endpoint file: `WPCOMREST.java` and `XMLRPC.java`.
+Endpoints for each of the supported APIs are centralized in a generated endpoint file: `WPCOMREST.java` and `XMLRPC.java` (also `WPAPI.java`).
 
 To add a new endpoint, first add it to the appropriate `fluxc/src/main/tools/*.txt` file, and then rebuild the project to update the generated (Java) endpoint file.
+
+Note that, for WordPress.com REST API endpoints, the final endpoint will be normalized to include a trailing slash.
 
 ### On Changed Events
 
