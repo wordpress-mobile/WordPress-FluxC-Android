@@ -134,7 +134,7 @@ public class MediaFragment extends Fragment {
                     return;
                 }
                 Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
+                intent.setType("*/*");
                 startActivityForResult(intent, RESULT_PICK_MEDIA);
             }
         });
