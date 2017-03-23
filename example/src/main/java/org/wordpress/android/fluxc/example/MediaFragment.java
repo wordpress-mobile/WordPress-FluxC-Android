@@ -235,10 +235,6 @@ public class MediaFragment extends Fragment {
                 prependToLog("Upload canceled");
                 mCancelButton.setEnabled(false);
                 mCurrentUpload = null;
-            } else if (event.progress < 0.f) {
-                prependToLog("Upload canceled: " + event.media.getFileName());
-                mCancelButton.setEnabled(false);
-                mCurrentUpload = null;
             } else if (event.completed) {
                 prependToLog("Successfully uploaded localId=" + mCurrentUpload.getId()
                              + " - url=" + event.media.getUrl());
