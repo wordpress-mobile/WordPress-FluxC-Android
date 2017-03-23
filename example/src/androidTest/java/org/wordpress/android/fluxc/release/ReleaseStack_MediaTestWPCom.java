@@ -42,7 +42,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     private TestEvents mNextEvent;
     private long mLastUploadedId = -1L;
 
-    private ArrayList mUploadedIds = new ArrayList();
+    private List<Long> mUploadedIds = new ArrayList();
 
     @Override
     protected void setUp() throws Exception {
@@ -278,12 +278,10 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         } else if (event.completed) {
             if (mNextEvent == TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL) {
                 assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL, mNextEvent);
-                Long mediaId = new Long(event.media.getMediaId());
-                mUploadedIds.add(mediaId);
+                mUploadedIds.add(event.media.getMediaId());
             } else if (mNextEvent == TestEvents.UPLOADED_MUTIPLE_MEDIA) {
                 assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA, mNextEvent);
-                Long mediaId = new Long(event.media.getMediaId());
-                mUploadedIds.add(mediaId);
+                mUploadedIds.add(event.media.getMediaId());
             } else
             if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
                 assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
