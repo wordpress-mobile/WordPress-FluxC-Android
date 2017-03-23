@@ -1,7 +1,5 @@
 package org.wordpress.android.fluxc.release;
 
-import android.util.Log;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
@@ -17,7 +15,6 @@ import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.utils.MediaUtils;
-import org.wordpress.android.util.AppLog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -277,7 +274,6 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         if (event.canceled) {
             if (mNextEvent == TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL) {
                 assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL, mNextEvent);
-                Log.d("TEST", "CANCELED EVENT");
                 mCountDownLatch.countDown();
             }
         }
@@ -286,14 +282,12 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             if (mNextEvent == TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL) {
                 assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL, mNextEvent);
                 Long mediaId = new Long(event.media.getMediaId());
-                Log.d("TEST", "mediaId is: " + mediaId);
                 mUploadedIds.add(mediaId);
             }
             else
             if (mNextEvent == TestEvents.UPLOADED_MUTIPLE_MEDIA) {
                 assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA, mNextEvent);
                 Long mediaId = new Long(event.media.getMediaId());
-                Log.d("TEST", "mediaId is: " + mediaId);
                 mUploadedIds.add(mediaId);
             } else
             if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
@@ -406,7 +400,6 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     private void uploadMultipleMedia(List<MediaModel> mediaList, int howManyFirstToCancel) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(mediaList.size());
         for (MediaModel media : mediaList) {
-            AppLog.d(AppLog.T.MEDIA, "TEST - dispatching upload media action");
             MediaPayload payload = new MediaPayload(sSite, media);
             mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         }
@@ -417,7 +410,6 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
             // we'e only cancelling the first n=howManyFirstToCancel uploads
             for (int i=0; i < howManyFirstToCancel; i++) {
-                AppLog.d(AppLog.T.MEDIA, "TEST - dispatching cancel upload action");
                 MediaModel media = mediaList.get(i);
                 MediaPayload payload = new MediaPayload(sSite, media);
                 mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(payload));
