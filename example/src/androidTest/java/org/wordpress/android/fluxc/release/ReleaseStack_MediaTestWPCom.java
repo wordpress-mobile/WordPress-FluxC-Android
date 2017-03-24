@@ -399,7 +399,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         if (howManyFirstToCancel > 0 && howManyFirstToCancel <= mediaList.size()) {
             // wait a bit and issue the cancel command
-            TestUtils.waitFor(5000);
+            TestUtils.waitFor(1000);
 
             // we'e only cancelling the first n=howManyFirstToCancel uploads
             for (int i = 0; i < howManyFirstToCancel; i++) {
