@@ -197,7 +197,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         // now set media ID to each one, verify they exist in the MediaStore
         for (int i = 0; i < mediaModels.size(); i++) {
             MediaModel media = mediaModels.get(i);
-            media.setMediaId((Long) mUploadedIds.get(i));
+            media.setMediaId(mUploadedIds.get(i));
             assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
         }
 
@@ -235,7 +235,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         // and verify they exist in the MediaStore
         for (int i = amountToCancel; i < mediaModels.size(); i++) {
             MediaModel media = mediaModels.get(i);
-            media.setMediaId((Long) mUploadedIds.get(i - amountToCancel));
+            media.setMediaId(mUploadedIds.get(i - amountToCancel));
             assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
         }
 
