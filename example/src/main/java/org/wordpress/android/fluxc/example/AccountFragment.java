@@ -84,7 +84,7 @@ public class AccountFragment extends Fragment {
             prependToLog("Signed Out");
         } else {
             if (event.causeOfChange == AccountAction.SEND_VERIFICATION_EMAIL) {
-                if (event.accountInfosChanged) {
+                if (!event.isError()) {
                     prependToLog("Verification email sent, check your inbox.");
                 } else {
                     prependToLog("Error sending verification email. Are you already verified?");
