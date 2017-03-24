@@ -229,7 +229,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         uploadMultipleMedia(mediaModels, amountToCancel);
 
         // verify how many have been uploaded
-        assertTrue(mUploadedIds.size() == (mediaModels.size() - amountToCancel));
+        assertEquals(mediaModels.size() - amountToCancel, mUploadedIds.size());
 
         // now set media ID to each one of the remaining, non-cancelled uploads,
         // and verify they exist in the MediaStore
