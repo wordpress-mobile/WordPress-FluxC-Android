@@ -42,7 +42,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     private TestEvents mNextEvent;
     private long mLastUploadedId = -1L;
 
-    private List<Long> mUploadedIds = new ArrayList();
+    private List<Long> mUploadedIds = new ArrayList<>();
 
     @Override
     protected void setUp() throws Exception {
@@ -177,7 +177,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     public void testUploadMultipleImages() throws InterruptedException {
         // upload media to guarantee media exists
-        mUploadedIds = new ArrayList();
+        mUploadedIds = new ArrayList<>();
         mNextEvent = TestEvents.UPLOADED_MUTIPLE_MEDIA;
 
         ArrayList<MediaModel> mediaModels = new ArrayList<>();
@@ -211,7 +211,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     public void testUploadMultipleImagesAndCancel() throws InterruptedException {
         // upload media to guarantee media exists
-        mUploadedIds = new ArrayList();
+        mUploadedIds = new ArrayList<>();
         mNextEvent = TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL;
 
         ArrayList<MediaModel> mediaModels = new ArrayList<>();
