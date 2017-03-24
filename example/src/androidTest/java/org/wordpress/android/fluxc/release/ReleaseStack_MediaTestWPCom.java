@@ -192,7 +192,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         uploadMultipleMedia(mediaModels, 0);
 
         // verify all have been uploaded
-        assertTrue(mUploadedIds.size() == mediaModels.size());
+        assertEquals(mediaModels.size(), mUploadedIds.size());
 
         // now set media ID to each one, verify they exist in the MediaStore
         for (int i = 0; i < mediaModels.size(); i++) {
