@@ -181,11 +181,12 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.UPLOADED_MUTIPLE_MEDIA;
 
         ArrayList<MediaModel> mediaModels = new ArrayList<>();
-        mediaModels.add(newMediaModel("Test media 1", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mediaModels.add(newMediaModel("Test media 2", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mediaModels.add(newMediaModel("Test media 3", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mediaModels.add(newMediaModel("Test media 4", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mediaModels.add(newMediaModel("Test media 5", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        // here we use the newMediaModel() with id builder, as we need it to identify uploads
+        mediaModels.add(newMediaModel(1, "Test media 1", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel(2, "Test media 2", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel(3, "Test media 3", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel(4, "Test media 4", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel(5, "Test media 5", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
 
         // upload media, dispatching all at a time (not waiting for each to finish)
         // also don't cancel any upload (0)
@@ -215,11 +216,12 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL;
 
         ArrayList<MediaModel> mediaModels = new ArrayList<>();
-        mediaModels.add(newMediaModel("Test media 1", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mediaModels.add(newMediaModel("Test media 2", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mediaModels.add(newMediaModel("Test media 3", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mediaModels.add(newMediaModel("Test media 4", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mediaModels.add(newMediaModel("Test media 5", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        // here we use the newMediaModel() with id builder, as we need it to identify uploads
+        mediaModels.add(newMediaModel(1, "Test media 1", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel(2, "Test media 2", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel(3, "Test media 3", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel(4, "Test media 4", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mediaModels.add(newMediaModel(5, "Test media 5", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
 
         // use this variable to test cancelling 1, 2, 3, 4 or all 5 uploads
         int amountToCancel = 4;
@@ -344,11 +346,16 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private MediaModel newMediaModel(String testTitle, String mediaPath, String mimeType) {
+        return newMediaModel(0, testTitle, mediaPath, mimeType);
+    }
+
+    private MediaModel newMediaModel(int id, String testTitle, String mediaPath, String mimeType) {
         final String testDescription = "Test Description";
         final String testCaption = "Test Caption";
         final String testAlt = "Test Alt";
 
         MediaModel testMedia = new MediaModel();
+        testMedia.setId(id);
         testMedia.setFilePath(mediaPath);
         testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1, mediaPath.length()));
         testMedia.setMimeType(mimeType + testMedia.getFileExtension());
@@ -404,6 +411,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             // we'e only cancelling the first n=howManyFirstToCancel uploads
             for (int i = 0; i < howManyFirstToCancel; i++) {
                 MediaModel media = mediaList.get(i);
+                media.setMediaId(media.getId()); // doing the same as in WPAndroid
                 MediaPayload payload = new MediaPayload(sSite, media);
                 mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(payload));
             }
