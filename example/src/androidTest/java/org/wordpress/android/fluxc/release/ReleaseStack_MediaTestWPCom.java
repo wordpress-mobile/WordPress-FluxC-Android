@@ -296,6 +296,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
                 for (int i = 0; i < mUploadedMediaModels.size(); i++) {
                     MediaModel media = mUploadedMediaModels.get(i);
                     if (media.getId() == event.media.getId()) {
+                        AppLog.d(AppLog.T.MEDIA, "UploadedMedia found and media set: " + media.getId()
+                                + " old mediaId: " + media.getMediaId() + " - new media id: "
+                                + event.media.getMediaId());
                         media.setMediaId(event.media.getMediaId());
                     }
                 }
@@ -309,6 +312,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
                 for (int i = 0; i < mUploadedMediaModels.size(); i++) {
                     MediaModel media = mUploadedMediaModels.get(i);
                     if (media.getId() == event.media.getId()) {
+                        AppLog.d(AppLog.T.MEDIA, "UploadedMedia found and media set: " + media.getId()
+                                + " old mediaId: " + media.getMediaId() + " - new media id: "
+                                + event.media.getMediaId());
                         media.setMediaId(event.media.getMediaId());
                     }
                 }
