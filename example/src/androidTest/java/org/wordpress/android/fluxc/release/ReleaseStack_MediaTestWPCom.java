@@ -188,11 +188,11 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         mUploadedMediaModels = new HashMap<>();
         // here we use the newMediaModel() with id builder, as we need it to identify uploads
-        mUploadedMediaModels.put(1, newMediaModel(1, "Test media 1", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(2, newMediaModel(2, "Test media 2", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(3, newMediaModel(3, "Test media 3", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(4, newMediaModel(4, "Test media 4", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(5, newMediaModel(5, "Test media 5", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mUploadedMediaModels.put(1, newMediaModel(1, "Test media 1", BuildConfig.TEST_LOCAL_IMAGE_1, MediaUtils.MIME_TYPE_IMAGE));
+        mUploadedMediaModels.put(2, newMediaModel(2, "Test media 2", BuildConfig.TEST_LOCAL_IMAGE_2, MediaUtils.MIME_TYPE_IMAGE));
+        mUploadedMediaModels.put(3, newMediaModel(3, "Test media 3", BuildConfig.TEST_LOCAL_IMAGE_3, MediaUtils.MIME_TYPE_IMAGE));
+//        mUploadedMediaModels.put(4, newMediaModel(4, "Test media 4", BuildConfig.TEST_LOCAL_IMAGE_4, MediaUtils.MIME_TYPE_IMAGE));
+//        mUploadedMediaModels.put(5, newMediaModel(5, "Test media 5", BuildConfig.TEST_LOCAL_IMAGE_5, MediaUtils.MIME_TYPE_IMAGE));
 
         // upload media, dispatching all at a time (not waiting for each to finish)
         // also don't cancel any upload (0)
@@ -226,11 +226,11 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         mUploadedMediaModels = new HashMap<>();
         // here we use the newMediaModel() with id builder, as we need it to identify uploads
-        mUploadedMediaModels.put(1, newMediaModel(1, "Test media 1", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(2, newMediaModel(2, "Test media 2", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(3, newMediaModel(3, "Test media 3", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(4, newMediaModel(4, "Test media 4", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(5, newMediaModel(5, "Test media 5", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        mUploadedMediaModels.put(1, newMediaModel(1, "Test media 1", BuildConfig.TEST_LOCAL_IMAGE_1, MediaUtils.MIME_TYPE_IMAGE));
+        mUploadedMediaModels.put(2, newMediaModel(2, "Test media 2", BuildConfig.TEST_LOCAL_IMAGE_2, MediaUtils.MIME_TYPE_IMAGE));
+        mUploadedMediaModels.put(3, newMediaModel(3, "Test media 3", BuildConfig.TEST_LOCAL_IMAGE_3, MediaUtils.MIME_TYPE_IMAGE));
+        mUploadedMediaModels.put(4, newMediaModel(4, "Test media 4", BuildConfig.TEST_LOCAL_IMAGE_4, MediaUtils.MIME_TYPE_IMAGE));
+        mUploadedMediaModels.put(5, newMediaModel(5, "Test media 5", BuildConfig.TEST_LOCAL_IMAGE_5, MediaUtils.MIME_TYPE_IMAGE));
 
         // use this variable to test cancelling 1, 2, 3, 4 or all 5 uploads
         int amountToCancel = 4;
@@ -444,7 +444,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             }
         }
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.MULTIPLE_UPLOAD_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void deleteMedia(MediaModel media) throws InterruptedException {

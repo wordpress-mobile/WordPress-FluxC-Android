@@ -7,6 +7,7 @@ import com.yarolegovich.wellsql.core.annotation.Table;
 
 import org.wordpress.android.fluxc.Payload;
 import org.wordpress.android.fluxc.utils.MediaUtils;
+import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.StringUtils;
 
 import java.io.Serializable;
@@ -109,6 +110,7 @@ public class MediaModel extends Payload implements Identifiable, Serializable {
 
     @Override
     public void setId(int id) {
+        AppLog.d(AppLog.T.MEDIA, "setting MediaId WAS: " + mId + " - setting to: " + id);
         mId = id;
     }
 
