@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -372,7 +373,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private MediaModel newMediaModel(String testTitle, String mediaPath, String mimeType) {
-        return newMediaModel(0, testTitle, mediaPath, mimeType);
+        Random random = new Random();
+        return newMediaModel(random.nextInt() + 1, testTitle, mediaPath, mimeType);
     }
 
     private MediaModel newMediaModel(int id, String testTitle, String mediaPath, String mimeType) {
