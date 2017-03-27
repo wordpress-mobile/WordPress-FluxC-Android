@@ -245,13 +245,15 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
         }
 
-        // delete test images (bear in mind this is done sequentially as to not add complexity to the
-        // test)
+        // delete test images (bear in mind this is done sequentially)
         mNextEvent = TestEvents.DELETED_MEDIA;
         iterator = mUploadedMediaModels.values().iterator();
         while (iterator.hasNext()) {
             MediaModel media = iterator.next();
-            deleteMedia(media);
+            // delete only successfully uploaded test images
+            if (mUploadedIds.contains(media.getId())) {
+                deleteMedia(media);
+            }
         }
     }
 
