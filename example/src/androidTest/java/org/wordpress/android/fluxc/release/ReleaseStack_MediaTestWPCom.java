@@ -204,9 +204,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         Iterator<MediaModel> iterator = mUploadedMediaModels.values().iterator();
         while (iterator.hasNext()) {
             MediaModel media = iterator.next();
-            MediaModel inStore = mMediaStore.getSiteMediaWithId(sSite, media.getMediaId());
-            AppLog.d(AppLog.T.MEDIA, "Is this NULL? " + media.getId() + " - " + inStore);
-            //  assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
+            assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
         }
 
         // delete test images (bear in mind this is done sequentially)
@@ -294,17 +292,15 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
                 if (media != null) {
                     media.setMediaId(event.media.getMediaId());
                 } else {
-                    AppLog.e(AppLog.T.MEDIA, "trying to locate media event couldn' find it: " + event.media.getId());
+                    AppLog.e(AppLog.T.MEDIA, "mediamodel not found: " + event.media.getId());
                 }
                 assertNotNull(media);
             } else if (mNextEvent == TestEvents.UPLOADED_MUTIPLE_MEDIA) {
                 assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA, mNextEvent);
                 mUploadedIds.add(event.media.getMediaId());
                 // now update our own map with the new media id
-                AppLog.e(AppLog.T.MEDIA, "about to get mediamodel id: " + event.media.getId());
                 MediaModel media = mUploadedMediaModels.get(event.media.getId());
                 if (media != null) {
-                    AppLog.e(AppLog.T.MEDIA, "mediamodel found, mediaId is: " + event.media.getMediaId());
                     media.setMediaId(event.media.getMediaId());
                 } else {
                     AppLog.e(AppLog.T.MEDIA, "mediamodel not found: " + event.media.getId());
@@ -442,7 +438,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             }
         }
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.MUTIPLE_UPLOADS_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void deleteMedia(MediaModel media) throws InterruptedException {
