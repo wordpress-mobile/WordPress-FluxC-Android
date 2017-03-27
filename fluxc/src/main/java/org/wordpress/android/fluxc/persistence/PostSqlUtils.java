@@ -111,6 +111,22 @@ public class PostSqlUtils {
                 .getAsModel();
     }
 
+    public static List<PostModel> searchPostTitles(SiteModel site, String searchQuery, boolean getPages) {
+        if (site == null) {
+            return Collections.emptyList();
+        }
+
+        return WellSql.select(PostModel.class)
+                .where().beginGroup()
+                .equals(PostModelTable.LOCAL_SITE_ID, site.getId())
+                .contains(PostModelTable.TITLE, searchQuery)
+                .equals(PostModelTable.IS_PAGE, getPages)
+                .endGroup().endWhere()
+                .orderBy(PostModelTable.IS_LOCAL_DRAFT, SelectQuery.ORDER_DESCENDING)
+                .orderBy(PostModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
+                .getAsModel();
+    }
+
     public static PostModel insertPostForResult(PostModel post) {
         WellSql.insert(post).asSingleTransaction(true).execute();
 
