@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -188,11 +187,11 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         mUploadedMediaModels = new HashMap<>();
         // here we use the newMediaModel() with id builder, as we need it to identify uploads
-        mUploadedMediaModels.put(1, newMediaModel(1, "Test media 1", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(2, newMediaModel(2, "Test media 2", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(3, newMediaModel(3, "Test media 3", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(4, newMediaModel(4, "Test media 4", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(5, newMediaModel(5, "Test media 5", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        addMediaModelToUploadArray("Test media 1");
+        addMediaModelToUploadArray("Test media 2");
+        addMediaModelToUploadArray("Test media 3");
+        addMediaModelToUploadArray("Test media 4");
+        addMediaModelToUploadArray("Test media 5");
 
         // upload media, dispatching all at a time (not waiting for each to finish)
         // also don't cancel any upload (0)
@@ -206,8 +205,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         while (iterator.hasNext()) {
             MediaModel media = iterator.next();
             MediaModel inStore = mMediaStore.getSiteMediaWithId(sSite, media.getMediaId());
-            AppLog.d(AppLog.T.MEDIA, "ESTE ES NULL? " + media.getId() + " - " + inStore);
-            //assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
+            AppLog.d(AppLog.T.MEDIA, "Is this NULL? " + media.getId() + " - " + inStore);
+            //  assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
         }
 
         // delete test images (bear in mind this is done sequentially)
@@ -226,11 +225,11 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         mUploadedMediaModels = new HashMap<>();
         // here we use the newMediaModel() with id builder, as we need it to identify uploads
-        mUploadedMediaModels.put(1, newMediaModel(1, "Test media 1", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(2, newMediaModel(2, "Test media 2", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(3, newMediaModel(3, "Test media 3", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(4, newMediaModel(4, "Test media 4", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(5, newMediaModel(5, "Test media 5", BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE));
+        addMediaModelToUploadArray("Test media 1");
+        addMediaModelToUploadArray("Test media 2");
+        addMediaModelToUploadArray("Test media 3");
+        addMediaModelToUploadArray("Test media 4");
+        addMediaModelToUploadArray("Test media 5");
 
         // use this variable to test cancelling 1, 2, 3, 4 or all 5 uploads
         int amountToCancel = 4;
@@ -368,22 +367,21 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         return true;
     }
 
+    private void addMediaModelToUploadArray(String title) {
+        MediaModel mediaModel = newMediaModel(title, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        mUploadedMediaModels.put(mediaModel.getId(), mediaModel);
+    }
+
     private MediaModel newMediaModel(String mediaPath, String mimeType) {
         return newMediaModel("Test Title", mediaPath, mimeType);
     }
 
     private MediaModel newMediaModel(String testTitle, String mediaPath, String mimeType) {
-        Random random = new Random();
-        return newMediaModel(random.nextInt() + 1, testTitle, mediaPath, mimeType);
-    }
-
-    private MediaModel newMediaModel(int id, String testTitle, String mediaPath, String mimeType) {
         final String testDescription = "Test Description";
         final String testCaption = "Test Caption";
         final String testAlt = "Test Alt";
 
-        MediaModel testMedia = new MediaModel();
-        testMedia.setId(id);
+        MediaModel testMedia = mMediaStore.instantiateMediaModel();
         testMedia.setFilePath(mediaPath);
         testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1, mediaPath.length()));
         testMedia.setMimeType(mimeType + testMedia.getFileExtension());
