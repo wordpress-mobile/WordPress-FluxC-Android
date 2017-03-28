@@ -194,7 +194,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         // upload media, dispatching all at a time (not waiting for each to finish)
         // also don't cancel any upload (0)
-        uploadMultipleMedia(new ArrayList(mUploadedMediaModels.values()), 0);
+        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()), 0);
 
         // verify all have been uploaded
         assertEquals(mUploadedMediaModels.size(), mUploadedIds.size());
@@ -233,7 +233,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         // upload media, dispatching all at a time (not waiting for each to finish)
         // also cancel the first n=`amountToCancel` media uploads
-        uploadMultipleMedia(new ArrayList(mUploadedMediaModels.values()), amountToCancel);
+        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()), amountToCancel);
 
         // verify how many have been uploaded
         assertEquals(mUploadedMediaModels.size() - amountToCancel, mUploadedIds.size());
