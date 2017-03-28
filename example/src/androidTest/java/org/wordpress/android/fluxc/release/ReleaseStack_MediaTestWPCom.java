@@ -251,7 +251,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         while (iterator.hasNext()) {
             MediaModel media = iterator.next();
             // delete only successfully uploaded test images
-            if (mUploadedIds.contains(media.getId())) {
+            if (mUploadedIds.contains(media.getMediaId())) {
                 deleteMedia(media);
             }
         }
