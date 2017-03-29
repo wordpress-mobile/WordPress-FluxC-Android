@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class TestUtils {
     public static final int DEFAULT_TIMEOUT_MS = 30000;
-    public static final int MULTIPLE_UPLOAD_TIMEOUT_MS = 120000;
+    public static final int MUTIPLE_UPLOADS_TIMEOUT_MS = 60000;
 
     public static void waitFor(long milliseconds) {
         try {

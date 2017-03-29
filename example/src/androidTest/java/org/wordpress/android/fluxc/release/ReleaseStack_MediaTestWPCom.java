@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -48,7 +47,6 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     private List<Long> mUploadedIds = new ArrayList<>();
     private HashMap<Integer, MediaModel> mUploadedMediaModels = new HashMap<>();
-
 
     @Override
     protected void setUp() throws Exception {
@@ -188,15 +186,15 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         mUploadedMediaModels = new HashMap<>();
         // here we use the newMediaModel() with id builder, as we need it to identify uploads
-        mUploadedMediaModels.put(1, newMediaModel(1, "Test media 1", BuildConfig.TEST_LOCAL_IMAGE_1, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(2, newMediaModel(2, "Test media 2", BuildConfig.TEST_LOCAL_IMAGE_2, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(3, newMediaModel(3, "Test media 3", BuildConfig.TEST_LOCAL_IMAGE_3, MediaUtils.MIME_TYPE_IMAGE));
-//        mUploadedMediaModels.put(4, newMediaModel(4, "Test media 4", BuildConfig.TEST_LOCAL_IMAGE_4, MediaUtils.MIME_TYPE_IMAGE));
-//        mUploadedMediaModels.put(5, newMediaModel(5, "Test media 5", BuildConfig.TEST_LOCAL_IMAGE_5, MediaUtils.MIME_TYPE_IMAGE));
+        addMediaModelToUploadArray("Test media 1");
+        addMediaModelToUploadArray("Test media 2");
+        addMediaModelToUploadArray("Test media 3");
+        addMediaModelToUploadArray("Test media 4");
+        addMediaModelToUploadArray("Test media 5");
 
         // upload media, dispatching all at a time (not waiting for each to finish)
         // also don't cancel any upload (0)
-        uploadMultipleMedia(new ArrayList(mUploadedMediaModels.values()), 0);
+        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()), 0);
 
         // verify all have been uploaded
         assertEquals(mUploadedMediaModels.size(), mUploadedIds.size());
@@ -205,9 +203,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         Iterator<MediaModel> iterator = mUploadedMediaModels.values().iterator();
         while (iterator.hasNext()) {
             MediaModel media = iterator.next();
-            MediaModel inStore = mMediaStore.getSiteMediaWithId(sSite, media.getMediaId());
-            AppLog.d(AppLog.T.MEDIA, "ESTE ES NULL? " + media.getId() + " - " + inStore);
-            //assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
+            assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
         }
 
         // delete test images (bear in mind this is done sequentially)
@@ -226,18 +222,18 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         mUploadedMediaModels = new HashMap<>();
         // here we use the newMediaModel() with id builder, as we need it to identify uploads
-        mUploadedMediaModels.put(1, newMediaModel(1, "Test media 1", BuildConfig.TEST_LOCAL_IMAGE_1, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(2, newMediaModel(2, "Test media 2", BuildConfig.TEST_LOCAL_IMAGE_2, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(3, newMediaModel(3, "Test media 3", BuildConfig.TEST_LOCAL_IMAGE_3, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(4, newMediaModel(4, "Test media 4", BuildConfig.TEST_LOCAL_IMAGE_4, MediaUtils.MIME_TYPE_IMAGE));
-        mUploadedMediaModels.put(5, newMediaModel(5, "Test media 5", BuildConfig.TEST_LOCAL_IMAGE_5, MediaUtils.MIME_TYPE_IMAGE));
+        addMediaModelToUploadArray("Test media 1");
+        addMediaModelToUploadArray("Test media 2");
+        addMediaModelToUploadArray("Test media 3");
+        addMediaModelToUploadArray("Test media 4");
+        addMediaModelToUploadArray("Test media 5");
 
         // use this variable to test cancelling 1, 2, 3, 4 or all 5 uploads
         int amountToCancel = 4;
 
         // upload media, dispatching all at a time (not waiting for each to finish)
         // also cancel the first n=`amountToCancel` media uploads
-        uploadMultipleMedia(new ArrayList(mUploadedMediaModels.values()), amountToCancel);
+        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()), amountToCancel);
 
         // verify how many have been uploaded
         assertEquals(mUploadedMediaModels.size() - amountToCancel, mUploadedIds.size());
@@ -249,13 +245,15 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
         }
 
-        // delete test images (bear in mind this is done sequentially as to not add complexity to the
-        // test)
+        // delete test images (bear in mind this is done sequentially)
         mNextEvent = TestEvents.DELETED_MEDIA;
         iterator = mUploadedMediaModels.values().iterator();
         while (iterator.hasNext()) {
             MediaModel media = iterator.next();
-            deleteMedia(media);
+            // delete only successfully uploaded test images
+            if (mUploadedIds.contains(media.getMediaId())) {
+                deleteMedia(media);
+            }
         }
     }
 
@@ -290,22 +288,20 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             if (mNextEvent == TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL) {
                 assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL, mNextEvent);
                 mUploadedIds.add(event.media.getMediaId());
-                // now update our own map with the new media id
+                // now update our own map object with the new media id
                 MediaModel media = mUploadedMediaModels.get(event.media.getId());
                 if (media != null) {
                     media.setMediaId(event.media.getMediaId());
                 } else {
-                    AppLog.e(AppLog.T.MEDIA, "trying to locate media event couldn' find it: " + event.media.getId());
+                    AppLog.e(AppLog.T.MEDIA, "mediamodel not found: " + event.media.getId());
                 }
                 assertNotNull(media);
             } else if (mNextEvent == TestEvents.UPLOADED_MUTIPLE_MEDIA) {
                 assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA, mNextEvent);
                 mUploadedIds.add(event.media.getMediaId());
-                // now update our own map with the new media id
-                AppLog.e(AppLog.T.MEDIA, "about to get mediamodel id: " + event.media.getId());
+                // now update our own map object with the new media id
                 MediaModel media = mUploadedMediaModels.get(event.media.getId());
                 if (media != null) {
-                    AppLog.e(AppLog.T.MEDIA, "mediamodel found, mediaId is: " + event.media.getMediaId());
                     media.setMediaId(event.media.getMediaId());
                 } else {
                     AppLog.e(AppLog.T.MEDIA, "mediamodel not found: " + event.media.getId());
@@ -368,22 +364,21 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         return true;
     }
 
+    private void addMediaModelToUploadArray(String title) {
+        MediaModel mediaModel = newMediaModel(title, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        mUploadedMediaModels.put(mediaModel.getId(), mediaModel);
+    }
+
     private MediaModel newMediaModel(String mediaPath, String mimeType) {
         return newMediaModel("Test Title", mediaPath, mimeType);
     }
 
     private MediaModel newMediaModel(String testTitle, String mediaPath, String mimeType) {
-        Random random = new Random();
-        return newMediaModel(random.nextInt() + 1, testTitle, mediaPath, mimeType);
-    }
-
-    private MediaModel newMediaModel(int id, String testTitle, String mediaPath, String mimeType) {
         final String testDescription = "Test Description";
         final String testCaption = "Test Caption";
         final String testAlt = "Test Alt";
 
-        MediaModel testMedia = new MediaModel();
-        testMedia.setId(id);
+        MediaModel testMedia = mMediaStore.instantiateMediaModel();
         testMedia.setFilePath(mediaPath);
         testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1, mediaPath.length()));
         testMedia.setMimeType(mimeType + testMedia.getFileExtension());
@@ -444,7 +439,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             }
         }
 
-        assertTrue(mCountDownLatch.await(TestUtils.MULTIPLE_UPLOAD_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.MUTIPLE_UPLOADS_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void deleteMedia(MediaModel media) throws InterruptedException {

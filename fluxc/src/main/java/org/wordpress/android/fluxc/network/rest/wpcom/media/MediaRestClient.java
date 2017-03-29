@@ -254,10 +254,10 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
         Call correspondingCall = mCurrentUploadCalls.get(mediaModelId);
         if (correspondingCall != null && correspondingCall.isExecuted() && !correspondingCall.isCanceled()) {
             AppLog.d(T.MEDIA, "Canceled in-progress upload: " + media.getFileName());
-            correspondingCall.cancel();
             // set the upload Cancelled flag on the media model so in case a failure is raised for this upload
             // after cancellation (or as a product of it) we don't need to notify about the error
             media.setUploadCancelled(true);
+            correspondingCall.cancel();
             // clean from the current uploads map
             mCurrentUploadCalls.remove(mediaModelId);
 
@@ -288,13 +288,11 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
         mCurrentUploadCalls.put(media.getId(), call);
 
         AppLog.d(T.MEDIA, "starting upload for: " + media.getId());
-
         call.enqueue(new Callback() {
             @Override
             public void onResponse(Call call, okhttp3.Response response) throws IOException {
                 if (response.isSuccessful()) {
                     AppLog.d(T.MEDIA, "media upload successful: " + response);
-                    AppLog.d(T.MEDIA, "media upload successful for media.getId: " + media.getId());
                     String jsonBody = response.body().string();
 
                     Gson gson = new Gson();
@@ -305,10 +303,7 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
                     List<MediaModel> responseMedia = getMediaListFromRestResponse(mediaResponse, siteModel.getId());
                     if (responseMedia != null && !responseMedia.isEmpty()) {
                         MediaModel uploadedMedia = responseMedia.get(0);
-                        AppLog.d(T.MEDIA, "mediaRestClient: uploadedMediaId: " + uploadedMedia.getId());
-                        AppLog.d(T.MEDIA, "mediaRestClient: uploadedMedia-MediaId: " + uploadedMedia.getMediaId());
                         uploadedMedia.setId(media.getId());
-                        AppLog.d(T.MEDIA, "mediaRestClient: new uploadedMediaId: " + uploadedMedia.getId());
                         notifyMediaUploaded(uploadedMedia, null);
                     } else {
                         MediaStore.MediaError error = new MediaError(MediaErrorType.PARSE_ERROR);
@@ -316,8 +311,9 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
                     }
                     // clean from the current uploads map
                     mCurrentUploadCalls.remove(media.getId());
-                    AppLog.d(T.MEDIA, "mediaRestClient: removed from current uploads, remaining: " + mCurrentUploadCalls.size());
-
+                    AppLog.d(T.MEDIA, "mediaRestClient: removed id: " +  media.getId() + " from current"
+                            + " uploads, remaining: "
+                            + mCurrentUploadCalls.size());
                 } else {
                     AppLog.w(T.MEDIA, "error uploading media: " + response);
                     notifyMediaUploaded(media, parseUploadError(response));
@@ -330,6 +326,8 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
             public void onFailure(Call call, IOException e) {
                 AppLog.w(T.MEDIA, "media upload failed: " + e);
                 if (!media.isUploadCancelled()) {
+                    // TODO it would be great to raise some more fine grained errors here, for
+                    // instance timeouts should be raised instead of GENERIC_ERROR
                     MediaStore.MediaError error = new MediaError(MediaErrorType.GENERIC_ERROR);
                     notifyMediaUploaded(media, error);
                 }
