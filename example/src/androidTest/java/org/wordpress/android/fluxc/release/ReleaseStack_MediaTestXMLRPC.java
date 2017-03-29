@@ -202,7 +202,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     public void testUploadMultipleImages() throws InterruptedException {
         // upload media to guarantee media exists
         mUploadedIds = new ArrayList<>();
-        mNextEvent = ReleaseStack_MediaTestXMLRPC.TestEvents.UPLOADED_MUTIPLE_MEDIA;
+        mNextEvent = TestEvents.UPLOADED_MUTIPLE_MEDIA;
 
         mUploadedMediaModels = new HashMap<>();
         // here we use the newMediaModel() with id builder, as we need it to identify uploads
@@ -227,7 +227,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         }
 
         // delete test images (bear in mind this is done sequentially)
-        mNextEvent = ReleaseStack_MediaTestXMLRPC.TestEvents.DELETED_MEDIA;
+        mNextEvent = TestEvents.DELETED_MEDIA;
         iterator = mUploadedMediaModels.values().iterator();
         while (iterator.hasNext()) {
             MediaModel media = iterator.next();
@@ -238,7 +238,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     public void testUploadMultipleImagesAndCancel() throws InterruptedException {
         // upload media to guarantee media exists
         mUploadedIds = new ArrayList<>();
-        mNextEvent = ReleaseStack_MediaTestXMLRPC.TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL;
+        mNextEvent = TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL;
 
         mUploadedMediaModels = new HashMap<>();
         // here we use the newMediaModel() with id builder, as we need it to identify uploads
@@ -266,7 +266,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         }
 
         // delete test images (bear in mind this is done sequentially)
-        mNextEvent = ReleaseStack_MediaTestXMLRPC.TestEvents.DELETED_MEDIA;
+        mNextEvent = TestEvents.DELETED_MEDIA;
         iterator = mUploadedMediaModels.values().iterator();
         while (iterator.hasNext()) {
             MediaModel media = iterator.next();
