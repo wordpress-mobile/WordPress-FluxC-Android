@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +43,9 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         FETCHED_MEDIA,
         DELETED_MEDIA,
         UPLOADED_MEDIA,
+        UPLOADED_MUTIPLE_MEDIA, // these don't exist in FluxC, but are an artifact to wait for all
+        // uploads to finish
+        UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL, // same as above
         NULL_ERROR,
         MALFORMED_ERROR,
         NOT_FOUND_ERROR,
@@ -50,6 +54,9 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     private TestEvents mNextEvent;
     private long mLastUploadedId = -1L;
+
+    private List<Long> mUploadedIds = new ArrayList<>();
+    private HashMap<Integer, MediaModel> mUploadedMediaModels = new HashMap<>();
 
     @Override
     protected void setUp() throws Exception {
