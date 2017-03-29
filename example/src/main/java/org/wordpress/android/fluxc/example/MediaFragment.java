@@ -231,7 +231,7 @@ public class MediaFragment extends Fragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMediaUploaded(OnMediaUploaded event) {
         if (!event.isError()) {
-            if (event.progress < 0.f) {
+            if (event.canceled) {
                 prependToLog("Upload canceled: " + event.media.getFileName());
                 mCancelButton.setEnabled(false);
                 mCurrentUpload = null;
