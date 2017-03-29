@@ -21,6 +21,7 @@ import org.wordpress.android.util.AppLog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -198,6 +199,84 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         deleteMedia(testMedia);
     }
 
+    public void testUploadMultipleImages() throws InterruptedException {
+        // upload media to guarantee media exists
+        mUploadedIds = new ArrayList<>();
+        mNextEvent = ReleaseStack_MediaTestXMLRPC.TestEvents.UPLOADED_MUTIPLE_MEDIA;
+
+        mUploadedMediaModels = new HashMap<>();
+        // here we use the newMediaModel() with id builder, as we need it to identify uploads
+        addMediaModelToUploadArray("Test media 1");
+        addMediaModelToUploadArray("Test media 2");
+        addMediaModelToUploadArray("Test media 3");
+        addMediaModelToUploadArray("Test media 4");
+        addMediaModelToUploadArray("Test media 5");
+
+        // upload media, dispatching all at a time (not waiting for each to finish)
+        // also don't cancel any upload (0)
+        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()), 0);
+
+        // verify all have been uploaded
+        assertEquals(mUploadedMediaModels.size(), mUploadedIds.size());
+
+        // verify they exist in the MediaStore
+        Iterator<MediaModel> iterator = mUploadedMediaModels.values().iterator();
+        while (iterator.hasNext()) {
+            MediaModel media = iterator.next();
+            assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
+        }
+
+        // delete test images (bear in mind this is done sequentially)
+        mNextEvent = ReleaseStack_MediaTestXMLRPC.TestEvents.DELETED_MEDIA;
+        iterator = mUploadedMediaModels.values().iterator();
+        while (iterator.hasNext()) {
+            MediaModel media = iterator.next();
+            deleteMedia(media);
+        }
+    }
+
+    public void testUploadMultipleImagesAndCancel() throws InterruptedException {
+        // upload media to guarantee media exists
+        mUploadedIds = new ArrayList<>();
+        mNextEvent = ReleaseStack_MediaTestXMLRPC.TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL;
+
+        mUploadedMediaModels = new HashMap<>();
+        // here we use the newMediaModel() with id builder, as we need it to identify uploads
+        addMediaModelToUploadArray("Test media 1");
+        addMediaModelToUploadArray("Test media 2");
+        addMediaModelToUploadArray("Test media 3");
+        addMediaModelToUploadArray("Test media 4");
+        addMediaModelToUploadArray("Test media 5");
+
+        // use this variable to test cancelling 1, 2, 3, 4 or all 5 uploads
+        int amountToCancel = 4;
+
+        // upload media, dispatching all at a time (not waiting for each to finish)
+        // also cancel the first n=`amountToCancel` media uploads
+        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()), amountToCancel);
+
+        // verify how many have been uploaded
+        assertEquals(mUploadedMediaModels.size() - amountToCancel, mUploadedIds.size());
+
+        // verify each one of the remaining, non-cancelled uploads exist in the MediaStore
+        Iterator<MediaModel> iterator = mUploadedMediaModels.values().iterator();
+        while (iterator.hasNext()) {
+            MediaModel media = iterator.next();
+            assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
+        }
+
+        // delete test images (bear in mind this is done sequentially)
+        mNextEvent = ReleaseStack_MediaTestXMLRPC.TestEvents.DELETED_MEDIA;
+        iterator = mUploadedMediaModels.values().iterator();
+        while (iterator.hasNext()) {
+            MediaModel media = iterator.next();
+            // delete only successfully uploaded test images
+            if (mUploadedIds.contains(media.getMediaId())) {
+                deleteMedia(media);
+            }
+        }
+    }
+
     public void testUploadVideo() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_VIDEO, MediaUtils.MIME_TYPE_VIDEO);
@@ -218,10 +297,41 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Subscribe
     public void onMediaUploaded(OnMediaUploaded event) throws InterruptedException {
         if (event.isError()) {
-            mCountDownLatch.countDown();
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        if (event.canceled) {
+            if (mNextEvent == TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL) {
+                assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL, mNextEvent);
+                mCountDownLatch.countDown();
+            }
         } else if (event.completed) {
-            mLastUploadedId = event.media.getMediaId();
-            assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
+            if (mNextEvent == TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL) {
+                assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL, mNextEvent);
+                mUploadedIds.add(event.media.getMediaId());
+                // now update our own map object with the new media id
+                MediaModel media = mUploadedMediaModels.get(event.media.getId());
+                if (media != null) {
+                    media.setMediaId(event.media.getMediaId());
+                } else {
+                    AppLog.e(AppLog.T.MEDIA, "mediamodel not found: " + event.media.getId());
+                }
+                assertNotNull(media);
+            } else if (mNextEvent == TestEvents.UPLOADED_MUTIPLE_MEDIA) {
+                assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA, mNextEvent);
+                mUploadedIds.add(event.media.getMediaId());
+                // now update our own map object with the new media id
+                MediaModel media = mUploadedMediaModels.get(event.media.getId());
+                if (media != null) {
+                    media.setMediaId(event.media.getMediaId());
+                } else {
+                    AppLog.e(AppLog.T.MEDIA, "mediamodel not found: " + event.media.getId());
+                }
+                assertNotNull(media);
+            } else
+            if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
+                assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
+                mLastUploadedId = event.media.getMediaId();
+            }
             mCountDownLatch.countDown();
         }
     }
@@ -263,13 +373,21 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch.countDown();
     }
 
+    private void addMediaModelToUploadArray(String title) {
+        MediaModel mediaModel = newMediaModel(title, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        mUploadedMediaModels.put(mediaModel.getId(), mediaModel);
+    }
+
     private MediaModel newMediaModel(String mediaPath, String mimeType) {
-        final String testTitle = "Test Title";
+        return newMediaModel("Test Title", mediaPath, mimeType);
+    }
+
+    private MediaModel newMediaModel(String testTitle, String mediaPath, String mimeType) {
         final String testDescription = "Test Description";
         final String testCaption = "Test Caption";
         final String testAlt = "Test Alt";
 
-        MediaModel testMedia = new MediaModel();
+        MediaModel testMedia = mMediaStore.instantiateMediaModel();
         testMedia.setFilePath(mediaPath);
         testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1, mediaPath.length()));
         testMedia.setMimeType(mimeType + testMedia.getFileExtension());
@@ -309,6 +427,28 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void uploadMultipleMedia(List<MediaModel> mediaList, int howManyFirstToCancel) throws InterruptedException {
+        mCountDownLatch = new CountDownLatch(mediaList.size());
+        for (MediaModel media : mediaList) {
+            MediaStore.MediaPayload payload = new MediaStore.MediaPayload(sSite, media);
+            mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        }
+
+        if (howManyFirstToCancel > 0 && howManyFirstToCancel <= mediaList.size()) {
+            // wait a bit and issue the cancel command
+            TestUtils.waitFor(1000);
+
+            // we'e only cancelling the first n=howManyFirstToCancel uploads
+            for (int i = 0; i < howManyFirstToCancel; i++) {
+                MediaModel media = mediaList.get(i);
+                MediaStore.MediaPayload payload = new MediaStore.MediaPayload(sSite, media);
+                mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(payload));
+            }
+        }
+
+        assertTrue(mCountDownLatch.await(TestUtils.MUTIPLE_UPLOADS_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void deleteMedia(MediaModel media) throws InterruptedException {
