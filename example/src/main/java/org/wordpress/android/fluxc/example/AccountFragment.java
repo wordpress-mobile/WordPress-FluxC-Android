@@ -13,6 +13,7 @@ import android.widget.EditText;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.action.AccountAction;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
@@ -53,6 +54,14 @@ public class AccountFragment extends Fragment {
                 mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
             }
         });
+
+        view.findViewById(R.id.account_email_verification).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDispatcher.dispatch(AccountActionBuilder.newSendVerificationEmailAction());
+            }
+        });
+
         return view;
     }
 
@@ -74,7 +83,13 @@ public class AccountFragment extends Fragment {
         if (!mAccountStore.hasAccessToken()) {
             prependToLog("Signed Out");
         } else {
-            if (event.accountInfosChanged) {
+            if (event.causeOfChange == AccountAction.SEND_VERIFICATION_EMAIL) {
+                if (!event.isError()) {
+                    prependToLog("Verification email sent, check your inbox.");
+                } else {
+                    prependToLog("Error sending verification email. Are you already verified?");
+                }
+            } else if (event.accountInfosChanged) {
                 prependToLog("Display Name: " + mAccountStore.getAccount().getDisplayName());
             }
         }
