@@ -44,9 +44,9 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         FETCHED_MEDIA,
         DELETED_MEDIA,
         UPLOADED_MEDIA,
-        UPLOADED_MUTIPLE_MEDIA, // these don't exist in FluxC, but are an artifact to wait for all
+        UPLOADED_MULTIPLE_MEDIA, // these don't exist in FluxC, but are an artifact to wait for all
         // uploads to finish
-        UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL, // same as above
+        UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL, // same as above
         NULL_ERROR,
         MALFORMED_ERROR,
         NOT_FOUND_ERROR,
@@ -202,7 +202,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     public void testUploadMultipleImages() throws InterruptedException {
         // upload media to guarantee media exists
         mUploadedIds = new ArrayList<>();
-        mNextEvent = TestEvents.UPLOADED_MUTIPLE_MEDIA;
+        mNextEvent = TestEvents.UPLOADED_MULTIPLE_MEDIA;
 
         mUploadedMediaModels = new HashMap<>();
         // here we use the newMediaModel() with id builder, as we need it to identify uploads
@@ -238,7 +238,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     public void testUploadMultipleImagesAndCancel() throws InterruptedException {
         // upload media to guarantee media exists
         mUploadedIds = new ArrayList<>();
-        mNextEvent = TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL;
+        mNextEvent = TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL;
 
         mUploadedMediaModels = new HashMap<>();
         // here we use the newMediaModel() with id builder, as we need it to identify uploads
@@ -300,13 +300,13 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         if (event.canceled) {
-            if (mNextEvent == TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL) {
-                assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL, mNextEvent);
+            if (mNextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL) {
+                assertEquals(TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL, mNextEvent);
                 mCountDownLatch.countDown();
             }
         } else if (event.completed) {
-            if (mNextEvent == TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL) {
-                assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA_WITH_CANCEL, mNextEvent);
+            if (mNextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL) {
+                assertEquals(TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL, mNextEvent);
                 mUploadedIds.add(event.media.getMediaId());
                 // now update our own map object with the new media id
                 MediaModel media = mUploadedMediaModels.get(event.media.getId());
@@ -316,8 +316,8 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
                     AppLog.e(AppLog.T.MEDIA, "mediamodel not found: " + event.media.getId());
                 }
                 assertNotNull(media);
-            } else if (mNextEvent == TestEvents.UPLOADED_MUTIPLE_MEDIA) {
-                assertEquals(TestEvents.UPLOADED_MUTIPLE_MEDIA, mNextEvent);
+            } else if (mNextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA) {
+                assertEquals(TestEvents.UPLOADED_MULTIPLE_MEDIA, mNextEvent);
                 mUploadedIds.add(event.media.getMediaId());
                 // now update our own map object with the new media id
                 MediaModel media = mUploadedMediaModels.get(event.media.getId());
@@ -448,7 +448,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
             }
         }
 
-        assertTrue(mCountDownLatch.await(TestUtils.MUTIPLE_UPLOADS_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.MULTIPLE_UPLOADS_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void deleteMedia(MediaModel media) throws InterruptedException {
