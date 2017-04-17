@@ -439,7 +439,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             }
         }
 
-        assertTrue(mCountDownLatch.await(TestUtils.MUTIPLE_UPLOADS_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mCountDownLatch.await(TestUtils.MULTIPLE_UPLOADS_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void deleteMedia(MediaModel media) throws InterruptedException {
