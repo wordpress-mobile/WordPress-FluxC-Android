@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
+import org.wordpress.android.fluxc.store.PostStore.OnPostsSearched;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
 import org.wordpress.android.fluxc.store.PostStore.SearchPostsPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
@@ -121,11 +122,6 @@ public class PostsFragment extends Fragment {
             return;
         }
 
-        if (event.causeOfChange.equals(PostAction.SEARCH_POSTS)) {
-            prependToLog("Found " + event.rowsAffected + " posts from the search.");
-            return;
-        }
-
         SiteModel firstSite = getFirstSite();
         if (!mPostStore.getPostsForSite(firstSite).isEmpty()) {
             if (event.causeOfChange.equals(PostAction.FETCH_POSTS)
@@ -141,6 +137,18 @@ public class PostsFragment extends Fragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPostUploaded(OnPostUploaded event) {
         prependToLog("Post uploaded! Remote post id: " + event.post.getRemotePostId());
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPostsSearched(OnPostsSearched event) {
+        if (event.isError()) {
+            prependToLog("Error searching posts: " + event.error.type);
+            return;
+        }
+        List<PostModel> results = event.searchResults != null ? event.searchResults.getPosts() : null;
+        int resultCount = results == null ? 0 : results.size();
+        prependToLog("Found " + resultCount + " posts from the search.");
     }
 
     private void prependToLog(final String s) {
