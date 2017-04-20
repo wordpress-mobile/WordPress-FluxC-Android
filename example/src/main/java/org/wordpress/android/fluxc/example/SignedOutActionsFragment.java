@@ -19,11 +19,14 @@ import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
+import org.wordpress.android.fluxc.network.rest.wpcom.site.DomainSuggestionResponse;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
+import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
 import org.wordpress.android.fluxc.store.SiteStore.OnURLChecked;
+import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
 
 import javax.inject.Inject;
 
@@ -61,6 +64,12 @@ public class SignedOutActionsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 showCheckWPComUrlDialog();
+            }
+        });
+        view.findViewById(R.id.domain_suggestions).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDomainSuggestionsDialog();
             }
         });
         return view;
@@ -110,6 +119,23 @@ public class SignedOutActionsFragment extends Fragment {
         alert.show();
     }
 
+    private void showDomainSuggestionsDialog() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+        final EditText editText = new EditText(getActivity());
+        editText.setSingleLine();
+        alert.setMessage("Suggest domain names (max 5), by keyword:");
+        alert.setView(editText);
+        alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String keyword = editText.getText().toString();
+                SuggestDomainsPayload payload = new SuggestDomainsPayload(keyword, true, false, 5);
+                mDispatcher.dispatch(SiteActionBuilder.newSuggestDomainsAction(payload));
+            }
+        });
+        alert.show();
+    }
+
+
     private void showMagicLinkDialog() {
         AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
         final EditText editText = new EditText(getActivity());
@@ -154,6 +180,18 @@ public class SignedOutActionsFragment extends Fragment {
         } else {
             prependToLog("OnUrlChecked: " + event.url + (event.isWPCom ? " is" : " is not")
                          + " accessible via WordPress.com API");
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSuggestedDomains(OnSuggestedDomains event) {
+        if (event.isError()) {
+            prependToLog("OnSuggestedDomains: error: " + event.error.type + " - " + event.error.message);
+        } else {
+            for (DomainSuggestionResponse suggestion : event.suggestions) {
+                prependToLog("Suggestion: " + suggestion.domain_name + " - " + suggestion.cost);
+            }
         }
     }
 
