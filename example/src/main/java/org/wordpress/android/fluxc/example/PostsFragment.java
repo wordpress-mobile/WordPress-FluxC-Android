@@ -36,6 +36,8 @@ public class PostsFragment extends Fragment {
     @Inject PostStore mPostStore;
     @Inject Dispatcher mDispatcher;
 
+    private int mSearchOffset = 0;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,9 +95,7 @@ public class PostsFragment extends Fragment {
                     ToastUtils.showToast(getActivity(), "Couldn't find EditText, refresh fragment");
                     return;
                 }
-                String searchTerm = searchQuery.getText().toString();
-                SearchPostsPayload payload = new SearchPostsPayload(getFirstSite(), searchTerm);
-                mDispatcher.dispatch(PostActionBuilder.newSearchPostsAction(payload));
+                searchPosts(searchQuery.getText().toString(), 0);
             }
         });
         return view;
@@ -146,9 +146,23 @@ public class PostsFragment extends Fragment {
             prependToLog("Error searching posts: " + event.error.type);
             return;
         }
+
         List<PostModel> results = event.searchResults != null ? event.searchResults.getPosts() : null;
         int resultCount = results == null ? 0 : results.size();
         prependToLog("Found " + resultCount + " posts from the search.");
+
+        if (event.canLoadMore) {
+            prependToLog("Can search more posts, dispatching...");
+            mSearchOffset += resultCount;
+            searchPosts(event.searchTerm, mSearchOffset);
+        } else {
+            mSearchOffset = 0;
+        }
+    }
+
+    private void searchPosts(String searchQuery, int offset) {
+        SearchPostsPayload payload = new SearchPostsPayload(getFirstSite(), searchQuery, offset);
+        mDispatcher.dispatch(PostActionBuilder.newSearchPostsAction(payload));
     }
 
     private void prependToLog(final String s) {
