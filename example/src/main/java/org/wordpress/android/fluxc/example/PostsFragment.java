@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -19,7 +20,9 @@ import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
+import org.wordpress.android.fluxc.store.PostStore.SearchPostsPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.util.ToastUtils;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -46,7 +49,7 @@ public class PostsFragment extends Fragment {
         view.findViewById(R.id.fetch_first_site_posts).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                FetchPostsPayload payload = new FetchPostsPayload(mSiteStore.getSites().get(0));
+                FetchPostsPayload payload = new FetchPostsPayload(getFirstSite());
                 mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
             }
         });
@@ -54,11 +57,11 @@ public class PostsFragment extends Fragment {
         view.findViewById(R.id.create_new_post_first_site).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                PostModel examplePost = mPostStore.instantiatePostModel(mSiteStore.getSites().get(0), false);
+                PostModel examplePost = mPostStore.instantiatePostModel(getFirstSite(), false);
                 examplePost.setTitle("From example activity");
                 examplePost.setContent("Hi there, I'm a post from FluxC!");
                 examplePost.setFeaturedImageId(0);
-                RemotePostPayload payload = new RemotePostPayload(examplePost, mSiteStore.getSites().get(0));
+                RemotePostPayload payload = new RemotePostPayload(examplePost, getFirstSite());
                 mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
             }
         });
@@ -66,7 +69,7 @@ public class PostsFragment extends Fragment {
         view.findViewById(R.id.delete_a_post_from_first_site).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                SiteModel firstSite = mSiteStore.getSites().get(0);
+                SiteModel firstSite = getFirstSite();
                 List<PostModel> posts = mPostStore.getPostsForSite(firstSite);
                 Collections.sort(posts, new Comparator<PostModel>() {
                     @Override
@@ -78,6 +81,20 @@ public class PostsFragment extends Fragment {
                     RemotePostPayload payload = new RemotePostPayload(posts.get(0), firstSite);
                     mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(payload));
                 }
+            }
+        });
+
+        final TextView searchQuery = (TextView) view.findViewById(R.id.search_posts_query);
+        view.findViewById(R.id.search_posts).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (searchQuery == null) {
+                    ToastUtils.showToast(getActivity(), "Couldn't find EditText, refresh fragment");
+                    return;
+                }
+                String searchTerm = searchQuery.getText().toString();
+                SearchPostsPayload payload = new SearchPostsPayload(getFirstSite(), searchTerm);
+                mDispatcher.dispatch(PostActionBuilder.newSearchPostsAction(payload));
             }
         });
         return view;
@@ -104,7 +121,12 @@ public class PostsFragment extends Fragment {
             return;
         }
 
-        SiteModel firstSite = mSiteStore.getSites().get(0);
+        if (event.causeOfChange.equals(PostAction.SEARCH_POSTS)) {
+            prependToLog("Found " + event.rowsAffected + " posts from the search.");
+            return;
+        }
+
+        SiteModel firstSite = getFirstSite();
         if (!mPostStore.getPostsForSite(firstSite).isEmpty()) {
             if (event.causeOfChange.equals(PostAction.FETCH_POSTS)
                 || event.causeOfChange.equals(PostAction.FETCH_PAGES)) {
@@ -123,5 +145,9 @@ public class PostsFragment extends Fragment {
 
     private void prependToLog(final String s) {
         ((MainExampleActivity) getActivity()).prependToLog(s);
+    }
+
+    private SiteModel getFirstSite() {
+        return mSiteStore.getSites().get(0);
     }
 }
