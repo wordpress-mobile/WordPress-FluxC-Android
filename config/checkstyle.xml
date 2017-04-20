@@ -51,6 +51,12 @@
       <property name="severity" value="error"/>
     </module>
 
+    <module name="RegexpSingleline">
+        <property name="format" value="@[\S]*(\([{]?\&quot;.*\&quot;[}]?\)|\([^\&quot;]*\))[^ \t]"/>
+        <property name="message" value="In-line annotations must be followed by one whitespace"/>
+        <property name="severity" value="error"/>
+    </module>
+
     <!-- Specific to FluxC / WordPress -->
     <module name="RegexpSingleline">
       <property name="format" value="dotcom"/>

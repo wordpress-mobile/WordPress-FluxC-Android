@@ -122,18 +122,18 @@ public class MockedNetworkModule {
     @Provides
     public MediaRestClient provideMediaRestClient(Dispatcher dispatcher, Context appContext,
                                                   @Named("regular") RequestQueue requestQueue,
-                                                  @Named("regular") OkHttpClient.Builder okHttpClientBuilder,
+                                                  @Named("regular") OkHttpClient okHttpClient,
                                                   AccessToken token, UserAgent userAgent) {
-        return new MediaRestClient(appContext, dispatcher, requestQueue, okHttpClientBuilder, token, userAgent);
+        return new MediaRestClient(appContext, dispatcher, requestQueue, okHttpClient, token, userAgent);
     }
 
     @Singleton
     @Provides
-    public MediaXMLRPCClient provideMediaXMLRPCClient(Dispatcher dispatcher, OkHttpClient.Builder okHttpClientBuilder,
+    public MediaXMLRPCClient provideMediaXMLRPCClient(Dispatcher dispatcher, OkHttpClient okHttpClient,
                                                       @Named("regular") RequestQueue requestQueue,
                                                       AccessToken token, UserAgent userAgent,
                                                       HTTPAuthManager httpAuthManager) {
-        return new MediaXMLRPCClient(dispatcher, requestQueue, okHttpClientBuilder, token, userAgent, httpAuthManager);
+        return new MediaXMLRPCClient(dispatcher, requestQueue, okHttpClient, token, userAgent, httpAuthManager);
     }
 
     @Singleton
