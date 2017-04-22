@@ -179,6 +179,37 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         deleteMedia(testMedia);
     }
 
+    public void testUploadImageAttachedToPost() throws InterruptedException {
+        // Upload media attached to remotely saved post
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        testMedia.setLocalPostId(5);
+        testMedia.setPostId(1);
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
+        uploadMedia(testMedia);
+
+        testMedia.setMediaId(mLastUploadedId);
+        MediaModel uploadedMedia = mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId());
+        assertNotNull(uploadedMedia);
+        assertEquals(1, uploadedMedia.getPostId());
+
+        mNextEvent = TestEvents.DELETED_MEDIA;
+        deleteMedia(testMedia);
+
+        // Upload media attached to a local draft
+        testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        testMedia.setLocalPostId(5);
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
+        uploadMedia(testMedia);
+
+        testMedia.setMediaId(mLastUploadedId);
+        uploadedMedia = mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId());
+        assertNotNull(uploadedMedia);
+        assertEquals(0, uploadedMedia.getPostId());
+
+        mNextEvent = TestEvents.DELETED_MEDIA;
+        deleteMedia(testMedia);
+    }
+
     public void testUploadMultipleImages() throws InterruptedException {
         // upload media to guarantee media exists
         mUploadedIds = new ArrayList<>();
