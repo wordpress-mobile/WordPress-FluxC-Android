@@ -7,12 +7,14 @@ import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
+import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListPayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaErrorType;
+import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
@@ -293,6 +295,72 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         deleteMedia(testMedia);
     }
 
+    public void testUploadImageOlderWordPress() throws InterruptedException {
+        // Before WordPress 4.4, a separate call to wp.getMediaItem was necessary after wp.uploadFile completed.
+        // This is a regression test making sure we're falling back to that behaviour when expected field are missing
+        // (using a WordPress 4.3 site).
+        SiteModel site = new SiteModel();
+        site.setId(2);
+        site.setSelfHostedSiteId(0);
+        site.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_WORDPRESS_4_3);
+        site.setPassword(BuildConfig.TEST_WPORG_PASSWORD_SH_WORDPRESS_4_3);
+        site.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_WORDPRESS_4_3_ENDPOINT);
+
+        // upload media to guarantee media exists
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
+
+        MediaPayload payload = new MediaPayload(site, testMedia);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // verify and set media ID
+        assertTrue(mLastUploadedId >= 0);
+        testMedia.setMediaId(mLastUploadedId);
+        assertNotNull(mMediaStore.getSiteMediaWithId(site, testMedia.getMediaId()));
+
+        // delete test image
+        mNextEvent = TestEvents.DELETED_MEDIA;
+        MediaPayload deletePayload = new MediaPayload(site, testMedia);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testUploadVideoOlderWordPress() throws InterruptedException {
+        // Before WordPress 4.4, a separate call to wp.getMediaItem was necessary after wp.uploadFile completed.
+        // This is a regression test making sure we're falling back to that behaviour when expected field are missing
+        // (using a WordPress 4.3 site).
+        SiteModel site = new SiteModel();
+        site.setId(2);
+        site.setSelfHostedSiteId(0);
+        site.setUsername(BuildConfig.TEST_WPORG_USERNAME_SH_WORDPRESS_4_3);
+        site.setPassword(BuildConfig.TEST_WPORG_PASSWORD_SH_WORDPRESS_4_3);
+        site.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_WORDPRESS_4_3_ENDPOINT);
+
+        // upload media to guarantee media exists
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_VIDEO, MediaUtils.MIME_TYPE_VIDEO);
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
+
+        MediaPayload payload = new MediaPayload(site, testMedia);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // verify and set media ID
+        assertTrue(mLastUploadedId >= 0);
+        testMedia.setMediaId(mLastUploadedId);
+        assertNotNull(mMediaStore.getSiteMediaWithId(site, testMedia.getMediaId()));
+
+        // delete test image
+        mNextEvent = TestEvents.DELETED_MEDIA;
+        MediaPayload deletePayload = new MediaPayload(site, testMedia);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onMediaUploaded(OnMediaUploaded event) throws InterruptedException {
@@ -402,7 +470,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     private void pushMedia(MediaModel media) throws InterruptedException {
-        MediaStore.MediaPayload payload = new MediaStore.MediaPayload(sSite, media);
+        MediaPayload payload = new MediaPayload(sSite, media);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -416,14 +484,14 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     private void fetchMedia(MediaModel media) throws InterruptedException {
-        MediaStore.MediaPayload fetchPayload = new MediaStore.MediaPayload(sSite, media, null);
+        MediaPayload fetchPayload = new MediaPayload(sSite, media, null);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void uploadMedia(MediaModel media) throws InterruptedException {
-        MediaStore.MediaPayload payload = new MediaStore.MediaPayload(sSite, media);
+        MediaPayload payload = new MediaPayload(sSite, media);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -432,7 +500,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     private void uploadMultipleMedia(List<MediaModel> mediaList, int howManyFirstToCancel) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(mediaList.size());
         for (MediaModel media : mediaList) {
-            MediaStore.MediaPayload payload = new MediaStore.MediaPayload(sSite, media);
+            MediaPayload payload = new MediaPayload(sSite, media);
             mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         }
 
@@ -443,7 +511,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
             // we'e only cancelling the first n=howManyFirstToCancel uploads
             for (int i = 0; i < howManyFirstToCancel; i++) {
                 MediaModel media = mediaList.get(i);
-                MediaStore.MediaPayload payload = new MediaStore.MediaPayload(sSite, media);
+                MediaPayload payload = new MediaPayload(sSite, media);
                 mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(payload));
             }
         }
@@ -452,7 +520,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     private void deleteMedia(MediaModel media) throws InterruptedException {
-        MediaStore.MediaPayload deletePayload = new MediaStore.MediaPayload(sSite, media);
+        MediaPayload deletePayload = new MediaPayload(sSite, media);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
