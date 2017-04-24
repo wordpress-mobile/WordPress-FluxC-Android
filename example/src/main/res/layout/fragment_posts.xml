@@ -23,4 +23,16 @@
         android:layout_height="wrap_content"
         android:text="Delete a post from first site" />
 
+    <EditText
+        android:id="@+id/search_posts_query"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Search query" />
+
+    <Button
+        android:id="@+id/search_posts"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Search" />
+
 </LinearLayout>

@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -18,8 +19,11 @@ import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
+import org.wordpress.android.fluxc.store.PostStore.OnPostsSearched;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
+import org.wordpress.android.fluxc.store.PostStore.SearchPostsPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.util.ToastUtils;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,6 +35,8 @@ public class PostsFragment extends Fragment {
     @Inject SiteStore mSiteStore;
     @Inject PostStore mPostStore;
     @Inject Dispatcher mDispatcher;
+
+    private int mSearchOffset = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,7 +52,7 @@ public class PostsFragment extends Fragment {
         view.findViewById(R.id.fetch_first_site_posts).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                FetchPostsPayload payload = new FetchPostsPayload(mSiteStore.getSites().get(0));
+                FetchPostsPayload payload = new FetchPostsPayload(getFirstSite());
                 mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
             }
         });
@@ -54,11 +60,11 @@ public class PostsFragment extends Fragment {
         view.findViewById(R.id.create_new_post_first_site).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                PostModel examplePost = mPostStore.instantiatePostModel(mSiteStore.getSites().get(0), false);
+                PostModel examplePost = mPostStore.instantiatePostModel(getFirstSite(), false);
                 examplePost.setTitle("From example activity");
                 examplePost.setContent("Hi there, I'm a post from FluxC!");
                 examplePost.setFeaturedImageId(0);
-                RemotePostPayload payload = new RemotePostPayload(examplePost, mSiteStore.getSites().get(0));
+                RemotePostPayload payload = new RemotePostPayload(examplePost, getFirstSite());
                 mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
             }
         });
@@ -66,7 +72,7 @@ public class PostsFragment extends Fragment {
         view.findViewById(R.id.delete_a_post_from_first_site).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                SiteModel firstSite = mSiteStore.getSites().get(0);
+                SiteModel firstSite = getFirstSite();
                 List<PostModel> posts = mPostStore.getPostsForSite(firstSite);
                 Collections.sort(posts, new Comparator<PostModel>() {
                     @Override
@@ -78,6 +84,18 @@ public class PostsFragment extends Fragment {
                     RemotePostPayload payload = new RemotePostPayload(posts.get(0), firstSite);
                     mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(payload));
                 }
+            }
+        });
+
+        final TextView searchQuery = (TextView) view.findViewById(R.id.search_posts_query);
+        view.findViewById(R.id.search_posts).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (searchQuery == null) {
+                    ToastUtils.showToast(getActivity(), "Couldn't find EditText, refresh fragment");
+                    return;
+                }
+                searchPosts(searchQuery.getText().toString(), 0);
             }
         });
         return view;
@@ -104,7 +122,7 @@ public class PostsFragment extends Fragment {
             return;
         }
 
-        SiteModel firstSite = mSiteStore.getSites().get(0);
+        SiteModel firstSite = getFirstSite();
         if (!mPostStore.getPostsForSite(firstSite).isEmpty()) {
             if (event.causeOfChange.equals(PostAction.FETCH_POSTS)
                 || event.causeOfChange.equals(PostAction.FETCH_PAGES)) {
@@ -121,7 +139,37 @@ public class PostsFragment extends Fragment {
         prependToLog("Post uploaded! Remote post id: " + event.post.getRemotePostId());
     }
 
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPostsSearched(OnPostsSearched event) {
+        if (event.isError()) {
+            prependToLog("Error searching posts: " + event.error.type);
+            return;
+        }
+
+        List<PostModel> results = event.searchResults != null ? event.searchResults.getPosts() : null;
+        int resultCount = results == null ? 0 : results.size();
+        prependToLog("Found " + resultCount + " posts from the search.");
+
+        if (event.canLoadMore) {
+            prependToLog("Can search more posts, dispatching...");
+            mSearchOffset += resultCount;
+            searchPosts(event.searchTerm, mSearchOffset);
+        } else {
+            mSearchOffset = 0;
+        }
+    }
+
+    private void searchPosts(String searchQuery, int offset) {
+        SearchPostsPayload payload = new SearchPostsPayload(getFirstSite(), searchQuery, offset);
+        mDispatcher.dispatch(PostActionBuilder.newSearchPostsAction(payload));
+    }
+
     private void prependToLog(final String s) {
         ((MainExampleActivity) getActivity()).prependToLog(s);
+    }
+
+    private SiteModel getFirstSite() {
+        return mSiteStore.getSites().get(0);
     }
 }
