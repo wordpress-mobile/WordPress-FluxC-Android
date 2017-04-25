@@ -191,6 +191,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         MediaModel uploadedMedia = mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId());
         assertNotNull(uploadedMedia);
         assertEquals(1, uploadedMedia.getPostId());
+        assertEquals(5, uploadedMedia.getLocalPostId());
 
         mNextEvent = TestEvents.DELETED_MEDIA;
         deleteMedia(testMedia);
@@ -205,6 +206,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         uploadedMedia = mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId());
         assertNotNull(uploadedMedia);
         assertEquals(0, uploadedMedia.getPostId());
+        assertEquals(5, uploadedMedia.getLocalPostId());
 
         mNextEvent = TestEvents.DELETED_MEDIA;
         deleteMedia(testMedia);
