@@ -147,7 +147,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
 
         assertEquals(1, mSiteStore.getSitesCount());
         assertEquals(0, mSiteStore.getWPComSitesCount());
-        assertEquals(0, mSiteStore.getSelfHostedSitesCount());
+        assertEquals(1, mSiteStore.getSelfHostedSitesCount());
         assertEquals(1, mSiteStore.getJetpackSitesCount());
 
         SiteModel site = mSiteStore.getSites().get(0);
@@ -224,11 +224,13 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         fetchSite(mSiteStore.getSites().get(0));
 
         assertEquals(1, mSiteStore.getSitesCount());
-        // We added the site from an XMLRPC call, but it's a Jetpack site accessible via the .com REST API, but
-        // not considered a .com site
+        // We added the site from an XMLRPC call, but it's a Jetpack site accessible via the .com REST API but accessed
+        // via XMLRPC (ie. not pull from the REST call).
         assertTrue(mSiteStore.hasJetpackSite());
+        // not considered a .com site
         assertFalse(mSiteStore.hasWPComSite());
-        assertFalse(mSiteStore.hasSelfHostedSite());
+        // accessed via XMLRPC, that's why we consider it a "self hosted site"
+        assertTrue(mSiteStore.hasSelfHostedSite());
 
         // Authenticate as WP.com user with a single site, which is the Jetpack site we already added as self-hosted
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
@@ -270,22 +272,24 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         fetchSite(selfHostedSite);
 
         assertEquals(totalSiteCount + 1, mSiteStore.getSitesCount());
-        // The site is connected to a different wpcom account but we don't make that difference yet.
+        // The site is connected to a different wpcom account but we count it as a Jetpack site anyway.
         assertEquals(jetpackSiteCount + 1, mSiteStore.getJetpackSitesCount());
-        assertEquals(selfhostedSiteCount, mSiteStore.getSelfHostedSitesCount());
+        assertEquals(selfhostedSiteCount + 1, mSiteStore.getSelfHostedSitesCount());
         assertEquals(wpComSiteCount, mSiteStore.getWPComSitesCount());
-        assertEquals(0, mSiteStore.getSelfHostedSitesCount());
+        assertEquals(1, mSiteStore.getSelfHostedSitesCount());
 
         assertTrue(selfHostedSite.isJetpackConnected());
         assertFalse(selfHostedSite.isWPCom());
 
         signOutWPCom();
 
-        // Expect all WP.com sites to be removed (jetpack connected sites included)
-        assertEquals(0, mSiteStore.getSitesCount());
+        // Expect all WP.com sites to be removed
         assertEquals(0, mSiteStore.getWPComSitesCount());
-        assertEquals(0, mSiteStore.getJetpackSitesCount());
-        assertEquals(0, mSiteStore.getSelfHostedSitesCount());
+
+        // Site accessed via XMLRPC should not be removed
+        assertEquals(1, mSiteStore.getJetpackSitesCount());
+        assertEquals(1, mSiteStore.getSitesCount());
+        assertEquals(1, mSiteStore.getSelfHostedSitesCount());
     }
 
     @SuppressWarnings("unused")
