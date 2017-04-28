@@ -160,7 +160,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
 
         mNextEvent = TestEvents.SITE_REMOVED;
         mCountDownLatch = new CountDownLatch(1);
-        SiteModel selfHostedSite = mSiteStore.getSelfHostedSites().get(0);
+        SiteModel selfHostedSite = mSiteStore.getSitesAccessedViaXMLRPC().get(0);
         mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(selfHostedSite));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -225,7 +225,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
             return;
         }
         assertTrue(mSiteStore.hasSite());
-        assertTrue(mSiteStore.hasSelfHostedSite());
+        assertTrue(mSiteStore.hasSiteAccessedViaXMLRPC());
         assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
@@ -238,7 +238,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertFalse(mSiteStore.hasSite());
-        assertFalse(mSiteStore.hasSelfHostedSite());
+        assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
         assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
         mCountDownLatch.countDown();
     }
