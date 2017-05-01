@@ -9,6 +9,7 @@ import org.wordpress.android.util.AppLog.T;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Named;
@@ -35,7 +36,7 @@ public class DebugOkHttpClientModule {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         try {
             final SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, new TrustManager[]{memorizingTrustManager}, new java.security.SecureRandom());
+            sslContext.init(null, new TrustManager[]{memorizingTrustManager}, new SecureRandom());
             final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
             builder.sslSocketFactory(sslSocketFactory);
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
