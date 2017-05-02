@@ -2,13 +2,17 @@
 
 [![Build Status](https://travis-ci.org/wordpress-mobile/WordPress-FluxC-Android.svg?branch=develop)](https://travis-ci.org/wordpress-mobile/WordPress-FluxC-Android)
 
-WordPress-FluxC-Android is a networking and persistence library that helps to connect and sync data from a WordPress site (self hosted, or wordpress.com site). It's not ready for prime time yet.
+WordPress-FluxC-Android is a networking and persistence library that helps to connect and sync data from a WordPress site (self hosted, or wordpress.com site).
 
 Based on the [Flux][1] pattern, we're using: [Dagger2][2] for dependency injection, [WellSql][3] for persistence.
 
 FluxC is pronounced ‘fluxy’, and stands for ‘Flux Capacitor’. This makes a double reference to the architecture model (since a capacitor is a kind of storage unit, or ‘store’). More importantly, a flux capacitor is the core component of the DeLorean time machine in [Back to the Future](https://en.wikipedia.org/wiki/Back_to_the_Future), which ‘makes time travel possible.’
 
 **Most of our documentation for using and contributing to FluxC can be found in our [wiki](https://github.com/wordpress-mobile/WordPress-FluxC-Android/wiki).**
+
+## Using FluxC as a library
+
+Please see our [Using FluxC](https://github.com/wordpress-mobile/WordPress-FluxC-Android/wiki/Using-FluxC#initial-setup) wiki page for setup instructions.
 
 ## Building the library
 
