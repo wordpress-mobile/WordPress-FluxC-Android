@@ -151,6 +151,19 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(newValue, String.valueOf(mAccountStore.getAccount().getPrimarySiteId()));
     }
 
+    public void testWPComSignOut() throws InterruptedException {
+        mNextEvent = TestEvents.AUTHENTICATE;
+        authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        mCountDownLatch = new CountDownLatch(2); // Wait for OnAuthenticationChanged and OnAccountChanged
+        mNextEvent = TestEvents.AUTHENTICATE;
+        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertFalse(mAccountStore.hasAccessToken());
+        assertEquals(0, mAccountStore.getAccount().getUserId());
+    }
+
     public void testSendAuthEmail() throws InterruptedException {
         mNextEvent = TestEvents.SENT_AUTH_EMAIL;
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(BuildConfig.TEST_WPCOM_EMAIL_TEST1));
