@@ -175,11 +175,17 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        // Fetch sites from REST API, and wait for onSiteChanged event
+        // Fetch account from REST API, and wait for OnAccountChanged event
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Fetch sites from REST API, and wait for OnSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mSiteStore.getSitesCount() > 0);
     }
 }
