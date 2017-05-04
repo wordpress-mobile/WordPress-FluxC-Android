@@ -354,6 +354,32 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(featuredImageId, newPost.getFeaturedImageId());
     }
 
+    public void testUploadAndEditPage() throws InterruptedException {
+        createNewPost();
+        mPost.setIsPage(true);
+        mPost.setTitle("A fully featured page");
+        mPost.setContent("Some content here! <strong>Bold text</strong>.");
+        mPost.setDateCreated(DateTimeUtils.iso8601UTCFromDate(new Date()));
+        uploadPost(mPost);
+        assertEquals(1, mPostStore.getPagesCountForSite(sSite));
+
+        // We should have one page and no post
+        assertEquals(1, mPostStore.getPagesCountForSite(sSite));
+        assertEquals(0, mPostStore.getPostsCountForSite(sSite));
+
+        // Get the current copy of the page from the PostStore
+        PostModel newPage = mPostStore.getPostByLocalPostId(mPost.getId());
+        newPage.setTitle("A fully featured page - edited");
+        newPage.setIsLocallyChanged(true);
+
+        // Upload edited page
+        uploadPost(newPage);
+
+        // We should still have one page and no post
+        assertEquals(1, mPostStore.getPagesCountForSite(sSite));
+        assertEquals(0, mPostStore.getPostsCountForSite(sSite));
+    }
+
     public void testFullFeaturedPageUpload() throws InterruptedException {
         createNewPost();
 
