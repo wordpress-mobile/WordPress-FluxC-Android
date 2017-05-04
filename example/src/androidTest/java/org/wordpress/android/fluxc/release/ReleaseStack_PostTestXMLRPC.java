@@ -39,6 +39,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     private enum TestEvents {
         NONE,
+        ALL_POST_REMOVED,
         POST_INSTANTIATED,
         POST_UPLOADED,
         POST_UPDATED,
@@ -353,6 +354,32 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(featuredImageId, newPost.getFeaturedImageId());
     }
 
+    public void testUploadAndEditPage() throws InterruptedException {
+        createNewPost();
+        mPost.setIsPage(true);
+        mPost.setTitle("A fully featured page");
+        mPost.setContent("Some content here! <strong>Bold text</strong>.");
+        mPost.setDateCreated(DateTimeUtils.iso8601UTCFromDate(new Date()));
+        uploadPost(mPost);
+        assertEquals(1, mPostStore.getPagesCountForSite(sSite));
+
+        // We should have one page and no post
+        assertEquals(1, mPostStore.getPagesCountForSite(sSite));
+        assertEquals(0, mPostStore.getPostsCountForSite(sSite));
+
+        // Get the current copy of the page from the PostStore
+        PostModel newPage = mPostStore.getPostByLocalPostId(mPost.getId());
+        newPage.setTitle("A fully featured page - edited");
+        newPage.setIsLocallyChanged(true);
+
+        // Upload edited page
+        uploadPost(newPage);
+
+        // We should still have one page and no post
+        assertEquals(1, mPostStore.getPagesCountForSite(sSite));
+        assertEquals(0, mPostStore.getPostsCountForSite(sSite));
+    }
+
     public void testFullFeaturedPageUpload() throws InterruptedException {
         createNewPost();
 
@@ -367,6 +394,15 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         // Get the current copy of the page from the PostStore
         PostModel newPage = mPostStore.getPostByLocalPostId(mPost.getId());
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
+
+        // Clear local data
+        removeAllPosts();
+
+        assertEquals(0, WellSqlUtils.getTotalPostsCount());
+
+        // Fetch the page
+        fetchPost(newPage);
 
         assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPagesCountForSite(sSite));
@@ -912,6 +948,11 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
                     mCountDownLatch.countDown();
                 }
                 break;
+            case REMOVE_ALL_POSTS:
+                if (mNextEvent.equals(TestEvents.ALL_POST_REMOVED)) {
+                    mCountDownLatch.countDown();
+                }
+                break;
         }
     }
 
@@ -995,6 +1036,15 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newUpdatePostAction(post));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void removeAllPosts() throws InterruptedException {
+        mNextEvent = TestEvents.ALL_POST_REMOVED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newRemoveAllPostsAction());
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
