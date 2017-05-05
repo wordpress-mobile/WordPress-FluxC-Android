@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.action.AccountAction;
 import org.wordpress.android.fluxc.action.AuthenticationAction;
 import org.wordpress.android.fluxc.annotations.action.Action;
 import org.wordpress.android.fluxc.annotations.action.IAction;
+import org.wordpress.android.fluxc.annotations.action.NextableAction;
 import org.wordpress.android.fluxc.model.AccountModel;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
@@ -47,7 +48,6 @@ public class AccountStore extends Store {
         public String password;
         public String twoStepCode;
         public boolean shouldSendTwoStepSms;
-        public Action nextAction;
         public AuthenticatePayload(@NonNull String username, @NonNull String password) {
             this.username = username;
             this.password = password;
@@ -317,15 +317,16 @@ public class AccountStore extends Store {
     public void onAction(Action action) {
         IAction actionType = action.getType();
         if (actionType instanceof AccountAction) {
-            onAccountAction((AccountAction) actionType, action.getPayload());
+            onAccountAction(action);
         }
         if (actionType instanceof AuthenticationAction) {
-            onAuthenticationAction((AuthenticationAction) actionType, action.getPayload());
+            onAuthenticationAction(action);
         }
     }
 
-    private void onAccountAction(AccountAction actionType, Object payload) {
-        switch (actionType) {
+    private void onAccountAction(Action action) {
+        Object payload = action.getPayload();
+        switch ((AccountAction) action.getType()) {
             case FETCH_ACCOUNT:
                 mAccountRestClient.fetchAccount();
                 break;
@@ -383,10 +384,11 @@ public class AccountStore extends Store {
         }
     }
 
-    private void onAuthenticationAction(AuthenticationAction actionType, Object payload) {
-        switch (actionType) {
+    private void onAuthenticationAction(Action action) {
+        Object payload = action.getPayload();
+        switch ((AuthenticationAction) action.getType()) {
             case AUTHENTICATE:
-                authenticate((AuthenticatePayload) payload);
+                authenticate((AuthenticatePayload) payload, ((NextableAction) action).getNextAction());
                 break;
             case AUTHENTICATE_ERROR:
                 handleAuthenticateError((AuthenticateErrorPayload) payload);
@@ -564,16 +566,16 @@ public class AccountStore extends Store {
         return account == null ? new AccountModel() : account;
     }
 
-    private void authenticate(final AuthenticatePayload payload) {
+    private void authenticate(final AuthenticatePayload payload, final Action nextAction) {
         mAuthenticator.authenticate(payload.username, payload.password, payload.twoStepCode,
                 payload.shouldSendTwoStepSms, new Authenticator.Listener() {
                     @Override
                     public void onResponse(Token token) {
                         mAccessToken.set(token.getAccessToken());
-                        if (payload.nextAction != null) {
-                            mDispatcher.dispatch(payload.nextAction);
-                        }
                         emitChange(new OnAuthenticationChanged());
+                        if (nextAction != null) {
+                            mDispatcher.dispatch(nextAction);
+                        }
                     }
                 }, new Authenticator.ErrorListener() {
                     @Override

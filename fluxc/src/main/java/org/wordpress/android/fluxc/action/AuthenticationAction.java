@@ -11,7 +11,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 @ActionEnum
 public enum AuthenticationAction implements IAction {
     // Remote actions
-    @Action(payloadType = AuthenticatePayload.class)
+    @Action(payloadType = AuthenticatePayload.class, nextable = true)
     AUTHENTICATE,
     @Action(payloadType = String.class)
     DISCOVER_ENDPOINT,
