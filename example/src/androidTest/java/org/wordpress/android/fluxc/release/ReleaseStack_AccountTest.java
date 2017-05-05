@@ -36,6 +36,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AUTHENTICATE_2FA_ERROR,
         FETCHED,
         POSTED,
+        FETCH_ERROR,
         SENT_AUTH_EMAIL,
         AUTH_EMAIL_ERROR_INVALID,
         AUTH_EMAIL_ERROR_NO_SUCH_USER
@@ -176,7 +177,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         mCountDownLatch = new CountDownLatch(1); // Wait for FETCH_ACCOUNT result
-        mNextEvent = TestEvents.FETCHED;
+        mNextEvent = TestEvents.FETCH_ERROR;
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         assertFalse(mAccountStore.hasAccessToken());
@@ -231,7 +232,15 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     public void onAccountChanged(OnAccountChanged event) {
         AppLog.i(AppLog.T.API, "Received OnAccountChanged");
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            switch (event.error.type) {
+                case ACCOUNT_FETCH_ERROR:
+                    assertEquals(mNextEvent, TestEvents.FETCH_ERROR);
+                    mCountDownLatch.countDown();
+                    break;
+                default:
+                    throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            }
+            return;
         }
         if (event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
             assertEquals(mNextEvent, TestEvents.FETCHED);
