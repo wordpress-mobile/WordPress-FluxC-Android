@@ -3,11 +3,13 @@ package org.wordpress.android.fluxc.release;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
+import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
+import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
@@ -28,6 +30,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     private enum TestEvents {
         NONE,
         AUTHENTICATED,
+        ACCOUNT_FETCHED,
         SITE_CHANGED,
     }
 
@@ -38,7 +41,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         super.init();
         mNextEvent = TestEvents.NONE;
 
-        if (mAccountStore.getAccessToken().isEmpty()) {
+        if (mAccountStore.getAccessToken().isEmpty() || mAccountStore.getAccount().getUserId() == 0) {
             authenticate();
         }
 
@@ -52,11 +55,18 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         // Authenticate a test user (actual credentials declared in gradle.properties)
         AuthenticatePayload payload = new AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
                 BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-        mCountDownLatch = new CountDownLatch(1);
 
         // Correct user we should get an OnAuthenticationChanged message
+        mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.AUTHENTICATED;
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+        // Wait for a network response / onChanged event
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Also fetch the account - it's required before WP.com sites can be stored in the database
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.ACCOUNT_FETCHED;
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -75,6 +85,14 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         assertFalse(event.isError());
         assertEquals(TestEvents.AUTHENTICATED, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onAccountChanged(OnAccountChanged event) {
+        assertFalse(event.isError());
+        assertEquals(TestEvents.ACCOUNT_FETCHED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
