@@ -41,6 +41,11 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         super.init();
         mNextEvent = TestEvents.NONE;
 
+        if (!mAccountStore.getAccessToken().isEmpty() && sSite != null) {
+            // We have all we need, move on (the AccountStore is probably empty, but we don't need it)
+            return;
+        }
+
         if (mAccountStore.getAccessToken().isEmpty() || mAccountStore.getAccount().getUserId() == 0) {
             authenticate();
         }
