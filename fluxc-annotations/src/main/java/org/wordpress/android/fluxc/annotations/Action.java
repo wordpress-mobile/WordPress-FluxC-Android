@@ -12,4 +12,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Action {
     Class payloadType() default NoPayload.class;
+    boolean nextable() default false;
 }

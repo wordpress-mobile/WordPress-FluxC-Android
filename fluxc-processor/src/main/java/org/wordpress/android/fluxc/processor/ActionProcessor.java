@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.AnnotationConfig;
 import org.wordpress.android.fluxc.annotations.action.Action;
 import org.wordpress.android.fluxc.annotations.action.ActionBuilder;
+import org.wordpress.android.fluxc.annotations.action.NextableAction;
 import org.wordpress.android.fluxc.annotations.action.NoPayload;
 
 import java.io.IOException;
@@ -80,26 +81,31 @@ public class ActionProcessor extends AbstractProcessor {
             boolean hasPayload =
                     !annotatedAction.getPayloadType().toString().equals(TypeName.get(NoPayload.class).toString());
 
+            Class actionClass = annotatedAction.isNextable() ? NextableAction.class : Action.class;
+
             if (hasPayload) {
-                // Create builder method for Action with a prescribed payload type
-                returnType = ParameterizedTypeName.get(ClassName.get(Action.class),
+                // Create builder method for action with a prescribed payload type
+                returnType = ParameterizedTypeName.get(ClassName.get(actionClass),
                         TypeName.get(annotatedAction.getPayloadType()));
 
                 method = MethodSpec.methodBuilder(CodeGenerationUtils.getActionBuilderMethodName(annotatedAction))
                         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                         .returns(returnType)
                         .addParameter(TypeName.get(annotatedAction.getPayloadType()), "payload")
-                        .addStatement("return new $T<>($T.$L, $N)", Action.class, tableElement.asType(),
+                        .addStatement("return new $T<>($T.$L, $N)", actionClass, tableElement.asType(),
                                 annotatedAction.getActionName(), "payload")
                         .build();
             } else {
-                // Create builder method for Action with no payload
-                returnType = ParameterizedTypeName.get(Action.class, Void.class);
+                // Create builder method for action with no payload
+                returnType = ParameterizedTypeName.get(actionClass, Void.class);
+
+                String noPayloadActionMethodName = annotatedAction.isNextable() ? "generateNoPayloadNextableAction"
+                        : "generateNoPayloadAction";
 
                 method = MethodSpec.methodBuilder(CodeGenerationUtils.getActionBuilderMethodName(annotatedAction))
                         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                         .returns(returnType)
-                        .addStatement("return $L($T.$L)", "generateNoPayloadAction", tableElement.asType(),
+                        .addStatement("return $L($T.$L)", noPayloadActionMethodName, tableElement.asType(),
                                 annotatedAction.getActionName())
                         .build();
             }

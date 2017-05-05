@@ -12,6 +12,7 @@ import javax.lang.model.type.TypeMirror;
 public class AnnotatedAction {
     private String mActionName;
     private TypeMirror mPayloadType;
+    private boolean mIsNextable;
 
     public AnnotatedAction(Element typeElement, Action actionAnnotation) {
         mActionName = typeElement.getSimpleName().toString();
@@ -20,6 +21,7 @@ public class AnnotatedAction {
         } catch (MirroredTypeException e) {
             mPayloadType = e.getTypeMirror();
         }
+        mIsNextable = actionAnnotation.nextable();
     }
 
     public String getActionName() {
@@ -28,5 +30,9 @@ public class AnnotatedAction {
 
     public TypeMirror getPayloadType() {
         return mPayloadType;
+    }
+
+    public boolean isNextable() {
+        return mIsNextable;
     }
 }
