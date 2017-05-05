@@ -30,7 +30,8 @@ public class ReleaseStack_NextableActionTest extends ReleaseStack_Base {
         AUTHENTICATED,
         ACCOUNT_FETCHED,
         SETTINGS_FETCHED,
-        SITES_FETCHED
+        SITES_FETCHED,
+        AUTH_ERROR
     }
 
     private TestEvents mNextEvent;
@@ -75,12 +76,40 @@ public class ReleaseStack_NextableActionTest extends ReleaseStack_Base {
         assertTrue(mSiteStore.getSitesCount() > 0);
     }
 
+    public void testWPComSiteChainedFetchAuthFailure() throws InterruptedException {
+        // First, make sure we're completely signed out, with no token
+        mCountDownLatch = new CountDownLatch(2); // Two events: OnAuthenticationChanged and OnAccountChanged
+        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Attempt to authenticate with invalid credentials
+        // Fetch account and sites, and wait for OnSiteChanged event
+        AuthenticatePayload payload = new AuthenticatePayload("notarealusername14562", "secret");
+        NextableAction authAction = AuthenticationActionBuilder.newAuthenticateAction(payload);
+        authAction.doNextOnSuccess(AccountActionBuilder.newFetchAccountAction())
+                .doNextOnSuccess(AccountActionBuilder.newFetchSettingsAction())
+                .doNextOnSuccess(SiteActionBuilder.newFetchSitesAction());
+
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.AUTH_ERROR;
+        mDispatcher.dispatch(authAction);
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        mCountDownLatch = new CountDownLatch(1);
+
+        // Auth failed, so FETCH_ACCOUNT and the rest of the actions shouldn't get dispatched at all
+        assertFalse(mCountDownLatch.await(5, TimeUnit.SECONDS));
+        assertFalse(mAccountStore.hasAccessToken());
+        assertEquals(0, mAccountStore.getAccount().getUserId());
+        assertFalse(mSiteStore.hasSite());
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
         AppLog.i(T.API, "Received OnAuthenticationChanged");
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            assertEquals(mNextEvent, TestEvents.AUTH_ERROR);
         } else {
             if (mAccountStore.hasAccessToken()) {
                 assertEquals(mNextEvent, TestEvents.AUTHENTICATED);
