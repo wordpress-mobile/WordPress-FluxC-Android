@@ -99,7 +99,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                         AccountModel account = responseToAccountModel(response);
                         AccountRestPayload payload = new AccountRestPayload(account, null);
                         NextableAction action = AccountActionBuilder.newFetchedAccountAction(payload);
-                        action.doNext(nextAction);
+                        action.doNextOnSuccess(nextAction);
                         mDispatcher.dispatch(action);
                     }
                 },
@@ -128,7 +128,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                         AccountModel settings = responseToAccountSettingsModel(response);
                         AccountRestPayload payload = new AccountRestPayload(settings, null);
                         NextableAction action = AccountActionBuilder.newFetchedSettingsAction(payload);
-                        action.doNext(nextAction);
+                        action.doNextOnSuccess(nextAction);
                         mDispatcher.dispatch(action);
                     }
                 },

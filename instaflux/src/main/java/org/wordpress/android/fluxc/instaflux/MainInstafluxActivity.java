@@ -145,9 +145,9 @@ public class MainInstafluxActivity extends AppCompatActivity {
     private void wpcomFetchSites(String username, String password) {
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
         NextableAction authAction = AuthenticationActionBuilder.newAuthenticateAction(payload);
-        authAction.doNext(AccountActionBuilder.newFetchAccountAction())
-                .doNext(AccountActionBuilder.newFetchSettingsAction())
-                .doNext(SiteActionBuilder.newFetchSitesAction());
+        authAction.doNextOnSuccess(AccountActionBuilder.newFetchAccountAction())
+                .doNextOnSuccess(AccountActionBuilder.newFetchSettingsAction())
+                .doNextOnSuccess(SiteActionBuilder.newFetchSitesAction());
         mDispatcher.dispatch(authAction);
     }
 

@@ -11,12 +11,12 @@ public class NextableAction<T> extends Action<T> {
         return mNextAction;
     }
 
-    public Action doNext(Action action) {
+    public Action doNextOnSuccess(Action action) {
         mNextAction = action;
         return mNextAction;
     }
 
-    public NextableAction doNext(NextableAction action) {
+    public NextableAction doNextOnSuccess(NextableAction action) {
         mNextAction = action;
         return (NextableAction) mNextAction;
     }

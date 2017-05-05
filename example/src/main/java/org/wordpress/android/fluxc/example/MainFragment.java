@@ -184,9 +184,9 @@ public class MainFragment extends Fragment {
         mAuthenticatePayload.twoStepCode = twoStepCode;
 
         NextableAction authAction = AuthenticationActionBuilder.newAuthenticateAction(mAuthenticatePayload);
-        authAction.doNext(AccountActionBuilder.newFetchAccountAction())
-                .doNext(AccountActionBuilder.newFetchSettingsAction())
-                .doNext(SiteActionBuilder.newFetchSitesAction());
+        authAction.doNextOnSuccess(AccountActionBuilder.newFetchAccountAction())
+                .doNextOnSuccess(AccountActionBuilder.newFetchSettingsAction())
+                .doNextOnSuccess(SiteActionBuilder.newFetchSitesAction());
         mDispatcher.dispatch(authAction);
     }
 
@@ -236,9 +236,9 @@ public class MainFragment extends Fragment {
         mAuthenticatePayload = new AuthenticatePayload(username, password);
 
         NextableAction authAction = AuthenticationActionBuilder.newAuthenticateAction(mAuthenticatePayload);
-        authAction.doNext(AccountActionBuilder.newFetchAccountAction())
-                .doNext(AccountActionBuilder.newFetchSettingsAction())
-                .doNext(SiteActionBuilder.newFetchSitesAction());
+        authAction.doNextOnSuccess(AccountActionBuilder.newFetchAccountAction())
+                .doNextOnSuccess(AccountActionBuilder.newFetchSettingsAction())
+                .doNextOnSuccess(SiteActionBuilder.newFetchSitesAction());
         mDispatcher.dispatch(authAction);
     }
 
