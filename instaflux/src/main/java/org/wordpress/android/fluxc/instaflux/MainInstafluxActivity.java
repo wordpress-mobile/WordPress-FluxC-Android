@@ -14,12 +14,15 @@ import android.widget.TextView;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.action.AccountAction;
+import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder;
 import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse;
@@ -140,9 +143,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
     }
 
     private void wpcomFetchSites(String username, String password) {
-        AccountStore.AuthenticatePayload payload = new AccountStore.AuthenticatePayload(username, password);
-        // Next action will be dispatched if authentication is successful
-        payload.nextAction = SiteActionBuilder.newFetchSitesAction();
+        AuthenticatePayload payload = new AuthenticatePayload(username, password);
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
     }
 
@@ -168,6 +169,16 @@ public class MainInstafluxActivity extends AppCompatActivity {
     public void onAccountChanged(OnAccountChanged event) {
         if (!mAccountStore.hasAccessToken()) {
             // Signed out!
+            return;
+        }
+
+        if (event.isError()) {
+            AppLog.e(AppLog.T.API, "Account error: " + event.error.type);
+        } else {
+            if (!mSiteStore.hasSite() && event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
+                AppLog.d(AppLog.T.API, "Account data fetched - fetching sites");
+                mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
+            }
         }
     }
 
@@ -190,6 +201,12 @@ public class MainInstafluxActivity extends AppCompatActivity {
                 default:
                     // Show Toast "Network Error"?
                     break;
+            }
+        } else {
+            if (mAccountStore.hasAccessToken()) {
+                AppLog.d(AppLog.T.API, "Signed in to WordPress.com successfully, fetching account");
+                mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
+                mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
             }
         }
     }
