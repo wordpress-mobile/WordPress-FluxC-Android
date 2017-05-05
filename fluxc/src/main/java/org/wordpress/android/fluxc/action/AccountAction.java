@@ -15,9 +15,9 @@ import org.wordpress.android.fluxc.store.AccountStore.UpdateTokenPayload;
 @ActionEnum
 public enum AccountAction implements IAction {
     // Remote actions
-    @Action
+    @Action(nextable = true)
     FETCH_ACCOUNT,          // request fetch of Account information
-    @Action
+    @Action(nextable = true)
     FETCH_SETTINGS,         // request fetch of Account Settings
     @Action
     SEND_VERIFICATION_EMAIL, // request verification email for unverified accounts
@@ -35,9 +35,9 @@ public enum AccountAction implements IAction {
     IS_AVAILABLE_USERNAME,
 
     // Remote responses
-    @Action(payloadType = AccountRestPayload.class)
+    @Action(payloadType = AccountRestPayload.class, nextable = true)
     FETCHED_ACCOUNT,        // response received from Account fetch request
-    @Action(payloadType = AccountRestPayload.class)
+    @Action(payloadType = AccountRestPayload.class, nextable = true)
     FETCHED_SETTINGS,       // response received from Account Settings fetch
     @Action(payloadType = NewAccountResponsePayload.class)
     SENT_VERIFICATION_EMAIL,

@@ -328,10 +328,10 @@ public class AccountStore extends Store {
         Object payload = action.getPayload();
         switch ((AccountAction) action.getType()) {
             case FETCH_ACCOUNT:
-                mAccountRestClient.fetchAccount();
+                mAccountRestClient.fetchAccount(((NextableAction) action).getNextAction());
                 break;
             case FETCH_SETTINGS:
-                mAccountRestClient.fetchAccountSettings();
+                mAccountRestClient.fetchAccountSettings(((NextableAction) action).getNextAction());
                 break;
             case SEND_VERIFICATION_EMAIL:
                 mAccountRestClient.sendVerificationEmail();
@@ -358,10 +358,10 @@ public class AccountStore extends Store {
                 handlePushSettingsCompleted((AccountPushSettingsResponsePayload) payload);
                 break;
             case FETCHED_SETTINGS:
-                handleFetchSettingsCompleted((AccountRestPayload) payload);
+                handleFetchSettingsCompleted((AccountRestPayload) payload, ((NextableAction) action).getNextAction());
                 break;
             case FETCHED_ACCOUNT:
-                handleFetchAccountCompleted((AccountRestPayload) payload);
+                handleFetchAccountCompleted((AccountRestPayload) payload, ((NextableAction) action).getNextAction());
                 break;
             case SENT_VERIFICATION_EMAIL:
                 handleSentVerificationEmail((NewAccountResponsePayload) payload);
@@ -433,7 +433,7 @@ public class AccountStore extends Store {
         emitChange(discoveryResponse);
     }
 
-    private void handleFetchAccountCompleted(AccountRestPayload payload) {
+    private void handleFetchAccountCompleted(AccountRestPayload payload, Action nextAction) {
         if (!hasAccessToken()) {
             emitAccountChangeError(AccountErrorType.ACCOUNT_FETCH_ERROR);
             return;
@@ -441,12 +441,15 @@ public class AccountStore extends Store {
         if (!checkError(payload, "Error fetching Account via REST API (/me)")) {
             mAccount.copyAccountAttributes(payload.account);
             updateDefaultAccount(mAccount, AccountAction.FETCH_ACCOUNT);
+            if (nextAction != null) {
+                mDispatcher.dispatch(nextAction);
+            }
         } else {
             emitAccountChangeError(AccountErrorType.ACCOUNT_FETCH_ERROR);
         }
     }
 
-    private void handleFetchSettingsCompleted(AccountRestPayload payload) {
+    private void handleFetchSettingsCompleted(AccountRestPayload payload, Action nextAction) {
         if (!hasAccessToken()) {
             emitAccountChangeError(AccountErrorType.SETTINGS_FETCH_ERROR);
             return;
@@ -454,6 +457,9 @@ public class AccountStore extends Store {
         if (!checkError(payload, "Error fetching Account Settings via REST API (/me/settings)")) {
             mAccount.copyAccountSettingsAttributes(payload.account);
             updateDefaultAccount(mAccount, AccountAction.FETCH_SETTINGS);
+            if (nextAction != null) {
+                mDispatcher.dispatch(nextAction);
+            }
         } else {
             emitAccountChangeError(AccountErrorType.SETTINGS_FETCH_ERROR);
         }

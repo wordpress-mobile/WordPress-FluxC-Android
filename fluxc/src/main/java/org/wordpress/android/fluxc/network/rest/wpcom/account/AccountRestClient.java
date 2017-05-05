@@ -12,6 +12,8 @@ import org.json.JSONObject;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.Payload;
 import org.wordpress.android.fluxc.action.AccountAction;
+import org.wordpress.android.fluxc.annotations.action.Action;
+import org.wordpress.android.fluxc.annotations.action.NextableAction;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST;
 import org.wordpress.android.fluxc.model.AccountModel;
@@ -88,7 +90,7 @@ public class AccountRestClient extends BaseWPComRestClient {
      * with a payload of type {@link AccountRestPayload}. {@link AccountRestPayload#isError()} can
      * be used to determine the result of the request.
      */
-    public void fetchAccount() {
+    public void fetchAccount(final Action nextAction) {
         String url = WPCOMREST.me.getUrlV1_1();
         add(WPComGsonRequest.buildGetRequest(url, null, AccountResponse.class,
                 new Listener<AccountResponse>() {
@@ -96,7 +98,9 @@ public class AccountRestClient extends BaseWPComRestClient {
                     public void onResponse(AccountResponse response) {
                         AccountModel account = responseToAccountModel(response);
                         AccountRestPayload payload = new AccountRestPayload(account, null);
-                        mDispatcher.dispatch(AccountActionBuilder.newFetchedAccountAction(payload));
+                        NextableAction action = AccountActionBuilder.newFetchedAccountAction(payload);
+                        action.doNext(nextAction);
+                        mDispatcher.dispatch(action);
                     }
                 },
                 new BaseErrorListener() {
@@ -115,7 +119,7 @@ public class AccountRestClient extends BaseWPComRestClient {
      * with a payload of type {@link AccountRestPayload}. {@link AccountRestPayload#isError()} can
      * be used to determine the result of the request.
      */
-    public void fetchAccountSettings() {
+    public void fetchAccountSettings(final Action nextAction) {
         String url = WPCOMREST.me.settings.getUrlV1_1();
         add(WPComGsonRequest.buildGetRequest(url, null, AccountSettingsResponse.class,
                 new Listener<AccountSettingsResponse>() {
@@ -123,7 +127,9 @@ public class AccountRestClient extends BaseWPComRestClient {
                     public void onResponse(AccountSettingsResponse response) {
                         AccountModel settings = responseToAccountSettingsModel(response);
                         AccountRestPayload payload = new AccountRestPayload(settings, null);
-                        mDispatcher.dispatch(AccountActionBuilder.newFetchedSettingsAction(payload));
+                        NextableAction action = AccountActionBuilder.newFetchedSettingsAction(payload);
+                        action.doNext(nextAction);
+                        mDispatcher.dispatch(action);
                     }
                 },
                 new BaseErrorListener() {
