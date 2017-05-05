@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.network.xmlrpc.media;
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Base64;
 
 import com.android.volley.RequestQueue;
@@ -47,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -213,12 +215,29 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
                 if (!media.isUploadCancelled()) {
                     // TODO it would be great to raise some more fine grained errors here, for
                     // instance timeouts should be raised instead of GENERIC_ERROR
-                    MediaStore.MediaError error = new MediaError(MediaErrorType.GENERIC_ERROR);
-                    error.message = e.getLocalizedMessage();
+                    MediaStore.MediaError error = parseUploadError(e);
                     notifyMediaUploaded(media, error);
                 }
             }
         });
+    }
+
+    private MediaError parseUploadError(IOException e) {
+        MediaError mediaError = new MediaError(MediaErrorType.GENERIC_ERROR);
+        mediaError.message = e.getLocalizedMessage();
+
+        String errorMessage = e.getMessage();
+        if (TextUtils.isEmpty(errorMessage)) {
+            return mediaError;
+        }
+
+        errorMessage =  errorMessage.toLowerCase(Locale.US);
+        if (errorMessage.contains("broken pipe") || errorMessage.contains("epipe")) {
+            // do not use the real error message.
+            mediaError.message = "";
+        }
+
+        return mediaError;
     }
 
     private void removeCallFromCurrentUploadsMap(int id) {
