@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
+import org.wordpress.android.fluxc.annotations.action.NextableAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
@@ -186,23 +187,15 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     private void authenticateAndFetchSites(String username, String password) throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
+        // Fetch account and sites, and wait for OnSiteChanged event
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
-        mCountDownLatch = new CountDownLatch(1);
+        NextableAction authAction = AuthenticationActionBuilder.newAuthenticateAction(payload);
+        authAction.doNextOnSuccess(AccountActionBuilder.newFetchAccountAction())
+                .doNextOnSuccess(SiteActionBuilder.newFetchSitesAction());
 
-        // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
-        // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        // Fetch account from REST API, and wait for OnAccountChanged event
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        // Fetch sites from REST API, and wait for OnSiteChanged event
-        mCountDownLatch = new CountDownLatch(1);
+        mCountDownLatch = new CountDownLatch(3);
         mNextEvent = TestEvents.SITE_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
+        mDispatcher.dispatch(authAction);
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertTrue(mSiteStore.getSitesCount() > 0);
