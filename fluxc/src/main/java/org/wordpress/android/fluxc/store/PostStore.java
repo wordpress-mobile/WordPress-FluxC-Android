@@ -331,6 +331,14 @@ public class PostStore extends Store {
         }
     }
 
+    public List<PostModel> searchPostTitles(SiteModel site, String searchTerm) {
+        return PostSqlUtils.searchPostTitles(site, searchTerm, false);
+    }
+
+    public List<PostModel> searchPageTitles(SiteModel site, String searchTerm) {
+        return PostSqlUtils.searchPostTitles(site, searchTerm, true);
+    }
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     @Override
     public void onAction(Action action) {

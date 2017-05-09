@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -327,5 +328,61 @@ public class PostStoreUnitTest {
         PostSqlUtils.deleteAllPosts();
 
         assertEquals(0, PostTestUtils.getPostsCount());
+    }
+
+    @Test
+    public void testSearchPostTitles() {
+        final int testSiteId = 628;
+        final int testPoolSize = 10;
+        final String[] testTitles = new String[testPoolSize];
+        final SiteModel site = new SiteModel();
+
+        site.setId(testSiteId);
+        String baseString = "Base Title String ";
+        for (int i = 0; i < testPoolSize; ++i) {
+            testTitles[i] = baseString;
+            PostModel testPost = PostTestUtils.generateSampleLocalDraftPost();
+            testPost.setIsPage(false);
+            testPost.setId(i + 53);
+            testPost.setTitle(baseString);
+            testPost.setLocalSiteId(site.getId());
+            assertTrue(PostSqlUtils.insertOrUpdatePost(testPost, true) == 1);
+            baseString += String.valueOf(i);
+        }
+
+        for (int i = 0; i < testPoolSize; ++i) {
+            assertTrue(mPostStore.searchPageTitles(site, testTitles[i]).isEmpty());
+            List<PostModel> storePost = mPostStore.searchPostTitles(site, testTitles[i]);
+            assertNotNull(storePost);
+            assertTrue(storePost.size() == testPoolSize - i);
+        }
+    }
+
+    @Test
+    public void testSearchPageTitles() {
+        final int testSiteId = 628;
+        final int testPoolSize = 10;
+        final String[] testTitles = new String[testPoolSize];
+        final SiteModel site = new SiteModel();
+
+        site.setId(testSiteId);
+        String baseString = "Base Title String ";
+        for (int i = 0; i < testPoolSize; ++i) {
+            testTitles[i] = baseString;
+            PostModel testPost = PostTestUtils.generateSampleLocalDraftPost();
+            testPost.setIsPage(true);
+            testPost.setId(i + 53);
+            testPost.setTitle(baseString);
+            testPost.setLocalSiteId(site.getId());
+            assertTrue(PostSqlUtils.insertOrUpdatePost(testPost, true) == 1);
+            baseString += String.valueOf(i);
+        }
+
+        for (int i = 0; i < testPoolSize; ++i) {
+            assertTrue(mPostStore.searchPostTitles(site, testTitles[i]).isEmpty());
+            List<PostModel> storePost = mPostStore.searchPageTitles(site, testTitles[i]);
+            assertNotNull(storePost);
+            assertTrue(storePost.size() == testPoolSize - i);
+        }
     }
 }
