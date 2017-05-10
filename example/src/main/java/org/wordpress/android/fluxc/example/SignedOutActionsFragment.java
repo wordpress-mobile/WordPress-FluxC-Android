@@ -24,6 +24,7 @@ import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
+import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
 import org.wordpress.android.fluxc.store.SiteStore.OnURLChecked;
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
@@ -70,6 +71,13 @@ public class SignedOutActionsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 showDomainSuggestionsDialog();
+            }
+        });
+        view.findViewById(R.id.connect_site_info).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String site = "http://www.example.com";
+                mDispatcher.dispatch(SiteActionBuilder.newFetchConnectSiteInfoAction(site));
             }
         });
         return view;
@@ -192,6 +200,16 @@ public class SignedOutActionsFragment extends Fragment {
             for (DomainSuggestionResponse suggestion : event.suggestions) {
                 prependToLog("Suggestion: " + suggestion.domain_name + " - " + suggestion.cost);
             }
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onFetchedConnectSiteInfo(SiteStore.OnConnectSiteInfoChecked event) {
+        if (event.isError()) {
+            prependToLog("Connect Site Info: error: " + event.error.type);
+        } else {
+            prependToLog("Connect Site Info: success!");
         }
     }
 
