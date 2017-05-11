@@ -76,8 +76,7 @@ public class SignedOutActionsFragment extends Fragment {
         view.findViewById(R.id.connect_site_info).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                String site = "http://www.example.com";
-                mDispatcher.dispatch(SiteActionBuilder.newFetchConnectSiteInfoAction(site));
+                showFetchConnectSiteInfoDialog();
             }
         });
         return view;
@@ -154,6 +153,21 @@ public class SignedOutActionsFragment extends Fragment {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String email = editText.getText().toString();
                 mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(email));
+            }
+        });
+        alert.show();
+    }
+
+    private void showFetchConnectSiteInfoDialog() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+        final EditText editText = new EditText(getActivity());
+        editText.setSingleLine();
+        alert.setMessage("Fetch site info about the following URL");
+        alert.setView(editText);
+        alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String url = editText.getText().toString();
+                mDispatcher.dispatch(SiteActionBuilder.newFetchConnectSiteInfoAction(url));
             }
         });
         alert.show();
