@@ -209,7 +209,7 @@ public class SignedOutActionsFragment extends Fragment {
         if (event.isError()) {
             prependToLog("Connect Site Info: error: " + event.error.type);
         } else {
-            prependToLog("Connect Site Info: success!");
+            prependToLog("Connect Site Info: success! " + event.info.description());
         }
     }
 
