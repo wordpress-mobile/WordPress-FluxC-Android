@@ -24,6 +24,7 @@ import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
+import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
 import org.wordpress.android.fluxc.store.SiteStore.OnURLChecked;
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
@@ -70,6 +71,12 @@ public class SignedOutActionsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 showDomainSuggestionsDialog();
+            }
+        });
+        view.findViewById(R.id.connect_site_info).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showFetchConnectSiteInfoDialog();
             }
         });
         return view;
@@ -151,6 +158,21 @@ public class SignedOutActionsFragment extends Fragment {
         alert.show();
     }
 
+    private void showFetchConnectSiteInfoDialog() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+        final EditText editText = new EditText(getActivity());
+        editText.setSingleLine();
+        alert.setMessage("Fetch site info about the following URL");
+        alert.setView(editText);
+        alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String url = editText.getText().toString();
+                mDispatcher.dispatch(SiteActionBuilder.newFetchConnectSiteInfoAction(url));
+            }
+        });
+        alert.show();
+    }
+
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNewUserValidated(OnNewUserCreated event) {
@@ -192,6 +214,16 @@ public class SignedOutActionsFragment extends Fragment {
             for (DomainSuggestionResponse suggestion : event.suggestions) {
                 prependToLog("Suggestion: " + suggestion.domain_name + " - " + suggestion.cost);
             }
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onFetchedConnectSiteInfo(SiteStore.OnConnectSiteInfoChecked event) {
+        if (event.isError()) {
+            prependToLog("Connect Site Info: error: " + event.error.type);
+        } else {
+            prependToLog("Connect Site Info: success! " + event.info.description());
         }
     }
 
