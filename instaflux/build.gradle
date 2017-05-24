@@ -4,7 +4,6 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.0'
-        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
     }
 }
 
@@ -13,7 +12,6 @@ repositories {
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'com.neenbedankt.android-apt'
 
 android {
     compileSdkVersion 25
@@ -55,6 +53,6 @@ dependencies {
     compile 'com.android.support:support-v4:25.1.1'
     compile 'com.android.support:recyclerview-v7:25.1.1'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    apt 'com.google.dagger:dagger-compiler:2.0.2'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.0.2'
     provided 'org.glassfish:javax.annotation:10.0-b28'
 }
