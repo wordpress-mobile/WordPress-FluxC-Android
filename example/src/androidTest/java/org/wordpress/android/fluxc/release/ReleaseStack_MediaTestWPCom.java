@@ -272,17 +272,16 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(mUploadedMediaModels.size() - amountToCancel, mUploadedIds.size());
 
         // verify each one of the remaining, non-cancelled uploads exist in the MediaStore
-        Iterator<MediaModel> iterator = mUploadedMediaModels.values().iterator();
-        while (iterator.hasNext()) {
-            MediaModel media = iterator.next();
-            assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
+        for (long mediaId : mUploadedIds) {
+            assertNotNull(mMediaStore.getSiteMediaWithId(sSite, mediaId));
         }
+
+        // Only completed uploads should exist in the store
+        assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaCount(sSite));
 
         // delete test images (bear in mind this is done sequentially)
         mNextEvent = TestEvents.DELETED_MEDIA;
-        iterator = mUploadedMediaModels.values().iterator();
-        while (iterator.hasNext()) {
-            MediaModel media = iterator.next();
+        for (MediaModel media : mUploadedMediaModels.values()) {
             // delete only successfully uploaded test images
             if (mUploadedIds.contains(media.getMediaId())) {
                 deleteMedia(media);
