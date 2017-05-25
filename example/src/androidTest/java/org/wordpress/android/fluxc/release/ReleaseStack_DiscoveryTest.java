@@ -540,7 +540,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type " + event.error.type);
         }
         assertTrue(mSiteStore.hasSite());
-        assertTrue(mSiteStore.hasSelfHostedSite());
+        assertTrue(mSiteStore.hasSiteAccessedViaXMLRPC());
         assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
@@ -553,7 +553,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type " + event.error.type);
         }
         assertFalse(mSiteStore.hasSite());
-        assertFalse(mSiteStore.hasSelfHostedSite());
+        assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
         assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
         mCountDownLatch.countDown();
     }

@@ -19,7 +19,7 @@ public class MockedStack_Base extends InstrumentationTestCase {
         System.setProperty("dexmaker.dexcache", getInstrumentation().getTargetContext().getCacheDir().getPath());
         mAppContext = getInstrumentation().getTargetContext().getApplicationContext();
 
-        mMockedNetworkAppComponent =  DaggerMockedNetworkAppComponent.builder()
+        mMockedNetworkAppComponent = DaggerMockedNetworkAppComponent.builder()
                 .appContextModule(new AppContextModule(mAppContext))
                 .build();
         WellSqlConfig config = new WellSqlConfig(mAppContext);
