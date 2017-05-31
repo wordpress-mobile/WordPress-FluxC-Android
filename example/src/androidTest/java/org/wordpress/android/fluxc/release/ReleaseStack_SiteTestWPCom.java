@@ -36,7 +36,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         NONE,
         SITE_CHANGED,
         POST_FORMATS_CHANGED,
-        SITE_REMOVED
+        SITE_REMOVED,
+        FETCHED_CONNECT_SITE_INFO,
     }
 
     private TestEvents mNextEvent;
@@ -82,6 +83,14 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Test fetched Post Formats
         List<PostFormatModel> postFormats = mSiteStore.getPostFormats(firstSite);
         assertNotSame(0, postFormats.size());
+    }
+
+    public void testFetchConnectSiteInfo() throws InterruptedException {
+        String site = "http://www.example.com";
+        mDispatcher.dispatch(SiteActionBuilder.newFetchConnectSiteInfoAction(site));
+        mNextEvent = TestEvents.FETCHED_CONNECT_SITE_INFO;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testWPComSiteFetchAndLogoutCollision() throws InterruptedException {
@@ -162,6 +171,16 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.POST_FORMATS_CHANGED, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onFetchedConnectSiteInfo(SiteStore.OnConnectSiteInfoChecked event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occured with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.FETCHED_CONNECT_SITE_INFO, mNextEvent);
         mCountDownLatch.countDown();
     }
 

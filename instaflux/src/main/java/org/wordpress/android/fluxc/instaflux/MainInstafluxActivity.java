@@ -114,7 +114,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
     private void showSSLWarningDialog(String certifString) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         SSLWarningDialog newFragment = SSLWarningDialog.newInstance(
-                new android.content.DialogInterface.OnClickListener() {
+                new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         // Add the certificate to our list
