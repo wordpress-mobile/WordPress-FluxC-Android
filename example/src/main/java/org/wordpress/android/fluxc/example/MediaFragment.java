@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.MediaStore;
+import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListPayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
@@ -289,7 +290,7 @@ public class MediaFragment extends Fragment {
     }
 
     private void cancelMediaUpload(@NonNull SiteModel site, @NonNull MediaModel media) {
-        MediaPayload payload = new MediaPayload(site, media);
+        CancelMediaPayload payload = new CancelMediaPayload(site, media);
         mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(payload));
     }
 
