@@ -42,18 +42,18 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     private enum TestEvents {
         NONE,
-        PUSHED_MEDIA,
+        CANCELED_MEDIA,
+        DELETED_MEDIA,
         FETCHED_MEDIA_LIST,
         FETCHED_MEDIA,
-        DELETED_MEDIA,
+        PUSHED_MEDIA,
+        REMOVED_MEDIA,
         UPLOADED_MEDIA,
-        UPLOADED_MULTIPLE_MEDIA, // these don't exist in FluxC, but are an artifact to wait for all
-        // uploads to finish
+        UPLOADED_MULTIPLE_MEDIA, // these don't exist in FluxC, but are an artifact to wait for all uploads to finish
         UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL, // same as above
         NULL_ERROR,
         MALFORMED_ERROR,
-        NOT_FOUND_ERROR,
-        REMOVED_MEDIA
+        NOT_FOUND_ERROR
     }
 
     private TestEvents mNextEvent;
@@ -235,6 +235,44 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         deleteMedia(testMedia);
     }
 
+    public void testCancelImageUpload() throws InterruptedException {
+        // First, try canceling an image with the default behavior (canceled image is deleted from the store)
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.CANCELED_MEDIA;
+        MediaPayload payload = new MediaPayload(sSite, testMedia);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+
+        // Wait a bit and issue the cancel command
+        TestUtils.waitFor(1000);
+
+        CancelMediaPayload cancelPayload = new CancelMediaPayload(sSite, testMedia);
+        mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(0, mMediaStore.getSiteMediaCount(sSite));
+
+        // Now, try canceling with delete=false (canceled image should be marked as failed and kept in the store)
+        testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.CANCELED_MEDIA;
+        payload = new MediaPayload(sSite, testMedia);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+
+        // Wait a bit and issue the cancel command
+        TestUtils.waitFor(1000);
+
+        cancelPayload = new CancelMediaPayload(sSite, testMedia, false);
+        mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(1, mMediaStore.getSiteMediaCount(sSite));
+        MediaModel canceledMedia = mMediaStore.getMediaWithLocalId(testMedia.getId());
+        assertEquals(MediaModel.UploadState.FAILED.toString(), canceledMedia.getUploadState());
+    }
+
     public void testUploadMultipleImages() throws InterruptedException {
         // upload media to guarantee media exists
         mUploadedIds = new ArrayList<>();
@@ -396,18 +434,19 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onMediaUploaded(OnMediaUploaded event) throws InterruptedException {
+    public void onMediaUploaded(OnMediaUploaded event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         if (event.canceled) {
-            if (mNextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL) {
-                assertEquals(TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL, mNextEvent);
+            if (mNextEvent == TestEvents.CANCELED_MEDIA
+                    || mNextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL) {
                 mCountDownLatch.countDown();
+            } else {
+                throw new AssertionError("Unexpected cancellation for media: " + event.media.getId());
             }
         } else if (event.completed) {
             if (mNextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL) {
-                assertEquals(TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL, mNextEvent);
                 mUploadedIds.add(event.media.getMediaId());
                 // now update our own map object with the new media id
                 MediaModel media = mUploadedMediaModels.get(event.media.getId());
@@ -418,7 +457,6 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
                 }
                 assertNotNull(media);
             } else if (mNextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA) {
-                assertEquals(TestEvents.UPLOADED_MULTIPLE_MEDIA, mNextEvent);
                 mUploadedIds.add(event.media.getMediaId());
                 // now update our own map object with the new media id
                 MediaModel media = mUploadedMediaModels.get(event.media.getId());
@@ -428,10 +466,10 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
                     AppLog.e(AppLog.T.MEDIA, "mediamodel not found: " + event.media.getId());
                 }
                 assertNotNull(media);
-            } else
-            if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
-                assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
+            } else if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
                 mLastUploadedId = event.media.getMediaId();
+            } else {
+                throw new AssertionError("Unexpected completion for media: " + event.media.getId());
             }
             mCountDownLatch.countDown();
         }
