@@ -310,6 +310,8 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     public void testUploadMultipleImagesAndCancel() throws InterruptedException {
+        assertEquals(0, mMediaStore.getSiteMediaCount(sSite));
+
         // upload media to guarantee media exists
         mUploadedIds = new ArrayList<>();
         mNextEvent = TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL;
@@ -434,7 +436,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onMediaUploaded(OnMediaUploaded event) {
+    public synchronized void onMediaUploaded(OnMediaUploaded event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -442,6 +444,11 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
             if (mNextEvent == TestEvents.CANCELED_MEDIA
                     || mNextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL) {
                 mCountDownLatch.countDown();
+                AppLog.e(AppLog.T.MEDIA, "cancelled media, total image count: " + mMediaStore.getSiteImageCount(sSite));
+                MediaModel media = mUploadedMediaModels.get(event.media.getId());
+                if (media != null) {
+                    media.setUploadState(MediaModel.UploadState.FAILED.toString());
+                }
             } else {
                 throw new AssertionError("Unexpected cancellation for media: " + event.media.getId());
             }
@@ -452,6 +459,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
                 MediaModel media = mUploadedMediaModels.get(event.media.getId());
                 if (media != null) {
                     media.setMediaId(event.media.getMediaId());
+                    media.setUploadState(MediaModel.UploadState.UPLOADED.toString());
                 } else {
                     AppLog.e(AppLog.T.MEDIA, "mediamodel not found: " + event.media.getId());
                 }
@@ -472,6 +480,19 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
                 throw new AssertionError("Unexpected completion for media: " + event.media.getId());
             }
             mCountDownLatch.countDown();
+        } else {
+            if (mNextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL) {
+                // we need to set the UPLOADING state for our initial list of MediaModels
+                // so we know when we are truly able to issue the cancellation actions
+                MediaModel media = mUploadedMediaModels.get(event.media.getId());
+                if (media != null) {
+                    // minor optimisation so we don't set the UploadState value on each
+                    // progress update
+                    if (media.getUploadState() == null) {
+                        media.setUploadState(MediaModel.UploadState.UPLOADING.toString());
+                    }
+                }
+            }
         }
     }
 
@@ -577,9 +598,15 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         if (howManyFirstToCancel > 0 && howManyFirstToCancel <= mediaList.size()) {
             // wait a bit and issue the cancel command
-            TestUtils.waitFor(1000);
 
-            // we'e only cancelling the first n=howManyFirstToCancel uploads
+            // only issue the cancel signals when we are sure we have as many uploads happening
+            // as cancellation actions we want to issue
+            while (howManyAreUploading(mediaList) < howManyFirstToCancel) {
+                TestUtils.waitFor(800);
+                AppLog.e(AppLog.T.MEDIA, "just finished waiting 800 ms");
+            }
+
+            // we're only cancelling the first n=howManyFirstToCancel uploads
             for (int i = 0; i < howManyFirstToCancel; i++) {
                 MediaModel media = mediaList.get(i);
                 CancelMediaPayload payload = new CancelMediaPayload(sSite, media);
@@ -588,6 +615,19 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         }
 
         assertTrue(mCountDownLatch.await(TestUtils.MULTIPLE_UPLOADS_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private synchronized int howManyAreUploading(List<MediaModel> mediaModels) {
+        int count = 0;
+        for (MediaModel media : mediaModels) {
+            String state = media.getUploadState();
+            if (state != null) {
+                if (state.equals(MediaModel.UploadState.UPLOADING.toString())) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
     private void deleteMedia(MediaModel media) throws InterruptedException {
