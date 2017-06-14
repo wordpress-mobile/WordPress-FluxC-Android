@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
+import org.wordpress.android.fluxc.model.MediaModel.UploadState;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListPayload;
@@ -248,7 +249,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         assertEquals(1, mMediaStore.getSiteMediaCount(sSite));
         MediaModel canceledMedia = mMediaStore.getMediaWithLocalId(testMedia.getId());
-        assertEquals(MediaModel.UploadState.FAILED.toString(), canceledMedia.getUploadState());
+        assertEquals(UploadState.FAILED.toString(), canceledMedia.getUploadState());
     }
 
     public void testUploadMultipleImages() throws InterruptedException {
@@ -316,6 +317,51 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         // Only completed uploads should exist in the store
         assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaCount(sSite));
+
+        // delete test images (bear in mind this is done sequentially)
+        mNextEvent = TestEvents.DELETED_MEDIA;
+        for (MediaModel media : mUploadedMediaModels.values()) {
+            // delete only successfully uploaded test images
+            if (mUploadedIds.contains(media.getMediaId())) {
+                deleteMedia(media);
+            }
+        }
+    }
+
+    public void testUploadMultipleImagesAndCancelWithoutDeleting() throws InterruptedException {
+        // upload media to guarantee media exists
+        mUploadedIds = new ArrayList<>();
+        mNextEvent = TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL;
+
+        mUploadedMediaModels = new HashMap<>();
+        // here we use the newMediaModel() with id builder, as we need it to identify uploads
+        addMediaModelToUploadArray("Test media 1");
+        addMediaModelToUploadArray("Test media 2");
+        addMediaModelToUploadArray("Test media 3");
+        addMediaModelToUploadArray("Test media 4");
+        addMediaModelToUploadArray("Test media 5");
+
+        // use this variable to test cancelling 1, 2, 3, 4 or all 5 uploads
+        int amountToCancel = 4;
+
+        // upload media, dispatching all at a time (not waiting for each to finish)
+        // also cancel (without deleting) the first n=`amountToCancel` media uploads
+        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()), amountToCancel, false);
+
+        // verify how many have been uploaded
+        assertEquals(mUploadedMediaModels.size() - amountToCancel, mUploadedIds.size());
+
+        // verify each one of the remaining, non-cancelled uploads exist in the MediaStore
+        for (long mediaId : mUploadedIds) {
+            assertNotNull(mMediaStore.getSiteMediaWithId(sSite, mediaId));
+        }
+
+        // All the original uploads should exist in the store, whether cancelled or not
+        assertEquals(mUploadedMediaModels.size(), mMediaStore.getSiteMediaCount(sSite));
+        // The number of uploaded media in the store should match our records of how many were not cancelled
+        assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaWithState(sSite, UploadState.UPLOADED).size());
+        // All cancelled media should have a FAILED state
+        assertEquals(amountToCancel, mMediaStore.getSiteMediaWithState(sSite, UploadState.FAILED).size());
 
         // delete test images (bear in mind this is done sequentially)
         mNextEvent = TestEvents.DELETED_MEDIA;
