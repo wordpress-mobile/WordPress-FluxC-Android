@@ -292,6 +292,8 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         // verify all have been uploaded
         assertEquals(mUploadedMediaModels.size(), mUploadedIds.size());
+        assertEquals(mUploadedMediaModels.size(),
+                mMediaStore.getSiteMediaWithState(sSite, UploadState.UPLOADED).size());
 
         // verify they exist in the MediaStore
         Iterator<MediaModel> iterator = mUploadedMediaModels.values().iterator();
@@ -339,6 +341,8 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         // Only completed uploads should exist in the store
         assertEquals(mUploadedIds.size(), mMediaStore.getSiteImageCount(sSite));
+        // The number of uploaded media in the store should match our records of how many were not cancelled
+        assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaWithState(sSite, UploadState.UPLOADED).size());
 
         // delete test images (bear in mind this is done sequentially)
         mNextEvent = TestEvents.DELETED_MEDIA;
