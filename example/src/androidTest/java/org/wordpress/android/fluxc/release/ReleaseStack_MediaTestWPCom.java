@@ -265,8 +265,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         addMediaModelToUploadArray("Test media 5");
 
         // upload media, dispatching all at a time (not waiting for each to finish)
-        // also don't cancel any upload (0)
-        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()), 0);
+        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()));
 
         // verify all have been uploaded
         assertEquals(mUploadedMediaModels.size(), mUploadedIds.size());
@@ -304,8 +303,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         int amountToCancel = 4;
 
         // upload media, dispatching all at a time (not waiting for each to finish)
-        // also cancel the first n=`amountToCancel` media uploads
-        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()), amountToCancel);
+        // also cancel (and delete) the first n=`amountToCancel` media uploads
+        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()), amountToCancel, true);
 
         // verify how many have been uploaded
         assertEquals(mUploadedMediaModels.size() - amountToCancel, mUploadedIds.size());
@@ -491,7 +490,12 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void uploadMultipleMedia(List<MediaModel> mediaList, int howManyFirstToCancel) throws InterruptedException {
+    private void uploadMultipleMedia(List<MediaModel> mediaList) throws InterruptedException {
+        uploadMultipleMedia(mediaList, 0, false);
+    }
+
+    private void uploadMultipleMedia(List<MediaModel> mediaList, int howManyFirstToCancel, boolean delete)
+            throws InterruptedException {
         mCountDownLatch = new CountDownLatch(mediaList.size());
         for (MediaModel media : mediaList) {
             MediaPayload payload = new MediaPayload(sSite, media);
@@ -505,7 +509,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             // we'e only cancelling the first n=howManyFirstToCancel uploads
             for (int i = 0; i < howManyFirstToCancel; i++) {
                 MediaModel media = mediaList.get(i);
-                CancelMediaPayload payload = new CancelMediaPayload(sSite, media);
+                CancelMediaPayload payload = new CancelMediaPayload(sSite, media, delete);
                 mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(payload));
             }
         }
