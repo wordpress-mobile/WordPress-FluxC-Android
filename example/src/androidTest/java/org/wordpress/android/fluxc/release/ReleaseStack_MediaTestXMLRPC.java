@@ -7,7 +7,7 @@ import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
-import org.wordpress.android.fluxc.model.MediaModel.UploadState;
+import org.wordpress.android.fluxc.model.MediaModel.MediaUploadState;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
@@ -271,7 +271,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         assertEquals(1, mMediaStore.getSiteMediaCount(sSite));
         MediaModel canceledMedia = mMediaStore.getMediaWithLocalId(testMedia.getId());
-        assertEquals(UploadState.FAILED.toString(), canceledMedia.getUploadState());
+        assertEquals(MediaUploadState.FAILED.toString(), canceledMedia.getUploadState());
     }
 
     public void testUploadMultipleImages() throws InterruptedException {
@@ -293,7 +293,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // verify all have been uploaded
         assertEquals(mUploadedMediaModels.size(), mUploadedIds.size());
         assertEquals(mUploadedMediaModels.size(),
-                mMediaStore.getSiteMediaWithState(sSite, UploadState.UPLOADED).size());
+                mMediaStore.getSiteMediaWithState(sSite, MediaUploadState.UPLOADED).size());
 
         // verify they exist in the MediaStore
         Iterator<MediaModel> iterator = mUploadedMediaModels.values().iterator();
@@ -342,7 +342,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // Only completed uploads should exist in the store
         assertEquals(mUploadedIds.size(), mMediaStore.getSiteImageCount(sSite));
         // The number of uploaded media in the store should match our records of how many were not cancelled
-        assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaWithState(sSite, UploadState.UPLOADED).size());
+        assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaWithState(sSite, MediaUploadState.UPLOADED).size());
 
         // delete test images (bear in mind this is done sequentially)
         mNextEvent = TestEvents.DELETED_MEDIA;
@@ -385,9 +385,9 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // All the original uploads should exist in the store, whether cancelled or not
         assertEquals(mUploadedMediaModels.size(), mMediaStore.getSiteMediaCount(sSite));
         // The number of uploaded media in the store should match our records of how many were not cancelled
-        assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaWithState(sSite, UploadState.UPLOADED).size());
+        assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaWithState(sSite, MediaUploadState.UPLOADED).size());
         // All cancelled media should have a FAILED state
-        assertEquals(amountToCancel, mMediaStore.getSiteMediaWithState(sSite, UploadState.FAILED).size());
+        assertEquals(amountToCancel, mMediaStore.getSiteMediaWithState(sSite, MediaUploadState.FAILED).size());
 
         // delete test images (bear in mind this is done sequentially)
         mNextEvent = TestEvents.DELETED_MEDIA;
