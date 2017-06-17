@@ -222,7 +222,7 @@ public class PostActivity extends AppCompatActivity {
         mediaModel.setMimeType(mimeType);
         mediaModel.setFileName(MediaUtils.getFileName(imagePath));
         mediaModel.setLocalSiteId(mSite.getId());
-        mediaModel.setUploadState(UploadState.UPLOADING.toString());
+        mediaModel.setUploadState(UploadState.UPLOADING);
         mediaModel.setUploadDate(DateTimeUtils.iso8601UTCFromTimestamp(System.currentTimeMillis() / 1000));
         mDispatcher.dispatch(MediaActionBuilder.newUpdateMediaAction(mediaModel));
 
