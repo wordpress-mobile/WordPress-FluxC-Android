@@ -8,7 +8,9 @@ import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
+import org.wordpress.android.fluxc.model.MediaModel.UploadState;
 import org.wordpress.android.fluxc.store.MediaStore;
+import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListPayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
@@ -30,16 +32,16 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Inject MediaStore mMediaStore;
 
     private enum TestEvents {
+        CANCELED_MEDIA,
         DELETED_MEDIA,
         FETCHED_MEDIA_LIST,
         FETCHED_KNOWN_IMAGES,
         PUSHED_MEDIA,
-        UPLOADED_MEDIA,
-        UPLOADED_MULTIPLE_MEDIA, // these don't exist in FluxC, but are an artifact to wait for all
-                                // uploads to finish
-        UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL, // same as above
-        PUSH_ERROR,
         REMOVED_MEDIA,
+        UPLOADED_MEDIA,
+        UPLOADED_MULTIPLE_MEDIA, // these don't exist in FluxC, but are an artifact to wait for all uploads to finish
+        UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL, // same as above
+        PUSH_ERROR
     }
 
     private TestEvents mNextEvent;
@@ -212,6 +214,44 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         deleteMedia(testMedia);
     }
 
+    public void testCancelImageUpload() throws InterruptedException {
+        // First, try canceling an image with the default behavior (canceled image is deleted from the store)
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.CANCELED_MEDIA;
+        MediaPayload payload = new MediaPayload(sSite, testMedia);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+
+        // Wait a bit and issue the cancel command
+        TestUtils.waitFor(1000);
+
+        CancelMediaPayload cancelPayload = new CancelMediaPayload(sSite, testMedia);
+        mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(0, mMediaStore.getSiteMediaCount(sSite));
+
+        // Now, try canceling with delete=false (canceled image should be marked as failed and kept in the store)
+        testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.CANCELED_MEDIA;
+        payload = new MediaPayload(sSite, testMedia);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+
+        // Wait a bit and issue the cancel command
+        TestUtils.waitFor(1000);
+
+        cancelPayload = new CancelMediaPayload(sSite, testMedia, false);
+        mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(1, mMediaStore.getSiteMediaCount(sSite));
+        MediaModel canceledMedia = mMediaStore.getMediaWithLocalId(testMedia.getId());
+        assertEquals(UploadState.FAILED.toString(), canceledMedia.getUploadState());
+    }
+
     public void testUploadMultipleImages() throws InterruptedException {
         // upload media to guarantee media exists
         mUploadedIds = new ArrayList<>();
@@ -226,11 +266,12 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         addMediaModelToUploadArray("Test media 5");
 
         // upload media, dispatching all at a time (not waiting for each to finish)
-        // also don't cancel any upload (0)
-        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()), 0);
+        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()));
 
         // verify all have been uploaded
         assertEquals(mUploadedMediaModels.size(), mUploadedIds.size());
+        assertEquals(mUploadedMediaModels.size(),
+                mMediaStore.getSiteMediaWithState(sSite, UploadState.UPLOADED).size());
 
         // verify they exist in the MediaStore
         Iterator<MediaModel> iterator = mUploadedMediaModels.values().iterator();
@@ -265,24 +306,70 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         int amountToCancel = 4;
 
         // upload media, dispatching all at a time (not waiting for each to finish)
-        // also cancel the first n=`amountToCancel` media uploads
-        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()), amountToCancel);
+        // also cancel (and delete) the first n=`amountToCancel` media uploads
+        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()), amountToCancel, true);
 
         // verify how many have been uploaded
         assertEquals(mUploadedMediaModels.size() - amountToCancel, mUploadedIds.size());
 
         // verify each one of the remaining, non-cancelled uploads exist in the MediaStore
-        Iterator<MediaModel> iterator = mUploadedMediaModels.values().iterator();
-        while (iterator.hasNext()) {
-            MediaModel media = iterator.next();
-            assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
+        for (long mediaId : mUploadedIds) {
+            assertNotNull(mMediaStore.getSiteMediaWithId(sSite, mediaId));
         }
+
+        // Only completed uploads should exist in the store
+        assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaCount(sSite));
+        // The number of uploaded media in the store should match our records of how many were not cancelled
+        assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaWithState(sSite, UploadState.UPLOADED).size());
 
         // delete test images (bear in mind this is done sequentially)
         mNextEvent = TestEvents.DELETED_MEDIA;
-        iterator = mUploadedMediaModels.values().iterator();
-        while (iterator.hasNext()) {
-            MediaModel media = iterator.next();
+        for (MediaModel media : mUploadedMediaModels.values()) {
+            // delete only successfully uploaded test images
+            if (mUploadedIds.contains(media.getMediaId())) {
+                deleteMedia(media);
+            }
+        }
+    }
+
+    public void testUploadMultipleImagesAndCancelWithoutDeleting() throws InterruptedException {
+        // upload media to guarantee media exists
+        mUploadedIds = new ArrayList<>();
+        mNextEvent = TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL;
+
+        mUploadedMediaModels = new HashMap<>();
+        // here we use the newMediaModel() with id builder, as we need it to identify uploads
+        addMediaModelToUploadArray("Test media 1");
+        addMediaModelToUploadArray("Test media 2");
+        addMediaModelToUploadArray("Test media 3");
+        addMediaModelToUploadArray("Test media 4");
+        addMediaModelToUploadArray("Test media 5");
+
+        // use this variable to test cancelling 1, 2, 3, 4 or all 5 uploads
+        int amountToCancel = 4;
+
+        // upload media, dispatching all at a time (not waiting for each to finish)
+        // also cancel (without deleting) the first n=`amountToCancel` media uploads
+        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()), amountToCancel, false);
+
+        // verify how many have been uploaded
+        assertEquals(mUploadedMediaModels.size() - amountToCancel, mUploadedIds.size());
+
+        // verify each one of the remaining, non-cancelled uploads exist in the MediaStore
+        for (long mediaId : mUploadedIds) {
+            assertNotNull(mMediaStore.getSiteMediaWithId(sSite, mediaId));
+        }
+
+        // All the original uploads should exist in the store, whether cancelled or not
+        assertEquals(mUploadedMediaModels.size(), mMediaStore.getSiteMediaCount(sSite));
+        // The number of uploaded media in the store should match our records of how many were not cancelled
+        assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaWithState(sSite, UploadState.UPLOADED).size());
+        // All cancelled media should have a FAILED state
+        assertEquals(amountToCancel, mMediaStore.getSiteMediaWithState(sSite, UploadState.FAILED).size());
+
+        // delete test images (bear in mind this is done sequentially)
+        mNextEvent = TestEvents.DELETED_MEDIA;
+        for (MediaModel media : mUploadedMediaModels.values()) {
             // delete only successfully uploaded test images
             if (mUploadedIds.contains(media.getMediaId())) {
                 deleteMedia(media);
@@ -313,13 +400,14 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         if (event.canceled) {
-            if (mNextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL) {
-                assertEquals(TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL, mNextEvent);
+            if (mNextEvent == TestEvents.CANCELED_MEDIA
+                    || mNextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL) {
                 mCountDownLatch.countDown();
+            } else {
+                throw new AssertionError("Unexpected cancellation for media: " + event.media.getId());
             }
         } else if (event.completed) {
             if (mNextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL) {
-                assertEquals(TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL, mNextEvent);
                 mUploadedIds.add(event.media.getMediaId());
                 // now update our own map object with the new media id
                 MediaModel media = mUploadedMediaModels.get(event.media.getId());
@@ -330,7 +418,6 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
                 }
                 assertNotNull(media);
             } else if (mNextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA) {
-                assertEquals(TestEvents.UPLOADED_MULTIPLE_MEDIA, mNextEvent);
                 mUploadedIds.add(event.media.getMediaId());
                 // now update our own map object with the new media id
                 MediaModel media = mUploadedMediaModels.get(event.media.getId());
@@ -340,10 +427,10 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
                     AppLog.e(AppLog.T.MEDIA, "mediamodel not found: " + event.media.getId());
                 }
                 assertNotNull(media);
-            } else
-            if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
-                assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
+            } else if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
                 mLastUploadedId = event.media.getMediaId();
+            } else {
+                throw new AssertionError("Unexpected completion for media: " + event.media.getId());
             }
             mCountDownLatch.countDown();
         }
@@ -453,7 +540,12 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void uploadMultipleMedia(List<MediaModel> mediaList, int howManyFirstToCancel) throws InterruptedException {
+    private void uploadMultipleMedia(List<MediaModel> mediaList) throws InterruptedException {
+        uploadMultipleMedia(mediaList, 0, false);
+    }
+
+    private void uploadMultipleMedia(List<MediaModel> mediaList, int howManyFirstToCancel, boolean delete)
+            throws InterruptedException {
         mCountDownLatch = new CountDownLatch(mediaList.size());
         for (MediaModel media : mediaList) {
             MediaPayload payload = new MediaPayload(sSite, media);
@@ -467,7 +559,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             // we'e only cancelling the first n=howManyFirstToCancel uploads
             for (int i = 0; i < howManyFirstToCancel; i++) {
                 MediaModel media = mediaList.get(i);
-                MediaPayload payload = new MediaPayload(sSite, media);
+                CancelMediaPayload payload = new CancelMediaPayload(sSite, media, delete);
                 mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(payload));
             }
         }
