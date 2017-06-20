@@ -105,7 +105,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        site = "http://example.com";
+        site = "http://definitelynotawpcomsite.impossible";
         mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
         mNextEvent = TestEvents.SITE_FETCH_ERROR;
         mCountDownLatch = new CountDownLatch(1);
