@@ -42,7 +42,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         SITE_REMOVED,
         FETCHED_CONNECT_SITE_INFO,
         FETCHED_WPCOM_SITE_BY_URL,
-        SITE_FETCH_ERROR
+        ERROR_INVALID_SITE
     }
 
     private TestEvents mNextEvent;
@@ -96,6 +96,12 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mNextEvent = TestEvents.FETCHED_CONNECT_SITE_INFO;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        site = "";
+        mDispatcher.dispatch(SiteActionBuilder.newFetchConnectSiteInfoAction(site));
+        mNextEvent = TestEvents.ERROR_INVALID_SITE;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testFetchWPComSiteByUrl() throws InterruptedException {
@@ -107,7 +113,13 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
         site = "http://definitelynotawpcomsite.impossible";
         mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
-        mNextEvent = TestEvents.SITE_FETCH_ERROR;
+        mNextEvent = TestEvents.ERROR_INVALID_SITE;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        site = "";
+        mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
+        mNextEvent = TestEvents.ERROR_INVALID_SITE;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -197,6 +209,11 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     @Subscribe
     public void onFetchedConnectSiteInfo(OnConnectSiteInfoChecked event) {
         if (event.isError()) {
+            if (mNextEvent.equals(TestEvents.ERROR_INVALID_SITE)) {
+                assertEquals(SiteErrorType.INVALID_SITE, event.error.type);
+                mCountDownLatch.countDown();
+                return;
+            }
             throw new AssertionError("Unexpected error occured with type: " + event.error.type);
         }
         assertEquals(TestEvents.FETCHED_CONNECT_SITE_INFO, mNextEvent);
@@ -207,7 +224,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     @Subscribe
     public void onWPComSiteFetched(OnWPComSiteFetched event) {
         if (event.isError()) {
-            if (mNextEvent.equals(TestEvents.SITE_FETCH_ERROR)) {
+            if (mNextEvent.equals(TestEvents.ERROR_INVALID_SITE)) {
                 assertEquals(SiteErrorType.INVALID_SITE, event.error.type);
                 mCountDownLatch.countDown();
                 return;
