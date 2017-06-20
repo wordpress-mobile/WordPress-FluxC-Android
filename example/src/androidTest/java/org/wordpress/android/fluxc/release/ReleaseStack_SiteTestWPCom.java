@@ -13,9 +13,12 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
+import org.wordpress.android.fluxc.store.SiteStore.OnWPComSiteFetched;
+import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -38,6 +41,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         POST_FORMATS_CHANGED,
         SITE_REMOVED,
         FETCHED_CONNECT_SITE_INFO,
+        FETCHED_WPCOM_SITE_BY_URL,
+        SITE_FETCH_ERROR
     }
 
     private TestEvents mNextEvent;
@@ -89,6 +94,20 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         String site = "http://www.example.com";
         mDispatcher.dispatch(SiteActionBuilder.newFetchConnectSiteInfoAction(site));
         mNextEvent = TestEvents.FETCHED_CONNECT_SITE_INFO;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testFetchWPComSiteByUrl() throws InterruptedException {
+        String site = "http://en.blog.wordpress.com";
+        mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
+        mNextEvent = TestEvents.FETCHED_WPCOM_SITE_BY_URL;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        site = "http://example.com";
+        mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
+        mNextEvent = TestEvents.SITE_FETCH_ERROR;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -176,11 +195,26 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onFetchedConnectSiteInfo(SiteStore.OnConnectSiteInfoChecked event) {
+    public void onFetchedConnectSiteInfo(OnConnectSiteInfoChecked event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occured with type: " + event.error.type);
         }
         assertEquals(TestEvents.FETCHED_CONNECT_SITE_INFO, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onWPComSiteFetched(OnWPComSiteFetched event) {
+        if (event.isError()) {
+            if (mNextEvent.equals(TestEvents.SITE_FETCH_ERROR)) {
+                assertEquals(SiteErrorType.INVALID_SITE, event.error.type);
+                mCountDownLatch.countDown();
+                return;
+            }
+            throw new AssertionError("Unexpected error occured with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.FETCHED_WPCOM_SITE_BY_URL, mNextEvent);
         mCountDownLatch.countDown();
     }
 
