@@ -253,9 +253,10 @@ public class SignedOutActionsFragment extends Fragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onFetchedConnectSiteInfo(OnWPComSiteFetched event) {
         if (event.isError()) {
-            prependToLog("Fetch WP.com site: error: " + event.error.type);
+            prependToLog("Fetch WP.com site for URL " + event.checkedUrl + ": error: " + event.error.type);
         } else {
-            prependToLog("Fetch WP.com site: success! Site url: " + event.site.getUrl());
+            prependToLog("Fetch WP.com site for URL " + event.checkedUrl + ": success! Site name: "
+                    + event.site.getName());
         }
     }
 
