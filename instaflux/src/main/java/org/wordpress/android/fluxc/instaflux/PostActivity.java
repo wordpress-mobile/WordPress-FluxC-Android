@@ -29,7 +29,6 @@ import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
-import org.wordpress.android.fluxc.model.MediaModel.MediaUploadState;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
@@ -222,7 +221,6 @@ public class PostActivity extends AppCompatActivity {
         mediaModel.setMimeType(mimeType);
         mediaModel.setFileName(MediaUtils.getFileName(imagePath));
         mediaModel.setLocalSiteId(mSite.getId());
-        mediaModel.setUploadState(MediaUploadState.UPLOADING);
         mediaModel.setUploadDate(DateTimeUtils.iso8601UTCFromTimestamp(System.currentTimeMillis() / 1000));
         mDispatcher.dispatch(MediaActionBuilder.newUpdateMediaAction(mediaModel));
 
