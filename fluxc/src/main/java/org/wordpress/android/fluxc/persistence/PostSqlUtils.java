@@ -79,7 +79,7 @@ public class PostSqlUtils {
                 .getAsModel();
     }
 
-    public static PostModel getPostWithRemoteId(SiteModel site, long remoteId, boolean getPages) {
+    public static PostModel getPostForSiteWithRemoteId(SiteModel site, long remoteId, boolean getPages) {
         if (site == null) {
             return null;
         }
