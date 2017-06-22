@@ -36,6 +36,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AUTHENTICATE_2FA_ERROR,
         FETCHED,
         POSTED,
+        FETCH_ERROR,
         SENT_AUTH_EMAIL,
         AUTH_EMAIL_ERROR_INVALID,
         AUTH_EMAIL_ERROR_NO_SUCH_USER
@@ -151,6 +152,38 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(newValue, String.valueOf(mAccountStore.getAccount().getPrimarySiteId()));
     }
 
+    public void testWPComSignOut() throws InterruptedException {
+        mNextEvent = TestEvents.AUTHENTICATE;
+        authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        mCountDownLatch = new CountDownLatch(2); // Wait for OnAuthenticationChanged and OnAccountChanged
+        mNextEvent = TestEvents.AUTHENTICATE;
+        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertFalse(mAccountStore.hasAccessToken());
+        assertEquals(0, mAccountStore.getAccount().getUserId());
+    }
+
+    public void testWPComSignOutCollision() throws InterruptedException {
+        mNextEvent = TestEvents.AUTHENTICATE;
+        authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        mCountDownLatch = new CountDownLatch(2); // Wait for OnAuthenticationChanged and OnAccountChanged
+        mNextEvent = TestEvents.AUTHENTICATE;
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
+        Thread.sleep(100);
+        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        mCountDownLatch = new CountDownLatch(1); // Wait for FETCH_ACCOUNT result
+        mNextEvent = TestEvents.FETCH_ERROR;
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertFalse(mAccountStore.hasAccessToken());
+        assertEquals(0, mAccountStore.getAccount().getUserId());
+    }
+
     public void testSendAuthEmail() throws InterruptedException {
         mNextEvent = TestEvents.SENT_AUTH_EMAIL;
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(BuildConfig.TEST_WPCOM_EMAIL_TEST1));
@@ -176,6 +209,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
+        AppLog.i(AppLog.T.API, "Received OnAuthenticationChanged");
         if (event.isError()) {
             switch (mNextEvent) {
                 case AUTHENTICATE_2FA_ERROR:
@@ -196,8 +230,17 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     @SuppressWarnings("unused")
     @Subscribe
     public void onAccountChanged(OnAccountChanged event) {
+        AppLog.i(AppLog.T.API, "Received OnAccountChanged");
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            switch (event.error.type) {
+                case ACCOUNT_FETCH_ERROR:
+                    assertEquals(mNextEvent, TestEvents.FETCH_ERROR);
+                    mCountDownLatch.countDown();
+                    break;
+                default:
+                    throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            }
+            return;
         }
         if (event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
             assertEquals(mNextEvent, TestEvents.FETCHED);

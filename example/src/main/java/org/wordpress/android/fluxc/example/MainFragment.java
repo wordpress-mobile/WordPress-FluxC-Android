@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.action.AccountAction;
 import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
@@ -181,7 +182,6 @@ public class MainFragment extends Fragment {
 
     private void signIn2fa(String twoStepCode) {
         mAuthenticatePayload.twoStepCode = twoStepCode;
-        mAuthenticatePayload.nextAction = SiteActionBuilder.newFetchSitesAction();
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mAuthenticatePayload));
     }
 
@@ -229,8 +229,6 @@ public class MainFragment extends Fragment {
 
     private void wpcomFetchSites(String username, String password) {
         mAuthenticatePayload = new AuthenticatePayload(username, password);
-        // Next action will be dispatched if authentication is successful
-        mAuthenticatePayload.nextAction = SiteActionBuilder.newFetchSitesAction();
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mAuthenticatePayload));
     }
 
@@ -251,6 +249,16 @@ public class MainFragment extends Fragment {
     public void onAccountChanged(OnAccountChanged event) {
         if (!mAccountStore.hasAccessToken()) {
             prependToLog("Signed Out");
+            return;
+        }
+
+        if (event.isError()) {
+            prependToLog("Account error: " + event.error.type);
+        } else {
+            if (!mSiteStore.hasSite() && event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
+                AppLog.d(T.API, "Account data fetched - fetching sites");
+                mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
+            }
         }
     }
 
@@ -294,6 +302,12 @@ public class MainFragment extends Fragment {
                 case GENERIC_ERROR:
                     // Show Toast "Network Error"?
                     break;
+            }
+        } else {
+            if (mAccountStore.hasAccessToken()) {
+                AppLog.d(T.API, "Signed in to WordPress.com successfully, fetching account");
+                mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
+                mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
             }
         }
     }
