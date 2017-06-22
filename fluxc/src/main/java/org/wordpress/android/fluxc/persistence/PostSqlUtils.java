@@ -79,6 +79,20 @@ public class PostSqlUtils {
                 .getAsModel();
     }
 
+    public static PostModel getPostWithRemoteId(SiteModel site, long remoteId, boolean getPages) {
+        if (site == null) {
+            return null;
+        }
+
+        List<PostModel> posts = WellSql.select(PostModel.class)
+                .where().beginGroup()
+                .equals(PostModelTable.LOCAL_SITE_ID, site.getId())
+                .equals(PostModelTable.REMOTE_POST_ID, remoteId)
+                .equals(PostModelTable.IS_PAGE, getPages)
+                .endGroup().endWhere().getAsModel();
+        return posts != null && !posts.isEmpty() ? posts.get(0) : null;
+    }
+
     public static List<PostModel> getPostsForSiteWithFormat(SiteModel site, List<String> postFormat, boolean getPages) {
         if (site == null) {
             return Collections.emptyList();
