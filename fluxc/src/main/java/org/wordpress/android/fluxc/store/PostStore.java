@@ -260,6 +260,14 @@ public class PostStore extends Store {
         return PostSqlUtils.getPostsForSite(site, false);
     }
 
+    public PostModel getPostForSiteWithRemoteId(SiteModel site, long remotePostId) {
+        return PostSqlUtils.getPostForSiteWithRemoteId(site, remotePostId, false);
+    }
+
+    public PostModel getPageForSiteWithRemoteId(SiteModel site, long remotePageId) {
+        return PostSqlUtils.getPostForSiteWithRemoteId(site, remotePageId, true);
+    }
+
     /**
      * Returns posts with given format in the store for the given site as a {@link PostModel} list.
      */
