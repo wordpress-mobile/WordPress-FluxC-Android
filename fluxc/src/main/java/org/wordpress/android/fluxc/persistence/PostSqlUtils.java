@@ -48,8 +48,9 @@ public class PostSqlUtils {
             }
             // Update only if local changes for this post don't exist
             if (overwriteLocalChanges || !postResult.get(0).isLocallyChanged()) {
-                int oldId = postResult.get(0).getId();
-                return WellSql.update(PostModel.class).whereId(oldId)
+                // we should update the given post's local ID to match what's in the DB
+                post.setId(postResult.get(0).getId());
+                return WellSql.update(PostModel.class).whereId(post.getId())
                         .put(post, new UpdateAllExceptId<>(PostModel.class)).execute();
             }
         }
