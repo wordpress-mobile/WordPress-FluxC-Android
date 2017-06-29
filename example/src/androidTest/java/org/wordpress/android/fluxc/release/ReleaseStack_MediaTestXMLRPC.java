@@ -119,9 +119,13 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         fetchMediaList();
         assertFalse(mMediaStore.getAllSiteMedia(sSite).isEmpty());
 
-        // remove all media again, fetch only images, verify store is not empty and contains only images
-        mNextEvent = TestEvents.FETCHED_MEDIA_IMAGE_LIST;
+        // remove all media again
+        mNextEvent = TestEvents.REMOVED_MEDIA;
         removeAllSiteMedia();
+        assertTrue(mMediaStore.getAllSiteMedia(sSite).isEmpty());
+
+        // fetch only images, verify store is not empty and contains only images
+        mNextEvent = TestEvents.FETCHED_MEDIA_IMAGE_LIST;
         fetchMediaImageList();
         List<MediaModel> mediaList = mMediaStore.getSiteImages(sSite);
         assertFalse(mediaList.isEmpty());
