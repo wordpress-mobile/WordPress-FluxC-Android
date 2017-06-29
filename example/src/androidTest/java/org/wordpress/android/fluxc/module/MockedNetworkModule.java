@@ -98,9 +98,9 @@ public class MockedNetworkModule {
 
     @Singleton
     @Provides
-    public BaseXMLRPCClient provideBaseXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken token,
+    public BaseXMLRPCClient provideBaseXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue,
                                                     UserAgent userAgent, HTTPAuthManager httpAuthManager) {
-        return new BaseXMLRPCClient(dispatcher, requestQueue, token, userAgent, httpAuthManager);
+        return new BaseXMLRPCClient(dispatcher, requestQueue, userAgent, httpAuthManager);
     }
 
     @Singleton
@@ -131,16 +131,15 @@ public class MockedNetworkModule {
     @Provides
     public MediaXMLRPCClient provideMediaXMLRPCClient(Dispatcher dispatcher, OkHttpClient okHttpClient,
                                                       @Named("regular") RequestQueue requestQueue,
-                                                      AccessToken token, UserAgent userAgent,
-                                                      HTTPAuthManager httpAuthManager) {
-        return new MediaXMLRPCClient(dispatcher, requestQueue, okHttpClient, token, userAgent, httpAuthManager);
+                                                      UserAgent userAgent, HTTPAuthManager httpAuthManager) {
+        return new MediaXMLRPCClient(dispatcher, requestQueue, okHttpClient, userAgent, httpAuthManager);
     }
 
     @Singleton
     @Provides
-    public SiteXMLRPCClient provideSiteXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken token,
+    public SiteXMLRPCClient provideSiteXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue,
                                                     UserAgent userAgent, HTTPAuthManager httpAuthManager) {
-        return new SiteXMLRPCClient(dispatcher, requestQueue, token, userAgent, httpAuthManager);
+        return new SiteXMLRPCClient(dispatcher, requestQueue, userAgent, httpAuthManager);
     }
 
     @Singleton
@@ -152,9 +151,9 @@ public class MockedNetworkModule {
 
     @Singleton
     @Provides
-    public PostXMLRPCClient providePostXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken token,
+    public PostXMLRPCClient providePostXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue,
                                                     UserAgent userAgent, HTTPAuthManager httpAuthManager) {
-        return new PostXMLRPCClient(dispatcher, requestQueue, token, userAgent, httpAuthManager);
+        return new PostXMLRPCClient(dispatcher, requestQueue, userAgent, httpAuthManager);
     }
 
     @Singleton
