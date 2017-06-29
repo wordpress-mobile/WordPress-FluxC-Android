@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.OkHttpStack;
 import org.wordpress.android.fluxc.network.UserAgent;
+import org.wordpress.android.fluxc.network.discovery.DiscoveryWPAPIRestClient;
 import org.wordpress.android.fluxc.network.discovery.DiscoveryXMLRPCClient;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder;
 import org.wordpress.android.fluxc.network.rest.wpapi.BaseWPAPIRestClient;
@@ -173,10 +174,17 @@ public class MockedNetworkModule {
 
     @Singleton
     @Provides
+    public DiscoveryWPAPIRestClient provideDiscoveryWPAPIRestClient(Dispatcher dispatcher, RequestQueue requestQueue,
+                                                              UserAgent userAgent) {
+        return new DiscoveryWPAPIRestClient(dispatcher, requestQueue, userAgent);
+    }
+
+    @Singleton
+    @Provides
     public SelfHostedEndpointFinder provideSelfHostedEndpointFinder(Dispatcher dispatcher,
                                                                     DiscoveryXMLRPCClient discoveryXMLRPCClient,
-                                                                    BaseWPAPIRestClient baseWPAPIRestClient) {
-        return new SelfHostedEndpointFinder(dispatcher, discoveryXMLRPCClient, baseWPAPIRestClient);
+                                                                    DiscoveryWPAPIRestClient discoveryWPAPIRestClient) {
+        return new SelfHostedEndpointFinder(dispatcher, discoveryXMLRPCClient, discoveryWPAPIRestClient);
     }
 
     @Singleton
