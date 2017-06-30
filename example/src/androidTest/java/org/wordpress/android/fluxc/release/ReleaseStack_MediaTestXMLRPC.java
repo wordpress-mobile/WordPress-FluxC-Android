@@ -559,10 +559,6 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
                 assertEquals(TestEvents.PUSHED_MEDIA, mNextEvent);
             } else if (event.cause == MediaAction.DELETE_MEDIA) {
                 assertEquals(TestEvents.DELETED_MEDIA, mNextEvent);
-            } else if (event.cause == MediaAction.FETCHED_MEDIA_LIST) {
-                boolean isMediaListEvent = mNextEvent == TestEvents.FETCHED_MEDIA_LIST
-                        || mNextEvent == TestEvents.FETCHED_MEDIA_IMAGE_LIST;
-                assertTrue(isMediaListEvent);
             } else if (event.cause == MediaAction.REMOVE_MEDIA) {
                 assertEquals(TestEvents.REMOVED_MEDIA, mNextEvent);
             } else {

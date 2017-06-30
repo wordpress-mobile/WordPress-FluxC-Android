@@ -461,11 +461,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             mCountDownLatch.countDown();
             return;
         }
-        if (event.cause == MediaAction.FETCHED_MEDIA_LIST) {
-            boolean isMediaListEvent = mNextEvent == TestEvents.FETCHED_MEDIA_LIST
-                    || mNextEvent == TestEvents.FETCHED_MEDIA_IMAGE_LIST;
-            assertTrue(isMediaListEvent);
-        } else if (event.cause == MediaAction.FETCH_MEDIA) {
+        if (event.cause == MediaAction.FETCH_MEDIA) {
             if (eventHasKnownImages(event)) {
                 assertEquals(TestEvents.FETCHED_KNOWN_IMAGES, mNextEvent);
             }
