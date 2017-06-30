@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import android.annotation.SuppressLint;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
@@ -27,11 +29,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+@SuppressLint("UseSparseArrays")
 public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @SuppressWarnings("unused")
     @Inject AccountStore mAccountStore;
@@ -62,7 +66,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     private long mLastUploadedId = -1L;
 
     private List<Long> mUploadedIds = new ArrayList<>();
-    private HashMap<Integer, MediaModel> mUploadedMediaModels = new HashMap<>();
+    private Map<Integer, MediaModel> mUploadedMediaModels = new HashMap<>();
 
     @Override
     protected void setUp() throws Exception {
