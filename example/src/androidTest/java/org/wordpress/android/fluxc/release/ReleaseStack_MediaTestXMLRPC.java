@@ -46,6 +46,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         CANCELED_MEDIA,
         DELETED_MEDIA,
         FETCHED_MEDIA_LIST,
+        FETCHED_MEDIA_IMAGE_LIST,
         FETCHED_MEDIA,
         PUSHED_MEDIA,
         REMOVED_MEDIA,
@@ -117,6 +118,18 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.FETCHED_MEDIA_LIST;
         fetchMediaList();
         assertFalse(mMediaStore.getAllSiteMedia(sSite).isEmpty());
+
+        // remove all media again
+        mNextEvent = TestEvents.REMOVED_MEDIA;
+        removeAllSiteMedia();
+        assertTrue(mMediaStore.getAllSiteMedia(sSite).isEmpty());
+
+        // fetch only images, verify store is not empty and contains only images
+        mNextEvent = TestEvents.FETCHED_MEDIA_IMAGE_LIST;
+        fetchMediaImageList();
+        List<MediaModel> mediaList = mMediaStore.getSiteImages(sSite);
+        assertFalse(mediaList.isEmpty());
+        assertTrue(mMediaStore.getSiteMediaCount(sSite) == mediaList.size());
 
         // delete test image
         mNextEvent = TestEvents.DELETED_MEDIA;
@@ -546,6 +559,10 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
                 assertEquals(TestEvents.PUSHED_MEDIA, mNextEvent);
             } else if (event.cause == MediaAction.DELETE_MEDIA) {
                 assertEquals(TestEvents.DELETED_MEDIA, mNextEvent);
+            } else if (event.cause == MediaAction.FETCHED_MEDIA_LIST) {
+                boolean isMediaListEvent = mNextEvent == TestEvents.FETCHED_MEDIA_LIST
+                        || mNextEvent == TestEvents.FETCHED_MEDIA_IMAGE_LIST;
+                assertTrue(isMediaListEvent);
             }
         }
         mCountDownLatch.countDown();
@@ -557,7 +574,9 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TestEvents.FETCHED_MEDIA_LIST, mNextEvent);
+        boolean isMediaListEvent = mNextEvent == TestEvents.FETCHED_MEDIA_LIST
+                || mNextEvent == TestEvents.FETCHED_MEDIA_IMAGE_LIST;
+        assertTrue(isMediaListEvent);
         mCountDownLatch.countDown();
     }
 
@@ -598,6 +617,13 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     private void fetchMediaList() throws InterruptedException {
         FetchMediaListPayload fetchPayload = new FetchMediaListPayload(sSite, false);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void fetchMediaImageList() throws InterruptedException {
+        FetchMediaListPayload fetchPayload = new FetchMediaListPayload(sSite, false, MediaUtils.MIME_TYPE_IMAGE);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
