@@ -42,7 +42,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         SITE_REMOVED,
         FETCHED_CONNECT_SITE_INFO,
         FETCHED_WPCOM_SITE_BY_URL,
-        ERROR_INVALID_SITE
+        ERROR_INVALID_SITE,
+        ERROR_UNKNOWN_SITE
     }
 
     private TestEvents mNextEvent;
@@ -113,7 +114,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
         site = "http://definitelynotawpcomsite.impossible";
         mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
-        mNextEvent = TestEvents.ERROR_INVALID_SITE;
+        mNextEvent = TestEvents.ERROR_UNKNOWN_SITE;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -226,6 +227,10 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         if (event.isError()) {
             if (mNextEvent.equals(TestEvents.ERROR_INVALID_SITE)) {
                 assertEquals(SiteErrorType.INVALID_SITE, event.error.type);
+                mCountDownLatch.countDown();
+                return;
+            } else if (mNextEvent.equals(TestEvents.ERROR_UNKNOWN_SITE)) {
+                assertEquals(SiteErrorType.UNKNOWN_SITE, event.error.type);
                 mCountDownLatch.countDown();
                 return;
             }
