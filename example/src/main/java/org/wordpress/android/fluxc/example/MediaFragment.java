@@ -255,7 +255,7 @@ public class MediaFragment extends Fragment {
     }
 
     private void fetchMediaList(@NonNull SiteModel site) {
-        FetchMediaListPayload payload = new FetchMediaListPayload(site, false);
+        FetchMediaListPayload payload = new FetchMediaListPayload(site, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(payload));
     }
 
