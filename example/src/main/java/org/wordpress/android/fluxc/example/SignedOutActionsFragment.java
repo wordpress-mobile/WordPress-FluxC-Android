@@ -24,9 +24,10 @@ import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
-import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
 import org.wordpress.android.fluxc.store.SiteStore.OnURLChecked;
+import org.wordpress.android.fluxc.store.SiteStore.OnWPComSiteFetched;
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
 
 import javax.inject.Inject;
@@ -65,6 +66,12 @@ public class SignedOutActionsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 showCheckWPComUrlDialog();
+            }
+        });
+        view.findViewById(R.id.fetch_wpcom_site).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showFetchWPComSiteDialog();
             }
         });
         view.findViewById(R.id.domain_suggestions).setOnClickListener(new OnClickListener() {
@@ -173,6 +180,21 @@ public class SignedOutActionsFragment extends Fragment {
         alert.show();
     }
 
+    private void showFetchWPComSiteDialog() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+        final EditText editText = new EditText(getActivity());
+        editText.setSingleLine();
+        alert.setMessage("Fetch the WordPress.com site with URL:");
+        alert.setView(editText);
+        alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String url = editText.getText().toString();
+                mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(url));
+            }
+        });
+        alert.show();
+    }
+
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNewUserValidated(OnNewUserCreated event) {
@@ -219,11 +241,22 @@ public class SignedOutActionsFragment extends Fragment {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onFetchedConnectSiteInfo(SiteStore.OnConnectSiteInfoChecked event) {
+    public void onFetchedConnectSiteInfo(OnConnectSiteInfoChecked event) {
         if (event.isError()) {
             prependToLog("Connect Site Info: error: " + event.error.type);
         } else {
             prependToLog("Connect Site Info: success! " + event.info.description());
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onFetchedConnectSiteInfo(OnWPComSiteFetched event) {
+        if (event.isError()) {
+            prependToLog("Fetch WP.com site for URL " + event.checkedUrl + ": error: " + event.error.type);
+        } else {
+            prependToLog("Fetch WP.com site for URL " + event.checkedUrl + ": success! Site name: "
+                    + event.site.getName());
         }
     }
 

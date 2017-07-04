@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import android.annotation.SuppressLint;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
@@ -23,11 +25,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+@SuppressLint("UseSparseArrays")
 public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Inject MediaStore mMediaStore;
 
@@ -35,6 +39,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         CANCELED_MEDIA,
         DELETED_MEDIA,
         FETCHED_MEDIA_LIST,
+        FETCHED_MEDIA_IMAGE_LIST,
         FETCHED_KNOWN_IMAGES,
         PUSHED_MEDIA,
         REMOVED_MEDIA,
@@ -48,7 +53,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     private long mLastUploadedId = -1L;
 
     private List<Long> mUploadedIds = new ArrayList<>();
-    private HashMap<Integer, MediaModel> mUploadedMediaModels = new HashMap<>();
+    private Map<Integer, MediaModel> mUploadedMediaModels = new HashMap<>();
 
     @Override
     protected void setUp() throws Exception {
@@ -96,6 +101,18 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.FETCHED_MEDIA_LIST;
         fetchMediaList();
         assertFalse(mMediaStore.getAllSiteMedia(sSite).isEmpty());
+
+        // remove all media again
+        mNextEvent = TestEvents.REMOVED_MEDIA;
+        removeAllSiteMedia();
+        assertTrue(mMediaStore.getAllSiteMedia(sSite).isEmpty());
+
+        // fetch only images, verify store is not empty and contains only images
+        mNextEvent = TestEvents.FETCHED_MEDIA_IMAGE_LIST;
+        fetchMediaImageList();
+        List<MediaModel> mediaList = mMediaStore.getSiteImages(sSite);
+        assertFalse(mediaList.isEmpty());
+        assertTrue(mMediaStore.getSiteMediaCount(sSite) == mediaList.size());
 
         // delete test image
         mNextEvent = TestEvents.DELETED_MEDIA;
@@ -448,9 +465,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             mCountDownLatch.countDown();
             return;
         }
-        if (event.cause == MediaAction.FETCHED_MEDIA_LIST) {
-            assertEquals(TestEvents.FETCHED_MEDIA_LIST, mNextEvent);
-        } else if (event.cause == MediaAction.FETCH_MEDIA) {
+        if (event.cause == MediaAction.FETCH_MEDIA) {
             if (eventHasKnownImages(event)) {
                 assertEquals(TestEvents.FETCHED_KNOWN_IMAGES, mNextEvent);
             }
@@ -460,6 +475,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             assertEquals(TestEvents.DELETED_MEDIA, mNextEvent);
         } else if (event.cause == MediaAction.REMOVE_MEDIA) {
             assertEquals(TestEvents.REMOVED_MEDIA, mNextEvent);
+        } else {
+            throw new AssertionError("Unexpected event: " + event.cause);
         }
         mCountDownLatch.countDown();
     }
@@ -470,7 +487,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TestEvents.FETCHED_MEDIA_LIST, mNextEvent);
+        boolean isMediaListEvent = mNextEvent == TestEvents.FETCHED_MEDIA_LIST
+                || mNextEvent == TestEvents.FETCHED_MEDIA_IMAGE_LIST;
+        assertTrue(isMediaListEvent);
         mCountDownLatch.countDown();
     }
 
@@ -521,6 +540,13 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     private void fetchMediaList() throws InterruptedException {
         FetchMediaListPayload fetchPayload = new FetchMediaListPayload(sSite, false);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void fetchMediaImageList() throws InterruptedException {
+        FetchMediaListPayload fetchPayload = new FetchMediaListPayload(sSite, false, MediaUtils.MIME_TYPE_IMAGE);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
