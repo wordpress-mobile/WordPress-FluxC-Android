@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import android.annotation.SuppressLint;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
@@ -23,11 +25,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+@SuppressLint("UseSparseArrays")
 public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Inject MediaStore mMediaStore;
 
@@ -49,7 +53,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     private long mLastUploadedId = -1L;
 
     private List<Long> mUploadedIds = new ArrayList<>();
-    private HashMap<Integer, MediaModel> mUploadedMediaModels = new HashMap<>();
+    private Map<Integer, MediaModel> mUploadedMediaModels = new HashMap<>();
 
     @Override
     protected void setUp() throws Exception {
@@ -461,11 +465,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             mCountDownLatch.countDown();
             return;
         }
-        if (event.cause == MediaAction.FETCHED_MEDIA_LIST) {
-            boolean isMediaListEvent = mNextEvent == TestEvents.FETCHED_MEDIA_LIST
-                    || mNextEvent == TestEvents.FETCHED_MEDIA_IMAGE_LIST;
-            assertTrue(isMediaListEvent);
-        } else if (event.cause == MediaAction.FETCH_MEDIA) {
+        if (event.cause == MediaAction.FETCH_MEDIA) {
             if (eventHasKnownImages(event)) {
                 assertEquals(TestEvents.FETCHED_KNOWN_IMAGES, mNextEvent);
             }
@@ -475,6 +475,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             assertEquals(TestEvents.DELETED_MEDIA, mNextEvent);
         } else if (event.cause == MediaAction.REMOVE_MEDIA) {
             assertEquals(TestEvents.REMOVED_MEDIA, mNextEvent);
+        } else {
+            throw new AssertionError("Unexpected event: " + event.cause);
         }
         mCountDownLatch.countDown();
     }
