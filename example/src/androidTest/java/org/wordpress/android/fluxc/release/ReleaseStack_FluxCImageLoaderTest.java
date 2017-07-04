@@ -134,7 +134,8 @@ public class ReleaseStack_FluxCImageLoaderTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.FETCHED_MEDIA_LIST;
         mCountDownLatch = new CountDownLatch(1);
 
-        FetchMediaListPayload fetchPayload = new FetchMediaListPayload(site, false);
+        FetchMediaListPayload fetchPayload = new FetchMediaListPayload(
+                site, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
