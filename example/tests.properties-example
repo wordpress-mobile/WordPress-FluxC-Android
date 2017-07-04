@@ -177,7 +177,10 @@ TEST_WPCOM_USERNAME_JETPACK_UPLOAD_LIMIT = FIXME
 TEST_WPCOM_PASSWORD_JETPACK_UPLOAD_LIMIT = FIXME
 
 ## Local
+# These files should be at least 500KB, otherwise they may cause cancellation tests to fail on fast enough connections
 
-# Local image to test upload
+# Path (on device) to a test image for uploading, e.g. /sdcard/Pictures/flux-capacitor-schematics.png
 TEST_LOCAL_IMAGE = FIXME
+
+# Path (on device) to a test video for uploading, e.g. /sdcard/Video/1985-10-26-Einstein-temporal-experiment.mp4
 TEST_LOCAL_VIDEO = FIXME
