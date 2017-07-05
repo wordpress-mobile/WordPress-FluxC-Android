@@ -36,7 +36,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
 
     private enum TestEvents {
         MEDIA_UPLOADED,
-        ERROR_REQUEST_TOO_LARGE,
+        ERROR_EXCEEDS_FILESIZE_LIMIT,
         SITE_CHANGED,
         SITE_REMOVED,
         NONE
@@ -66,7 +66,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
 
         // Attempt to upload an image that exceeds the site's maximum upload_max_filesize or post_max_size
         MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
-        mNextEvent = TestEvents.ERROR_REQUEST_TOO_LARGE;
+        mNextEvent = TestEvents.ERROR_EXCEEDS_FILESIZE_LIMIT;
         uploadMedia(site, testMedia);
 
         signOutWPCom();
@@ -76,8 +76,8 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
     @Subscribe
     public void onMediaUploaded(OnMediaUploaded event) {
         if (event.isError()) {
-            if (event.error.type == MediaErrorType.REQUEST_TOO_LARGE) {
-                assertEquals(TestEvents.ERROR_REQUEST_TOO_LARGE, mNextEvent);
+            if (event.error.type == MediaErrorType.EXCEEDS_FILESIZE_LIMIT) {
+                assertEquals(TestEvents.ERROR_EXCEEDS_FILESIZE_LIMIT, mNextEvent);
                 mCountDownLatch.countDown();
                 return;
             }
