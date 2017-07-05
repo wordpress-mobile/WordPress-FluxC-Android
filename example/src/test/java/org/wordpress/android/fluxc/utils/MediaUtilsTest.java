@@ -10,7 +10,6 @@ import org.robolectric.RobolectricTestRunner;
 public class MediaUtilsTest {
     @Test
     public void testSupportedMimeTypeRecognition() {
-
         // Image
         final String[] validImageMimeTypes = {
                 "image/jpeg", "image/png"
@@ -60,7 +59,8 @@ public class MediaUtilsTest {
                 "application/pdf", "application/vnd.ms-powerpoint"
         };
         final String[] invalidApplicationMimeTypes = {
-                "applicationpdf", "audio/pdf", "", null, "/", "application/pdf/doc", "pdf", "pdf/application", "application/png"
+                "applicationpdf", "audio/pdf", "", null, "/",
+                "application/pdf/doc", "pdf", "pdf/application", "application/png"
         };
 
         for (String validApplicationMimeType : validApplicationMimeTypes) {
@@ -97,5 +97,4 @@ public class MediaUtilsTest {
             Assert.assertTrue(currentMime != null && currentMime.startsWith("audio/"));
         }
     }
-
 }

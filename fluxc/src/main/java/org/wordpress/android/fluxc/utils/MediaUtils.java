@@ -96,7 +96,7 @@ public class MediaUtils {
                 || isSupportedAudioExt(extension)
                 || isSupportedApplicationExt(extension);
     }
-    
+
     public static String getMimeTypeForExtension(String extension) {
         return EXTENSIONS_TO_MIME_TYPE.get(extension);
     }
