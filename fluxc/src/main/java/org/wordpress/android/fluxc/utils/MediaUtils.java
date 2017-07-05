@@ -97,13 +97,19 @@ public class MediaUtils {
                 || isSupportedAudioExt(extension)
                 || isSupportedApplicationExt(extension);
     }
+    
+    public static String getMimeTypeForExtension(String extension) {
+        return EXTENSIONS_TO_MIME_TYPE.get(extension);
+    }
 
     public static boolean isSupportedMimeType(String mime) {
         return EXTENSIONS_TO_MIME_TYPE.containsValue(mime);
     }
 
-    public static String getMimeTypeForExtension(String extension) {
-        return EXTENSIONS_TO_MIME_TYPE.get(extension);
+    public static boolean isVideoMimeType(String type) {
+        return !TextUtils.isEmpty(type)
+                && isSupportedMimeType(type)
+                && type.startsWith(MIME_TYPE_AUDIO);
     }
 
     //
