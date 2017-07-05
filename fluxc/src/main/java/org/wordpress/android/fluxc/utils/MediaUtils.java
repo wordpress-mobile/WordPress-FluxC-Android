@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.utils;
 
 import android.text.TextUtils;
-import android.util.ArrayMap;
 
 import java.io.File;
 import java.util.Collections;
