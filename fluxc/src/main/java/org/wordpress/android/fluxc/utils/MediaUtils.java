@@ -109,7 +109,7 @@ public class MediaUtils {
     public static boolean isVideoMimeType(String type) {
         return !TextUtils.isEmpty(type)
                 && isSupportedMimeType(type)
-                && type.startsWith(MIME_TYPE_AUDIO);
+                && type.startsWith(MIME_TYPE_VIDEO);
     }
 
     //
