@@ -163,9 +163,9 @@ public class MediaStoreTest {
 
         // insert media of different types
         MediaModel videoMedia = generateMediaFromPath(testSiteId, testVideoId, testVideoPath);
-        assertTrue(MediaUtils.isVideoMimeType(videoMedia.getMimeType()));
+        assertTrue(MediaUtils.isSupportedMimeType(videoMedia.getMimeType()));
         MediaModel imageMedia = generateMediaFromPath(testSiteId, testImageId, testImagePath);
-        assertTrue(MediaUtils.isImageMimeType(imageMedia.getMimeType()));
+        assertTrue(MediaUtils.isSupportedMimeType(imageMedia.getMimeType()));
         insertMediaIntoDatabase(videoMedia);
         insertMediaIntoDatabase(imageMedia);
 
@@ -173,7 +173,7 @@ public class MediaStoreTest {
         assertNotNull(storeImages);
         assertTrue(storeImages.size() == 1);
         assertEquals(testImageId, storeImages.get(0).getMediaId());
-        assertTrue(MediaUtils.isImageMimeType(storeImages.get(0).getMimeType()));
+        assertTrue(MediaUtils.isSupportedMimeType(storeImages.get(0).getMimeType()));
     }
 
     @Test

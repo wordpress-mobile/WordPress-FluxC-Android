@@ -326,10 +326,6 @@ public class MediaModel extends Payload implements Identifiable, Serializable {
     // Legacy methods
     //
 
-    public boolean isVideo() {
-        return MediaUtils.isVideoMimeType(getMimeType());
-    }
-
     public void setHorizontalAlignment(int horizontalAlignment) {
         mHorizontalAlignment = horizontalAlignment;
     }

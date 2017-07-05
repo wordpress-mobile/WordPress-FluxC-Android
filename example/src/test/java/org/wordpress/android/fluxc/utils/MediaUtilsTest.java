@@ -9,183 +9,93 @@ import org.robolectric.RobolectricTestRunner;
 @RunWith(RobolectricTestRunner.class)
 public class MediaUtilsTest {
     @Test
-    public void testImageMimeTypeRecognition() {
+    public void testSupportedMimeTypeRecognition() {
+
+        // Image
         final String[] validImageMimeTypes = {
-                "image/jpg", "image/*", "image/png", "image/mp4"
+                "image/jpeg", "image/png"
         };
         final String[] invalidImageMimeTypes = {
-                "imagejpg", "video/jpg", "", null, "/", "image/jpg/png", "jpg", "jpg/image"
+                "image/jpg", "imagejpg", "video/jpg", "", null, "/", "image/jpg/png", "jpg", "jpg/image", "image/mp4"
         };
 
         for (String validImageMimeType : validImageMimeTypes) {
-            Assert.assertTrue(MediaUtils.isImageMimeType(validImageMimeType));
+            Assert.assertTrue(MediaUtils.isSupportedMimeType(validImageMimeType));
         }
         for (String invalidImageMimeType : invalidImageMimeTypes) {
-            Assert.assertFalse(MediaUtils.isImageMimeType(invalidImageMimeType));
+            Assert.assertFalse(MediaUtils.isSupportedMimeType(invalidImageMimeType));
         }
-    }
 
-    @Test
-    public void testVideoMimeTypeRecognition() {
+        // Video
         final String[] validVideoMimeTypes = {
-                "video/mp4", "video/*", "video/mkv", "video/png"
+                "video/mp4", "video/3gpp"
         };
         final String[] invalidVideoMimeTypes = {
-                "videomp4", "image/mp4", "", null, "/", "video/mp4/mkv", "mp4", "mp4/video"
+                "videomp4", "image/mp4", "", null, "/", "video/mp4/mkv", "mp4", "mp4/video", "video/*", "video/png"
         };
 
         for (String validVideoMimeType : validVideoMimeTypes) {
-            Assert.assertTrue(MediaUtils.isVideoMimeType(validVideoMimeType));
+            Assert.assertTrue(MediaUtils.isSupportedMimeType(validVideoMimeType));
         }
         for (String invalidVideoMimeType : invalidVideoMimeTypes) {
-            Assert.assertFalse(MediaUtils.isVideoMimeType(invalidVideoMimeType));
+            Assert.assertFalse(MediaUtils.isSupportedMimeType(invalidVideoMimeType));
         }
-    }
 
-    @Test
-    public void testAudioMimeTypeRecognition() {
+        // Audio
         final String[] validAudioMimeTypes = {
-                "audio/mp3", "audio/*", "audio/wav", "audio/png"
+                "audio/mpeg", "audio/wav"
         };
         final String[] invalidAudioMimeTypes = {
-                "audiomp3", "video/mp3", "", null, "/", "audio/mp4/mkv", "mp3", "mp4/audio"
+                "audio/mp3", "video/mp3", "", null, "/", "audio/mp4/mkv", "mp3", "mp4/audio", "audio/png"
         };
 
         for (String validAudioMimeType : validAudioMimeTypes) {
-            Assert.assertTrue(MediaUtils.isAudioMimeType(validAudioMimeType));
+            Assert.assertTrue(MediaUtils.isSupportedMimeType(validAudioMimeType));
         }
         for (String invalidAudioMimeType : invalidAudioMimeTypes) {
-            Assert.assertFalse(MediaUtils.isAudioMimeType(invalidAudioMimeType));
+            Assert.assertFalse(MediaUtils.isSupportedMimeType(invalidAudioMimeType));
         }
-    }
 
-    @Test
-    public void testApplicationMimeTypeRecognition() {
         final String[] validApplicationMimeTypes = {
-                "application/pdf", "application/*", "application/ppsx", "application/png"
+                "application/pdf", "application/vnd.ms-powerpoint"
         };
         final String[] invalidApplicationMimeTypes = {
-                "applicationpdf", "audio/pdf", "", null, "/", "application/pdf/doc", "pdf", "pdf/application"
+                "applicationpdf", "audio/pdf", "", null, "/", "application/pdf/doc", "pdf", "pdf/application", "application/png"
         };
 
         for (String validApplicationMimeType : validApplicationMimeTypes) {
-            Assert.assertTrue(MediaUtils.isApplicationMimeType(validApplicationMimeType));
+            Assert.assertTrue(MediaUtils.isSupportedMimeType(validApplicationMimeType));
         }
         for (String invalidApplicationMimeType : invalidApplicationMimeTypes) {
-            Assert.assertFalse(MediaUtils.isApplicationMimeType(invalidApplicationMimeType));
+            Assert.assertFalse(MediaUtils.isSupportedMimeType(invalidApplicationMimeType));
         }
     }
 
     @Test
-    public void testSupportedImageRecognition() {
-        final String[] unsupportedImageTypes = {"bmp", "tif", "tiff", "ppm", "pgm", "svg"};
-        for (String supportedImageType : MediaUtils.SUPPORTED_IMAGE_SUBTYPES) {
-            String supportedImageMimeType = MediaUtils.MIME_TYPE_IMAGE + supportedImageType;
-            Assert.assertTrue(MediaUtils.isSupportedImageMimeType(supportedImageMimeType));
-        }
-        for (String unsupportedImageType : MediaUtils.SUPPORTED_VIDEO_SUBTYPES) {
-            String unsupportedImageMimeType = MediaUtils.MIME_TYPE_IMAGE + unsupportedImageType;
-            Assert.assertFalse(MediaUtils.isSupportedImageMimeType(unsupportedImageMimeType));
-        }
-        for (String unsupportedImageType : unsupportedImageTypes) {
-            String unsupportedImageMimeType = MediaUtils.MIME_TYPE_IMAGE + unsupportedImageType;
-            Assert.assertFalse(MediaUtils.isSupportedImageMimeType(unsupportedImageMimeType));
+    public void testSupportedImageFileRecognition() {
+        final String[] supportedImageTypes = {"jpg", "gif", "jpeg"};
+        for (String supportedImageType : supportedImageTypes) {
+            String currentMime = MediaUtils.getMimeTypeForExtension(supportedImageType);
+            Assert.assertTrue(currentMime != null && currentMime.startsWith("image/"));
         }
     }
 
     @Test
-    public void testSupportedVideoRecognition() {
-        final String[] unsupportedVideoTypes = {"flv", "vob", "yuv", "m2v"};
-        for (String supportedVideoType : MediaUtils.SUPPORTED_VIDEO_SUBTYPES) {
-            String supportedVideoMimeType = MediaUtils.MIME_TYPE_VIDEO + supportedVideoType;
-            Assert.assertTrue(MediaUtils.isSupportedVideoMimeType(supportedVideoMimeType));
-        }
-        for (String unsupportedVideoType : MediaUtils.SUPPORTED_AUDIO_SUBTYPES) {
-            String unsupportedVideoMimeType = MediaUtils.MIME_TYPE_VIDEO + unsupportedVideoType;
-            Assert.assertFalse(MediaUtils.isSupportedVideoMimeType(unsupportedVideoMimeType));
-        }
-        for (String unsupportedVideoType : unsupportedVideoTypes) {
-            String unsupportedVideoMimeType = MediaUtils.MIME_TYPE_VIDEO + unsupportedVideoType;
-            Assert.assertFalse(MediaUtils.isSupportedVideoMimeType(unsupportedVideoMimeType));
+    public void testSupportedVideoFileRecognition() {
+        final String[] supportedVideoTypes = {"mov", "mp4", "ogv", "mpg"};
+        for (String supportedVideoType : supportedVideoTypes) {
+            String currentMime = MediaUtils.getMimeTypeForExtension(supportedVideoType);
+            Assert.assertTrue(currentMime != null && currentMime.startsWith("video/"));
         }
     }
 
     @Test
-    public void testSupportedAudioRecognition() {
-        final String[] unsupportedAudioTypes = {"m4p", "raw", "tta", "wma", "dss", "webm"};
-        for (String supportedAudioType : MediaUtils.SUPPORTED_AUDIO_SUBTYPES) {
-            String supportedAudioMimeType = MediaUtils.MIME_TYPE_AUDIO + supportedAudioType;
-            Assert.assertTrue(MediaUtils.isSupportedAudioMimeType(supportedAudioMimeType));
-        }
-        for (String unsupportedAudioType : MediaUtils.SUPPORTED_APPLICATION_SUBTYPES) {
-            String unsupportedAudioMimeType = MediaUtils.MIME_TYPE_AUDIO + unsupportedAudioType;
-            Assert.assertFalse(MediaUtils.isSupportedAudioMimeType(unsupportedAudioMimeType));
-        }
-        for (String unsupportedAudioType : unsupportedAudioTypes) {
-            String unsupportedAudioMimeType = MediaUtils.MIME_TYPE_AUDIO + unsupportedAudioType;
-            Assert.assertFalse(MediaUtils.isSupportedAudioMimeType(unsupportedAudioMimeType));
+    public void testSupportedAudioFileRecognition() {
+        final String[] supportedAudioTypes = {"m4a", "mp3", "ogg", "wav"};
+        for (String supportedAudioType : supportedAudioTypes) {
+            String currentMime = MediaUtils.getMimeTypeForExtension(supportedAudioType);
+            Assert.assertTrue(currentMime != null && currentMime.startsWith("audio/"));
         }
     }
 
-    @Test
-    public void testSupportedApplicationRecognition() {
-        final String[] unsupportedApplicationTypes = {"com", "bin", "exe", "jar", "xif", "xsl"};
-        for (String supportedApplicationType : MediaUtils.SUPPORTED_APPLICATION_SUBTYPES) {
-            String supportedApplicationMimeType = MediaUtils.MIME_TYPE_APPLICATION + supportedApplicationType;
-            Assert.assertTrue(MediaUtils.isSupportedApplicationMimeType(supportedApplicationMimeType));
-        }
-        for (String unsupportedApplicationType : MediaUtils.SUPPORTED_IMAGE_SUBTYPES) {
-            String unsupportedApplicationMimeType = MediaUtils.MIME_TYPE_APPLICATION + unsupportedApplicationType;
-            Assert.assertFalse(MediaUtils.isSupportedApplicationMimeType(unsupportedApplicationMimeType));
-        }
-        for (String unsupportedApplicationType : unsupportedApplicationTypes) {
-            String unsupportedApplicationMimeType = MediaUtils.MIME_TYPE_APPLICATION + unsupportedApplicationType;
-            Assert.assertFalse(MediaUtils.isSupportedApplicationMimeType(unsupportedApplicationMimeType));
-        }
-    }
-
-    @Test
-    public void testGetMimeTypeFromExtension() {
-        for (String supportedImageExtension : MediaUtils.SUPPORTED_IMAGE_SUBTYPES) {
-            String mimeType = MediaUtils.getMimeTypeForExtension(supportedImageExtension);
-            Assert.assertNotNull(mimeType);
-            Assert.assertTrue(mimeType.equals(MediaUtils.MIME_TYPE_IMAGE + supportedImageExtension));
-        }
-        for (String supportedVideoExtension : MediaUtils.SUPPORTED_VIDEO_SUBTYPES) {
-            String mimeType = MediaUtils.getMimeTypeForExtension(supportedVideoExtension);
-            Assert.assertNotNull(mimeType);
-            Assert.assertTrue(mimeType.equals(MediaUtils.MIME_TYPE_VIDEO + supportedVideoExtension));
-        }
-        for (String supportedAudioExtension : MediaUtils.SUPPORTED_AUDIO_SUBTYPES) {
-            String mimeType = MediaUtils.getMimeTypeForExtension(supportedAudioExtension);
-            Assert.assertNotNull(mimeType);
-            Assert.assertTrue(mimeType.equals(MediaUtils.MIME_TYPE_AUDIO + supportedAudioExtension));
-        }
-        for (String supportedApplicationExtension : MediaUtils.SUPPORTED_APPLICATION_SUBTYPES) {
-            String mimeType = MediaUtils.getMimeTypeForExtension(supportedApplicationExtension);
-            Assert.assertNotNull(mimeType);
-            Assert.assertTrue(mimeType.equals(MediaUtils.MIME_TYPE_APPLICATION + supportedApplicationExtension));
-        }
-
-        final String[] unsupportedImageTypes = {"bmp", "tif", "tiff", "ppm", "pgm", "svg"};
-        for (String supportedImageExtension : unsupportedImageTypes) {
-            String mimeType = MediaUtils.getMimeTypeForExtension(supportedImageExtension);
-            Assert.assertNull(mimeType);
-        }
-        final String[] unsupportedVideoTypes = {"flv", "vob", "yuv", "m2v"};
-        for (String supportedVideoExtension : unsupportedVideoTypes) {
-            String mimeType = MediaUtils.getMimeTypeForExtension(supportedVideoExtension);
-            Assert.assertNull(mimeType);
-        }
-        final String[] unsupportedAudioTypes = {"m4p", "raw", "tta", "wma", "dss"};
-        for (String supportedAudioExtension : unsupportedAudioTypes) {
-            String mimeType = MediaUtils.getMimeTypeForExtension(supportedAudioExtension);
-            Assert.assertNull(mimeType);
-        }
-        final String[] unsupportedApplicationTypes = {"com", "bin", "exe", "jar", "xif", "xsl"};
-        for (String supportedApplicationExtension : unsupportedApplicationTypes) {
-            String mimeType = MediaUtils.getMimeTypeForExtension(supportedApplicationExtension);
-            Assert.assertNull(mimeType);
-        }
-    }
 }

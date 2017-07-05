@@ -1,100 +1,109 @@
 package org.wordpress.android.fluxc.utils;
 
 import android.text.TextUtils;
+import android.util.ArrayMap;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MediaUtils {
     //
     // MIME types
     //
 
+    // ref https://en.support.wordpress.com/accepted-filetypes/
+    // Ref https://codex.wordpress.org/Uploading_Files
+    private static final Map<String, String> EXTENSIONS_TO_MIME_TYPE;
+    static {
+        Map<String, String> aMap = new HashMap<>();
+        aMap.put("jpg", "image/jpeg");
+        aMap.put("jpeg", "image/jpeg");
+        aMap.put("jpe", "image/jpeg");
+        aMap.put("gif", "image/gif");
+        aMap.put("png", "image/png");
+        // Video formats.
+        aMap.put("wmv", "video/x-ms-wmv");
+        aMap.put("wmx", "video/x-ms-wmx");
+        aMap.put("wm", "video/x-ms-wm");
+        aMap.put("avi", "video/avi");
+        aMap.put("mov", "video/quicktime");
+        aMap.put("qt", "video/quicktime");
+        aMap.put("mpeg", "video/mpeg");
+        aMap.put("mpg", "video/mpeg");
+        aMap.put("mpe", "video/mpeg");
+        aMap.put("mp4", "video/mp4");
+        aMap.put("m4v", "video/mp4");
+        aMap.put("ogv", "video/ogg");
+        aMap.put("webm", "video/webm");
+        aMap.put("3gp", "video/3gpp"); // Can also be audio
+        aMap.put("3gpp", "video/3gpp"); // Can also be audio
+        aMap.put("3g2", "video/3gpp2"); // Can also be audio
+        aMap.put("3gp2", "video/3gpp2"); // Can also be audio
+        // Audio formats.
+        aMap.put("mp3", "audio/mpeg");
+        aMap.put("m4a", "audio/mpeg");
+        aMap.put("m4b", "audio/mpeg");
+        aMap.put("wav", "audio/wav");
+        aMap.put("ogg", "audio/ogg");
+        aMap.put("oga", "audio/ogg");
+        // Document formats
+        aMap.put("pdf", "application/pdf");
+        aMap.put("odt", "application/vnd.oasis.opendocument.text");
+        aMap.put("doc", "application/msword");
+        aMap.put("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        aMap.put("ppt", "application/vnd.ms-powerpoint");
+        aMap.put("pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation");
+        aMap.put("pps", "application/vnd.ms-powerpoint");
+        aMap.put("ppsx", "application/vnd.openxmlformats-officedocument.presentationml.slideshow");
+        aMap.put("xls", "application/vnd.ms-excel");
+        aMap.put("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        aMap.put("key", "application/vnd.apple.keynote");
+        aMap.put("zip", "application/zip");
+
+
+        EXTENSIONS_TO_MIME_TYPE = Collections.unmodifiableMap(aMap);
+    }
+
     public static final String MIME_TYPE_IMAGE = "image/";
     public static final String MIME_TYPE_VIDEO = "video/";
     public static final String MIME_TYPE_AUDIO = "audio/";
     public static final String MIME_TYPE_APPLICATION = "application/";
 
-    // ref https://en.support.wordpress.com/accepted-filetypes/
-    public static final String[] SUPPORTED_IMAGE_SUBTYPES = {
-            "jpg", "jpeg", "png", "gif"
-    };
-    public static final String[] SUPPORTED_VIDEO_SUBTYPES = {
-            "mp4", "m4v", "mov", "wmv", "avi", "mpg", "ogv", "3gp", "3gpp", "3gpp2", "3g2", "mpeg", "quicktime", "webm"
-    };
-    public static final String[] SUPPORTED_AUDIO_SUBTYPES = {
-            "mp3", "m4a", "ogg", "wav"
-    };
-    public static final String[] SUPPORTED_APPLICATION_SUBTYPES = {
-            "pdf", "doc", "ppt", "odt", "pptx", "docx", "pps", "ppsx", "xls", "xlsx", "key", ".zip"
-    };
-
-    public static boolean isImageMimeType(String type) {
-        return isExpectedMimeType(MIME_TYPE_IMAGE, type);
+    public static boolean isSupportedImageExt(String extension) {
+        String mimeType = EXTENSIONS_TO_MIME_TYPE.get(extension);
+        return !TextUtils.isEmpty(mimeType) && mimeType.startsWith(MIME_TYPE_IMAGE);
     }
 
-    public static boolean isVideoMimeType(String type) {
-        return isExpectedMimeType(MIME_TYPE_VIDEO, type);
+    public static boolean isSupportedVideoExt(String extension) {
+        String mimeType = EXTENSIONS_TO_MIME_TYPE.get(extension);
+        return !TextUtils.isEmpty(mimeType) && mimeType.startsWith(MIME_TYPE_VIDEO);
     }
 
-    public static boolean isAudioMimeType(String type) {
-        return isExpectedMimeType(MIME_TYPE_AUDIO, type);
+    public static boolean isSupportedAudioExt(String extension) {
+        String mimeType = EXTENSIONS_TO_MIME_TYPE.get(extension);
+        return !TextUtils.isEmpty(mimeType) && mimeType.startsWith(MIME_TYPE_AUDIO);
     }
 
-    public static boolean isApplicationMimeType(String type) {
-        return isExpectedMimeType(MIME_TYPE_APPLICATION, type);
+    public static boolean isSupportedApplicationExt(String extension) {
+        String mimeType = EXTENSIONS_TO_MIME_TYPE.get(extension);
+        return !TextUtils.isEmpty(mimeType) && mimeType.startsWith(MIME_TYPE_APPLICATION);
     }
 
-    public static boolean isSupportedImageMimeType(String type) {
-        return isSupportedMimeType(MIME_TYPE_IMAGE, SUPPORTED_IMAGE_SUBTYPES, type);
+    public static boolean isSupportedFileExt(String extension) {
+        return isSupportedImageExt(extension)
+                || isSupportedVideoExt(extension)
+                || isSupportedAudioExt(extension)
+                || isSupportedApplicationExt(extension);
     }
 
-    public static boolean isSupportedVideoMimeType(String type) {
-        return isSupportedMimeType(MIME_TYPE_VIDEO, SUPPORTED_VIDEO_SUBTYPES, type);
-    }
-
-    public static boolean isSupportedAudioMimeType(String type) {
-        return isSupportedMimeType(MIME_TYPE_AUDIO, SUPPORTED_AUDIO_SUBTYPES, type);
-    }
-
-    public static boolean isSupportedApplicationMimeType(String type) {
-        return isSupportedMimeType(MIME_TYPE_APPLICATION, SUPPORTED_APPLICATION_SUBTYPES, type);
-    }
-
-    public static boolean isSupportedMimeType(String type) {
-        return isSupportedImageMimeType(type)
-                || isSupportedVideoMimeType(type)
-                || isSupportedAudioMimeType(type)
-                || isSupportedApplicationMimeType(type);
+    public static boolean isSupportedMimeType(String mime) {
+        return EXTENSIONS_TO_MIME_TYPE.containsValue(mime);
     }
 
     public static String getMimeTypeForExtension(String extension) {
-        if (isSupportedImageMimeType(MIME_TYPE_IMAGE + extension)) {
-            return MIME_TYPE_IMAGE + extension;
-        }
-        if (isSupportedVideoMimeType(MIME_TYPE_VIDEO + extension)) {
-            return MIME_TYPE_VIDEO + extension;
-        }
-        if (isSupportedAudioMimeType(MIME_TYPE_AUDIO + extension)) {
-            return MIME_TYPE_AUDIO + extension;
-        }
-        if (isSupportedApplicationMimeType(MIME_TYPE_APPLICATION + extension)) {
-            return MIME_TYPE_APPLICATION + extension;
-        }
-        return null;
-    }
-
-    private static boolean isExpectedMimeType(String expected, String type) {
-        if (type == null) return false;
-        String[] split = type.split("/");
-        return split.length == 2 && expected.startsWith(split[0]);
-    }
-
-    private static boolean isSupportedMimeType(String type, String[] supported, String mimeType) {
-        if (type == null || supported == null || mimeType == null) return false;
-        for (String supportedSubtype : supported) {
-            if (mimeType.equals(type + supportedSubtype)) return true;
-        }
-        return false;
+        return EXTENSIONS_TO_MIME_TYPE.get(extension);
     }
 
     //
