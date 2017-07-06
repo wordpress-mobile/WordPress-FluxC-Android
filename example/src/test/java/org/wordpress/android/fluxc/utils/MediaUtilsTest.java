@@ -9,7 +9,7 @@ import org.robolectric.RobolectricTestRunner;
 @RunWith(RobolectricTestRunner.class)
 public class MediaUtilsTest {
     @Test
-    public void testSupportedMimeTypeRecognition() {
+    public void testSupportedAndUnsupportedMimeTypeRecognition() {
         // Image
         final String[] validImageMimeTypes = {
                 "image/jpeg", "image/png"
