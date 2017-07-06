@@ -620,14 +620,16 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     private void fetchMediaList() throws InterruptedException {
-        FetchMediaListPayload fetchPayload = new FetchMediaListPayload(sSite, false);
+        FetchMediaListPayload fetchPayload = new FetchMediaListPayload(
+                sSite, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchMediaImageList() throws InterruptedException {
-        FetchMediaListPayload fetchPayload = new FetchMediaListPayload(sSite, false, MediaUtils.MIME_TYPE_IMAGE);
+        FetchMediaListPayload fetchPayload = new FetchMediaListPayload(
+                sSite, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false, MediaUtils.MIME_TYPE_IMAGE);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
