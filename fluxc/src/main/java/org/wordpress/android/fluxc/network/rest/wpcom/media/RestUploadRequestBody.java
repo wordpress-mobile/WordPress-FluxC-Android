@@ -1,9 +1,11 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.media;
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.network.BaseUploadRequestBody;
+import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
 
 import java.io.File;
@@ -33,6 +35,48 @@ public class RestUploadRequestBody extends BaseUploadRequestBody {
     public RestUploadRequestBody(MediaModel media, Map<String, Object> params, ProgressListener listener) {
         super(media, listener);
         mMultipartBody = buildMultipartBody(params);
+    }
+
+    /**
+     * Determines if media data is sufficient for upload. Valid media must:
+     * <ul>
+     *     <li>be non-null</li>
+     *     <li>define a recognized MIME type</li>
+     *     <li>define a file path to a valid local file</li>
+     * </ul>
+     *
+     * @return null if {@code media} is valid, otherwise a string describing why it's invalid
+     */
+    public static String hasRequiredData(MediaModel media) {
+        if (media == null) return "media cannot be null";
+
+        // validate MIME type is recognized
+        String mimeType = media.getMimeType();
+
+        if (!MediaUtils.isSupportedMimeTypeWPCOM(mimeType)) {
+            return "media must define a valid MIME type";
+        }
+
+        // verify file path is defined
+        String filePath = media.getFilePath();
+        if (TextUtils.isEmpty(filePath)) {
+            return "media must define a local file path";
+        }
+
+        // verify file exists and is not a directory
+        File file = new File(filePath);
+        if (!file.exists()) {
+            return "local file path for media does not exist";
+        } else if (file.isDirectory()) {
+            return "supplied file path is a directory, a file is required";
+        }
+
+        return null;
+    }
+
+    @Override
+    protected String hasAllRequiredData(MediaModel media) {
+        return hasRequiredData(media);
     }
 
     @Override

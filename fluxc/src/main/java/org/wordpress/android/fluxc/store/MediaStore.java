@@ -18,9 +18,10 @@ import org.wordpress.android.fluxc.model.MediaModel.MediaUploadState;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.BaseRequest;
-import org.wordpress.android.fluxc.network.BaseUploadRequestBody;
 import org.wordpress.android.fluxc.network.rest.wpcom.media.MediaRestClient;
+import org.wordpress.android.fluxc.network.rest.wpcom.media.RestUploadRequestBody;
 import org.wordpress.android.fluxc.network.xmlrpc.media.MediaXMLRPCClient;
+import org.wordpress.android.fluxc.network.xmlrpc.media.XmlrpcUploadRequestBody;
 import org.wordpress.android.fluxc.persistence.MediaSqlUtils;
 import org.wordpress.android.util.AppLog;
 
@@ -614,7 +615,7 @@ public class MediaStore extends Store {
     }
 
     private void performUploadMedia(MediaPayload payload) {
-        String errorMessage = isWellFormedForUpload(payload.media);
+        String errorMessage = isWellFormedForUpload(payload);
         if (errorMessage != null) {
             payload.media.setUploadState(MediaUploadState.FAILED);
             MediaSqlUtils.insertOrUpdateMedia(payload.media);
@@ -774,8 +775,9 @@ public class MediaStore extends Store {
         emitChange(onMediaChanged);
     }
 
-    private String isWellFormedForUpload(@NonNull MediaModel media) {
-        String error = BaseUploadRequestBody.hasRequiredData(media);
+    private String isWellFormedForUpload(@NonNull MediaPayload payload) {
+        String error = payload.site.isUsingWpComRestApi() ? RestUploadRequestBody.hasRequiredData(payload.media)
+                : XmlrpcUploadRequestBody.hasRequiredData(payload.media);
         if (error != null) {
             AppLog.e(AppLog.T.MEDIA, "Media doesn't have required data: " + error);
         }

@@ -9,20 +9,21 @@ import org.robolectric.RobolectricTestRunner;
 @RunWith(RobolectricTestRunner.class)
 public class MediaUtilsTest {
     @Test
-    public void testSupportedAndUnsupportedMimeTypeRecognition() {
+    public void testSupportedAndUnsupportedMimeTypeWPCOM() {
         // Image
         final String[] validImageMimeTypes = {
                 "image/jpeg", "image/png"
         };
         final String[] invalidImageMimeTypes = {
-                "image/jpg", "imagejpg", "video/jpg", "", null, "/", "image/jpg/png", "jpg", "jpg/image", "image/mp4"
+                "image/jpg", "imagejpg", "video/jpg", "", null, "/", "image/jpg/png", "jpg", "jpg/image", "image/mp4",
+                "image/x-icon", "image/tiff"
         };
 
         for (String validImageMimeType : validImageMimeTypes) {
-            Assert.assertTrue(MediaUtils.isSupportedMimeType(validImageMimeType));
+            Assert.assertTrue(MediaUtils.isSupportedMimeTypeWPCOM(validImageMimeType));
         }
         for (String invalidImageMimeType : invalidImageMimeTypes) {
-            Assert.assertFalse(MediaUtils.isSupportedMimeType(invalidImageMimeType));
+            Assert.assertFalse(MediaUtils.isSupportedMimeTypeWPCOM(invalidImageMimeType));
         }
 
         // Video
@@ -34,10 +35,10 @@ public class MediaUtilsTest {
         };
 
         for (String validVideoMimeType : validVideoMimeTypes) {
-            Assert.assertTrue(MediaUtils.isSupportedMimeType(validVideoMimeType));
+            Assert.assertTrue(MediaUtils.isSupportedMimeTypeWPCOM(validVideoMimeType));
         }
         for (String invalidVideoMimeType : invalidVideoMimeTypes) {
-            Assert.assertFalse(MediaUtils.isSupportedMimeType(invalidVideoMimeType));
+            Assert.assertFalse(MediaUtils.isSupportedMimeTypeWPCOM(invalidVideoMimeType));
         }
 
         // Audio
@@ -49,25 +50,46 @@ public class MediaUtilsTest {
         };
 
         for (String validAudioMimeType : validAudioMimeTypes) {
-            Assert.assertTrue(MediaUtils.isSupportedMimeType(validAudioMimeType));
+            Assert.assertTrue(MediaUtils.isSupportedMimeTypeWPCOM(validAudioMimeType));
         }
         for (String invalidAudioMimeType : invalidAudioMimeTypes) {
-            Assert.assertFalse(MediaUtils.isSupportedMimeType(invalidAudioMimeType));
+            Assert.assertFalse(MediaUtils.isSupportedMimeTypeWPCOM(invalidAudioMimeType));
         }
 
+        // Document
         final String[] validApplicationMimeTypes = {
                 "application/pdf", "application/vnd.ms-powerpoint"
         };
         final String[] invalidApplicationMimeTypes = {
-                "applicationpdf", "audio/pdf", "", null, "/",
+                "application/octet-stream", "applicationpdf", "audio/pdf", "", null, "/",
                 "application/pdf/doc", "pdf", "pdf/application", "application/png"
         };
 
         for (String validApplicationMimeType : validApplicationMimeTypes) {
-            Assert.assertTrue(MediaUtils.isSupportedMimeType(validApplicationMimeType));
+            Assert.assertTrue(MediaUtils.isSupportedMimeTypeWPCOM(validApplicationMimeType));
         }
         for (String invalidApplicationMimeType : invalidApplicationMimeTypes) {
-            Assert.assertFalse(MediaUtils.isSupportedMimeType(invalidApplicationMimeType));
+            Assert.assertFalse(MediaUtils.isSupportedMimeTypeWPCOM(invalidApplicationMimeType));
+        }
+    }
+
+    @Test
+    public void testSupportedAndUnsupportedMimeTypeSelfHosted() {
+        // Image
+        final String[] validImageMimeTypes = {
+                "image/x-icon", "image/tiff"
+        };
+
+        for (String validImageMimeType : validImageMimeTypes) {
+            Assert.assertTrue(MediaUtils.isSupportedMimeTypeSelfHosted(validImageMimeType));
+        }
+
+        // Document
+        final String[] validApplicationMimeTypes = {
+                "application/octet-stream"
+        };
+        for (String validApplicationMimeType : validApplicationMimeTypes) {
+            Assert.assertTrue(MediaUtils.isSupportedMimeTypeSelfHosted(validApplicationMimeType));
         }
     }
 

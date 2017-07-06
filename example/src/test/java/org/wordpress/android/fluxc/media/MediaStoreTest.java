@@ -163,9 +163,9 @@ public class MediaStoreTest {
 
         // insert media of different types
         MediaModel videoMedia = generateMediaFromPath(testSiteId, testVideoId, testVideoPath);
-        assertTrue(MediaUtils.isSupportedMimeType(videoMedia.getMimeType()));
+        assertTrue(MediaUtils.isSupportedMimeTypeWPCOM(videoMedia.getMimeType()));
         MediaModel imageMedia = generateMediaFromPath(testSiteId, testImageId, testImagePath);
-        assertTrue(MediaUtils.isSupportedMimeType(imageMedia.getMimeType()));
+        assertTrue(MediaUtils.isSupportedMimeTypeWPCOM(imageMedia.getMimeType()));
         insertMediaIntoDatabase(videoMedia);
         insertMediaIntoDatabase(imageMedia);
 
@@ -173,7 +173,7 @@ public class MediaStoreTest {
         assertNotNull(storeImages);
         assertTrue(storeImages.size() == 1);
         assertEquals(testImageId, storeImages.get(0).getMediaId());
-        assertTrue(MediaUtils.isSupportedMimeType(storeImages.get(0).getMimeType()));
+        assertTrue(MediaUtils.isSupportedMimeTypeWPCOM(storeImages.get(0).getMimeType()));
     }
 
     @Test
