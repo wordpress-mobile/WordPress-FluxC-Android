@@ -112,6 +112,20 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
+        // Sites in subfolders should be handled and return a response distinct from their host
+        site = "http://en.blog.wordpress.com/nonexistentsubdomain";
+        mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
+        mNextEvent = TestEvents.ERROR_UNKNOWN_SITE;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // A Jetpack-connected site in a subfolder should have a successful response
+        site = BuildConfig.TEST_WPORG_URL_JETPACK_SUBFOLDER;
+        mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
+        mNextEvent = TestEvents.FETCHED_WPCOM_SITE_BY_URL;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
         site = "http://definitelynotawpcomsite.impossible";
         mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
         mNextEvent = TestEvents.ERROR_UNKNOWN_SITE;
