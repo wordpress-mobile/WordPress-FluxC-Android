@@ -101,7 +101,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Get the first site
         SiteModel firstSite = mSiteStore.getSites().get(0);
 
-        // Fetch post formats
+        // Fetch user roles
         mDispatcher.dispatch(SiteActionBuilder.newFetchUserRolesAction(firstSite));
         mNextEvent = TestEvents.USER_ROLES_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
