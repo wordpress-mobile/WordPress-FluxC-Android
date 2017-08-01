@@ -153,6 +153,7 @@
         <module name="WhitespaceAround">
           <property name="allowEmptyTypes" value="true"/>
           <property name="allowEmptyConstructors" value="true"/>
+          <property name="ignoreEnhancedForColon" value="false"/>
         </module>
         <module name="NoWhitespaceAfter">
           <property name="tokens"
