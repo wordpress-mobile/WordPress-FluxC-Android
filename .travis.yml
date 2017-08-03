@@ -22,7 +22,7 @@ before_install:
   - echo yes | android update sdk -a --filter platform-tools --no-ui --force
 
 script:
-  - ./gradlew build
+  - ./gradlew assembleDebug assembleRelease
   - ./gradlew lint || (grep -A20 -B2 'severity="Error"' */build/**/*.xml; exit 1)
   - ./gradlew checkstyle
   - find . -iname "*XMLRPCClient*java" | xargs grep getSiteId && (echo "You should not use _getSiteId_ in a XMLRPClient, did you mean _selfHostedId_?" && exit 1) || return 0
