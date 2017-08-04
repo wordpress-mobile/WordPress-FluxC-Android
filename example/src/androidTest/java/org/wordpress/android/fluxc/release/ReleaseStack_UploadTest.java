@@ -8,8 +8,11 @@ import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
+import org.wordpress.android.fluxc.model.MediaModel.MediaUploadState;
 import org.wordpress.android.fluxc.model.MediaUploadModel;
 import org.wordpress.android.fluxc.store.MediaStore;
+import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload;
+import org.wordpress.android.fluxc.store.MediaStore.MediaErrorType;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
@@ -32,6 +35,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         PUSHED_MEDIA,
         REMOVED_MEDIA,
         UPLOADED_MEDIA,
+        MEDIA_ERROR_MALFORMED
     }
 
     private TestEvents mNextEvent;
@@ -82,10 +86,89 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         assertNull(mUploadStore.getMediaUploadModelForMediaModel(testMedia));
     }
 
+    public void testUploadInvalidMedia() throws InterruptedException {
+        // Start uploading media
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, "not-even-close/to-an-actual-mime-type");
+        mNextEvent = TestEvents.MEDIA_ERROR_MALFORMED;
+        MediaPayload payload = new MediaPayload(sSite, testMedia);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // MediaModel and MediaUploadModel should both exist and be marked as FAILED
+        MediaModel mediaModel = mMediaStore.getMediaWithLocalId(testMedia.getId());
+        assertNotNull(mediaModel);
+        assertEquals(MediaUploadState.FAILED, MediaUploadState.fromString(mediaModel.getUploadState()));
+
+        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        assertNotNull(mediaUploadModel);
+        assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
+
+        // Remove local test image
+        mNextEvent = TestEvents.REMOVED_MEDIA;
+        removeMedia(testMedia);
+
+        // Since the MediaUploadModel keys are linked to MediaModels, the corresponding MediaUploadModel should
+        // have been deleted as well
+        assertNull(mUploadStore.getMediaUploadModelForMediaModel(testMedia));
+    }
+
+    public void testCancelImageUpload() throws InterruptedException {
+        // First, try canceling an image with the default behavior (canceled image is deleted from the store)
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.CANCELED_MEDIA;
+        MediaPayload payload = new MediaPayload(sSite, testMedia);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+
+        // Wait a bit and issue the cancel command
+        TestUtils.waitFor(1000);
+
+        CancelMediaPayload cancelPayload = new CancelMediaPayload(sSite, testMedia);
+        mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(0, mMediaStore.getSiteMediaCount(sSite));
+
+        // The delete flag was on, so there should be no associated MediaUploadModel
+        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        assertNull(mediaUploadModel);
+
+        // Now, try canceling with delete=false (canceled image should be marked as failed and kept in the store)
+        testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.CANCELED_MEDIA;
+        payload = new MediaPayload(sSite, testMedia);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+
+        // Wait a bit and issue the cancel command
+        TestUtils.waitFor(1000);
+
+        cancelPayload = new CancelMediaPayload(sSite, testMedia, false);
+        mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(1, mMediaStore.getSiteMediaCount(sSite));
+        MediaModel canceledMedia = mMediaStore.getMediaWithLocalId(testMedia.getId());
+        assertEquals(MediaUploadState.FAILED.toString(), canceledMedia.getUploadState());
+
+        // The delete flag was off, so we can expect an associated MediaUploadModel
+        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        assertNotNull(mediaUploadModel);
+        assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onMediaUploaded(OnMediaUploaded event) {
         if (event.isError()) {
+            if (mNextEvent == TestEvents.MEDIA_ERROR_MALFORMED) {
+                assertEquals(MediaErrorType.MALFORMED_MEDIA_ARG, event.error.type);
+                mCountDownLatch.countDown();
+                return;
+            }
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         if (event.canceled) {
