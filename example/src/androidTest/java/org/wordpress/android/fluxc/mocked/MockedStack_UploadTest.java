@@ -7,6 +7,8 @@ import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.MediaUploadModel;
+import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.PostUploadModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.module.MockedNetworkModule;
 import org.wordpress.android.fluxc.store.MediaStore;
@@ -16,6 +18,9 @@ import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.UploadStore;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -25,11 +30,15 @@ import javax.inject.Inject;
  * Tests using a Mocked Network app component. Test the Store itself and not the underlying network component(s).
  */
 public class MockedStack_UploadTest extends MockedStack_Base {
+    private static final String POST_DEFAULT_TITLE = "UploadTest base post";
+    private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
+
     @Inject Dispatcher mDispatcher;
     @Inject MediaStore mMediaStore;
     @Inject PostStore mPostStore;
     @Inject UploadStore mUploadStore;
 
+    private PostModel mPost;
     private boolean mExpectingMediaError;
     private CountDownLatch mCountDownLatch;
 
@@ -60,6 +69,84 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertNotNull(mediaUploadModel);
         assertEquals(0F, mediaUploadModel.getProgress());
         assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
+    }
+
+    public void testRegisterPostAndUploadMediaWithError() throws InterruptedException {
+        SiteModel site = getTestSite();
+
+        // Instantiate new post
+        createNewPost(site);
+        setupPostAttributes();
+
+        // Start uploading media
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        testMedia.setLocalPostId(mPost.getId());
+        startFailingMediaUpload(testMedia, site);
+
+        // Wait for the event to be processed by the UploadStore
+        TestUtils.waitFor(50);
+
+        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        assertNotNull(mediaUploadModel);
+        assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
+
+        // Register the post with the UploadStore and verify that it exists and has the right state
+        List<MediaModel> mediaModelList = new ArrayList<>();
+        mediaModelList.add(testMedia);
+        mUploadStore.registerPostModel(mPost, mediaModelList);
+
+        // PostUploadModel exists and has correct state and associated media
+        PostUploadModel postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
+        assertNotNull(postUploadModel);
+        assertEquals(PostUploadModel.PENDING, postUploadModel.getUploadState());
+        Set<Integer> associatedMedia = postUploadModel.getAssociatedMediaIdSet();
+        assertEquals(1, associatedMedia.size());
+        assertTrue(associatedMedia.contains(testMedia.getId()));
+
+        // MediaUploadModel exists and has correct state
+        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
+
+        // UploadStore returns the correct sets of media for the post by type
+        assertEquals(1, mUploadStore.getUploadingMediaForPost(mPost).size());
+        assertEquals(0, mUploadStore.getCompletedMediaForPost(mPost).size());
+        assertEquals(0, mUploadStore.getFailedMediaForPost(mPost).size());
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        TestUtils.waitFor(50);
+
+        // Media upload completed
+        // PostUploadModel still exists and has correct state and associated media
+        postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
+        assertNotNull(postUploadModel);
+        assertEquals(PostUploadModel.CANCELLED, postUploadModel.getUploadState());
+        associatedMedia = postUploadModel.getAssociatedMediaIdSet();
+        assertEquals(1, associatedMedia.size());
+        assertTrue(associatedMedia.contains(testMedia.getId()));
+
+        // MediaUploadModel still exists and has correct state
+        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
+
+        // UploadStore returns the correct sets of media for the post by type
+        assertEquals(0, mUploadStore.getUploadingMediaForPost(mPost).size());
+        assertEquals(0, mUploadStore.getCompletedMediaForPost(mPost).size());
+        assertEquals(1, mUploadStore.getFailedMediaForPost(mPost).size());
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onPostUploaded(OnPostUploaded event) {
+        if (event.post == null) {
+            throw new AssertionError("Unexpected null post");
+        }
+
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error: " + event.error.type + " - " + event.error.message);
+        }
+
+        mCountDownLatch.countDown();
     }
 
     @SuppressWarnings("unused")
@@ -101,6 +188,16 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         testMedia.setAlt(testAlt);
 
         return testMedia;
+    }
+
+    private PostModel createNewPost(SiteModel site) throws InterruptedException {
+        mPost = mPostStore.instantiatePostModel(site, false);
+        return mPost;
+    }
+
+    private void setupPostAttributes() {
+        mPost.setTitle(POST_DEFAULT_TITLE);
+        mPost.setContent(POST_DEFAULT_DESCRIPTION);
     }
 
     private SiteModel getTestSite() {
