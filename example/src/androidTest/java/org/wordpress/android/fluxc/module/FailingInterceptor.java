@@ -40,6 +40,9 @@ class FailingInterceptor implements Interceptor {
             } else {
                 return buildMediaSuccessResponse(request);
             }
+        } else if (requestUrl.contains("posts/new")) {
+            // WP.com post upload request
+            return buildPostSuccessResponse(request);
         } else {
             throw new IllegalStateException("Interceptor was given a request with no mocks - URL: " + requestUrl);
         }
@@ -66,6 +69,11 @@ class FailingInterceptor implements Interceptor {
                 + "\"focal_length\":\"0\",\"iso\":\"0\",\"shutter_speed\":\"0\",\"title\":\"\","
                 + "\"orientation\":\"0\",\"keywords\":[]},\"meta\":{\"links\":{\"self\":\"\","
                 + "\"help\":\"\",\"site\":\"\"}}}]}";
+        return buildResponse(request, responseJson, 200);
+    }
+
+    private static Response buildPostSuccessResponse(Request request) {
+        String responseJson = "{\"ID\":7970,\"type\":\"post\"}";
         return buildResponse(request, responseJson, 200);
     }
 
