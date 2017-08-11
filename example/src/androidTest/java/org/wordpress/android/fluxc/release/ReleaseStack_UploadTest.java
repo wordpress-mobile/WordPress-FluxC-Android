@@ -226,6 +226,8 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
+        TestUtils.waitFor(50);
+
         // Since the post upload had an error, the PostUploadModel should still exist and be marked as FAILED
         postUploadModel = mUploadStore.getPostUploadModelForPostModel(uploadedPost);
         assertEquals(PostUploadModel.FAILED, postUploadModel.getUploadState());
