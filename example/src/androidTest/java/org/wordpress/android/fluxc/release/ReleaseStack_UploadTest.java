@@ -7,18 +7,29 @@ import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
+import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.MediaModel.MediaUploadState;
 import org.wordpress.android.fluxc.model.MediaUploadModel;
+import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.PostUploadModel;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaErrorType;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
+import org.wordpress.android.fluxc.store.PostStore;
+import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
+import org.wordpress.android.fluxc.store.PostStore.PostErrorType;
+import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
 import org.wordpress.android.fluxc.store.UploadStore;
 import org.wordpress.android.fluxc.utils.MediaUtils;
+import org.wordpress.android.fluxc.utils.WellSqlUtils;
+import org.wordpress.android.util.AppLog;
+import org.wordpress.android.util.AppLog.T;
 
+import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -26,7 +37,11 @@ import javax.inject.Inject;
 
 @SuppressLint("UseSparseArrays")
 public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
+    private static final String POST_DEFAULT_TITLE = "UploadTest base post";
+    private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
+
     @Inject MediaStore mMediaStore;
+    @Inject PostStore mPostStore;
     @Inject UploadStore mUploadStore;
 
     private enum TestEvents {
@@ -35,9 +50,12 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         PUSHED_MEDIA,
         REMOVED_MEDIA,
         UPLOADED_MEDIA,
-        MEDIA_ERROR_MALFORMED
+        MEDIA_ERROR_MALFORMED,
+        UPLOADED_POST,
+        POST_ERROR_UNKNOWN
     }
 
+    private PostModel mPost;
     private TestEvents mNextEvent;
     private long mLastUploadedId = -1L;
 
@@ -160,6 +178,60 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
     }
 
+    public void testRegisterAndUploadPost() throws InterruptedException {
+        // Instantiate new post
+        createNewPost();
+        setupPostAttributes();
+
+        // Register the post with the UploadStore and verify that it exists
+        mUploadStore.registerPostModel(mPost, Collections.<MediaModel>emptyList());
+
+        PostUploadModel postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
+        assertNotNull(postUploadModel);
+        assertEquals(PostUploadModel.PENDING, postUploadModel.getUploadState());
+
+        // Upload new post to site
+        uploadPost(mPost);
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
+
+        // Since the post upload completed successfully, the PostUploadModel should have been deleted
+        assertNull(mUploadStore.getPostUploadModelForPostModel(uploadedPost));
+    }
+
+    public void testRegisterAndUploadInvalidPost() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+        mPost.setIsLocalDraft(false);
+        mPost.setIsLocallyChanged(false);
+        mPost.setRemotePostId(7428748); // Set to a non-existent remote ID
+
+        // Register the post with the UploadStore and verify that it exists
+        mUploadStore.registerPostModel(mPost, Collections.<MediaModel>emptyList());
+
+        PostUploadModel postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
+        assertNotNull(postUploadModel);
+        assertEquals(PostUploadModel.PENDING, postUploadModel.getUploadState());
+
+        mNextEvent = TestEvents.POST_ERROR_UNKNOWN;
+        mCountDownLatch = new CountDownLatch(1);
+
+        RemotePostPayload pushPayload = new RemotePostPayload(mPost, sSite);
+        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        // Since the post upload had an error, the PostUploadModel should still exist and be marked as FAILED
+        postUploadModel = mUploadStore.getPostUploadModelForPostModel(uploadedPost);
+        assertEquals(PostUploadModel.FAILED, postUploadModel.getUploadState());
+        assertEquals(PostErrorType.UNKNOWN_POST, PostErrorType.fromString(postUploadModel.getErrorType()));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onMediaUploaded(OnMediaUploaded event) {
@@ -205,6 +277,38 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onPostUploaded(OnPostUploaded event) {
+        AppLog.i(T.API, "Received OnPostUploaded");
+        if (event.isError()) {
+            AppLog.i(T.API, "OnPostUploaded has error: " + event.error.type + " - " + event.error.message);
+            if (mNextEvent == TestEvents.POST_ERROR_UNKNOWN) {
+                assertEquals(PostErrorType.UNKNOWN_POST, event.error.type);
+                mCountDownLatch.countDown();
+            } else {
+                throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            }
+            return;
+        }
+        assertEquals(TestEvents.UPLOADED_POST, mNextEvent);
+        assertFalse(event.post.isLocalDraft());
+        assertFalse(event.post.isLocallyChanged());
+        assertNotSame(0, event.post.getRemotePostId());
+
+        mCountDownLatch.countDown();
+    }
+
+    private PostModel createNewPost() throws InterruptedException {
+        mPost = mPostStore.instantiatePostModel(sSite, false);
+        return mPost;
+    }
+
+    private void setupPostAttributes() {
+        mPost.setTitle(POST_DEFAULT_TITLE);
+        mPost.setContent(POST_DEFAULT_DESCRIPTION);
+    }
+
     private MediaModel newMediaModel(String mediaPath, String mimeType) {
         return newMediaModel("Test Title", mediaPath, mimeType);
     }
@@ -245,6 +349,16 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
     private void removeMedia(MediaModel media) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newRemoveMediaAction(media));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void uploadPost(PostModel post) throws InterruptedException {
+        mNextEvent = TestEvents.UPLOADED_POST;
+        mCountDownLatch = new CountDownLatch(1);
+
+        RemotePostPayload pushPayload = new RemotePostPayload(post, sSite);
+        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
+
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
