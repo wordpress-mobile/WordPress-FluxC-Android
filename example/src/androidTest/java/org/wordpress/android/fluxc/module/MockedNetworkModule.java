@@ -43,6 +43,9 @@ import static org.mockito.Mockito.spy;
 
 @Module
 public class MockedNetworkModule {
+    // Induces the mocked media upload to fail when set as the author id of the MediaModel
+    public static final int MEDIA_FAILURE_AUTHOR_CODE = 31337;
+
     @Singleton
     @Provides
     public OkHttpClient.Builder provideOkHttpClientBuilder() {
@@ -52,7 +55,9 @@ public class MockedNetworkModule {
     @Singleton
     @Provides
     public OkHttpClient provideOkHttpClientInstance(OkHttpClient.Builder builder) {
-        return builder.build();
+        return builder
+                .addInterceptor(new FailingInterceptor())
+                .build();
     }
 
     @Singleton
