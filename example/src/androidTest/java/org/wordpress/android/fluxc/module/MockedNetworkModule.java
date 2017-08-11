@@ -28,7 +28,6 @@ import org.wordpress.android.fluxc.network.xmlrpc.media.MediaXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.post.PostXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.site.SiteXMLRPCClient;
 
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -48,6 +47,12 @@ public class MockedNetworkModule {
     @Provides
     public OkHttpClient.Builder provideOkHttpClientBuilder() {
         return new OkHttpClient.Builder();
+    }
+
+    @Singleton
+    @Provides
+    public OkHttpClient provideOkHttpClientInstance(OkHttpClient.Builder builder) {
+        return builder.build();
     }
 
     @Singleton
@@ -107,8 +112,8 @@ public class MockedNetworkModule {
     @Singleton
     @Provides
     public MediaRestClient provideMediaRestClient(Dispatcher dispatcher, Context appContext,
-                                                  @Named("regular") RequestQueue requestQueue,
-                                                  @Named("regular") OkHttpClient okHttpClient,
+                                                  RequestQueue requestQueue,
+                                                  OkHttpClient okHttpClient,
                                                   AccessToken token, UserAgent userAgent) {
         return new MediaRestClient(appContext, dispatcher, requestQueue, okHttpClient, token, userAgent);
     }
@@ -116,7 +121,7 @@ public class MockedNetworkModule {
     @Singleton
     @Provides
     public MediaXMLRPCClient provideMediaXMLRPCClient(Dispatcher dispatcher, OkHttpClient okHttpClient,
-                                                      @Named("regular") RequestQueue requestQueue,
+                                                      RequestQueue requestQueue,
                                                       UserAgent userAgent, HTTPAuthManager httpAuthManager) {
         return new MediaXMLRPCClient(dispatcher, requestQueue, okHttpClient, userAgent, httpAuthManager);
     }
