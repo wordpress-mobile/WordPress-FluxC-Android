@@ -21,6 +21,8 @@ import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
 import org.wordpress.android.fluxc.store.UploadStore;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.fluxc.utils.WellSqlUtils;
+import org.wordpress.android.util.AppLog;
+import org.wordpress.android.util.AppLog.T;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +44,15 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     @Inject PostStore mPostStore;
     @Inject UploadStore mUploadStore;
 
+    private enum TestEvents {
+        UPLOADED_POST,
+        UPLOADED_MEDIA,
+        MEDIA_ERROR,
+        CLEARED_MEDIA
+    }
+
     private PostModel mPost;
-    private boolean mExpectingMediaError;
+    private TestEvents mNextEvent;
     private CountDownLatch mCountDownLatch;
 
     @Override
@@ -143,6 +152,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
 
         // Upload post to site
         mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.UPLOADED_POST;
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(new RemotePostPayload(mPost, site)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -161,6 +171,8 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     @SuppressWarnings("unused")
     @Subscribe
     public void onPostUploaded(OnPostUploaded event) {
+        AppLog.i(T.API, "Received OnPostUploaded");
+
         if (event.post == null) {
             throw new AssertionError("Unexpected null post");
         }
@@ -169,24 +181,28 @@ public class MockedStack_UploadTest extends MockedStack_Base {
             throw new AssertionError("Unexpected error: " + event.error.type + " - " + event.error.message);
         }
 
+        assertEquals(TestEvents.UPLOADED_POST, mNextEvent);
         mCountDownLatch.countDown();
     }
 
     @SuppressWarnings("unused")
     @Subscribe
     public void onMediaUploaded(OnMediaUploaded event) {
+        AppLog.i(T.API, "Received OnMediaUploaded");
+
         if (event.media == null) {
             throw new AssertionError("Unexpected null media");
         }
 
         if (event.isError()) {
-            assertTrue(mExpectingMediaError);
+            assertEquals(TestEvents.MEDIA_ERROR, mNextEvent);
             mCountDownLatch.countDown();
             return;
         }
 
         if (event.completed) {
-            assertFalse(mExpectingMediaError);
+            assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
+            mCountDownLatch.countDown();
             mCountDownLatch.countDown();
         }
     }
@@ -233,7 +249,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     private void startSuccessfulMediaUpload(MediaModel media, SiteModel site) {
         MediaPayload payload = new MediaPayload(site, media);
         mCountDownLatch = new CountDownLatch(1);
-        mExpectingMediaError = false;
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
     }
 
@@ -242,7 +258,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
 
         MediaPayload payload = new MediaPayload(site, media);
         mCountDownLatch = new CountDownLatch(1);
-        mExpectingMediaError = true;
+        mNextEvent = TestEvents.MEDIA_ERROR;
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
     }
 }
