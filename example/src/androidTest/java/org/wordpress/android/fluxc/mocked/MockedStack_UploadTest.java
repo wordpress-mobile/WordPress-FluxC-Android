@@ -52,6 +52,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         UPLOADED_POST,
         UPLOADED_MEDIA,
         MEDIA_ERROR,
+        CANCELLED_POST,
         CLEARED_MEDIA
     }
 
@@ -180,6 +181,73 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertNull(mUploadStore.getPostUploadModelForPostModel(uploadedPost));
     }
 
+    public void testRegisterPostAndUploadMediaWithPostCancellation() throws InterruptedException {
+        SiteModel site = getTestSite();
+
+        // Instantiate new post
+        createNewPost(site);
+        setupPostAttributes();
+
+        // Start uploading media
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        testMedia.setLocalPostId(mPost.getId());
+        startSuccessfulMediaUpload(testMedia, site);
+
+        // Wait for the event to be processed by the UploadStore
+        TestUtils.waitFor(50);
+
+        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        assertNotNull(mediaUploadModel);
+        assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
+
+        // Register the post with the UploadStore and verify that it exists and has the right state
+        List<MediaModel> mediaModelList = new ArrayList<>();
+        mediaModelList.add(testMedia);
+        mUploadStore.registerPostModel(mPost, mediaModelList);
+
+        mNextEvent = TestEvents.CANCELLED_POST;
+        mDispatcher.dispatch(UploadActionBuilder.newCancelPostAction(mPost));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // The media upload action we already started will be next, reset the CountDownLatch and mNextEvent
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
+
+        // The Post should be cancelled (the media upload should continue unaffected)
+        assertEquals(0, mUploadStore.getPendingPosts().size());
+        assertEquals(0, mUploadStore.getFailedPosts().size());
+        assertEquals(1, mUploadStore.getCancelledPosts().size());
+
+        // The media upload should be unaffected
+        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        assertNotNull(mediaUploadModel);
+        assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        TestUtils.waitFor(50);
+
+        // Media upload completed
+        // PostUploadModel still exists and has correct state and associated media
+        assertEquals(0, mUploadStore.getPendingPosts().size());
+        assertEquals(1, mUploadStore.getCancelledPosts().size());
+        PostUploadModel postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
+        assertNotNull(postUploadModel);
+        assertEquals(PostUploadModel.CANCELLED, postUploadModel.getUploadState());
+        Set<Integer> associatedMedia = postUploadModel.getAssociatedMediaIdSet();
+        assertEquals(1, associatedMedia.size());
+        assertTrue(associatedMedia.contains(testMedia.getId()));
+
+        // MediaUploadModel still exists and has correct state
+        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        assertEquals(MediaUploadModel.COMPLETED, mediaUploadModel.getUploadState());
+
+        // UploadStore returns the correct sets of media for the post by type
+        assertEquals(0, mUploadStore.getUploadingMediaForPost(mPost).size());
+        assertEquals(1, mUploadStore.getCompletedMediaForPost(mPost).size());
+        assertEquals(0, mUploadStore.getFailedMediaForPost(mPost).size());
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onPostUploaded(OnPostUploaded event) {
@@ -223,7 +291,10 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     public void onUploadChanged(OnUploadChanged event) {
         AppLog.i(T.API, "Received OnUploadChanged");
 
-        if (mNextEvent.equals(TestEvents.CLEARED_MEDIA)) {
+        if (mNextEvent.equals(TestEvents.CANCELLED_POST)) {
+            assertEquals(UploadAction.CANCEL_POST, event.cause);
+            mCountDownLatch.countDown();
+        } else if (mNextEvent.equals(TestEvents.CLEARED_MEDIA)) {
             assertEquals(UploadAction.CLEAR_MEDIA, event.cause);
             mCountDownLatch.countDown();
         } else {
