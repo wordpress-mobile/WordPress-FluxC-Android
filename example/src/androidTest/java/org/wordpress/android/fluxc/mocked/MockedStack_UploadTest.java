@@ -3,9 +3,11 @@ package org.wordpress.android.fluxc.mocked;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
+import org.wordpress.android.fluxc.action.UploadAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
+import org.wordpress.android.fluxc.generated.UploadActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.MediaUploadModel;
 import org.wordpress.android.fluxc.model.PostModel;
@@ -19,6 +21,8 @@ import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
 import org.wordpress.android.fluxc.store.UploadStore;
+import org.wordpress.android.fluxc.store.UploadStore.ClearMediaPayload;
+import org.wordpress.android.fluxc.store.UploadStore.OnUploadChanged;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.fluxc.utils.WellSqlUtils;
 import org.wordpress.android.util.AppLog;
@@ -150,7 +154,15 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertEquals(0, mUploadStore.getCompletedMediaForPost(mPost).size());
         assertEquals(1, mUploadStore.getFailedMediaForPost(mPost).size());
 
-        // Upload post to site
+        // Clean up failed media manually
+        clearMedia(mPost, mUploadStore.getFailedMediaForPost(mPost));
+
+        // UploadStore returns the correct sets of media for the post by type
+        assertEquals(0, mUploadStore.getUploadingMediaForPost(mPost).size());
+        assertEquals(0, mUploadStore.getCompletedMediaForPost(mPost).size());
+        assertEquals(0, mUploadStore.getFailedMediaForPost(mPost).size());
+
+        // Upload post to site (pretend we've removed the failed media from the post content)
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.UPLOADED_POST;
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(new RemotePostPayload(mPost, site)));
@@ -203,7 +215,19 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         if (event.completed) {
             assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
             mCountDownLatch.countDown();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onUploadChanged(OnUploadChanged event) {
+        AppLog.i(T.API, "Received OnUploadChanged");
+
+        if (mNextEvent.equals(TestEvents.CLEARED_MEDIA)) {
+            assertEquals(UploadAction.CLEAR_MEDIA, event.cause);
             mCountDownLatch.countDown();
+        } else {
+            throw new AssertionError("Unexpected OnUploadChanged event with cause: " + event.cause);
         }
     }
 
@@ -260,5 +284,13 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.MEDIA_ERROR;
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+    }
+
+    private void clearMedia(PostModel post, Set<MediaModel> media) throws InterruptedException {
+        ClearMediaPayload clearMediaPayload = new ClearMediaPayload(post, media);
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.CLEARED_MEDIA;
+        mDispatcher.dispatch(UploadActionBuilder.newClearMediaAction(clearMediaPayload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
