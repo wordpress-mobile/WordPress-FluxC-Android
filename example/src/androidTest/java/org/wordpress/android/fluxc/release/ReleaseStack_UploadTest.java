@@ -84,9 +84,10 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
 
-        // Wait for the event to be processed by the UploadStore, then check that a MediaUploadModel has been registered
+        // Wait for the event to be processed by the UploadStore
         TestUtils.waitFor(50);
 
+        // Check that a MediaUploadModel has been registered
         MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
         assertNotNull(mediaUploadModel);
         assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
@@ -238,8 +239,6 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        TestUtils.waitFor(50);
-
         // Since the post upload had an error, the PostUploadModel should still exist and be marked as FAILED
         assertEquals(0, mUploadStore.getPendingPosts().size());
         assertEquals(1, mUploadStore.getFailedPosts().size());
@@ -336,8 +335,6 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
         assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(sSite));
-
-        TestUtils.waitFor(50);
 
         // Since the post upload completed successfully, the PostUploadModel should have been deleted
         assertEquals(0, mUploadStore.getPendingPosts().size());
@@ -469,13 +466,6 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         testMedia.setLocalSiteId(sSite.getId());
 
         return testMedia;
-    }
-
-    private void uploadMedia(MediaModel media) throws InterruptedException {
-        MediaPayload payload = new MediaPayload(sSite, media);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void deleteMedia(MediaModel media) throws InterruptedException {

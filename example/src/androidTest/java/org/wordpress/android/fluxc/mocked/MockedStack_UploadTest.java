@@ -87,6 +87,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         startFailingMediaUpload(testMedia, getTestSite());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
+        // Wait for the event to be processed by the UploadStore
         TestUtils.waitFor(50);
 
         // Confirm that the corresponding MediaUploadModel's state has been updated automatically
@@ -141,8 +142,6 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertEquals(0, mUploadStore.getFailedMediaForPost(mPost).size());
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        TestUtils.waitFor(50);
 
         // Media upload completed
         // PostUploadModel still exists and has correct state and associated media
@@ -235,8 +234,6 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        TestUtils.waitFor(50);
 
         // Media upload completed
         // PostUploadModel still exists and has correct state and associated media
