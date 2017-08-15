@@ -73,6 +73,13 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         startSuccessfulMediaUpload(testMedia, getTestSite());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Confirm that the corresponding MediaUploadModel's state has been updated automatically
+        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        assertNotNull(mediaUploadModel);
+        assertEquals(1F, mediaUploadModel.getProgress());
+        assertEquals(1F, mUploadStore.getUploadProgressForMedia(testMedia));
+        assertEquals(MediaUploadModel.COMPLETED, mediaUploadModel.getUploadState());
     }
 
     public void testUploadMediaError() throws InterruptedException {
@@ -86,6 +93,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
         assertNotNull(mediaUploadModel);
         assertEquals(0F, mediaUploadModel.getProgress());
+        assertEquals(0F, mUploadStore.getUploadProgressForMedia(testMedia));
         assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
     }
 
