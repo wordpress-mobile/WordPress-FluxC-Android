@@ -365,6 +365,10 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
                 throw new AssertionError("Unexpected completion for media: " + event.media.getId());
             }
             mCountDownLatch.countDown();
+        } else {
+            // General checks that the UploadStore is keeping an updated progress value for the media
+            assertTrue(mUploadStore.getUploadProgressForMedia(event.media) > 0F);
+            assertTrue(mUploadStore.getUploadProgressForMedia(event.media) < 1F);
         }
     }
 
