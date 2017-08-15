@@ -126,6 +126,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         PostUploadModel postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
         assertNotNull(postUploadModel);
         assertEquals(PostUploadModel.PENDING, postUploadModel.getUploadState());
+        assertTrue(mUploadStore.isPendingPost(mPost));
         Set<Integer> associatedMedia = postUploadModel.getAssociatedMediaIdSet();
         assertEquals(1, associatedMedia.size());
         assertTrue(associatedMedia.contains(testMedia.getId()));
@@ -150,6 +151,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
         assertNotNull(postUploadModel);
         assertEquals(PostUploadModel.CANCELLED, postUploadModel.getUploadState());
+        assertTrue(mUploadStore.isCancelledPost(mPost));
         associatedMedia = postUploadModel.getAssociatedMediaIdSet();
         assertEquals(1, associatedMedia.size());
         assertTrue(associatedMedia.contains(testMedia.getId()));
@@ -187,6 +189,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertEquals(0, mUploadStore.getFailedPosts().size());
         assertEquals(0, mUploadStore.getCancelledPosts().size());
         assertNull(mUploadStore.getPostUploadModelForPostModel(uploadedPost));
+        assertFalse(mUploadStore.isPendingPost(mPost));
     }
 
     public void testRegisterPostAndUploadMediaWithPostCancellation() throws InterruptedException {
@@ -242,6 +245,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         PostUploadModel postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
         assertNotNull(postUploadModel);
         assertEquals(PostUploadModel.CANCELLED, postUploadModel.getUploadState());
+        assertTrue(mUploadStore.isCancelledPost(mPost));
         Set<Integer> associatedMedia = postUploadModel.getAssociatedMediaIdSet();
         assertEquals(1, associatedMedia.size());
         assertTrue(associatedMedia.contains(testMedia.getId()));
