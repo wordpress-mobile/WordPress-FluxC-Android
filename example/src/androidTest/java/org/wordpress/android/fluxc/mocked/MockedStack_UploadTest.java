@@ -257,6 +257,60 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertEquals(0, mUploadStore.getFailedMediaForPost(mPost).size());
     }
 
+    public void testUploadMediaInCancelledPost() throws InterruptedException {
+        SiteModel site = getTestSite();
+
+        // Instantiate new post
+        createNewPost(site);
+        setupPostAttributes();
+
+        // Start uploading media
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        testMedia.setLocalPostId(mPost.getId());
+        startFailingMediaUpload(testMedia, site);
+
+        // Wait for the event to be processed by the UploadStore
+        TestUtils.waitFor(50);
+
+        // Register the post with the UploadStore and verify that it exists and has the right state
+        List<MediaModel> mediaModelList = new ArrayList<>();
+        mediaModelList.add(testMedia);
+        mUploadStore.registerPostModel(mPost, mediaModelList);
+
+        // MediaUploadModel exists and has correct state
+        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Media upload completed
+        // PostUploadModel still exists and has correct state and associated media
+        assertTrue(mUploadStore.isCancelledPost(mPost));
+
+        // MediaUploadModel still exists and has correct state
+        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
+
+        // Clean up failed media manually
+        clearMedia(mPost, mUploadStore.getFailedMediaForPost(mPost));
+
+        // Upload a new media item to the cancelled post
+        testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        testMedia.setLocalPostId(mPost.getId());
+        startFailingMediaUpload(testMedia, site);
+
+        // Wait for the event to be processed by the UploadStore
+        TestUtils.waitFor(50);
+
+        // The cancelled post should be cleared since we've now modified it
+        // There's no pending post either, because we haven't re-registered one yet
+        assertEquals(0, mUploadStore.getCancelledPosts().size());
+        assertEquals(0, mUploadStore.getFailedPosts().size());
+        assertEquals(0, mUploadStore.getPendingPosts().size());
+
+        assertNull(mUploadStore.getPostUploadModelForPostModel(mPost));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onPostUploaded(OnPostUploaded event) {
