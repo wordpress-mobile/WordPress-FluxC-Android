@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.module.MockedNetworkModule;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
+import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
@@ -49,8 +50,10 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     @Inject UploadStore mUploadStore;
 
     private enum TestEvents {
+        NONE,
         UPLOADED_POST,
         UPLOADED_MEDIA,
+        MEDIA_CHANGED,
         MEDIA_ERROR,
         CANCELLED_POST,
         CLEARED_MEDIA
@@ -67,6 +70,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         mMockedNetworkAppComponent.inject(this);
         // Register
         mDispatcher.register(this);
+        mNextEvent = TestEvents.NONE;
     }
 
     public void testUploadMedia() throws InterruptedException {
@@ -311,6 +315,59 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertNull(mUploadStore.getPostUploadModelForPostModel(mPost));
     }
 
+    public void testUpdateMediaModelState() throws InterruptedException {
+        SiteModel site = getTestSite();
+
+        // Instantiate new post
+        createNewPost(site);
+        setupPostAttributes();
+
+        // Start uploading media
+        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        testMedia.setLocalPostId(mPost.getId());
+        startSuccessfulMediaUpload(testMedia, site);
+
+        // Wait for the event to be processed by the UploadStore
+        TestUtils.waitFor(50);
+
+        // Register the post with the UploadStore and verify that it exists and has the right state
+        List<MediaModel> mediaModelList = new ArrayList<>();
+        mediaModelList.add(testMedia);
+        mUploadStore.registerPostModel(mPost, mediaModelList);
+
+        // MediaUploadModel exists and has correct state
+        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
+
+        // Manually set the MediaModel to FAILED
+        // This might happen, e.g., if the app using FluxC was terminated, and any 'UPLOADING' MediaModels are set
+        // to FAILED on reload to ensure consistency
+        testMedia.setUploadState(MediaModel.MediaUploadState.FAILED);
+        mNextEvent = TestEvents.MEDIA_CHANGED;
+        mDispatcher.dispatch(MediaActionBuilder.newUpdateMediaAction(testMedia));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Wait for the event to be processed by the UploadStore
+        TestUtils.waitFor(50);
+
+        // The MediaUploadModel should have been set to FAILED automatically via the UPDATE_MEDIA action
+        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
+        assertNotNull(mediaUploadModel.getMediaError());
+        assertEquals(0F, mediaUploadModel.getProgress());
+
+        // The PostUploadModel should have been set to CANCELLED automatically via the UPDATE_MEDIA action
+        PostUploadModel postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
+        assertEquals(PostUploadModel.CANCELLED, postUploadModel.getUploadState());
+
+        // Reset expected event back to the UPLOADED_MEDIA we were expecting at the start,
+        // and finish off the events for this test
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.UPLOADED_MEDIA;
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onPostUploaded(OnPostUploaded event) {
@@ -347,6 +404,15 @@ public class MockedStack_UploadTest extends MockedStack_Base {
             assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
             mCountDownLatch.countDown();
         }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onMediaChanged(OnMediaChanged event) {
+        AppLog.i(T.API, "Received OnMediaChanged");
+
+        assertEquals(TestEvents.MEDIA_CHANGED, mNextEvent);
+        mCountDownLatch.countDown();
     }
 
     @SuppressWarnings("unused")
