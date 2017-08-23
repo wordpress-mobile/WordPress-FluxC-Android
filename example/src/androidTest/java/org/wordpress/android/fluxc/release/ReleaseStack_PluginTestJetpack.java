@@ -14,7 +14,9 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.PluginStore;
+import org.wordpress.android.fluxc.store.PluginStore.OnPluginChanged;
 import org.wordpress.android.fluxc.store.PluginStore.OnPluginsChanged;
+import org.wordpress.android.fluxc.store.PluginStore.UpdatePluginPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
@@ -35,6 +37,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     enum TestEvents {
         NONE,
         PLUGINS_FETCHED,
+        UPDATED_PLUGIN,
         SITE_CHANGED,
         SITE_REMOVED
     }
@@ -65,6 +68,39 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         List<PluginModel> plugins = mPluginStore.getPlugins(site);
         assertTrue(plugins.size() > 0);
+
+        signOutWPCom();
+    }
+
+    public void testUpdatePlugin() throws InterruptedException {
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
+
+        mNextEvent = TestEvents.PLUGINS_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        SiteModel site = mSiteStore.getSites().get(0);
+        mDispatcher.dispatch(PluginActionBuilder.newFetchPluginsAction(site));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        List<PluginModel> plugins = mPluginStore.getPlugins(site);
+        assertTrue(plugins.size() > 0);
+        PluginModel plugin = plugins.get(0);
+        boolean isActive = !plugin.isActive();
+        plugin.setIsActive(isActive);
+
+        mNextEvent = TestEvents.UPDATED_PLUGIN;
+        mCountDownLatch = new CountDownLatch(1);
+
+        UpdatePluginPayload payload = new UpdatePluginPayload(site, plugin);
+        mDispatcher.dispatch(PluginActionBuilder.newUpdatePluginAction(payload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        PluginModel newPlugin = mPluginStore.getPluginByName(site, plugin.getName());
+        assertNotNull(newPlugin);
+        assertEquals(newPlugin.isActive(), isActive);
 
         signOutWPCom();
     }
@@ -120,6 +156,18 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
                     + event.error.type);
         }
         assertEquals(mNextEvent, TestEvents.PLUGINS_FETCHED);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onPluginChanged(OnPluginChanged event) {
+        AppLog.i(T.API, "Received onPluginChanged");
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred in onPluginChanged with type: "
+                    + event.error.type);
+        }
+        assertEquals(mNextEvent, TestEvents.UPDATED_PLUGIN);
         mCountDownLatch.countDown();
     }
 
