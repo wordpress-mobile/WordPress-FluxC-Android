@@ -76,6 +76,10 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
 
+        // If a plugin is active and we try to activate it, we'll get an error. If it's not active and we try to
+        // deactivate it, we'll again get an error. So, in order to have a reliable test, we have to fetch the
+        // plugins first, select one and change the activation status and verify that it went through.
+
         mNextEvent = TestEvents.PLUGINS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
