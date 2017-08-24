@@ -11,8 +11,9 @@ import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.OkHttpStack;
 import org.wordpress.android.fluxc.network.UserAgent;
+import org.wordpress.android.fluxc.network.discovery.DiscoveryWPAPIRestClient;
+import org.wordpress.android.fluxc.network.discovery.DiscoveryXMLRPCClient;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder;
-import org.wordpress.android.fluxc.network.rest.wpapi.BaseWPAPIRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AppSecrets;
@@ -23,7 +24,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Token;
 import org.wordpress.android.fluxc.network.rest.wpcom.media.MediaRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.SiteRestClient;
-import org.wordpress.android.fluxc.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.media.MediaXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.post.PostXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.site.SiteXMLRPCClient;
@@ -98,20 +98,6 @@ public class MockedNetworkModule {
 
     @Singleton
     @Provides
-    public BaseXMLRPCClient provideBaseXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken token,
-                                                    UserAgent userAgent, HTTPAuthManager httpAuthManager) {
-        return new BaseXMLRPCClient(dispatcher, requestQueue, token, userAgent, httpAuthManager);
-    }
-
-    @Singleton
-    @Provides
-    public BaseWPAPIRestClient provideBaseWPAPIClient(Dispatcher dispatcher, RequestQueue requestQueue,
-                                                       UserAgent userAgent) {
-        return new BaseWPAPIRestClient(dispatcher, requestQueue, userAgent);
-    }
-
-    @Singleton
-    @Provides
     public SiteRestClient provideSiteRestClient(Context appContext, Dispatcher dispatcher, RequestQueue requestQueue,
                                                 AppSecrets appSecrets,
                                                 AccessToken token, UserAgent userAgent) {
@@ -131,16 +117,15 @@ public class MockedNetworkModule {
     @Provides
     public MediaXMLRPCClient provideMediaXMLRPCClient(Dispatcher dispatcher, OkHttpClient okHttpClient,
                                                       @Named("regular") RequestQueue requestQueue,
-                                                      AccessToken token, UserAgent userAgent,
-                                                      HTTPAuthManager httpAuthManager) {
-        return new MediaXMLRPCClient(dispatcher, requestQueue, okHttpClient, token, userAgent, httpAuthManager);
+                                                      UserAgent userAgent, HTTPAuthManager httpAuthManager) {
+        return new MediaXMLRPCClient(dispatcher, requestQueue, okHttpClient, userAgent, httpAuthManager);
     }
 
     @Singleton
     @Provides
-    public SiteXMLRPCClient provideSiteXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken token,
+    public SiteXMLRPCClient provideSiteXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue,
                                                     UserAgent userAgent, HTTPAuthManager httpAuthManager) {
-        return new SiteXMLRPCClient(dispatcher, requestQueue, token, userAgent, httpAuthManager);
+        return new SiteXMLRPCClient(dispatcher, requestQueue, userAgent, httpAuthManager);
     }
 
     @Singleton
@@ -152,9 +137,9 @@ public class MockedNetworkModule {
 
     @Singleton
     @Provides
-    public PostXMLRPCClient providePostXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken token,
+    public PostXMLRPCClient providePostXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue,
                                                     UserAgent userAgent, HTTPAuthManager httpAuthManager) {
-        return new PostXMLRPCClient(dispatcher, requestQueue, token, userAgent, httpAuthManager);
+        return new PostXMLRPCClient(dispatcher, requestQueue, userAgent, httpAuthManager);
     }
 
     @Singleton
@@ -166,10 +151,24 @@ public class MockedNetworkModule {
 
     @Singleton
     @Provides
+    public DiscoveryXMLRPCClient provideDiscoveryXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue,
+                                                              UserAgent userAgent, HTTPAuthManager httpAuthManager) {
+        return new DiscoveryXMLRPCClient(dispatcher, requestQueue, userAgent, httpAuthManager);
+    }
+
+    @Singleton
+    @Provides
+    public DiscoveryWPAPIRestClient provideDiscoveryWPAPIRestClient(Dispatcher dispatcher, RequestQueue requestQueue,
+                                                              UserAgent userAgent) {
+        return new DiscoveryWPAPIRestClient(dispatcher, requestQueue, userAgent);
+    }
+
+    @Singleton
+    @Provides
     public SelfHostedEndpointFinder provideSelfHostedEndpointFinder(Dispatcher dispatcher,
-                                                                    BaseXMLRPCClient baseXMLRPCClient,
-                                                                    BaseWPAPIRestClient baseWPAPIRestClient) {
-        return new SelfHostedEndpointFinder(dispatcher, baseXMLRPCClient, baseWPAPIRestClient);
+                                                                    DiscoveryXMLRPCClient discoveryXMLRPCClient,
+                                                                    DiscoveryWPAPIRestClient discoveryWPAPIRestClient) {
+        return new SelfHostedEndpointFinder(dispatcher, discoveryXMLRPCClient, discoveryWPAPIRestClient);
     }
 
     @Singleton
