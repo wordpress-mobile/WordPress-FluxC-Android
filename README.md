@@ -41,9 +41,13 @@ We have some tests connecting to real HTTP servers, URL and credentials are defi
 
 The FluxC project uses [Checkstyle](http://checkstyle.sourceforge.net/). You can run checkstyle using `./gradlew checkstyle`.
 
-You can also install the Checkstyle plugin for Android Studio, which will allow checkstyle errors and warnings to be displayed in the editor in realtime. Once installed, you can configure the checkstyle plugin here:
+You can also view errors and warnings in realtime by installing the CheckStyle-IDEA plugin in Android Studio here:
 
-`Preferences > Other Settings > Checkstyle`
+`Android Studio > Preferences... > Plugins > CheckStyle-IDEA`
+
+Once installed, you can configure the plugin here:
+
+`Android Studio > Preferences... > Other Settings > Checkstyle`
 
 From there, add and enable the configuration file for FluxC, located [here](https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/develop/config/checkstyle.xml).
 
