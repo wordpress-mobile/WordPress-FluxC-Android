@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.generated.ThemeActionBuilder;
 import org.wordpress.android.fluxc.store.ThemeStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 
@@ -42,11 +43,26 @@ public class ThemeFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_themes, container, false);
+
+        view.findViewById(R.id.fetch_wpcom_themes).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDispatcher.dispatch(ThemeActionBuilder.newFetchWpThemesAction());
+            }
+        });
+
+
         return view;
     }
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onThemesChanged(ThemeStore.OnThemesChanged event) {
+        prependToLog("onThemesChanged: ");
+        if (event.isError()) {
+            prependToLog("error: " + event.error.message);
+        } else {
+            prependToLog("success: WP.com theme count = " + mThemeStore.getWpThemes().size());
+        }
     }
 
     @SuppressWarnings("unused")
