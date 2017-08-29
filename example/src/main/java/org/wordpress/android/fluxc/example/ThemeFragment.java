@@ -64,9 +64,44 @@ public class ThemeFragment extends Fragment {
             }
         });
 
+        view.findViewById(R.id.fetch_current_theme_jp).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SiteModel jetpackSite = getJetpackConnectedSite();
+                if (jetpackSite == null) {
+                    prependToLog("No Jetpack connected site found, unable to test.");
+                } else {
+                    mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(jetpackSite));
+                }
+            }
+        });
+
+        view.findViewById(R.id.fetch_current_theme_wpcom).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SiteModel wpcomSite = getWPComSite();
+                if (wpcomSite == null) {
+                    prependToLog("No WP.com site found, unable to test.");
+                } else {
+                    mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(wpcomSite));
+                }
+            }
+        });
 
         return view;
     }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onCurrentThemesFetched(ThemeStore.OnCurrentThemeFetched event) {
+        prependToLog("onCurrentThemesFetched: ");
+        if (event.isError()) {
+            prependToLog("error: " + event.error.message);
+        } else {
+            prependToLog("success: theme = " + event.theme.getName());
+        }
+    }
+
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onThemesChanged(ThemeStore.OnThemesChanged event) {
