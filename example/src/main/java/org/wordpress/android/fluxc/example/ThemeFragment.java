@@ -2,15 +2,18 @@ package org.wordpress.android.fluxc.example;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.generated.ThemeActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.model.ThemeModel;
 import org.wordpress.android.fluxc.store.ThemeStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 
@@ -20,6 +23,8 @@ public class ThemeFragment extends Fragment {
     @Inject SiteStore mSiteStore;
     @Inject ThemeStore mThemeStore;
     @Inject Dispatcher mDispatcher;
+
+    private TextView mIdField;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,6 +49,50 @@ public class ThemeFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_themes, container, false);
+
+        mIdField = (TextView) view.findViewById(R.id.theme_id);
+
+        view.findViewById(R.id.activate_theme_wpcom).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (TextUtils.isEmpty(mIdField.getText().toString())) {
+                    prependToLog("Please enter a theme id");
+                    return;
+                }
+
+                SiteModel site = getWPComSite();
+                if (site == null) {
+                    prependToLog("No WP.com site found, unable to test.");
+                } else {
+                    ThemeModel theme = new ThemeModel();
+                    theme.setLocalSiteId(site.getSiteId());
+                    theme.setThemeId(mIdField.getText().toString());
+                    ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
+                    mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
+                }
+            }
+        });
+
+        view.findViewById(R.id.activate_theme_jp).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (TextUtils.isEmpty(mIdField.getText().toString())) {
+                    prependToLog("Please enter a theme id");
+                    return;
+                }
+
+                SiteModel site = getJetpackConnectedSite();
+                if (site == null) {
+                    prependToLog("No Jetpack connected site found, unable to test.");
+                } else {
+                    ThemeModel theme = new ThemeModel();
+                    theme.setLocalSiteId(site.getSiteId());
+                    theme.setThemeId(mIdField.getText().toString());
+                    ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
+                    mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
+                }
+            }
+        });
 
         view.findViewById(R.id.fetch_wpcom_themes).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,6 +138,17 @@ public class ThemeFragment extends Fragment {
         });
 
         return view;
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onThemeActivated(ThemeStore.OnThemeActivated event) {
+        prependToLog("onThemeActivated: ");
+        if (event.isError()) {
+            prependToLog("error: " + event.error.message);
+        } else {
+            prependToLog("success: theme = " + event.theme.getThemeId());
+        }
     }
 
     @SuppressWarnings("unused")
