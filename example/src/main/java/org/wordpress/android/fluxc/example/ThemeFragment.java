@@ -48,7 +48,7 @@ public class ThemeFragment extends Fragment {
         view.findViewById(R.id.fetch_wpcom_themes).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDispatcher.dispatch(ThemeActionBuilder.newFetchWpThemesAction());
+                mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
             }
         });
 
