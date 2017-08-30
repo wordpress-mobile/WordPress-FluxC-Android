@@ -210,14 +210,17 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
             if (mNextEvent.equals(TestEvents.ERROR_INVALID_TAXONOMY)) {
                 assertEquals(TaxonomyErrorType.INVALID_TAXONOMY, event.error.type);
                 mCountDownLatch.countDown();
+                return;
             } else if (mNextEvent.equals(TestEvents.ERROR_UNAUTHORIZED)) {
                 assertEquals(TaxonomyErrorType.UNAUTHORIZED, event.error.type);
                 mCountDownLatch.countDown();
+                return;
             } else if (mNextEvent.equals(TestEvents.ERROR_GENERIC)) {
                 assertEquals(TaxonomyErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
+                return;
             }
-            return;
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         switch (event.causeOfChange) {
             case FETCH_CATEGORIES:
@@ -256,17 +259,21 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
             if (mNextEvent.equals(TestEvents.ERROR_INVALID_TAXONOMY)) {
                 assertEquals(TaxonomyErrorType.INVALID_TAXONOMY, event.error.type);
                 mCountDownLatch.countDown();
+                return;
             } else if (mNextEvent.equals(TestEvents.ERROR_DUPLICATE)) {
                 assertEquals(TaxonomyErrorType.DUPLICATE, event.error.type);
                 mCountDownLatch.countDown();
+                return;
             } else if (mNextEvent.equals(TestEvents.ERROR_UNAUTHORIZED)) {
                 assertEquals(TaxonomyErrorType.UNAUTHORIZED, event.error.type);
                 mCountDownLatch.countDown();
+                return;
             } else if (mNextEvent.equals(TestEvents.ERROR_GENERIC)) {
                 assertEquals(TaxonomyErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
+                return;
             }
-            return;
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.TERM_UPLOADED, mNextEvent);
         assertNotSame(0, event.term.getRemoteTermId());
