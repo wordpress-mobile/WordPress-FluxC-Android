@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.model.MediaModel.MediaUploadState;
 import org.wordpress.android.fluxc.model.MediaUploadModel;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.PostUploadModel;
+import org.wordpress.android.fluxc.persistence.UploadSqlUtils;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaErrorType;
@@ -88,7 +89,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         TestUtils.waitFor(50);
 
         // Check that a MediaUploadModel has been registered
-        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertNotNull(mediaUploadModel);
         assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
 
@@ -100,7 +101,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
 
         // Confirm that the corresponding MediaUploadModel's state has been updated automatically
-        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertEquals(1F, mUploadStore.getUploadProgressForMedia(testMedia));
         assertEquals(MediaUploadModel.COMPLETED, mediaUploadModel.getUploadState());
 
@@ -110,7 +111,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
         // Since the MediaUploadModel keys are linked to MediaModels, the corresponding MediaUploadModel should
         // have been deleted as well
-        assertNull(mUploadStore.getMediaUploadModelForMediaModel(testMedia));
+        assertNull(getMediaUploadModelForMediaModel(testMedia));
     }
 
     public void testUploadInvalidMedia() throws InterruptedException {
@@ -127,7 +128,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         assertNotNull(mediaModel);
         assertEquals(MediaUploadState.FAILED, MediaUploadState.fromString(mediaModel.getUploadState()));
 
-        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertNotNull(mediaUploadModel);
         assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
 
@@ -137,7 +138,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
         // Since the MediaUploadModel keys are linked to MediaModels, the corresponding MediaUploadModel should
         // have been deleted as well
-        assertNull(mUploadStore.getMediaUploadModelForMediaModel(testMedia));
+        assertNull(getMediaUploadModelForMediaModel(testMedia));
     }
 
     public void testCancelImageUpload() throws InterruptedException {
@@ -159,7 +160,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         assertEquals(0, mMediaStore.getSiteMediaCount(sSite));
 
         // The delete flag was on, so there should be no associated MediaUploadModel
-        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertNull(mediaUploadModel);
 
         // Now, try canceling with delete=false (canceled image should be marked as failed and kept in the store)
@@ -182,7 +183,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         assertEquals(MediaUploadState.FAILED.toString(), canceledMedia.getUploadState());
 
         // The delete flag was off, so we can expect an associated MediaUploadModel
-        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertNotNull(mediaUploadModel);
         assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
     }
@@ -196,7 +197,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         mUploadStore.registerPostModel(mPost, Collections.<MediaModel>emptyList());
 
         assertEquals(1, mUploadStore.getPendingPosts().size());
-        PostUploadModel postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
+        PostUploadModel postUploadModel = getPostUploadModelForPostModel(mPost);
         assertNotNull(postUploadModel);
         assertEquals(PostUploadModel.PENDING, postUploadModel.getUploadState());
         assertTrue(mUploadStore.isPendingPost(mPost));
@@ -211,7 +212,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
         // Since the post upload completed successfully, the PostUploadModel should have been deleted
         assertEquals(0, mUploadStore.getPendingPosts().size());
-        assertNull(mUploadStore.getPostUploadModelForPostModel(uploadedPost));
+        assertNull(getPostUploadModelForPostModel(uploadedPost));
     }
 
     public void testRegisterAndUploadInvalidPost() throws InterruptedException {
@@ -224,7 +225,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         // Register the post with the UploadStore and verify that it exists
         mUploadStore.registerPostModel(mPost, Collections.<MediaModel>emptyList());
 
-        PostUploadModel postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
+        PostUploadModel postUploadModel = getPostUploadModelForPostModel(mPost);
         assertNotNull(postUploadModel);
         assertEquals(PostUploadModel.PENDING, postUploadModel.getUploadState());
         assertTrue(mUploadStore.isPendingPost(mPost));
@@ -242,7 +243,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         // Since the post upload had an error, the PostUploadModel should still exist and be marked as FAILED
         assertEquals(0, mUploadStore.getPendingPosts().size());
         assertEquals(1, mUploadStore.getFailedPosts().size());
-        postUploadModel = mUploadStore.getPostUploadModelForPostModel(uploadedPost);
+        postUploadModel = getPostUploadModelForPostModel(uploadedPost);
         assertEquals(PostUploadModel.FAILED, postUploadModel.getUploadState());
         assertTrue(mUploadStore.isFailedPost(mPost));
         assertEquals(PostErrorType.UNKNOWN_POST, PostErrorType.fromString(postUploadModel.getErrorType()));
@@ -270,7 +271,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
         // PostUploadModel exists and has correct state and associated media
         assertEquals(1, mUploadStore.getPendingPosts().size());
-        PostUploadModel postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
+        PostUploadModel postUploadModel = getPostUploadModelForPostModel(mPost);
         assertNotNull(postUploadModel);
         assertEquals(PostUploadModel.PENDING, postUploadModel.getUploadState());
         assertTrue(mUploadStore.isPendingPost(mPost));
@@ -279,7 +280,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         assertTrue(associatedMedia.contains(testMedia.getId()));
 
         // MediaUploadModel exists and has correct state
-        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
 
         // UploadStore returns the correct sets of media for the post by type
@@ -291,7 +292,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
         // Media upload completed
         // PostUploadModel still exists and has correct state and associated media
-        postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
+        postUploadModel = getPostUploadModelForPostModel(mPost);
         assertNotNull(postUploadModel);
         assertEquals(PostUploadModel.PENDING, postUploadModel.getUploadState());
         assertTrue(mUploadStore.isPendingPost(mPost));
@@ -300,7 +301,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         assertTrue(associatedMedia.contains(testMedia.getId()));
 
         // MediaUploadModel still exists and has correct state
-        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertEquals(MediaUploadModel.COMPLETED, mediaUploadModel.getUploadState());
 
         // UploadStore returns the correct sets of media for the post by type
@@ -313,14 +314,14 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
         // PostUploadModel still exists and has correct state and associated media
         assertEquals(1, mUploadStore.getPendingPosts().size());
-        postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
+        postUploadModel = getPostUploadModelForPostModel(mPost);
         assertNotNull(postUploadModel);
         assertEquals(PostUploadModel.PENDING, postUploadModel.getUploadState());
         assertTrue(mUploadStore.isPendingPost(mPost));
         assertTrue(postUploadModel.getAssociatedMediaIdSet().isEmpty());
 
         // MediaUploadModel should have been deleted
-        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertNull(mediaUploadModel);
 
         // UploadStore returns the correct sets of media for the post by type
@@ -338,7 +339,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
         // Since the post upload completed successfully, the PostUploadModel should have been deleted
         assertEquals(0, mUploadStore.getPendingPosts().size());
-        assertNull(mUploadStore.getPostUploadModelForPostModel(uploadedPost));
+        assertNull(getPostUploadModelForPostModel(uploadedPost));
     }
 
     @SuppressWarnings("unused")
@@ -501,5 +502,13 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         ClearMediaPayload clearMediaPayload = new ClearMediaPayload(post, media);
         mDispatcher.dispatch(UploadActionBuilder.newClearMediaAction(clearMediaPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private static MediaUploadModel getMediaUploadModelForMediaModel(MediaModel mediaModel) {
+        return UploadSqlUtils.getMediaUploadModelForLocalId(mediaModel.getId());
+    }
+
+    private static PostUploadModel getPostUploadModelForPostModel(PostModel postModel) {
+        return UploadSqlUtils.getPostUploadModelForLocalId(postModel.getId());
     }
 }

@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.PostUploadModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.module.MockedNetworkModule;
+import org.wordpress.android.fluxc.persistence.UploadSqlUtils;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
@@ -79,7 +80,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Confirm that the corresponding MediaUploadModel's state has been updated automatically
-        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertNotNull(mediaUploadModel);
         assertEquals(1F, mUploadStore.getUploadProgressForMedia(testMedia));
         assertEquals(MediaUploadModel.COMPLETED, mediaUploadModel.getUploadState());
@@ -94,7 +95,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         TestUtils.waitFor(50);
 
         // Confirm that the corresponding MediaUploadModel's state has been updated automatically
-        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertNotNull(mediaUploadModel);
         assertEquals(0F, mUploadStore.getUploadProgressForMedia(testMedia));
         assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
@@ -115,7 +116,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         // Wait for the event to be processed by the UploadStore
         TestUtils.waitFor(50);
 
-        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertNotNull(mediaUploadModel);
         assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
 
@@ -126,7 +127,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
 
         // PostUploadModel exists and has correct state and associated media
         assertEquals(1, mUploadStore.getPendingPosts().size());
-        PostUploadModel postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
+        PostUploadModel postUploadModel = getPostUploadModelForPostModel(mPost);
         assertNotNull(postUploadModel);
         assertEquals(PostUploadModel.PENDING, postUploadModel.getUploadState());
         assertTrue(mUploadStore.isPendingPost(mPost));
@@ -135,7 +136,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertTrue(associatedMedia.contains(testMedia.getId()));
 
         // MediaUploadModel exists and has correct state
-        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
 
         // UploadStore returns the correct sets of media for the post by type
@@ -149,7 +150,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         // PostUploadModel still exists and has correct state and associated media
         assertEquals(0, mUploadStore.getPendingPosts().size());
         assertEquals(1, mUploadStore.getCancelledPosts().size());
-        postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
+        postUploadModel = getPostUploadModelForPostModel(mPost);
         assertNotNull(postUploadModel);
         assertEquals(PostUploadModel.CANCELLED, postUploadModel.getUploadState());
         assertTrue(mUploadStore.isCancelledPost(mPost));
@@ -158,7 +159,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertTrue(associatedMedia.contains(testMedia.getId()));
 
         // MediaUploadModel still exists and has correct state
-        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
 
         // UploadStore returns the correct sets of media for the post by type
@@ -189,7 +190,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertEquals(0, mUploadStore.getPendingPosts().size());
         assertEquals(0, mUploadStore.getFailedPosts().size());
         assertEquals(0, mUploadStore.getCancelledPosts().size());
-        assertNull(mUploadStore.getPostUploadModelForPostModel(uploadedPost));
+        assertNull(getPostUploadModelForPostModel(uploadedPost));
         assertFalse(mUploadStore.isPendingPost(mPost));
     }
 
@@ -208,7 +209,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         // Wait for the event to be processed by the UploadStore
         TestUtils.waitFor(50);
 
-        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertNotNull(mediaUploadModel);
         assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
 
@@ -231,7 +232,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertEquals(1, mUploadStore.getCancelledPosts().size());
 
         // The media upload should be unaffected
-        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertNotNull(mediaUploadModel);
         assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
 
@@ -241,7 +242,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         // PostUploadModel still exists and has correct state and associated media
         assertEquals(0, mUploadStore.getPendingPosts().size());
         assertEquals(1, mUploadStore.getCancelledPosts().size());
-        PostUploadModel postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
+        PostUploadModel postUploadModel = getPostUploadModelForPostModel(mPost);
         assertNotNull(postUploadModel);
         assertEquals(PostUploadModel.CANCELLED, postUploadModel.getUploadState());
         assertTrue(mUploadStore.isCancelledPost(mPost));
@@ -250,7 +251,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertTrue(associatedMedia.contains(testMedia.getId()));
 
         // MediaUploadModel still exists and has correct state
-        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertEquals(MediaUploadModel.COMPLETED, mediaUploadModel.getUploadState());
 
         // UploadStore returns the correct sets of media for the post by type
@@ -280,7 +281,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         mUploadStore.registerPostModel(mPost, mediaModelList);
 
         // MediaUploadModel exists and has correct state
-        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -290,7 +291,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertTrue(mUploadStore.isCancelledPost(mPost));
 
         // MediaUploadModel still exists and has correct state
-        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
 
         // Clean up failed media manually
@@ -310,7 +311,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertEquals(0, mUploadStore.getFailedPosts().size());
         assertEquals(0, mUploadStore.getPendingPosts().size());
 
-        assertNull(mUploadStore.getPostUploadModelForPostModel(mPost));
+        assertNull(getPostUploadModelForPostModel(mPost));
     }
 
     public void testUpdateMediaModelState() throws InterruptedException {
@@ -334,7 +335,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         mUploadStore.registerPostModel(mPost, mediaModelList);
 
         // MediaUploadModel exists and has correct state
-        MediaUploadModel mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
 
         // Manually set the MediaModel to FAILED
@@ -350,13 +351,13 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         TestUtils.waitFor(50);
 
         // The MediaUploadModel should have been set to FAILED automatically via the UPDATE_MEDIA action
-        mediaUploadModel = mUploadStore.getMediaUploadModelForMediaModel(testMedia);
+        mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
         assertNotNull(mediaUploadModel.getMediaError());
         assertEquals(0F, mUploadStore.getUploadProgressForMedia(testMedia));
 
         // The PostUploadModel should have been set to CANCELLED automatically via the UPDATE_MEDIA action
-        PostUploadModel postUploadModel = mUploadStore.getPostUploadModelForPostModel(mPost);
+        PostUploadModel postUploadModel = getPostUploadModelForPostModel(mPost);
         assertEquals(PostUploadModel.CANCELLED, postUploadModel.getUploadState());
 
         // Reset expected event back to the UPLOADED_MEDIA we were expecting at the start,
@@ -490,5 +491,13 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         mNextEvent = TestEvents.CLEARED_MEDIA;
         mDispatcher.dispatch(UploadActionBuilder.newClearMediaAction(clearMediaPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private static MediaUploadModel getMediaUploadModelForMediaModel(MediaModel mediaModel) {
+        return UploadSqlUtils.getMediaUploadModelForLocalId(mediaModel.getId());
+    }
+
+    private static PostUploadModel getPostUploadModelForPostModel(PostModel postModel) {
+        return UploadSqlUtils.getPostUploadModelForLocalId(postModel.getId());
     }
 }
