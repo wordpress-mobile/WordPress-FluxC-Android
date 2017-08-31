@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/fetch_wpcom_themes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch WP.com themes" />
+
+    <Button
+        android:id="@+id/fetch_installed_themes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch installed themes" />
+
+    <Button
+        android:id="@+id/fetch_current_theme_jp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch current theme Jetpack" />
+
+    <Button
+        android:id="@+id/fetch_current_theme_wpcom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch current theme WP.com" />
+
+</LinearLayout>
