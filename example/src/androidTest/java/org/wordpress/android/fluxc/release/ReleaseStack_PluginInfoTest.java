@@ -33,7 +33,7 @@ public class ReleaseStack_PluginInfoTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.NONE;
     }
 
-    public void testFetchPlugins() throws InterruptedException {
+    public void testFetchPluginInfo() throws InterruptedException {
         mNextEvent = TestEvents.PLUGIN_INFO_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
