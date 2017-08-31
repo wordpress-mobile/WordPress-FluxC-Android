@@ -153,8 +153,8 @@ public class ThemeFragment extends Fragment {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onCurrentThemesFetched(ThemeStore.OnCurrentThemeFetched event) {
-        prependToLog("onCurrentThemesFetched: ");
+    public void onCurrentThemeFetched(ThemeStore.OnCurrentThemeFetched event) {
+        prependToLog("onCurrentThemeFetched: ");
         if (event.isError()) {
             prependToLog("error: " + event.error.message);
         } else {
