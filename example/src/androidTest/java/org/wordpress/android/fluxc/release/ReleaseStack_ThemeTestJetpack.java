@@ -21,8 +21,8 @@ import javax.inject.Inject;
 public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     enum TestEvents {
         NONE,
-        FETCH_INSTALLED_THEMES,
-        FETCH_CURRENT_THEME,
+        FETCHED_INSTALLED_THEMES,
+        FETCHED_CURRENT_THEME,
         SITE_CHANGED,
         SITE_REMOVED
     }
@@ -44,15 +44,20 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     public void testFetchInstalledThemes() throws InterruptedException {
+        // sign into a WP.com account with a Jetpack site
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
 
+        // verify Jetpack site is available
         SiteModel jetpackSite = getJetpackSite();
         assertNotNull(jetpackSite);
 
-        mNextEvent = TestEvents.FETCH_INSTALLED_THEMES;
+        // fetch installed themes
+        mNextEvent = TestEvents.FETCHED_INSTALLED_THEMES;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(ThemeActionBuilder.newFetchInstalledThemesAction(jetpackSite));
+
+        // verify response received and themes are available for the site
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertTrue(mThemeStore.getThemesForSite(jetpackSite).size() > 0);
 
@@ -60,15 +65,19 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     public void testFetchCurrentTheme() throws InterruptedException {
+        // sign into a WP.com account with a Jetpack site
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
 
+        // verify Jetpack site is available
         SiteModel jetpackSite = getJetpackSite();
         assertNotNull(jetpackSite);
 
-        mNextEvent = TestEvents.FETCH_CURRENT_THEME;
+        // fetch current theme
+        mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(jetpackSite));
+
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         signOutWPCom();
@@ -87,7 +96,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
 
-        if (mNextEvent == TestEvents.FETCH_INSTALLED_THEMES) {
+        if (mNextEvent == TestEvents.FETCHED_INSTALLED_THEMES) {
             mCountDownLatch.countDown();
         }
     }
@@ -99,7 +108,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
 
-        if (mNextEvent == TestEvents.FETCH_CURRENT_THEME) {
+        if (mNextEvent == TestEvents.FETCHED_CURRENT_THEME) {
             assertNotNull(event.theme);
             mCountDownLatch.countDown();
         }

@@ -3,6 +3,8 @@ package org.wordpress.android.fluxc.release;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.ThemeActionBuilder;
+import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.ThemeStore;
 
 import java.util.concurrent.CountDownLatch;
@@ -16,6 +18,8 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
         FETCHED_THEMES,
     }
 
+    @Inject AccountStore mAccountStore;
+    @Inject SiteStore mSiteStore;
     @Inject ThemeStore mThemeStore;
     private TestEvents mNextEvent;
 
@@ -29,7 +33,8 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
         mNextEvent = TestEvents.NONE;
     }
 
-    public void testFetchWpComThemes() throws InterruptedException {
+    public void testFetchWPComThemes() throws InterruptedException {
+        // no need to sign into account, this is a test for an endpoint that does not require authentication
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.FETCHED_THEMES;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
