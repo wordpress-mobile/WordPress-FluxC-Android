@@ -212,6 +212,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
         // Since the post upload completed successfully, the PostUploadModel should have been deleted
         assertEquals(0, mUploadStore.getPendingPosts().size());
+        assertEquals(0, mUploadStore.getAllRegisteredPosts().size());
         assertNull(getPostUploadModelForPostModel(uploadedPost));
     }
 
@@ -243,6 +244,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         // Since the post upload had an error, the PostUploadModel should still exist and be marked as FAILED
         assertEquals(0, mUploadStore.getPendingPosts().size());
         assertEquals(1, mUploadStore.getFailedPosts().size());
+        assertEquals(1, mUploadStore.getAllRegisteredPosts().size());
         postUploadModel = getPostUploadModelForPostModel(uploadedPost);
         assertEquals(PostUploadModel.FAILED, postUploadModel.getUploadState());
         assertTrue(mUploadStore.isFailedPost(mPost));
@@ -339,6 +341,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
         // Since the post upload completed successfully, the PostUploadModel should have been deleted
         assertEquals(0, mUploadStore.getPendingPosts().size());
+        assertEquals(0, mUploadStore.getAllRegisteredPosts().size());
         assertNull(getPostUploadModelForPostModel(uploadedPost));
     }
 
