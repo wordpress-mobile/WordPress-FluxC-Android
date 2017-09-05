@@ -28,6 +28,9 @@ import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest;
 import org.wordpress.android.fluxc.network.xmlrpc.site.SiteXMLRPCClient;
 import org.wordpress.android.fluxc.persistence.WellSqlConfig;
+import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
+import org.wordpress.android.fluxc.store.SiteStore.SiteRequestPayload;
+import org.wordpress.android.fluxc.store.SiteStore.SitesResponsePayload;
 import org.wordpress.android.fluxc.utils.ErrorUtils.OnUnexpectedError;
 
 import java.lang.reflect.Method;
@@ -138,7 +141,7 @@ public class SiteXMLRPCClientTest {
                           + "  </value></member></struct></value></member>\n"
                           + "  </struct>\n"
                           + "</value></param></params></methodResponse>";
-        mSiteXMLRPCClient.fetchSite(site);
+        mSiteXMLRPCClient.fetchSite(new SiteRequestPayload(site));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -175,7 +178,8 @@ public class SiteXMLRPCClientTest {
                 Action action = invocation.getArgumentAt(0, Action.class);
                 assertEquals(SiteAction.UPDATE_SITE, action.getType());
 
-                SiteModel result = (SiteModel) action.getPayload();
+                SiteRequestPayload siteRequestPayload = (SiteRequestPayload) action.getPayload();
+                SiteModel result = siteRequestPayload.site;
                 assertTrue(result.isError());
                 assertEquals(GenericErrorType.INVALID_RESPONSE, result.error.type);
 
@@ -185,7 +189,7 @@ public class SiteXMLRPCClientTest {
         }).when(mDispatcher).dispatch(any(Action.class));
 
         mCountDownLatch = new CountDownLatch(3);
-        mSiteXMLRPCClient.fetchSite(site);
+        mSiteXMLRPCClient.fetchSite(new SiteRequestPayload(site));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -207,7 +211,7 @@ public class SiteXMLRPCClientTest {
         final String xmlrpcUrl = "http://docbrown.url/xmlrpc.php";
 
         mCountDownLatch = new CountDownLatch(1);
-        mSiteXMLRPCClient.fetchSites(xmlrpcUrl, "thedoc", "gr3@tsc0tt");
+        mSiteXMLRPCClient.fetchSites(new RefreshSitesXMLRPCPayload(xmlrpcUrl, "thedoc", "gr3@tsc0tt"));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -240,7 +244,8 @@ public class SiteXMLRPCClientTest {
                 Action action = invocation.getArgumentAt(0, Action.class);
                 assertEquals(SiteAction.FETCHED_SITES_XML_RPC, action.getType());
 
-                SitesModel result = (SitesModel) action.getPayload();
+                SitesResponsePayload sitesResponsePayload = (SitesResponsePayload) action.getPayload();
+                SitesModel result = sitesResponsePayload.sites;
                 assertTrue(result.isError());
                 assertEquals(GenericErrorType.INVALID_RESPONSE, result.error.type);
 
@@ -250,7 +255,7 @@ public class SiteXMLRPCClientTest {
         }).when(mDispatcher).dispatch(any(Action.class));
 
         mCountDownLatch = new CountDownLatch(3);
-        mSiteXMLRPCClient.fetchSites(xmlrpcUrl, "thedoc", "gr3@tsc0tt");
+        mSiteXMLRPCClient.fetchSites(new RefreshSitesXMLRPCPayload(xmlrpcUrl, "thedoc", "gr3@tsc0tt"));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }

@@ -59,7 +59,11 @@ public class SiteStore extends Store {
     }
 
     public static class RefreshSitesXMLRPCPayload extends RequestPayload {
-        public RefreshSitesXMLRPCPayload() {}
+        public RefreshSitesXMLRPCPayload(String username, String password, String url) {
+            this.username = username;
+            this.password = password;
+            this.url = url;
+        }
         public String username;
         public String password;
         public String url;
@@ -839,10 +843,10 @@ public class SiteStore extends Store {
                 removeWPComAndJetpackSites((RemoveWpcomAndJetpackSitesPayload) action.getPayload());
                 break;
             case SHOW_SITES:
-                toggleSitesVisibility((SitesModel) action.getPayload(), true);
+                toggleSitesVisibility((SitesRequestPayload) action.getPayload(), true);
                 break;
             case HIDE_SITES:
-                toggleSitesVisibility((SitesModel) action.getPayload(), false);
+                toggleSitesVisibility((SitesRequestPayload) action.getPayload(), false);
                 break;
             case CREATE_NEW_SITE:
                 createNewSite((NewSitePayload) action.getPayload());
@@ -1016,9 +1020,9 @@ public class SiteStore extends Store {
         emitChange(new OnSiteRemoved(payload, rowsAffected));
     }
 
-    private int toggleSitesVisibility(SitesModel sites, boolean visible) {
+    private int toggleSitesVisibility(SitesRequestPayload payload, boolean visible) {
         int rowsAffected = 0;
-        for (SiteModel site : sites.getSites()) {
+        for (SiteModel site : payload.sites.getSites()) {
             rowsAffected += SiteSqlUtils.setSiteVisibility(site, visible);
         }
         return rowsAffected;
