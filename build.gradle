@@ -36,4 +36,10 @@ subprojects {
         classpath = configurations.ktlint
         args "src/**/*.kt"
     }
+
+    task ktlintFormat(type: JavaExec) {
+        main = "com.github.shyiko.ktlint.Main"
+        classpath = configurations.ktlint
+        args "-F", "src/**/*.kt"
+    }
 }
