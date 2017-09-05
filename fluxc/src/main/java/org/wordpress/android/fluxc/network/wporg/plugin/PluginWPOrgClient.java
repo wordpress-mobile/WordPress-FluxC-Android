@@ -7,6 +7,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response.Listener;
 
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.Payload;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.WPORGAPI;
 import org.wordpress.android.fluxc.model.PluginInfoModel;
@@ -28,6 +29,9 @@ import javax.inject.Singleton;
 @Singleton
 public class PluginWPOrgClient extends BaseWPOrgAPIClient {
     private final Dispatcher mDispatcher;
+
+    public static class BrowsePluginPayload extends Payload {
+    }
 
     @Inject
     public PluginWPOrgClient(Dispatcher dispatcher, RequestQueue requestQueue, UserAgent userAgent) {
