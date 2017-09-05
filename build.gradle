@@ -10,6 +10,7 @@ allprojects {
     task checkstyle(type: Checkstyle) {
         source 'src'
         include '**/*.java'
+        include '**/*.kt'
         exclude '**/gen/**'
 
         classpath = files()
