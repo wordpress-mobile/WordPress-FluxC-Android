@@ -100,10 +100,9 @@ public class AccountStoreTest {
     @Test
     public void testPayloadIsError() throws Exception {
         // AuthenticateErrorPayload masks the error field of its superclass (Payload)
-        AuthenticateErrorPayload payload1 = new AuthenticateErrorPayload(AuthenticationErrorType.GENERIC_ERROR);
+        AuthenticateErrorPayload payload1 = new AuthenticateErrorPayload(null,
+                new AccountStore.AuthenticationError(AuthenticationErrorType.GENERIC_ERROR, ""));
         Assert.assertTrue(payload1.isError());
-        payload1.error = null;
-        Assert.assertFalse(payload1.isError());
 
         AuthenticatePayload payload2 = new AuthenticatePayload("", "");
         Assert.assertFalse(payload2.isError());

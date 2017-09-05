@@ -23,9 +23,13 @@ public abstract class Store {
             this.mRequestPayload = requestPayload;
         }
 
-        public long getActionId() {
-            return mRequestPayload.getRequestId();
+        public RequestPayload getRequestPayload() {
+            return mRequestPayload;
         }
+
+//        public long getActionId() {
+//            return mRequestPayload.getRequestId();
+//        }
 
         public boolean isError() {
             return error != null;

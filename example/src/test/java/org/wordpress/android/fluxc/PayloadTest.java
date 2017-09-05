@@ -12,11 +12,11 @@ import static org.junit.Assert.assertNull;
 
 @RunWith(RobolectricTestRunner.class)
 public class PayloadTest {
-    private class CloneablePayload extends Payload implements Cloneable {
+    private class CloneableRequestPayload extends RequestPayload implements Cloneable {
         @Override
-        public CloneablePayload clone() {
+        public CloneableRequestPayload clone() {
             try {
-                return (CloneablePayload) super.clone();
+                return (CloneableRequestPayload) super.clone();
             } catch (CloneNotSupportedException e) {
                 throw new AssertionError(); // Can't happen
             }
@@ -24,22 +24,58 @@ public class PayloadTest {
     }
 
     @Test
-    public void testClone() {
+    public void testRequestClone() {
         // Cloning default (no error) payload
-        CloneablePayload errorlessPayload = new CloneablePayload();
+        CloneableRequestPayload errorlessPayload = new CloneableRequestPayload();
 
-        CloneablePayload errorlessClone = errorlessPayload.clone();
+        CloneableRequestPayload errorlessClone = errorlessPayload.clone();
 
         assertFalse(errorlessPayload == errorlessClone);
         assertNull(errorlessPayload.error);
         assertNull(errorlessClone.error);
 
         // Cloning payload with error field
-        CloneablePayload errorPayload = new CloneablePayload();
+        CloneableRequestPayload errorPayload = new CloneableRequestPayload();
 
         errorPayload.error = new BaseRequest.BaseNetworkError(BaseRequest.GenericErrorType.SERVER_ERROR);
 
-        CloneablePayload errorClone = errorPayload.clone();
+        CloneableRequestPayload errorClone = errorPayload.clone();
+
+        assertFalse(errorPayload == errorClone);
+
+        // The error field should be cloned
+        assertNotEquals(errorClone.error, errorPayload.error);
+        assertEquals(errorClone.error.type, errorPayload.error.type);
+    }
+
+    private class CloneableResponsePayload extends RequestPayload implements Cloneable {
+        @Override
+        public CloneableResponsePayload clone() {
+            try {
+                return (CloneableResponsePayload) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(); // Can't happen
+            }
+        }
+    }
+
+    @Test
+    public void testResponseClone() {
+        // Cloning default (no error) payload
+        CloneableResponsePayload errorlessPayload = new CloneableResponsePayload();
+
+        CloneableResponsePayload errorlessClone = errorlessPayload.clone();
+
+        assertFalse(errorlessPayload == errorlessClone);
+        assertNull(errorlessPayload.error);
+        assertNull(errorlessClone.error);
+
+        // Cloning payload with error field
+        CloneableResponsePayload errorPayload = new CloneableResponsePayload();
+
+        errorPayload.error = new BaseRequest.BaseNetworkError(BaseRequest.GenericErrorType.SERVER_ERROR);
+
+        CloneableResponsePayload errorClone = errorPayload.clone();
 
         assertFalse(errorPayload == errorClone);
 

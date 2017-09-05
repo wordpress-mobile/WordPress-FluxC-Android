@@ -236,7 +236,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CANCELED_MEDIA;
-        MediaPayload payload = new MediaPayload(sSite, testMedia);
+        MediaRequestPayload payload = new MediaRequestPayload(sSite, testMedia);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
 
         // Wait a bit and issue the cancel command
@@ -253,7 +253,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CANCELED_MEDIA;
-        payload = new MediaPayload(sSite, testMedia);
+        payload = new MediaRequestPayload(sSite, testMedia);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
 
         // Wait a bit and issue the cancel command
@@ -532,7 +532,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private void pushMedia(MediaModel media) throws InterruptedException {
-        MediaPayload payload = new MediaPayload(sSite, media);
+        MediaRequestPayload payload = new MediaRequestPayload(sSite, media);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -555,14 +555,14 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private void fetchMedia(MediaModel media) throws InterruptedException {
-        MediaPayload fetchPayload = new MediaPayload(sSite, media, null);
+        MediaRequestPayload fetchPayload = new MediaRequestPayload(sSite, media);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void uploadMedia(MediaModel media) throws InterruptedException {
-        MediaPayload payload = new MediaPayload(sSite, media);
+        MediaRequestPayload payload = new MediaRequestPayload(sSite, media);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -576,7 +576,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             throws InterruptedException {
         mCountDownLatch = new CountDownLatch(mediaList.size());
         for (MediaModel media : mediaList) {
-            MediaPayload payload = new MediaPayload(sSite, media);
+            MediaRequestPayload payload = new MediaRequestPayload(sSite, media);
             mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         }
 
@@ -604,7 +604,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     private void removeMedia(MediaModel media) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newRemoveMediaAction(new MediaRequestPayload(media)));
+        mDispatcher.dispatch(MediaActionBuilder.newRemoveMediaAction(new MediaRequestPayload(null, media)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 

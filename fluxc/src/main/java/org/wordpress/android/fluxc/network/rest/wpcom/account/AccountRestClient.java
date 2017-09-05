@@ -78,6 +78,7 @@ public class AccountRestClient extends BaseWPComRestClient {
     }
 
     public static class IsAvailableResponsePayload extends ResponsePayload {
+        public IsAvailable type;
         public String value;
         public boolean isAvailable;
         public List<String> suggestions;
@@ -291,6 +292,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                     public void onResponse(IsAvailableResponse response) {
                         IsAvailableResponsePayload payload = new IsAvailableResponsePayload(requestPayload);
                         payload.value = value;
+                        payload.type = type;
 
                         if (response == null) {
                             // The 'is-available' endpoints return either true or a JSON object representing an error
@@ -323,6 +325,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                         // 200 status code, which will appear under Listener.onResponse instead
                         IsAvailableResponsePayload payload = new IsAvailableResponsePayload(requestPayload);
                         payload.value = value;
+                        payload.type = type;
 
                         payload.error = new IsAvailableError(((WPComGsonNetworkError) error).apiError, error.message);
                         mDispatcher.dispatch(AccountActionBuilder.newCheckedIsAvailableAction(payload));

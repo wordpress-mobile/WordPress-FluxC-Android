@@ -59,6 +59,8 @@ public class SiteStore extends Store {
     }
 
     public static class RefreshSitesXMLRPCPayload extends RequestPayload {
+        public RefreshSitesXMLRPCPayload() {}
+
         public RefreshSitesXMLRPCPayload(String username, String password, String url) {
             this.username = username;
             this.password = password;

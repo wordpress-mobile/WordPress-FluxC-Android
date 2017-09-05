@@ -183,12 +183,15 @@ public class AccountStore extends Store {
     }
 
     public static class OnAvailabilityChecked extends OnChanged<IsAvailableError> {
+        public IsAvailable type;
         public String value;
         public boolean isAvailable;
         public List<String> suggestions;
 
-        public OnAvailabilityChecked(RequestPayload requestPayload, String value, boolean isAvailable) {
+        public OnAvailabilityChecked(RequestPayload requestPayload, IsAvailable type, String value,
+                                     boolean isAvailable) {
             super(requestPayload);
+            this.type = type;
             this.value = value;
             this.isAvailable = isAvailable;
         }
@@ -569,8 +572,8 @@ public class AccountStore extends Store {
     }
 
     private void handleCheckedIsAvailable(IsAvailableResponsePayload payload) {
-        OnAvailabilityChecked event = new OnAvailabilityChecked(payload.getRequestPayload(), payload.value,
-                payload.isAvailable);
+        OnAvailabilityChecked event = new OnAvailabilityChecked(payload.getRequestPayload(), payload.type,
+                payload.value, payload.isAvailable);
         event.suggestions = payload.suggestions;
 
         if (payload.isError()) {

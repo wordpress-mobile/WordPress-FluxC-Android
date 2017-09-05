@@ -216,10 +216,7 @@ public class MainFragment extends Fragment {
         if (TextUtils.isEmpty(url)) {
             wpcomFetchSites(username, password);
         } else {
-            mSelfhostedPayload = new RefreshSitesXMLRPCPayload();
-            mSelfhostedPayload.url = url;
-            mSelfhostedPayload.username = username;
-            mSelfhostedPayload.password = password;
+            mSelfhostedPayload = new RefreshSitesXMLRPCPayload(username, password, url);
 
             mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(url)));
         }
@@ -240,10 +237,7 @@ public class MainFragment extends Fragment {
     }
 
     private void selfHostedFetchSites(String username, String password, String xmlrpcEndpoint) {
-        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
-        payload.username = username;
-        payload.password = password;
-        payload.url = xmlrpcEndpoint;
+        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload(username, password, xmlrpcEndpoint);
         mSelfhostedPayload = payload;
         // Self Hosted don't have any "Authentication" request, try to list sites with user/password
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
