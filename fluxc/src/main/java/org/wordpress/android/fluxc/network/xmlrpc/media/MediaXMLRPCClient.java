@@ -198,7 +198,7 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
                                 // `parent, title, caption, description, videopress_shortcode, thumbnail,
                                 // date_created_gmt, link, width, height` fields, so we need to make a fetch for them
                                 // This only applies to WordPress sites running versions older than WordPress 4.4
-                                fetchMedia(site, media, true);
+                                fetchMedia(requestPayload, site, media, true);
                             } else {
                                 MediaModel responseMedia = getMediaFromXmlrpcResponse(responseMap);
                                 // Retain local IDs
