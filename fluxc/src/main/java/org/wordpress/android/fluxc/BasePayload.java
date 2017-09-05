@@ -5,7 +5,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 
 import java.lang.reflect.Field;
 
-public abstract class Payload {
+public abstract class BasePayload {
     public BaseNetworkError error;
 
     public boolean isError() {
@@ -18,12 +18,12 @@ public abstract class Payload {
     }
 
     @Override
-    protected Payload clone() throws CloneNotSupportedException {
+    protected BasePayload clone() throws CloneNotSupportedException {
         if (!(this instanceof Cloneable)) {
             throw new CloneNotSupportedException("Class " + getClass().getName() + " doesn't implement Cloneable");
         }
 
-        Payload clonedPayload = (Payload) super.clone();
+        BasePayload clonedPayload = (BasePayload) super.clone();
 
         // Clone non-primitive, mutable fields
         if (this.error != null) {

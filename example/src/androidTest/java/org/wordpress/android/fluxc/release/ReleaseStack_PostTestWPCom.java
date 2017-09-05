@@ -14,7 +14,10 @@ import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.PostErrorType;
-import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
+import org.wordpress.android.fluxc.store.PostStore.RemotePostRequest;
+import org.wordpress.android.fluxc.store.PostStore.RemoveAllPostsPayload;
+import org.wordpress.android.fluxc.store.PostStore.RemovePostPayload;
+import org.wordpress.android.fluxc.store.PostStore.UpdatePostPayload;
 import org.wordpress.android.fluxc.utils.WellSqlUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -76,7 +79,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         mNextEvent = TestEvents.POST_REMOVED;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(PostActionBuilder.newRemovePostAction(mPost));
+        mDispatcher.dispatch(PostActionBuilder.newRemovePostAction(new RemovePostPayload(mPost)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         assertEquals(0, PostSqlUtils.getPostsForSite(sSite, false).size());
@@ -594,7 +597,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.POST_DELETED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(uploadedPost, sSite)));
+        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostRequest(uploadedPost, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -614,7 +617,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ERROR_UNKNOWN_POST;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, sSite)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostRequest(post, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -640,7 +643,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
 
         // Upload edited post
-        RemotePostPayload pushPayload = new RemotePostPayload(uploadedPost, sSite);
+        RemotePostRequest pushPayload = new RemotePostRequest(uploadedPost, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -667,7 +670,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ERROR_UNKNOWN_POST;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(invalidPost, sSite)));
+        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostRequest(invalidPost, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -685,7 +688,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, site)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostRequest(post, site)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -797,7 +800,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.POST_UPLOADED;
         mCountDownLatch = new CountDownLatch(1);
 
-        RemotePostPayload pushPayload = new RemotePostPayload(post, sSite);
+        RemotePostRequest pushPayload = new RemotePostRequest(post, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -807,7 +810,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.POST_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, sSite)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostRequest(post, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -816,7 +819,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.POST_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newUpdatePostAction(post));
+        mDispatcher.dispatch(PostActionBuilder.newUpdatePostAction(new UpdatePostPayload(post)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -825,7 +828,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ALL_POST_REMOVED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newRemoveAllPostsAction());
+        mDispatcher.dispatch(PostActionBuilder.newRemoveAllPostsAction(new RemoveAllPostsPayload()));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

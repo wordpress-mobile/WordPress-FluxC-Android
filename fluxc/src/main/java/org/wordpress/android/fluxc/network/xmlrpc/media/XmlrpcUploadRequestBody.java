@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.util.Base64;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.wordpress.android.fluxc.RequestPayload;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.BaseUploadRequestBody;
@@ -42,8 +43,9 @@ public class XmlrpcUploadRequestBody extends BaseUploadRequestBody {
     private long mContentSize = -1;
     private long mMediaBytesWritten = 0;
 
-    public XmlrpcUploadRequestBody(MediaModel media, ProgressListener listener, SiteModel site) {
-        super(media, listener);
+    public XmlrpcUploadRequestBody(RequestPayload requestPayload, MediaModel media, ProgressListener listener,
+                                   SiteModel site) {
+        super(requestPayload, media, listener);
 
         // TODO: we should use the XMLRPCSerializer instead of doing this
         mPrependString = String.format(Locale.ENGLISH, PREPEND_XML_FORMAT,

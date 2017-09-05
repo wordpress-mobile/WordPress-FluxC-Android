@@ -22,15 +22,22 @@ import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
+import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoverPayload;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
+import org.wordpress.android.fluxc.store.AccountStore.FetchAccountPayload;
+import org.wordpress.android.fluxc.store.AccountStore.FetchSettingsPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse;
+import org.wordpress.android.fluxc.store.AccountStore.SignOutPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.FetchAllSitesPayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
+import org.wordpress.android.fluxc.store.SiteStore.RemoveWpcomAndJetpackSitesPayload;
+import org.wordpress.android.fluxc.store.SiteStore.SiteRequestPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 import org.wordpress.android.util.ToastUtils;
@@ -214,16 +221,16 @@ public class MainFragment extends Fragment {
             mSelfhostedPayload.username = username;
             mSelfhostedPayload.password = password;
 
-            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(url));
+            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(url)));
         }
     }
 
     private void signOut() {
-        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
-        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
+        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction(new SignOutPayload()));
+        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction(new RemoveWpcomAndJetpackSitesPayload()));
         // Remove all remaining sites
         for (SiteModel site : mSiteStore.getSites()) {
-            mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(site));
+            mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(new SiteRequestPayload(site)));
         }
     }
 
@@ -257,7 +264,7 @@ public class MainFragment extends Fragment {
         } else {
             if (!mSiteStore.hasSite() && event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
                 AppLog.d(T.API, "Account data fetched - fetching sites");
-                mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
+                mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchAllSitesPayload()));
             }
         }
     }
@@ -306,8 +313,8 @@ public class MainFragment extends Fragment {
         } else {
             if (mAccountStore.hasAccessToken()) {
                 AppLog.d(T.API, "Signed in to WordPress.com successfully, fetching account");
-                mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
-                mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
+                mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
+                mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction(new FetchSettingsPayload()));
             }
         }
     }

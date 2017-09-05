@@ -5,7 +5,8 @@ import android.support.annotation.NonNull;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
-import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.RequestPayload;
+import org.wordpress.android.fluxc.ResponsePayload;
 import org.wordpress.android.fluxc.action.TaxonomyAction;
 import org.wordpress.android.fluxc.annotations.action.Action;
 import org.wordpress.android.fluxc.annotations.action.IAction;
@@ -27,7 +28,15 @@ public class TaxonomyStore extends Store {
     public static final String DEFAULT_TAXONOMY_CATEGORY = "category";
     public static final String DEFAULT_TAXONOMY_TAG = "post_tag";
 
-    public static class FetchTermsPayload extends Payload {
+    public static class FetchCategoriesPayload extends RequestPayload {
+        public SiteModel site;
+
+        public FetchCategoriesPayload(SiteModel site) {
+            this.site = site;
+        }
+    }
+
+    public static class FetchTermsPayload extends RequestPayload {
         public SiteModel site;
         public TaxonomyModel taxonomy;
 
@@ -37,40 +46,59 @@ public class TaxonomyStore extends Store {
         }
     }
 
-    public static class FetchTermsResponsePayload extends Payload {
+    public static class FetchTermsResponsePayload extends ResponsePayload {
         public TaxonomyError error;
         public TermsModel terms;
         public SiteModel site;
         public String taxonomy;
 
-        public FetchTermsResponsePayload(TermsModel terms, SiteModel site, String taxonomy) {
+        public FetchTermsResponsePayload(RequestPayload requestPayload, TermsModel terms, SiteModel site,
+                                         String taxonomy) {
+            super(requestPayload);
             this.terms = terms;
             this.site = site;
             this.taxonomy = taxonomy;
         }
 
-        public FetchTermsResponsePayload(TaxonomyError error, String taxonomy) {
+        public FetchTermsResponsePayload(RequestPayload requestPayload, TaxonomyError error, String taxonomy) {
+            super(requestPayload);
             this.error = error;
             this.taxonomy = taxonomy;
         }
     }
 
-    public static class RemoteTermPayload extends Payload {
-        public TaxonomyError error;
+    public static class RemoteTermRequestPayload extends RequestPayload {
         public TermModel term;
         public SiteModel site;
 
-        public RemoteTermPayload(TermModel term, SiteModel site) {
+        public RemoteTermRequestPayload(TermModel term, SiteModel site) {
             this.term = term;
             this.site = site;
         }
     }
 
-    public static class FetchTermResponsePayload extends RemoteTermPayload {
+    public static class RemoteTermResponsePayload extends ResponsePayload {
+        public final TaxonomyError error;
+        public TermModel term;
+        public SiteModel site;
+
+        public RemoteTermResponsePayload(RequestPayload requestPayload, TermModel term, SiteModel site,
+                                         TaxonomyError error) {
+            super(requestPayload);
+            this.error = error;
+            this.term = term;
+            this.site = site;
+        }
+    }
+
+    public static class RemoveAllTermsPayload extends RequestPayload {}
+
+    public static class FetchTermResponsePayload extends RemoteTermResponsePayload {
         public TaxonomyAction origin = TaxonomyAction.FETCH_TERM; // Used to track fetching newly uploaded XML-RPC terms
 
-        public FetchTermResponsePayload(TermModel term, SiteModel site) {
-            super(term, site);
+        public FetchTermResponsePayload(RequestPayload requestPayload, TermModel term, SiteModel site,
+                                        TaxonomyError error) {
+            super(requestPayload, term, site, error);
         }
     }
 
@@ -80,12 +108,14 @@ public class TaxonomyStore extends Store {
         public String taxonomyName;
         public TaxonomyAction causeOfChange;
 
-        public OnTaxonomyChanged(int rowsAffected, String taxonomyName) {
+        public OnTaxonomyChanged(RequestPayload requestPayload, int rowsAffected, String taxonomyName) {
+            super(requestPayload);
             this.rowsAffected = rowsAffected;
             this.taxonomyName = taxonomyName;
         }
 
-        public OnTaxonomyChanged(int rowsAffected) {
+        public OnTaxonomyChanged(RequestPayload requestPayload, int rowsAffected) {
+            super(requestPayload);
             this.rowsAffected = rowsAffected;
         }
     }
@@ -93,7 +123,8 @@ public class TaxonomyStore extends Store {
     public static class OnTermUploaded extends OnChanged<TaxonomyError> {
         public TermModel term;
 
-        public OnTermUploaded(TermModel term) {
+        public OnTermUploaded(RequestPayload requestPayload, TermModel term) {
+            super(requestPayload);
             this.term = term;
         }
     }
@@ -266,10 +297,12 @@ public class TaxonomyStore extends Store {
 
         switch ((TaxonomyAction) actionType) {
             case FETCH_CATEGORIES:
-                fetchTerms(((SiteModel) action.getPayload()), DEFAULT_TAXONOMY_CATEGORY);
+                fetchTerms((FetchCategoriesPayload) action.getPayload(),
+                        ((FetchCategoriesPayload) action.getPayload()).site, DEFAULT_TAXONOMY_CATEGORY);
                 break;
             case FETCH_TAGS:
-                fetchTerms(((SiteModel) action.getPayload()), DEFAULT_TAXONOMY_TAG);
+                fetchTerms((FetchCategoriesPayload) action.getPayload(),
+                        ((FetchCategoriesPayload) action.getPayload()).site, DEFAULT_TAXONOMY_TAG);
                 break;
             case FETCH_TERMS:
                 fetchTerms((FetchTermsPayload) action.getPayload());
@@ -278,51 +311,51 @@ public class TaxonomyStore extends Store {
                 handleFetchTermsCompleted((FetchTermsResponsePayload) action.getPayload());
                 break;
             case FETCH_TERM:
-                fetchTerm((RemoteTermPayload) action.getPayload());
+                fetchTerm((RemoteTermRequestPayload) action.getPayload());
                 break;
             case FETCHED_TERM:
                 handleFetchSingleTermCompleted((FetchTermResponsePayload) action.getPayload());
                 break;
             case PUSH_TERM:
-                pushTerm((RemoteTermPayload) action.getPayload());
+                pushTerm((RemoteTermRequestPayload) action.getPayload());
                 break;
             case PUSHED_TERM:
-                handlePushTermCompleted((RemoteTermPayload) action.getPayload());
+                handlePushTermCompleted((RemoteTermResponsePayload) action.getPayload());
                 break;
             case REMOVE_ALL_TERMS:
-                removeAllTerms();
+                removeAllTerms((RemoveAllTermsPayload) action.getPayload());
                 break;
         }
     }
 
-    private void fetchTerm(RemoteTermPayload payload) {
+    private void fetchTerm(RemoteTermRequestPayload payload) {
         if (payload.site.isUsingWpComRestApi()) {
-            mTaxonomyRestClient.fetchTerm(payload.term, payload.site);
+            mTaxonomyRestClient.fetchTerm(payload, payload.term, payload.site);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
-            mTaxonomyXMLRPCClient.fetchTerm(payload.term, payload.site);
+            mTaxonomyXMLRPCClient.fetchTerm(payload, payload.term, payload.site);
         }
     }
 
-    private void fetchTerms(SiteModel site, String taxonomyName) {
+    private void fetchTerms(RequestPayload payload, SiteModel site, String taxonomyName) {
         // TODO: Support large number of terms (currently pulling 100 from REST, and ? from XML-RPC) - pagination?
         if (site.isUsingWpComRestApi()) {
-            mTaxonomyRestClient.fetchTerms(site, taxonomyName);
+            mTaxonomyRestClient.fetchTerms(payload, site, taxonomyName);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
-             mTaxonomyXMLRPCClient.fetchTerms(site, taxonomyName);
+             mTaxonomyXMLRPCClient.fetchTerms(payload, site, taxonomyName);
         }
     }
 
     private void fetchTerms(FetchTermsPayload payload) {
-        fetchTerms(payload.site, payload.taxonomy.getName());
+        fetchTerms(payload, payload.site, payload.taxonomy.getName());
     }
 
     private void handleFetchTermsCompleted(FetchTermsResponsePayload payload) {
         OnTaxonomyChanged onTaxonomyChanged;
 
         if (payload.isError()) {
-            onTaxonomyChanged = new OnTaxonomyChanged(0, payload.taxonomy);
+            onTaxonomyChanged = new OnTaxonomyChanged(payload.getRequestPayload(), 0, payload.taxonomy);
             onTaxonomyChanged.error = payload.error;
         } else {
             // Clear existing terms for this taxonomy
@@ -336,7 +369,7 @@ public class TaxonomyStore extends Store {
                 rowsAffected += TaxonomySqlUtils.insertOrUpdateTerm(term);
             }
 
-            onTaxonomyChanged = new OnTaxonomyChanged(rowsAffected, payload.taxonomy);
+            onTaxonomyChanged = new OnTaxonomyChanged(payload.getRequestPayload(), rowsAffected, payload.taxonomy);
         }
 
         switch (payload.taxonomy) {
@@ -355,67 +388,68 @@ public class TaxonomyStore extends Store {
 
     private void handleFetchSingleTermCompleted(FetchTermResponsePayload payload) {
         if (payload.origin == TaxonomyAction.PUSH_TERM) {
-            OnTermUploaded onTermUploaded = new OnTermUploaded(payload.term);
+            OnTermUploaded onTermUploaded = new OnTermUploaded(payload.getRequestPayload(), payload.term);
             if (payload.isError()) {
                 onTermUploaded.error = payload.error;
             } else {
-                updateTerm(payload.term);
+                updateTerm(payload.getRequestPayload(), payload.term);
             }
             emitChange(onTermUploaded);
             return;
         }
 
         if (payload.isError()) {
-            OnTaxonomyChanged event = new OnTaxonomyChanged(0, payload.term.getTaxonomy());
+            OnTaxonomyChanged event = new OnTaxonomyChanged(payload.getRequestPayload(), 0, payload.term.getTaxonomy());
             event.error = payload.error;
             event.causeOfChange = TaxonomyAction.UPDATE_TERM;
             emitChange(event);
         } else {
-            updateTerm(payload.term);
+            updateTerm(payload.getRequestPayload(), payload.term);
         }
     }
 
-    private void handlePushTermCompleted(RemoteTermPayload payload) {
+    private void handlePushTermCompleted(RemoteTermResponsePayload payload) {
         if (payload.isError()) {
-            OnTermUploaded onTermUploaded = new OnTermUploaded(payload.term);
+            OnTermUploaded onTermUploaded = new OnTermUploaded(payload.getRequestPayload(), payload.term);
             onTermUploaded.error = payload.error;
             emitChange(onTermUploaded);
         } else {
             if (payload.site.isUsingWpComRestApi()) {
                 // The WP.COM REST API response contains the modified term, so we're already in sync with the server
                 // All we need to do is store it and emit OnTaxonomyChanged
-                updateTerm(payload.term);
-                emitChange(new OnTermUploaded(payload.term));
+                updateTerm(payload.getRequestPayload(), payload.term);
+                emitChange(new OnTermUploaded(payload.getRequestPayload(), payload.term));
             } else {
                 // XML-RPC does not respond to new/edit term calls with the resulting term - request it from the server
                 // This needs to complete for us to obtain the slug for a newly created term
                 TaxonomySqlUtils.insertOrUpdateTerm(payload.term);
-                mTaxonomyXMLRPCClient.fetchTerm(payload.term, payload.site, TaxonomyAction.PUSH_TERM);
+                mTaxonomyXMLRPCClient.fetchTerm(payload.getRequestPayload(), payload.term, payload.site,
+                        TaxonomyAction.PUSH_TERM);
             }
         }
     }
 
-    private void pushTerm(RemoteTermPayload payload) {
+    private void pushTerm(RemoteTermRequestPayload payload) {
         if (payload.site.isUsingWpComRestApi()) {
-            mTaxonomyRestClient.pushTerm(payload.term, payload.site);
+            mTaxonomyRestClient.pushTerm(payload, payload.term, payload.site);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
-            mTaxonomyXMLRPCClient.pushTerm(payload.term, payload.site);
+            mTaxonomyXMLRPCClient.pushTerm(payload, payload.term, payload.site);
         }
     }
 
-    private void updateTerm(TermModel term) {
+    private void updateTerm(RequestPayload requestPayload, TermModel term) {
         int rowsAffected = TaxonomySqlUtils.insertOrUpdateTerm(term);
 
-        OnTaxonomyChanged onTaxonomyChanged = new OnTaxonomyChanged(rowsAffected, term.getTaxonomy());
+        OnTaxonomyChanged onTaxonomyChanged = new OnTaxonomyChanged(requestPayload, rowsAffected, term.getTaxonomy());
         onTaxonomyChanged.causeOfChange = TaxonomyAction.UPDATE_TERM;
         emitChange(onTaxonomyChanged);
     }
 
-    private void removeAllTerms() {
+    private void removeAllTerms(RemoveAllTermsPayload payload) {
         int rowsAffected = TaxonomySqlUtils.deleteAllTerms();
 
-        OnTaxonomyChanged onTaxonomyChanged = new OnTaxonomyChanged(rowsAffected);
+        OnTaxonomyChanged onTaxonomyChanged = new OnTaxonomyChanged(payload, rowsAffected);
         onTaxonomyChanged.causeOfChange = TaxonomyAction.REMOVE_ALL_TERMS;
         emitChange(onTaxonomyChanged);
     }

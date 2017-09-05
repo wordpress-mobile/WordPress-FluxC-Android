@@ -7,10 +7,11 @@ import org.wordpress.android.fluxc.generated.TaxonomyActionBuilder;
 import org.wordpress.android.fluxc.model.TaxonomyModel;
 import org.wordpress.android.fluxc.model.TermModel;
 import org.wordpress.android.fluxc.store.TaxonomyStore;
+import org.wordpress.android.fluxc.store.TaxonomyStore.FetchCategoriesPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermsPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.OnTaxonomyChanged;
 import org.wordpress.android.fluxc.store.TaxonomyStore.OnTermUploaded;
-import org.wordpress.android.fluxc.store.TaxonomyStore.RemoteTermPayload;
+import org.wordpress.android.fluxc.store.TaxonomyStore.RemoteTermRequestPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.TaxonomyErrorType;
 import org.wordpress.android.fluxc.utils.WellSqlUtils;
 import org.wordpress.android.util.AppLog;
@@ -59,7 +60,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.CATEGORIES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchCategoriesAction(sSite));
+        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchCategoriesAction(new FetchCategoriesPayload(sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -71,7 +72,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.TAGS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTagsAction(sSite));
+        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTagsAction(new FetchCategoriesPayload(sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -99,7 +100,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         TermModel term = new TermModel();
         term.setTaxonomy(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
         term.setSlug("uncategorized");
-        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermAction(new RemoteTermPayload(term, sSite)));
+        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermAction(new RemoteTermRequestPayload(term, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -172,7 +173,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ERROR_INVALID_TAXONOMY;
         mCountDownLatch = new CountDownLatch(1);
 
-        RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
+        RemoteTermRequestPayload pushPayload = new RemoteTermRequestPayload(mTerm, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -193,7 +194,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ERROR_DUPLICATE;
         mCountDownLatch = new CountDownLatch(1);
 
-        RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
+        RemoteTermRequestPayload pushPayload = new RemoteTermRequestPayload(mTerm, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -323,7 +324,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.TERM_UPLOADED;
         mCountDownLatch = new CountDownLatch(1);
 
-        RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
+        RemoteTermRequestPayload pushPayload = new RemoteTermRequestPayload(term, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));

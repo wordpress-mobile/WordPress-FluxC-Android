@@ -2,12 +2,12 @@ package org.wordpress.android.fluxc.model;
 
 import android.support.annotation.NonNull;
 
-import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.BasePayload;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TermsModel extends Payload {
+public class TermsModel extends BasePayload {
     private List<TermModel> mTerms;
 
     public TermsModel() {

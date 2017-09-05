@@ -9,7 +9,7 @@ import com.yarolegovich.wellsql.core.annotation.PrimaryKey;
 import com.yarolegovich.wellsql.core.annotation.RawConstraints;
 import com.yarolegovich.wellsql.core.annotation.Table;
 
-import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.BasePayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -22,7 +22,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 @Table
 @RawConstraints({"UNIQUE (SITE_ID, URL)"})
-public class SiteModel extends Payload implements Identifiable, Serializable {
+public class SiteModel extends BasePayload implements Identifiable, Serializable {
     @Retention(SOURCE)
     @IntDef({ORIGIN_UNKNOWN, ORIGIN_WPCOM_REST, ORIGIN_XMLRPC})
     public @interface SiteOrigin {}

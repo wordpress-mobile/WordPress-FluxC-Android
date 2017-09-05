@@ -8,6 +8,7 @@ import com.android.volley.Response.Listener;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.RequestPayload;
 import org.wordpress.android.fluxc.action.TaxonomyAction;
 import org.wordpress.android.fluxc.generated.TaxonomyActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.XMLRPC;
@@ -22,7 +23,7 @@ import org.wordpress.android.fluxc.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermResponsePayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermsResponsePayload;
-import org.wordpress.android.fluxc.store.TaxonomyStore.RemoteTermPayload;
+import org.wordpress.android.fluxc.store.TaxonomyStore.RemoteTermResponsePayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.TaxonomyError;
 import org.wordpress.android.fluxc.store.TaxonomyStore.TaxonomyErrorType;
 import org.wordpress.android.util.MapUtils;
@@ -38,11 +39,12 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
         super(dispatcher, requestQueue, userAgent, httpAuthManager);
     }
 
-    public void fetchTerm(final TermModel term, final SiteModel site) {
-        fetchTerm(term, site, TaxonomyAction.FETCH_TERM);
+    public void fetchTerm(final RequestPayload requestPayload, final TermModel term, final SiteModel site) {
+        fetchTerm(requestPayload, term, site, TaxonomyAction.FETCH_TERM);
     }
 
-    public void fetchTerm(final TermModel term, final SiteModel site, final TaxonomyAction origin) {
+    public void fetchTerm(final RequestPayload requestPayload, final TermModel term, final SiteModel site,
+                          final TaxonomyAction origin) {
         List<Object> params = new ArrayList<>(5);
         params.add(site.getSelfHostedSiteId());
         params.add(site.getUsername());
@@ -61,10 +63,10 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
                             if (origin == TaxonomyAction.PUSH_TERM) {
                                 termModel.setId(term.getId());
                             }
-                            payload = new FetchTermResponsePayload(termModel, site);
+                            payload = new FetchTermResponsePayload(requestPayload, termModel, site, null);
                         } else {
-                            payload = new FetchTermResponsePayload(term, site);
-                            payload.error = new TaxonomyError(TaxonomyErrorType.INVALID_RESPONSE);
+                            payload = new FetchTermResponsePayload(requestPayload, term, site,
+                                    new TaxonomyError(TaxonomyErrorType.INVALID_RESPONSE));
                         }
                         payload.origin = origin;
 
@@ -78,7 +80,6 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
                         // Possible non-generic errors:
                         // 403 - "Invalid taxonomy."
                         // 404 - "Invalid term ID."
-                        FetchTermResponsePayload payload = new FetchTermResponsePayload(term, site);
                         // TODO: Check the error message and flag this as INVALID_TAXONOMY or UNKNOWN_TERM
                         // Convert GenericErrorType to TaxonomyErrorType where applicable
                         TaxonomyError taxonomyError;
@@ -89,17 +90,18 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
                             default:
                                 taxonomyError = new TaxonomyError(TaxonomyErrorType.GENERIC_ERROR, error.message);
                         }
-                        payload.error = taxonomyError;
+                        FetchTermResponsePayload payload = new FetchTermResponsePayload(requestPayload, term, site,
+                                taxonomyError);
                         payload.origin = origin;
                         mDispatcher.dispatch(TaxonomyActionBuilder.newFetchedTermAction(payload));
                     }
                 }
         );
 
-        add(request);
+        add(requestPayload, request);
     }
 
-    public void fetchTerms(final SiteModel site, final String taxonomyName) {
+    public void fetchTerms(final RequestPayload requestPayload, final SiteModel site, final String taxonomyName) {
         List<Object> params = new ArrayList<>(4);
         params.add(site.getSelfHostedSiteId());
         params.add(site.getUsername());
@@ -112,7 +114,8 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
                     public void onResponse(Object[] response) {
                         TermsModel terms = termsResponseToTermsModel(response, site);
 
-                        FetchTermsResponsePayload payload = new FetchTermsResponsePayload(terms, site, taxonomyName);
+                        FetchTermsResponsePayload payload = new FetchTermsResponsePayload(requestPayload, terms, site,
+                                taxonomyName);
 
                         if (terms != null) {
                             mDispatcher.dispatch(TaxonomyActionBuilder.newFetchedTermsAction(payload));
@@ -137,16 +140,17 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
                             default:
                                 taxonomyError = new TaxonomyError(TaxonomyErrorType.GENERIC_ERROR, error.message);
                         }
-                        FetchTermsResponsePayload payload = new FetchTermsResponsePayload(taxonomyError, taxonomyName);
+                        FetchTermsResponsePayload payload = new FetchTermsResponsePayload(requestPayload, taxonomyError,
+                                taxonomyName);
                         mDispatcher.dispatch(TaxonomyActionBuilder.newFetchedTermsAction(payload));
                     }
                 }
         );
 
-        add(request);
+        add(requestPayload, request);
     }
 
-    public void pushTerm(final TermModel term, final SiteModel site) {
+    public void pushTerm(final RequestPayload requestPayload, final TermModel term, final SiteModel site) {
         Map<String, Object> contentStruct = termModelToContentStruct(term);
 
         List<Object> params = new ArrayList<>(4);
@@ -161,7 +165,8 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
                     public void onResponse(Object response) {
                         term.setRemoteTermId(Long.valueOf((String) response));
 
-                        RemoteTermPayload payload = new RemoteTermPayload(term, site);
+                        RemoteTermResponsePayload payload = new RemoteTermResponsePayload(requestPayload, term, site,
+                                null);
                         mDispatcher.dispatch(TaxonomyActionBuilder.newPushedTermAction(payload));
                     }
                 },
@@ -173,7 +178,6 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
                         // 403 - "Parent term does not exist."
                         // 403 - "The term name cannot be empty."
                         // 500 - "A term with the name provided already exists with this parent."
-                        RemoteTermPayload payload = new RemoteTermPayload(term, site);
                         // TODO: Check the error message and flag this as one of the above specific errors if applicable
                         // Convert GenericErrorType to PostErrorType where applicable
                         TaxonomyError taxonomyError;
@@ -184,14 +188,15 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
                             default:
                                 taxonomyError = new TaxonomyError(TaxonomyErrorType.GENERIC_ERROR, error.message);
                         }
-                        payload.error = taxonomyError;
+                        RemoteTermResponsePayload payload = new RemoteTermResponsePayload(requestPayload, term, site,
+                                taxonomyError);
                         mDispatcher.dispatch(TaxonomyActionBuilder.newPushedTermAction(payload));
                     }
                 }
         );
 
         request.disableRetries();
-        add(request);
+        add(requestPayload, request);
     }
 
     private TermsModel termsResponseToTermsModel(Object[] response, SiteModel site) {

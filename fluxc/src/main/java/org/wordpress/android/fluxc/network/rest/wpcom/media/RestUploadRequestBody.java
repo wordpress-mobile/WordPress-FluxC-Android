@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.media;
 
 import android.support.annotation.NonNull;
 
+import org.wordpress.android.fluxc.RequestPayload;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.network.BaseUploadRequestBody;
 import org.wordpress.android.util.AppLog;
@@ -30,8 +31,9 @@ public class RestUploadRequestBody extends BaseUploadRequestBody {
 
     private final MultipartBody mMultipartBody;
 
-    public RestUploadRequestBody(MediaModel media, Map<String, Object> params, ProgressListener listener) {
-        super(media, listener);
+    public RestUploadRequestBody(RequestPayload requestPayload, MediaModel media, Map<String, Object> params,
+                                 ProgressListener listener) {
+        super(requestPayload, media, listener);
         mMultipartBody = buildMultipartBody(params);
     }
 

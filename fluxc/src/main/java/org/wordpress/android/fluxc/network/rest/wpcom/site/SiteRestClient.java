@@ -13,7 +13,8 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wordpress.android.fluxc.Dispatcher;
-import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.RequestPayload;
+import org.wordpress.android.fluxc.ResponsePayload;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST;
 import org.wordpress.android.fluxc.model.PostFormatModel;
@@ -33,16 +34,22 @@ import org.wordpress.android.fluxc.network.rest.wpcom.site.SiteWPComRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.site.UserRoleWPComRestResponse.UserRolesResponse;
 import org.wordpress.android.fluxc.store.SiteStore.ConnectSiteInfoPayload;
 import org.wordpress.android.fluxc.store.SiteStore.DeleteSiteError;
+import org.wordpress.android.fluxc.store.SiteStore.FetchAllSitesPayload;
 import org.wordpress.android.fluxc.store.SiteStore.FetchedPostFormatsPayload;
 import org.wordpress.android.fluxc.store.SiteStore.FetchedUserRolesPayload;
 import org.wordpress.android.fluxc.store.SiteStore.NewSiteError;
 import org.wordpress.android.fluxc.store.SiteStore.NewSiteErrorType;
+import org.wordpress.android.fluxc.store.SiteStore.NewSitePayload;
 import org.wordpress.android.fluxc.store.SiteStore.PostFormatsError;
 import org.wordpress.android.fluxc.store.SiteStore.PostFormatsErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.SiteError;
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
-import org.wordpress.android.fluxc.store.SiteStore.SiteVisibility;
+import org.wordpress.android.fluxc.store.SiteStore.SiteResponsePayload;
+import org.wordpress.android.fluxc.store.SiteStore.SiteRequestPayload;
+import org.wordpress.android.fluxc.store.SiteStore.SitesResponsePayload;
+import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsResponsePayload;
+import org.wordpress.android.fluxc.store.SiteStore.UrlRequestPayload;
 import org.wordpress.android.fluxc.store.SiteStore.UserRolesError;
 import org.wordpress.android.fluxc.store.SiteStore.UserRolesErrorType;
 import org.wordpress.android.util.AppLog;
@@ -68,35 +75,42 @@ public class SiteRestClient extends BaseWPComRestClient {
 
     private final AppSecrets mAppSecrets;
 
-    public static class NewSiteResponsePayload extends Payload {
-        public NewSiteResponsePayload() {
+    public static class NewSiteResponsePayload extends ResponsePayload {
+        public NewSiteResponsePayload(RequestPayload requestPayload) {
+            super(requestPayload);
         }
         public long newSiteRemoteId;
         public NewSiteError error;
         public boolean dryRun;
     }
 
-    public static class DeleteSiteResponsePayload extends Payload {
-        public DeleteSiteResponsePayload() {
+    public static class DeleteSiteResponsePayload extends ResponsePayload {
+        public DeleteSiteResponsePayload(RequestPayload requestPayload) {
+            super(requestPayload);
         }
         public SiteModel site;
         public DeleteSiteError error;
     }
 
-    public static class ExportSiteResponsePayload extends Payload {
-        public ExportSiteResponsePayload() {
+    public static class ExportSiteResponsePayload extends ResponsePayload {
+        public ExportSiteResponsePayload(RequestPayload requestPayload) {
+            super(requestPayload);
         }
     }
 
-    public static class IsWPComResponsePayload extends Payload {
-        public IsWPComResponsePayload() {
+    public static class IsWPComResponsePayload extends ResponsePayload {
+        public IsWPComResponsePayload(RequestPayload requestPayload) {
+            super(requestPayload);
         }
+
         public String url;
         public boolean isWPCom;
     }
 
-    public static class FetchWPComSiteResponsePayload extends Payload {
-        public FetchWPComSiteResponsePayload() {}
+    public static class FetchWPComSiteResponsePayload extends ResponsePayload {
+        public FetchWPComSiteResponsePayload(RequestPayload requestPayload) {
+            super(requestPayload);
+        }
         public String checkedUrl;
         public SiteModel site;
         public SiteError error;
@@ -109,7 +123,7 @@ public class SiteRestClient extends BaseWPComRestClient {
         mAppSecrets = appSecrets;
     }
 
-    public void fetchSites() {
+    public void fetchSites(final FetchAllSitesPayload fetchAllSitesPayload) {
         String url = WPCOMREST.me.sites.getUrlV1_1();
         final WPComGsonRequest<SitesResponse> request = WPComGsonRequest.buildGetRequest(url, null,
                 SitesResponse.class,
@@ -122,12 +136,14 @@ public class SiteRestClient extends BaseWPComRestClient {
                             for (SiteWPComRestResponse siteResponse : response.sites) {
                                 siteArray.add(siteResponseToSiteModel(siteResponse));
                             }
-                            mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesAction(new SitesModel(siteArray)));
+                            mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesAction(
+                                    new SitesResponsePayload(fetchAllSitesPayload, new SitesModel(siteArray))));
                         } else {
                             AppLog.e(T.API, "Received empty response to /me/sites/");
                             SitesModel payload = new SitesModel(Collections.<SiteModel>emptyList());
                             payload.error = new BaseNetworkError(GenericErrorType.INVALID_RESPONSE);
-                            mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesAction(payload));
+                            mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesAction(
+                                    new SitesResponsePayload(fetchAllSitesPayload, new SitesModel())));
                         }
                     }
                 },
@@ -136,15 +152,16 @@ public class SiteRestClient extends BaseWPComRestClient {
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         SitesModel payload = new SitesModel(Collections.<SiteModel>emptyList());
                         payload.error = error;
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesAction(payload));
+                        mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesAction(
+                                new SitesResponsePayload(fetchAllSitesPayload, payload)));
                     }
                 }
         );
-        add(request);
+        add(fetchAllSitesPayload, request);
     }
 
-    public void fetchSite(final SiteModel site) {
-        String url = WPCOMREST.sites.getUrlV1_1() + site.getSiteId();
+    public void fetchSite(final SiteRequestPayload siteRequestPayload) {
+        String url = WPCOMREST.sites.getUrlV1_1() + siteRequestPayload.site.getSiteId();
         final WPComGsonRequest<SiteWPComRestResponse> request = WPComGsonRequest.buildGetRequest(url, null,
                 SiteWPComRestResponse.class,
                 new Listener<SiteWPComRestResponse>() {
@@ -152,12 +169,15 @@ public class SiteRestClient extends BaseWPComRestClient {
                     public void onResponse(SiteWPComRestResponse response) {
                         if (response != null) {
                             SiteModel site = siteResponseToSiteModel(response);
-                            mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(site));
+                            mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(
+                                    new SiteRequestPayload(siteRequestPayload.getRequestId(), site)));
                         } else {
-                            AppLog.e(T.API, "Received empty response to /sites/$site/ for " + site.getUrl());
+                            AppLog.e(T.API, "Received empty response to /sites/$site/ for " +
+                                    siteRequestPayload.site.getUrl());
                             SiteModel payload = new SiteModel();
                             payload.error = new BaseNetworkError(GenericErrorType.INVALID_RESPONSE);
-                            mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(payload));
+                            mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(
+                                    new SiteRequestPayload(siteRequestPayload.getRequestId(), payload)));
                         }
                     }
                 },
@@ -166,22 +186,22 @@ public class SiteRestClient extends BaseWPComRestClient {
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         SiteModel payload = new SiteModel();
                         payload.error = error;
-                        mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(payload));
+                        mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(
+                                new SiteRequestPayload(siteRequestPayload.getRequestId(), payload)));
                     }
                 }
         );
-        add(request);
+        add(siteRequestPayload, request);
     }
 
-    public void newSite(@NonNull String siteName, @NonNull String siteTitle, @NonNull String language,
-                        @NonNull SiteVisibility visibility, final boolean dryRun) {
+    public void newSite(@NonNull final NewSitePayload newSitePayload) {
         String url = WPCOMREST.sites.new_.getUrlV1();
         Map<String, Object> body = new HashMap<>();
-        body.put("blog_name", siteName);
-        body.put("blog_title", siteTitle);
-        body.put("lang_id", language);
-        body.put("public", visibility.toString());
-        body.put("validate", dryRun ? "1" : "0");
+        body.put("blog_name", newSitePayload.siteName);
+        body.put("blog_title", newSitePayload.siteTitle);
+        body.put("lang_id", newSitePayload.language);
+        body.put("public", newSitePayload.visibility.toString());
+        body.put("validate", newSitePayload.dryRun ? "1" : "0");
         body.put("client_id", mAppSecrets.getAppId());
         body.put("client_secret", mAppSecrets.getAppSecret());
 
@@ -190,8 +210,8 @@ public class SiteRestClient extends BaseWPComRestClient {
                 new Listener<NewSiteResponse>() {
                     @Override
                     public void onResponse(NewSiteResponse response) {
-                        NewSiteResponsePayload payload = new NewSiteResponsePayload();
-                        payload.dryRun = dryRun;
+                        NewSiteResponsePayload payload = new NewSiteResponsePayload(newSitePayload);
+                        payload.dryRun = newSitePayload.dryRun;
                         long siteId = 0;
                         if (response.blog_details != null) {
                             try {
@@ -207,8 +227,9 @@ public class SiteRestClient extends BaseWPComRestClient {
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        NewSiteResponsePayload payload = volleyErrorToAccountResponsePayload(error.volleyError);
-                        payload.dryRun = dryRun;
+                        NewSiteResponsePayload payload = volleyErrorToAccountResponsePayload(newSitePayload,
+                                error.volleyError);
+                        payload.dryRun = newSitePayload.dryRun;
                         mDispatcher.dispatch(SiteActionBuilder.newCreatedNewSiteAction(payload));
                     }
                 }
@@ -216,11 +237,11 @@ public class SiteRestClient extends BaseWPComRestClient {
 
         // Disable retries and increase timeout for site creation (it can sometimes take a long time to complete)
         request.setRetryPolicy(new DefaultRetryPolicy(NEW_SITE_TIMEOUT_MS, 0, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-        add(request);
+        add(newSitePayload, request);
     }
 
-    public void fetchPostFormats(@NonNull final SiteModel site) {
-        String url = WPCOMREST.sites.site(site.getSiteId()).post_formats.getUrlV1_1();
+    public void fetchPostFormats(@NonNull final SiteRequestPayload siteRequestPayload) {
+        String url = WPCOMREST.sites.site(siteRequestPayload.site.getSiteId()).post_formats.getUrlV1_1();
         final WPComGsonRequest<PostFormatsResponse> request = WPComGsonRequest.buildGetRequest(url, null,
                 PostFormatsResponse.class,
                 new Listener<PostFormatsResponse>() {
@@ -236,24 +257,24 @@ public class SiteRestClient extends BaseWPComRestClient {
                             }
                         }
                         mDispatcher.dispatch(SiteActionBuilder.newFetchedPostFormatsAction(new
-                                FetchedPostFormatsPayload(site, postFormats)));
+                                FetchedPostFormatsPayload(siteRequestPayload, siteRequestPayload.site, postFormats)));
                     }
                 },
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        FetchedPostFormatsPayload payload = new FetchedPostFormatsPayload(site,
-                                Collections.<PostFormatModel>emptyList());
+                        FetchedPostFormatsPayload payload = new FetchedPostFormatsPayload(siteRequestPayload,
+                                siteRequestPayload.site, Collections.<PostFormatModel>emptyList());
                         // TODO: what other kind of error could we get here?
                         payload.error = new PostFormatsError(PostFormatsErrorType.GENERIC_ERROR);
                         mDispatcher.dispatch(SiteActionBuilder.newFetchedPostFormatsAction(payload));
                     }
                 }
         );
-        add(request);
+        add(siteRequestPayload, request);
     }
 
-    public void fetchUserRoles(@NonNull final SiteModel site) {
+    public void fetchUserRoles(@NonNull final RequestPayload requestPayload, final SiteModel site) {
         String url = WPCOMREST.sites.site(site.getSiteId()).roles.getUrlV1_1();
         final WPComGsonRequest<UserRolesResponse> request = WPComGsonRequest.buildGetRequest(url, null,
                 UserRolesResponse.class,
@@ -268,13 +289,13 @@ public class SiteRestClient extends BaseWPComRestClient {
                             roleArray.add(roleModel);
                         }
                         mDispatcher.dispatch(SiteActionBuilder.newFetchedUserRolesAction(new
-                                FetchedUserRolesPayload(site, roleArray)));
+                                FetchedUserRolesPayload(requestPayload, site, roleArray)));
                     }
                 },
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        FetchedUserRolesPayload payload = new FetchedUserRolesPayload(site,
+                        FetchedUserRolesPayload payload = new FetchedUserRolesPayload(requestPayload, site,
                                 Collections.<RoleModel>emptyList());
                         // TODO: what other kind of error could we get here?
                         payload.error = new UserRolesError(UserRolesErrorType.GENERIC_ERROR);
@@ -282,17 +303,17 @@ public class SiteRestClient extends BaseWPComRestClient {
                     }
                 }
         );
-        add(request);
+        add(requestPayload, request);
     }
 
-    public void deleteSite(final SiteModel site) {
+    public void deleteSite(final RequestPayload requestPayload, final SiteModel site) {
         String url = WPCOMREST.sites.site(site.getSiteId()).delete.getUrlV1_1();
         WPComGsonRequest<SiteWPComRestResponse> request = WPComGsonRequest.buildPostRequest(url, null,
                 SiteWPComRestResponse.class,
                 new Listener<SiteWPComRestResponse>() {
                     @Override
                     public void onResponse(SiteWPComRestResponse response) {
-                        DeleteSiteResponsePayload payload = new DeleteSiteResponsePayload();
+                        DeleteSiteResponsePayload payload = new DeleteSiteResponsePayload(requestPayload);
                         payload.site = site;
                         mDispatcher.dispatch(SiteActionBuilder.newDeletedSiteAction(payload));
                     }
@@ -300,7 +321,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        DeleteSiteResponsePayload payload = new DeleteSiteResponsePayload();
+                        DeleteSiteResponsePayload payload = new DeleteSiteResponsePayload(requestPayload);
                         WPComGsonNetworkError networkError = ((WPComGsonNetworkError) error);
                         payload.error = new DeleteSiteError(networkError.apiError, networkError.message);
                         payload.site = site;
@@ -308,50 +329,50 @@ public class SiteRestClient extends BaseWPComRestClient {
                     }
                 }
         );
-        add(request);
+        add(requestPayload, request);
     }
 
-    public void exportSite(@NonNull final SiteModel site) {
+    public void exportSite(@NonNull final RequestPayload requestPayload, final SiteModel site) {
         String url = WPCOMREST.sites.site(site.getSiteId()).exports.start.getUrlV1_1();
         final WPComGsonRequest<ExportSiteResponse> request = WPComGsonRequest.buildPostRequest(url, null,
                 ExportSiteResponse.class,
                 new Listener<ExportSiteResponse>() {
                     @Override
                     public void onResponse(ExportSiteResponse response) {
-                        ExportSiteResponsePayload payload = new ExportSiteResponsePayload();
+                        ExportSiteResponsePayload payload = new ExportSiteResponsePayload(requestPayload);
                         mDispatcher.dispatch(SiteActionBuilder.newExportedSiteAction(payload));
                     }
                 },
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        ExportSiteResponsePayload payload = new ExportSiteResponsePayload();
+                        ExportSiteResponsePayload payload = new ExportSiteResponsePayload(requestPayload);
                         payload.error = error;
                         mDispatcher.dispatch(SiteActionBuilder.newExportedSiteAction(payload));
                     }
                 }
         );
-        add(request);
+        add(requestPayload, request);
     }
 
     //
     // Unauthenticated network calls
     //
 
-    public void fetchConnectSiteInfo(@NonNull final String siteUrl) {
+    public void fetchConnectSiteInfo(@NonNull final UrlRequestPayload urlRequestPayload) {
         // Get a proper URI to reliably retrieve the scheme.
         URI uri;
         try {
-            uri = URI.create(UrlUtils.addUrlSchemeIfNeeded(siteUrl, false));
+            uri = URI.create(UrlUtils.addUrlSchemeIfNeeded(urlRequestPayload.url, false));
         } catch (IllegalArgumentException e) {
             SiteError siteError = new SiteError(SiteErrorType.INVALID_SITE);
-            ConnectSiteInfoPayload payload = new ConnectSiteInfoPayload(siteUrl, siteError);
+            ConnectSiteInfoPayload payload = new ConnectSiteInfoPayload(urlRequestPayload, siteError);
             mDispatcher.dispatch(SiteActionBuilder.newFetchedConnectSiteInfoAction(payload));
             return;
         }
 
         // Sanitize and encode the Url for the API call.
-        String sanitizedURL = UrlUtils.removeScheme(siteUrl);
+        String sanitizedURL = UrlUtils.removeScheme(urlRequestPayload.url);
         sanitizedURL = sanitizedURL.replace("/", "::");
 
         // Make the call.
@@ -361,8 +382,8 @@ public class SiteRestClient extends BaseWPComRestClient {
                 new Listener<ConnectSiteInfoResponse>() {
                     @Override
                     public void onResponse(ConnectSiteInfoResponse response) {
-                        ConnectSiteInfoPayload info = connectSiteInfoFromResponse(siteUrl, response);
-                        info.url = siteUrl;
+                        ConnectSiteInfoPayload info = connectSiteInfoFromResponse(urlRequestPayload, response);
+                        info.url = urlRequestPayload.url;
                         mDispatcher.dispatch(SiteActionBuilder.newFetchedConnectSiteInfoAction(info));
                     }
                 },
@@ -370,22 +391,22 @@ public class SiteRestClient extends BaseWPComRestClient {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         SiteError siteError = new SiteError(SiteErrorType.INVALID_SITE);
-                        ConnectSiteInfoPayload info = new ConnectSiteInfoPayload(siteUrl, siteError);
+                        ConnectSiteInfoPayload info = new ConnectSiteInfoPayload(urlRequestPayload, siteError);
                         mDispatcher.dispatch(SiteActionBuilder.newFetchedConnectSiteInfoAction(info));
                     }
                 }
         );
-        addUnauthedRequest(request);
+        addUnauthedRequest(urlRequestPayload, request);
     }
 
-    public void fetchWPComSiteByUrl(@NonNull final String siteUrl) {
+    public void fetchWPComSiteByUrl(@NonNull final UrlRequestPayload urlRequestPayload) {
         String sanitizedUrl;
         try {
-            URI uri = URI.create(UrlUtils.addUrlSchemeIfNeeded(siteUrl, false));
+            URI uri = URI.create(UrlUtils.addUrlSchemeIfNeeded(urlRequestPayload.url, false));
             sanitizedUrl = URLEncoder.encode(UrlUtils.removeScheme(uri.toString()), "UTF-8");
         } catch (IllegalArgumentException e) {
-            FetchWPComSiteResponsePayload payload = new FetchWPComSiteResponsePayload();
-            payload.checkedUrl = siteUrl;
+            FetchWPComSiteResponsePayload payload = new FetchWPComSiteResponsePayload(urlRequestPayload);
+            payload.checkedUrl = urlRequestPayload.url;
             payload.error = new SiteError(SiteErrorType.INVALID_SITE);
             mDispatcher.dispatch(SiteActionBuilder.newFetchedWpcomSiteByUrlAction(payload));
             return;
@@ -401,8 +422,8 @@ public class SiteRestClient extends BaseWPComRestClient {
                 new Listener<SiteWPComRestResponse>() {
                     @Override
                     public void onResponse(SiteWPComRestResponse response) {
-                        FetchWPComSiteResponsePayload payload = new FetchWPComSiteResponsePayload();
-                        payload.checkedUrl = siteUrl;
+                        FetchWPComSiteResponsePayload payload = new FetchWPComSiteResponsePayload(urlRequestPayload);
+                        payload.checkedUrl = urlRequestPayload.url;
                         payload.site = siteResponseToSiteModel(response);
                         mDispatcher.dispatch(SiteActionBuilder.newFetchedWpcomSiteByUrlAction(payload));
                     }
@@ -410,8 +431,8 @@ public class SiteRestClient extends BaseWPComRestClient {
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        FetchWPComSiteResponsePayload payload = new FetchWPComSiteResponsePayload();
-                        payload.checkedUrl = siteUrl;
+                        FetchWPComSiteResponsePayload payload = new FetchWPComSiteResponsePayload(urlRequestPayload);
+                        payload.checkedUrl = urlRequestPayload.url;
 
                         SiteErrorType siteErrorType = SiteErrorType.GENERIC_ERROR;
                         if (error instanceof WPComGsonNetworkError) {
@@ -430,18 +451,18 @@ public class SiteRestClient extends BaseWPComRestClient {
                     }
                 }
         );
-        addUnauthedRequest(request);
+        addUnauthedRequest(urlRequestPayload, request);
     }
 
-    public void checkUrlIsWPCom(@NonNull final String testedUrl) {
-        String url = WPCOMREST.sites.getUrlV1_1() + testedUrl;
+    public void checkUrlIsWPCom(@NonNull final UrlRequestPayload urlRequestPayload) {
+        String url = WPCOMREST.sites.getUrlV1_1() + urlRequestPayload.url;
         final WPComGsonRequest<SiteWPComRestResponse> request = WPComGsonRequest.buildGetRequest(url, null,
                 SiteWPComRestResponse.class,
                 new Listener<SiteWPComRestResponse>() {
                     @Override
                     public void onResponse(SiteWPComRestResponse response) {
-                        IsWPComResponsePayload payload = new IsWPComResponsePayload();
-                        payload.url = testedUrl;
+                        IsWPComResponsePayload payload = new IsWPComResponsePayload(urlRequestPayload);
+                        payload.url = urlRequestPayload.url;
                         payload.isWPCom = true;
                         mDispatcher.dispatch(SiteActionBuilder.newCheckedIsWpcomUrlAction(payload));
                     }
@@ -449,8 +470,8 @@ public class SiteRestClient extends BaseWPComRestClient {
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        IsWPComResponsePayload payload = new IsWPComResponsePayload();
-                        payload.url = testedUrl;
+                        IsWPComResponsePayload payload = new IsWPComResponsePayload(urlRequestPayload);
+                        payload.url = urlRequestPayload.url;
                         // "unauthorized" and "unknown_blog" errors expected if the site is not accessible via
                         // the WPCom REST API.
                         if (error instanceof WPComGsonNetworkError
@@ -464,37 +485,38 @@ public class SiteRestClient extends BaseWPComRestClient {
                     }
                 }
         );
-        addUnauthedRequest(request);
+        addUnauthedRequest(urlRequestPayload, request);
     }
 
-    public void suggestDomains(@NonNull final String query, final boolean includeWordpressCom,
-                               final boolean includeDotBlogSubdomain, final int quantity) {
+    public void suggestDomains(@NonNull final SuggestDomainsPayload suggestDomainsPayload) {
         String url = WPCOMREST.domains.suggestions.getUrlV1_1();
         Map<String, String> params = new HashMap<>(4);
-        params.put("query", query);
+        params.put("query", suggestDomainsPayload.query);
         // ugly trick to bypass checkstyle and its dot com rule
-        params.put("include_wordpressdot" + "com", String.valueOf(includeWordpressCom));
-        params.put("include_dotblogsubdomain", String.valueOf(includeDotBlogSubdomain));
-        params.put("quantity", String.valueOf(quantity));
+        params.put("include_wordpressdot" + "com", String.valueOf(suggestDomainsPayload.includeWordpressCom));
+        params.put("include_dotblogsubdomain", String.valueOf(suggestDomainsPayload.includeDotBlogSubdomain));
+        params.put("quantity", String.valueOf(suggestDomainsPayload.quantity));
         final WPComGsonRequest<ArrayList<DomainSuggestionResponse>> request =
                 WPComGsonRequest.buildGetRequest(url, params,
                         new TypeToken<ArrayList<DomainSuggestionResponse>>(){}.getType(),
                 new Listener<ArrayList<DomainSuggestionResponse>>() {
                     @Override
                     public void onResponse(ArrayList<DomainSuggestionResponse> response) {
-                        SuggestDomainsResponsePayload payload = new SuggestDomainsResponsePayload(query, response);
+                        SuggestDomainsResponsePayload payload =
+                                new SuggestDomainsResponsePayload(suggestDomainsPayload.query, response);
                         mDispatcher.dispatch(SiteActionBuilder.newSuggestedDomainsAction(payload));
                     }
                 },
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        SuggestDomainsResponsePayload payload = new SuggestDomainsResponsePayload(query, error);
+                        SuggestDomainsResponsePayload payload =
+                                new SuggestDomainsResponsePayload(suggestDomainsPayload.query, error);
                         mDispatcher.dispatch(SiteActionBuilder.newSuggestedDomainsAction(payload));
                     }
                 }
         );
-        addUnauthedRequest(request);
+        addUnauthedRequest(suggestDomainsPayload, request);
     }
 
     private SiteModel siteResponseToSiteModel(SiteWPComRestResponse from) {
@@ -585,8 +607,8 @@ public class SiteRestClient extends BaseWPComRestClient {
         return site;
     }
 
-    private NewSiteResponsePayload volleyErrorToAccountResponsePayload(VolleyError error) {
-        NewSiteResponsePayload payload = new NewSiteResponsePayload();
+    private NewSiteResponsePayload volleyErrorToAccountResponsePayload(RequestPayload requestPayload, VolleyError error) {
+        NewSiteResponsePayload payload = new NewSiteResponsePayload(requestPayload);
         payload.error = new NewSiteError(NewSiteErrorType.GENERIC_ERROR, "");
         if (error.networkResponse != null && error.networkResponse.data != null) {
             String jsonString = new String(error.networkResponse.data);
@@ -601,9 +623,10 @@ public class SiteRestClient extends BaseWPComRestClient {
         return payload;
     }
 
-    private ConnectSiteInfoPayload connectSiteInfoFromResponse(String url, ConnectSiteInfoResponse response) {
-        ConnectSiteInfoPayload info = new ConnectSiteInfoPayload(url, null);
-        info.url = url;
+    private ConnectSiteInfoPayload connectSiteInfoFromResponse(@NonNull UrlRequestPayload urlRequestPayload,
+                                                               ConnectSiteInfoResponse response) {
+        ConnectSiteInfoPayload info = new ConnectSiteInfoPayload(urlRequestPayload, null);
+        info.url = urlRequestPayload.url;
         info.exists = response.exists;
         info.hasJetpack = response.hasJetpack;
         info.isJetpackActive = response.isJetpackActive;

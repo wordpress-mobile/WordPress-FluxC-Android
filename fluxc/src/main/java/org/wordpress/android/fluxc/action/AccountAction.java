@@ -3,35 +3,43 @@ package org.wordpress.android.fluxc.action;
 import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
-import org.wordpress.android.fluxc.model.AccountModel;
 import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient.AccountPushSettingsResponsePayload;
 import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient.AccountRestPayload;
 import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient.IsAvailableResponsePayload;
 import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient.NewAccountResponsePayload;
+import org.wordpress.android.fluxc.store.AccountStore.AvailableBlogPayload;
+import org.wordpress.android.fluxc.store.AccountStore.AvailableDomainPayload;
+import org.wordpress.android.fluxc.store.AccountStore.AvailableEmailPayload;
+import org.wordpress.android.fluxc.store.AccountStore.AvailableUsernamePayload;
+import org.wordpress.android.fluxc.store.AccountStore.FetchAccountPayload;
+import org.wordpress.android.fluxc.store.AccountStore.FetchSettingsPayload;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload;
+import org.wordpress.android.fluxc.store.AccountStore.SignOutPayload;
+import org.wordpress.android.fluxc.store.AccountStore.UpdateAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.UpdateTokenPayload;
+import org.wordpress.android.fluxc.store.AccountStore.VerificationEmailPayload;
 
 @ActionEnum
 public enum AccountAction implements IAction {
     // Remote actions
-    @Action
+    @Action(payloadType = FetchAccountPayload.class)
     FETCH_ACCOUNT,          // request fetch of Account information
-    @Action
+    @Action(payloadType = FetchSettingsPayload.class)
     FETCH_SETTINGS,         // request fetch of Account Settings
-    @Action
+    @Action(payloadType = VerificationEmailPayload.class)
     SEND_VERIFICATION_EMAIL, // request verification email for unverified accounts
     @Action(payloadType = PushAccountSettingsPayload.class)
     PUSH_SETTINGS,          // request saving Account Settings remotely
     @Action(payloadType = NewAccountPayload.class)
     CREATE_NEW_ACCOUNT,     // create a new account (can be used to validate the account before creating it)
-    @Action(payloadType = String.class)
+    @Action(payloadType = AvailableBlogPayload.class)
     IS_AVAILABLE_BLOG,
-    @Action(payloadType = String.class)
+    @Action(payloadType = AvailableDomainPayload.class)
     IS_AVAILABLE_DOMAIN,
-    @Action(payloadType = String.class)
+    @Action(payloadType = AvailableEmailPayload.class)
     IS_AVAILABLE_EMAIL,
-    @Action(payloadType = String.class)
+    @Action(payloadType = AvailableUsernamePayload.class)
     IS_AVAILABLE_USERNAME,
 
     // Remote responses
@@ -49,10 +57,10 @@ public enum AccountAction implements IAction {
     CHECKED_IS_AVAILABLE,
 
     // Local actions
-    @Action(payloadType = AccountModel.class)
+    @Action(payloadType = UpdateAccountPayload.class)
     UPDATE_ACCOUNT,         // update in-memory and persisted Account in AccountStore
     @Action(payloadType = UpdateTokenPayload.class)
     UPDATE_ACCESS_TOKEN,    // update in-memory and persisted Access Token
-    @Action
+    @Action(payloadType = SignOutPayload.class)
     SIGN_OUT                // delete persisted Account, reset in-memory Account, delete access token
 }

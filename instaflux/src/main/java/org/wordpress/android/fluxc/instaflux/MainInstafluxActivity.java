@@ -21,13 +21,17 @@ import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder;
+import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoverPayload;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
+import org.wordpress.android.fluxc.store.AccountStore.FetchAccountPayload;
+import org.wordpress.android.fluxc.store.AccountStore.FetchSettingsPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.FetchAllSitesPayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.util.AppLog;
@@ -138,7 +142,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
             mSelfhostedPayload.username = username;
             mSelfhostedPayload.password = password;
 
-            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(url));
+            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(url)));
         }
     }
 
@@ -177,7 +181,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
         } else {
             if (!mSiteStore.hasSite() && event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
                 AppLog.d(AppLog.T.API, "Account data fetched - fetching sites");
-                mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
+                mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchAllSitesPayload()));
             }
         }
     }
@@ -205,8 +209,8 @@ public class MainInstafluxActivity extends AppCompatActivity {
         } else {
             if (mAccountStore.hasAccessToken()) {
                 AppLog.d(AppLog.T.API, "Signed in to WordPress.com successfully, fetching account");
-                mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
-                mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
+                mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
+                mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction(new FetchSettingsPayload()));
             }
         }
     }

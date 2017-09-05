@@ -2,12 +2,12 @@ package org.wordpress.android.fluxc.model;
 
 import android.support.annotation.NonNull;
 
-import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.BasePayload;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PostsModel extends Payload {
+public class PostsModel extends BasePayload {
     private List<PostModel> mPosts;
 
     public PostsModel() {

@@ -9,10 +9,10 @@ import com.android.volley.Response.Listener;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.RequestPayload;
 import org.wordpress.android.fluxc.generated.CommentActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST;
 import org.wordpress.android.fluxc.model.CommentModel;
-import org.wordpress.android.fluxc.model.CommentStatus;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseErrorListener;
@@ -22,7 +22,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.comment.CommentWPComRestResponse.CommentsWPComRestResponse;
+import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsResponsePayload;
+import org.wordpress.android.fluxc.store.CommentStore.RemoteCommentPayload;
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCommentResponsePayload;
 import org.wordpress.android.fluxc.utils.CommentErrorUtils;
 
@@ -40,20 +42,21 @@ public class CommentRestClient extends BaseWPComRestClient {
         super(appContext, dispatcher, requestQueue, accessToken, userAgent);
     }
 
-    public void fetchComments(final SiteModel site, final int number, final int offset, CommentStatus status) {
-        String url = WPCOMREST.sites.site(site.getSiteId()).comments.getUrlV1_1();
+    public void fetchComments(final FetchCommentsPayload fetchCommentsPayload) {
+        String url = WPCOMREST.sites.site(fetchCommentsPayload.site.getSiteId()).comments.getUrlV1_1();
         Map<String, String> params = new HashMap<>();
-        params.put("status", status.toString());
-        params.put("offset", String.valueOf(offset));
-        params.put("number", String.valueOf(number));
+        params.put("status", fetchCommentsPayload.status.toString());
+        params.put("offset", String.valueOf(fetchCommentsPayload.offset));
+        params.put("number", String.valueOf(fetchCommentsPayload.number));
         final WPComGsonRequest<CommentsWPComRestResponse> request = WPComGsonRequest.buildGetRequest(
                 url, params, CommentsWPComRestResponse.class,
                 new Listener<CommentsWPComRestResponse>() {
                     @Override
                     public void onResponse(CommentsWPComRestResponse response) {
-                        List<CommentModel> comments = commentsResponseToCommentList(response, site);
-                        FetchCommentsResponsePayload payload = new FetchCommentsResponsePayload(comments, site, number,
-                                offset);
+                        List<CommentModel> comments = commentsResponseToCommentList(response, fetchCommentsPayload.site);
+                        FetchCommentsResponsePayload payload = new FetchCommentsResponsePayload(fetchCommentsPayload,
+                                comments, fetchCommentsPayload.site, fetchCommentsPayload.number,
+                                fetchCommentsPayload.offset);
                         mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentsAction(payload));
                     }
                 },
@@ -62,14 +65,16 @@ public class CommentRestClient extends BaseWPComRestClient {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentsAction(
-                                CommentErrorUtils.commentErrorToFetchCommentsPayload(error, site)));
+                                CommentErrorUtils.commentErrorToFetchCommentsPayload(fetchCommentsPayload, error,
+                                        fetchCommentsPayload.site)));
                     }
                 }
         );
-        add(request);
+        add(fetchCommentsPayload, request);
     }
 
-    public void pushComment(final SiteModel site, @NonNull final CommentModel comment) {
+    public void pushComment(final RequestPayload requestPayload, final SiteModel site,
+                            @NonNull final CommentModel comment) {
         String url = WPCOMREST.sites.site(site.getSiteId()).comments.comment(comment.getRemoteCommentId()).getUrlV1_1();
         Map<String, Object> params = new HashMap<>();
         params.put("content", comment.getContent());
@@ -82,7 +87,8 @@ public class CommentRestClient extends BaseWPComRestClient {
                     public void onResponse(CommentWPComRestResponse response) {
                         CommentModel newComment = commentResponseToComment(response, site);
                         newComment.setId(comment.getId()); // reconciliate local instance and newly created object
-                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(newComment);
+                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload,
+                                newComment);
                         mDispatcher.dispatch(CommentActionBuilder.newPushedCommentAction(payload));
                     }
                 },
@@ -91,27 +97,31 @@ public class CommentRestClient extends BaseWPComRestClient {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         mDispatcher.dispatch(CommentActionBuilder.newPushedCommentAction(
-                                CommentErrorUtils.commentErrorToPushCommentPayload(error, comment)));
+                                CommentErrorUtils.commentErrorToPushCommentPayload(requestPayload, error, comment)));
                     }
                 }
         );
-        add(request);
+        add(requestPayload, request);
     }
 
-    public void fetchComment(final SiteModel site, long remoteCommentId, @Nullable final CommentModel comment) {
+    public void fetchComment(final RemoteCommentPayload remoteCommentPayload) {
+        long remoteCommentId = remoteCommentPayload.remoteCommentId;
+
         // Prioritize CommentModel over comment id.
-        if (comment != null) {
-            remoteCommentId = comment.getRemoteCommentId();
+        if (remoteCommentPayload.comment != null) {
+            remoteCommentId = remoteCommentPayload.comment.getRemoteCommentId();
         }
 
-        String url = WPCOMREST.sites.site(site.getSiteId()).comments.comment(remoteCommentId).getUrlV1_1();
+        String url = WPCOMREST.sites.site(remoteCommentPayload.site.getSiteId()).comments.comment(remoteCommentId)
+                .getUrlV1_1();
         final WPComGsonRequest<CommentWPComRestResponse> request = WPComGsonRequest.buildGetRequest(
                 url, null, CommentWPComRestResponse.class,
                 new Listener<CommentWPComRestResponse>() {
                     @Override
                     public void onResponse(CommentWPComRestResponse response) {
-                        CommentModel comment = commentResponseToComment(response, site);
-                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(comment);
+                        CommentModel comment = commentResponseToComment(response, remoteCommentPayload.site);
+                        RemoteCommentResponsePayload payload =
+                                new RemoteCommentResponsePayload(remoteCommentPayload, remoteCommentPayload.comment);
                         mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentAction(payload));
                     }
                 },
@@ -120,14 +130,16 @@ public class CommentRestClient extends BaseWPComRestClient {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentAction(
-                                CommentErrorUtils.commentErrorToFetchCommentPayload(error, comment)));
+                                CommentErrorUtils.commentErrorToFetchCommentPayload(remoteCommentPayload, error,
+                                        remoteCommentPayload.comment)));
                     }
                 }
         );
-        add(request);
+        add(remoteCommentPayload, request);
     }
 
-    public void deleteComment(final SiteModel site, long remoteCommentId, @Nullable final CommentModel comment) {
+    public void deleteComment(final RequestPayload requestPayload, final SiteModel site, long remoteCommentId,
+                              @Nullable final CommentModel comment) {
         // Prioritize CommentModel over comment id.
         if (comment != null) {
             remoteCommentId = comment.getRemoteCommentId();
@@ -144,7 +156,8 @@ public class CommentRestClient extends BaseWPComRestClient {
                             // reconciliate local instance and newly created object if it exists locally
                             modifiedComment.setId(comment.getId());
                         }
-                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(modifiedComment);
+                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload,
+                                modifiedComment);
                         mDispatcher.dispatch(CommentActionBuilder.newDeletedCommentAction(payload));
                     }
                 },
@@ -153,14 +166,15 @@ public class CommentRestClient extends BaseWPComRestClient {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         mDispatcher.dispatch(CommentActionBuilder.newDeletedCommentAction(
-                                CommentErrorUtils.commentErrorToFetchCommentPayload(error, comment)));
+                                CommentErrorUtils.commentErrorToFetchCommentPayload(requestPayload, error, comment)));
                     }
                 }
         );
-        add(request);
+        add(requestPayload, request);
     }
 
-    public void createNewReply(final SiteModel site, final CommentModel comment, final CommentModel reply) {
+    public void createNewReply(final RequestPayload requestPayload, final SiteModel site, final CommentModel comment,
+                               final CommentModel reply) {
         String url = WPCOMREST.sites.site(site.getSiteId()).comments.comment(comment.getRemoteCommentId())
                 .replies.new_.getUrlV1_1();
         Map<String, Object> params = new HashMap<>();
@@ -172,7 +186,8 @@ public class CommentRestClient extends BaseWPComRestClient {
                     public void onResponse(CommentWPComRestResponse response) {
                         CommentModel newComment = commentResponseToComment(response, site);
                         newComment.setId(reply.getId()); // reconciliate local instance and newly created object
-                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(newComment);
+                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload,
+                                newComment);
                         mDispatcher.dispatch(CommentActionBuilder.newCreatedNewCommentAction(payload));
                     }
                 },
@@ -181,14 +196,15 @@ public class CommentRestClient extends BaseWPComRestClient {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         mDispatcher.dispatch(CommentActionBuilder.newCreatedNewCommentAction(
-                                CommentErrorUtils.commentErrorToFetchCommentPayload(error, reply)));
+                                CommentErrorUtils.commentErrorToFetchCommentPayload(requestPayload, error, reply)));
                     }
                 }
         );
-        add(request);
+        add(requestPayload, request);
     }
 
-    public void createNewComment(final SiteModel site, final PostModel post, final CommentModel comment) {
+    public void createNewComment(final RequestPayload requestPayload, final SiteModel site, final PostModel post,
+                                 final CommentModel comment) {
         String url = WPCOMREST.sites.site(site.getSiteId()).posts.post(post.getRemotePostId())
                 .replies.new_.getUrlV1_1();
         Map<String, Object> params = new HashMap<>();
@@ -200,7 +216,8 @@ public class CommentRestClient extends BaseWPComRestClient {
                     public void onResponse(CommentWPComRestResponse response) {
                         CommentModel newComment = commentResponseToComment(response, site);
                         newComment.setId(comment.getId()); // reconciliate local instance and newly created object
-                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(newComment);
+                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload,
+                                newComment);
                         mDispatcher.dispatch(CommentActionBuilder.newCreatedNewCommentAction(payload));
                     }
                 },
@@ -209,15 +226,16 @@ public class CommentRestClient extends BaseWPComRestClient {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         mDispatcher.dispatch(CommentActionBuilder.newCreatedNewCommentAction(
-                                CommentErrorUtils.commentErrorToFetchCommentPayload(error, comment)));
+                                CommentErrorUtils.commentErrorToFetchCommentPayload(requestPayload, error,
+                                        comment)));
                     }
                 }
         );
-        add(request);
+        add(requestPayload, request);
     }
 
-    public void likeComment(final SiteModel site, long remoteCommentId, @Nullable final CommentModel comment,
-                            boolean like) {
+    public void likeComment(final RequestPayload requestPayload, final SiteModel site, long remoteCommentId,
+                            @Nullable final CommentModel comment, boolean like) {
         // Prioritize CommentModel over comment id.
         if (comment != null) {
             remoteCommentId = comment.getRemoteCommentId();
@@ -235,7 +253,7 @@ public class CommentRestClient extends BaseWPComRestClient {
                 new Listener<CommentLikeWPComRestResponse>() {
                     @Override
                     public void onResponse(CommentLikeWPComRestResponse response) {
-                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(comment);
+                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload, comment);
 
                         if (comment != null) {
                             comment.setILike(response.i_like);
@@ -248,11 +266,11 @@ public class CommentRestClient extends BaseWPComRestClient {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         mDispatcher.dispatch(CommentActionBuilder.newLikedCommentAction(
-                                CommentErrorUtils.commentErrorToFetchCommentPayload(error, comment)));
+                                CommentErrorUtils.commentErrorToFetchCommentPayload(requestPayload, error, comment)));
                     }
                 }
         );
-        add(request);
+        add(requestPayload, request);
     }
 
     // Private methods

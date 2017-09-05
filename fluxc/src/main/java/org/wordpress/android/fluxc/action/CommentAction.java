@@ -3,13 +3,15 @@ package org.wordpress.android.fluxc.action;
 import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
-import org.wordpress.android.fluxc.model.CommentModel;
-import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsResponsePayload;
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCommentPayload;
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCommentResponsePayload;
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCreateCommentPayload;
+import org.wordpress.android.fluxc.store.CommentStore.RemoveAllCommentsPayload;
+import org.wordpress.android.fluxc.store.CommentStore.RemoveCommentPayload;
+import org.wordpress.android.fluxc.store.CommentStore.RemoveCommentsPayload;
+import org.wordpress.android.fluxc.store.CommentStore.UpdateCommentPayload;
 
 @ActionEnum
 public enum CommentAction implements IAction {
@@ -42,12 +44,12 @@ public enum CommentAction implements IAction {
     LIKED_COMMENT,
 
     // Local actions
-    @Action(payloadType = CommentModel.class)
+    @Action(payloadType = UpdateCommentPayload.class)
     UPDATE_COMMENT,
-    @Action(payloadType = SiteModel.class)
+    @Action(payloadType = RemoveCommentsPayload.class)
     REMOVE_COMMENTS,
-    @Action(payloadType = CommentModel.class)
+    @Action(payloadType = RemoveCommentPayload.class)
     REMOVE_COMMENT,
-    @Action
+    @Action(payloadType = RemoveAllCommentsPayload.class)
     REMOVE_ALL_COMMENTS,
 }

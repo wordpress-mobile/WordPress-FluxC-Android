@@ -10,7 +10,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.wordpress.android.fluxc.network.rest.GsonRequest;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator;
-import org.wordpress.android.fluxc.store.AccountStore.AuthenticateErrorPayload;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticationError;
 
 import java.io.UnsupportedEncodingException;
@@ -120,8 +119,7 @@ public class WPComGsonRequest<T> extends GsonRequest<T> {
                     || apiError.equals("access_denied") || apiError.equals("needs_2fa")) {
                 AuthenticationError authError = new AuthenticationError(
                         Authenticator.jsonErrorToAuthenticationError(jsonObject), apiMessage);
-                AuthenticateErrorPayload payload = new AuthenticateErrorPayload(authError);
-                mOnAuthFailedListener.onAuthFailed(payload);
+                mOnAuthFailedListener.onAuthFailed(authError);
             }
         }
 

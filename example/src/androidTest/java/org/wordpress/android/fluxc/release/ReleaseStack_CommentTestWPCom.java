@@ -18,6 +18,9 @@ import org.wordpress.android.fluxc.store.CommentStore.OnCommentChanged;
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCommentPayload;
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCreateCommentPayload;
 import org.wordpress.android.fluxc.store.CommentStore.RemoteLikeCommentPayload;
+import org.wordpress.android.fluxc.store.CommentStore.RemoveCommentPayload;
+import org.wordpress.android.fluxc.store.CommentStore.RemoveCommentsPayload;
+import org.wordpress.android.fluxc.store.CommentStore.UpdateCommentPayload;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
@@ -85,7 +88,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         // Update
         mNextEvent = TestEvents.COMMENT_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(CommentActionBuilder.newUpdateCommentAction(mNewComment));
+        mDispatcher.dispatch(CommentActionBuilder.newUpdateCommentAction(new UpdateCommentPayload(mNewComment)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check the last comment we get from the DB is the same
@@ -95,7 +98,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
         // Remove that comment
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(CommentActionBuilder.newRemoveCommentAction(mNewComment));
+        mDispatcher.dispatch(CommentActionBuilder.newRemoveCommentAction(new RemoveCommentPayload(mNewComment)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check the last comment we get from the DB is different
@@ -113,7 +116,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
 
         // Remove all comments for this site
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(CommentActionBuilder.newRemoveCommentsAction(sSite));
+        mDispatcher.dispatch(CommentActionBuilder.newRemoveCommentsAction(new RemoveCommentsPayload(sSite)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         count = mCommentStore.getNumberOfCommentsForSite(sSite, CommentStatus.ALL);

@@ -25,7 +25,7 @@ import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListPayload;
-import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
+import org.wordpress.android.fluxc.store.MediaStore.MediaRequestPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
@@ -263,7 +263,7 @@ public class MediaFragment extends Fragment {
     private void fetchMedia(@NonNull final SiteModel site, @NonNull MediaModel media) {
         prependToLog("Fetching requested media from" + site.getName());
 
-        MediaPayload payload = new MediaPayload(mSite, media);
+        MediaRequestPayload payload = new MediaRequestPayload(mSite, media);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
     }
 
@@ -276,7 +276,7 @@ public class MediaFragment extends Fragment {
         mCurrentUpload.setMimeType(MediaUtils.getMimeTypeForExtension(MediaUtils.getExtension(mediaUri)));
 
         // Upload
-        MediaPayload payload = new MediaPayload(site, mCurrentUpload);
+        MediaRequestPayload payload = new MediaRequestPayload(site, mCurrentUpload);
         prependToLog("Dispatching upload event for media localId=" + mCurrentUpload.getId());
 
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
@@ -286,7 +286,7 @@ public class MediaFragment extends Fragment {
     private void deleteMedia(@NonNull SiteModel site, @NonNull MediaModel media) {
         prependToLog("Deleting requested media from " + site.getName());
 
-        MediaPayload payload = new MediaPayload(site, media);
+        MediaRequestPayload payload = new MediaRequestPayload(site, media);
         mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(payload));
     }
 

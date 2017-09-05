@@ -14,7 +14,7 @@ import org.wordpress.android.fluxc.model.MediaModel.MediaUploadState;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListPayload;
-import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
+import org.wordpress.android.fluxc.store.MediaStore.MediaRequestPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
@@ -596,7 +596,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private void deleteMedia(MediaModel media) throws InterruptedException {
-        MediaPayload deletePayload = new MediaPayload(sSite, media);
+        MediaRequestPayload deletePayload = new MediaRequestPayload(sSite, media);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -604,7 +604,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     private void removeMedia(MediaModel media) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newRemoveMediaAction(media));
+        mDispatcher.dispatch(MediaActionBuilder.newRemoveMediaAction(new MediaRequestPayload(media)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 

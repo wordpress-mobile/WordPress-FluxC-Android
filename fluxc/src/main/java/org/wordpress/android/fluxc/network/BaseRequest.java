@@ -14,7 +14,7 @@ import com.android.volley.Request;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 
-import org.wordpress.android.fluxc.store.AccountStore.AuthenticateErrorPayload;
+import org.wordpress.android.fluxc.store.AccountStore.AuthenticationError;
 import org.wordpress.android.fluxc.utils.ErrorUtils.OnUnexpectedError;
 import org.wordpress.android.util.AppLog;
 
@@ -29,7 +29,7 @@ public abstract class BaseRequest<T> extends Request<T> {
     public Uri mUri;
 
     public interface OnAuthFailedListener {
-        void onAuthFailed(AuthenticateErrorPayload errorType);
+        void onAuthFailed(AuthenticationError error);
     }
     public interface BaseErrorListener {
         void onErrorResponse(@NonNull BaseNetworkError error);

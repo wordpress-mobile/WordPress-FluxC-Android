@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnNewSiteCreated;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteDeleted;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteExported;
+import org.wordpress.android.fluxc.store.SiteStore.SiteRequestPayload;
 import org.wordpress.android.fluxc.store.SiteStore.SiteVisibility;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -55,9 +56,9 @@ public class SitesFragment extends Fragment {
             public void onClick(View v) {
                 SiteModel site = mSiteStore.getSites().get(0);
                 // Fetch site
-                mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(site));
+                mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(new SiteRequestPayload(site)));
                 // Fetch site's post formats
-                mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(site));
+                mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(new SiteRequestPayload(site)));
             }
         });
 
@@ -65,7 +66,7 @@ public class SitesFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 for (SiteModel site : mSiteStore.getSites()) {
-                    mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(site));
+                    mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(new SiteRequestPayload(site)));
                 }
             }
         });
@@ -85,7 +86,7 @@ public class SitesFragment extends Fragment {
             public void onClick(View v) {
                 SiteModel site = mSiteStore.getSites().get(0);
                 // Delete site
-                mDispatcher.dispatch(SiteActionBuilder.newDeleteSiteAction(site));
+                mDispatcher.dispatch(SiteActionBuilder.newDeleteSiteAction(new SiteRequestPayload(site)));
             }
         });
 
@@ -94,7 +95,7 @@ public class SitesFragment extends Fragment {
             public void onClick(View v) {
                 SiteModel site = mSiteStore.getSites().get(0);
                 // Export site
-                mDispatcher.dispatch(SiteActionBuilder.newExportSiteAction(site));
+                mDispatcher.dispatch(SiteActionBuilder.newExportSiteAction(new SiteRequestPayload(site)));
             }
         });
 

@@ -9,10 +9,12 @@ import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
+import org.wordpress.android.fluxc.store.AccountStore.FetchAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.fluxc.store.SiteStore.FetchAllSitesPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -71,7 +73,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         // Also fetch the account - it's required before WP.com sites can be stored in the database
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.ACCOUNT_FETCHED;
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -80,7 +82,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchAllSitesPayload()));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

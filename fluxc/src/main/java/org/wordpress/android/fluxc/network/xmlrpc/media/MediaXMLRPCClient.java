@@ -10,6 +10,7 @@ import com.android.volley.VolleyError;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.RequestPayload;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.XMLRPC;
 import org.wordpress.android.fluxc.model.MediaModel;
@@ -27,10 +28,11 @@ import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCException;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCFault;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLSerializerUtils;
+import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListResponsePayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaError;
 import org.wordpress.android.fluxc.store.MediaStore.MediaErrorType;
-import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
+import org.wordpress.android.fluxc.store.MediaStore.MediaResponsePayload;
 import org.wordpress.android.fluxc.store.MediaStore.ProgressPayload;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
@@ -79,16 +81,16 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
     }
 
     @Override
-    public void onProgress(MediaModel media, float progress) {
+    public void onProgress(RequestPayload requestPayload, MediaModel media, float progress) {
         if (mCurrentUploadCalls.containsKey(media.getId())) {
-            notifyMediaProgress(media, Math.min(progress, 0.99f), null);
+            notifyMediaProgress(requestPayload, media, Math.min(progress, 0.99f), null);
         }
     }
 
-    public void pushMedia(final SiteModel site, final MediaModel media) {
+    public void pushMedia(final RequestPayload requestPayload, final SiteModel site, final MediaModel media) {
         List<Object> params = getBasicParams(site, media);
         params.add(getEditMediaFields(media));
-        add(new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.EDIT_POST, params,
+        add(requestPayload, new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.EDIT_POST, params,
                 new Listener<Object>() {
                     @Override
                     public void onResponse(Object response) {
@@ -96,13 +98,13 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
                         if (response == null || !(response instanceof Boolean) || !(Boolean) response) {
                             AppLog.w(T.MEDIA, "could not parse XMLRPC.EDIT_MEDIA response: " + response);
                             MediaError error = new MediaError(MediaErrorType.PARSE_ERROR);
-                            notifyMediaPushed(site, media, error);
+                            notifyMediaPushed(requestPayload, site, media, error);
                             return;
                         }
 
                         // success!
                         AppLog.i(T.MEDIA, "Media updated on remote: " + media.getTitle());
-                        notifyMediaPushed(site, media, null);
+                        notifyMediaPushed(requestPayload, site, media, null);
                     }
                 }, new BaseErrorListener() {
                     @Override
@@ -110,10 +112,10 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
                         AppLog.e(T.MEDIA, "error response to XMLRPC.EDIT_MEDIA request: " + error);
                         if (is404Response(error)) {
                             AppLog.e(T.MEDIA, "media does not exist, no need to report error");
-                            notifyMediaPushed(site, media, null);
+                            notifyMediaPushed(requestPayload, site, media, null);
                         } else {
                             MediaError mediaError = new MediaError(MediaErrorType.fromBaseNetworkError(error));
-                            notifyMediaPushed(site, media, mediaError);
+                            notifyMediaPushed(requestPayload, site, media, mediaError);
                         }
                     }
                 }
@@ -123,7 +125,7 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
     /**
      * ref: https://codex.wordpress.org/XML-RPC_WordPress_API/Media#wp.uploadFile
      */
-    public void uploadMedia(final SiteModel site, final MediaModel media) {
+    public void uploadMedia(final RequestPayload requestPayload, final SiteModel site, final MediaModel media) {
         URL xmlrpcUrl;
         try {
             xmlrpcUrl = new URL(site.getXmlRpcUrl());
@@ -135,17 +137,17 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
         if (media == null || media.getId() == 0) {
             // we can't have a MediaModel without an ID - otherwise we can't keep track of them.
             MediaError error = new MediaError(MediaErrorType.INVALID_ID);
-            notifyMediaUploaded(media, error);
+            notifyMediaUploaded(requestPayload, media, error);
             return;
         }
 
         if (!MediaUtils.canReadFile(media.getFilePath())) {
             MediaError error = new MediaError(MediaErrorType.FS_READ_PERMISSION_DENIED);
-            notifyMediaUploaded(media, error);
+            notifyMediaUploaded(requestPayload, media, error);
             return;
         }
 
-        XmlrpcUploadRequestBody requestBody = new XmlrpcUploadRequestBody(media, this, site);
+        XmlrpcUploadRequestBody requestBody = new XmlrpcUploadRequestBody(requestPayload, media, this, site);
         HttpUrl.Builder urlBuilder = new HttpUrl.Builder()
                 .scheme(xmlrpcUrl.getProtocol())
                 .host(xmlrpcUrl.getHost())
@@ -204,23 +206,23 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
                                 responseMedia.setLocalSiteId(site.getId());
                                 responseMedia.setLocalPostId(media.getLocalPostId());
 
-                                notifyMediaUploaded(responseMedia, null);
+                                notifyMediaUploaded(requestPayload, responseMedia, null);
                             }
                         } else {
                             AppLog.w(T.MEDIA, "error uploading media - malformed response: " + response.message());
                             MediaError error = new MediaError(MediaErrorType.PARSE_ERROR, response.message());
-                            notifyMediaUploaded(media, error);
+                            notifyMediaUploaded(requestPayload, media, error);
                         }
                     } catch (XMLRPCException fault) {
                         MediaError mediaError = getMediaErrorFromXMLRPCException(fault);
                         AppLog.w(T.MEDIA, "media upload failed with error: " + mediaError.message);
-                        notifyMediaUploaded(media, mediaError);
+                        notifyMediaUploaded(requestPayload, media, mediaError);
                     }
                 } else {
                     AppLog.e(T.MEDIA, "error uploading media: " + response.message());
                     MediaError error = new MediaError(MediaErrorType.fromHttpStatusCode(response.code()));
                     error.message = response.message();
-                    notifyMediaUploaded(media, error);
+                    notifyMediaUploaded(requestPayload, media, error);
                 }
             }
 
@@ -234,7 +236,7 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
                 }
 
                 MediaError error = MediaError.fromIOException(e);
-                notifyMediaUploaded(media, error);
+                notifyMediaUploaded(requestPayload, media, error);
             }
         });
     }
@@ -242,7 +244,8 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
     /**
      * ref: https://codex.wordpress.org/XML-RPC_WordPress_API/Media#wp.getMediaLibrary
      */
-    public void fetchMediaList(final SiteModel site, final int number, final int offset, final String mimeType) {
+    public void fetchMediaList(final RequestPayload requestPayload, final SiteModel site, final int number,
+                               final int offset, final String mimeType) {
         List<Object> params = getBasicParams(site, null);
         Map<String, Object> queryParams = new HashMap<>();
         queryParams.put("number", number);
@@ -254,7 +257,7 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
         }
         params.add(queryParams);
 
-        add(new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.GET_MEDIA_LIBRARY, params,
+        add(requestPayload, new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.GET_MEDIA_LIBRARY, params,
                 new Listener<Object[]>() {
                     @Override
                     public void onResponse(Object[] response) {
@@ -262,12 +265,12 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
                         if (mediaList != null) {
                             AppLog.v(T.MEDIA, "Fetched media list for site via XMLRPC.GET_MEDIA_LIBRARY");
                             boolean canLoadMore = mediaList.size() == number;
-                            notifyMediaListFetched(site, mediaList, offset > 0, canLoadMore, mimeType);
+                            notifyMediaListFetched(requestPayload, site, mediaList, offset > 0, canLoadMore, mimeType);
                         } else {
                             AppLog.w(T.MEDIA, "could not parse XMLRPC.GET_MEDIA_LIBRARY response: "
                                     + Arrays.toString(response));
                             MediaError error = new MediaError(MediaErrorType.PARSE_ERROR);
-                            notifyMediaListFetched(site, error, mimeType);
+                            notifyMediaListFetched(requestPayload, site, error, mimeType);
                         }
                     }
                 }, new BaseErrorListener() {
@@ -275,33 +278,34 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         AppLog.e(T.MEDIA, "XMLRPC.GET_MEDIA_LIBRARY error response:", error.volleyError);
                         MediaError mediaError = new MediaError(MediaErrorType.fromBaseNetworkError(error));
-                        notifyMediaListFetched(site, mediaError, mimeType);
+                        notifyMediaListFetched(requestPayload, site, mediaError, mimeType);
                     }
                 }
         ));
     }
 
-    public void fetchMedia(final SiteModel site, final MediaModel media) {
-        fetchMedia(site, media, false);
+    public void fetchMedia(final RequestPayload requestPayload, final SiteModel site, final MediaModel media) {
+        fetchMedia(requestPayload, site, media, false);
     }
 
     /**
      * ref: https://codex.wordpress.org/XML-RPC_WordPress_API/Media#wp.getMediaItem
      */
-    private void fetchMedia(final SiteModel site, final MediaModel media, final boolean isFreshUpload) {
+    private void fetchMedia(final RequestPayload requestPayload, final SiteModel site, final MediaModel media,
+                            final boolean isFreshUpload) {
         if (media == null) {
             // caller may be expecting a notification
             MediaError error = new MediaError(MediaErrorType.NULL_MEDIA_ARG);
             if (isFreshUpload) {
-                notifyMediaUploaded(null, error);
+                notifyMediaUploaded(requestPayload, null, error);
             } else {
-                notifyMediaFetched(site, null, error);
+                notifyMediaFetched(requestPayload, site, null, error);
             }
             return;
         }
 
         List<Object> params = getBasicParams(site, media);
-        add(new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.GET_MEDIA_ITEM, params,
+        add(requestPayload, new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.GET_MEDIA_ITEM, params,
                 new Listener<Object>() {
                     @Override
                     public void onResponse(Object response) {
@@ -316,17 +320,17 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
                             responseMedia.setLocalPostId(media.getLocalPostId());
 
                             if (isFreshUpload) {
-                                notifyMediaUploaded(responseMedia, null);
+                                notifyMediaUploaded(requestPayload, responseMedia, null);
                             } else {
-                                notifyMediaFetched(site, responseMedia, null);
+                                notifyMediaFetched(requestPayload, site, responseMedia, null);
                             }
                         } else {
                             AppLog.w(T.MEDIA, "could not parse Fetch media response, ID: " + media.getMediaId());
                             MediaError error = new MediaError(MediaErrorType.PARSE_ERROR);
                             if (isFreshUpload) {
-                                notifyMediaUploaded(media, error);
+                                notifyMediaUploaded(requestPayload, media, error);
                             } else {
-                                notifyMediaFetched(site, media, error);
+                                notifyMediaFetched(requestPayload, site, media, error);
                             }
                         }
                     }
@@ -338,25 +342,25 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
                         if (isFreshUpload) {
                             // we tried to fetch a media that's just uploaded but failed, so we should return
                             // an upload error and not a fetch error as initially parsing the upload response failed
-                            notifyMediaUploaded(media, new MediaError(MediaErrorType.PARSE_ERROR));
+                            notifyMediaUploaded(requestPayload, media, new MediaError(MediaErrorType.PARSE_ERROR));
                         } else {
-                            notifyMediaFetched(site, media, mediaError);
+                            notifyMediaFetched(requestPayload, site, media, mediaError);
                         }
                     }
                 }
             ));
     }
 
-    public void deleteMedia(final SiteModel site, final MediaModel media) {
+    public void deleteMedia(final RequestPayload requestPayload, final SiteModel site, final MediaModel media) {
         if (media == null) {
             // caller may be expecting a notification
             MediaError error = new MediaError(MediaErrorType.NULL_MEDIA_ARG);
-            notifyMediaDeleted(site, null, error);
+            notifyMediaDeleted(requestPayload, site, null, error);
             return;
         }
 
         List<Object> params = getBasicParams(site, media);
-        add(new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.DELETE_POST, params,
+        add(requestPayload, new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.DELETE_POST, params,
                 new Listener<Object>() {
                     @Override
                     public void onResponse(Object response) {
@@ -364,40 +368,40 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
                         if (response == null || !(response instanceof Boolean) || !(Boolean) response) {
                             AppLog.w(T.MEDIA, "could not parse XMLRPC.DELETE_MEDIA response: " + response);
                             MediaError error = new MediaError(MediaErrorType.PARSE_ERROR);
-                            notifyMediaDeleted(site, media, error);
+                            notifyMediaDeleted(requestPayload, site, media, error);
                             return;
                         }
 
                         AppLog.v(T.MEDIA, "Successful response from XMLRPC.DELETE_MEDIA");
-                        notifyMediaDeleted(site, media, null);
+                        notifyMediaDeleted(requestPayload, site, media, null);
                     }
                 }, new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         AppLog.e(T.MEDIA, "Error response from XMLRPC.DELETE_MEDIA:" + error);
                         MediaErrorType mediaError = MediaErrorType.fromBaseNetworkError(error);
-                        notifyMediaDeleted(site, media, new MediaError(mediaError));
+                        notifyMediaDeleted(requestPayload, site, media, new MediaError(mediaError));
                     }
                 }
             ));
     }
 
-    public void cancelUpload(final MediaModel media) {
-        if (media == null) {
+    public void cancelUpload(final CancelMediaPayload cancelMediaPayload) {
+        if (cancelMediaPayload.media == null) {
             MediaError error = new MediaError(MediaErrorType.NULL_MEDIA_ARG);
-            notifyMediaUploaded(null, error);
+            notifyMediaUploaded(cancelMediaPayload, null, error);
             return;
         }
 
         // cancel in-progress upload if necessary
-        Call correspondingCall = mCurrentUploadCalls.get(media.getId());
+        Call correspondingCall = mCurrentUploadCalls.get(cancelMediaPayload.media.getId());
         if (correspondingCall != null && correspondingCall.isExecuted() && !correspondingCall.isCanceled()) {
-            AppLog.d(T.MEDIA, "Canceled in-progress upload: " + media.getFileName());
-            removeCallFromCurrentUploadsMap(media.getId());
+            AppLog.d(T.MEDIA, "Canceled in-progress upload: " + cancelMediaPayload.media.getFileName());
+            removeCallFromCurrentUploadsMap(cancelMediaPayload.media.getId());
             correspondingCall.cancel();
 
             // report the upload was successfully cancelled
-            notifyMediaUploadCanceled(media);
+            notifyMediaUploadCanceled(cancelMediaPayload, cancelMediaPayload.media);
         }
     }
 
@@ -411,53 +415,54 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
     // Helper methods to dispatch media actions
     //
 
-    private void notifyMediaPushed(SiteModel site, MediaModel media, MediaError error) {
-        MediaPayload payload = new MediaPayload(site, media, error);
+    private void notifyMediaPushed(RequestPayload requestPayload, SiteModel site, MediaModel media, MediaError error) {
+        MediaResponsePayload payload = new MediaResponsePayload(requestPayload, site, media, error);
         mDispatcher.dispatch(MediaActionBuilder.newPushedMediaAction(payload));
     }
 
-    private void notifyMediaProgress(MediaModel media, float progress, MediaError error) {
-        ProgressPayload payload = new ProgressPayload(media, progress, false, error);
+    private void notifyMediaProgress(RequestPayload requestPayload, MediaModel media, float progress, MediaError error) {
+        ProgressPayload payload = new ProgressPayload(requestPayload, media, progress, false, error);
         mDispatcher.dispatch(MediaActionBuilder.newUploadedMediaAction(payload));
     }
 
-    private void notifyMediaUploaded(MediaModel media, MediaError error) {
+    private void notifyMediaUploaded(RequestPayload requestPayload, MediaModel media, MediaError error) {
         if (media != null) {
             media.setUploadState(error == null ? MediaUploadState.UPLOADED : MediaUploadState.FAILED);
             removeCallFromCurrentUploadsMap(media.getId());
         }
 
-        ProgressPayload payload = new ProgressPayload(media, 1.f, error == null, error);
+        ProgressPayload payload = new ProgressPayload(requestPayload, media, 1.f, error == null, error);
         mDispatcher.dispatch(MediaActionBuilder.newUploadedMediaAction(payload));
     }
 
-    private void notifyMediaListFetched(SiteModel site,
+    private void notifyMediaListFetched(RequestPayload requestPayload,
+                                        SiteModel site,
                                         @NonNull List<MediaModel> media,
                                         boolean loadedMore,
                                         boolean canLoadMore,
                                         String mimeType) {
-        FetchMediaListResponsePayload payload = new FetchMediaListResponsePayload(site, media,
+        FetchMediaListResponsePayload payload = new FetchMediaListResponsePayload(requestPayload, site, media,
                 loadedMore, canLoadMore, mimeType);
         mDispatcher.dispatch(MediaActionBuilder.newFetchedMediaListAction(payload));
     }
 
-    private void notifyMediaListFetched(SiteModel site, MediaError error, String mimeType) {
-        FetchMediaListResponsePayload payload = new FetchMediaListResponsePayload(site, error, mimeType);
+    private void notifyMediaListFetched(RequestPayload requestPayload, SiteModel site, MediaError error, String mimeType) {
+        FetchMediaListResponsePayload payload = new FetchMediaListResponsePayload(requestPayload, site, error, mimeType);
         mDispatcher.dispatch(MediaActionBuilder.newFetchedMediaListAction(payload));
     }
 
-    private void notifyMediaFetched(SiteModel site, MediaModel media, MediaError error) {
-        MediaPayload payload = new MediaPayload(site, media, error);
+    private void notifyMediaFetched(RequestPayload requestPayload, SiteModel site, MediaModel media, MediaError error) {
+        MediaResponsePayload payload = new MediaResponsePayload(requestPayload, site, media, error);
         mDispatcher.dispatch(MediaActionBuilder.newFetchedMediaAction(payload));
     }
 
-    private void notifyMediaDeleted(SiteModel site, MediaModel media, MediaError error) {
-        MediaPayload payload = new MediaPayload(site, media, error);
+    private void notifyMediaDeleted(RequestPayload requestPayload, SiteModel site, MediaModel media, MediaError error) {
+        MediaResponsePayload payload = new MediaResponsePayload(requestPayload, site, media, error);
         mDispatcher.dispatch(MediaActionBuilder.newDeletedMediaAction(payload));
     }
 
-    private void notifyMediaUploadCanceled(MediaModel media) {
-        ProgressPayload payload = new ProgressPayload(media, 0.f, false, true);
+    private void notifyMediaUploadCanceled(RequestPayload requestPayload, MediaModel media) {
+        ProgressPayload payload = new ProgressPayload(requestPayload, media, 0.f, false, true);
         mDispatcher.dispatch(MediaActionBuilder.newCanceledMediaUploadAction(payload));
     }
 

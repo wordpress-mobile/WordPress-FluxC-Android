@@ -14,7 +14,8 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wordpress.android.fluxc.Dispatcher;
-import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.RequestPayload;
+import org.wordpress.android.fluxc.ResponsePayload;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseErrorListener;
@@ -66,9 +67,19 @@ public class Authenticator {
     public interface ErrorListener extends Response.ErrorListener {
     }
 
-    public static class AuthEmailResponsePayload extends Payload {
+    public static class AuthEmailPayload extends RequestPayload {
+        public final String email;
+
+        public AuthEmailPayload(String email) {
+            this.email = email;
+        }
+    }
+
+    public static class AuthEmailResponsePayload extends ResponsePayload {
         public AuthEmailError error;
-        public AuthEmailResponsePayload() {}
+        public AuthEmailResponsePayload(RequestPayload requestPayload) {
+            super(requestPayload);
+        }
     }
 
     @Inject
@@ -198,11 +209,11 @@ public class Authenticator {
         }
     }
 
-    public void sendAuthEmail(final String email) {
+    public void sendAuthEmail(final AuthEmailPayload authEmailPayload) {
         String url = WPCOMREST.auth.send_login_email.getUrlV1_1();
 
         Map<String, Object> params = new HashMap<>();
-        params.put("email", email);
+        params.put("email", authEmailPayload.email);
         params.put("client_id", mAppSecrets.getAppId());
         params.put("client_secret", mAppSecrets.getAppSecret());
 
@@ -210,7 +221,7 @@ public class Authenticator {
                 new Response.Listener<AuthEmailWPComRestResponse>() {
                     @Override
                     public void onResponse(AuthEmailWPComRestResponse response) {
-                        AuthEmailResponsePayload payload = new AuthEmailResponsePayload();
+                        AuthEmailResponsePayload payload = new AuthEmailResponsePayload(authEmailPayload);
 
                         if (!response.success) {
                             payload.error = new AuthEmailError(AuthEmailErrorType.UNSUCCESSFUL, "");
@@ -220,7 +231,7 @@ public class Authenticator {
                 }, new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        AuthEmailResponsePayload payload = new AuthEmailResponsePayload();
+                        AuthEmailResponsePayload payload = new AuthEmailResponsePayload(authEmailPayload);
                         payload.error = new AuthEmailError(((WPComGsonNetworkError) error).apiError, error.message);
                         mDispatcher.dispatch(AuthenticationActionBuilder.newSentAuthEmailAction(payload));
                     }

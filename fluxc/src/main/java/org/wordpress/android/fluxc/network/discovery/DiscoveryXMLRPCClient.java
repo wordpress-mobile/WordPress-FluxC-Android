@@ -7,6 +7,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.ServerError;
 
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.RequestPayload;
 import org.wordpress.android.fluxc.generated.endpoint.XMLRPC;
 import org.wordpress.android.fluxc.network.BaseRequestFuture;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
@@ -39,10 +40,10 @@ public class DiscoveryXMLRPCClient extends BaseXMLRPCClient {
     /**
      * Obtain the HTML response from a GET request for the given URL.
      */
-    public String getResponse(String url) throws DiscoveryException {
+    public String getResponse(RequestPayload requestPayload, String url) throws DiscoveryException {
         BaseRequestFuture<String> future = BaseRequestFuture.newFuture();
         DiscoveryRequest request = new DiscoveryRequest(url, future, future);
-        add(request);
+        add(requestPayload, request);
 
         try {
             return future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
@@ -73,7 +74,7 @@ public class DiscoveryXMLRPCClient extends BaseXMLRPCClient {
     /**
      * Peform a system.listMethods call on the given URL.
      */
-    public Object[] listMethods(String url) throws DiscoveryException {
+    public Object[] listMethods(RequestPayload requestPayload, String url) throws DiscoveryException {
         if (!UrlUtils.isValidUrlAndHostNotNull(url)) {
             AppLog.e(AppLog.T.NUX, "Invalid URL: " + url);
             throw new DiscoveryException(DiscoveryError.INVALID_URL, url);
@@ -83,7 +84,7 @@ public class DiscoveryXMLRPCClient extends BaseXMLRPCClient {
 
         BaseRequestFuture<Object[]> future = BaseRequestFuture.newFuture();
         DiscoveryXMLRPCRequest request = new DiscoveryXMLRPCRequest(url, XMLRPC.LIST_METHODS, future, future);
-        add(request);
+        add(requestPayload, request);
 
         try {
             return future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);

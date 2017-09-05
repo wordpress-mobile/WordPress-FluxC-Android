@@ -33,14 +33,18 @@ import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
+import org.wordpress.android.fluxc.store.AccountStore.SignOutPayload;
 import org.wordpress.android.fluxc.store.MediaStore;
-import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
+import org.wordpress.android.fluxc.store.MediaStore.MediaRequestPayload;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
+import org.wordpress.android.fluxc.store.PostStore.RemotePostRequest;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
+import org.wordpress.android.fluxc.store.SiteStore.RemoveWpcomAndJetpackSitesPayload;
+import org.wordpress.android.fluxc.store.SiteStore.SiteRequestPayload;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.DateTimeUtils;
@@ -199,17 +203,17 @@ public class PostActivity extends AppCompatActivity {
                              + "\" height=\"" + mMedia.getHeight() + "\" />";
         post.setContent(postContent);
 
-        PostStore.RemotePostPayload payload = new PostStore.RemotePostPayload(post, mSite);
+        RemotePostRequest payload = new RemotePostRequest(post, mSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
         AppLog.i(AppLog.T.API, "Create a new media post for " + mMedia.getUrl());
     }
 
     private void signOut() {
         if (mAccountStore.hasAccessToken()) {
-            mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
-            mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
+            mDispatcher.dispatch(AccountActionBuilder.newSignOutAction(new SignOutPayload()));
+            mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction(new RemoveWpcomAndJetpackSitesPayload()));
         } else {
-            mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(mSite));
+            mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(new SiteRequestPayload(mSite)));
         }
     }
 
@@ -222,10 +226,11 @@ public class PostActivity extends AppCompatActivity {
         mediaModel.setFileName(MediaUtils.getFileName(imagePath));
         mediaModel.setLocalSiteId(mSite.getId());
         mediaModel.setUploadDate(DateTimeUtils.iso8601UTCFromTimestamp(System.currentTimeMillis() / 1000));
-        mDispatcher.dispatch(MediaActionBuilder.newUpdateMediaAction(mediaModel));
+        MediaRequestPayload updateMediaPayload = new MediaRequestPayload(null, mediaModel);
+        mDispatcher.dispatch(MediaActionBuilder.newUpdateMediaAction(updateMediaPayload));
 
-        MediaPayload payload = new MediaPayload(mSite, mediaModel);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        MediaRequestPayload uploadMediaPayload = new MediaRequestPayload(mSite, mediaModel);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(uploadMediaPayload));
     }
 
     @SuppressWarnings("unused")

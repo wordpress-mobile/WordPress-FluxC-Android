@@ -5,6 +5,10 @@ import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.AccountStore.AvailableBlogPayload;
+import org.wordpress.android.fluxc.store.AccountStore.AvailableDomainPayload;
+import org.wordpress.android.fluxc.store.AccountStore.AvailableEmailPayload;
+import org.wordpress.android.fluxc.store.AccountStore.AvailableUsernamePayload;
 import org.wordpress.android.fluxc.store.AccountStore.IsAvailableErrorType;
 import org.wordpress.android.fluxc.store.AccountStore.OnAvailabilityChecked;
 import org.wordpress.android.util.AppLog;
@@ -46,7 +50,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     public void testIsAvailableBlog() throws InterruptedException {
         mNextEvent = TestEvents.IS_AVAILABLE_BLOG;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableBlogAction("wordpress"));
+        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableBlogAction(new AvailableBlogPayload("wordpress")));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -56,7 +60,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         String unavailableBlog = "docbrown" + RandomStringUtils.randomAlphanumeric(8).toLowerCase();
         mNextEvent = TestEvents.IS_AVAILABLE_BLOG;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableBlogAction(unavailableBlog));
+        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableBlogAction(new AvailableBlogPayload(unavailableBlog)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -67,7 +71,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     public void testIsAvailableBlogInvalid() throws InterruptedException {
         mNextEvent = TestEvents.ERROR_INVALID;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableBlogAction("notavalidname#"));
+        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableBlogAction(new AvailableBlogPayload("notavalidname#")));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -78,7 +82,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     public void testIsAvailableDomain() throws InterruptedException {
         mNextEvent = TestEvents.IS_AVAILABLE_DOMAIN;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableDomainAction("docbrown.com"));
+        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableDomainAction(new AvailableDomainPayload("docbrown.com")));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -89,7 +93,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         String unavailableDomain = "docbrown" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + ".com";
         mNextEvent = TestEvents.IS_AVAILABLE_DOMAIN;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableDomainAction(unavailableDomain));
+        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableDomainAction(new AvailableDomainPayload(unavailableDomain)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -101,7 +105,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     public void testIsAvailableDomainInvalid() throws InterruptedException {
         mNextEvent = TestEvents.ERROR_INVALID;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableDomainAction("notavaliddomain#"));
+        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableDomainAction(new AvailableDomainPayload("notavaliddomain#")));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -112,7 +116,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     public void testIsAvailableEmail() throws InterruptedException {
         mNextEvent = TestEvents.IS_AVAILABLE_EMAIL;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableEmailAction("mobile@automattic.com"));
+        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableEmailAction(new AvailableEmailPayload("mobile@automattic.com")));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -122,7 +126,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         String unavailableEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
         mNextEvent = TestEvents.IS_AVAILABLE_EMAIL;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableEmailAction(unavailableEmail));
+        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableEmailAction(new AvailableEmailPayload(unavailableEmail)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -133,7 +137,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     public void testIsAvailableEmailInvalid() throws InterruptedException {
         mNextEvent = TestEvents.ERROR_INVALID;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableEmailAction("notanemail"));
+        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableEmailAction(new AvailableEmailPayload("notanemail")));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -144,7 +148,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     public void testIsAvailableUsername() throws InterruptedException {
         mNextEvent = TestEvents.IS_AVAILABLE_USERNAME;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableUsernameAction("mobile"));
+        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableUsernameAction(new AvailableUsernamePayload("mobile")));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -154,7 +158,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         String unavailableUsername = "fluxc" + RandomStringUtils.randomAlphanumeric(8).toLowerCase();
         mNextEvent = TestEvents.IS_AVAILABLE_USERNAME;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableUsernameAction(unavailableUsername));
+        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableUsernameAction(new AvailableUsernamePayload(unavailableUsername)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -165,7 +169,7 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     public void testIsAvailableUsernameInvalid() throws InterruptedException {
         mNextEvent = TestEvents.ERROR_INVALID;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableUsernameAction("invalidusername#"));
+        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableUsernameAction(new AvailableUsernamePayload("invalidusername#")));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 

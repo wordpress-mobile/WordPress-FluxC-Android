@@ -6,12 +6,14 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.RequestPayload;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.network.BaseRequest.OnAuthFailedListener;
 import org.wordpress.android.fluxc.network.BaseRequest.OnParseErrorListener;
 import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticateErrorPayload;
+import org.wordpress.android.fluxc.store.AccountStore.AuthenticationError;
 import org.wordpress.android.fluxc.utils.ErrorUtils.OnUnexpectedError;
 import org.wordpress.android.util.LanguageUtils;
 
@@ -22,9 +24,6 @@ public abstract class BaseWPComRestClient {
     protected final Dispatcher mDispatcher;
     protected UserAgent mUserAgent;
 
-    private OnAuthFailedListener mOnAuthFailedListener;
-    private OnParseErrorListener mOnParseErrorListener;
-
     public BaseWPComRestClient(Context appContext, Dispatcher dispatcher, RequestQueue requestQueue,
                                AccessToken accessToken, UserAgent userAgent) {
         mRequestQueue = requestQueue;
@@ -32,52 +31,62 @@ public abstract class BaseWPComRestClient {
         mAccessToken = accessToken;
         mUserAgent = userAgent;
         mAppContext = appContext;
-        mOnAuthFailedListener = new OnAuthFailedListener() {
+    }
+
+    private OnAuthFailedListener getOnAuthFailedListener(final RequestPayload requestPayload) {
+        return new OnAuthFailedListener() {
             @Override
-            public void onAuthFailed(AuthenticateErrorPayload authError) {
-                mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateErrorAction(authError));
+            public void onAuthFailed(AuthenticationError authError) {
+                AuthenticateErrorPayload payload = new AuthenticateErrorPayload(requestPayload, authError);
+                mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateErrorAction(payload));
             }
         };
-        mOnParseErrorListener = new OnParseErrorListener() {
+    }
+
+    private OnParseErrorListener getOnParseErrorListener(final RequestPayload requestPayload) {
+        return new OnParseErrorListener() {
             @Override
             public void onParseError(OnUnexpectedError event) {
+                event.requestPayload = requestPayload;
                 mDispatcher.emitChange(event);
             }
         };
     }
 
-    protected Request add(WPComGsonRequest request) {
+    protected Request add(RequestPayload requestPayload, WPComGsonRequest request) {
         // Add "locale=xx_XX" query parameter to all request by default
-        return add(request, true);
+        return add(requestPayload, request, true);
     }
 
-    protected Request add(WPComGsonRequest request, boolean addLocaleParameter) {
+    protected Request add(RequestPayload requestPayload, WPComGsonRequest request, boolean addLocaleParameter) {
         if (addLocaleParameter) {
             request.addQueryParameter("locale", LanguageUtils.getPatchedCurrentDeviceLanguage(mAppContext));
         }
         // TODO: If !mAccountToken.exists() then trigger the mOnAuthFailedListener
-        return mRequestQueue.add(setRequestAuthParams(request, true));
+        return mRequestQueue.add(setRequestAuthParams(requestPayload, request, true));
     }
 
-    protected Request addUnauthedRequest(WPComGsonRequest request) {
+    protected Request addUnauthedRequest(RequestPayload requestPayload, WPComGsonRequest request) {
         // Add "locale=xx_XX" query parameter to all request by default
-        return addUnauthedRequest(request, true);
+        return addUnauthedRequest(requestPayload, request, true);
     }
 
-    protected Request addUnauthedRequest(WPComGsonRequest request, boolean addLocaleParameter) {
+    protected Request addUnauthedRequest(RequestPayload requestPayload, WPComGsonRequest request,
+                                         boolean addLocaleParameter) {
         if (addLocaleParameter) {
             request.addQueryParameter("locale", LanguageUtils.getPatchedCurrentDeviceLanguage(mAppContext));
         }
-        return mRequestQueue.add(setRequestAuthParams(request, false));
+        return mRequestQueue.add(setRequestAuthParams(requestPayload, request, false));
     }
 
     protected AccessToken getAccessToken() {
         return mAccessToken;
     }
 
-    private WPComGsonRequest setRequestAuthParams(WPComGsonRequest request, boolean shouldAuth) {
-        request.setOnAuthFailedListener(mOnAuthFailedListener);
-        request.setOnParseErrorListener(mOnParseErrorListener);
+    private WPComGsonRequest setRequestAuthParams(RequestPayload requestPayload, WPComGsonRequest request,
+                                                  boolean shouldAuth) {
+        request.setOnAuthFailedListener(getOnAuthFailedListener(requestPayload));
+        request.setOnParseErrorListener(getOnParseErrorListener(requestPayload));
         request.setUserAgent(mUserAgent.getUserAgent());
         request.setAccessToken(shouldAuth ? mAccessToken.get() : null);
         return request;

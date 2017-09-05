@@ -14,7 +14,9 @@ import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.PostError;
 import org.wordpress.android.fluxc.store.PostStore.PostErrorType;
-import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
+import org.wordpress.android.fluxc.store.PostStore.RemotePostRequest;
+import org.wordpress.android.fluxc.store.PostStore.RemoveAllPostsPayload;
+import org.wordpress.android.fluxc.store.PostStore.UpdatePostPayload;
 import org.wordpress.android.fluxc.utils.WellSqlUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -581,7 +583,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.POST_DELETED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(uploadedPost, sSite)));
+        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostRequest(uploadedPost, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -600,7 +602,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, sSite)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostRequest(post, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -630,7 +632,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
 
         // Upload edited post
-        RemotePostPayload pushPayload = new RemotePostPayload(uploadedPost, sSite);
+        RemotePostRequest pushPayload = new RemotePostRequest(uploadedPost, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -660,7 +662,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(invalidPost, sSite)));
+        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostRequest(invalidPost, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -682,7 +684,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
 
         // Upload edited post
-        RemotePostPayload pushPayload = new RemotePostPayload(mPost, sSite);
+        RemotePostRequest pushPayload = new RemotePostRequest(mPost, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -716,7 +718,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
 
         // Upload edited post
-        RemotePostPayload pushPayload = new RemotePostPayload(uploadedPost, sSite);
+        RemotePostRequest pushPayload = new RemotePostRequest(uploadedPost, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -749,7 +751,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
 
         // Upload edited post
-        RemotePostPayload pushPayload = new RemotePostPayload(mPost, sSite);
+        RemotePostRequest pushPayload = new RemotePostRequest(mPost, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -780,7 +782,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
 
         // Upload edited post
-        RemotePostPayload pushPayload = new RemotePostPayload(uploadedPost, sSite);
+        RemotePostRequest pushPayload = new RemotePostRequest(uploadedPost, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -817,7 +819,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         badSite.setPassword("wrong");
         badSite.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, badSite)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostRequest(post, badSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -838,7 +840,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         badSite.setPassword("wrong");
         badSite.setXmlRpcUrl("http://www.android.com");
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, badSite)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostRequest(post, badSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -881,7 +883,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.ERROR_UNAUTHORIZED;
         mCountDownLatch = new CountDownLatch(1);
 
-        RemotePostPayload pushPayload = new RemotePostPayload(mPost, subscriberSite);
+        RemotePostRequest pushPayload = new RemotePostRequest(mPost, subscriberSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -1016,7 +1018,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.POST_UPLOADED;
         mCountDownLatch = new CountDownLatch(1);
 
-        RemotePostPayload pushPayload = new RemotePostPayload(post, sSite);
+        RemotePostRequest pushPayload = new RemotePostRequest(post, sSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -1026,7 +1028,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.POST_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostPayload(post, sSite)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostRequest(post, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -1035,7 +1037,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.POST_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newUpdatePostAction(post));
+        mDispatcher.dispatch(PostActionBuilder.newUpdatePostAction(new UpdatePostPayload(post)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -1044,7 +1046,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.ALL_POST_REMOVED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newRemoveAllPostsAction());
+        mDispatcher.dispatch(PostActionBuilder.newRemoveAllPostsAction(new RemoveAllPostsPayload()));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

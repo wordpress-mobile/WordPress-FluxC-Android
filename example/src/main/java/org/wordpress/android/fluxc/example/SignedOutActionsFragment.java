@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.AuthEmailPayload;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.DomainSuggestionResponse;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
@@ -29,6 +30,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
 import org.wordpress.android.fluxc.store.SiteStore.OnURLChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnWPComSiteFetched;
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
+import org.wordpress.android.fluxc.store.SiteStore.UrlRequestPayload;
 
 import javax.inject.Inject;
 
@@ -127,7 +129,7 @@ public class SignedOutActionsFragment extends Fragment {
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String url = editText.getText().toString();
-                mDispatcher.dispatch(SiteActionBuilder.newIsWpcomUrlAction(url));
+                mDispatcher.dispatch(SiteActionBuilder.newIsWpcomUrlAction(new UrlRequestPayload(url)));
             }
         });
         alert.show();
@@ -159,7 +161,7 @@ public class SignedOutActionsFragment extends Fragment {
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String email = editText.getText().toString();
-                mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(email));
+                mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(new AuthEmailPayload(email)));
             }
         });
         alert.show();
@@ -174,7 +176,7 @@ public class SignedOutActionsFragment extends Fragment {
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String url = editText.getText().toString();
-                mDispatcher.dispatch(SiteActionBuilder.newFetchConnectSiteInfoAction(url));
+                mDispatcher.dispatch(SiteActionBuilder.newFetchConnectSiteInfoAction(new UrlRequestPayload(url)));
             }
         });
         alert.show();
@@ -189,7 +191,7 @@ public class SignedOutActionsFragment extends Fragment {
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String url = editText.getText().toString();
-                mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(url));
+                mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(new UrlRequestPayload(url)));
             }
         });
         alert.show();

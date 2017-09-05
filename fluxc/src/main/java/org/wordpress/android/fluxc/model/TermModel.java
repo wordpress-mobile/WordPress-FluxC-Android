@@ -5,13 +5,13 @@ import com.yarolegovich.wellsql.core.annotation.Column;
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey;
 import com.yarolegovich.wellsql.core.annotation.Table;
 
-import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.BasePayload;
 import org.wordpress.android.util.StringUtils;
 
 import java.io.Serializable;
 
 @Table
-public class TermModel extends Payload implements Identifiable, Serializable {
+public class TermModel extends BasePayload implements Identifiable, Serializable {
     @PrimaryKey
     @Column private int mId;
     @Column private int mLocalSiteId;

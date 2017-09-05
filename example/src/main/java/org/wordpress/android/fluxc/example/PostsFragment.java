@@ -20,7 +20,7 @@ import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.OnPostsSearched;
-import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
+import org.wordpress.android.fluxc.store.PostStore.RemotePostRequest;
 import org.wordpress.android.fluxc.store.PostStore.SearchPostsPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.util.ToastUtils;
@@ -64,7 +64,7 @@ public class PostsFragment extends Fragment {
                 examplePost.setTitle("From example activity");
                 examplePost.setContent("Hi there, I'm a post from FluxC!");
                 examplePost.setFeaturedImageId(0);
-                RemotePostPayload payload = new RemotePostPayload(examplePost, getFirstSite());
+                RemotePostRequest payload = new RemotePostRequest(examplePost, getFirstSite());
                 mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
             }
         });
@@ -81,7 +81,7 @@ public class PostsFragment extends Fragment {
                     }
                 });
                 if (!posts.isEmpty()) {
-                    RemotePostPayload payload = new RemotePostPayload(posts.get(0), firstSite);
+                    RemotePostRequest payload = new RemotePostRequest(posts.get(0), firstSite);
                     mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(payload));
                 }
             }

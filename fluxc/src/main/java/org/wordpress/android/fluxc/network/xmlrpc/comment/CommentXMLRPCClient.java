@@ -8,6 +8,7 @@ import com.android.volley.Response.Listener;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.RequestPayload;
 import org.wordpress.android.fluxc.generated.CommentActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.XMLRPC;
 import org.wordpress.android.fluxc.model.CommentModel;
@@ -23,7 +24,9 @@ import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCUtils;
 import org.wordpress.android.fluxc.store.CommentStore.CommentError;
 import org.wordpress.android.fluxc.store.CommentStore.CommentErrorType;
+import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsPayload;
 import org.wordpress.android.fluxc.store.CommentStore.FetchCommentsResponsePayload;
+import org.wordpress.android.fluxc.store.CommentStore.RemoteCommentPayload;
 import org.wordpress.android.fluxc.store.CommentStore.RemoteCommentResponsePayload;
 import org.wordpress.android.fluxc.utils.CommentErrorUtils;
 import org.wordpress.android.util.DateTimeUtils;
@@ -43,27 +46,28 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
         super(dispatcher, requestQueue, userAgent, httpAuthManager);
     }
 
-    public void fetchComments(final SiteModel site, final int number, final int offset, CommentStatus status) {
+    public void fetchComments(final FetchCommentsPayload fetchCommentsPayload) {
         List<Object> params = new ArrayList<>(4);
         Map<String, Object> commentParams = new HashMap<>();
-        commentParams.put("number", number);
-        commentParams.put("offset", offset);
-        if (status != CommentStatus.ALL) {
-            commentParams.put("status", getXMLRPCCommentStatus(status));
+        commentParams.put("number", fetchCommentsPayload.number);
+        commentParams.put("offset", fetchCommentsPayload.offset);
+        if (fetchCommentsPayload.status != CommentStatus.ALL) {
+            commentParams.put("status", getXMLRPCCommentStatus(fetchCommentsPayload.status));
         }
 
-        params.add(site.getSelfHostedSiteId());
-        params.add(site.getUsername());
-        params.add(site.getPassword());
+        params.add(fetchCommentsPayload.site.getSelfHostedSiteId());
+        params.add(fetchCommentsPayload.site.getUsername());
+        params.add(fetchCommentsPayload.site.getPassword());
         params.add(commentParams);
         final XMLRPCRequest request = new XMLRPCRequest(
-                site.getXmlRpcUrl(), XMLRPC.GET_COMMENTS, params,
+                fetchCommentsPayload.site.getXmlRpcUrl(), XMLRPC.GET_COMMENTS, params,
                 new Listener<Object>() {
                     @Override
                     public void onResponse(Object response) {
-                        List<CommentModel> comments = commentsResponseToCommentList(response, site);
-                        FetchCommentsResponsePayload payload = new FetchCommentsResponsePayload(comments, site, number,
-                                offset);
+                        List<CommentModel> comments = commentsResponseToCommentList(response, fetchCommentsPayload.site);
+                        FetchCommentsResponsePayload payload = new FetchCommentsResponsePayload(fetchCommentsPayload,
+                                comments, fetchCommentsPayload.site, fetchCommentsPayload.number,
+                                fetchCommentsPayload.offset);
                         mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentsAction(payload));
                     }
                 },
@@ -71,14 +75,16 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentsAction(
-                                CommentErrorUtils.commentErrorToFetchCommentsPayload(error, site)));
+                                CommentErrorUtils.commentErrorToFetchCommentsPayload(fetchCommentsPayload, error,
+                                        fetchCommentsPayload.site)));
                     }
                 }
         );
-        add(request);
+        add(fetchCommentsPayload, request);
     }
 
-    public void pushComment(final SiteModel site, @NonNull final CommentModel comment) {
+    public void pushComment(final RequestPayload requestPayload, final SiteModel site,
+                            @NonNull final CommentModel comment) {
         List<Object> params = new ArrayList<>(5);
         Map<String, Object> commentParams = new HashMap<>();
         commentParams.put("content", comment.getContent());
@@ -96,7 +102,7 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                 new Listener<Object>() {
                     @Override
                     public void onResponse(Object response) {
-                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(comment);
+                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload, comment);
                         mDispatcher.dispatch(CommentActionBuilder.newPushedCommentAction(payload));
                     }
                 },
@@ -104,31 +110,34 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         mDispatcher.dispatch(CommentActionBuilder.newPushedCommentAction(
-                                CommentErrorUtils.commentErrorToPushCommentPayload(error, comment)));
+                                CommentErrorUtils.commentErrorToPushCommentPayload(requestPayload, error, comment)));
                     }
                 }
         );
-        add(request);
+        add(requestPayload, request);
     }
 
-    public void fetchComment(final SiteModel site, long remoteCommentId, final CommentModel comment) {
+    public void fetchComment(final RemoteCommentPayload remoteCommentPayload) {
+        long remoteCommentId = remoteCommentPayload.remoteCommentId;
+
         // Prioritize CommentModel over comment id.
-        if (comment != null) {
-            remoteCommentId = comment.getRemoteCommentId();
+        if (remoteCommentPayload.comment != null) {
+            remoteCommentId = remoteCommentPayload.comment.getRemoteCommentId();
         }
 
         List<Object> params = new ArrayList<>(4);
-        params.add(site.getSelfHostedSiteId());
-        params.add(site.getUsername());
-        params.add(site.getPassword());
+        params.add(remoteCommentPayload.site.getSelfHostedSiteId());
+        params.add(remoteCommentPayload.site.getUsername());
+        params.add(remoteCommentPayload.site.getPassword());
         params.add(remoteCommentId);
         final XMLRPCRequest request = new XMLRPCRequest(
-                site.getXmlRpcUrl(), XMLRPC.GET_COMMENT, params,
+                remoteCommentPayload.site.getXmlRpcUrl(), XMLRPC.GET_COMMENT, params,
                 new Listener<Object>() {
                     @Override
                     public void onResponse(Object response) {
-                        CommentModel updatedComment = commentResponseToComment(response, site);
-                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(updatedComment);
+                        CommentModel updatedComment = commentResponseToComment(response, remoteCommentPayload.site);
+                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(remoteCommentPayload,
+                                updatedComment);
                         mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentAction(payload));
                     }
                 },
@@ -136,14 +145,16 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentAction(
-                                CommentErrorUtils.commentErrorToFetchCommentPayload(error, comment)));
+                                CommentErrorUtils.commentErrorToFetchCommentPayload(remoteCommentPayload, error,
+                                        remoteCommentPayload.comment)));
                     }
                 }
         );
-        add(request);
+        add(remoteCommentPayload, request);
     }
 
-    public void deleteComment(final SiteModel site, long remoteCommentId, @Nullable final CommentModel comment) {
+    public void deleteComment(final RequestPayload requestPayload, final SiteModel site, long remoteCommentId,
+                              @Nullable final CommentModel comment) {
         // Prioritize CommentModel over comment id.
         if (comment != null) {
             remoteCommentId = comment.getRemoteCommentId();
@@ -159,7 +170,7 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                 new Listener<Object>() {
                     @Override
                     public void onResponse(Object response) {
-                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(comment);
+                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload, comment);
                         if (comment != null) {
                             // This is ugly but the XMLRPC response doesn't contain any info about the update comment.
                             // So we're copying the logic here: if the comment status was "trash" before and the delete
@@ -178,17 +189,18 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         mDispatcher.dispatch(CommentActionBuilder.newDeletedCommentAction(
-                                CommentErrorUtils.commentErrorToFetchCommentPayload(error, comment)));
+                                CommentErrorUtils.commentErrorToFetchCommentPayload(requestPayload, error, comment)));
                     }
                 }
         );
-        add(request);
+        add(requestPayload, request);
     }
 
     /**
      * Create a new reply to a Comment
      */
-    public void createNewReply(final SiteModel site, final CommentModel comment, final CommentModel reply) {
+    public void createNewReply(final RequestPayload requestPayload, final SiteModel site, final CommentModel comment,
+                               final CommentModel reply) {
         // Comment parameters
         Map<String, Object> replyParams = new HashMap<>(5);
 
@@ -208,13 +220,14 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
             replyParams.put("author_email", reply.getAuthorEmail());
         }
 
-        newComment(site, comment.getRemotePostId(), reply, comment.getRemoteCommentId(), replyParams);
+        newComment(requestPayload, site, comment.getRemotePostId(), reply, comment.getRemoteCommentId(), replyParams);
     }
 
     /**
      * Create a new comment to a Post
      */
-    public void createNewComment(final SiteModel site, final PostModel post, final CommentModel comment) {
+    public void createNewComment(final RequestPayload requestPayload, final SiteModel site, final PostModel post,
+                                 final CommentModel comment) {
         // Comment parameters
         Map<String, Object> commentParams = new HashMap<>(5);
         commentParams.put("content", comment.getContent());
@@ -230,13 +243,14 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
         if (comment.getAuthorEmail() != null) {
             commentParams.put("author_email", comment.getAuthorEmail());
         }
-        newComment(site, post.getRemotePostId(), comment, comment.getRemoteParentCommentId(), commentParams);
+        newComment(requestPayload, site, post.getRemotePostId(), comment, comment.getRemoteParentCommentId(),
+                commentParams);
     }
 
     // Private methods
 
-    private void newComment(final SiteModel site, long remotePostId, final CommentModel comment, final long parentId,
-                            Map<String, Object> commentParams) {
+    private void newComment(final RequestPayload requestPayload, final SiteModel site, long remotePostId,
+                            final CommentModel comment, final long parentId, Map<String, Object> commentParams) {
         List<Object> params = new ArrayList<>(5);
         params.add(site.getSelfHostedSiteId());
         params.add(site.getUsername());
@@ -248,7 +262,7 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                 new Listener<Object>() {
                     @Override
                     public void onResponse(Object response) {
-                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(comment);
+                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload, comment);
                         comment.setRemoteParentCommentId(parentId);
                         if (response instanceof Integer) {
                             comment.setRemoteCommentId((int) response);
@@ -262,11 +276,11 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         mDispatcher.dispatch(CommentActionBuilder.newCreatedNewCommentAction(
-                                CommentErrorUtils.commentErrorToFetchCommentPayload(error, comment)));
+                                CommentErrorUtils.commentErrorToFetchCommentPayload(requestPayload, error, comment)));
                     }
                 }
         );
-        add(request);
+        add(requestPayload, request);
     }
 
     private String getXMLRPCCommentStatus(CommentStatus status) {

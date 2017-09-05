@@ -3,13 +3,16 @@ package org.wordpress.android.fluxc.action;
 import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
-import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostResponsePayload;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
+import org.wordpress.android.fluxc.store.PostStore.FetchPostsResponsePayload;
+import org.wordpress.android.fluxc.store.PostStore.RemotePostRequest;
+import org.wordpress.android.fluxc.store.PostStore.RemotePostResponsePayload;
+import org.wordpress.android.fluxc.store.PostStore.RemoveAllPostsPayload;
+import org.wordpress.android.fluxc.store.PostStore.RemovePostPayload;
 import org.wordpress.android.fluxc.store.PostStore.SearchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.SearchPostsResponsePayload;
-import org.wordpress.android.fluxc.store.PostStore.FetchPostsResponsePayload;
-import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
+import org.wordpress.android.fluxc.store.PostStore.UpdatePostPayload;
 
 @ActionEnum
 public enum PostAction implements IAction {
@@ -18,11 +21,11 @@ public enum PostAction implements IAction {
     FETCH_POSTS,
     @Action(payloadType = FetchPostsPayload.class)
     FETCH_PAGES,
-    @Action(payloadType = RemotePostPayload.class)
+    @Action(payloadType = RemotePostRequest.class)
     FETCH_POST,
-    @Action(payloadType = RemotePostPayload.class)
+    @Action(payloadType = RemotePostRequest.class)
     PUSH_POST,
-    @Action(payloadType = RemotePostPayload.class)
+    @Action(payloadType = RemotePostRequest.class)
     DELETE_POST,
     @Action(payloadType = SearchPostsPayload.class)
     SEARCH_POSTS,
@@ -34,19 +37,19 @@ public enum PostAction implements IAction {
     FETCHED_POSTS,
     @Action(payloadType = FetchPostResponsePayload.class)
     FETCHED_POST,
-    @Action(payloadType = RemotePostPayload.class)
+    @Action(payloadType = RemotePostResponsePayload.class)
     PUSHED_POST,
-    @Action(payloadType = RemotePostPayload.class)
+    @Action(payloadType = RemotePostResponsePayload.class)
     DELETED_POST,
     @Action(payloadType = SearchPostsResponsePayload.class)
     SEARCHED_POSTS,
 
     // Local actions
-    @Action(payloadType = PostModel.class)
+    @Action(payloadType = UpdatePostPayload.class)
     UPDATE_POST,
-    @Action(payloadType = PostModel.class)
+    @Action(payloadType = RemovePostPayload.class)
     REMOVE_POST,
-    @Action
+    @Action(payloadType = RemoveAllPostsPayload.class)
     REMOVE_ALL_POSTS
 }
 

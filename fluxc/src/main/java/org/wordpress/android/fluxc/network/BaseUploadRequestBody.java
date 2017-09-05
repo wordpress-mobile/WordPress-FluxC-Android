@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.network;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import org.wordpress.android.fluxc.RequestPayload;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 
@@ -26,7 +27,7 @@ public abstract class BaseUploadRequestBody extends RequestBody {
      * Callback to report upload progress as body data is written to the sink for network delivery.
      */
     public interface ProgressListener {
-        void onProgress(MediaModel media, float progress);
+        void onProgress(RequestPayload requestPayload, MediaModel media, float progress);
     }
 
     /**
@@ -65,10 +66,11 @@ public abstract class BaseUploadRequestBody extends RequestBody {
         return null;
     }
 
+    private final RequestPayload mRequestPayload;
     private final MediaModel mMedia;
     private final ProgressListener mListener;
 
-    public BaseUploadRequestBody(MediaModel media, ProgressListener listener) {
+    public BaseUploadRequestBody(RequestPayload requestPayload, MediaModel media, ProgressListener listener) {
         // validate arguments
         if (listener == null) {
             throw new IllegalArgumentException("progress listener cannot be null");
@@ -78,6 +80,7 @@ public abstract class BaseUploadRequestBody extends RequestBody {
             throw new IllegalArgumentException(mediaError);
         }
 
+        mRequestPayload = requestPayload;
         mMedia = media;
         mListener = listener;
     }
@@ -109,7 +112,7 @@ public abstract class BaseUploadRequestBody extends RequestBody {
             if ((currentTimeMillis - mLastTimeOnProgressCalled) > ON_PROGRESS_THROTTLE_RATE
                 || mLastTimeOnProgressCalled == 0) {
                 mLastTimeOnProgressCalled = currentTimeMillis;
-                mListener.onProgress(mMedia, getProgress(mBytesWritten));
+                mListener.onProgress(mRequestPayload, mMedia, getProgress(mBytesWritten));
             }
         }
     }

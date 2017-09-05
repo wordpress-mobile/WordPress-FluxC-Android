@@ -16,8 +16,11 @@ import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.action.AccountAction;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.AccountStore.FetchAccountPayload;
+import org.wordpress.android.fluxc.store.AccountStore.FetchSettingsPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload;
+import org.wordpress.android.fluxc.store.AccountStore.VerificationEmailPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 
 import java.util.HashMap;
@@ -50,15 +53,15 @@ public class AccountFragment extends Fragment {
         view.findViewById(R.id.account_infos_button).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
-                mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
+                mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
+                mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction(new FetchSettingsPayload()));
             }
         });
 
         view.findViewById(R.id.account_email_verification).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDispatcher.dispatch(AccountActionBuilder.newSendVerificationEmailAction());
+                mDispatcher.dispatch(AccountActionBuilder.newSendVerificationEmailAction(new VerificationEmailPayload()));
             }
         });
 

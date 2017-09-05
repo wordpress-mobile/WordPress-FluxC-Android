@@ -11,7 +11,8 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wordpress.android.fluxc.Dispatcher;
-import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.RequestPayload;
+import org.wordpress.android.fluxc.ResponsePayload;
 import org.wordpress.android.fluxc.action.AccountAction;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST;
@@ -24,9 +25,18 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AppSecrets;
+import org.wordpress.android.fluxc.store.AccountStore.AvailableBlogPayload;
+import org.wordpress.android.fluxc.store.AccountStore.AvailableDomainPayload;
+import org.wordpress.android.fluxc.store.AccountStore.AvailableEmailPayload;
+import org.wordpress.android.fluxc.store.AccountStore.AvailableUsernamePayload;
+import org.wordpress.android.fluxc.store.AccountStore.FetchAccountPayload;
+import org.wordpress.android.fluxc.store.AccountStore.FetchSettingsPayload;
 import org.wordpress.android.fluxc.store.AccountStore.IsAvailableError;
+import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.NewUserError;
 import org.wordpress.android.fluxc.store.AccountStore.NewUserErrorType;
+import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload;
+import org.wordpress.android.fluxc.store.AccountStore.VerificationEmailPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -41,32 +51,41 @@ import javax.inject.Singleton;
 public class AccountRestClient extends BaseWPComRestClient {
     private final AppSecrets mAppSecrets;
 
-    public static class AccountRestPayload extends Payload {
-        public AccountRestPayload(AccountModel account, BaseNetworkError error) {
+    public static class AccountRestPayload extends ResponsePayload {
+        public AccountRestPayload(RequestPayload requestPayload, AccountModel account, BaseNetworkError error) {
+            super(requestPayload);
             this.account = account;
             this.error = error;
         }
         public AccountModel account;
     }
 
-    public static class AccountPushSettingsResponsePayload extends Payload {
-        public AccountPushSettingsResponsePayload(BaseNetworkError error) {
+    public static class AccountPushSettingsResponsePayload extends ResponsePayload {
+        public AccountPushSettingsResponsePayload(RequestPayload requestPayload, BaseNetworkError error) {
+            super(requestPayload);
             this.error = error;
         }
         public Map<String, Object> settings;
     }
 
-    public static class NewAccountResponsePayload extends Payload {
+    public static class NewAccountResponsePayload extends ResponsePayload {
         public NewUserError error;
         public boolean dryRun;
+
+        public NewAccountResponsePayload(RequestPayload requestPayload) {
+            super(requestPayload);
+        }
     }
 
-    public static class IsAvailableResponsePayload extends Payload {
-        public IsAvailable type;
+    public static class IsAvailableResponsePayload extends ResponsePayload {
         public String value;
         public boolean isAvailable;
         public List<String> suggestions;
         public IsAvailableError error;
+
+        public IsAvailableResponsePayload(RequestPayload requestPayload) {
+            super(requestPayload);
+        }
     }
 
     public enum IsAvailable {
@@ -89,21 +108,22 @@ public class AccountRestClient extends BaseWPComRestClient {
      * with a payload of type {@link AccountRestPayload}. {@link AccountRestPayload#isError()} can
      * be used to determine the result of the request.
      */
-    public void fetchAccount() {
+    public void fetchAccount(@NonNull final FetchAccountPayload fetchAccountPayload) {
         String url = WPCOMREST.me.getUrlV1_1();
-        add(WPComGsonRequest.buildGetRequest(url, null, AccountResponse.class,
+        add(fetchAccountPayload, WPComGsonRequest.buildGetRequest(url, null, AccountResponse.class,
                 new Listener<AccountResponse>() {
                     @Override
                     public void onResponse(AccountResponse response) {
                         AccountModel account = responseToAccountModel(response);
-                        AccountRestPayload payload = new AccountRestPayload(account, null);
-                        mDispatcher.dispatch(AccountActionBuilder.newFetchedAccountAction(payload));
+                        AccountRestPayload accountRestPayload = new AccountRestPayload(fetchAccountPayload, account,
+                                null);
+                        mDispatcher.dispatch(AccountActionBuilder.newFetchedAccountAction(accountRestPayload));
                     }
                 },
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        AccountRestPayload payload = new AccountRestPayload(null, error);
+                        AccountRestPayload payload = new AccountRestPayload(fetchAccountPayload, null, error);
                         mDispatcher.dispatch(AccountActionBuilder.newFetchedAccountAction(payload));
                     }
                 }
@@ -116,41 +136,42 @@ public class AccountRestClient extends BaseWPComRestClient {
      * with a payload of type {@link AccountRestPayload}. {@link AccountRestPayload#isError()} can
      * be used to determine the result of the request.
      */
-    public void fetchAccountSettings() {
+    public void fetchAccountSettings(@NonNull final FetchSettingsPayload fetchSettingsPayload) {
         String url = WPCOMREST.me.settings.getUrlV1_1();
-        add(WPComGsonRequest.buildGetRequest(url, null, AccountSettingsResponse.class,
+        add(fetchSettingsPayload, WPComGsonRequest.buildGetRequest(url, null, AccountSettingsResponse.class,
                 new Listener<AccountSettingsResponse>() {
                     @Override
                     public void onResponse(AccountSettingsResponse response) {
                         AccountModel settings = responseToAccountSettingsModel(response);
-                        AccountRestPayload payload = new AccountRestPayload(settings, null);
+                        AccountRestPayload payload = new AccountRestPayload(fetchSettingsPayload, settings, null);
                         mDispatcher.dispatch(AccountActionBuilder.newFetchedSettingsAction(payload));
                     }
                 },
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        AccountRestPayload payload = new AccountRestPayload(null, error);
+                        AccountRestPayload payload = new AccountRestPayload(fetchSettingsPayload, null, error);
                         mDispatcher.dispatch(AccountActionBuilder.newFetchedSettingsAction(payload));
                     }
                 }
         ));
     }
 
-    public void sendVerificationEmail() {
+    public void sendVerificationEmail(@NonNull final VerificationEmailPayload verificationEmailPayload) {
         String url = WPCOMREST.me.send_verification_email.getUrlV1_1();
-        add(WPComGsonRequest.buildPostRequest(url, null, AccountBoolResponse.class,
+        add(verificationEmailPayload, WPComGsonRequest.buildPostRequest(url, null, AccountBoolResponse.class,
                 new Listener<AccountBoolResponse>() {
                     @Override
                     public void onResponse(AccountBoolResponse response) {
-                        NewAccountResponsePayload payload = new NewAccountResponsePayload();
+                        NewAccountResponsePayload payload = new NewAccountResponsePayload(verificationEmailPayload);
                         mDispatcher.dispatch(AccountActionBuilder.newSentVerificationEmailAction(payload));
                     }
                 },
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        NewAccountResponsePayload payload = volleyErrorToAccountResponsePayload(error.volleyError);
+                        NewAccountResponsePayload payload =
+                                volleyErrorToAccountResponsePayload(verificationEmailPayload, error.volleyError);
                         mDispatcher.dispatch(AccountActionBuilder.newSentVerificationEmailAction(payload));
                     }
                 }
@@ -165,16 +186,18 @@ public class AccountRestClient extends BaseWPComRestClient {
      *
      * No HTTP POST call is made if the given parameter map is null or contains no entries.
      */
-    public void pushAccountSettings(Map<String, Object> body) {
+    public void pushAccountSettings(@NonNull final PushAccountSettingsPayload pushAccountSettingsPayload) {
+        final Map<String, Object> body = pushAccountSettingsPayload.params;
         if (body == null || body.isEmpty()) return;
         String url = WPCOMREST.me.settings.getUrlV1_1();
         // Note: we have to use a Map as a response here because the API response format is different depending
         // of the request we do.
-        add(WPComGsonRequest.buildPostRequest(url, body, Map.class,
+        add(pushAccountSettingsPayload, WPComGsonRequest.buildPostRequest(url, body, Map.class,
                 new Listener<Map<String, Object>>() {
                     @Override
                     public void onResponse(Map<String, Object> response) {
-                        AccountPushSettingsResponsePayload payload = new AccountPushSettingsResponsePayload(null);
+                        AccountPushSettingsResponsePayload payload =
+                                new AccountPushSettingsResponsePayload(pushAccountSettingsPayload, null);
                         payload.settings = response;
                         mDispatcher.dispatch(AccountActionBuilder.newPushedSettingsAction(payload));
                     }
@@ -182,21 +205,21 @@ public class AccountRestClient extends BaseWPComRestClient {
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        AccountPushSettingsResponsePayload payload = new AccountPushSettingsResponsePayload(error);
+                        AccountPushSettingsResponsePayload payload =
+                                new AccountPushSettingsResponsePayload(pushAccountSettingsPayload, error);
                         mDispatcher.dispatch(AccountActionBuilder.newPushedSettingsAction(payload));
                     }
                 }
         ));
     }
 
-    public void newAccount(@NonNull String username, @NonNull String password, @NonNull String email,
-                           final boolean dryRun) {
+    public void newAccount(@NonNull final NewAccountPayload newAccountPayload) {
         String url = WPCOMREST.users.new_.getUrlV1();
         Map<String, Object> body = new HashMap<>();
-        body.put("username", username);
-        body.put("password", password);
-        body.put("email", email);
-        body.put("validate", dryRun ? "1" : "0");
+        body.put("username", newAccountPayload.username);
+        body.put("password", newAccountPayload.password);
+        body.put("email", newAccountPayload.email);
+        body.put("validate", newAccountPayload.dryRun ? "1" : "0");
         body.put("client_id", mAppSecrets.getAppId());
         body.put("client_secret", mAppSecrets.getAppSecret());
 
@@ -205,26 +228,44 @@ public class AccountRestClient extends BaseWPComRestClient {
                 new Listener<AccountBoolResponse>() {
                     @Override
                     public void onResponse(AccountBoolResponse response) {
-                        NewAccountResponsePayload payload = new NewAccountResponsePayload();
-                        payload.dryRun = dryRun;
+                        NewAccountResponsePayload payload = new NewAccountResponsePayload(newAccountPayload);
+                        payload.dryRun = newAccountPayload.dryRun;
                         mDispatcher.dispatch(AccountActionBuilder.newCreatedNewAccountAction(payload));
                     }
                 },
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        NewAccountResponsePayload payload = volleyErrorToAccountResponsePayload(error.volleyError);
-                        payload.dryRun = dryRun;
+                        NewAccountResponsePayload payload = volleyErrorToAccountResponsePayload(newAccountPayload,
+                                error.volleyError);
+                        payload.dryRun = newAccountPayload.dryRun;
                         mDispatcher.dispatch(AccountActionBuilder.newCreatedNewAccountAction(payload));
                     }
                 }
         );
 
         request.disableRetries();
-        add(request);
+        add(newAccountPayload, request);
     }
 
-    public void isAvailable(@NonNull final String value, final IsAvailable type) {
+    public void isAvailable(@NonNull final AvailableBlogPayload payload) {
+        isAvailable(payload, payload.value, payload.type);
+    }
+
+    public void isAvailable(@NonNull final AvailableDomainPayload payload) {
+        isAvailable(payload, payload.value, payload.type);
+    }
+
+    public void isAvailable(@NonNull final AvailableEmailPayload payload) {
+        isAvailable(payload, payload.value, payload.type);
+    }
+
+    public void isAvailable(@NonNull final AvailableUsernamePayload payload) {
+        isAvailable(payload, payload.value, payload.type);
+    }
+
+    private void isAvailable(@NonNull final RequestPayload requestPayload, @NonNull final String value,
+                             @NonNull final IsAvailable type) {
         String url = "";
         switch (type) {
             case BLOG:
@@ -248,9 +289,8 @@ public class AccountRestClient extends BaseWPComRestClient {
                 new Listener<IsAvailableResponse>() {
                     @Override
                     public void onResponse(IsAvailableResponse response) {
-                        IsAvailableResponsePayload payload = new IsAvailableResponsePayload();
+                        IsAvailableResponsePayload payload = new IsAvailableResponsePayload(requestPayload);
                         payload.value = value;
-                        payload.type = type;
 
                         if (response == null) {
                             // The 'is-available' endpoints return either true or a JSON object representing an error
@@ -281,9 +321,8 @@ public class AccountRestClient extends BaseWPComRestClient {
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         // We don't expect anything but server errors here - the API itself returns errors with a
                         // 200 status code, which will appear under Listener.onResponse instead
-                        IsAvailableResponsePayload payload = new IsAvailableResponsePayload();
+                        IsAvailableResponsePayload payload = new IsAvailableResponsePayload(requestPayload);
                         payload.value = value;
-                        payload.type = type;
 
                         payload.error = new IsAvailableError(((WPComGsonNetworkError) error).apiError, error.message);
                         mDispatcher.dispatch(AccountActionBuilder.newCheckedIsAvailableAction(payload));
@@ -291,11 +330,12 @@ public class AccountRestClient extends BaseWPComRestClient {
                 }
         );
 
-        add(request);
+        add(requestPayload, request);
     }
 
-    private NewAccountResponsePayload volleyErrorToAccountResponsePayload(VolleyError error) {
-        NewAccountResponsePayload payload = new NewAccountResponsePayload();
+    private NewAccountResponsePayload volleyErrorToAccountResponsePayload(RequestPayload requestPayload,
+                                                                          VolleyError error) {
+        NewAccountResponsePayload payload = new NewAccountResponsePayload(requestPayload);
         payload.error = new NewUserError(NewUserErrorType.GENERIC_ERROR, "");
         if (error.networkResponse != null && error.networkResponse.data != null) {
             AppLog.e(T.API, new String(error.networkResponse.data));

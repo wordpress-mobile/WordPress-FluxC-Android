@@ -7,14 +7,18 @@ import org.wordpress.android.fluxc.action.AccountAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailErrorType;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType;
+import org.wordpress.android.fluxc.store.AccountStore.FetchAccountPayload;
+import org.wordpress.android.fluxc.store.AccountStore.FetchSettingsPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload;
+import org.wordpress.android.fluxc.store.AccountStore.SignOutPayload;
 import org.wordpress.android.util.AppLog;
 
 import java.util.HashMap;
@@ -76,8 +80,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         }
         mNextEvent = TestEvents.FETCHED;
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
-        mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
+        mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction(new FetchSettingsPayload()));
         mCountDownLatch = new CountDownLatch(2);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -108,8 +112,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
         // First, fetch account settings
         mNextEvent = TestEvents.FETCHED;
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
-        mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
+        mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction(new FetchSettingsPayload()));
         mCountDownLatch = new CountDownLatch(2);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -134,8 +138,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
         // First, fetch account settings
         mNextEvent = TestEvents.FETCHED;
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
-        mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
+        mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction(new FetchSettingsPayload()));
         mCountDownLatch = new CountDownLatch(2);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -158,7 +162,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
         mCountDownLatch = new CountDownLatch(2); // Wait for OnAuthenticationChanged and OnAccountChanged
         mNextEvent = TestEvents.AUTHENTICATE;
-        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
+        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction(new SignOutPayload()));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         assertFalse(mAccountStore.hasAccessToken());
@@ -171,9 +175,9 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
         mCountDownLatch = new CountDownLatch(2); // Wait for OnAuthenticationChanged and OnAccountChanged
         mNextEvent = TestEvents.AUTHENTICATE;
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
         Thread.sleep(100);
-        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
+        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction(new SignOutPayload()));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         mCountDownLatch = new CountDownLatch(1); // Wait for FETCH_ACCOUNT result
@@ -186,14 +190,16 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     public void testSendAuthEmail() throws InterruptedException {
         mNextEvent = TestEvents.SENT_AUTH_EMAIL;
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(BuildConfig.TEST_WPCOM_EMAIL_TEST1));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(
+                new Authenticator.AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1)));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testSendAuthEmailInvalid() throws InterruptedException {
         mNextEvent = TestEvents.AUTH_EMAIL_ERROR_INVALID;
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction("notanemail"));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(
+                new Authenticator.AuthEmailPayload("notanemail")));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -201,7 +207,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     public void testSendAuthEmailNoSuchUser() throws InterruptedException {
         mNextEvent = TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER;
         String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(unknownEmail));
+        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(
+                new Authenticator.AuthEmailPayload(unknownEmail)));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

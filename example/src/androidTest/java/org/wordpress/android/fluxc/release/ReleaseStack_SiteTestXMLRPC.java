@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
+import org.wordpress.android.fluxc.store.SiteStore.SiteRequestPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -161,7 +162,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TestEvents.SITE_REMOVED;
         mCountDownLatch = new CountDownLatch(1);
         SiteModel selfHostedSite = mSiteStore.getSitesAccessedViaXMLRPC().get(0);
-        mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(selfHostedSite));
+        mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(new SiteRequestPayload(selfHostedSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -196,7 +197,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
 
         // Fetch post formats
         mNextEvent = TestEvents.POST_FORMATS_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(firstSite));
+        mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(new SiteRequestPayload(firstSite)));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 

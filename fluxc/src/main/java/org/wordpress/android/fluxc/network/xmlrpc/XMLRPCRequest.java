@@ -13,7 +13,7 @@ import com.android.volley.toolbox.HttpHeaderParser;
 
 import org.wordpress.android.fluxc.generated.endpoint.XMLRPC;
 import org.wordpress.android.fluxc.network.BaseRequest;
-import org.wordpress.android.fluxc.store.AccountStore.AuthenticateErrorPayload;
+import org.wordpress.android.fluxc.store.AccountStore.AuthenticationError;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType;
 import org.wordpress.android.fluxc.utils.ErrorUtils.OnUnexpectedError;
 import org.wordpress.android.util.AppLog;
@@ -96,16 +96,16 @@ public class XMLRPCRequest extends BaseRequest<Object> {
 
     @Override
     public BaseNetworkError deliverBaseNetworkError(@NonNull BaseNetworkError error) {
-        AuthenticateErrorPayload payload = new AuthenticateErrorPayload(AuthenticationErrorType.GENERIC_ERROR);
+        AuthenticationError authError = new AuthenticationError(AuthenticationErrorType.GENERIC_ERROR, "");
         // XMLRPC errors are not managed in the layer below (BaseRequest), so check them here:
         if (error.hasVolleyError() && error.volleyError.getCause() instanceof XMLRPCFault) {
             XMLRPCFault xmlrpcFault = (XMLRPCFault) error.volleyError.getCause();
             if (xmlrpcFault.getFaultCode() == 401) {
                 error.type = GenericErrorType.AUTHORIZATION_REQUIRED; // Augmented error
-                payload.error.type = AuthenticationErrorType.AUTHORIZATION_REQUIRED;
+                authError.type = AuthenticationErrorType.AUTHORIZATION_REQUIRED;
             } else if (xmlrpcFault.getFaultCode() == 403) {
                 error.type = GenericErrorType.NOT_AUTHENTICATED; // Augmented error
-                payload.error.type = AuthenticationErrorType.NOT_AUTHENTICATED;
+                authError.type = AuthenticationErrorType.NOT_AUTHENTICATED;
             } else if (xmlrpcFault.getFaultCode() == 404) {
                 error.type = GenericErrorType.NOT_FOUND; // Augmented error
             }
@@ -116,17 +116,17 @@ public class XMLRPCRequest extends BaseRequest<Object> {
         // like "onLowNetworkLevelError"
         switch (error.type) {
             case HTTP_AUTH_ERROR:
-                payload.error.type = AuthenticationErrorType.HTTP_AUTH_ERROR;
+                authError.type = AuthenticationErrorType.HTTP_AUTH_ERROR;
                 break;
             case INVALID_SSL_CERTIFICATE:
-                payload.error.type = AuthenticationErrorType.INVALID_SSL_CERTIFICATE;
+                authError.type = AuthenticationErrorType.INVALID_SSL_CERTIFICATE;
                 break;
             default:
                 break;
         }
 
-        if (payload.error.type != AuthenticationErrorType.GENERIC_ERROR) {
-            mOnAuthFailedListener.onAuthFailed(payload);
+        if (authError.type != AuthenticationErrorType.GENERIC_ERROR) {
+            mOnAuthFailedListener.onAuthFailed(authError);
         }
 
         return error;

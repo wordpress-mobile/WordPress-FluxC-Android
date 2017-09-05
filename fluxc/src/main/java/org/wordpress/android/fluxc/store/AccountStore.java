@@ -6,8 +6,9 @@ import com.android.volley.VolleyError;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.wordpress.android.fluxc.RequestPayload;
 import org.wordpress.android.fluxc.Dispatcher;
-import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.ResponsePayload;
 import org.wordpress.android.fluxc.action.AccountAction;
 import org.wordpress.android.fluxc.action.AuthenticationAction;
 import org.wordpress.android.fluxc.annotations.action.Action;
@@ -15,6 +16,7 @@ import org.wordpress.android.fluxc.annotations.action.IAction;
 import org.wordpress.android.fluxc.model.AccountModel;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
+import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoverPayload;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryResultPayload;
 import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient.AccountPushSettingsResponsePayload;
@@ -24,6 +26,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient.
 import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient.NewAccountResponsePayload;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator;
+import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.AuthEmailPayload;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.AuthEmailResponsePayload;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Token;
 import org.wordpress.android.fluxc.persistence.AccountSqlUtils;
@@ -42,7 +45,41 @@ import javax.inject.Singleton;
 @Singleton
 public class AccountStore extends Store {
     // Payloads
-    public static class AuthenticatePayload extends Payload {
+    private abstract static class AvailablePayload extends RequestPayload {
+        public final String value;
+        public final IsAvailable type;
+
+        AvailablePayload(String value, IsAvailable type) {
+            this.value = value;
+            this.type = type;
+        }
+    }
+
+    public static class AvailableBlogPayload extends AvailablePayload {
+        public AvailableBlogPayload(String value) {
+            super(value, IsAvailable.BLOG);
+        }
+    }
+
+    public static class AvailableDomainPayload extends AvailablePayload {
+        public AvailableDomainPayload(String value) {
+            super(value, IsAvailable.DOMAIN);
+        }
+    }
+
+    public static class AvailableEmailPayload extends AvailablePayload {
+        public AvailableEmailPayload(String value) {
+            super(value, IsAvailable.EMAIL);
+        }
+    }
+
+    public static class AvailableUsernamePayload extends AvailablePayload {
+        public AvailableUsernamePayload(String value) {
+            super(value, IsAvailable.USERNAME);
+        }
+    }
+
+    public static class AuthenticatePayload extends RequestPayload {
         public String username;
         public String password;
         public String twoStepCode;
@@ -54,23 +91,29 @@ public class AccountStore extends Store {
         }
     }
 
-    public static class AuthenticateErrorPayload extends Payload {
-        public AuthenticationError error;
-        public AuthenticateErrorPayload(@NonNull AuthenticationError error) {
+    public static class AuthenticateErrorPayload extends ResponsePayload {
+        public final AuthenticationError error;
+        public AuthenticateErrorPayload(RequestPayload requestPayload, @NonNull AuthenticationError error) {
+            super(requestPayload);
             this.error = error;
         }
-        public AuthenticateErrorPayload(@NonNull AuthenticationErrorType errorType) {
-            this.error = new AuthenticationError(errorType, "");
-        }
+//        public AuthenticateErrorPayload(RequestPayload requestPayload, @NonNull AuthenticationErrorType errorType) {
+//            super(requestPayload);
+//            this.error = new AuthenticationError(errorType, "");
+//        }
     }
 
-    public static class PushAccountSettingsPayload extends Payload {
+    public static class FetchAccountPayload extends RequestPayload {}
+
+    public static class FetchSettingsPayload extends RequestPayload {}
+
+    public static class PushAccountSettingsPayload extends RequestPayload {
         public Map<String, Object> params;
         public PushAccountSettingsPayload() {
         }
     }
 
-    public static class NewAccountPayload extends Payload {
+    public static class NewAccountPayload extends RequestPayload {
         public String username;
         public String password;
         public String email;
@@ -84,8 +127,21 @@ public class AccountStore extends Store {
         }
     }
 
-    public static class UpdateTokenPayload extends Payload {
-        public UpdateTokenPayload(String token) {
+    public static class SignOutPayload extends RequestPayload {}
+
+    public static class VerificationEmailPayload extends RequestPayload {}
+
+    public static class UpdateAccountPayload extends RequestPayload {
+        public AccountModel accountModel;
+
+        public UpdateAccountPayload(AccountModel accountModel) {
+            this.accountModel = accountModel;
+        }
+    }
+
+    public static class UpdateTokenPayload extends ResponsePayload {
+        public UpdateTokenPayload(RequestPayload requestPayload, String token) {
+            super(requestPayload);
             this.token = token;
         }
 
@@ -96,35 +152,53 @@ public class AccountStore extends Store {
     public static class OnAccountChanged extends OnChanged<AccountError> {
         public boolean accountInfosChanged;
         public AccountAction causeOfChange;
+
+        public OnAccountChanged(RequestPayload requestPayload) {
+            super(requestPayload);
+        }
     }
 
     public static class OnAuthenticationChanged extends OnChanged<AuthenticationError> {
+        public OnAuthenticationChanged(RequestPayload requestPayload) {
+            super(requestPayload);
+        }
     }
 
     public static class OnDiscoveryResponse extends OnChanged<DiscoveryError> {
         public String xmlRpcEndpoint;
         public String wpRestEndpoint;
         public String failedEndpoint;
+
+        public OnDiscoveryResponse(RequestPayload requestPayload) {
+            super(requestPayload);
+        }
     }
 
     public static class OnNewUserCreated extends OnChanged<NewUserError> {
         public boolean dryRun;
+
+        public OnNewUserCreated(RequestPayload requestPayload) {
+            super(requestPayload);
+        }
     }
 
     public static class OnAvailabilityChecked extends OnChanged<IsAvailableError> {
-        public IsAvailable type;
         public String value;
         public boolean isAvailable;
         public List<String> suggestions;
 
-        public OnAvailabilityChecked(IsAvailable type, String value, boolean isAvailable) {
-            this.type = type;
+        public OnAvailabilityChecked(RequestPayload requestPayload, String value, boolean isAvailable) {
+            super(requestPayload);
             this.value = value;
             this.isAvailable = isAvailable;
         }
     }
 
-    public static class OnAuthEmailSent extends OnChanged<AuthEmailError> {}
+    public static class OnAuthEmailSent extends OnChanged<AuthEmailError> {
+        public OnAuthEmailSent(RequestPayload requestPayload) {
+            super(requestPayload);
+        }
+    }
 
     public static class AuthenticationError implements OnChangedError {
         public AuthenticationErrorType type;
@@ -327,25 +401,26 @@ public class AccountStore extends Store {
     private void onAccountAction(AccountAction actionType, Object payload) {
         switch (actionType) {
             case FETCH_ACCOUNT:
-                mAccountRestClient.fetchAccount();
+                mAccountRestClient.fetchAccount((FetchAccountPayload) payload);
                 break;
             case FETCH_SETTINGS:
-                mAccountRestClient.fetchAccountSettings();
+                mAccountRestClient.fetchAccountSettings((FetchSettingsPayload) payload);
                 break;
             case SEND_VERIFICATION_EMAIL:
-                mAccountRestClient.sendVerificationEmail();
+                mAccountRestClient.sendVerificationEmail((VerificationEmailPayload) payload);
                 break;
             case PUSH_SETTINGS:
-                mAccountRestClient.pushAccountSettings(((PushAccountSettingsPayload) payload).params);
+                mAccountRestClient.pushAccountSettings((PushAccountSettingsPayload) payload);
                 break;
             case UPDATE_ACCOUNT:
-                updateDefaultAccount((AccountModel) payload, AccountAction.UPDATE_ACCOUNT);
+                updateDefaultAccount((UpdateAccountPayload) payload, ((UpdateAccountPayload) payload).accountModel,
+                        AccountAction.UPDATE_ACCOUNT);
                 break;
             case UPDATE_ACCESS_TOKEN:
                 updateToken((UpdateTokenPayload) payload);
                 break;
             case SIGN_OUT:
-                signOut();
+                signOut((SignOutPayload) payload);
                 break;
             case CREATE_NEW_ACCOUNT:
                 createNewAccount((NewAccountPayload) payload);
@@ -366,16 +441,16 @@ public class AccountStore extends Store {
                 handleSentVerificationEmail((NewAccountResponsePayload) payload);
                 break;
             case IS_AVAILABLE_BLOG:
-                mAccountRestClient.isAvailable((String) payload, IsAvailable.BLOG);
+                mAccountRestClient.isAvailable((AvailableBlogPayload) payload);
                 break;
             case IS_AVAILABLE_DOMAIN:
-                mAccountRestClient.isAvailable((String) payload, IsAvailable.DOMAIN);
+                mAccountRestClient.isAvailable((AvailableDomainPayload) payload);
                 break;
             case IS_AVAILABLE_EMAIL:
-                mAccountRestClient.isAvailable((String) payload, IsAvailable.EMAIL);
+                mAccountRestClient.isAvailable((AvailableEmailPayload) payload);
                 break;
             case IS_AVAILABLE_USERNAME:
-                mAccountRestClient.isAvailable((String) payload, IsAvailable.USERNAME);
+                mAccountRestClient.isAvailable((AvailableUsernamePayload) payload);
                 break;
             case CHECKED_IS_AVAILABLE:
                 handleCheckedIsAvailable((IsAvailableResponsePayload) payload);
@@ -392,13 +467,13 @@ public class AccountStore extends Store {
                 handleAuthenticateError((AuthenticateErrorPayload) payload);
                 break;
             case DISCOVER_ENDPOINT:
-                discoverEndPoint((String) payload);
+                discoverEndPoint((DiscoverPayload) payload);
                 break;
             case DISCOVERY_RESULT:
                 discoveryResult((DiscoveryResultPayload) payload);
                 break;
             case SEND_AUTH_EMAIL:
-                mAuthenticator.sendAuthEmail((String) payload);
+                mAuthenticator.sendAuthEmail((AuthEmailPayload) payload);
                 break;
             case SENT_AUTH_EMAIL:
                 handleSentAuthEmail((AuthEmailResponsePayload) payload);
@@ -407,17 +482,17 @@ public class AccountStore extends Store {
     }
 
     private void handleAuthenticateError(AuthenticateErrorPayload payload) {
-        OnAuthenticationChanged event = new OnAuthenticationChanged();
+        OnAuthenticationChanged event = new OnAuthenticationChanged(payload.getRequestPayload());
         event.error = payload.error;
         emitChange(event);
     }
 
-    private void discoverEndPoint(String payload) {
+    private void discoverEndPoint(DiscoverPayload payload) {
         mSelfHostedEndpointFinder.findEndpoint(payload);
     }
 
     private void discoveryResult(DiscoveryResultPayload payload) {
-        OnDiscoveryResponse discoveryResponse = new OnDiscoveryResponse();
+        OnDiscoveryResponse discoveryResponse = new OnDiscoveryResponse(payload.getRequestPayload());
         if (payload.isError()) {
             discoveryResponse.error = DiscoveryError.GENERIC_ERROR;
             discoveryResponse.failedEndpoint = payload.failedEndpoint;
@@ -433,32 +508,32 @@ public class AccountStore extends Store {
 
     private void handleFetchAccountCompleted(AccountRestPayload payload) {
         if (!hasAccessToken()) {
-            emitAccountChangeError(AccountErrorType.ACCOUNT_FETCH_ERROR);
+            emitAccountChangeError(payload, AccountErrorType.ACCOUNT_FETCH_ERROR);
             return;
         }
         if (!checkError(payload, "Error fetching Account via REST API (/me)")) {
             mAccount.copyAccountAttributes(payload.account);
-            updateDefaultAccount(mAccount, AccountAction.FETCH_ACCOUNT);
+            updateDefaultAccount(payload.getRequestPayload(), mAccount, AccountAction.FETCH_ACCOUNT);
         } else {
-            emitAccountChangeError(AccountErrorType.ACCOUNT_FETCH_ERROR);
+            emitAccountChangeError(payload, AccountErrorType.ACCOUNT_FETCH_ERROR);
         }
     }
 
     private void handleFetchSettingsCompleted(AccountRestPayload payload) {
         if (!hasAccessToken()) {
-            emitAccountChangeError(AccountErrorType.SETTINGS_FETCH_ERROR);
+            emitAccountChangeError(payload, AccountErrorType.SETTINGS_FETCH_ERROR);
             return;
         }
         if (!checkError(payload, "Error fetching Account Settings via REST API (/me/settings)")) {
             mAccount.copyAccountSettingsAttributes(payload.account);
-            updateDefaultAccount(mAccount, AccountAction.FETCH_SETTINGS);
+            updateDefaultAccount(payload.getRequestPayload(), mAccount, AccountAction.FETCH_SETTINGS);
         } else {
-            emitAccountChangeError(AccountErrorType.SETTINGS_FETCH_ERROR);
+            emitAccountChangeError(payload, AccountErrorType.SETTINGS_FETCH_ERROR);
         }
     }
 
     private void handleSentVerificationEmail(NewAccountResponsePayload payload) {
-        OnAccountChanged accountChanged = new OnAccountChanged();
+        OnAccountChanged accountChanged = new OnAccountChanged(payload.getRequestPayload());
         accountChanged.causeOfChange = AccountAction.SEND_VERIFICATION_EMAIL;
         if (payload.isError()) {
             accountChanged.error = new AccountError(AccountErrorType.SEND_VERIFICATION_EMAIL_ERROR, "");
@@ -468,33 +543,34 @@ public class AccountStore extends Store {
 
     private void handlePushSettingsCompleted(AccountPushSettingsResponsePayload payload) {
         if (!hasAccessToken()) {
-            emitAccountChangeError(AccountErrorType.SETTINGS_POST_ERROR);
+            emitAccountChangeError(payload, AccountErrorType.SETTINGS_POST_ERROR);
             return;
         }
         if (!payload.isError()) {
             boolean updated = AccountRestClient.updateAccountModelFromPushSettingsResponse(mAccount, payload.settings);
             if (updated) {
-                updateDefaultAccount(mAccount, AccountAction.PUSH_SETTINGS);
+                updateDefaultAccount(payload.getRequestPayload(), mAccount, AccountAction.PUSH_SETTINGS);
             } else {
-                OnAccountChanged accountChanged = new OnAccountChanged();
+                OnAccountChanged accountChanged = new OnAccountChanged(payload.getRequestPayload());
                 accountChanged.causeOfChange = AccountAction.PUSH_SETTINGS;
                 accountChanged.accountInfosChanged = false;
                 emitChange(accountChanged);
             }
         } else {
-            emitAccountChangeError(AccountErrorType.SETTINGS_POST_ERROR);
+            emitAccountChangeError(payload, AccountErrorType.SETTINGS_POST_ERROR);
         }
     }
 
     private void handleNewAccountCreated(NewAccountResponsePayload payload) {
-        OnNewUserCreated onNewUserCreated = new OnNewUserCreated();
+        OnNewUserCreated onNewUserCreated = new OnNewUserCreated(payload.getRequestPayload());
         onNewUserCreated.error = payload.error;
         onNewUserCreated.dryRun = payload.dryRun;
         emitChange(onNewUserCreated);
     }
 
     private void handleCheckedIsAvailable(IsAvailableResponsePayload payload) {
-        OnAvailabilityChecked event = new OnAvailabilityChecked(payload.type, payload.value, payload.isAvailable);
+        OnAvailabilityChecked event = new OnAvailabilityChecked(payload.getRequestPayload(), payload.value,
+                payload.isAvailable);
         event.suggestions = payload.suggestions;
 
         if (payload.isError()) {
@@ -504,26 +580,26 @@ public class AccountStore extends Store {
         emitChange(event);
     }
 
-    private void emitAccountChangeError(AccountErrorType errorType) {
-        OnAccountChanged event = new OnAccountChanged();
+    private void emitAccountChangeError(ResponsePayload responsePayload, AccountErrorType errorType) {
+        OnAccountChanged event = new OnAccountChanged(responsePayload.getRequestPayload());
         event.error = new AccountError(errorType, "");
         emitChange(event);
     }
 
     private void createNewAccount(NewAccountPayload payload) {
-        mAccountRestClient.newAccount(payload.username, payload.password, payload.email, payload.dryRun);
+        mAccountRestClient.newAccount(payload);
     }
 
-    private void signOut() {
+    private void signOut(SignOutPayload signOutPayload) {
         // Remove Account
         AccountSqlUtils.deleteAccount(mAccount);
         mAccount.init();
-        OnAccountChanged accountChanged = new OnAccountChanged();
+        OnAccountChanged accountChanged = new OnAccountChanged(signOutPayload);
         accountChanged.accountInfosChanged = true;
         emitChange(accountChanged);
         // Remove authentication token
         mAccessToken.set(null);
-        emitChange(new OnAuthenticationChanged());
+        emitChange(new OnAuthenticationChanged(signOutPayload));
     }
 
     public AccountModel getAccount() {
@@ -546,14 +622,14 @@ public class AccountStore extends Store {
 
     private void updateToken(UpdateTokenPayload updateTokenPayload) {
         mAccessToken.set(updateTokenPayload.token);
-        emitChange(new OnAuthenticationChanged());
+        emitChange(new OnAuthenticationChanged(updateTokenPayload.getRequestPayload()));
     }
 
-    private void updateDefaultAccount(AccountModel accountModel, AccountAction cause) {
+    private void updateDefaultAccount(RequestPayload requestPayload, AccountModel accountModel, AccountAction cause) {
         // Update memory instance
         mAccount = accountModel;
         AccountSqlUtils.insertOrUpdateDefaultAccount(accountModel);
-        OnAccountChanged accountChanged = new OnAccountChanged();
+        OnAccountChanged accountChanged = new OnAccountChanged(requestPayload);
         accountChanged.accountInfosChanged = true;
         accountChanged.causeOfChange = cause;
         emitChange(accountChanged);
@@ -573,13 +649,13 @@ public class AccountStore extends Store {
                         if (payload.nextAction != null) {
                             mDispatcher.dispatch(payload.nextAction);
                         }
-                        emitChange(new OnAuthenticationChanged());
+                        emitChange(new OnAuthenticationChanged(payload));
                     }
                 }, new Authenticator.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError volleyError) {
                         AppLog.e(T.API, "Authentication error");
-                        OnAuthenticationChanged event = new OnAuthenticationChanged();
+                        OnAuthenticationChanged event = new OnAuthenticationChanged(payload);
                         event.error = new AuthenticationError(
                                 Authenticator.volleyErrorToAuthenticationError(volleyError),
                                 Authenticator.volleyErrorToErrorMessage(volleyError));
@@ -590,11 +666,11 @@ public class AccountStore extends Store {
 
     private void handleSentAuthEmail(final AuthEmailResponsePayload payload) {
         if (payload.isError()) {
-            OnAuthEmailSent event = new OnAuthEmailSent();
+            OnAuthEmailSent event = new OnAuthEmailSent(payload.getRequestPayload());
             event.error = payload.error;
             emitChange(event);
         } else {
-            OnAuthEmailSent event = new OnAuthEmailSent();
+            OnAuthEmailSent event = new OnAuthEmailSent(payload.getRequestPayload());
             emitChange(event);
         }
     }

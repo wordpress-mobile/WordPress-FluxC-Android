@@ -8,7 +8,8 @@ import com.yarolegovich.wellsql.WellSql;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
-import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.RequestPayload;
+import org.wordpress.android.fluxc.ResponsePayload;
 import org.wordpress.android.fluxc.action.PostAction;
 import org.wordpress.android.fluxc.annotations.action.Action;
 import org.wordpress.android.fluxc.annotations.action.IAction;
@@ -40,7 +41,7 @@ public class PostStore extends Store {
             PostStatus.PUBLISHED,
             PostStatus.SCHEDULED));
 
-    public static class FetchPostsPayload extends Payload {
+    public static class FetchPostsPayload extends RequestPayload {
         public SiteModel site;
         public boolean loadMore;
 
@@ -54,7 +55,7 @@ public class PostStore extends Store {
         }
     }
 
-    public static class SearchPostsPayload extends Payload {
+    public static class SearchPostsPayload extends RequestPayload {
         public SiteModel site;
         public String searchTerm;
         public int offset;
@@ -70,7 +71,7 @@ public class PostStore extends Store {
         }
     }
 
-    public static class SearchPostsResponsePayload extends Payload {
+    public static class SearchPostsResponsePayload extends ResponsePayload {
         public PostError error;
         public PostsModel posts;
         public SiteModel site;
@@ -79,8 +80,9 @@ public class PostStore extends Store {
         public boolean loadedMore;
         public boolean canLoadMore;
 
-        public SearchPostsResponsePayload(PostsModel posts, SiteModel site, String searchTerm, boolean isPages,
-                                          boolean loadedMore, boolean canLoadMore) {
+        public SearchPostsResponsePayload(RequestPayload requestPayload, PostsModel posts, SiteModel site,
+                                          String searchTerm, boolean isPages, boolean loadedMore, boolean canLoadMore) {
+            super(requestPayload);
             this.posts = posts;
             this.site = site;
             this.searchTerm = searchTerm;
@@ -89,7 +91,9 @@ public class PostStore extends Store {
             this.canLoadMore = canLoadMore;
         }
 
-        public SearchPostsResponsePayload(SiteModel site, String searchTerm, boolean isPages, PostError error) {
+        public SearchPostsResponsePayload(RequestPayload requestPayload, SiteModel site, String searchTerm,
+                                          boolean isPages, PostError error) {
+            super(requestPayload);
             this.site = site;
             this.searchTerm = searchTerm;
             this.isPages = isPages;
@@ -97,7 +101,7 @@ public class PostStore extends Store {
         }
     }
 
-    public static class FetchPostsResponsePayload extends Payload {
+    public static class FetchPostsResponsePayload extends ResponsePayload {
         public PostError error;
         public PostsModel posts;
         public SiteModel site;
@@ -105,8 +109,9 @@ public class PostStore extends Store {
         public boolean loadedMore;
         public boolean canLoadMore;
 
-        public FetchPostsResponsePayload(PostsModel posts, SiteModel site, boolean isPages, boolean loadedMore,
-                                         boolean canLoadMore) {
+        public FetchPostsResponsePayload(RequestPayload requestPayload, PostsModel posts, SiteModel site,
+                                         boolean isPages, boolean loadedMore, boolean canLoadMore) {
+            super(requestPayload);
             this.posts = posts;
             this.site = site;
             this.isPages = isPages;
@@ -114,29 +119,62 @@ public class PostStore extends Store {
             this.canLoadMore = canLoadMore;
         }
 
-        public FetchPostsResponsePayload(PostError error) {
+        public FetchPostsResponsePayload(RequestPayload requestPayload, PostError error) {
+            super(requestPayload);
             this.error = error;
         }
     }
 
-    public static class RemotePostPayload extends Payload {
-        public PostError error;
+    public static class RemotePostRequest extends RequestPayload {
         public PostModel post;
         public SiteModel site;
 
-        public RemotePostPayload(PostModel post, SiteModel site) {
+        public RemotePostRequest(PostModel post, SiteModel site) {
             this.post = post;
             this.site = site;
         }
     }
 
-    public static class FetchPostResponsePayload extends RemotePostPayload {
-        public PostAction origin = PostAction.FETCH_POST; // Only used to track fetching newly uploaded XML-RPC posts
+    public static class RemotePostResponsePayload extends ResponsePayload {
+        public PostError error;
+        public PostModel post;
+        public SiteModel site;
 
-        public FetchPostResponsePayload(PostModel post, SiteModel site) {
-            super(post, site);
+        public RemotePostResponsePayload(RequestPayload requestPayload, PostModel post, SiteModel site, PostError error) {
+            super(requestPayload);
+            this.error = error;
+            this.post = post;
+            this.site = site;
         }
     }
+
+    public static class FetchPostResponsePayload extends RemotePostResponsePayload {
+        public final PostAction origin; // Only used to track fetching newly uploaded XML-RPC posts
+
+        public FetchPostResponsePayload(RequestPayload requestPayload, PostModel post, SiteModel site, PostError error,
+                                        PostAction origin) {
+            super(requestPayload, post, site, error);
+            this.origin = origin;
+        }
+    }
+
+    public static class UpdatePostPayload extends RequestPayload {
+        public PostModel post;
+
+        public UpdatePostPayload(PostModel post) {
+            this.post = post;
+        }
+    }
+
+    public static class RemovePostPayload extends RequestPayload {
+        public PostModel post;
+
+        public RemovePostPayload(PostModel post) {
+            this.post = post;
+        }
+    }
+
+    public static class RemoveAllPostsPayload extends RequestPayload {}
 
     public static class PostError implements OnChangedError {
         public PostErrorType type;
@@ -163,11 +201,13 @@ public class PostStore extends Store {
         public boolean canLoadMore;
         public PostAction causeOfChange;
 
-        public OnPostChanged(int rowsAffected) {
+        public OnPostChanged(RequestPayload requestPayload, int rowsAffected) {
+            super(requestPayload);
             this.rowsAffected = rowsAffected;
         }
 
-        public OnPostChanged(int rowsAffected, boolean canLoadMore) {
+        public OnPostChanged(RequestPayload requestPayload, int rowsAffected, boolean canLoadMore) {
+            super(requestPayload);
             this.rowsAffected = rowsAffected;
             this.canLoadMore = canLoadMore;
         }
@@ -176,7 +216,8 @@ public class PostStore extends Store {
     public static class OnPostUploaded extends OnChanged<PostError> {
         public PostModel post;
 
-        public OnPostUploaded(PostModel post) {
+        public OnPostUploaded(RequestPayload requestPayload, PostModel post) {
+            super(requestPayload);
             this.post = post;
         }
     }
@@ -186,7 +227,9 @@ public class PostStore extends Store {
         public PostsModel searchResults;
         public boolean canLoadMore;
 
-        public OnPostsSearched(String searchTerm, PostsModel searchResults, boolean canLoadMore) {
+        public OnPostsSearched(RequestPayload requestPayload, String searchTerm, PostsModel searchResults,
+                               boolean canLoadMore) {
+            super(requestPayload);
             this.searchTerm = searchTerm;
             this.searchResults = searchResults;
             this.canLoadMore = canLoadMore;
@@ -350,31 +393,32 @@ public class PostStore extends Store {
                 handleFetchPostsCompleted((FetchPostsResponsePayload) action.getPayload());
                 break;
             case FETCH_POST:
-                fetchPost((RemotePostPayload) action.getPayload());
+                fetchPost((RemotePostRequest) action.getPayload());
                 break;
             case FETCHED_POST:
                 handleFetchSinglePostCompleted((FetchPostResponsePayload) action.getPayload());
                 break;
             case PUSH_POST:
-                pushPost((RemotePostPayload) action.getPayload());
+                pushPost((RemotePostRequest) action.getPayload());
                 break;
             case PUSHED_POST:
-                handlePushPostCompleted((RemotePostPayload) action.getPayload());
+                handlePushPostCompleted((RemotePostResponsePayload) action.getPayload());
                 break;
             case UPDATE_POST:
-                updatePost((PostModel) action.getPayload(), true);
+                updatePost((UpdatePostPayload) action.getPayload(), ((UpdatePostPayload) action.getPayload()).post,
+                        true);
                 break;
             case DELETE_POST:
-                deletePost((RemotePostPayload) action.getPayload());
+                deletePost((RemotePostRequest) action.getPayload());
                 break;
             case DELETED_POST:
-                handleDeletePostCompleted((RemotePostPayload) action.getPayload());
+                handleDeletePostCompleted((RemotePostResponsePayload) action.getPayload());
                 break;
             case REMOVE_POST:
-                removePost((PostModel) action.getPayload());
+                removePost((RemovePostPayload) action.getPayload());
                 break;
             case REMOVE_ALL_POSTS:
-                removeAllPosts();
+                removeAllPosts((RemoveAllPostsPayload) action.getPayload());
                 break;
             case SEARCH_POSTS:
                 searchPosts((SearchPostsPayload) action.getPayload(), false);
@@ -388,21 +432,21 @@ public class PostStore extends Store {
         }
     }
 
-    private void deletePost(RemotePostPayload payload) {
+    private void deletePost(RemotePostRequest payload) {
         if (payload.site.isUsingWpComRestApi()) {
-            mPostRestClient.deletePost(payload.post, payload.site);
+            mPostRestClient.deletePost(payload, payload.post, payload.site);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
-            mPostXMLRPCClient.deletePost(payload.post, payload.site);
+            mPostXMLRPCClient.deletePost(payload, payload.post, payload.site);
         }
     }
 
-    private void fetchPost(RemotePostPayload payload) {
+    private void fetchPost(RemotePostRequest payload) {
         if (payload.site.isUsingWpComRestApi()) {
-            mPostRestClient.fetchPost(payload.post, payload.site);
+            mPostRestClient.fetchPost(payload, payload.post, payload.site);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
-            mPostXMLRPCClient.fetchPost(payload.post, payload.site);
+            mPostXMLRPCClient.fetchPost(payload, payload.post, payload.site);
         }
     }
 
@@ -413,28 +457,28 @@ public class PostStore extends Store {
         }
 
         if (payload.site.isUsingWpComRestApi()) {
-            mPostRestClient.fetchPosts(payload.site, pages, DEFAULT_POST_STATUS_LIST, offset);
+            mPostRestClient.fetchPosts(payload, payload.site, pages, DEFAULT_POST_STATUS_LIST, offset);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
-            mPostXMLRPCClient.fetchPosts(payload.site, pages, offset);
+            mPostXMLRPCClient.fetchPosts(payload, payload.site, pages, offset);
         }
     }
 
     private void searchPosts(SearchPostsPayload payload, boolean pages) {
         if (payload.site.isUsingWpComRestApi()) {
-            mPostRestClient.searchPosts(payload.site, payload.searchTerm, pages, payload.offset);
+            mPostRestClient.searchPosts(payload, payload.site, payload.searchTerm, pages, payload.offset);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
             PostError error =
                     new PostError(PostErrorType.UNSUPPORTED_ACTION, "Search only supported on .com/Jetpack sites");
-            OnPostsSearched onPostsSearched = new OnPostsSearched(payload.searchTerm, null, false);
+            OnPostsSearched onPostsSearched = new OnPostsSearched(payload, payload.searchTerm, null, false);
             onPostsSearched.error = error;
             emitChange(onPostsSearched);
         }
     }
 
-    private void handleDeletePostCompleted(RemotePostPayload payload) {
-        OnPostChanged event = new OnPostChanged(0);
+    private void handleDeletePostCompleted(RemotePostResponsePayload payload) {
+        OnPostChanged event = new OnPostChanged(payload.getRequestPayload(), 0);
         event.causeOfChange = PostAction.DELETE_POST;
 
         if (payload.isError()) {
@@ -450,7 +494,7 @@ public class PostStore extends Store {
         OnPostChanged onPostChanged;
 
         if (payload.isError()) {
-            onPostChanged = new OnPostChanged(0);
+            onPostChanged = new OnPostChanged(payload.getRequestPayload(), 0);
             onPostChanged.error = payload.error;
         } else {
             // Clear existing uploading posts if this is a fresh fetch (loadMore = false in the original request)
@@ -465,7 +509,7 @@ public class PostStore extends Store {
                 rowsAffected += PostSqlUtils.insertOrUpdatePostKeepingLocalChanges(post);
             }
 
-            onPostChanged = new OnPostChanged(rowsAffected, payload.canLoadMore);
+            onPostChanged = new OnPostChanged(payload.getRequestPayload(), rowsAffected, payload.canLoadMore);
         }
 
         if (payload.isPages) {
@@ -478,7 +522,8 @@ public class PostStore extends Store {
     }
 
     private void handleSearchPostsCompleted(SearchPostsResponsePayload payload) {
-        OnPostsSearched onPostsSearched = new OnPostsSearched(payload.searchTerm, payload.posts, payload.canLoadMore);
+        OnPostsSearched onPostsSearched = new OnPostsSearched(payload.getRequestPayload(), payload.searchTerm,
+                payload.posts, payload.canLoadMore);
 
         if (payload.isError()) {
             onPostsSearched.error = payload.error;
@@ -493,77 +538,78 @@ public class PostStore extends Store {
 
     private void handleFetchSinglePostCompleted(FetchPostResponsePayload payload) {
         if (payload.origin == PostAction.PUSH_POST) {
-            OnPostUploaded onPostUploaded = new OnPostUploaded(payload.post);
+            OnPostUploaded onPostUploaded = new OnPostUploaded(payload.getRequestPayload(), payload.post);
             if (payload.isError()) {
                 onPostUploaded.error = payload.error;
             } else {
-                updatePost(payload.post, false);
+                updatePost(payload.getRequestPayload(), payload.post, false);
             }
             emitChange(onPostUploaded);
             return;
         }
 
         if (payload.isError()) {
-            OnPostChanged event = new OnPostChanged(0);
+            OnPostChanged event = new OnPostChanged(payload.getRequestPayload(), 0);
             event.error = payload.error;
             event.causeOfChange = PostAction.UPDATE_POST;
             emitChange(event);
         } else {
-            updatePost(payload.post, false);
+            updatePost(payload.getRequestPayload(), payload.post, false);
         }
     }
 
-    private void handlePushPostCompleted(RemotePostPayload payload) {
+    private void handlePushPostCompleted(RemotePostResponsePayload payload) {
         if (payload.isError()) {
-            OnPostUploaded onPostUploaded = new OnPostUploaded(payload.post);
+            OnPostUploaded onPostUploaded = new OnPostUploaded(payload.getRequestPayload(), payload.post);
             onPostUploaded.error = payload.error;
             emitChange(onPostUploaded);
         } else {
             if (payload.site.isUsingWpComRestApi()) {
                 // The WP.COM REST API response contains the modified post, so we're already in sync with the server
                 // All we need to do is store it and emit OnPostChanged
-                updatePost(payload.post, false);
-                emitChange(new OnPostUploaded(payload.post));
+                updatePost(payload.getRequestPayload(), payload.post, false);
+                emitChange(new OnPostUploaded(payload.getRequestPayload(), payload.post));
             } else {
                 // XML-RPC does not respond to new/edit post calls with the modified post
                 // Update the post locally to reflect its uploaded status, but also request a fresh copy
                 // from the server to ensure local copy matches server
                 PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges(payload.post);
-                mPostXMLRPCClient.fetchPost(payload.post, payload.site, PostAction.PUSH_POST);
+                mPostXMLRPCClient.fetchPost(payload.getRequestPayload(), payload.post, payload.site,
+                        PostAction.PUSH_POST);
             }
         }
     }
 
-    private void pushPost(RemotePostPayload payload) {
+    private void pushPost(RemotePostRequest payload) {
         if (payload.site.isUsingWpComRestApi()) {
-            mPostRestClient.pushPost(payload.post, payload.site);
+            mPostRestClient.pushPost(payload, payload.post, payload.site);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
-            mPostXMLRPCClient.pushPost(payload.post, payload.site);
+            mPostXMLRPCClient.pushPost(payload, payload.post, payload.site);
         }
     }
 
-    private void updatePost(PostModel post, boolean changeLocalDate) {
+    private void updatePost(RequestPayload payload, PostModel post, boolean changeLocalDate) {
         if (changeLocalDate) {
             post.setDateLocallyChanged((DateTimeUtils.iso8601UTCFromDate(DateTimeUtils.nowUTC())));
         }
         int rowsAffected = PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges(post);
-        OnPostChanged onPostChanged = new OnPostChanged(rowsAffected);
+        OnPostChanged onPostChanged = new OnPostChanged(payload, rowsAffected);
         onPostChanged.causeOfChange = PostAction.UPDATE_POST;
         emitChange(onPostChanged);
     }
 
-    private void removePost(PostModel post) {
-        int rowsAffected = PostSqlUtils.deletePost(post);
+    private void removePost(RemovePostPayload payload) {
+        int rowsAffected = PostSqlUtils.deletePost(payload.post);
 
-        OnPostChanged onPostChanged = new OnPostChanged(rowsAffected);
+        OnPostChanged onPostChanged = new OnPostChanged(payload, rowsAffected);
         onPostChanged.causeOfChange = PostAction.REMOVE_POST;
         emitChange(onPostChanged);
     }
 
-    private void removeAllPosts() {
+    private void removeAllPosts(RequestPayload requestPayload) {
         int rowsAffected = PostSqlUtils.deleteAllPosts();
-        OnPostChanged event = new OnPostChanged(rowsAffected);
+        OnPostChanged event = new OnPostChanged(requestPayload, rowsAffected);
         event.causeOfChange = PostAction.REMOVE_ALL_POSTS;
         emitChange(event);
     }

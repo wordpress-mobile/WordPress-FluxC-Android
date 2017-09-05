@@ -5,12 +5,12 @@ import com.yarolegovich.wellsql.core.annotation.Column;
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey;
 import com.yarolegovich.wellsql.core.annotation.Table;
 
-import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.BasePayload;
 
 import java.io.Serializable;
 
 @Table
-public class CommentModel extends Payload implements Identifiable, Serializable {
+public class CommentModel extends BasePayload implements Identifiable, Serializable {
     // Ids
     @PrimaryKey
     @Column private int mId;

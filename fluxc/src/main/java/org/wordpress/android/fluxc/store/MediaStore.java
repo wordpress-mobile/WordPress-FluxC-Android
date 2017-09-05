@@ -9,7 +9,8 @@ import com.yarolegovich.wellsql.WellCursor;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
-import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.RequestPayload;
+import org.wordpress.android.fluxc.ResponsePayload;
 import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.annotations.action.Action;
 import org.wordpress.android.fluxc.annotations.action.IAction;
@@ -44,26 +45,39 @@ public class MediaStore extends Store {
     //
 
     /**
-     * Actions: FETCH(ED)_MEDIA, PUSH(ED)_MEDIA, UPLOAD(ED)_MEDIA, DELETE(D)_MEDIA, UPDATE_MEDIA, and REMOVE_MEDIA
+     * Actions: FETCH_MEDIA, PUSH_MEDIA, UPLOAD_MEDIA, DELETE_MEDIA, UPDATE_MEDIA, and REMOVE_MEDIA
      */
-    public static class MediaPayload extends Payload {
+    public static class MediaRequestPayload extends RequestPayload {
+        public SiteModel site;
+        public MediaModel media;
+        public MediaRequestPayload(SiteModel site, MediaModel media) {
+            this.site = site;
+            this.media = media;
+        }
+    }
+
+    /**
+     * Actions: FETCHED_MEDIA, PUSHED_MEDIA, UPLOADED_MEDIA, DELETED_MEDIA
+     */
+    public static class MediaResponsePayload extends ResponsePayload {
         public SiteModel site;
         public MediaError error;
         public MediaModel media;
-        public MediaPayload(SiteModel site, MediaModel media) {
-            this(site, media, null);
-        }
-        public MediaPayload(SiteModel site, MediaModel media, MediaError error) {
+        public MediaResponsePayload(@NonNull RequestPayload requestPayload, SiteModel site, MediaModel media,
+                                    MediaError error) {
+            super(requestPayload);
             this.site = site;
             this.media = media;
             this.error = error;
         }
     }
 
+    public static class RemoveAllMediaPayload extends RequestPayload {}
+
     /**
      * Actions: FETCH_MEDIA_LIST
      */
-    public static class FetchMediaListPayload extends Payload {
+    public static class FetchMediaListPayload extends RequestPayload {
         public SiteModel site;
         public boolean loadMore;
         public String mimeType;
@@ -90,18 +104,20 @@ public class MediaStore extends Store {
     /**
      * Actions: FETCHED_MEDIA_LIST
      */
-    public static class FetchMediaListResponsePayload extends Payload {
+    public static class FetchMediaListResponsePayload extends ResponsePayload {
         public SiteModel site;
         public MediaError error;
         public List<MediaModel> mediaList;
         public boolean loadedMore;
         public boolean canLoadMore;
         public String mimeType;
-        public FetchMediaListResponsePayload(SiteModel site,
+        public FetchMediaListResponsePayload(@NonNull RequestPayload requestPayload,
+                                             SiteModel site,
                                              @NonNull List<MediaModel> mediaList,
                                              boolean loadedMore,
                                              boolean canLoadMore,
                                              String mimeType) {
+            super(requestPayload);
             this.site = site;
             this.mediaList = mediaList;
             this.loadedMore = loadedMore;
@@ -109,9 +125,11 @@ public class MediaStore extends Store {
             this.mimeType = mimeType;
         }
 
-        public FetchMediaListResponsePayload(SiteModel site,
+        public FetchMediaListResponsePayload(@NonNull RequestPayload requestPayload,
+                                             SiteModel site,
                                              MediaError error,
                                              String mimeType) {
+            super(requestPayload);
             this.mediaList = new ArrayList<>();
             this.site = site;
             this.error = error;
@@ -122,17 +140,20 @@ public class MediaStore extends Store {
     /**
      * Actions: UPLOADED_MEDIA, CANCELED_MEDIA_UPLOAD
      */
-    public static class ProgressPayload extends Payload {
+    public static class ProgressPayload extends ResponsePayload {
         public MediaModel media;
         public float progress;
         public boolean completed;
         public boolean canceled;
         public MediaError error;
-        public ProgressPayload(MediaModel media, float progress, boolean completed, boolean canceled) {
-            this(media, progress, completed, null);
+        public ProgressPayload(@NonNull RequestPayload requestPayload, MediaModel media, float progress,
+                               boolean completed, boolean canceled) {
+            this(requestPayload, media, progress, completed, null);
             this.canceled = canceled;
         }
-        public ProgressPayload(MediaModel media, float progress, boolean completed, MediaError error) {
+        public ProgressPayload(@NonNull RequestPayload requestPayload, MediaModel media, float progress,
+                               boolean completed, MediaError error) {
+            super(requestPayload);
             this.media = media;
             this.progress = progress;
             this.completed = completed;
@@ -143,7 +164,7 @@ public class MediaStore extends Store {
     /**
      * Actions: CANCEL_MEDIA_UPLOAD
      */
-    public static class CancelMediaPayload extends Payload {
+    public static class CancelMediaPayload extends RequestPayload {
         public SiteModel site;
         public MediaModel media;
         public boolean delete;
@@ -204,16 +225,19 @@ public class MediaStore extends Store {
     public static class OnMediaChanged extends OnChanged<MediaError> {
         public MediaAction cause;
         public List<MediaModel> mediaList;
-        public OnMediaChanged(MediaAction cause) {
-            this(cause, new ArrayList<MediaModel>(), null);
+        public OnMediaChanged(@NonNull RequestPayload requestPayload, MediaAction cause) {
+            this(requestPayload, cause, new ArrayList<MediaModel>(), null);
         }
-        public OnMediaChanged(MediaAction cause, @NonNull List<MediaModel> mediaList) {
-            this(cause, mediaList, null);
+        public OnMediaChanged(@NonNull RequestPayload requestPayload, MediaAction cause,
+                              @NonNull List<MediaModel> mediaList) {
+            this(requestPayload, cause, mediaList, null);
         }
-        public OnMediaChanged(MediaAction cause, MediaError error) {
-            this(cause, new ArrayList<MediaModel>(), error);
+        public OnMediaChanged(@NonNull RequestPayload requestPayload, MediaAction cause, MediaError error) {
+            this(requestPayload, cause, new ArrayList<MediaModel>(), error);
         }
-        public OnMediaChanged(MediaAction cause, @NonNull List<MediaModel> mediaList, MediaError error) {
+        public OnMediaChanged(@NonNull RequestPayload requestPayload, MediaAction cause,
+                              @NonNull List<MediaModel> mediaList, MediaError error) {
+            super(requestPayload);
             this.cause = cause;
             this.mediaList = mediaList;
             this.error = error;
@@ -224,12 +248,16 @@ public class MediaStore extends Store {
         public SiteModel site;
         public boolean canLoadMore;
         public String mimeType;
-        public OnMediaListFetched(SiteModel site, boolean canLoadMore, String mimeType) {
+        public OnMediaListFetched(@NonNull RequestPayload requestPayload, SiteModel site, boolean canLoadMore,
+                                  String mimeType) {
+            super(requestPayload);
             this.site = site;
             this.canLoadMore = canLoadMore;
             this.mimeType = mimeType;
         }
-        public OnMediaListFetched(SiteModel site, MediaError error, String mimeType) {
+        public OnMediaListFetched(@NonNull RequestPayload requestPayload, SiteModel site, MediaError error,
+                                  String mimeType) {
+            super(requestPayload);
             this.site = site;
             this.error = error;
             this.mimeType = mimeType;
@@ -241,7 +269,9 @@ public class MediaStore extends Store {
         public float progress;
         public boolean completed;
         public boolean canceled;
-        public OnMediaUploaded(MediaModel media, float progress, boolean completed, boolean canceled) {
+        public OnMediaUploaded(@NonNull RequestPayload requestPayload, MediaModel media, float progress,
+                               boolean completed, boolean canceled) {
+            super(requestPayload);
             this.media = media;
             this.progress = progress;
             this.completed = completed;
@@ -333,25 +363,25 @@ public class MediaStore extends Store {
 
         switch ((MediaAction) actionType) {
             case PUSH_MEDIA:
-                performPushMedia((MediaPayload) action.getPayload());
+                performPushMedia((MediaRequestPayload) action.getPayload());
                 break;
             case UPLOAD_MEDIA:
-                performUploadMedia((MediaPayload) action.getPayload());
+                performUploadMedia((MediaRequestPayload) action.getPayload());
                 break;
             case FETCH_MEDIA_LIST:
                 performFetchMediaList((FetchMediaListPayload) action.getPayload());
                 break;
             case FETCH_MEDIA:
-                performFetchMedia((MediaPayload) action.getPayload());
+                performFetchMedia((MediaRequestPayload) action.getPayload());
                 break;
             case DELETE_MEDIA:
-                performDeleteMedia((MediaPayload) action.getPayload());
+                performDeleteMedia((MediaRequestPayload) action.getPayload());
                 break;
             case CANCEL_MEDIA_UPLOAD:
                 performCancelUpload((CancelMediaPayload) action.getPayload());
                 break;
             case PUSHED_MEDIA:
-                handleMediaPushed((MediaPayload) action.getPayload());
+                handleMediaPushed((MediaResponsePayload) action.getPayload());
                 break;
             case UPLOADED_MEDIA:
                 handleMediaUploaded((ProgressPayload) action.getPayload());
@@ -360,22 +390,23 @@ public class MediaStore extends Store {
                 handleMediaListFetched((FetchMediaListResponsePayload) action.getPayload());
                 break;
             case FETCHED_MEDIA:
-                handleMediaFetched((MediaPayload) action.getPayload());
+                handleMediaFetched((MediaResponsePayload) action.getPayload());
                 break;
             case DELETED_MEDIA:
-                handleMediaDeleted((MediaPayload) action.getPayload());
+                handleMediaDeleted((MediaResponsePayload) action.getPayload());
                 break;
             case CANCELED_MEDIA_UPLOAD:
                 handleMediaCanceled((ProgressPayload) action.getPayload());
                 break;
             case UPDATE_MEDIA:
-                updateMedia(((MediaModel) action.getPayload()), true);
+                updateMedia(((RequestPayload) action.getPayload()), ((MediaRequestPayload) action.getPayload()).media,
+                        true);
                 break;
             case REMOVE_MEDIA:
-                removeMedia(((MediaModel) action.getPayload()));
+                removeMedia(((MediaRequestPayload) action.getPayload()));
                 break;
             case REMOVE_ALL_MEDIA:
-                removeAllMedia();
+                removeAllMedia((RemoveAllMediaPayload) action.getPayload());
                 break;
         }
     }
@@ -551,9 +582,9 @@ public class MediaStore extends Store {
         return getNextSiteMediaToDelete(siteModel) != null;
     }
 
-    private void removeAllMedia() {
+    private void removeAllMedia(RemoveAllMediaPayload payload) {
         MediaSqlUtils.deleteAllMedia();
-        OnMediaChanged event = new OnMediaChanged(MediaAction.REMOVE_ALL_MEDIA);
+        OnMediaChanged event = new OnMediaChanged(payload, MediaAction.REMOVE_ALL_MEDIA);
         emitChange(event);
     }
 
@@ -561,8 +592,8 @@ public class MediaStore extends Store {
     // Action implementations
     //
 
-    private void updateMedia(MediaModel media, boolean emit) {
-        OnMediaChanged event = new OnMediaChanged(MediaAction.UPDATE_MEDIA);
+    private void updateMedia(@NonNull RequestPayload payload, MediaModel media, boolean emit) {
+        OnMediaChanged event = new OnMediaChanged(payload, MediaAction.UPDATE_MEDIA);
 
         if (media == null) {
             event.error = new MediaError(MediaErrorType.NULL_MEDIA_ARG);
@@ -577,13 +608,13 @@ public class MediaStore extends Store {
         }
     }
 
-    private void removeMedia(MediaModel media) {
-        OnMediaChanged event = new OnMediaChanged(MediaAction.REMOVE_MEDIA);
+    private void removeMedia(@NonNull MediaRequestPayload payload) {
+        OnMediaChanged event = new OnMediaChanged(payload, MediaAction.REMOVE_MEDIA);
 
-        if (media == null) {
+        if (payload.media == null) {
             event.error = new MediaError(MediaErrorType.NULL_MEDIA_ARG);
-        } else if (MediaSqlUtils.deleteMedia(media) > 0) {
-            event.mediaList.add(media);
+        } else if (MediaSqlUtils.deleteMedia(payload.media) > 0) {
+            event.mediaList.add(payload.media);
         } else {
             event.error = new MediaError(MediaErrorType.DB_QUERY_FAILURE);
         }
@@ -594,36 +625,37 @@ public class MediaStore extends Store {
     // Helper methods that choose the appropriate network client to perform an action
     //
 
-    private void performPushMedia(MediaPayload payload) {
+    private void performPushMedia(MediaRequestPayload payload) {
         if (payload.media == null) {
             // null or empty media list -or- list contains a null value
-            notifyMediaError(MediaErrorType.NULL_MEDIA_ARG, MediaAction.PUSH_MEDIA, null);
+            notifyMediaError(payload, MediaErrorType.NULL_MEDIA_ARG, MediaAction.PUSH_MEDIA, null);
             return;
         } else if (payload.media.getMediaId() <= 0) {
             // need media ID to push changes
-            notifyMediaError(MediaErrorType.MALFORMED_MEDIA_ARG, MediaAction.PUSH_MEDIA, payload.media);
+            notifyMediaError(payload, MediaErrorType.MALFORMED_MEDIA_ARG, MediaAction.PUSH_MEDIA, payload.media);
             return;
         }
 
         if (payload.site.isUsingWpComRestApi()) {
-            mMediaRestClient.pushMedia(payload.site, payload.media);
+            mMediaRestClient.pushMedia(payload, payload.site, payload.media);
         } else {
-            mMediaXmlrpcClient.pushMedia(payload.site, payload.media);
+            mMediaXmlrpcClient.pushMedia(payload, payload.site, payload.media);
         }
     }
 
-    private void notifyMediaUploadError(MediaErrorType errorType, String errorMessage, MediaModel media) {
-        OnMediaUploaded onMediaUploaded = new OnMediaUploaded(media, 1, false, false);
+    private void notifyMediaUploadError(RequestPayload requestPayload, MediaErrorType errorType, String errorMessage,
+                                        MediaModel media) {
+        OnMediaUploaded onMediaUploaded = new OnMediaUploaded(requestPayload, media, 1, false, false);
         onMediaUploaded.error = new MediaError(errorType, errorMessage);
         emitChange(onMediaUploaded);
     }
 
-    private void performUploadMedia(MediaPayload payload) {
+    private void performUploadMedia(MediaRequestPayload payload) {
         String errorMessage = isWellFormedForUpload(payload.media);
         if (errorMessage != null) {
             payload.media.setUploadState(MediaUploadState.FAILED);
             MediaSqlUtils.insertOrUpdateMedia(payload.media);
-            notifyMediaUploadError(MediaErrorType.MALFORMED_MEDIA_ARG, errorMessage, payload.media);
+            notifyMediaUploadError(payload, MediaErrorType.MALFORMED_MEDIA_ARG, errorMessage, payload.media);
             return;
         }
 
@@ -631,9 +663,9 @@ public class MediaStore extends Store {
         MediaSqlUtils.insertOrUpdateMedia(payload.media);
 
         if (payload.site.isUsingWpComRestApi()) {
-            mMediaRestClient.uploadMedia(payload.site, payload.media);
+            mMediaRestClient.uploadMedia(payload, payload.site, payload.media);
         } else {
-            mMediaXmlrpcClient.uploadMedia(payload.site, payload.media);
+            mMediaXmlrpcClient.uploadMedia(payload, payload.site, payload.media);
         }
     }
 
@@ -649,36 +681,36 @@ public class MediaStore extends Store {
             }
         }
         if (payload.site.isUsingWpComRestApi()) {
-            mMediaRestClient.fetchMediaList(payload.site, payload.number, offset, payload.mimeType);
+            mMediaRestClient.fetchMediaList(payload, payload.site, payload.number, offset, payload.mimeType);
         } else {
-            mMediaXmlrpcClient.fetchMediaList(payload.site, payload.number, offset, payload.mimeType);
+            mMediaXmlrpcClient.fetchMediaList(payload, payload.site, payload.number, offset, payload.mimeType);
         }
     }
 
-    private void performFetchMedia(MediaPayload payload) {
+    private void performFetchMedia(MediaRequestPayload payload) {
         if (payload.site == null || payload.media == null) {
             // null or empty media list -or- list contains a null value
-            notifyMediaError(MediaErrorType.NULL_MEDIA_ARG, MediaAction.FETCH_MEDIA, payload.media);
+            notifyMediaError(payload, MediaErrorType.NULL_MEDIA_ARG, MediaAction.FETCH_MEDIA, payload.media);
             return;
         }
 
         if (payload.site.isUsingWpComRestApi()) {
-            mMediaRestClient.fetchMedia(payload.site, payload.media);
+            mMediaRestClient.fetchMedia(payload, payload.site, payload.media);
         } else {
-            mMediaXmlrpcClient.fetchMedia(payload.site, payload.media);
+            mMediaXmlrpcClient.fetchMedia(payload, payload.site, payload.media);
         }
     }
 
-    private void performDeleteMedia(@NonNull MediaPayload payload) {
+    private void performDeleteMedia(@NonNull MediaRequestPayload payload) {
         if (payload.media == null) {
-            notifyMediaError(MediaErrorType.NULL_MEDIA_ARG, MediaAction.DELETE_MEDIA, null);
+            notifyMediaError(payload, MediaErrorType.NULL_MEDIA_ARG, MediaAction.DELETE_MEDIA, null);
             return;
         }
 
         if (payload.site.isUsingWpComRestApi()) {
-            mMediaRestClient.deleteMedia(payload.site, payload.media);
+            mMediaRestClient.deleteMedia(payload, payload.site, payload.media);
         } else {
-            mMediaXmlrpcClient.deleteMedia(payload.site, payload.media);
+            mMediaXmlrpcClient.deleteMedia(payload, payload.site, payload.media);
         }
     }
 
@@ -696,16 +728,17 @@ public class MediaStore extends Store {
         }
 
         if (payload.site.isUsingWpComRestApi()) {
-            mMediaRestClient.cancelUpload(media);
+            mMediaRestClient.cancelUpload(payload);
         } else {
-            mMediaXmlrpcClient.cancelUpload(media);
+            mMediaXmlrpcClient.cancelUpload(payload);
         }
     }
 
-    private void handleMediaPushed(@NonNull MediaPayload payload) {
-        OnMediaChanged onMediaChanged = new OnMediaChanged(MediaAction.PUSH_MEDIA, payload.error);
+    private void handleMediaPushed(@NonNull MediaResponsePayload payload) {
+        OnMediaChanged onMediaChanged = new OnMediaChanged(payload.getRequestPayload(), MediaAction.PUSH_MEDIA,
+                payload.error);
         if (payload.media != null) {
-            updateMedia(payload.media, false);
+            updateMedia(payload.getRequestPayload(), ((MediaRequestPayload) payload.getRequestPayload()).media, false);
             onMediaChanged.mediaList = new ArrayList<>();
             onMediaChanged.mediaList.add(payload.media);
         }
@@ -714,10 +747,10 @@ public class MediaStore extends Store {
 
     private void handleMediaUploaded(@NonNull ProgressPayload payload) {
         if (!payload.isError() && payload.completed) {
-            updateMedia(payload.media, false);
+            updateMedia(payload.getRequestPayload(), ((MediaRequestPayload) payload.getRequestPayload()).media, false);
         }
-        OnMediaUploaded onMediaUploaded =
-                new OnMediaUploaded(payload.media, payload.progress, payload.completed, payload.canceled);
+        OnMediaUploaded onMediaUploaded = new OnMediaUploaded(payload.getRequestPayload(), payload.media,
+                payload.progress, payload.completed, payload.canceled);
         onMediaUploaded.error = payload.error;
         if (payload.media != null) {
             MediaSqlUtils.insertOrUpdateMedia(payload.media);
@@ -726,8 +759,8 @@ public class MediaStore extends Store {
     }
 
     private void handleMediaCanceled(@NonNull ProgressPayload payload) {
-        OnMediaUploaded onMediaUploaded =
-                new OnMediaUploaded(payload.media, payload.progress, payload.completed, payload.canceled);
+        OnMediaUploaded onMediaUploaded = new OnMediaUploaded(payload.getRequestPayload(), payload.media,
+                payload.progress, payload.completed, payload.canceled);
         onMediaUploaded.error = payload.error;
 
         emitChange(onMediaUploaded);
@@ -737,7 +770,7 @@ public class MediaStore extends Store {
         // if we loaded another page, simply add the fetched media and be done
         if (payload.loadedMore) {
             for (MediaModel media : payload.mediaList) {
-                updateMedia(media, false);
+                updateMedia(payload.getRequestPayload(), media, false);
             }
             return;
         }
@@ -751,7 +784,7 @@ public class MediaStore extends Store {
                 // retain the local ID, then update this media item
                 fetchedMedia.setId(media.getId());
                 existingMediaList.add(fetchedMedia);
-                updateMedia(fetchedMedia, false);
+                updateMedia(payload.getRequestPayload(), fetchedMedia, false);
             } else {
                 newMediaList.add(fetchedMedia);
             }
@@ -763,7 +796,7 @@ public class MediaStore extends Store {
 
         // add new media
         for (MediaModel media : newMediaList) {
-            updateMedia(media, false);
+            updateMedia(payload.getRequestPayload(), media, false);
         }
     }
 
@@ -771,17 +804,20 @@ public class MediaStore extends Store {
         OnMediaListFetched onMediaListFetched;
 
         if (payload.isError()) {
-            onMediaListFetched = new OnMediaListFetched(payload.site, payload.error, payload.mimeType);
+            onMediaListFetched = new OnMediaListFetched(payload.getRequestPayload(), payload.site, payload.error,
+                    payload.mimeType);
         } else {
             updateFetchedMediaList(payload);
-            onMediaListFetched = new OnMediaListFetched(payload.site, payload.canLoadMore, payload.mimeType);
+            onMediaListFetched = new OnMediaListFetched(payload.getRequestPayload(), payload.site, payload.canLoadMore,
+                    payload.mimeType);
         }
 
         emitChange(onMediaListFetched);
     }
 
-    private void handleMediaFetched(@NonNull MediaPayload payload) {
-        OnMediaChanged onMediaChanged = new OnMediaChanged(MediaAction.FETCH_MEDIA, payload.error);
+    private void handleMediaFetched(@NonNull MediaResponsePayload payload) {
+        OnMediaChanged onMediaChanged = new OnMediaChanged(payload.getRequestPayload(), MediaAction.FETCH_MEDIA,
+                payload.error);
         if (payload.media != null) {
             MediaSqlUtils.insertOrUpdateMedia(payload.media);
             onMediaChanged.mediaList = new ArrayList<>();
@@ -790,8 +826,9 @@ public class MediaStore extends Store {
         emitChange(onMediaChanged);
     }
 
-    private void handleMediaDeleted(@NonNull MediaPayload payload) {
-        OnMediaChanged onMediaChanged = new OnMediaChanged(MediaAction.DELETE_MEDIA, payload.error);
+    private void handleMediaDeleted(@NonNull MediaResponsePayload payload) {
+        OnMediaChanged onMediaChanged = new OnMediaChanged(payload.getRequestPayload(), MediaAction.DELETE_MEDIA,
+                payload.error);
         if (payload.media != null) {
             MediaSqlUtils.deleteMedia(payload.media);
             onMediaChanged.mediaList = new ArrayList<>();
@@ -808,20 +845,22 @@ public class MediaStore extends Store {
         return error;
     }
 
-    private void notifyMediaError(MediaErrorType errorType, String errorMessage, MediaAction cause,
-                                  List<MediaModel> media) {
-        OnMediaChanged mediaChange = new OnMediaChanged(cause, media);
+    private void notifyMediaError(RequestPayload requestPayload, MediaErrorType errorType, String errorMessage,
+                                  MediaAction cause, List<MediaModel> media) {
+        OnMediaChanged mediaChange = new OnMediaChanged(requestPayload, cause, media);
         mediaChange.error = new MediaError(errorType, errorMessage);
         emitChange(mediaChange);
     }
 
-    private void notifyMediaError(MediaErrorType errorType, MediaAction cause, MediaModel media) {
-        notifyMediaError(errorType, null, cause, media);
+    private void notifyMediaError(RequestPayload requestPayload, MediaErrorType errorType, MediaAction cause,
+                                  MediaModel media) {
+        notifyMediaError(requestPayload, errorType, null, cause, media);
     }
 
-    private void notifyMediaError(MediaErrorType errorType, String errorMessage, MediaAction cause, MediaModel media) {
+    private void notifyMediaError(RequestPayload requestPayload, MediaErrorType errorType, String errorMessage,
+                                  MediaAction cause, MediaModel media) {
         List<MediaModel> mediaList = new ArrayList<>();
         mediaList.add(media);
-        notifyMediaError(errorType, errorMessage, cause, mediaList);
+        notifyMediaError(requestPayload, errorType, errorMessage, cause, mediaList);
     }
 }

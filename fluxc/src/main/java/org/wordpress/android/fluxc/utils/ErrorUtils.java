@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.utils;
 
+import org.wordpress.android.fluxc.RequestPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -15,6 +16,7 @@ public class ErrorUtils {
         public String description;
         public Map<String, String> extras = new HashMap<>();
         public AppLog.T type;
+        public RequestPayload requestPayload;
 
         public OnUnexpectedError(Exception exception) {
             this(exception, "");

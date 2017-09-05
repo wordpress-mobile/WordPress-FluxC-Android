@@ -4,6 +4,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.RequestPayload;
 import org.wordpress.android.fluxc.network.BaseRequestFuture;
 import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.rest.wpapi.BaseWPAPIRestClient;
@@ -26,10 +27,11 @@ public class DiscoveryWPAPIRestClient extends BaseWPAPIRestClient {
         super(dispatcher, requestQueue, userAgent);
     }
 
-    public String discoverWPAPIBaseURL(String url) throws SelfHostedEndpointFinder.DiscoveryException {
+    public String discoverWPAPIBaseURL(RequestPayload requestPayload, String url)
+            throws SelfHostedEndpointFinder.DiscoveryException {
         BaseRequestFuture<String> future = BaseRequestFuture.newFuture();
         WPAPIHeadRequest request = new WPAPIHeadRequest(url, future, future);
-        add(request);
+        add(requestPayload, request);
         try {
             return future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | TimeoutException e) {
@@ -47,11 +49,11 @@ public class DiscoveryWPAPIRestClient extends BaseWPAPIRestClient {
         return null;
     }
 
-    public String verifyWPAPIV2Support(String wpApiBaseUrl) {
+    public String verifyWPAPIV2Support(RequestPayload requestPayload, String wpApiBaseUrl) {
         BaseRequestFuture<RootWPAPIRestResponse> future = BaseRequestFuture.newFuture();
         WPAPIGsonRequest request = new WPAPIGsonRequest<>(Request.Method.GET, wpApiBaseUrl, null, null,
                 RootWPAPIRestResponse.class, future, future);
-        add(request);
+        add(requestPayload, request);
         try {
             RootWPAPIRestResponse response = future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
             if (!response.namespaces.contains("wp/v2")) {
