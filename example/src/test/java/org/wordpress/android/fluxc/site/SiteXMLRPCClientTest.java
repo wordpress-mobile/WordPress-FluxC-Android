@@ -211,7 +211,7 @@ public class SiteXMLRPCClientTest {
         final String xmlrpcUrl = "http://docbrown.url/xmlrpc.php";
 
         mCountDownLatch = new CountDownLatch(1);
-        mSiteXMLRPCClient.fetchSites(new RefreshSitesXMLRPCPayload(xmlrpcUrl, "thedoc", "gr3@tsc0tt"));
+        mSiteXMLRPCClient.fetchSites(new RefreshSitesXMLRPCPayload("thedoc", "gr3@tsc0tt", xmlrpcUrl));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -255,7 +255,7 @@ public class SiteXMLRPCClientTest {
         }).when(mDispatcher).dispatch(any(Action.class));
 
         mCountDownLatch = new CountDownLatch(3);
-        mSiteXMLRPCClient.fetchSites(new RefreshSitesXMLRPCPayload(xmlrpcUrl, "thedoc", "gr3@tsc0tt"));
+        mSiteXMLRPCClient.fetchSites(new RefreshSitesXMLRPCPayload("thedoc", "gr3@tsc0tt", xmlrpcUrl));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
