@@ -24,8 +24,6 @@ public class ThemeFragment extends Fragment {
     @Inject ThemeStore mThemeStore;
     @Inject Dispatcher mDispatcher;
 
-    private TextView mIdField;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,12 +48,12 @@ public class ThemeFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_themes, container, false);
 
-        mIdField = (TextView) view.findViewById(R.id.theme_id);
+        final TextView themeIdTextView = (TextView) view.findViewById(R.id.theme_id);
 
         view.findViewById(R.id.activate_theme_wpcom).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (TextUtils.isEmpty(mIdField.getText().toString())) {
+                if (TextUtils.isEmpty(themeIdTextView.getText().toString())) {
                     prependToLog("Please enter a theme id");
                     return;
                 }
@@ -66,7 +64,7 @@ public class ThemeFragment extends Fragment {
                 } else {
                     ThemeModel theme = new ThemeModel();
                     theme.setLocalSiteId(site.getSiteId());
-                    theme.setThemeId(mIdField.getText().toString());
+                    theme.setThemeId(themeIdTextView.getText().toString());
                     ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
                     mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
                 }
@@ -76,7 +74,7 @@ public class ThemeFragment extends Fragment {
         view.findViewById(R.id.activate_theme_jp).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (TextUtils.isEmpty(mIdField.getText().toString())) {
+                if (TextUtils.isEmpty(themeIdTextView.getText().toString())) {
                     prependToLog("Please enter a theme id");
                     return;
                 }
@@ -87,7 +85,7 @@ public class ThemeFragment extends Fragment {
                 } else {
                     ThemeModel theme = new ThemeModel();
                     theme.setLocalSiteId(site.getSiteId());
-                    theme.setThemeId(mIdField.getText().toString());
+                    theme.setThemeId(themeIdTextView.getText().toString());
                     ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
                     mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
                 }
