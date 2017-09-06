@@ -1,7 +1,5 @@
 package org.wordpress.android.fluxc.release;
 
-import android.annotation.SuppressLint;
-
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.MediaAction;
@@ -43,7 +41,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-@SuppressLint("UseSparseArrays")
 public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
     private static final String POST_DEFAULT_TITLE = "UploadTest base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
