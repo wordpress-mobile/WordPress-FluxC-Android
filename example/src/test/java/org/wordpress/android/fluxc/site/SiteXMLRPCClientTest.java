@@ -186,7 +186,7 @@ public class SiteXMLRPCClientTest {
                 mCountDownLatch.countDown();
                 return null;
             }
-        }).when(mDispatcher).dispatchRet(any(Action.class));
+        }).when(mDispatcher).dispatchAsk(any(Action.class));
 
         mCountDownLatch = new CountDownLatch(3);
         mSiteXMLRPCClient.fetchSite(new SiteRequestPayload(site));
