@@ -226,14 +226,14 @@ public class Authenticator {
                         if (!response.success) {
                             payload.error = new AuthEmailError(AuthEmailErrorType.UNSUCCESSFUL, "");
                         }
-                        mDispatcher.dispatch(AuthenticationActionBuilder.newSentAuthEmailAction(payload));
+                        mDispatcher.dispatchRet(AuthenticationActionBuilder.newSentAuthEmailAction(payload));
                     }
                 }, new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         AuthEmailResponsePayload payload = new AuthEmailResponsePayload(authEmailPayload);
                         payload.error = new AuthEmailError(((WPComGsonNetworkError) error).apiError, error.message);
-                        mDispatcher.dispatch(AuthenticationActionBuilder.newSentAuthEmailAction(payload));
+                        mDispatcher.dispatchRet(AuthenticationActionBuilder.newSentAuthEmailAction(payload));
                     }
                 }
         );

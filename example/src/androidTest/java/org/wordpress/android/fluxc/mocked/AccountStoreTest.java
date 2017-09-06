@@ -31,14 +31,14 @@ public class AccountStoreTest extends MockedStack_Base {
         AuthenticatePayload payload = new AuthenticatePayload("test", "test");
         mIsError = false;
         // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newAuthenticateAction(payload));
     }
 
     public void testAuthenticationKO() {
         AuthenticatePayload payload = new AuthenticatePayload("error", "error");
         mIsError = true;
         // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newAuthenticateAction(payload));
     }
 
     @Subscribe

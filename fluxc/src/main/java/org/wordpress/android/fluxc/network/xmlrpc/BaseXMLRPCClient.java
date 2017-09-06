@@ -36,7 +36,7 @@ public abstract class BaseXMLRPCClient {
             @Override
             public void onAuthFailed(AccountStore.AuthenticationError authError) {
                 AuthenticateErrorPayload payload = new AuthenticateErrorPayload(requestPayload, authError);
-                mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateErrorAction(payload));
+                mDispatcher.dispatchRet(AuthenticationActionBuilder.newAuthenticateErrorAction(payload));
             }
         };
     }

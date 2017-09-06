@@ -417,12 +417,12 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
 
     private void notifyMediaPushed(RequestPayload requestPayload, SiteModel site, MediaModel media, MediaError error) {
         MediaResponsePayload payload = new MediaResponsePayload(requestPayload, site, media, error);
-        mDispatcher.dispatch(MediaActionBuilder.newPushedMediaAction(payload));
+        mDispatcher.dispatchRet(MediaActionBuilder.newPushedMediaAction(payload));
     }
 
     private void notifyMediaProgress(RequestPayload requestPayload, MediaModel media, float progress, MediaError error) {
         ProgressPayload payload = new ProgressPayload(requestPayload, media, progress, false, error);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadedMediaAction(payload));
+        mDispatcher.dispatchRet(MediaActionBuilder.newUploadedMediaAction(payload));
     }
 
     private void notifyMediaUploaded(RequestPayload requestPayload, MediaModel media, MediaError error) {
@@ -432,7 +432,7 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
         }
 
         ProgressPayload payload = new ProgressPayload(requestPayload, media, 1.f, error == null, error);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadedMediaAction(payload));
+        mDispatcher.dispatchRet(MediaActionBuilder.newUploadedMediaAction(payload));
     }
 
     private void notifyMediaListFetched(RequestPayload requestPayload,
@@ -443,27 +443,27 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
                                         String mimeType) {
         FetchMediaListResponsePayload payload = new FetchMediaListResponsePayload(requestPayload, site, media,
                 loadedMore, canLoadMore, mimeType);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchedMediaListAction(payload));
+        mDispatcher.dispatchRet(MediaActionBuilder.newFetchedMediaListAction(payload));
     }
 
     private void notifyMediaListFetched(RequestPayload requestPayload, SiteModel site, MediaError error, String mimeType) {
         FetchMediaListResponsePayload payload = new FetchMediaListResponsePayload(requestPayload, site, error, mimeType);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchedMediaListAction(payload));
+        mDispatcher.dispatchRet(MediaActionBuilder.newFetchedMediaListAction(payload));
     }
 
     private void notifyMediaFetched(RequestPayload requestPayload, SiteModel site, MediaModel media, MediaError error) {
         MediaResponsePayload payload = new MediaResponsePayload(requestPayload, site, media, error);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchedMediaAction(payload));
+        mDispatcher.dispatchRet(MediaActionBuilder.newFetchedMediaAction(payload));
     }
 
     private void notifyMediaDeleted(RequestPayload requestPayload, SiteModel site, MediaModel media, MediaError error) {
         MediaResponsePayload payload = new MediaResponsePayload(requestPayload, site, media, error);
-        mDispatcher.dispatch(MediaActionBuilder.newDeletedMediaAction(payload));
+        mDispatcher.dispatchRet(MediaActionBuilder.newDeletedMediaAction(payload));
     }
 
     private void notifyMediaUploadCanceled(RequestPayload requestPayload, MediaModel media) {
         ProgressPayload payload = new ProgressPayload(requestPayload, media, 0.f, false, true);
-        mDispatcher.dispatch(MediaActionBuilder.newCanceledMediaUploadAction(payload));
+        mDispatcher.dispatchRet(MediaActionBuilder.newCanceledMediaUploadAction(payload));
     }
 
     //

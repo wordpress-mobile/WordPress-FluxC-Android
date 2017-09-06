@@ -68,13 +68,13 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                         FetchCommentsResponsePayload payload = new FetchCommentsResponsePayload(fetchCommentsPayload,
                                 comments, fetchCommentsPayload.site, fetchCommentsPayload.number,
                                 fetchCommentsPayload.offset);
-                        mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentsAction(payload));
+                        mDispatcher.dispatchRet(CommentActionBuilder.newFetchedCommentsAction(payload));
                     }
                 },
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentsAction(
+                        mDispatcher.dispatchRet(CommentActionBuilder.newFetchedCommentsAction(
                                 CommentErrorUtils.commentErrorToFetchCommentsPayload(fetchCommentsPayload, error,
                                         fetchCommentsPayload.site)));
                     }
@@ -103,13 +103,13 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                     @Override
                     public void onResponse(Object response) {
                         RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload, comment);
-                        mDispatcher.dispatch(CommentActionBuilder.newPushedCommentAction(payload));
+                        mDispatcher.dispatchRet(CommentActionBuilder.newPushedCommentAction(payload));
                     }
                 },
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        mDispatcher.dispatch(CommentActionBuilder.newPushedCommentAction(
+                        mDispatcher.dispatchRet(CommentActionBuilder.newPushedCommentAction(
                                 CommentErrorUtils.commentErrorToPushCommentPayload(requestPayload, error, comment)));
                     }
                 }
@@ -138,13 +138,13 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                         CommentModel updatedComment = commentResponseToComment(response, remoteCommentPayload.site);
                         RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(remoteCommentPayload,
                                 updatedComment);
-                        mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentAction(payload));
+                        mDispatcher.dispatchRet(CommentActionBuilder.newFetchedCommentAction(payload));
                     }
                 },
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentAction(
+                        mDispatcher.dispatchRet(CommentActionBuilder.newFetchedCommentAction(
                                 CommentErrorUtils.commentErrorToFetchCommentPayload(remoteCommentPayload, error,
                                         remoteCommentPayload.comment)));
                     }
@@ -182,13 +182,13 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                                 comment.setStatus(CommentStatus.TRASH.toString());
                             }
                         }
-                        mDispatcher.dispatch(CommentActionBuilder.newDeletedCommentAction(payload));
+                        mDispatcher.dispatchRet(CommentActionBuilder.newDeletedCommentAction(payload));
                     }
                 },
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        mDispatcher.dispatch(CommentActionBuilder.newDeletedCommentAction(
+                        mDispatcher.dispatchRet(CommentActionBuilder.newDeletedCommentAction(
                                 CommentErrorUtils.commentErrorToFetchCommentPayload(requestPayload, error, comment)));
                     }
                 }
@@ -269,13 +269,13 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                         } else {
                             payload.error = new CommentError(CommentErrorType.GENERIC_ERROR, "");
                         }
-                        mDispatcher.dispatch(CommentActionBuilder.newCreatedNewCommentAction(payload));
+                        mDispatcher.dispatchRet(CommentActionBuilder.newCreatedNewCommentAction(payload));
                     }
                 },
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        mDispatcher.dispatch(CommentActionBuilder.newCreatedNewCommentAction(
+                        mDispatcher.dispatchRet(CommentActionBuilder.newCreatedNewCommentAction(
                                 CommentErrorUtils.commentErrorToFetchCommentPayload(requestPayload, error, comment)));
                     }
                 }

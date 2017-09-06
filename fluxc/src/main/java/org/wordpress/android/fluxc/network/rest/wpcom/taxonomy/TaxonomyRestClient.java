@@ -61,7 +61,7 @@ public class TaxonomyRestClient extends BaseWPComRestClient {
 
                         FetchTermResponsePayload payload = new FetchTermResponsePayload(requestPayload, term, site,
                                 null);
-                        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchedTermAction(payload));
+                        mDispatcher.dispatchRet(TaxonomyActionBuilder.newFetchedTermAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -72,7 +72,7 @@ public class TaxonomyRestClient extends BaseWPComRestClient {
                                 error.message);
                         FetchTermResponsePayload payload = new FetchTermResponsePayload(requestPayload, term, site,
                                 taxonomyError);
-                        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchedTermAction(payload));
+                        mDispatcher.dispatchRet(TaxonomyActionBuilder.newFetchedTermAction(payload));
                     }
                 }
         );
@@ -101,7 +101,7 @@ public class TaxonomyRestClient extends BaseWPComRestClient {
 
                         FetchTermsResponsePayload payload = new FetchTermsResponsePayload(requestPayload,
                                 new TermsModel(termArray), site, taxonomyName);
-                        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchedTermsAction(payload));
+                        mDispatcher.dispatchRet(TaxonomyActionBuilder.newFetchedTermsAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -112,7 +112,7 @@ public class TaxonomyRestClient extends BaseWPComRestClient {
                                 error.message);
                         FetchTermsResponsePayload payload = new FetchTermsResponsePayload(requestPayload, taxonomyError,
                                 taxonomyName);
-                        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchedTermsAction(payload));
+                        mDispatcher.dispatchRet(TaxonomyActionBuilder.newFetchedTermsAction(payload));
                     }
                 }
         );
@@ -138,7 +138,7 @@ public class TaxonomyRestClient extends BaseWPComRestClient {
 
                         RemoteTermResponsePayload payload = new RemoteTermResponsePayload(requestPayload, term, site,
                                 null);
-                        mDispatcher.dispatch(TaxonomyActionBuilder.newPushedTermAction(payload));
+                        mDispatcher.dispatchRet(TaxonomyActionBuilder.newPushedTermAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -147,7 +147,7 @@ public class TaxonomyRestClient extends BaseWPComRestClient {
                         // Possible non-generic errors: 400 invalid_taxonomy, 409 duplicate
                         RemoteTermResponsePayload payload = new RemoteTermResponsePayload(requestPayload, term, site,
                                 new TaxonomyError(((WPComGsonNetworkError) error).apiError, error.message));
-                        mDispatcher.dispatch(TaxonomyActionBuilder.newPushedTermAction(payload));
+                        mDispatcher.dispatchRet(TaxonomyActionBuilder.newPushedTermAction(payload));
                     }
                 }
         );

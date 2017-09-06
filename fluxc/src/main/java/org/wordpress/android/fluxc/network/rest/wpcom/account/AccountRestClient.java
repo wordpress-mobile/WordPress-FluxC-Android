@@ -118,14 +118,14 @@ public class AccountRestClient extends BaseWPComRestClient {
                         AccountModel account = responseToAccountModel(response);
                         AccountRestPayload accountRestPayload = new AccountRestPayload(fetchAccountPayload, account,
                                 null);
-                        mDispatcher.dispatch(AccountActionBuilder.newFetchedAccountAction(accountRestPayload));
+                        mDispatcher.dispatchRet(AccountActionBuilder.newFetchedAccountAction(accountRestPayload));
                     }
                 },
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         AccountRestPayload payload = new AccountRestPayload(fetchAccountPayload, null, error);
-                        mDispatcher.dispatch(AccountActionBuilder.newFetchedAccountAction(payload));
+                        mDispatcher.dispatchRet(AccountActionBuilder.newFetchedAccountAction(payload));
                     }
                 }
         ));
@@ -145,14 +145,14 @@ public class AccountRestClient extends BaseWPComRestClient {
                     public void onResponse(AccountSettingsResponse response) {
                         AccountModel settings = responseToAccountSettingsModel(response);
                         AccountRestPayload payload = new AccountRestPayload(fetchSettingsPayload, settings, null);
-                        mDispatcher.dispatch(AccountActionBuilder.newFetchedSettingsAction(payload));
+                        mDispatcher.dispatchRet(AccountActionBuilder.newFetchedSettingsAction(payload));
                     }
                 },
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         AccountRestPayload payload = new AccountRestPayload(fetchSettingsPayload, null, error);
-                        mDispatcher.dispatch(AccountActionBuilder.newFetchedSettingsAction(payload));
+                        mDispatcher.dispatchRet(AccountActionBuilder.newFetchedSettingsAction(payload));
                     }
                 }
         ));
@@ -165,7 +165,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                     @Override
                     public void onResponse(AccountBoolResponse response) {
                         NewAccountResponsePayload payload = new NewAccountResponsePayload(verificationEmailPayload);
-                        mDispatcher.dispatch(AccountActionBuilder.newSentVerificationEmailAction(payload));
+                        mDispatcher.dispatchRet(AccountActionBuilder.newSentVerificationEmailAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -173,7 +173,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         NewAccountResponsePayload payload =
                                 volleyErrorToAccountResponsePayload(verificationEmailPayload, error.volleyError);
-                        mDispatcher.dispatch(AccountActionBuilder.newSentVerificationEmailAction(payload));
+                        mDispatcher.dispatchRet(AccountActionBuilder.newSentVerificationEmailAction(payload));
                     }
                 }
         ));
@@ -200,7 +200,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                         AccountPushSettingsResponsePayload payload =
                                 new AccountPushSettingsResponsePayload(pushAccountSettingsPayload, null);
                         payload.settings = response;
-                        mDispatcher.dispatch(AccountActionBuilder.newPushedSettingsAction(payload));
+                        mDispatcher.dispatchRet(AccountActionBuilder.newPushedSettingsAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -208,7 +208,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         AccountPushSettingsResponsePayload payload =
                                 new AccountPushSettingsResponsePayload(pushAccountSettingsPayload, error);
-                        mDispatcher.dispatch(AccountActionBuilder.newPushedSettingsAction(payload));
+                        mDispatcher.dispatchRet(AccountActionBuilder.newPushedSettingsAction(payload));
                     }
                 }
         ));
@@ -231,7 +231,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                     public void onResponse(AccountBoolResponse response) {
                         NewAccountResponsePayload payload = new NewAccountResponsePayload(newAccountPayload);
                         payload.dryRun = newAccountPayload.dryRun;
-                        mDispatcher.dispatch(AccountActionBuilder.newCreatedNewAccountAction(payload));
+                        mDispatcher.dispatchRet(AccountActionBuilder.newCreatedNewAccountAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -240,7 +240,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                         NewAccountResponsePayload payload = volleyErrorToAccountResponsePayload(newAccountPayload,
                                 error.volleyError);
                         payload.dryRun = newAccountPayload.dryRun;
-                        mDispatcher.dispatch(AccountActionBuilder.newCreatedNewAccountAction(payload));
+                        mDispatcher.dispatchRet(AccountActionBuilder.newCreatedNewAccountAction(payload));
                     }
                 }
         );
@@ -315,7 +315,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                                 payload.error = new IsAvailableError(response.error, response.message);
                             }
                         }
-                        mDispatcher.dispatch(AccountActionBuilder.newCheckedIsAvailableAction(payload));
+                        mDispatcher.dispatchRet(AccountActionBuilder.newCheckedIsAvailableAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -328,7 +328,7 @@ public class AccountRestClient extends BaseWPComRestClient {
                         payload.type = type;
 
                         payload.error = new IsAvailableError(((WPComGsonNetworkError) error).apiError, error.message);
-                        mDispatcher.dispatch(AccountActionBuilder.newCheckedIsAvailableAction(payload));
+                        mDispatcher.dispatchRet(AccountActionBuilder.newCheckedIsAvailableAction(payload));
                     }
                 }
         );

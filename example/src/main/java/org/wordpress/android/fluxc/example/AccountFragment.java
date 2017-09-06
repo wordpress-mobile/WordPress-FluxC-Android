@@ -53,15 +53,16 @@ public class AccountFragment extends Fragment {
         view.findViewById(R.id.account_infos_button).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
-                mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction(new FetchSettingsPayload()));
+                mDispatcher.dispatchAsk(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
+                mDispatcher.dispatchAsk(AccountActionBuilder.newFetchSettingsAction(new FetchSettingsPayload()));
             }
         });
 
         view.findViewById(R.id.account_email_verification).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDispatcher.dispatch(AccountActionBuilder.newSendVerificationEmailAction(new VerificationEmailPayload()));
+                mDispatcher.dispatchAsk(
+                        AccountActionBuilder.newSendVerificationEmailAction(new VerificationEmailPayload()));
             }
         });
 
@@ -109,7 +110,7 @@ public class AccountFragment extends Fragment {
                 PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
                 payload.params = new HashMap<>();
                 payload.params.put("display_name", displayName);
-                mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
+                mDispatcher.dispatchAsk(AccountActionBuilder.newPushSettingsAction(payload));
             }
         });
         alert.show();

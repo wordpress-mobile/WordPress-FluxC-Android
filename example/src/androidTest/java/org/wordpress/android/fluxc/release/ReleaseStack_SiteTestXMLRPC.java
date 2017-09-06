@@ -95,7 +95,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TestEvents.INVALID_SSL_CERTIFICATE;
         mCountDownLatch = new CountDownLatch(2);
 
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onAuthenticationChanged error event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         // Add an exception for the last certificate
@@ -103,7 +103,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         // Retry
         mNextEvent = TestEvents.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -121,7 +121,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TestEvents.HTTP_AUTH_ERROR;
         mCountDownLatch = new CountDownLatch(2);
 
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onAuthenticationChanged error event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         // Set known HTTP Auth credentials
@@ -131,7 +131,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         // Retry to fetch sites, this time we expect a site refresh
         mNextEvent = TestEvents.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -149,7 +149,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
 
         mCountDownLatch = new CountDownLatch(1);
         // Retry to fetch sites,we expect a site refresh
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -162,7 +162,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TestEvents.SITE_REMOVED;
         mCountDownLatch = new CountDownLatch(1);
         SiteModel selfHostedSite = mSiteStore.getSitesAccessedViaXMLRPC().get(0);
-        mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(new SiteRequestPayload(selfHostedSite)));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newRemoveSiteAction(new SiteRequestPayload(selfHostedSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -197,7 +197,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
 
         // Fetch post formats
         mNextEvent = TestEvents.POST_FORMATS_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(new SiteRequestPayload(firstSite)));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchPostFormatsAction(new SiteRequestPayload(firstSite)));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -278,7 +278,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
 
         mNextEvent = TestEvents.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));

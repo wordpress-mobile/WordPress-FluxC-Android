@@ -57,14 +57,14 @@ public class CommentRestClient extends BaseWPComRestClient {
                         FetchCommentsResponsePayload payload = new FetchCommentsResponsePayload(fetchCommentsPayload,
                                 comments, fetchCommentsPayload.site, fetchCommentsPayload.number,
                                 fetchCommentsPayload.offset);
-                        mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentsAction(payload));
+                        mDispatcher.dispatchRet(CommentActionBuilder.newFetchedCommentsAction(payload));
                     }
                 },
 
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentsAction(
+                        mDispatcher.dispatchRet(CommentActionBuilder.newFetchedCommentsAction(
                                 CommentErrorUtils.commentErrorToFetchCommentsPayload(fetchCommentsPayload, error,
                                         fetchCommentsPayload.site)));
                     }
@@ -89,14 +89,14 @@ public class CommentRestClient extends BaseWPComRestClient {
                         newComment.setId(comment.getId()); // reconciliate local instance and newly created object
                         RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload,
                                 newComment);
-                        mDispatcher.dispatch(CommentActionBuilder.newPushedCommentAction(payload));
+                        mDispatcher.dispatchRet(CommentActionBuilder.newPushedCommentAction(payload));
                     }
                 },
 
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        mDispatcher.dispatch(CommentActionBuilder.newPushedCommentAction(
+                        mDispatcher.dispatchRet(CommentActionBuilder.newPushedCommentAction(
                                 CommentErrorUtils.commentErrorToPushCommentPayload(requestPayload, error, comment)));
                     }
                 }
@@ -122,14 +122,14 @@ public class CommentRestClient extends BaseWPComRestClient {
                         CommentModel comment = commentResponseToComment(response, remoteCommentPayload.site);
                         RemoteCommentResponsePayload payload =
                                 new RemoteCommentResponsePayload(remoteCommentPayload, remoteCommentPayload.comment);
-                        mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentAction(payload));
+                        mDispatcher.dispatchRet(CommentActionBuilder.newFetchedCommentAction(payload));
                     }
                 },
 
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        mDispatcher.dispatch(CommentActionBuilder.newFetchedCommentAction(
+                        mDispatcher.dispatchRet(CommentActionBuilder.newFetchedCommentAction(
                                 CommentErrorUtils.commentErrorToFetchCommentPayload(remoteCommentPayload, error,
                                         remoteCommentPayload.comment)));
                     }
@@ -158,14 +158,14 @@ public class CommentRestClient extends BaseWPComRestClient {
                         }
                         RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload,
                                 modifiedComment);
-                        mDispatcher.dispatch(CommentActionBuilder.newDeletedCommentAction(payload));
+                        mDispatcher.dispatchRet(CommentActionBuilder.newDeletedCommentAction(payload));
                     }
                 },
 
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        mDispatcher.dispatch(CommentActionBuilder.newDeletedCommentAction(
+                        mDispatcher.dispatchRet(CommentActionBuilder.newDeletedCommentAction(
                                 CommentErrorUtils.commentErrorToFetchCommentPayload(requestPayload, error, comment)));
                     }
                 }
@@ -188,14 +188,14 @@ public class CommentRestClient extends BaseWPComRestClient {
                         newComment.setId(reply.getId()); // reconciliate local instance and newly created object
                         RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload,
                                 newComment);
-                        mDispatcher.dispatch(CommentActionBuilder.newCreatedNewCommentAction(payload));
+                        mDispatcher.dispatchRet(CommentActionBuilder.newCreatedNewCommentAction(payload));
                     }
                 },
 
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        mDispatcher.dispatch(CommentActionBuilder.newCreatedNewCommentAction(
+                        mDispatcher.dispatchRet(CommentActionBuilder.newCreatedNewCommentAction(
                                 CommentErrorUtils.commentErrorToFetchCommentPayload(requestPayload, error, reply)));
                     }
                 }
@@ -218,14 +218,14 @@ public class CommentRestClient extends BaseWPComRestClient {
                         newComment.setId(comment.getId()); // reconciliate local instance and newly created object
                         RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload,
                                 newComment);
-                        mDispatcher.dispatch(CommentActionBuilder.newCreatedNewCommentAction(payload));
+                        mDispatcher.dispatchRet(CommentActionBuilder.newCreatedNewCommentAction(payload));
                     }
                 },
 
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        mDispatcher.dispatch(CommentActionBuilder.newCreatedNewCommentAction(
+                        mDispatcher.dispatchRet(CommentActionBuilder.newCreatedNewCommentAction(
                                 CommentErrorUtils.commentErrorToFetchCommentPayload(requestPayload, error,
                                         comment)));
                     }
@@ -258,14 +258,14 @@ public class CommentRestClient extends BaseWPComRestClient {
                         if (comment != null) {
                             comment.setILike(response.i_like);
                         }
-                        mDispatcher.dispatch(CommentActionBuilder.newLikedCommentAction(payload));
+                        mDispatcher.dispatchRet(CommentActionBuilder.newLikedCommentAction(payload));
                     }
                 },
 
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        mDispatcher.dispatch(CommentActionBuilder.newLikedCommentAction(
+                        mDispatcher.dispatchRet(CommentActionBuilder.newLikedCommentAction(
                                 CommentErrorUtils.commentErrorToFetchCommentPayload(requestPayload, error, comment)));
                     }
                 }

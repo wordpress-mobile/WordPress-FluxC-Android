@@ -125,7 +125,7 @@ public class ReleaseStack_FluxCImageLoaderTest extends ReleaseStack_Base {
 
         mCountDownLatch = new CountDownLatch(1);
         // Retry to fetch sites,we expect a site refresh
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -136,7 +136,7 @@ public class ReleaseStack_FluxCImageLoaderTest extends ReleaseStack_Base {
 
         FetchMediaListPayload fetchPayload = new FetchMediaListPayload(
                 site, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertFalse(mMediaStore.getAllSiteMedia(site).isEmpty());

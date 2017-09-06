@@ -56,9 +56,9 @@ public class SitesFragment extends Fragment {
             public void onClick(View v) {
                 SiteModel site = mSiteStore.getSites().get(0);
                 // Fetch site
-                mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(new SiteRequestPayload(site)));
+                mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSiteAction(new SiteRequestPayload(site)));
                 // Fetch site's post formats
-                mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(new SiteRequestPayload(site)));
+                mDispatcher.dispatchAsk(SiteActionBuilder.newFetchPostFormatsAction(new SiteRequestPayload(site)));
             }
         });
 
@@ -66,7 +66,7 @@ public class SitesFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 for (SiteModel site : mSiteStore.getSites()) {
-                    mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(new SiteRequestPayload(site)));
+                    mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSiteAction(new SiteRequestPayload(site)));
                 }
             }
         });
@@ -86,7 +86,7 @@ public class SitesFragment extends Fragment {
             public void onClick(View v) {
                 SiteModel site = mSiteStore.getSites().get(0);
                 // Delete site
-                mDispatcher.dispatch(SiteActionBuilder.newDeleteSiteAction(new SiteRequestPayload(site)));
+                mDispatcher.dispatchAsk(SiteActionBuilder.newDeleteSiteAction(new SiteRequestPayload(site)));
             }
         });
 
@@ -95,7 +95,7 @@ public class SitesFragment extends Fragment {
             public void onClick(View v) {
                 SiteModel site = mSiteStore.getSites().get(0);
                 // Export site
-                mDispatcher.dispatch(SiteActionBuilder.newExportSiteAction(new SiteRequestPayload(site)));
+                mDispatcher.dispatchAsk(SiteActionBuilder.newExportSiteAction(new SiteRequestPayload(site)));
             }
         });
 
@@ -117,7 +117,7 @@ public class SitesFragment extends Fragment {
     private void newSiteAction(String name, String title) {
         // Default language "en" (english)
         NewSitePayload newSitePayload = new NewSitePayload(name, title, "en", SiteVisibility.PUBLIC, true);
-        mDispatcher.dispatch(SiteActionBuilder.newCreateNewSiteAction(newSitePayload));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newCreateNewSiteAction(newSitePayload));
     }
 
     private void showNewSiteDialog() {

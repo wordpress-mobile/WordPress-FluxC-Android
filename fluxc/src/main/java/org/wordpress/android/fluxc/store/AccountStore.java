@@ -650,7 +650,7 @@ public class AccountStore extends Store {
                     public void onResponse(Token token) {
                         mAccessToken.set(token.getAccessToken());
                         if (payload.nextAction != null) {
-                            mDispatcher.dispatch(payload.nextAction);
+                            mDispatcher.dispatchAsk(payload.nextAction);
                         }
                         emitChange(new OnAuthenticationChanged(payload));
                     }

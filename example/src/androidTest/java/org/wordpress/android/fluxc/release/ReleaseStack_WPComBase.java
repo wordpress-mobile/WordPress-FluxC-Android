@@ -66,14 +66,14 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         // Correct user we should get an OnAuthenticationChanged message
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.AUTHENTICATED;
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newAuthenticateAction(payload));
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Also fetch the account - it's required before WP.com sites can be stored in the database
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.ACCOUNT_FETCHED;
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
+        mDispatcher.dispatchAsk(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -82,7 +82,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchAllSitesPayload()));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesAction(new FetchAllSitesPayload()));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

@@ -100,7 +100,7 @@ public class CommentsFragment extends Fragment {
     }
 
     private void fetchCommentsFirstSite() {
-        mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(
+        mDispatcher.dispatchAsk(CommentActionBuilder.newFetchCommentsAction(
                 new FetchCommentsPayload(getFirstSite(), 5, 0)));
     }
 
@@ -108,13 +108,13 @@ public class CommentsFragment extends Fragment {
         CommentModel comment = new CommentModel();
         comment.setRemoteSiteId(getFirstSite().getSiteId());
         comment.setContent("I'm a new comment id: " + new Random().nextLong() + " from FluxC Example App");
-        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(
+        mDispatcher.dispatchAsk(CommentActionBuilder.newCreateNewCommentAction(
                 new RemoteCreateCommentPayload(getFirstSite(), getFirstComment(), comment)
         ));
     }
 
     private void likeOrUnlikeFirstComment() {
-        mDispatcher.dispatch(CommentActionBuilder.newLikeCommentAction(
+        mDispatcher.dispatchAsk(CommentActionBuilder.newLikeCommentAction(
                 new CommentStore.RemoteLikeCommentPayload(getFirstSite(), getFirstComment(),
                         !getFirstComment().getILike())));
     }

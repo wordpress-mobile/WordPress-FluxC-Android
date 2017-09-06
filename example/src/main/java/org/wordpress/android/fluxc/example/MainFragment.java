@@ -189,7 +189,7 @@ public class MainFragment extends Fragment {
 
     private void signIn2fa(String twoStepCode) {
         mAuthenticatePayload.twoStepCode = twoStepCode;
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mAuthenticatePayload));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newAuthenticateAction(mAuthenticatePayload));
     }
 
     private void showHTTPAuthDialog(final String url) {
@@ -218,29 +218,29 @@ public class MainFragment extends Fragment {
         } else {
             mSelfhostedPayload = new RefreshSitesXMLRPCPayload(username, password, url);
 
-            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(url)));
+            mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(url)));
         }
     }
 
     private void signOut() {
-        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction(new SignOutPayload()));
-        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction(new RemoveWpcomAndJetpackSitesPayload()));
+        mDispatcher.dispatchAsk(AccountActionBuilder.newSignOutAction(new SignOutPayload()));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction(new RemoveWpcomAndJetpackSitesPayload()));
         // Remove all remaining sites
         for (SiteModel site : mSiteStore.getSites()) {
-            mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(new SiteRequestPayload(site)));
+            mDispatcher.dispatchAsk(SiteActionBuilder.newRemoveSiteAction(new SiteRequestPayload(site)));
         }
     }
 
     private void wpcomFetchSites(String username, String password) {
         mAuthenticatePayload = new AuthenticatePayload(username, password);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(mAuthenticatePayload));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newAuthenticateAction(mAuthenticatePayload));
     }
 
     private void selfHostedFetchSites(String username, String password, String xmlrpcEndpoint) {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload(username, password, xmlrpcEndpoint);
         mSelfhostedPayload = payload;
         // Self Hosted don't have any "Authentication" request, try to list sites with user/password
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
     }
 
     // Event listeners
@@ -258,7 +258,7 @@ public class MainFragment extends Fragment {
         } else {
             if (!mSiteStore.hasSite() && event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
                 AppLog.d(T.API, "Account data fetched - fetching sites");
-                mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchAllSitesPayload()));
+                mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesAction(new FetchAllSitesPayload()));
             }
         }
     }
@@ -307,8 +307,8 @@ public class MainFragment extends Fragment {
         } else {
             if (mAccountStore.hasAccessToken()) {
                 AppLog.d(T.API, "Signed in to WordPress.com successfully, fetching account");
-                mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
-                mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction(new FetchSettingsPayload()));
+                mDispatcher.dispatchAsk(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
+                mDispatcher.dispatchAsk(AccountActionBuilder.newFetchSettingsAction(new FetchSettingsPayload()));
             }
         }
     }

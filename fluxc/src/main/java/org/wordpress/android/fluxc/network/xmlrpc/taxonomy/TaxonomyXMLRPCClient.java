@@ -70,7 +70,7 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
                         }
                         payload.origin = origin;
 
-                        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchedTermAction(payload));
+                        mDispatcher.dispatchRet(TaxonomyActionBuilder.newFetchedTermAction(payload));
                     }
                     }
                 },
@@ -93,7 +93,7 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
                         FetchTermResponsePayload payload = new FetchTermResponsePayload(requestPayload, term, site,
                                 taxonomyError);
                         payload.origin = origin;
-                        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchedTermAction(payload));
+                        mDispatcher.dispatchRet(TaxonomyActionBuilder.newFetchedTermAction(payload));
                     }
                 }
         );
@@ -118,10 +118,10 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
                                 taxonomyName);
 
                         if (terms != null) {
-                            mDispatcher.dispatch(TaxonomyActionBuilder.newFetchedTermsAction(payload));
+                            mDispatcher.dispatchRet(TaxonomyActionBuilder.newFetchedTermsAction(payload));
                         } else {
                             payload.error = new TaxonomyError(TaxonomyErrorType.INVALID_RESPONSE);
-                            mDispatcher.dispatch(TaxonomyActionBuilder.newFetchedTermsAction(payload));
+                            mDispatcher.dispatchRet(TaxonomyActionBuilder.newFetchedTermsAction(payload));
                         }
                     }
                 },
@@ -142,7 +142,7 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
                         }
                         FetchTermsResponsePayload payload = new FetchTermsResponsePayload(requestPayload, taxonomyError,
                                 taxonomyName);
-                        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchedTermsAction(payload));
+                        mDispatcher.dispatchRet(TaxonomyActionBuilder.newFetchedTermsAction(payload));
                     }
                 }
         );
@@ -167,7 +167,7 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
 
                         RemoteTermResponsePayload payload = new RemoteTermResponsePayload(requestPayload, term, site,
                                 null);
-                        mDispatcher.dispatch(TaxonomyActionBuilder.newPushedTermAction(payload));
+                        mDispatcher.dispatchRet(TaxonomyActionBuilder.newPushedTermAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -190,7 +190,7 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
                         }
                         RemoteTermResponsePayload payload = new RemoteTermResponsePayload(requestPayload, term, site,
                                 taxonomyError);
-                        mDispatcher.dispatch(TaxonomyActionBuilder.newPushedTermAction(payload));
+                        mDispatcher.dispatchRet(TaxonomyActionBuilder.newPushedTermAction(payload));
                     }
                 }
         );

@@ -78,7 +78,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                                 payload.error = new PostError(PostErrorType.INVALID_RESPONSE);
                             }
 
-                            mDispatcher.dispatch(PostActionBuilder.newFetchedPostAction(payload));
+                            mDispatcher.dispatchRet(PostActionBuilder.newFetchedPostAction(payload));
                         }
                     }
                 }, new BaseErrorListener() {
@@ -98,7 +98,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                         }
                         FetchPostResponsePayload payload = new FetchPostResponsePayload(requestPayload, post, site,
                                 postError, origin);
-                        mDispatcher.dispatch(PostActionBuilder.newFetchedPostAction(payload));
+                        mDispatcher.dispatchRet(PostActionBuilder.newFetchedPostAction(payload));
                     }
                 });
 
@@ -137,10 +137,10 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                                 getPages, offset > 0, canLoadMore);
 
                         if (posts != null) {
-                            mDispatcher.dispatch(PostActionBuilder.newFetchedPostsAction(payload));
+                            mDispatcher.dispatchRet(PostActionBuilder.newFetchedPostsAction(payload));
                         } else {
                             payload.error = new PostError(PostErrorType.INVALID_RESPONSE);
-                            mDispatcher.dispatch(PostActionBuilder.newFetchedPostsAction(payload));
+                            mDispatcher.dispatchRet(PostActionBuilder.newFetchedPostsAction(payload));
                         }
                     }
                 },
@@ -160,7 +160,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                                 postError = new PostError(PostErrorType.GENERIC_ERROR, error.message);
                         }
                         FetchPostsResponsePayload payload = new FetchPostsResponsePayload(requestPayload, postError);
-                        mDispatcher.dispatch(PostActionBuilder.newFetchedPostsAction(payload));
+                        mDispatcher.dispatchRet(PostActionBuilder.newFetchedPostsAction(payload));
                     }
                 }
         );
@@ -204,7 +204,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
 
                         RemotePostResponsePayload payload = new RemotePostResponsePayload(requestPayload, post, site,
                                 null);
-                        mDispatcher.dispatch(PostActionBuilder.newPushedPostAction(payload));
+                        mDispatcher.dispatchRet(PostActionBuilder.newPushedPostAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -227,7 +227,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                         }
                         RemotePostResponsePayload payload = new RemotePostResponsePayload(requestPayload, post, site,
                                 postError);
-                        mDispatcher.dispatch(PostActionBuilder.newPushedPostAction(payload));
+                        mDispatcher.dispatchRet(PostActionBuilder.newPushedPostAction(payload));
                     }
                 });
 
@@ -248,7 +248,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                     public void onResponse(Object response) {
                         RemotePostResponsePayload payload = new RemotePostResponsePayload(requestPayload, post, site,
                                 null);
-                        mDispatcher.dispatch(PostActionBuilder.newDeletedPostAction(payload));
+                        mDispatcher.dispatchRet(PostActionBuilder.newDeletedPostAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -268,7 +268,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                         }
                         RemotePostResponsePayload payload = new RemotePostResponsePayload(requestPayload, post, site,
                                 postError);
-                        mDispatcher.dispatch(PostActionBuilder.newDeletedPostAction(payload));
+                        mDispatcher.dispatchRet(PostActionBuilder.newDeletedPostAction(payload));
                     }
                 });
 

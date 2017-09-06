@@ -204,16 +204,17 @@ public class PostActivity extends AppCompatActivity {
         post.setContent(postContent);
 
         RemotePostRequest payload = new RemotePostRequest(post, mSite);
-        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
+        mDispatcher.dispatchAsk(PostActionBuilder.newPushPostAction(payload));
         AppLog.i(AppLog.T.API, "Create a new media post for " + mMedia.getUrl());
     }
 
     private void signOut() {
         if (mAccountStore.hasAccessToken()) {
-            mDispatcher.dispatch(AccountActionBuilder.newSignOutAction(new SignOutPayload()));
-            mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction(new RemoveWpcomAndJetpackSitesPayload()));
+            mDispatcher.dispatchAsk(AccountActionBuilder.newSignOutAction(new SignOutPayload()));
+            mDispatcher.dispatchAsk(
+                    SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction(new RemoveWpcomAndJetpackSitesPayload()));
         } else {
-            mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(new SiteRequestPayload(mSite)));
+            mDispatcher.dispatchAsk(SiteActionBuilder.newRemoveSiteAction(new SiteRequestPayload(mSite)));
         }
     }
 
@@ -227,10 +228,10 @@ public class PostActivity extends AppCompatActivity {
         mediaModel.setLocalSiteId(mSite.getId());
         mediaModel.setUploadDate(DateTimeUtils.iso8601UTCFromTimestamp(System.currentTimeMillis() / 1000));
         MediaRequestPayload updateMediaPayload = new MediaRequestPayload(null, mediaModel);
-        mDispatcher.dispatch(MediaActionBuilder.newUpdateMediaAction(updateMediaPayload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newUpdateMediaAction(updateMediaPayload));
 
         MediaRequestPayload uploadMediaPayload = new MediaRequestPayload(mSite, mediaModel);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(uploadMediaPayload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newUploadMediaAction(uploadMediaPayload));
     }
 
     @SuppressWarnings("unused")
@@ -295,7 +296,7 @@ public class PostActivity extends AppCompatActivity {
 
     private void fetchPosts() {
         PostStore.FetchPostsPayload payload = new PostStore.FetchPostsPayload(mSite);
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
+        mDispatcher.dispatchAsk(PostActionBuilder.newFetchPostsAction(payload));
     }
 
     private void showProgress() {

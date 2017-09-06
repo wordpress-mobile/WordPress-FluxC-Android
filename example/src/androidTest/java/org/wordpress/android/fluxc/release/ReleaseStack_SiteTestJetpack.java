@@ -203,7 +203,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.ERROR_DUPLICATE_SITE;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(xmlrpcPayload));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesXmlRpcAction(xmlrpcPayload));
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -352,19 +352,19 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newAuthenticateAction(payload));
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch account from REST API, and wait for OnAccountChanged event
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
+        mDispatcher.dispatchAsk(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchAllSitesPayload()));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesAction(new FetchAllSitesPayload()));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertTrue(mSiteStore.getSitesCount() > 0);
@@ -374,7 +374,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         // Clear WP.com sites, and wait for OnSiteRemoved event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_REMOVED;
-        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction(new RemoveWpcomAndJetpackSitesPayload()));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction(new RemoveWpcomAndJetpackSitesPayload()));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -388,7 +388,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
 
         mNextEvent = TestEvents.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -398,7 +398,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.SITE_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(new SiteRequestPayload(site)));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSiteAction(new SiteRequestPayload(site)));
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

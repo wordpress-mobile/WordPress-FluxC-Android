@@ -53,7 +53,7 @@ public class PostsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 FetchPostsPayload payload = new FetchPostsPayload(getFirstSite());
-                mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
+                mDispatcher.dispatchAsk(PostActionBuilder.newFetchPostsAction(payload));
             }
         });
 
@@ -65,7 +65,7 @@ public class PostsFragment extends Fragment {
                 examplePost.setContent("Hi there, I'm a post from FluxC!");
                 examplePost.setFeaturedImageId(0);
                 RemotePostRequest payload = new RemotePostRequest(examplePost, getFirstSite());
-                mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
+                mDispatcher.dispatchAsk(PostActionBuilder.newPushPostAction(payload));
             }
         });
 
@@ -82,7 +82,7 @@ public class PostsFragment extends Fragment {
                 });
                 if (!posts.isEmpty()) {
                     RemotePostRequest payload = new RemotePostRequest(posts.get(0), firstSite);
-                    mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(payload));
+                    mDispatcher.dispatchAsk(PostActionBuilder.newDeletePostAction(payload));
                 }
             }
         });
@@ -162,7 +162,7 @@ public class PostsFragment extends Fragment {
 
     private void searchPosts(String searchQuery, int offset) {
         SearchPostsPayload payload = new SearchPostsPayload(getFirstSite(), searchQuery, offset);
-        mDispatcher.dispatch(PostActionBuilder.newSearchPostsAction(payload));
+        mDispatcher.dispatchAsk(PostActionBuilder.newSearchPostsAction(payload));
     }
 
     private void prependToLog(final String s) {

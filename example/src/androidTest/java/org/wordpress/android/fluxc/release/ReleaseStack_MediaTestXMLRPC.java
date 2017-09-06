@@ -259,13 +259,13 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CANCELED_MEDIA;
         MediaRequestPayload payload = new MediaRequestPayload(sSite, testMedia);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newUploadMediaAction(payload));
 
         // Wait a bit and issue the cancel command
         TestUtils.waitFor(1000);
 
         CancelMediaPayload cancelPayload = new CancelMediaPayload(sSite, testMedia);
-        mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -276,13 +276,13 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CANCELED_MEDIA;
         payload = new MediaRequestPayload(sSite, testMedia);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newUploadMediaAction(payload));
 
         // Wait a bit and issue the cancel command
         TestUtils.waitFor(1000);
 
         cancelPayload = new CancelMediaPayload(sSite, testMedia, false);
-        mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -449,7 +449,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         MediaRequestPayload payload = new MediaRequestPayload(site, testMedia);
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newUploadMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // verify and set media ID
@@ -461,7 +461,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.DELETED_MEDIA;
         MediaRequestPayload deletePayload = new MediaRequestPayload(site, testMedia);
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newDeleteMediaAction(deletePayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -482,7 +482,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         MediaRequestPayload payload = new MediaRequestPayload(site, testMedia);
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newUploadMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // verify and set media ID
@@ -494,7 +494,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.DELETED_MEDIA;
         MediaRequestPayload deletePayload = new MediaRequestPayload(site, testMedia);
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newDeleteMediaAction(deletePayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -615,7 +615,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     private void pushMedia(MediaModel media) throws InterruptedException {
         MediaRequestPayload payload = new MediaRequestPayload(sSite, media);
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newPushMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -623,7 +623,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         FetchMediaListPayload fetchPayload = new FetchMediaListPayload(
                 sSite, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false);
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -631,21 +631,21 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         FetchMediaListPayload fetchPayload = new FetchMediaListPayload(
                 sSite, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false, MediaUtils.MIME_TYPE_IMAGE);
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchMedia(MediaModel media) throws InterruptedException {
         MediaRequestPayload fetchPayload = new MediaRequestPayload(sSite, media);
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(fetchPayload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newFetchMediaAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void uploadMedia(MediaModel media) throws InterruptedException {
         MediaRequestPayload payload = new MediaRequestPayload(sSite, media);
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newUploadMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -658,7 +658,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(mediaList.size());
         for (MediaModel media : mediaList) {
             MediaRequestPayload payload = new MediaRequestPayload(sSite, media);
-            mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+            mDispatcher.dispatchAsk(MediaActionBuilder.newUploadMediaAction(payload));
         }
 
         if (howManyFirstToCancel > 0 && howManyFirstToCancel <= mediaList.size()) {
@@ -669,7 +669,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
             for (int i = 0; i < howManyFirstToCancel; i++) {
                 MediaModel media = mediaList.get(i);
                 CancelMediaPayload payload = new CancelMediaPayload(sSite, media, delete);
-                mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(payload));
+                mDispatcher.dispatchAsk(MediaActionBuilder.newCancelMediaUploadAction(payload));
             }
         }
 
@@ -679,13 +679,13 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     private void deleteMedia(MediaModel media) throws InterruptedException {
         MediaRequestPayload deletePayload = new MediaRequestPayload(sSite, media);
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newDeleteMediaAction(deletePayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void removeMedia(MediaModel media) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(MediaActionBuilder.newRemoveMediaAction(new MediaRequestPayload(null, media)));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newRemoveMediaAction(new MediaRequestPayload(null, media)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 

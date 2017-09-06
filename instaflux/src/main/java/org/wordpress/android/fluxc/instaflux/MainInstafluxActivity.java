@@ -142,13 +142,13 @@ public class MainInstafluxActivity extends AppCompatActivity {
             mSelfhostedPayload.username = username;
             mSelfhostedPayload.password = password;
 
-            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(url)));
+            mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(url)));
         }
     }
 
     private void wpcomFetchSites(String username, String password) {
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newAuthenticateAction(payload));
     }
 
     private void selfHostedFetchSites(String username, String password, String xmlrpcEndpoint) {
@@ -158,7 +158,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
         payload.url = xmlrpcEndpoint;
         mSelfhostedPayload = payload;
         // Self Hosted don't have any "Authentication" request, try to list sites with user/password
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
     }
 
     private void launchPostActivity() {
@@ -181,7 +181,7 @@ public class MainInstafluxActivity extends AppCompatActivity {
         } else {
             if (!mSiteStore.hasSite() && event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
                 AppLog.d(AppLog.T.API, "Account data fetched - fetching sites");
-                mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchAllSitesPayload()));
+                mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesAction(new FetchAllSitesPayload()));
             }
         }
     }
@@ -209,8 +209,8 @@ public class MainInstafluxActivity extends AppCompatActivity {
         } else {
             if (mAccountStore.hasAccessToken()) {
                 AppLog.d(AppLog.T.API, "Signed in to WordPress.com successfully, fetching account");
-                mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
-                mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction(new FetchSettingsPayload()));
+                mDispatcher.dispatchAsk(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
+                mDispatcher.dispatchAsk(AccountActionBuilder.newFetchSettingsAction(new FetchSettingsPayload()));
             }
         }
     }

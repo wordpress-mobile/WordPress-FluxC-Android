@@ -81,11 +81,12 @@ public class TaxonomiesFragment extends Fragment {
     }
 
     private void fetchCategoriesFirstSite() {
-        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchCategoriesAction(new FetchCategoriesPayload(getFirstSite())));
+        mDispatcher.dispatchAsk(
+                TaxonomyActionBuilder.newFetchCategoriesAction(new FetchCategoriesPayload(getFirstSite())));
     }
 
     private void fetchTagsFirstSite() {
-        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTagsAction(new FetchCategoriesPayload(getFirstSite())));
+        mDispatcher.dispatchAsk(TaxonomyActionBuilder.newFetchTagsAction(new FetchCategoriesPayload(getFirstSite())));
     }
 
     private void createCategory() {
@@ -94,7 +95,7 @@ public class TaxonomiesFragment extends Fragment {
         newCategory.setDescription("From FluxC example app");
 
         RemoteTermRequestPayload payload = new RemoteTermRequestPayload(newCategory, getFirstSite());
-        mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(payload));
+        mDispatcher.dispatchAsk(TaxonomyActionBuilder.newPushTermAction(payload));
     }
 
     @SuppressWarnings("unused")

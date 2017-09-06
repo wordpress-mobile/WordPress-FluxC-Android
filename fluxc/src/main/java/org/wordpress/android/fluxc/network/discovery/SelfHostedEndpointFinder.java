@@ -104,7 +104,7 @@ public class SelfHostedEndpointFinder {
                     String xmlRpcEndpoint = verifyOrDiscoverXMLRPCEndpoint(payload, payload.url);
                     DiscoveryResultPayload discoveryResultPayload = new DiscoveryResultPayload(payload, xmlRpcEndpoint,
                             wpRestEndpoint);
-                    mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoveryResultAction(discoveryResultPayload));
+                    mDispatcher.dispatchRet(AuthenticationActionBuilder.newDiscoveryResultAction(discoveryResultPayload));
                 } catch (DiscoveryException e) {
                     // TODO: Handle tracking of XMLRPCDiscoveryException
                     // If a DiscoveryException is caught this high up, it means that either:
@@ -113,7 +113,7 @@ public class SelfHostedEndpointFinder {
                     // or is a WordPress.com site, or is a completely invalid URL
                     DiscoveryResultPayload discoveryResultPayload = new DiscoveryResultPayload(payload,
                             e.discoveryError, e.failedUrl);
-                    mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoveryResultAction(discoveryResultPayload));
+                    mDispatcher.dispatchRet(AuthenticationActionBuilder.newDiscoveryResultAction(discoveryResultPayload));
                 }
             }
         }).start();

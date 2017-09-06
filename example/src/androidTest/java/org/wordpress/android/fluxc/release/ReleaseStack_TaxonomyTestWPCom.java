@@ -60,7 +60,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.CATEGORIES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchCategoriesAction(new FetchCategoriesPayload(sSite)));
+        mDispatcher.dispatchAsk(TaxonomyActionBuilder.newFetchCategoriesAction(new FetchCategoriesPayload(sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -72,7 +72,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.TAGS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTagsAction(new FetchCategoriesPayload(sSite)));
+        mDispatcher.dispatchAsk(TaxonomyActionBuilder.newFetchTagsAction(new FetchCategoriesPayload(sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -88,7 +88,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         taxonomyModel.setName("roads");
 
         FetchTermsPayload payload = new FetchTermsPayload(sSite, taxonomyModel);
-        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermsAction(payload));
+        mDispatcher.dispatchAsk(TaxonomyActionBuilder.newFetchTermsAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -100,7 +100,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         TermModel term = new TermModel();
         term.setTaxonomy(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
         term.setSlug("uncategorized");
-        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermAction(new RemoteTermRequestPayload(term, sSite)));
+        mDispatcher.dispatchAsk(TaxonomyActionBuilder.newFetchTermAction(new RemoteTermRequestPayload(term, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -174,7 +174,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
 
         RemoteTermRequestPayload pushPayload = new RemoteTermRequestPayload(mTerm, sSite);
-        mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
+        mDispatcher.dispatchAsk(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -195,7 +195,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
 
         RemoteTermRequestPayload pushPayload = new RemoteTermRequestPayload(mTerm, sSite);
-        mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
+        mDispatcher.dispatchAsk(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -325,7 +325,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
 
         RemoteTermRequestPayload pushPayload = new RemoteTermRequestPayload(term, sSite);
-        mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
+        mDispatcher.dispatchAsk(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

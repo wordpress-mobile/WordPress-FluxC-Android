@@ -136,13 +136,13 @@ public class SiteRestClient extends BaseWPComRestClient {
                             for (SiteWPComRestResponse siteResponse : response.sites) {
                                 siteArray.add(siteResponseToSiteModel(siteResponse));
                             }
-                            mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesAction(
+                            mDispatcher.dispatchRet(SiteActionBuilder.newFetchedSitesAction(
                                     new SitesResponsePayload(fetchAllSitesPayload, new SitesModel(siteArray))));
                         } else {
                             AppLog.e(T.API, "Received empty response to /me/sites/");
                             SitesModel payload = new SitesModel(Collections.<SiteModel>emptyList());
                             payload.error = new BaseNetworkError(GenericErrorType.INVALID_RESPONSE);
-                            mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesAction(
+                            mDispatcher.dispatchRet(SiteActionBuilder.newFetchedSitesAction(
                                     new SitesResponsePayload(fetchAllSitesPayload, new SitesModel())));
                         }
                     }
@@ -152,7 +152,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         SitesModel payload = new SitesModel(Collections.<SiteModel>emptyList());
                         payload.error = error;
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesAction(
+                        mDispatcher.dispatchRet(SiteActionBuilder.newFetchedSitesAction(
                                 new SitesResponsePayload(fetchAllSitesPayload, payload)));
                     }
                 }
@@ -169,14 +169,14 @@ public class SiteRestClient extends BaseWPComRestClient {
                     public void onResponse(SiteWPComRestResponse response) {
                         if (response != null) {
                             SiteModel site = siteResponseToSiteModel(response);
-                            mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(
+                            mDispatcher.dispatchAsk(SiteActionBuilder.newUpdateSiteAction(
                                     new SiteRequestPayload(siteRequestPayload.getRequestId(), site)));
                         } else {
                             AppLog.e(T.API, "Received empty response to /sites/$site/ for " +
                                     siteRequestPayload.site.getUrl());
                             SiteModel payload = new SiteModel();
                             payload.error = new BaseNetworkError(GenericErrorType.INVALID_RESPONSE);
-                            mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(
+                            mDispatcher.dispatchAsk(SiteActionBuilder.newUpdateSiteAction(
                                     new SiteRequestPayload(siteRequestPayload.getRequestId(), payload)));
                         }
                     }
@@ -186,7 +186,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         SiteModel payload = new SiteModel();
                         payload.error = error;
-                        mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(
+                        mDispatcher.dispatchAsk(SiteActionBuilder.newUpdateSiteAction(
                                 new SiteRequestPayload(siteRequestPayload.getRequestId(), payload)));
                     }
                 }
@@ -221,7 +221,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                             }
                         }
                         payload.newSiteRemoteId = siteId;
-                        mDispatcher.dispatch(SiteActionBuilder.newCreatedNewSiteAction(payload));
+                        mDispatcher.dispatchRet(SiteActionBuilder.newCreatedNewSiteAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -230,7 +230,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                         NewSiteResponsePayload payload = volleyErrorToAccountResponsePayload(newSitePayload,
                                 error.volleyError);
                         payload.dryRun = newSitePayload.dryRun;
-                        mDispatcher.dispatch(SiteActionBuilder.newCreatedNewSiteAction(payload));
+                        mDispatcher.dispatchRet(SiteActionBuilder.newCreatedNewSiteAction(payload));
                     }
                 }
         );
@@ -256,7 +256,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                                 postFormats.add(postFormat);
                             }
                         }
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchedPostFormatsAction(new
+                        mDispatcher.dispatchRet(SiteActionBuilder.newFetchedPostFormatsAction(new
                                 FetchedPostFormatsPayload(siteRequestPayload, siteRequestPayload.site, postFormats)));
                     }
                 },
@@ -267,7 +267,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                                 siteRequestPayload.site, Collections.<PostFormatModel>emptyList());
                         // TODO: what other kind of error could we get here?
                         payload.error = new PostFormatsError(PostFormatsErrorType.GENERIC_ERROR);
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchedPostFormatsAction(payload));
+                        mDispatcher.dispatchRet(SiteActionBuilder.newFetchedPostFormatsAction(payload));
                     }
                 }
         );
@@ -288,7 +288,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                             roleModel.setDisplayName(roleResponse.display_name);
                             roleArray.add(roleModel);
                         }
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchedUserRolesAction(new
+                        mDispatcher.dispatchRet(SiteActionBuilder.newFetchedUserRolesAction(new
                                 FetchedUserRolesPayload(requestPayload, site, roleArray)));
                     }
                 },
@@ -299,7 +299,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                                 Collections.<RoleModel>emptyList());
                         // TODO: what other kind of error could we get here?
                         payload.error = new UserRolesError(UserRolesErrorType.GENERIC_ERROR);
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchedUserRolesAction(payload));
+                        mDispatcher.dispatchRet(SiteActionBuilder.newFetchedUserRolesAction(payload));
                     }
                 }
         );
@@ -315,7 +315,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                     public void onResponse(SiteWPComRestResponse response) {
                         DeleteSiteResponsePayload payload = new DeleteSiteResponsePayload(requestPayload);
                         payload.site = site;
-                        mDispatcher.dispatch(SiteActionBuilder.newDeletedSiteAction(payload));
+                        mDispatcher.dispatchRet(SiteActionBuilder.newDeletedSiteAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -325,7 +325,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                         WPComGsonNetworkError networkError = ((WPComGsonNetworkError) error);
                         payload.error = new DeleteSiteError(networkError.apiError, networkError.message);
                         payload.site = site;
-                        mDispatcher.dispatch(SiteActionBuilder.newDeletedSiteAction(payload));
+                        mDispatcher.dispatchRet(SiteActionBuilder.newDeletedSiteAction(payload));
                     }
                 }
         );
@@ -340,7 +340,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                     @Override
                     public void onResponse(ExportSiteResponse response) {
                         ExportSiteResponsePayload payload = new ExportSiteResponsePayload(requestPayload);
-                        mDispatcher.dispatch(SiteActionBuilder.newExportedSiteAction(payload));
+                        mDispatcher.dispatchRet(SiteActionBuilder.newExportedSiteAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -348,7 +348,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         ExportSiteResponsePayload payload = new ExportSiteResponsePayload(requestPayload);
                         payload.error = error;
-                        mDispatcher.dispatch(SiteActionBuilder.newExportedSiteAction(payload));
+                        mDispatcher.dispatchRet(SiteActionBuilder.newExportedSiteAction(payload));
                     }
                 }
         );
@@ -367,7 +367,7 @@ public class SiteRestClient extends BaseWPComRestClient {
         } catch (IllegalArgumentException e) {
             SiteError siteError = new SiteError(SiteErrorType.INVALID_SITE);
             ConnectSiteInfoPayload payload = new ConnectSiteInfoPayload(urlRequestPayload, siteError);
-            mDispatcher.dispatch(SiteActionBuilder.newFetchedConnectSiteInfoAction(payload));
+            mDispatcher.dispatchRet(SiteActionBuilder.newFetchedConnectSiteInfoAction(payload));
             return;
         }
 
@@ -384,7 +384,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                     public void onResponse(ConnectSiteInfoResponse response) {
                         ConnectSiteInfoPayload info = connectSiteInfoFromResponse(urlRequestPayload, response);
                         info.url = urlRequestPayload.url;
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchedConnectSiteInfoAction(info));
+                        mDispatcher.dispatchRet(SiteActionBuilder.newFetchedConnectSiteInfoAction(info));
                     }
                 },
                 new BaseErrorListener() {
@@ -392,7 +392,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         SiteError siteError = new SiteError(SiteErrorType.INVALID_SITE);
                         ConnectSiteInfoPayload info = new ConnectSiteInfoPayload(urlRequestPayload, siteError);
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchedConnectSiteInfoAction(info));
+                        mDispatcher.dispatchRet(SiteActionBuilder.newFetchedConnectSiteInfoAction(info));
                     }
                 }
         );
@@ -408,7 +408,7 @@ public class SiteRestClient extends BaseWPComRestClient {
             FetchWPComSiteResponsePayload payload = new FetchWPComSiteResponsePayload(urlRequestPayload);
             payload.checkedUrl = urlRequestPayload.url;
             payload.error = new SiteError(SiteErrorType.INVALID_SITE);
-            mDispatcher.dispatch(SiteActionBuilder.newFetchedWpcomSiteByUrlAction(payload));
+            mDispatcher.dispatchRet(SiteActionBuilder.newFetchedWpcomSiteByUrlAction(payload));
             return;
         } catch (UnsupportedEncodingException e) {
             // This should be impossible (it means an Android device without UTF-8 support)
@@ -425,7 +425,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                         FetchWPComSiteResponsePayload payload = new FetchWPComSiteResponsePayload(urlRequestPayload);
                         payload.checkedUrl = urlRequestPayload.url;
                         payload.site = siteResponseToSiteModel(response);
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchedWpcomSiteByUrlAction(payload));
+                        mDispatcher.dispatchRet(SiteActionBuilder.newFetchedWpcomSiteByUrlAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -447,7 +447,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                         }
                         payload.error = new SiteError(siteErrorType);
 
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchedWpcomSiteByUrlAction(payload));
+                        mDispatcher.dispatchRet(SiteActionBuilder.newFetchedWpcomSiteByUrlAction(payload));
                     }
                 }
         );
@@ -464,7 +464,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                         IsWPComResponsePayload payload = new IsWPComResponsePayload(urlRequestPayload);
                         payload.url = urlRequestPayload.url;
                         payload.isWPCom = true;
-                        mDispatcher.dispatch(SiteActionBuilder.newCheckedIsWpcomUrlAction(payload));
+                        mDispatcher.dispatchRet(SiteActionBuilder.newCheckedIsWpcomUrlAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -481,7 +481,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                         } else {
                             payload.error = error;
                         }
-                        mDispatcher.dispatch(SiteActionBuilder.newCheckedIsWpcomUrlAction(payload));
+                        mDispatcher.dispatchRet(SiteActionBuilder.newCheckedIsWpcomUrlAction(payload));
                     }
                 }
         );
@@ -504,7 +504,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                     public void onResponse(ArrayList<DomainSuggestionResponse> response) {
                         SuggestDomainsResponsePayload payload =
                                 new SuggestDomainsResponsePayload(suggestDomainsPayload.query, response);
-                        mDispatcher.dispatch(SiteActionBuilder.newSuggestedDomainsAction(payload));
+                        mDispatcher.dispatchAsk(SiteActionBuilder.newSuggestedDomainsAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -512,7 +512,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         SuggestDomainsResponsePayload payload =
                                 new SuggestDomainsResponsePayload(suggestDomainsPayload.query, error);
-                        mDispatcher.dispatch(SiteActionBuilder.newSuggestedDomainsAction(payload));
+                        mDispatcher.dispatchAsk(SiteActionBuilder.newSuggestedDomainsAction(payload));
                     }
                 }
         );

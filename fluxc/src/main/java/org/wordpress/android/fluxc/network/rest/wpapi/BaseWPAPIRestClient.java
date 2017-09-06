@@ -30,7 +30,7 @@ public abstract class BaseWPAPIRestClient {
             @Override
             public void onAuthFailed(AccountStore.AuthenticationError authError) {
                 AuthenticateErrorPayload payload = new AuthenticateErrorPayload(requestPayload, authError);
-                mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateErrorAction(payload));
+                mDispatcher.dispatchRet(AuthenticationActionBuilder.newAuthenticateErrorAction(payload));
             }
         };
     }

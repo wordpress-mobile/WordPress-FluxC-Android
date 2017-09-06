@@ -146,7 +146,7 @@ public class SiteXMLRPCClientTest {
     }
 
     @Test
-    public void testFetchSiteBadResponseFormat() throws Exception {
+    public <T> void testFetchSiteBadResponseFormat() throws Exception {
         // If wp.getOptions returns a String instead of a Map, make sure we:
         // 1. Don't crash
         // 2. Emit an UPDATE_SITE action with an INVALID_RESPONSE error
@@ -186,7 +186,7 @@ public class SiteXMLRPCClientTest {
                 mCountDownLatch.countDown();
                 return null;
             }
-        }).when(mDispatcher).dispatch(any(Action.class));
+        }).when(mDispatcher).dispatchRet(any(Action.class));
 
         mCountDownLatch = new CountDownLatch(3);
         mSiteXMLRPCClient.fetchSite(new SiteRequestPayload(site));
@@ -252,7 +252,7 @@ public class SiteXMLRPCClientTest {
                 mCountDownLatch.countDown();
                 return null;
             }
-        }).when(mDispatcher).dispatch(any(Action.class));
+        }).when(mDispatcher).dispatchRet(any(Action.class));
 
         mCountDownLatch = new CountDownLatch(3);
         mSiteXMLRPCClient.fetchSites(new RefreshSitesXMLRPCPayload("thedoc", "gr3@tsc0tt", xmlrpcUrl));

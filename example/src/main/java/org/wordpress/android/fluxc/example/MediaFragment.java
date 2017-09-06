@@ -257,14 +257,14 @@ public class MediaFragment extends Fragment {
     private void fetchMediaList(@NonNull SiteModel site) {
         FetchMediaListPayload payload = new FetchMediaListPayload(
                 site, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(payload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newFetchMediaListAction(payload));
     }
 
     private void fetchMedia(@NonNull final SiteModel site, @NonNull MediaModel media) {
         prependToLog("Fetching requested media from" + site.getName());
 
         MediaRequestPayload payload = new MediaRequestPayload(mSite, media);
-        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(payload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newFetchMediaAction(payload));
     }
 
     private void uploadMedia(@NonNull SiteModel site, @NonNull String mediaUri) {
@@ -279,7 +279,7 @@ public class MediaFragment extends Fragment {
         MediaRequestPayload payload = new MediaRequestPayload(site, mCurrentUpload);
         prependToLog("Dispatching upload event for media localId=" + mCurrentUpload.getId());
 
-        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newUploadMediaAction(payload));
         mCancelButton.setEnabled(true);
     }
 
@@ -287,12 +287,12 @@ public class MediaFragment extends Fragment {
         prependToLog("Deleting requested media from " + site.getName());
 
         MediaRequestPayload payload = new MediaRequestPayload(site, media);
-        mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(payload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newDeleteMediaAction(payload));
     }
 
     private void cancelMediaUpload(@NonNull SiteModel site, @NonNull MediaModel media) {
         CancelMediaPayload payload = new CancelMediaPayload(site, media);
-        mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(payload));
+        mDispatcher.dispatchAsk(MediaActionBuilder.newCancelMediaUploadAction(payload));
     }
 
     private class MediaAdapter extends ArrayAdapter<MediaModel> {

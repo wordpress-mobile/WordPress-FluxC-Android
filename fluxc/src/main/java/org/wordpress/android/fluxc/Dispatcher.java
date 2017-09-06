@@ -31,11 +31,19 @@ public class Dispatcher {
         mBus.unregister(object);
     }
 
-    public RequestPayload dispatch(Action action) {
+    public <T extends RequestPayload> RequestPayload dispatchAsk(Action<T> action) {
+        dispatchNoReturn(action);
+        return action.getPayload();
+    }
+
+    public <T extends ResponsePayload> void dispatchRet(Action<T> action) {
+        dispatchNoReturn(action);
+    }
+
+    private void dispatchNoReturn(Action action) {
         AppLog.d(T.API, "Dispatching action: " + action.getType().getClass().getSimpleName()
                 + "-" + action.getType().name());
         post(action);
-        return (RequestPayload) action.getPayload();
     }
 
     public void emitChange(final Object changeEvent) {

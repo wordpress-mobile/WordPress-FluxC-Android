@@ -75,7 +75,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.INVALID_URL_ERROR;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -89,7 +89,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.NO_SITE_ERROR;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -103,7 +103,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.NO_SITE_ERROR;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -117,7 +117,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.WORDPRESS_COM_SITE;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -373,7 +373,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.XMLRPC_BLOCKED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -387,7 +387,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.XMLRPC_FORBIDDEN;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -401,7 +401,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.MISSING_XMLRPC_METHOD;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -416,7 +416,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
             mNextEvent = TestEvents.DISCOVERY_SUCCEEDED_WPAPI;
             mCountDownLatch = new CountDownLatch(1);
 
-            mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
+            mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
 
             // Wait for a network response / onChanged event
             assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -445,7 +445,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = nextEvent;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -464,7 +464,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.ERRONEOUS_SSL_CERTIFICATE;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
 
         // Wait for a network response / onAuthenticationChanged error event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -476,7 +476,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = nextEvent;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
 
         // Wait for a network response / onAuthenticationChanged error event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -496,7 +496,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.HTTP_AUTH_REQUIRED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
 
         // Wait for a network response / onAuthenticationChanged error event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -508,7 +508,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = nextEvent;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(mUrl)));
 
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -525,7 +525,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         payload.username = mUsername;
         payload.password = mPassword;
 
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

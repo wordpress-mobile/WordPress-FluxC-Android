@@ -77,7 +77,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_REMOVED;
         mExpectedRowsAffected = mSiteStore.getSitesCount();
-        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction(new RemoveWpcomAndJetpackSitesPayload()));
+        mDispatcher.dispatchAsk(
+                SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction(new RemoveWpcomAndJetpackSitesPayload()));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -90,7 +91,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         SiteModel firstSite = mSiteStore.getSites().get(0);
 
         // Fetch post formats
-        mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(new SiteRequestPayload(firstSite)));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchPostFormatsAction(new SiteRequestPayload(firstSite)));
         mNextEvent = TestEvents.POST_FORMATS_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -108,7 +109,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         SiteModel firstSite = mSiteStore.getSites().get(0);
 
         // Fetch user roles
-        mDispatcher.dispatch(SiteActionBuilder.newFetchUserRolesAction(new SiteRequestPayload(firstSite)));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchUserRolesAction(new SiteRequestPayload(firstSite)));
         mNextEvent = TestEvents.USER_ROLES_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -120,13 +121,13 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     public void testFetchConnectSiteInfo() throws InterruptedException {
         String site = "http://www.example.com";
-        mDispatcher.dispatch(SiteActionBuilder.newFetchConnectSiteInfoAction(new UrlRequestPayload(site)));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchConnectSiteInfoAction(new UrlRequestPayload(site)));
         mNextEvent = TestEvents.FETCHED_CONNECT_SITE_INFO;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         site = "";
-        mDispatcher.dispatch(SiteActionBuilder.newFetchConnectSiteInfoAction(new UrlRequestPayload(site)));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchConnectSiteInfoAction(new UrlRequestPayload(site)));
         mNextEvent = TestEvents.ERROR_INVALID_SITE;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -134,33 +135,33 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     public void testFetchWPComSiteByUrl() throws InterruptedException {
         String site = "http://en.blog.wordpress.com";
-        mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(new UrlRequestPayload(site)));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchWpcomSiteByUrlAction(new UrlRequestPayload(site)));
         mNextEvent = TestEvents.FETCHED_WPCOM_SITE_BY_URL;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Sites in subfolders should be handled and return a response distinct from their host
         site = "http://en.blog.wordpress.com/nonexistentsubdomain";
-        mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(new UrlRequestPayload(site)));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchWpcomSiteByUrlAction(new UrlRequestPayload(site)));
         mNextEvent = TestEvents.ERROR_UNKNOWN_SITE;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // A Jetpack-connected site in a subfolder should have a successful response
         site = BuildConfig.TEST_WPORG_URL_JETPACK_SUBFOLDER;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(new UrlRequestPayload(site)));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchWpcomSiteByUrlAction(new UrlRequestPayload(site)));
         mNextEvent = TestEvents.FETCHED_WPCOM_SITE_BY_URL;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         site = "http://definitelynotawpcomsite.impossible";
-        mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(new UrlRequestPayload(site)));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchWpcomSiteByUrlAction(new UrlRequestPayload(site)));
         mNextEvent = TestEvents.ERROR_UNKNOWN_SITE;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         site = "";
-        mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(new UrlRequestPayload(site)));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchWpcomSiteByUrlAction(new UrlRequestPayload(site)));
         mNextEvent = TestEvents.ERROR_INVALID_SITE;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -174,9 +175,10 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(3); // Wait for OnAuthenticationChanged, OnAccountChanged and OnSiteRemoved
         mNextEvent = TestEvents.SITE_REMOVED;
         mExpectedRowsAffected = mSiteStore.getSitesCount();
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchAllSitesPayload()));
-        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction(new SignOutPayload()));
-        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction(new RemoveWpcomAndJetpackSitesPayload()));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesAction(new FetchAllSitesPayload()));
+        mDispatcher.dispatchAsk(AccountActionBuilder.newSignOutAction(new SignOutPayload()));
+        mDispatcher.dispatchAsk(
+                SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction(new RemoveWpcomAndJetpackSitesPayload()));
 
         // Wait for OnAuthenticationChanged, OnAccountChanged and OnSiteRemoved from logout/site removal
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -297,19 +299,19 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         // Correct user we should get an OnAuthenticationChanged message
-        mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newAuthenticateAction(payload));
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch account from REST API, and wait for OnAccountChanged event
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
+        mDispatcher.dispatchAsk(AccountActionBuilder.newFetchAccountAction(new FetchAccountPayload()));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch sites from REST API, and wait for OnSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction(new FetchAllSitesPayload()));
+        mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesAction(new FetchAllSitesPayload()));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertTrue(mSiteStore.getSitesCount() > 0);

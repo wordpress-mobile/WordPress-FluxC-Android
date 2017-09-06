@@ -38,7 +38,7 @@ public abstract class BaseWPComRestClient {
             @Override
             public void onAuthFailed(AuthenticationError authError) {
                 AuthenticateErrorPayload payload = new AuthenticateErrorPayload(requestPayload, authError);
-                mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateErrorAction(payload));
+                mDispatcher.dispatchRet(AuthenticationActionBuilder.newAuthenticateErrorAction(payload));
             }
         };
     }

@@ -79,7 +79,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         mNextEvent = TestEvents.POST_REMOVED;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(PostActionBuilder.newRemovePostAction(new RemovePostPayload(mPost)));
+        mDispatcher.dispatchAsk(PostActionBuilder.newRemovePostAction(new RemovePostPayload(mPost)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         assertEquals(0, PostSqlUtils.getPostsForSite(sSite, false).size());
@@ -282,7 +282,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, false)));
+        mDispatcher.dispatchAsk(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, false)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -298,7 +298,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, true)));
+        mDispatcher.dispatchAsk(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, true)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -312,7 +312,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.PAGES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPagesAction(new FetchPostsPayload(sSite, false)));
+        mDispatcher.dispatchAsk(PostActionBuilder.newFetchPagesAction(new FetchPostsPayload(sSite, false)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -597,7 +597,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.POST_DELETED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostRequest(uploadedPost, sSite)));
+        mDispatcher.dispatchAsk(PostActionBuilder.newDeletePostAction(new RemotePostRequest(uploadedPost, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -617,7 +617,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ERROR_UNKNOWN_POST;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostRequest(post, sSite)));
+        mDispatcher.dispatchAsk(PostActionBuilder.newFetchPostAction(new RemotePostRequest(post, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -644,7 +644,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         // Upload edited post
         RemotePostRequest pushPayload = new RemotePostRequest(uploadedPost, sSite);
-        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
+        mDispatcher.dispatchAsk(PostActionBuilder.newPushPostAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -670,7 +670,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ERROR_UNKNOWN_POST;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostRequest(invalidPost, sSite)));
+        mDispatcher.dispatchAsk(PostActionBuilder.newDeletePostAction(new RemotePostRequest(invalidPost, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -688,7 +688,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostRequest(post, site)));
+        mDispatcher.dispatchAsk(PostActionBuilder.newFetchPostAction(new RemotePostRequest(post, site)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -801,7 +801,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
 
         RemotePostRequest pushPayload = new RemotePostRequest(post, sSite);
-        mDispatcher.dispatch(PostActionBuilder.newPushPostAction(pushPayload));
+        mDispatcher.dispatchAsk(PostActionBuilder.newPushPostAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -810,7 +810,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.POST_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostAction(new RemotePostRequest(post, sSite)));
+        mDispatcher.dispatchAsk(PostActionBuilder.newFetchPostAction(new RemotePostRequest(post, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -819,7 +819,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.POST_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newUpdatePostAction(new UpdatePostPayload(post)));
+        mDispatcher.dispatchAsk(PostActionBuilder.newUpdatePostAction(new UpdatePostPayload(post)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -828,7 +828,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ALL_POST_REMOVED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newRemoveAllPostsAction(new RemoveAllPostsPayload()));
+        mDispatcher.dispatchAsk(PostActionBuilder.newRemoveAllPostsAction(new RemoveAllPostsPayload()));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

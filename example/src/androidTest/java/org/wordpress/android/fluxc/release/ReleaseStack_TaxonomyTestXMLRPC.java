@@ -64,7 +64,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.CATEGORIES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchCategoriesAction(new FetchCategoriesPayload(sSite)));
+        mDispatcher.dispatchAsk(TaxonomyActionBuilder.newFetchCategoriesAction(new FetchCategoriesPayload(sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -76,7 +76,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.TAGS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTagsAction(new FetchCategoriesPayload(sSite)));
+        mDispatcher.dispatchAsk(TaxonomyActionBuilder.newFetchTagsAction(new FetchCategoriesPayload(sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -92,7 +92,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         taxonomyModel.setName("roads");
 
         FetchTermsPayload payload = new FetchTermsPayload(sSite, taxonomyModel);
-        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermsAction(payload));
+        mDispatcher.dispatchAsk(TaxonomyActionBuilder.newFetchTermsAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -109,7 +109,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         term.setTaxonomy(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
         term.setSlug("uncategorized");
         term.setRemoteTermId(1);
-        mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermAction(new RemoteTermRequestPayload(term, sSite)));
+        mDispatcher.dispatchAsk(TaxonomyActionBuilder.newFetchTermAction(new RemoteTermRequestPayload(term, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -183,7 +183,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
 
         RemoteTermRequestPayload pushPayload = new RemoteTermRequestPayload(mTerm, sSite);
-        mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
+        mDispatcher.dispatchAsk(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -208,7 +208,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
 
         RemoteTermRequestPayload pushPayload = new RemoteTermRequestPayload(mTerm, sSite);
-        mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
+        mDispatcher.dispatchAsk(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -342,7 +342,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
 
         RemoteTermRequestPayload pushPayload = new RemoteTermRequestPayload(term, sSite);
-        mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
+        mDispatcher.dispatchAsk(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

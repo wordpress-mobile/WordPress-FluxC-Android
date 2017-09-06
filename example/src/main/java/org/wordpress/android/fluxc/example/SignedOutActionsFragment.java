@@ -105,7 +105,7 @@ public class SignedOutActionsFragment extends Fragment {
 
     private void newAccountAction(String username, String email, String password) {
         NewAccountPayload newAccountPayload = new NewAccountPayload(username, password, email, true);
-        mDispatcher.dispatch(AccountActionBuilder.newCreateNewAccountAction(newAccountPayload));
+        mDispatcher.dispatchAsk(AccountActionBuilder.newCreateNewAccountAction(newAccountPayload));
     }
 
     private void showNewAccountDialog() {
@@ -129,7 +129,7 @@ public class SignedOutActionsFragment extends Fragment {
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String url = editText.getText().toString();
-                mDispatcher.dispatch(SiteActionBuilder.newIsWpcomUrlAction(new UrlRequestPayload(url)));
+                mDispatcher.dispatchAsk(SiteActionBuilder.newIsWpcomUrlAction(new UrlRequestPayload(url)));
             }
         });
         alert.show();
@@ -145,7 +145,7 @@ public class SignedOutActionsFragment extends Fragment {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String keyword = editText.getText().toString();
                 SuggestDomainsPayload payload = new SuggestDomainsPayload(keyword, true, false, 5);
-                mDispatcher.dispatch(SiteActionBuilder.newSuggestDomainsAction(payload));
+                mDispatcher.dispatchAsk(SiteActionBuilder.newSuggestDomainsAction(payload));
             }
         });
         alert.show();
@@ -161,7 +161,7 @@ public class SignedOutActionsFragment extends Fragment {
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String email = editText.getText().toString();
-                mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(new AuthEmailPayload(email)));
+                mDispatcher.dispatchAsk(AuthenticationActionBuilder.newSendAuthEmailAction(new AuthEmailPayload(email)));
             }
         });
         alert.show();
@@ -176,7 +176,7 @@ public class SignedOutActionsFragment extends Fragment {
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String url = editText.getText().toString();
-                mDispatcher.dispatch(SiteActionBuilder.newFetchConnectSiteInfoAction(new UrlRequestPayload(url)));
+                mDispatcher.dispatchAsk(SiteActionBuilder.newFetchConnectSiteInfoAction(new UrlRequestPayload(url)));
             }
         });
         alert.show();
@@ -191,7 +191,7 @@ public class SignedOutActionsFragment extends Fragment {
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String url = editText.getText().toString();
-                mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(new UrlRequestPayload(url)));
+                mDispatcher.dispatchAsk(SiteActionBuilder.newFetchWpcomSiteByUrlAction(new UrlRequestPayload(url)));
             }
         });
         alert.show();

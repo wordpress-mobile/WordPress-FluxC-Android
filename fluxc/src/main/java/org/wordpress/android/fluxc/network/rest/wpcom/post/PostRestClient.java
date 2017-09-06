@@ -70,7 +70,7 @@ public class PostRestClient extends BaseWPComRestClient {
                                 site, null, PostAction.FETCH_POST);
                         payload.post = fetchedPost;
 
-                        mDispatcher.dispatch(PostActionBuilder.newFetchedPostAction(payload));
+                        mDispatcher.dispatchRet(PostActionBuilder.newFetchedPostAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -80,7 +80,7 @@ public class PostRestClient extends BaseWPComRestClient {
                         PostError postError = new PostError(((WPComGsonNetworkError) error).apiError, error.message);
                         FetchPostResponsePayload payload = new FetchPostResponsePayload(requestPayload, post, site,
                                 postError, PostAction.FETCH_POST);
-                        mDispatcher.dispatch(PostActionBuilder.newFetchedPostAction(payload));
+                        mDispatcher.dispatchRet(PostActionBuilder.newFetchedPostAction(payload));
                     }
                 }
         );
@@ -125,7 +125,7 @@ public class PostRestClient extends BaseWPComRestClient {
 
                         FetchPostsResponsePayload payload = new FetchPostsResponsePayload(requestPayload,
                                 new PostsModel(postArray), site, getPages, offset > 0, canLoadMore);
-                        mDispatcher.dispatch(PostActionBuilder.newFetchedPostsAction(payload));
+                        mDispatcher.dispatchRet(PostActionBuilder.newFetchedPostsAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -134,7 +134,7 @@ public class PostRestClient extends BaseWPComRestClient {
                         // Possible non-generic errors: 404 unknown_post_type (invalid post type, shouldn't happen)
                         PostError postError = new PostError(((WPComGsonNetworkError) error).apiError, error.message);
                         FetchPostsResponsePayload payload = new FetchPostsResponsePayload(requestPayload, postError);
-                        mDispatcher.dispatch(PostActionBuilder.newFetchedPostsAction(payload));
+                        mDispatcher.dispatchRet(PostActionBuilder.newFetchedPostsAction(payload));
                     }
                 }
         );
@@ -166,7 +166,7 @@ public class PostRestClient extends BaseWPComRestClient {
 
                         RemotePostResponsePayload payload = new RemotePostResponsePayload(requestPayload, uploadedPost,
                                 site, null);
-                        mDispatcher.dispatch(PostActionBuilder.newPushedPostAction(payload));
+                        mDispatcher.dispatchRet(PostActionBuilder.newPushedPostAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -178,7 +178,7 @@ public class PostRestClient extends BaseWPComRestClient {
                         PostError postError = new PostError(((WPComGsonNetworkError) error).apiError, error.message);
                         RemotePostResponsePayload payload = new RemotePostResponsePayload(requestPayload, post, site,
                                 postError);
-                        mDispatcher.dispatch(PostActionBuilder.newPushedPostAction(payload));
+                        mDispatcher.dispatchRet(PostActionBuilder.newPushedPostAction(payload));
                     }
                 }
         );
@@ -203,7 +203,7 @@ public class PostRestClient extends BaseWPComRestClient {
 
                         RemotePostResponsePayload payload = new RemotePostResponsePayload(requestPayload, post, site,
                                 null);
-                        mDispatcher.dispatch(PostActionBuilder.newDeletedPostAction(payload));
+                        mDispatcher.dispatchRet(PostActionBuilder.newDeletedPostAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -213,7 +213,7 @@ public class PostRestClient extends BaseWPComRestClient {
                         PostError postError = new PostError(((WPComGsonNetworkError) error).apiError, error.message);
                         RemotePostResponsePayload payload = new RemotePostResponsePayload(requestPayload, post, site,
                                 postError);
-                        mDispatcher.dispatch(PostActionBuilder.newDeletedPostAction(payload));
+                        mDispatcher.dispatchRet(PostActionBuilder.newDeletedPostAction(payload));
                     }
                 }
         );
@@ -257,7 +257,7 @@ public class PostRestClient extends BaseWPComRestClient {
 
                         SearchPostsResponsePayload payload = new SearchPostsResponsePayload(requestPayload, postsModel,
                                 site, searchTerm, pages, loadedMore, canLoadMore);
-                        mDispatcher.dispatch(PostActionBuilder.newSearchedPostsAction(payload));
+                        mDispatcher.dispatchRet(PostActionBuilder.newSearchedPostsAction(payload));
                     }
                 },
                 new BaseErrorListener() {
@@ -266,7 +266,7 @@ public class PostRestClient extends BaseWPComRestClient {
                         PostError postError = new PostError(((WPComGsonNetworkError) error).apiError, error.message);
                         SearchPostsResponsePayload payload =
                                 new SearchPostsResponsePayload(requestPayload, site, searchTerm, pages, postError);
-                        mDispatcher.dispatch(PostActionBuilder.newSearchedPostsAction(payload));
+                        mDispatcher.dispatchRet(PostActionBuilder.newSearchedPostsAction(payload));
                     }
                 }
         );

@@ -52,12 +52,12 @@ public class SiteXMLRPCClient extends BaseXMLRPCClient {
                     public void onResponse(Object[] response) {
                         SitesModel sites = sitesResponseToSitesModel(response, payload.username, payload.password);
                         if (sites != null) {
-                            mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesXmlRpcAction(
+                            mDispatcher.dispatchRet(SiteActionBuilder.newFetchedSitesXmlRpcAction(
                                     new SitesResponsePayload(payload, sites)));
                         } else {
                             sites = new SitesModel();
                             sites.error = new BaseNetworkError(GenericErrorType.INVALID_RESPONSE);
-                            mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesXmlRpcAction(
+                            mDispatcher.dispatchRet(SiteActionBuilder.newFetchedSitesXmlRpcAction(
                                     new SitesResponsePayload(payload, sites)));
                         }
                     }
@@ -67,7 +67,7 @@ public class SiteXMLRPCClient extends BaseXMLRPCClient {
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         SitesModel sites = new SitesModel();
                         sites.error = error;
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesXmlRpcAction(
+                        mDispatcher.dispatchRet(SiteActionBuilder.newFetchedSitesXmlRpcAction(
                                 new SitesResponsePayload(payload, sites)));
                     }
                 }
@@ -90,12 +90,12 @@ public class SiteXMLRPCClient extends BaseXMLRPCClient {
                     public void onResponse(Object response) {
                         SiteModel updatedSite = updateSiteFromOptions(payload, response, payload.site);
                         if (updatedSite != null) {
-                            mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(
+                            mDispatcher.dispatchAsk(SiteActionBuilder.newUpdateSiteAction(
                                     new SiteRequestPayload(payload.getRequestId(), updatedSite)));
                         } else {
                             SiteModel site = new SiteModel();
                             site.error = new BaseNetworkError(GenericErrorType.INVALID_RESPONSE);
-                            mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(
+                            mDispatcher.dispatchAsk(SiteActionBuilder.newUpdateSiteAction(
                                     new SiteRequestPayload(payload.getRequestId(), site)));
                         }
                     }
@@ -105,7 +105,7 @@ public class SiteXMLRPCClient extends BaseXMLRPCClient {
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         SiteModel site = new SiteModel();
                         site.error = error;
-                        mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(
+                        mDispatcher.dispatchAsk(SiteActionBuilder.newUpdateSiteAction(
                                 new SiteRequestPayload(payload.getRequestId(), site)));
                     }
                 }
@@ -128,12 +128,12 @@ public class SiteXMLRPCClient extends BaseXMLRPCClient {
                         if (postFormats != null) {
                             FetchedPostFormatsPayload payload = new FetchedPostFormatsPayload(siteRequestPayload,
                                     siteRequestPayload.site, postFormats);
-                            mDispatcher.dispatch(SiteActionBuilder.newFetchedPostFormatsAction(payload));
+                            mDispatcher.dispatchRet(SiteActionBuilder.newFetchedPostFormatsAction(payload));
                         } else {
                             FetchedPostFormatsPayload payload = new FetchedPostFormatsPayload(siteRequestPayload,
                                     siteRequestPayload.site, Collections.<PostFormatModel>emptyList());
                             payload.error = new PostFormatsError(PostFormatsErrorType.INVALID_RESPONSE);
-                            mDispatcher.dispatch(SiteActionBuilder.newFetchedPostFormatsAction(payload));
+                            mDispatcher.dispatchRet(SiteActionBuilder.newFetchedPostFormatsAction(payload));
                         }
                     }
                 },
@@ -154,7 +154,7 @@ public class SiteXMLRPCClient extends BaseXMLRPCClient {
                         FetchedPostFormatsPayload payload = new FetchedPostFormatsPayload(siteRequestPayload,
                                 siteRequestPayload.site, Collections.<PostFormatModel>emptyList());
                         payload.error = postFormatsError;
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchedPostFormatsAction(payload));
+                        mDispatcher.dispatchRet(SiteActionBuilder.newFetchedPostFormatsAction(payload));
                     }
                 }
         );
