@@ -31,10 +31,11 @@ public class Dispatcher {
         mBus.unregister(object);
     }
 
-    public void dispatch(Action action) {
+    public RequestPayload dispatch(Action action) {
         AppLog.d(T.API, "Dispatching action: " + action.getType().getClass().getSimpleName()
                 + "-" + action.getType().name());
         post(action);
+        return (RequestPayload) action.getPayload();
     }
 
     public void emitChange(final Object changeEvent) {
