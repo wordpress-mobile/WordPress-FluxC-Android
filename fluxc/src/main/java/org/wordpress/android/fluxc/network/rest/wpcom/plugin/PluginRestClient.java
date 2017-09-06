@@ -7,6 +7,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response.Listener;
 
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.RequestPayload;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST;
 import org.wordpress.android.fluxc.model.PluginModel;
@@ -44,7 +45,7 @@ public class PluginRestClient extends BaseWPComRestClient {
         super(appContext, dispatcher, requestQueue, accessToken, userAgent);
     }
 
-    public void fetchPlugins(@NonNull final SiteModel site) {
+    public void fetchPlugins(@NonNull final RequestPayload requestPayload, @NonNull final SiteModel site) {
         String url = WPCOMREST.sites.site(site.getSiteId()).plugins.getUrlV1_1();
         final WPComGsonRequest<FetchPluginsResponse> request = WPComGsonRequest.buildGetRequest(url, null,
                 FetchPluginsResponse.class,
@@ -57,8 +58,8 @@ public class PluginRestClient extends BaseWPComRestClient {
                                 plugins.add(pluginModelFromResponse(site, pluginResponse));
                             }
                         }
-                        mDispatcher.dispatch(PluginActionBuilder.newFetchedPluginsAction(
-                                new FetchedPluginsPayload(site, plugins)));
+                        mDispatcher.dispatchRet(PluginActionBuilder.newFetchedPluginsAction(
+                                new FetchedPluginsPayload(requestPayload, site, plugins)));
                     }
                 },
                 new BaseErrorListener() {
@@ -74,15 +75,16 @@ public class PluginRestClient extends BaseWPComRestClient {
                             }
                         }
                         fetchPluginsError.message = networkError.message;
-                        FetchedPluginsPayload payload = new FetchedPluginsPayload(fetchPluginsError);
-                        mDispatcher.dispatch(PluginActionBuilder.newFetchedPluginsAction(payload));
+                        FetchedPluginsPayload payload = new FetchedPluginsPayload(requestPayload, fetchPluginsError);
+                        mDispatcher.dispatchRet(PluginActionBuilder.newFetchedPluginsAction(payload));
                     }
                 }
         );
-        add(request);
+        add(requestPayload, request);
     }
 
-    public void updatePlugin(@NonNull final SiteModel site, @NonNull final PluginModel plugin) {
+    public void updatePlugin(@NonNull final RequestPayload requestPayload, @NonNull final SiteModel site,
+                             @NonNull final PluginModel plugin) {
         String name;
         try {
             // We need to encode plugin name otherwise names like "akismet/akismet" would fail
@@ -98,8 +100,8 @@ public class PluginRestClient extends BaseWPComRestClient {
                     @Override
                     public void onResponse(PluginWPComRestResponse response) {
                         PluginModel pluginModel = pluginModelFromResponse(site, response);
-                        mDispatcher.dispatch(PluginActionBuilder.newUpdatedPluginAction(
-                                new UpdatedPluginPayload(site, pluginModel)));
+                        mDispatcher.dispatchRet(PluginActionBuilder.newUpdatedPluginAction(
+                                new UpdatedPluginPayload(requestPayload, site, pluginModel)));
                     }
                 },
                 new BaseErrorListener() {
@@ -115,12 +117,12 @@ public class PluginRestClient extends BaseWPComRestClient {
                             }
                         }
                         updatePluginError.message = networkError.message;
-                        UpdatedPluginPayload payload = new UpdatedPluginPayload(site, updatePluginError);
-                        mDispatcher.dispatch(PluginActionBuilder.newUpdatedPluginAction(payload));
+                        UpdatedPluginPayload payload = new UpdatedPluginPayload(requestPayload, site, updatePluginError);
+                        mDispatcher.dispatchRet(PluginActionBuilder.newUpdatedPluginAction(payload));
                     }
                 }
         );
-        add(request);
+        add(requestPayload, request);
     }
 
     private PluginModel pluginModelFromResponse(SiteModel siteModel, PluginWPComRestResponse response) {

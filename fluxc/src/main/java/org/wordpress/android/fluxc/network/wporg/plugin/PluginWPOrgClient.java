@@ -7,6 +7,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response.Listener;
 
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.RequestPayload;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.WPORGAPI;
 import org.wordpress.android.fluxc.model.PluginInfoModel;
@@ -35,7 +36,7 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         mDispatcher = dispatcher;
     }
 
-    public void fetchPluginInfo(String plugin) {
+    public void fetchPluginInfo(final RequestPayload requestPayload, String plugin) {
         String url = WPORGAPI.plugins.info.version("1.0").slug(plugin).getUrl();
         Map<String, String> params = new HashMap<>();
         params.put("fields", "icons");
@@ -45,8 +46,9 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
                             @Override
                             public void onResponse(FetchPluginInfoResponse response) {
                                 PluginInfoModel pluginInfoModel = pluginInfoModelFromResponse(response);
-                                FetchedPluginInfoPayload payload = new FetchedPluginInfoPayload(pluginInfoModel);
-                                mDispatcher.dispatch(PluginActionBuilder.newFetchedPluginInfoAction(payload));
+                                FetchedPluginInfoPayload payload = new FetchedPluginInfoPayload(requestPayload,
+                                        pluginInfoModel);
+                                mDispatcher.dispatchRet(PluginActionBuilder.newFetchedPluginInfoAction(payload));
                             }
                         },
                         new BaseErrorListener() {
@@ -54,12 +56,12 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
                             public void onErrorResponse(@NonNull BaseNetworkError networkError) {
                                 FetchPluginInfoError error = new FetchPluginInfoError(
                                         FetchPluginInfoErrorType.GENERIC_ERROR);
-                                mDispatcher.dispatch(PluginActionBuilder.newFetchedPluginInfoAction(
-                                        new FetchedPluginInfoPayload(error)));
+                                mDispatcher.dispatchRet(PluginActionBuilder.newFetchedPluginInfoAction(
+                                        new FetchedPluginInfoPayload(requestPayload, error)));
                             }
                         }
                 );
-        add(request);
+        add(requestPayload, request);
     }
 
     private PluginInfoModel pluginInfoModelFromResponse(FetchPluginInfoResponse response) {

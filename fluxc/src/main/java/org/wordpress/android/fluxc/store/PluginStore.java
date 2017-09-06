@@ -5,7 +5,8 @@ import android.support.annotation.NonNull;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
-import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.RequestPayload;
+import org.wordpress.android.fluxc.ResponsePayload;
 import org.wordpress.android.fluxc.action.PluginAction;
 import org.wordpress.android.fluxc.annotations.action.Action;
 import org.wordpress.android.fluxc.annotations.action.IAction;
@@ -15,6 +16,7 @@ import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient;
 import org.wordpress.android.fluxc.persistence.PluginSqlUtils;
+import org.wordpress.android.fluxc.store.SiteStore.SiteRequestPayload;
 import org.wordpress.android.util.AppLog;
 
 import java.util.List;
@@ -23,7 +25,14 @@ import javax.inject.Inject;
 
 public class PluginStore extends Store {
     // Payloads
-    public static class UpdatePluginPayload extends Payload {
+    public static class PluginInfoRequestPayload extends RequestPayload {
+        public final String plugin;
+        public PluginInfoRequestPayload(String plugin) {
+            this.plugin = plugin;
+        }
+    }
+
+    public static class UpdatePluginPayload extends RequestPayload {
         public SiteModel site;
         public PluginModel plugin;
 
@@ -33,45 +42,52 @@ public class PluginStore extends Store {
         }
     }
 
-    public static class FetchedPluginsPayload extends Payload {
+    public static class FetchedPluginsPayload extends ResponsePayload {
         public SiteModel site;
         public List<PluginModel> plugins;
         public FetchPluginsError error;
 
-        public FetchedPluginsPayload(FetchPluginsError error) {
+        public FetchedPluginsPayload(@NonNull RequestPayload requestPayload, FetchPluginsError error) {
+            super(requestPayload);
             this.error = error;
         }
 
-        public FetchedPluginsPayload(@NonNull SiteModel site, @NonNull List<PluginModel> plugins) {
+        public FetchedPluginsPayload(@NonNull RequestPayload requestPayload, @NonNull SiteModel site,
+                                     @NonNull List<PluginModel> plugins) {
+            super(requestPayload);
             this.site = site;
             this.plugins = plugins;
         }
     }
 
-    public static class FetchedPluginInfoPayload extends Payload {
+    public static class FetchedPluginInfoPayload extends ResponsePayload {
         public PluginInfoModel pluginInfo;
         public FetchPluginInfoError error;
 
-        public FetchedPluginInfoPayload(FetchPluginInfoError error) {
+        public FetchedPluginInfoPayload(@NonNull RequestPayload requestPayload, FetchPluginInfoError error) {
+            super(requestPayload);
             this.error = error;
         }
 
-        public FetchedPluginInfoPayload(PluginInfoModel pluginInfo) {
+        public FetchedPluginInfoPayload(@NonNull RequestPayload requestPayload, PluginInfoModel pluginInfo) {
+            super(requestPayload);
             this.pluginInfo = pluginInfo;
         }
     }
 
-    public static class UpdatedPluginPayload extends Payload {
+    public static class UpdatedPluginPayload extends ResponsePayload {
         public SiteModel site;
         public PluginModel plugin;
         public UpdatePluginError error;
 
-        public UpdatedPluginPayload(SiteModel site, PluginModel plugin) {
+        public UpdatedPluginPayload(@NonNull RequestPayload requestPayload, SiteModel site, PluginModel plugin) {
+            super(requestPayload);
             this.site = site;
             this.plugin = plugin;
         }
 
-        public UpdatedPluginPayload(SiteModel site, UpdatePluginError error) {
+        public UpdatedPluginPayload(@NonNull RequestPayload requestPayload, SiteModel site, UpdatePluginError error) {
+            super(requestPayload);
             this.error = error;
         }
     }
@@ -124,19 +140,24 @@ public class PluginStore extends Store {
 
     public static class OnPluginsChanged extends OnChanged<FetchPluginsError> {
         public SiteModel site;
-        public OnPluginsChanged(SiteModel site) {
+        public OnPluginsChanged(@NonNull RequestPayload requestPayload, SiteModel site) {
+            super(requestPayload);
             this.site = site;
         }
     }
 
     public static class OnPluginInfoChanged extends OnChanged<FetchPluginInfoError> {
         public PluginInfoModel pluginInfo;
+        public OnPluginInfoChanged(RequestPayload requestPayload) {
+            super(requestPayload);
+        }
     }
 
     public static class OnPluginChanged extends OnChanged<UpdatePluginError> {
         public SiteModel site;
         public PluginModel plugin;
-        public OnPluginChanged(SiteModel site) {
+        public OnPluginChanged(@NonNull RequestPayload requestPayload, SiteModel site) {
+            super(requestPayload);
             this.site = site;
         }
     }
@@ -165,10 +186,10 @@ public class PluginStore extends Store {
         }
         switch ((PluginAction) actionType) {
             case FETCH_PLUGINS:
-                fetchPlugins((SiteModel) action.getPayload());
+                fetchPlugins((SiteRequestPayload) action.getPayload());
                 break;
             case FETCH_PLUGIN_INFO:
-                fetchPluginInfo((String) action.getPayload());
+                fetchPluginInfo((PluginInfoRequestPayload) action.getPayload());
                 break;
             case UPDATE_PLUGIN:
                 updatePlugin((UpdatePluginPayload) action.getPayload());
@@ -197,32 +218,32 @@ public class PluginStore extends Store {
         return PluginSqlUtils.getPluginInfoBySlug(slug);
     }
 
-    private void fetchPlugins(SiteModel site) {
-        if (site.isUsingWpComRestApi() && site.isJetpackConnected()) {
-            mPluginRestClient.fetchPlugins(site);
+    private void fetchPlugins(SiteRequestPayload siteRequestPayload) {
+        if (siteRequestPayload.site.isUsingWpComRestApi() && siteRequestPayload.site.isJetpackConnected()) {
+            mPluginRestClient.fetchPlugins(siteRequestPayload, siteRequestPayload.site);
         } else {
             FetchPluginsError error = new FetchPluginsError(FetchPluginsErrorType.NOT_AVAILABLE);
-            FetchedPluginsPayload payload = new FetchedPluginsPayload(error);
+            FetchedPluginsPayload payload = new FetchedPluginsPayload(siteRequestPayload, error);
             fetchedPlugins(payload);
         }
     }
 
-    private void fetchPluginInfo(String plugin) {
-        mPluginWPOrgClient.fetchPluginInfo(plugin);
+    private void fetchPluginInfo(PluginInfoRequestPayload payload) {
+        mPluginWPOrgClient.fetchPluginInfo(payload, payload.plugin);
     }
 
     private void updatePlugin(UpdatePluginPayload payload) {
         if (payload.site.isUsingWpComRestApi() && payload.site.isJetpackConnected()) {
-            mPluginRestClient.updatePlugin(payload.site, payload.plugin);
+            mPluginRestClient.updatePlugin(payload, payload.site, payload.plugin);
         } else {
             UpdatePluginError error = new UpdatePluginError(UpdatePluginErrorType.NOT_AVAILABLE);
-            UpdatedPluginPayload errorPayload = new UpdatedPluginPayload(payload.site, error);
+            UpdatedPluginPayload errorPayload = new UpdatedPluginPayload(payload, payload.site, error);
             updatedPlugin(errorPayload);
         }
     }
 
     private void fetchedPlugins(FetchedPluginsPayload payload) {
-        OnPluginsChanged event = new OnPluginsChanged(payload.site);
+        OnPluginsChanged event = new OnPluginsChanged(payload.getRequestPayload(), payload.site);
         if (payload.isError()) {
             event.error = payload.error;
         } else {
@@ -232,7 +253,7 @@ public class PluginStore extends Store {
     }
 
     private void fetchedPluginInfo(FetchedPluginInfoPayload payload) {
-        OnPluginInfoChanged event = new OnPluginInfoChanged();
+        OnPluginInfoChanged event = new OnPluginInfoChanged(payload.getRequestPayload());
         if (payload.isError()) {
             event.error = payload.error;
         } else {
@@ -243,7 +264,7 @@ public class PluginStore extends Store {
     }
 
     private void updatedPlugin(UpdatedPluginPayload payload) {
-        OnPluginChanged event = new OnPluginChanged(payload.site);
+        OnPluginChanged event = new OnPluginChanged(payload.getRequestPayload(), payload.site);
         if (payload.isError()) {
             event.error = payload.error;
         } else {
