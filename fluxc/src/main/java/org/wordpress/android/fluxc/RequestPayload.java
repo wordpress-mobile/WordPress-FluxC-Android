@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class RequestPayload extends BasePayload {
-    private static final AtomicLong GLOBAL_REQUEST_COUNTER = new AtomicLong(0);
+    private static final AtomicLong GLOBAL_REQUEST_COUNTER = new AtomicLong(1);
     private final long mRequestId;
 
     public RequestPayload() {
