@@ -52,12 +52,6 @@ public class MainFragment extends Fragment {
     @Inject MemorizingTrustManager mMemorizingTrustManager;
 
 
-    // Would be great to not have to keep this state, but it makes HTTPAuth and self signed SSL management easier
-    private RefreshSitesXMLRPCPayload mSelfhostedPayload;
-
-    // used for 2fa
-    private AuthenticatePayload mAuthenticatePayload;
-
     public MainFragment() {
         // Required empty public constructor
     }
@@ -143,7 +137,8 @@ public class MainFragment extends Fragment {
                 .commit();
     }
 
-    private void showSSLWarningDialog(String certifString) {
+    private void showSSLWarningDialog(final RefreshSitesXMLRPCPayload selfhostedPayload, final String url,
+                                      String certifString) {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         SSLWarningDialog newFragment = SSLWarningDialog.newInstance(
                 new DialogInterface.OnClickListener() {
@@ -152,9 +147,8 @@ public class MainFragment extends Fragment {
                         // Add the certificate to our list
                         mMemorizingTrustManager.storeLastFailure();
                         // Retry login action
-                        if (mSelfhostedPayload != null) {
-                            signInAction(mSelfhostedPayload.username, mSelfhostedPayload.password,
-                                    mSelfhostedPayload.url);
+                        if (selfhostedPayload != null) {
+                            signInAction(selfhostedPayload.username, selfhostedPayload.password, url);
                         }
                     }
                 }, certifString);
@@ -172,7 +166,7 @@ public class MainFragment extends Fragment {
         newFragment.show(ft, "dialog");
     }
 
-    private void show2faDialog() {
+    private void show2faDialog(final AuthenticatePayload authenticatePayload) {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
             @Override
@@ -181,18 +175,18 @@ public class MainFragment extends Fragment {
                     prependToLog("2FA code required to login");
                     return;
                 }
-                signIn2fa(text3);
+                signIn2fa(authenticatePayload, text3);
             }
         }, "", "", "2FA Code");
         newFragment.show(ft, "2fadialog");
     }
 
-    private void signIn2fa(String twoStepCode) {
-        mAuthenticatePayload.twoStepCode = twoStepCode;
-        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newAuthenticateAction(mAuthenticatePayload));
+    private void signIn2fa(AuthenticatePayload authenticatePayload, String twoStepCode) {
+        authenticatePayload.twoStepCode = twoStepCode;
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newAuthenticateAction(authenticatePayload));
     }
 
-    private void showHTTPAuthDialog(final String url) {
+    private void showHTTPAuthDialog(final RefreshSitesXMLRPCPayload selfhostedPayload, final String url) {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
             @Override
@@ -200,9 +194,7 @@ public class MainFragment extends Fragment {
                 // Add credentials
                 mHTTPAuthManager.addHTTPAuthCredentials(username, password, url, null);
                 // Retry login action
-                if (mSelfhostedPayload != null) {
-                    signInAction(mSelfhostedPayload.username, mSelfhostedPayload.password, url);
-                }
+                signInAction(selfhostedPayload.username, selfhostedPayload.password, url);
             }
         }, "Username", "Password", "unused");
         newFragment.show(ft, "dialog");
@@ -216,9 +208,9 @@ public class MainFragment extends Fragment {
         if (TextUtils.isEmpty(url)) {
             wpcomFetchSites(username, password);
         } else {
-            mSelfhostedPayload = new RefreshSitesXMLRPCPayload(username, password, url);
-
-            mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(new DiscoverPayload(url)));
+            DiscoverPayload discoverPayload = new DiscoverPayload(url);
+            discoverPayload.extra = new RefreshSitesXMLRPCPayload(username, password, url);
+            mDispatcher.dispatchAsk(AuthenticationActionBuilder.newDiscoverEndpointAction(discoverPayload));
         }
     }
 
@@ -232,13 +224,12 @@ public class MainFragment extends Fragment {
     }
 
     private void wpcomFetchSites(String username, String password) {
-        mAuthenticatePayload = new AuthenticatePayload(username, password);
-        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newAuthenticateAction(mAuthenticatePayload));
+        AuthenticatePayload authenticatePayload = new AuthenticatePayload(username, password);
+        mDispatcher.dispatchAsk(AuthenticationActionBuilder.newAuthenticateAction(authenticatePayload));
     }
 
     private void selfHostedFetchSites(String username, String password, String xmlrpcEndpoint) {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload(username, password, xmlrpcEndpoint);
-        mSelfhostedPayload = payload;
         // Self Hosted don't have any "Authentication" request, try to list sites with user/password
         mDispatcher.dispatchAsk(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
     }
@@ -286,15 +277,19 @@ public class MainFragment extends Fragment {
                     showSigninDialog();
                     break;
                 case HTTP_AUTH_ERROR:
+                    RefreshSitesXMLRPCPayload requestPayload = (RefreshSitesXMLRPCPayload) event.getRequestPayload();
                     // Show a Dialog prompting for http username and password
-                    showHTTPAuthDialog(mSelfhostedPayload.url);
+                    showHTTPAuthDialog(requestPayload, requestPayload.url);
                     break;
                 case INVALID_SSL_CERTIFICATE:
+                    requestPayload = (RefreshSitesXMLRPCPayload) event.getRequestPayload();
                     // Show a SSL Warning Dialog
-                    showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
+                    showSSLWarningDialog(requestPayload, requestPayload.url,
+                            mMemorizingTrustManager.getLastFailure().toString());
                     break;
                 case NEEDS_2FA:
-                    show2faDialog();
+                    AuthenticatePayload authenticatePayload = (AuthenticatePayload) event.getRequestPayload();
+                    show2faDialog(authenticatePayload);
                     break;
                 case INVALID_OTP:
                     break;
@@ -316,14 +311,17 @@ public class MainFragment extends Fragment {
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDiscoveryResponse(OnDiscoveryResponse event) {
+        DiscoverPayload discoverPayload = (DiscoverPayload) event.getRequestPayload();
+        RefreshSitesXMLRPCPayload requestPayload = (RefreshSitesXMLRPCPayload) discoverPayload.extra;
+
         if (event.isError()) {
             if (event.error == DiscoveryError.WORDPRESS_COM_SITE) {
-                wpcomFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password);
+                wpcomFetchSites(requestPayload.username, requestPayload.password);
             } else if (event.error == DiscoveryError.HTTP_AUTH_REQUIRED) {
-                showHTTPAuthDialog(event.failedEndpoint);
+                showHTTPAuthDialog(requestPayload, event.failedEndpoint);
             } else if (event.error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
-                mSelfhostedPayload.url = event.failedEndpoint;
-                showSSLWarningDialog(mMemorizingTrustManager.getLastFailure().toString());
+                showSSLWarningDialog(requestPayload, event.failedEndpoint,
+                        mMemorizingTrustManager.getLastFailure().toString());
             }
             prependToLog("Discovery failed with error: " + event.error);
             AppLog.e(T.API, "Discover error: " + event.error);
@@ -333,7 +331,7 @@ public class MainFragment extends Fragment {
             } else {
                 prependToLog("Discovery succeeded, found XML-RPC endpoint: " + event.xmlRpcEndpoint);
             }
-            selfHostedFetchSites(mSelfhostedPayload.username, mSelfhostedPayload.password, event.xmlRpcEndpoint);
+            selfHostedFetchSites(requestPayload.username, requestPayload.password, event.xmlRpcEndpoint);
         }
     }
 
