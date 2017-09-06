@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.wporg.BaseWPOrgAPIClient;
 import org.wordpress.android.fluxc.network.wporg.WPOrgAPIGsonRequest;
+import org.wordpress.android.fluxc.network.wporg.plugin.FetchPluginInfoResponse.BrowsePluginResponse;
 import org.wordpress.android.fluxc.store.PluginStore.FetchPluginInfoError;
 import org.wordpress.android.fluxc.store.PluginStore.FetchPluginInfoErrorType;
 import org.wordpress.android.fluxc.store.PluginStore.FetchedPluginInfoPayload;
@@ -31,6 +32,17 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
     private final Dispatcher mDispatcher;
 
     public static class BrowsePluginPayload extends Payload {
+        public int page;
+
+        public BrowsePluginPayload() {
+            page = 1;
+        }
+
+        private Map<String, String> getParams() {
+            Map<String, String> params = new HashMap<>();
+            params.put("page", String.valueOf(page));
+            return params;
+        }
     }
 
     @Inject
@@ -60,6 +72,24 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
                                         FetchPluginInfoErrorType.GENERIC_ERROR);
                                 mDispatcher.dispatch(PluginActionBuilder.newFetchedPluginInfoAction(
                                         new FetchedPluginInfoPayload(error)));
+                            }
+                        }
+                );
+        add(request);
+    }
+
+    public void fetchPlugins(BrowsePluginPayload payload) {
+        String url = "https://api.wordpress.org/plugins/info/1.1/?action=query_plugins";
+        final WPOrgAPIGsonRequest<BrowsePluginResponse> request =
+                new WPOrgAPIGsonRequest<>(Method.GET, url, payload.getParams(), null, BrowsePluginResponse.class,
+                        new Listener<BrowsePluginResponse>() {
+                            @Override
+                            public void onResponse(BrowsePluginResponse response) {
+                            }
+                        },
+                        new BaseErrorListener() {
+                            @Override
+                            public void onErrorResponse(@NonNull BaseNetworkError networkError) {
                             }
                         }
                 );

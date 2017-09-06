@@ -230,6 +230,7 @@ public class PluginStore extends Store {
     }
 
     private void fetchWpOrgPlugins(BrowsePluginPayload payload) {
+        mPluginWPOrgClient.fetchPlugins(payload);
     }
 
     private void fetchedPlugins(FetchedPluginsPayload payload) {

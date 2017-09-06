@@ -8,9 +8,20 @@ import com.google.gson.JsonParseException;
 import com.google.gson.annotations.JsonAdapter;
 
 import java.lang.reflect.Type;
+import java.util.List;
 
 @JsonAdapter(PluginInfoDeserializer.class)
 public class FetchPluginInfoResponse {
+    public class BrowsePluginResponse {
+        public BrowsePluginResponseInfo info;
+        public List<FetchPluginInfoResponse> plugins;
+    }
+
+    public class BrowsePluginResponseInfo {
+        public int page;
+        public int pages;
+    }
+
     public String name;
     public String slug;
     public String version;
