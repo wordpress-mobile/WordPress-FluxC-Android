@@ -50,6 +50,8 @@ public class ReleaseStack_PluginInfoTest extends ReleaseStack_Base {
 
         BrowsePluginPayload payload = new BrowsePluginPayload();
         mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginsAction(payload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @SuppressWarnings("unused")
