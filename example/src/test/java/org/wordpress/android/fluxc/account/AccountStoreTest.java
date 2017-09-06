@@ -27,6 +27,7 @@ import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticateErrorPayload;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType;
+import org.wordpress.android.fluxc.store.AccountStore.SignOutPayload;
 
 import java.lang.reflect.Method;
 
@@ -90,9 +91,9 @@ public class AccountStoreTest {
                 getMockSelfHostedEndpointFinder(), getMockAuthenticator(), testToken);
         Assert.assertTrue(testStore.hasAccessToken());
         // Signout is private (and it should remain private)
-        Method privateMethod = AccountStore.class.getDeclaredMethod("signOut");
+        Method privateMethod = AccountStore.class.getDeclaredMethod("signOut", SignOutPayload.class);
         privateMethod.setAccessible(true);
-        privateMethod.invoke(testStore);
+        privateMethod.invoke(testStore, new SignOutPayload());
         Assert.assertFalse(testStore.hasAccessToken());
         Assert.assertNull(AccountSqlUtils.getAccountByLocalId(testAccount.getId()));
     }
