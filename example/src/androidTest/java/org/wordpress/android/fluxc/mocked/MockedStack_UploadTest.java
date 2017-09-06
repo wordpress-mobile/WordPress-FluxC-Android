@@ -427,7 +427,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
             assertEquals(UploadAction.CANCEL_POST, event.cause);
             mCountDownLatch.countDown();
         } else if (mNextEvent.equals(TestEvents.CLEARED_MEDIA)) {
-            assertEquals(UploadAction.CLEAR_MEDIA, event.cause);
+            assertEquals(UploadAction.CLEAR_MEDIA_FOR_POST, event.cause);
             mCountDownLatch.countDown();
         } else {
             throw new AssertionError("Unexpected OnUploadChanged event with cause: " + event.cause);
@@ -493,7 +493,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         ClearMediaPayload clearMediaPayload = new ClearMediaPayload(post, media);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CLEARED_MEDIA;
-        mDispatcher.dispatch(UploadActionBuilder.newClearMediaAction(clearMediaPayload));
+        mDispatcher.dispatch(UploadActionBuilder.newClearMediaForPostAction(clearMediaPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 

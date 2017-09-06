@@ -436,7 +436,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         }
 
         if (mNextEvent.equals(TestEvents.CLEARED_MEDIA)) {
-            assertEquals(UploadAction.CLEAR_MEDIA, event.cause);
+            assertEquals(UploadAction.CLEAR_MEDIA_FOR_POST, event.cause);
             mCountDownLatch.countDown();
         } else {
             throw new AssertionError("Unexpected OnUploadChanged event with cause: " + event.cause);
@@ -503,7 +503,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.CLEARED_MEDIA;
         mCountDownLatch = new CountDownLatch(1);
         ClearMediaPayload clearMediaPayload = new ClearMediaPayload(post, media);
-        mDispatcher.dispatch(UploadActionBuilder.newClearMediaAction(clearMediaPayload));
+        mDispatcher.dispatch(UploadActionBuilder.newClearMediaForPostAction(clearMediaPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
