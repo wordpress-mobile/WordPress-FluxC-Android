@@ -4,10 +4,14 @@ import android.support.annotation.NonNull;
 
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.network.rest.wpcom.media.RestUploadRequestBody;
+import org.wordpress.android.util.AppLog;
+import org.wordpress.android.util.AppLog.T;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
 import javax.annotation.Nullable;
@@ -48,32 +52,18 @@ class FailingInterceptor implements Interceptor {
         }
     }
 
-    private static Response buildMediaErrorResponse(Request request) {
-        String responseJson = "{\"error\": \"invalid_token\","
-                + "\"message\": \"The OAuth2 token is invalid.\""
-                + "}";
+    private Response buildMediaErrorResponse(Request request) {
+        String responseJson = getStringFromResourceFile("media-upload-response-failure.json");
         return buildResponse(request, responseJson, 404);
     }
 
-    private static Response buildMediaSuccessResponse(Request request) {
-        String responseJson = "{\"media\":[{\"ID\":9999,\"URL\":\"https:\\/\\/place.com\\/photo"
-                + ".jpg\",\"guid\":\"http:\\/\\/place.com\\/photo.jpg\","
-                + "\"date\":\"2017-08-11T12:17:49+00:00\",\"post_ID\":0,\"author_ID\":12345,"
-                + "\"file\":\"photo.jpg\",\"mime_type\":\"image\\/jpeg\",\"extension\":\"jpg\","
-                + "\"title\":\"\",\"caption\":\"Test Caption\",\"description\":\"\",\"alt\":\"\","
-                + "\"icon\":\"\",\"thumbnails\":{\"thumbnail\":\"https:\\/\\/place.com\\/photo"
-                + ".jpg?w=150\",\"medium\":\"https:\\/\\/place.com\\/photo.jpg?w=300\","
-                + "\"large\":\"https:\\/\\/place.com\\/photo.jpg?w=880\"},\"height\":585,"
-                + "\"width\":880,\"exif\":{\"aperture\":\"0\",\"credit\":\"\",\"camera\":\"\","
-                + "\"caption\":\"\",\"created_timestamp\":\"0\",\"copyright\":\"\","
-                + "\"focal_length\":\"0\",\"iso\":\"0\",\"shutter_speed\":\"0\",\"title\":\"\","
-                + "\"orientation\":\"0\",\"keywords\":[]},\"meta\":{\"links\":{\"self\":\"\","
-                + "\"help\":\"\",\"site\":\"\"}}}]}";
+    private Response buildMediaSuccessResponse(Request request) {
+        String responseJson = getStringFromResourceFile("media-upload-response-success.json");
         return buildResponse(request, responseJson, 200);
     }
 
-    private static Response buildPostSuccessResponse(Request request) {
-        String responseJson = "{\"ID\":7970,\"type\":\"post\"}";
+    private Response buildPostSuccessResponse(Request request) {
+        String responseJson = getStringFromResourceFile("post-upload-response-success.json");
         return buildResponse(request, responseJson, 200);
     }
 
@@ -106,5 +96,25 @@ class FailingInterceptor implements Interceptor {
                 })
                 .code(responseCode)
                 .build();
+    }
+
+    private String getStringFromResourceFile(String filename) {
+        try {
+            InputStream is = this.getClass().getClassLoader().getResourceAsStream(filename);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+
+            StringBuilder buffer = new StringBuilder();
+            String lineString;
+
+            while ((lineString = bufferedReader.readLine()) != null) {
+                buffer.append(lineString);
+            }
+
+            bufferedReader.close();
+            return buffer.toString();
+        } catch (IOException e) {
+            AppLog.e(T.TESTS, "Could not load response JSON file.");
+            return null;
+        }
     }
 }
