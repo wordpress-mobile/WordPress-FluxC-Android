@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.BrowsePluginPayload;
+import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.FetchedPluginInfoPayload;
 import org.wordpress.android.fluxc.persistence.PluginSqlUtils;
 import org.wordpress.android.util.AppLog;
 
@@ -46,19 +47,6 @@ public class PluginStore extends Store {
         public FetchedPluginsPayload(@NonNull SiteModel site, @NonNull List<PluginModel> plugins) {
             this.site = site;
             this.plugins = plugins;
-        }
-    }
-
-    public static class FetchedPluginInfoPayload extends Payload {
-        public PluginInfoModel pluginInfo;
-        public FetchPluginInfoError error;
-
-        public FetchedPluginInfoPayload(FetchPluginInfoError error) {
-            this.error = error;
-        }
-
-        public FetchedPluginInfoPayload(PluginInfoModel pluginInfo) {
-            this.pluginInfo = pluginInfo;
         }
     }
 

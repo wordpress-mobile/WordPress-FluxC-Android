@@ -19,7 +19,6 @@ import org.wordpress.android.fluxc.network.wporg.WPOrgAPIGsonRequest;
 import org.wordpress.android.fluxc.network.wporg.plugin.FetchPluginInfoResponse.BrowsePluginResponse;
 import org.wordpress.android.fluxc.store.PluginStore.FetchPluginInfoError;
 import org.wordpress.android.fluxc.store.PluginStore.FetchPluginInfoErrorType;
-import org.wordpress.android.fluxc.store.PluginStore.FetchedPluginInfoPayload;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +29,19 @@ import javax.inject.Singleton;
 @Singleton
 public class PluginWPOrgClient extends BaseWPOrgAPIClient {
     private final Dispatcher mDispatcher;
+
+    public static class FetchedPluginInfoPayload extends Payload {
+        public PluginInfoModel pluginInfo;
+        public FetchPluginInfoError error;
+
+        FetchedPluginInfoPayload(FetchPluginInfoError error) {
+            this.error = error;
+        }
+
+        FetchedPluginInfoPayload(PluginInfoModel pluginInfo) {
+            this.pluginInfo = pluginInfo;
+        }
+    }
 
     public static class BrowsePluginPayload extends Payload {
         public int page;
