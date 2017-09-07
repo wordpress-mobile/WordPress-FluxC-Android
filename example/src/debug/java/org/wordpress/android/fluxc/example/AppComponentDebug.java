@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.example;
 import org.wordpress.android.fluxc.module.AppContextModule;
 import org.wordpress.android.fluxc.module.ReleaseBaseModule;
 import org.wordpress.android.fluxc.module.ReleaseNetworkModule;
-import org.wordpress.android.fluxc.module.ReleaseStoreModule;
 
 import javax.inject.Singleton;
 
@@ -15,8 +14,7 @@ import dagger.Component;
         AppSecretsModule.class,
         DebugOkHttpClientModule.class,
         ReleaseBaseModule.class,
-        ReleaseNetworkModule.class,
-        ReleaseStoreModule.class
+        ReleaseNetworkModule.class
 })
 public interface AppComponentDebug extends AppComponent {
 }
