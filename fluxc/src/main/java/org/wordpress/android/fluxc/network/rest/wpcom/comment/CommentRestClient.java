@@ -53,7 +53,8 @@ public class CommentRestClient extends BaseWPComRestClient {
                 new Listener<CommentsWPComRestResponse>() {
                     @Override
                     public void onResponse(CommentsWPComRestResponse response) {
-                        List<CommentModel> comments = commentsResponseToCommentList(response, fetchCommentsPayload.site);
+                        List<CommentModel> comments = commentsResponseToCommentList(response,
+                                fetchCommentsPayload.site);
                         FetchCommentsResponsePayload payload = new FetchCommentsResponsePayload(fetchCommentsPayload,
                                 comments, fetchCommentsPayload.site, fetchCommentsPayload.number,
                                 fetchCommentsPayload.offset);
@@ -253,7 +254,8 @@ public class CommentRestClient extends BaseWPComRestClient {
                 new Listener<CommentLikeWPComRestResponse>() {
                     @Override
                     public void onResponse(CommentLikeWPComRestResponse response) {
-                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload, comment);
+                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload,
+                                comment);
 
                         if (comment != null) {
                             comment.setILike(response.i_like);

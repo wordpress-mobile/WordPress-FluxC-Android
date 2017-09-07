@@ -140,7 +140,8 @@ public class PostStore extends Store {
         public PostModel post;
         public SiteModel site;
 
-        public RemotePostResponsePayload(RequestPayload requestPayload, PostModel post, SiteModel site, PostError error) {
+        public RemotePostResponsePayload(RequestPayload requestPayload, PostModel post, SiteModel site,
+                PostError error) {
             super(requestPayload);
             this.error = error;
             this.post = post;

@@ -420,7 +420,8 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
         mDispatcher.dispatchRet(MediaActionBuilder.newPushedMediaAction(payload));
     }
 
-    private void notifyMediaProgress(RequestPayload requestPayload, MediaModel media, float progress, MediaError error) {
+    private void notifyMediaProgress(RequestPayload requestPayload, MediaModel media, float progress,
+            MediaError error) {
         ProgressPayload payload = new ProgressPayload(requestPayload, media, progress, false, error);
         mDispatcher.dispatchRet(MediaActionBuilder.newUploadedMediaAction(payload));
     }
@@ -446,8 +447,10 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
         mDispatcher.dispatchRet(MediaActionBuilder.newFetchedMediaListAction(payload));
     }
 
-    private void notifyMediaListFetched(RequestPayload requestPayload, SiteModel site, MediaError error, String mimeType) {
-        FetchMediaListResponsePayload payload = new FetchMediaListResponsePayload(requestPayload, site, error, mimeType);
+    private void notifyMediaListFetched(RequestPayload requestPayload, SiteModel site, MediaError error,
+            String mimeType) {
+        FetchMediaListResponsePayload payload = new FetchMediaListResponsePayload(requestPayload, site, error,
+                mimeType);
         mDispatcher.dispatchRet(MediaActionBuilder.newFetchedMediaListAction(payload));
     }
 

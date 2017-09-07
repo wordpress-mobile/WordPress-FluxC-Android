@@ -161,7 +161,8 @@ public class SignedOutActionsFragment extends Fragment {
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String email = editText.getText().toString();
-                mDispatcher.dispatchAsk(AuthenticationActionBuilder.newSendAuthEmailAction(new AuthEmailPayload(email)));
+                mDispatcher.dispatchAsk(
+                        AuthenticationActionBuilder.newSendAuthEmailAction(new AuthEmailPayload(email)));
             }
         });
         alert.show();

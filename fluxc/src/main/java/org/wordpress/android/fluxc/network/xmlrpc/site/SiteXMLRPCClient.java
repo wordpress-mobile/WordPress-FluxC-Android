@@ -26,7 +26,6 @@ import org.wordpress.android.fluxc.store.SiteStore.FetchedPostFormatsPayload;
 import org.wordpress.android.fluxc.store.SiteStore.PostFormatsError;
 import org.wordpress.android.fluxc.store.SiteStore.PostFormatsErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.SiteRequestPayload;
-import org.wordpress.android.fluxc.store.SiteStore.SiteResponsePayload;
 import org.wordpress.android.fluxc.store.SiteStore.SitesResponsePayload;
 import org.wordpress.android.util.MapUtils;
 
@@ -269,7 +268,8 @@ public class SiteXMLRPCClient extends BaseXMLRPCClient {
         return oldModel;
     }
 
-    private List<PostFormatModel> responseToPostFormats(RequestPayload requestPayload, Object response, SiteModel site) {
+    private List<PostFormatModel> responseToPostFormats(RequestPayload requestPayload, Object response,
+            SiteModel site) {
         if (!(response instanceof Map)) {
             reportParseError(requestPayload, response, site.getXmlRpcUrl(), Map.class);
             return null;

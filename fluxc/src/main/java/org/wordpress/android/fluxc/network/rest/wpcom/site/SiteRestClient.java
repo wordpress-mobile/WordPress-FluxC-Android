@@ -44,7 +44,6 @@ import org.wordpress.android.fluxc.store.SiteStore.PostFormatsError;
 import org.wordpress.android.fluxc.store.SiteStore.PostFormatsErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.SiteError;
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
-import org.wordpress.android.fluxc.store.SiteStore.SiteResponsePayload;
 import org.wordpress.android.fluxc.store.SiteStore.SiteRequestPayload;
 import org.wordpress.android.fluxc.store.SiteStore.SitesResponsePayload;
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
@@ -172,8 +171,8 @@ public class SiteRestClient extends BaseWPComRestClient {
                             mDispatcher.dispatchAsk(SiteActionBuilder.newUpdateSiteAction(
                                     new SiteRequestPayload(siteRequestPayload.getRequestId(), site)));
                         } else {
-                            AppLog.e(T.API, "Received empty response to /sites/$site/ for " +
-                                    siteRequestPayload.site.getUrl());
+                            AppLog.e(T.API, "Received empty response to /sites/$site/ for "
+                                    + siteRequestPayload.site.getUrl());
                             SiteModel payload = new SiteModel();
                             payload.error = new BaseNetworkError(GenericErrorType.INVALID_RESPONSE);
                             mDispatcher.dispatchAsk(SiteActionBuilder.newUpdateSiteAction(
@@ -607,7 +606,8 @@ public class SiteRestClient extends BaseWPComRestClient {
         return site;
     }
 
-    private NewSiteResponsePayload volleyErrorToAccountResponsePayload(RequestPayload requestPayload, VolleyError error) {
+    private NewSiteResponsePayload volleyErrorToAccountResponsePayload(RequestPayload requestPayload,
+            VolleyError error) {
         NewSiteResponsePayload payload = new NewSiteResponsePayload(requestPayload);
         payload.error = new NewSiteError(NewSiteErrorType.GENERIC_ERROR, "");
         if (error.networkResponse != null && error.networkResponse.data != null) {

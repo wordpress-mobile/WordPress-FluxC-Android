@@ -117,7 +117,8 @@ public class PluginRestClient extends BaseWPComRestClient {
                             }
                         }
                         updatePluginError.message = networkError.message;
-                        UpdatedPluginPayload payload = new UpdatedPluginPayload(requestPayload, site, updatePluginError);
+                        UpdatedPluginPayload payload = new UpdatedPluginPayload(requestPayload, site,
+                                updatePluginError);
                         mDispatcher.dispatchRet(PluginActionBuilder.newUpdatedPluginAction(payload));
                     }
                 }

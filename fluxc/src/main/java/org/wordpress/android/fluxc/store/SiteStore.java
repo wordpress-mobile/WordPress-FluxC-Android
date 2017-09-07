@@ -821,7 +821,8 @@ public class SiteStore extends Store {
                 updateSite((SiteRequestPayload) action.getPayload());
                 break;
             case UPDATE_SITES:
-                updateSites((SitesRequestPayload) action.getPayload(), ((SitesRequestPayload) action.getPayload()).sites);
+                updateSites((SitesRequestPayload) action.getPayload(),
+                        ((SitesRequestPayload) action.getPayload()).sites);
                 break;
             case DELETE_SITE:
                 deleteSite((SiteRequestPayload) action.getPayload());
@@ -1099,7 +1100,8 @@ public class SiteStore extends Store {
     }
 
     private void handleFetchedWPComSiteByUrl(FetchWPComSiteResponsePayload payload) {
-        OnWPComSiteFetched event = new OnWPComSiteFetched(payload.getRequestPayload(), payload.checkedUrl, payload.site);
+        OnWPComSiteFetched event = new OnWPComSiteFetched(payload.getRequestPayload(), payload.checkedUrl,
+                payload.site);
         event.error = payload.error;
         emitChange(event);
     }

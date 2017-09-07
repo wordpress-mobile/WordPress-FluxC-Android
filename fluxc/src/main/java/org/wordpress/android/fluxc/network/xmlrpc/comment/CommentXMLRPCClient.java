@@ -64,7 +64,8 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                 new Listener<Object>() {
                     @Override
                     public void onResponse(Object response) {
-                        List<CommentModel> comments = commentsResponseToCommentList(response, fetchCommentsPayload.site);
+                        List<CommentModel> comments = commentsResponseToCommentList(response,
+                                fetchCommentsPayload.site);
                         FetchCommentsResponsePayload payload = new FetchCommentsResponsePayload(fetchCommentsPayload,
                                 comments, fetchCommentsPayload.site, fetchCommentsPayload.number,
                                 fetchCommentsPayload.offset);
@@ -102,7 +103,8 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                 new Listener<Object>() {
                     @Override
                     public void onResponse(Object response) {
-                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload, comment);
+                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload,
+                                comment);
                         mDispatcher.dispatchRet(CommentActionBuilder.newPushedCommentAction(payload));
                     }
                 },
@@ -170,7 +172,8 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                 new Listener<Object>() {
                     @Override
                     public void onResponse(Object response) {
-                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload, comment);
+                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload,
+                                comment);
                         if (comment != null) {
                             // This is ugly but the XMLRPC response doesn't contain any info about the update comment.
                             // So we're copying the logic here: if the comment status was "trash" before and the delete
@@ -262,7 +265,8 @@ public class CommentXMLRPCClient extends BaseXMLRPCClient {
                 new Listener<Object>() {
                     @Override
                     public void onResponse(Object response) {
-                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload, comment);
+                        RemoteCommentResponsePayload payload = new RemoteCommentResponsePayload(requestPayload,
+                                comment);
                         comment.setRemoteParentCommentId(parentId);
                         if (response instanceof Integer) {
                             comment.setRemoteCommentId((int) response);

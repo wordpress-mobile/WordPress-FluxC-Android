@@ -59,7 +59,8 @@ import okhttp3.ResponseBody;
  *
  * <ul>
  *     <li>Fetch existing media from a WP.com site
- *     (via {@link #fetchMediaList(RequestPayload, SiteModel, int, int, String)} and {@link #fetchMedia(RequestPayload, SiteModel, MediaModel)}</li>
+ *     (via {@link #fetchMediaList(RequestPayload, SiteModel, int, int, String)} and
+ *          {@link #fetchMedia(RequestPayload, SiteModel, MediaModel)}</li>
  *     <li>Push new media to a WP.com site
  *     (via {@link #uploadMedia(RequestPayload, SiteModel, MediaModel)})</li>
  *     <li>Push updates to existing media to a WP.com site
@@ -97,8 +98,8 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
 
         String url = WPCOMREST.sites.site(site.getSiteId()).media.item(media.getMediaId()).getUrlV1_1();
 
-        add(requestPayload, WPComGsonRequest.buildPostRequest(url, getEditRequestParams(media), MediaWPComRestResponse.class,
-                new Listener<MediaWPComRestResponse>() {
+        add(requestPayload, WPComGsonRequest.buildPostRequest(url, getEditRequestParams(media),
+                MediaWPComRestResponse.class, new Listener<MediaWPComRestResponse>() {
                     @Override
                     public void onResponse(MediaWPComRestResponse response) {
                         MediaModel responseMedia = getMediaFromRestResponse(response);
@@ -140,7 +141,8 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
         }
 
         String url = WPCOMREST.sites.site(site.getSiteId()).media.new_.getUrlV1_1();
-        RestUploadRequestBody body = new RestUploadRequestBody(requestPayload, media, getEditRequestParams(media), this);
+        RestUploadRequestBody body = new RestUploadRequestBody(requestPayload, media,
+                getEditRequestParams(media), this);
 
         // Abort upload if it exceeds the site upload limit
         if (site.hasMaxUploadSize() && body.contentLength() > site.getMaxUploadSize()) {
@@ -430,7 +432,8 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
         mDispatcher.dispatchRet(MediaActionBuilder.newPushedMediaAction(payload));
     }
 
-    private void notifyMediaProgress(RequestPayload requestPayload, MediaModel media, float progress, MediaError error) {
+    private void notifyMediaProgress(RequestPayload requestPayload, MediaModel media, float progress, MediaError
+            error) {
         ProgressPayload payload = new ProgressPayload(requestPayload, media, progress, false, error);
         mDispatcher.dispatchRet(MediaActionBuilder.newUploadedMediaAction(payload));
     }
@@ -458,7 +461,8 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
 
     private void notifyMediaListFetched(RequestPayload requestPayload, SiteModel site, MediaError error,
                                         String mimeType) {
-        FetchMediaListResponsePayload payload = new FetchMediaListResponsePayload(requestPayload, site, error, mimeType);
+        FetchMediaListResponsePayload payload = new FetchMediaListResponsePayload(requestPayload, site, error,
+                mimeType);
         mDispatcher.dispatchRet(MediaActionBuilder.newFetchedMediaListAction(payload));
     }
 
