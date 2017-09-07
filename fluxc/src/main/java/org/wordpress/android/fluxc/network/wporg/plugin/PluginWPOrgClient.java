@@ -33,15 +33,11 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
 
     public static class BrowsePluginPayload extends Payload {
         public int page;
+        public int pageSize;
 
         public BrowsePluginPayload() {
             page = 1;
-        }
-
-        private Map<String, String> getParams() {
-            Map<String, String> params = new HashMap<>();
-            params.put("page", String.valueOf(page));
-            return params;
+            pageSize = 30;
         }
     }
 
@@ -79,9 +75,10 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
     }
 
     public void fetchPlugins(BrowsePluginPayload payload) {
-        String url = "https://api.wordpress.org/plugins/info/1.1/?action=query_plugins";
+        String url = WPORGAPI.plugins.info.version("1.1").getUrl();
+        Map<String, String> params = getBrowsePluginParams(payload);
         final WPOrgAPIGsonRequest<BrowsePluginResponse> request =
-                new WPOrgAPIGsonRequest<>(Method.GET, url, payload.getParams(), null, BrowsePluginResponse.class,
+                new WPOrgAPIGsonRequest<>(Method.GET, url, params, null, BrowsePluginResponse.class,
                         new Listener<BrowsePluginResponse>() {
                             @Override
                             public void onResponse(BrowsePluginResponse response) {
@@ -94,6 +91,16 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
                         }
                 );
         add(request);
+    }
+
+    private Map<String, String> getBrowsePluginParams(BrowsePluginPayload payload) {
+        Map<String, String> params = new HashMap<>();
+        // This parameter is necessary for browse plugin actions
+        params.put("action", "query_plugins");
+        params.put("page", String.valueOf(payload.page));
+        params.put("per_page", String.valueOf(payload.pageSize));
+        params.put("fields", "icons");
+        return params;
     }
 
     private PluginInfoModel pluginInfoModelFromResponse(FetchPluginInfoResponse response) {
