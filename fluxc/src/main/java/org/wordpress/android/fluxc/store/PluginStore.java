@@ -155,7 +155,7 @@ public class PluginStore extends Store {
         switch ((PluginAction) actionType) {
             // REST actions
             case FETCH_SITE_PLUGINS:
-                fetchPlugins((SiteModel) action.getPayload());
+                fetchSitePlugins((SiteModel) action.getPayload());
                 break;
             case UPDATE_PLUGIN:
                 updatePlugin((UpdatePluginPayload) action.getPayload());
@@ -181,11 +181,11 @@ public class PluginStore extends Store {
         }
     }
 
-    public List<PluginModel> getPlugins(SiteModel site) {
+    public List<PluginModel> getSitePlugins(SiteModel site) {
         return PluginSqlUtils.getPlugins(site);
     }
 
-    public PluginModel getPluginByName(SiteModel site, String name) {
+    public PluginModel getSitePluginByName(SiteModel site, String name) {
         return PluginSqlUtils.getPluginByName(site, name);
     }
 
@@ -193,9 +193,9 @@ public class PluginStore extends Store {
         return PluginSqlUtils.getPluginInfoBySlug(slug);
     }
 
-    private void fetchPlugins(SiteModel site) {
+    private void fetchSitePlugins(SiteModel site) {
         if (site.isUsingWpComRestApi() && site.isJetpackConnected()) {
-            mPluginRestClient.fetchPlugins(site);
+            mPluginRestClient.fetchSitePlugins(site);
         } else {
             FetchPluginsError error = new FetchPluginsError(FetchPluginsErrorType.NOT_AVAILABLE);
             FetchedSitePluginsPayload payload = new FetchedSitePluginsPayload(error);
