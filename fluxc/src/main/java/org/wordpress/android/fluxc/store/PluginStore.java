@@ -14,6 +14,8 @@ import org.wordpress.android.fluxc.model.PluginModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient;
+import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.BrowsePluginPayload;
+import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.FetchedPluginInfoPayload;
 import org.wordpress.android.fluxc.persistence.PluginSqlUtils;
 import org.wordpress.android.util.AppLog;
 
@@ -45,19 +47,6 @@ public class PluginStore extends Store {
         public FetchedPluginsPayload(@NonNull SiteModel site, @NonNull List<PluginModel> plugins) {
             this.site = site;
             this.plugins = plugins;
-        }
-    }
-
-    public static class FetchedPluginInfoPayload extends Payload {
-        public PluginInfoModel pluginInfo;
-        public FetchPluginInfoError error;
-
-        public FetchedPluginInfoPayload(FetchPluginInfoError error) {
-            this.error = error;
-        }
-
-        public FetchedPluginInfoPayload(PluginInfoModel pluginInfo) {
-            this.pluginInfo = pluginInfo;
         }
     }
 
@@ -164,23 +153,30 @@ public class PluginStore extends Store {
             return;
         }
         switch ((PluginAction) actionType) {
+            // REST actions
             case FETCH_PLUGINS:
                 fetchPlugins((SiteModel) action.getPayload());
-                break;
-            case FETCH_PLUGIN_INFO:
-                fetchPluginInfo((String) action.getPayload());
                 break;
             case UPDATE_PLUGIN:
                 updatePlugin((UpdatePluginPayload) action.getPayload());
                 break;
+            // WPORG actions
+            case FETCH_PLUGIN_INFO:
+                fetchPluginInfo((String) action.getPayload());
+                break;
+            case FETCH_WPORG_PLUGINS:
+                fetchWpOrgPlugins((BrowsePluginPayload) action.getPayload());
+                break;
+            // REST responses
             case FETCHED_PLUGINS:
                 fetchedPlugins((FetchedPluginsPayload) action.getPayload());
                 break;
-            case FETCHED_PLUGIN_INFO:
-                fetchedPluginInfo((FetchedPluginInfoPayload) action.getPayload());
-                break;
             case UPDATED_PLUGIN:
                 updatedPlugin((UpdatedPluginPayload) action.getPayload());
+                break;
+            // WPORG responses
+            case FETCHED_PLUGIN_INFO:
+                fetchedPluginInfo((FetchedPluginInfoPayload) action.getPayload());
                 break;
         }
     }
@@ -207,10 +203,6 @@ public class PluginStore extends Store {
         }
     }
 
-    private void fetchPluginInfo(String plugin) {
-        mPluginWPOrgClient.fetchPluginInfo(plugin);
-    }
-
     private void updatePlugin(UpdatePluginPayload payload) {
         if (payload.site.isUsingWpComRestApi() && payload.site.isJetpackConnected()) {
             mPluginRestClient.updatePlugin(payload.site, payload.plugin);
@@ -219,6 +211,14 @@ public class PluginStore extends Store {
             UpdatedPluginPayload errorPayload = new UpdatedPluginPayload(payload.site, error);
             updatedPlugin(errorPayload);
         }
+    }
+
+    private void fetchPluginInfo(String plugin) {
+        mPluginWPOrgClient.fetchPluginInfo(plugin);
+    }
+
+    private void fetchWpOrgPlugins(BrowsePluginPayload payload) {
+        mPluginWPOrgClient.fetchPlugins(payload);
     }
 
     private void fetchedPlugins(FetchedPluginsPayload payload) {

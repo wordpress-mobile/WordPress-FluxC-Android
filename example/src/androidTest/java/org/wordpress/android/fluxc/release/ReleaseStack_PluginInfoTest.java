@@ -4,6 +4,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.model.PluginInfoModel;
+import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.BrowsePluginPayload;
 import org.wordpress.android.fluxc.store.PluginStore;
 import org.wordpress.android.fluxc.store.PluginStore.OnPluginInfoChanged;
 
@@ -18,6 +19,7 @@ public class ReleaseStack_PluginInfoTest extends ReleaseStack_Base {
     enum TestEvents {
         NONE,
         PLUGIN_INFO_FETCHED,
+        WPORG_PLUGINS_FETCHED
     }
 
     private TestEvents mNextEvent;
@@ -38,6 +40,16 @@ public class ReleaseStack_PluginInfoTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PluginActionBuilder.newFetchPluginInfoAction(mSlug));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testFetchPlugins() throws InterruptedException {
+        mNextEvent = TestEvents.WPORG_PLUGINS_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        BrowsePluginPayload payload = new BrowsePluginPayload();
+        mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginsAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

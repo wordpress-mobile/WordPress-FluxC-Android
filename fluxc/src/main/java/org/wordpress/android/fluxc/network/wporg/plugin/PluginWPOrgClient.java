@@ -7,6 +7,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response.Listener;
 
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.Payload;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.WPORGAPI;
 import org.wordpress.android.fluxc.model.PluginInfoModel;
@@ -15,9 +16,9 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.wporg.BaseWPOrgAPIClient;
 import org.wordpress.android.fluxc.network.wporg.WPOrgAPIGsonRequest;
+import org.wordpress.android.fluxc.network.wporg.plugin.FetchPluginInfoResponse.BrowsePluginResponse;
 import org.wordpress.android.fluxc.store.PluginStore.FetchPluginInfoError;
 import org.wordpress.android.fluxc.store.PluginStore.FetchPluginInfoErrorType;
-import org.wordpress.android.fluxc.store.PluginStore.FetchedPluginInfoPayload;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +29,29 @@ import javax.inject.Singleton;
 @Singleton
 public class PluginWPOrgClient extends BaseWPOrgAPIClient {
     private final Dispatcher mDispatcher;
+
+    public static class FetchedPluginInfoPayload extends Payload {
+        public PluginInfoModel pluginInfo;
+        public FetchPluginInfoError error;
+
+        FetchedPluginInfoPayload(FetchPluginInfoError error) {
+            this.error = error;
+        }
+
+        FetchedPluginInfoPayload(PluginInfoModel pluginInfo) {
+            this.pluginInfo = pluginInfo;
+        }
+    }
+
+    public static class BrowsePluginPayload extends Payload {
+        public int page;
+        public int pageSize;
+
+        public BrowsePluginPayload() {
+            page = 1;
+            pageSize = 30;
+        }
+    }
 
     @Inject
     public PluginWPOrgClient(Dispatcher dispatcher, RequestQueue requestQueue, UserAgent userAgent) {
@@ -60,6 +84,35 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
                         }
                 );
         add(request);
+    }
+
+    public void fetchPlugins(BrowsePluginPayload payload) {
+        String url = WPORGAPI.plugins.info.version("1.1").getUrl();
+        Map<String, String> params = getBrowsePluginParams(payload);
+        final WPOrgAPIGsonRequest<BrowsePluginResponse> request =
+                new WPOrgAPIGsonRequest<>(Method.GET, url, params, null, BrowsePluginResponse.class,
+                        new Listener<BrowsePluginResponse>() {
+                            @Override
+                            public void onResponse(BrowsePluginResponse response) {
+                            }
+                        },
+                        new BaseErrorListener() {
+                            @Override
+                            public void onErrorResponse(@NonNull BaseNetworkError networkError) {
+                            }
+                        }
+                );
+        add(request);
+    }
+
+    private Map<String, String> getBrowsePluginParams(BrowsePluginPayload payload) {
+        Map<String, String> params = new HashMap<>();
+        // This parameter is necessary for browse plugin actions
+        params.put("action", "query_plugins");
+        params.put("page", String.valueOf(payload.page));
+        params.put("per_page", String.valueOf(payload.pageSize));
+        params.put("fields", "icons");
+        return params;
     }
 
     private PluginInfoModel pluginInfoModelFromResponse(FetchPluginInfoResponse response) {
