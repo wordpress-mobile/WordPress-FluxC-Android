@@ -17,8 +17,8 @@ import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.wporg.BaseWPOrgAPIClient;
 import org.wordpress.android.fluxc.network.wporg.WPOrgAPIGsonRequest;
 import org.wordpress.android.fluxc.network.wporg.plugin.FetchPluginInfoResponse.BrowsePluginResponse;
-import org.wordpress.android.fluxc.store.PluginStore.FetchPluginInfoError;
 import org.wordpress.android.fluxc.store.PluginStore.FetchPluginInfoErrorType;
+import org.wordpress.android.fluxc.store.Store.OnChangedError;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +50,14 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         public FetchPluginDirectoryPayload() {
             page = 1;
             pageSize = 30;
+        }
+    }
+
+    public static class FetchPluginInfoError implements OnChangedError {
+        public FetchPluginInfoErrorType type;
+
+        public FetchPluginInfoError(FetchPluginInfoErrorType type) {
+            this.type = type;
         }
     }
 

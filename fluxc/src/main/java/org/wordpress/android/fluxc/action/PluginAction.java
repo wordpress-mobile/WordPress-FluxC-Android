@@ -4,11 +4,11 @@ import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient.FetchedSitePluginsPayload;
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient.UpdateSitePluginPayload;
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient.UpdatedSitePluginPayload;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.FetchPluginDirectoryPayload;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.FetchedPluginInfoPayload;
-import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginPayload;
-import org.wordpress.android.fluxc.store.PluginStore.FetchedSitePluginsPayload;
-import org.wordpress.android.fluxc.store.PluginStore.UpdatedSitePluginPayload;
 
 @ActionEnum
 public enum PluginAction implements IAction {

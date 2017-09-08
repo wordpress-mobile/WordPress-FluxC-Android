@@ -1,11 +1,8 @@
 package org.wordpress.android.fluxc.store;
 
-import android.support.annotation.NonNull;
-
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
-import org.wordpress.android.fluxc.Payload;
 import org.wordpress.android.fluxc.action.PluginAction;
 import org.wordpress.android.fluxc.annotations.action.Action;
 import org.wordpress.android.fluxc.annotations.action.IAction;
@@ -13,7 +10,13 @@ import org.wordpress.android.fluxc.model.PluginInfoModel;
 import org.wordpress.android.fluxc.model.PluginModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient;
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient.FetchSitePluginsError;
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient.FetchedSitePluginsPayload;
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient.UpdateSitePluginError;
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient.UpdateSitePluginPayload;
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient.UpdatedSitePluginPayload;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient;
+import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.FetchPluginInfoError;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.FetchedPluginInfoPayload;
 import org.wordpress.android.fluxc.persistence.PluginSqlUtils;
 import org.wordpress.android.util.AppLog;
@@ -23,78 +26,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 public class PluginStore extends Store {
-    // Payloads
-    public static class UpdateSitePluginPayload extends Payload {
-        public SiteModel site;
-        public PluginModel plugin;
-
-        public UpdateSitePluginPayload(@NonNull SiteModel site, PluginModel plugin) {
-            this.site = site;
-            this.plugin = plugin;
-        }
-    }
-
-    public static class FetchedSitePluginsPayload extends Payload {
-        public SiteModel site;
-        public List<PluginModel> plugins;
-        public FetchSitePluginsError error;
-
-        public FetchedSitePluginsPayload(FetchSitePluginsError error) {
-            this.error = error;
-        }
-
-        public FetchedSitePluginsPayload(@NonNull SiteModel site, @NonNull List<PluginModel> plugins) {
-            this.site = site;
-            this.plugins = plugins;
-        }
-    }
-
-    public static class UpdatedSitePluginPayload extends Payload {
-        public SiteModel site;
-        public PluginModel plugin;
-        public UpdateSitePluginError error;
-
-        public UpdatedSitePluginPayload(@NonNull SiteModel site, PluginModel plugin) {
-            this.site = site;
-            this.plugin = plugin;
-        }
-
-        public UpdatedSitePluginPayload(@NonNull SiteModel site, UpdateSitePluginError error) {
-            this.site = site;
-            this.error = error;
-        }
-    }
-
-    public static class FetchSitePluginsError implements OnChangedError {
-        public FetchPluginsErrorType type;
-        public String message;
-        public FetchSitePluginsError(FetchPluginsErrorType type) {
-            this(type, "");
-        }
-
-        FetchSitePluginsError(FetchPluginsErrorType type, String message) {
-            this.type = type;
-            this.message = message;
-        }
-    }
-
-    public static class FetchPluginInfoError implements OnChangedError {
-        public FetchPluginInfoErrorType type;
-
-        public FetchPluginInfoError(FetchPluginInfoErrorType type) {
-            this.type = type;
-        }
-    }
-
-    public static class UpdateSitePluginError implements OnChangedError {
-        public UpdateSitePluginErrorType type;
-        public String message;
-
-        public UpdateSitePluginError(UpdateSitePluginErrorType type) {
-            this.type = type;
-        }
-    }
-
     public enum FetchPluginsErrorType {
         GENERIC_ERROR,
         UNAUTHORIZED,
