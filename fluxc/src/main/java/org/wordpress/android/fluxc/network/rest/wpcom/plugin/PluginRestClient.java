@@ -57,7 +57,7 @@ public class PluginRestClient extends BaseWPComRestClient {
                                 plugins.add(pluginModelFromResponse(site, pluginResponse));
                             }
                         }
-                        mDispatcher.dispatch(PluginActionBuilder.newFetchedPluginsAction(
+                        mDispatcher.dispatch(PluginActionBuilder.newFetchedSitePluginsAction(
                                 new FetchedPluginsPayload(site, plugins)));
                     }
                 },
@@ -75,7 +75,7 @@ public class PluginRestClient extends BaseWPComRestClient {
                         }
                         fetchPluginsError.message = networkError.message;
                         FetchedPluginsPayload payload = new FetchedPluginsPayload(fetchPluginsError);
-                        mDispatcher.dispatch(PluginActionBuilder.newFetchedPluginsAction(payload));
+                        mDispatcher.dispatch(PluginActionBuilder.newFetchedSitePluginsAction(payload));
                     }
                 }
         );

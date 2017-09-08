@@ -49,7 +49,7 @@ public class ReleaseStack_PluginInfoTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         BrowsePluginPayload payload = new BrowsePluginPayload();
-        mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginsAction(payload));
+        mDispatcher.dispatch(PluginActionBuilder.newFetchPluginDirectoryAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

@@ -62,7 +62,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         SiteModel site = mSiteStore.getSites().get(0);
-        mDispatcher.dispatch(PluginActionBuilder.newFetchPluginsAction(site));
+        mDispatcher.dispatch(PluginActionBuilder.newFetchSitePluginsAction(site));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -84,7 +84,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         SiteModel site = mSiteStore.getSites().get(0);
-        mDispatcher.dispatch(PluginActionBuilder.newFetchPluginsAction(site));
+        mDispatcher.dispatch(PluginActionBuilder.newFetchSitePluginsAction(site));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 

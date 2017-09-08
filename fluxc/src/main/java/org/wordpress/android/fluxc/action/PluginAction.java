@@ -14,7 +14,7 @@ import org.wordpress.android.fluxc.store.PluginStore.UpdatedPluginPayload;
 public enum PluginAction implements IAction {
     // Remote REST actions
     @Action(payloadType = SiteModel.class)
-    FETCH_PLUGINS,
+    FETCH_SITE_PLUGINS,
     @Action(payloadType = UpdatePluginPayload.class)
     UPDATE_PLUGIN,
 
@@ -22,11 +22,11 @@ public enum PluginAction implements IAction {
     @Action(payloadType = String.class)
     FETCH_PLUGIN_INFO,
     @Action(payloadType = BrowsePluginPayload.class)
-    FETCH_WPORG_PLUGINS,
+    FETCH_PLUGIN_DIRECTORY,
 
     // Remote REST responses
     @Action(payloadType = FetchedPluginsPayload.class)
-    FETCHED_PLUGINS,
+    FETCHED_SITE_PLUGINS,
     @Action(payloadType = UpdatedPluginPayload.class)
     UPDATED_PLUGIN,
 

@@ -154,7 +154,7 @@ public class PluginStore extends Store {
         }
         switch ((PluginAction) actionType) {
             // REST actions
-            case FETCH_PLUGINS:
+            case FETCH_SITE_PLUGINS:
                 fetchPlugins((SiteModel) action.getPayload());
                 break;
             case UPDATE_PLUGIN:
@@ -164,11 +164,11 @@ public class PluginStore extends Store {
             case FETCH_PLUGIN_INFO:
                 fetchPluginInfo((String) action.getPayload());
                 break;
-            case FETCH_WPORG_PLUGINS:
+            case FETCH_PLUGIN_DIRECTORY:
                 fetchWpOrgPlugins((BrowsePluginPayload) action.getPayload());
                 break;
             // REST responses
-            case FETCHED_PLUGINS:
+            case FETCHED_SITE_PLUGINS:
                 fetchedPlugins((FetchedPluginsPayload) action.getPayload());
                 break;
             case UPDATED_PLUGIN:
