@@ -37,9 +37,9 @@ public class PluginStore extends Store {
     public static class FetchedSitePluginsPayload extends Payload {
         public SiteModel site;
         public List<PluginModel> plugins;
-        public FetchPluginsError error;
+        public FetchSitePluginsError error;
 
-        public FetchedSitePluginsPayload(FetchPluginsError error) {
+        public FetchedSitePluginsPayload(FetchSitePluginsError error) {
             this.error = error;
         }
 
@@ -65,14 +65,14 @@ public class PluginStore extends Store {
         }
     }
 
-    public static class FetchPluginsError implements OnChangedError {
+    public static class FetchSitePluginsError implements OnChangedError {
         public FetchPluginsErrorType type;
         public String message;
-        public FetchPluginsError(FetchPluginsErrorType type) {
+        public FetchSitePluginsError(FetchPluginsErrorType type) {
             this(type, "");
         }
 
-        FetchPluginsError(FetchPluginsErrorType type, String message) {
+        FetchSitePluginsError(FetchPluginsErrorType type, String message) {
             this.type = type;
             this.message = message;
         }
@@ -111,7 +111,7 @@ public class PluginStore extends Store {
         NOT_AVAILABLE // Return for non-jetpack sites
     }
 
-    public static class OnSitePluginsChanged extends OnChanged<FetchPluginsError> {
+    public static class OnSitePluginsChanged extends OnChanged<FetchSitePluginsError> {
         public SiteModel site;
         public OnSitePluginsChanged(SiteModel site) {
             this.site = site;
@@ -197,7 +197,7 @@ public class PluginStore extends Store {
         if (site.isUsingWpComRestApi() && site.isJetpackConnected()) {
             mPluginRestClient.fetchSitePlugins(site);
         } else {
-            FetchPluginsError error = new FetchPluginsError(FetchPluginsErrorType.NOT_AVAILABLE);
+            FetchSitePluginsError error = new FetchSitePluginsError(FetchPluginsErrorType.NOT_AVAILABLE);
             FetchedSitePluginsPayload payload = new FetchedSitePluginsPayload(error);
             fetchedSitePlugins(payload);
         }

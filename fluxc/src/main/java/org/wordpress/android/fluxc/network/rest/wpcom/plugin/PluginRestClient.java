@@ -20,7 +20,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginWPComRestResponse.FetchPluginsResponse;
 import org.wordpress.android.fluxc.store.PluginStore;
-import org.wordpress.android.fluxc.store.PluginStore.FetchPluginsError;
+import org.wordpress.android.fluxc.store.PluginStore.FetchSitePluginsError;
 import org.wordpress.android.fluxc.store.PluginStore.FetchPluginsErrorType;
 import org.wordpress.android.fluxc.store.PluginStore.FetchedSitePluginsPayload;
 import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginError;
@@ -64,17 +64,17 @@ public class PluginRestClient extends BaseWPComRestClient {
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError networkError) {
-                        FetchPluginsError fetchPluginsError
-                                = new FetchPluginsError(FetchPluginsErrorType.GENERIC_ERROR);
+                        FetchSitePluginsError fetchSitePluginsError
+                                = new FetchSitePluginsError(FetchPluginsErrorType.GENERIC_ERROR);
                         if (networkError instanceof WPComGsonNetworkError) {
                             switch (((WPComGsonNetworkError) networkError).apiError) {
                                 case "unauthorized":
-                                    fetchPluginsError.type = FetchPluginsErrorType.UNAUTHORIZED;
+                                    fetchSitePluginsError.type = FetchPluginsErrorType.UNAUTHORIZED;
                                     break;
                             }
                         }
-                        fetchPluginsError.message = networkError.message;
-                        FetchedSitePluginsPayload payload = new FetchedSitePluginsPayload(fetchPluginsError);
+                        fetchSitePluginsError.message = networkError.message;
+                        FetchedSitePluginsPayload payload = new FetchedSitePluginsPayload(fetchSitePluginsError);
                         mDispatcher.dispatch(PluginActionBuilder.newFetchedSitePluginsAction(payload));
                     }
                 }
