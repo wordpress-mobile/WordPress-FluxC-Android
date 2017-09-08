@@ -112,9 +112,9 @@ public class PluginStore extends Store {
         NOT_AVAILABLE // Return for non-jetpack sites
     }
 
-    public static class OnPluginsChanged extends OnChanged<FetchPluginsError> {
+    public static class OnSitePluginsChanged extends OnChanged<FetchPluginsError> {
         public SiteModel site;
-        public OnPluginsChanged(SiteModel site) {
+        public OnSitePluginsChanged(SiteModel site) {
             this.site = site;
         }
     }
@@ -223,7 +223,7 @@ public class PluginStore extends Store {
     }
 
     private void fetchedSitePlugins(FetchedSitePluginsPayload payload) {
-        OnPluginsChanged event = new OnPluginsChanged(payload.site);
+        OnSitePluginsChanged event = new OnSitePluginsChanged(payload.site);
         if (payload.isError()) {
             event.error = payload.error;
         } else {
