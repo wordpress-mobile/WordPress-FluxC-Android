@@ -14,7 +14,6 @@ import org.wordpress.android.fluxc.model.PluginModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient;
-import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.BrowsePluginPayload;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.FetchedPluginInfoPayload;
 import org.wordpress.android.fluxc.persistence.PluginSqlUtils;
 import org.wordpress.android.util.AppLog;
@@ -166,7 +165,7 @@ public class PluginStore extends Store {
                 fetchPluginInfo((String) action.getPayload());
                 break;
             case FETCH_PLUGIN_DIRECTORY:
-                fetchWpOrgPlugins((BrowsePluginPayload) action.getPayload());
+                fetchPluginDirectory((PluginWPOrgClient.FetchPluginDirectoryPayload) action.getPayload());
                 break;
             // REST responses
             case FETCHED_SITE_PLUGINS:
@@ -218,8 +217,8 @@ public class PluginStore extends Store {
         mPluginWPOrgClient.fetchPluginInfo(plugin);
     }
 
-    private void fetchWpOrgPlugins(BrowsePluginPayload payload) {
-        mPluginWPOrgClient.fetchPlugins(payload);
+    private void fetchPluginDirectory(PluginWPOrgClient.FetchPluginDirectoryPayload payload) {
+        mPluginWPOrgClient.fetchPluginDirectory(payload);
     }
 
     private void fetchedSitePlugins(FetchedSitePluginsPayload payload) {

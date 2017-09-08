@@ -4,7 +4,7 @@ import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
 import org.wordpress.android.fluxc.model.SiteModel;
-import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.BrowsePluginPayload;
+import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.FetchPluginDirectoryPayload;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.FetchedPluginInfoPayload;
 import org.wordpress.android.fluxc.store.PluginStore.UpdatePluginPayload;
 import org.wordpress.android.fluxc.store.PluginStore.FetchedSitePluginsPayload;
@@ -21,7 +21,7 @@ public enum PluginAction implements IAction {
     // REMOTE WPORG actions
     @Action(payloadType = String.class)
     FETCH_PLUGIN_INFO,
-    @Action(payloadType = BrowsePluginPayload.class)
+    @Action(payloadType = FetchPluginDirectoryPayload.class)
     FETCH_PLUGIN_DIRECTORY,
 
     // Remote REST responses
