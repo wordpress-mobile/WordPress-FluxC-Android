@@ -24,11 +24,11 @@ import javax.inject.Inject;
 
 public class PluginStore extends Store {
     // Payloads
-    public static class UpdatePluginPayload extends Payload {
+    public static class UpdateSitePluginPayload extends Payload {
         public SiteModel site;
         public PluginModel plugin;
 
-        public UpdatePluginPayload(SiteModel site, PluginModel plugin) {
+        public UpdateSitePluginPayload(@NonNull SiteModel site, PluginModel plugin) {
             this.site = site;
             this.plugin = plugin;
         }
@@ -49,17 +49,17 @@ public class PluginStore extends Store {
         }
     }
 
-    public static class UpdatedPluginPayload extends Payload {
+    public static class UpdatedSitePluginPayload extends Payload {
         public SiteModel site;
         public PluginModel plugin;
-        public UpdatePluginError error;
+        public UpdateSitePluginError error;
 
-        public UpdatedPluginPayload(SiteModel site, PluginModel plugin) {
+        public UpdatedSitePluginPayload(@NonNull SiteModel site, PluginModel plugin) {
             this.site = site;
             this.plugin = plugin;
         }
 
-        public UpdatedPluginPayload(@NonNull SiteModel site, UpdatePluginError error) {
+        public UpdatedSitePluginPayload(@NonNull SiteModel site, UpdateSitePluginError error) {
             this.site = site;
             this.error = error;
         }
@@ -86,11 +86,11 @@ public class PluginStore extends Store {
         }
     }
 
-    public static class UpdatePluginError implements OnChangedError {
-        public UpdatePluginErrorType type;
+    public static class UpdateSitePluginError implements OnChangedError {
+        public UpdateSitePluginErrorType type;
         public String message;
 
-        public UpdatePluginError(UpdatePluginErrorType type) {
+        public UpdateSitePluginError(UpdateSitePluginErrorType type) {
             this.type = type;
         }
     }
@@ -105,7 +105,7 @@ public class PluginStore extends Store {
         GENERIC_ERROR
     }
 
-    public enum UpdatePluginErrorType {
+    public enum UpdateSitePluginErrorType {
         GENERIC_ERROR,
         UNAUTHORIZED,
         NOT_AVAILABLE // Return for non-jetpack sites
@@ -122,7 +122,7 @@ public class PluginStore extends Store {
         public PluginInfoModel pluginInfo;
     }
 
-    public static class OnPluginChanged extends OnChanged<UpdatePluginError> {
+    public static class OnPluginChanged extends OnChanged<UpdateSitePluginError> {
         public SiteModel site;
         public PluginModel plugin;
         public OnPluginChanged(SiteModel site) {
@@ -157,8 +157,8 @@ public class PluginStore extends Store {
             case FETCH_SITE_PLUGINS:
                 fetchSitePlugins((SiteModel) action.getPayload());
                 break;
-            case UPDATE_PLUGIN:
-                updatePlugin((UpdatePluginPayload) action.getPayload());
+            case UPDATE_SITE_PLUGIN:
+                updateSitePlugin((UpdateSitePluginPayload) action.getPayload());
                 break;
             // WPORG actions
             case FETCH_PLUGIN_INFO:
@@ -171,8 +171,8 @@ public class PluginStore extends Store {
             case FETCHED_SITE_PLUGINS:
                 fetchedSitePlugins((FetchedSitePluginsPayload) action.getPayload());
                 break;
-            case UPDATED_PLUGIN:
-                updatedPlugin((UpdatedPluginPayload) action.getPayload());
+            case UPDATED_SITE_PLUGIN:
+                updatedSitePlugin((UpdatedSitePluginPayload) action.getPayload());
                 break;
             // WPORG responses
             case FETCHED_PLUGIN_INFO:
@@ -203,13 +203,13 @@ public class PluginStore extends Store {
         }
     }
 
-    private void updatePlugin(UpdatePluginPayload payload) {
+    private void updateSitePlugin(UpdateSitePluginPayload payload) {
         if (payload.site.isUsingWpComRestApi() && payload.site.isJetpackConnected()) {
             mPluginRestClient.updatePlugin(payload.site, payload.plugin);
         } else {
-            UpdatePluginError error = new UpdatePluginError(UpdatePluginErrorType.NOT_AVAILABLE);
-            UpdatedPluginPayload errorPayload = new UpdatedPluginPayload(payload.site, error);
-            updatedPlugin(errorPayload);
+            UpdateSitePluginError error = new UpdateSitePluginError(UpdateSitePluginErrorType.NOT_AVAILABLE);
+            UpdatedSitePluginPayload errorPayload = new UpdatedSitePluginPayload(payload.site, error);
+            updatedSitePlugin(errorPayload);
         }
     }
 
@@ -242,7 +242,7 @@ public class PluginStore extends Store {
         emitChange(event);
     }
 
-    private void updatedPlugin(UpdatedPluginPayload payload) {
+    private void updatedSitePlugin(UpdatedSitePluginPayload payload) {
         OnPluginChanged event = new OnPluginChanged(payload.site);
         if (payload.isError()) {
             event.error = payload.error;
