@@ -54,7 +54,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.NONE;
     }
 
-    public void testFetchPlugins() throws InterruptedException {
+    public void testFetchSitePlugins() throws InterruptedException {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
 
@@ -72,7 +72,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
-    public void testUpdatePlugin() throws InterruptedException {
+    public void testUpdateSitePlugin() throws InterruptedException {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
 

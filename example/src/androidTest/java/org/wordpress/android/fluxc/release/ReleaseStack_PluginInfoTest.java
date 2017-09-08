@@ -44,7 +44,7 @@ public class ReleaseStack_PluginInfoTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testFetchPlugins() throws InterruptedException {
+    public void testFetchPluginDirectory() throws InterruptedException {
         mNextEvent = TestEvents.WPORG_PLUGINS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
