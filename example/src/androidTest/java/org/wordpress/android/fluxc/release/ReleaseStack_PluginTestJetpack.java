@@ -14,7 +14,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.PluginStore;
-import org.wordpress.android.fluxc.store.PluginStore.OnPluginChanged;
+import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginChanged;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsChanged;
 import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
@@ -165,7 +165,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onPluginChanged(OnPluginChanged event) {
+    public void onSitePluginChanged(OnSitePluginChanged event) {
         AppLog.i(T.API, "Received onPluginChanged");
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred in onPluginChanged with type: "

@@ -122,10 +122,10 @@ public class PluginStore extends Store {
         public PluginInfoModel pluginInfo;
     }
 
-    public static class OnPluginChanged extends OnChanged<UpdateSitePluginError> {
+    public static class OnSitePluginChanged extends OnChanged<UpdateSitePluginError> {
         public SiteModel site;
         public PluginModel plugin;
-        public OnPluginChanged(SiteModel site) {
+        public OnSitePluginChanged(SiteModel site) {
             this.site = site;
         }
     }
@@ -243,7 +243,7 @@ public class PluginStore extends Store {
     }
 
     private void updatedSitePlugin(UpdatedSitePluginPayload payload) {
-        OnPluginChanged event = new OnPluginChanged(payload.site);
+        OnSitePluginChanged event = new OnSitePluginChanged(payload.site);
         if (payload.isError()) {
             event.error = payload.error;
         } else {
