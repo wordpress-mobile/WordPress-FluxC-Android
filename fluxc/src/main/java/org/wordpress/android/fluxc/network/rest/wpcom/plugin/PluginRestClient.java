@@ -21,7 +21,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginWPComRestResponse.FetchPluginsResponse;
 import org.wordpress.android.fluxc.store.PluginStore.FetchPluginsError;
 import org.wordpress.android.fluxc.store.PluginStore.FetchPluginsErrorType;
-import org.wordpress.android.fluxc.store.PluginStore.FetchedPluginsPayload;
+import org.wordpress.android.fluxc.store.PluginStore.FetchedSitePluginsPayload;
 import org.wordpress.android.fluxc.store.PluginStore.UpdatePluginError;
 import org.wordpress.android.fluxc.store.PluginStore.UpdatePluginErrorType;
 import org.wordpress.android.fluxc.store.PluginStore.UpdatedPluginPayload;
@@ -58,7 +58,7 @@ public class PluginRestClient extends BaseWPComRestClient {
                             }
                         }
                         mDispatcher.dispatch(PluginActionBuilder.newFetchedSitePluginsAction(
-                                new FetchedPluginsPayload(site, plugins)));
+                                new FetchedSitePluginsPayload(site, plugins)));
                     }
                 },
                 new BaseErrorListener() {
@@ -74,7 +74,7 @@ public class PluginRestClient extends BaseWPComRestClient {
                             }
                         }
                         fetchPluginsError.message = networkError.message;
-                        FetchedPluginsPayload payload = new FetchedPluginsPayload(fetchPluginsError);
+                        FetchedSitePluginsPayload payload = new FetchedSitePluginsPayload(fetchPluginsError);
                         mDispatcher.dispatch(PluginActionBuilder.newFetchedSitePluginsAction(payload));
                     }
                 }

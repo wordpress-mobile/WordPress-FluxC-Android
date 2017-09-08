@@ -35,16 +35,16 @@ public class PluginStore extends Store {
         }
     }
 
-    public static class FetchedPluginsPayload extends Payload {
+    public static class FetchedSitePluginsPayload extends Payload {
         public SiteModel site;
         public List<PluginModel> plugins;
         public FetchPluginsError error;
 
-        public FetchedPluginsPayload(FetchPluginsError error) {
+        public FetchedSitePluginsPayload(FetchPluginsError error) {
             this.error = error;
         }
 
-        public FetchedPluginsPayload(@NonNull SiteModel site, @NonNull List<PluginModel> plugins) {
+        public FetchedSitePluginsPayload(@NonNull SiteModel site, @NonNull List<PluginModel> plugins) {
             this.site = site;
             this.plugins = plugins;
         }
@@ -169,7 +169,7 @@ public class PluginStore extends Store {
                 break;
             // REST responses
             case FETCHED_SITE_PLUGINS:
-                fetchedPlugins((FetchedPluginsPayload) action.getPayload());
+                fetchedSitePlugins((FetchedSitePluginsPayload) action.getPayload());
                 break;
             case UPDATED_PLUGIN:
                 updatedPlugin((UpdatedPluginPayload) action.getPayload());
@@ -198,8 +198,8 @@ public class PluginStore extends Store {
             mPluginRestClient.fetchPlugins(site);
         } else {
             FetchPluginsError error = new FetchPluginsError(FetchPluginsErrorType.NOT_AVAILABLE);
-            FetchedPluginsPayload payload = new FetchedPluginsPayload(error);
-            fetchedPlugins(payload);
+            FetchedSitePluginsPayload payload = new FetchedSitePluginsPayload(error);
+            fetchedSitePlugins(payload);
         }
     }
 
@@ -221,7 +221,7 @@ public class PluginStore extends Store {
         mPluginWPOrgClient.fetchPlugins(payload);
     }
 
-    private void fetchedPlugins(FetchedPluginsPayload payload) {
+    private void fetchedSitePlugins(FetchedSitePluginsPayload payload) {
         OnPluginsChanged event = new OnPluginsChanged(payload.site);
         if (payload.isError()) {
             event.error = payload.error;
