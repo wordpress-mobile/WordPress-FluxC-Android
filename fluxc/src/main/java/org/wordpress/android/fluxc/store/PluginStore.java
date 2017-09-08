@@ -60,7 +60,8 @@ public class PluginStore extends Store {
             this.plugin = plugin;
         }
 
-        public UpdatedPluginPayload(SiteModel site, UpdatePluginError error) {
+        public UpdatedPluginPayload(@NonNull SiteModel site, UpdatePluginError error) {
+            this.site = site;
             this.error = error;
         }
     }
