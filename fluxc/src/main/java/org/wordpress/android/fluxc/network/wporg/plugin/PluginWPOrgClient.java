@@ -16,7 +16,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.wporg.BaseWPOrgAPIClient;
 import org.wordpress.android.fluxc.network.wporg.WPOrgAPIGsonRequest;
-import org.wordpress.android.fluxc.network.wporg.plugin.FetchPluginInfoResponse.BrowsePluginResponse;
+import org.wordpress.android.fluxc.network.wporg.plugin.FetchPluginInfoResponse.FetchPluginDirectoryResponse;
 import org.wordpress.android.fluxc.store.PluginStore.FetchPluginInfoErrorType;
 import org.wordpress.android.fluxc.store.Store.OnChangedError;
 
@@ -97,11 +97,11 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
     public void fetchPluginDirectory(FetchPluginDirectoryPayload payload) {
         String url = WPORGAPI.plugins.info.version("1.1").getUrl();
         Map<String, String> params = getPluginDirectoryParams(payload);
-        final WPOrgAPIGsonRequest<BrowsePluginResponse> request =
-                new WPOrgAPIGsonRequest<>(Method.GET, url, params, null, BrowsePluginResponse.class,
-                        new Listener<BrowsePluginResponse>() {
+        final WPOrgAPIGsonRequest<FetchPluginDirectoryResponse> request =
+                new WPOrgAPIGsonRequest<>(Method.GET, url, params, null, FetchPluginDirectoryResponse.class,
+                        new Listener<FetchPluginDirectoryResponse>() {
                             @Override
-                            public void onResponse(BrowsePluginResponse response) {
+                            public void onResponse(FetchPluginDirectoryResponse response) {
                             }
                         },
                         new BaseErrorListener() {

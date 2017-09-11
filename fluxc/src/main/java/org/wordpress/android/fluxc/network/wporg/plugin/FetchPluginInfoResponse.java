@@ -12,12 +12,12 @@ import java.util.List;
 
 @JsonAdapter(PluginInfoDeserializer.class)
 public class FetchPluginInfoResponse {
-    public class BrowsePluginResponse {
-        public BrowsePluginResponseInfo info;
+    public class FetchPluginDirectoryResponse {
+        public FetchPluginDirectoryInfo info;
         public List<FetchPluginInfoResponse> plugins;
     }
 
-    public class BrowsePluginResponseInfo {
+    public class FetchPluginDirectoryInfo {
         public int page;
         public int pages;
     }
