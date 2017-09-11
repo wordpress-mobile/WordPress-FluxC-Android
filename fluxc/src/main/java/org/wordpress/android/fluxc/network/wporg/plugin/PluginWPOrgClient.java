@@ -20,7 +20,9 @@ import org.wordpress.android.fluxc.network.wporg.plugin.FetchPluginInfoResponse.
 import org.wordpress.android.fluxc.store.PluginStore.FetchPluginInfoErrorType;
 import org.wordpress.android.fluxc.store.Store.OnChangedError;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -50,6 +52,21 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         public FetchPluginDirectoryPayload() {
             page = 1;
             pageSize = 30;
+        }
+    }
+
+    public static class FetchedPluginDirectoryPayload extends Payload {
+        public int page;
+        public List<PluginInfoModel> plugins;
+        public FetchPluginInfoError error;
+
+        FetchedPluginDirectoryPayload(FetchPluginInfoError error) {
+            this.error = error;
+        }
+
+        FetchedPluginDirectoryPayload(List<PluginInfoModel> plugins, int page) {
+            this.plugins = plugins;
+            this.page = page;
         }
     }
 
@@ -102,11 +119,19 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
                         new Listener<FetchPluginDirectoryResponse>() {
                             @Override
                             public void onResponse(FetchPluginDirectoryResponse response) {
+                                FetchedPluginDirectoryPayload fetchedPluginDirectoryPayload =
+                                        pluginDirectoryPayloadFromResponse(response);
+                                mDispatcher.dispatch(PluginActionBuilder.
+                                        newFetchedPluginDirectoryAction(fetchedPluginDirectoryPayload));
                             }
                         },
                         new BaseErrorListener() {
                             @Override
                             public void onErrorResponse(@NonNull BaseNetworkError networkError) {
+                                FetchPluginInfoError error = new FetchPluginInfoError(
+                                        FetchPluginInfoErrorType.GENERIC_ERROR);
+                                mDispatcher.dispatch(PluginActionBuilder.newFetchedPluginDirectoryAction(
+                                        new FetchedPluginDirectoryPayload(error)));
                             }
                         }
                 );
@@ -131,5 +156,13 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         pluginInfo.setVersion(response.version);
         pluginInfo.setIcon(response.icon);
         return pluginInfo;
+    }
+
+    private FetchedPluginDirectoryPayload pluginDirectoryPayloadFromResponse(FetchPluginDirectoryResponse response) {
+        List<PluginInfoModel> plugins = new ArrayList<>();
+        for (FetchPluginInfoResponse pluginInfoResponse : response.plugins) {
+            plugins.add(pluginInfoModelFromResponse(pluginInfoResponse));
+        }
+        return new FetchedPluginDirectoryPayload(plugins, response.info.page);
     }
 }
