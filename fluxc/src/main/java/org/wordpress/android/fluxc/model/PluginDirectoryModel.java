@@ -9,7 +9,7 @@ import com.yarolegovich.wellsql.core.annotation.Table;
 import java.io.Serializable;
 
 @Table
-public class BrowsePluginModel implements Identifiable, Serializable {
+public class PluginDirectoryModel implements Identifiable, Serializable {
     @PrimaryKey @Column
     private int mId;
     @Column private String mName;

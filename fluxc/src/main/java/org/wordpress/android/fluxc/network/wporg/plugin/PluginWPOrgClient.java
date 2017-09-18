@@ -10,7 +10,7 @@ import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.Payload;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.WPORGAPI;
-import org.wordpress.android.fluxc.model.BrowsePluginModel;
+import org.wordpress.android.fluxc.model.PluginDirectoryModel;
 import org.wordpress.android.fluxc.model.PluginInfoModel;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseErrorListener;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
@@ -59,14 +59,14 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
     public static class FetchedPluginDirectoryPayload extends Payload {
         public int page;
         public List<PluginInfoModel> plugins;
-        public List<BrowsePluginModel> browsePlugins;
+        public List<PluginDirectoryModel> browsePlugins;
         public FetchPluginInfoError error;
 
         FetchedPluginDirectoryPayload(FetchPluginInfoError error) {
             this.error = error;
         }
 
-        FetchedPluginDirectoryPayload(List<PluginInfoModel> plugins, List<BrowsePluginModel> browsePlugins, int page) {
+        FetchedPluginDirectoryPayload(List<PluginInfoModel> plugins, List<PluginDirectoryModel> browsePlugins, int page) {
             this.plugins = plugins;
             this.browsePlugins = browsePlugins;
             this.page = page;
@@ -161,19 +161,19 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         return pluginInfo;
     }
 
-    private BrowsePluginModel browsePluginModelFromResponse(FetchPluginInfoResponse response) {
-        BrowsePluginModel browsePluginModel = new BrowsePluginModel();
-        browsePluginModel.setName(response.name);
-        return browsePluginModel;
+    private PluginDirectoryModel browsePluginModelFromResponse(FetchPluginInfoResponse response) {
+        PluginDirectoryModel pluginDirectoryModel = new PluginDirectoryModel();
+        pluginDirectoryModel.setName(response.name);
+        return pluginDirectoryModel;
     }
 
     private FetchedPluginDirectoryPayload pluginDirectoryPayloadFromResponse(FetchPluginDirectoryResponse response) {
         List<PluginInfoModel> plugins = new ArrayList<>();
-        List<BrowsePluginModel> browsePluginModels = new ArrayList<>();
+        List<PluginDirectoryModel> pluginDirectoryModels = new ArrayList<>();
         for (FetchPluginInfoResponse pluginInfoResponse : response.plugins) {
             plugins.add(pluginInfoModelFromResponse(pluginInfoResponse));
-            browsePluginModels.add(browsePluginModelFromResponse(pluginInfoResponse));
+            pluginDirectoryModels.add(browsePluginModelFromResponse(pluginInfoResponse));
         }
-        return new FetchedPluginDirectoryPayload(plugins, browsePluginModels, response.info.page);
+        return new FetchedPluginDirectoryPayload(plugins, pluginDirectoryModels, response.info.page);
     }
 }

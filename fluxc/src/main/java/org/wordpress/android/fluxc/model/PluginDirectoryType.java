@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.model;
 
-public enum BrowsePluginType {
+public enum PluginDirectoryType {
     FEATURED,
     SEARCH;
 
@@ -8,9 +8,9 @@ public enum BrowsePluginType {
         return this.name();
     }
 
-    public static BrowsePluginType fromString(String string) {
+    public static PluginDirectoryType fromString(String string) {
         if (string != null) {
-            for (BrowsePluginType type : BrowsePluginType.values()) {
+            for (PluginDirectoryType type : PluginDirectoryType.values()) {
                 if (string.equalsIgnoreCase(type.name())) {
                     return type;
                 }
