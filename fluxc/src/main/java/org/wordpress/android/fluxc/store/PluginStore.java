@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient.Up
 import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient.UpdatedSitePluginPayload;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.FetchPluginInfoError;
+import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.FetchedPluginDirectoryPayload;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.FetchedPluginInfoPayload;
 import org.wordpress.android.fluxc.persistence.PluginSqlUtils;
 import org.wordpress.android.util.AppLog;
@@ -109,6 +110,9 @@ public class PluginStore extends Store {
             case FETCHED_PLUGIN_INFO:
                 fetchedPluginInfo((FetchedPluginInfoPayload) action.getPayload());
                 break;
+            case FETCHED_PLUGIN_DIRECTORY:
+                fetchedPluginDirectory((FetchedPluginDirectoryPayload) action.getPayload());
+                break;
         }
     }
 
@@ -171,6 +175,10 @@ public class PluginStore extends Store {
             PluginSqlUtils.insertOrUpdatePluginInfo(payload.pluginInfo);
         }
         emitChange(event);
+    }
+
+    private void fetchedPluginDirectory(FetchedPluginDirectoryPayload payload) {
+
     }
 
     private void updatedSitePlugin(UpdatedSitePluginPayload payload) {
