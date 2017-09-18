@@ -11,6 +11,7 @@ import com.yarolegovich.wellsql.core.TableClass;
 import com.yarolegovich.wellsql.mapper.SQLiteMapper;
 
 import org.wordpress.android.fluxc.model.AccountModel;
+import org.wordpress.android.fluxc.model.BrowsePluginModel;
 import org.wordpress.android.fluxc.model.CommentModel;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.PluginInfoModel;
@@ -47,11 +48,12 @@ public class WellSqlConfig extends DefaultWellConfig {
         add(RoleModel.class);
         add(PluginModel.class);
         add(PluginInfoModel.class);
+        add(BrowsePluginModel.class);
     }};
 
     @Override
     public int getDbVersion() {
-        return 14;
+        return 15;
     }
 
     @Override
@@ -130,6 +132,10 @@ public class WellSqlConfig extends DefaultWellConfig {
                 AppLog.d(T.DB, "Migrating to version " + (oldVersion + 1));
                 db.execSQL("CREATE TABLE PluginInfoModel (_id INTEGER PRIMARY KEY AUTOINCREMENT,"
                         + "NAME TEXT,SLUG TEXT,VERSION TEXT,RATING TEXT,ICON TEXT)");
+                oldVersion++;
+            case 14:
+                AppLog.d(T.DB, "Migrating to version " + (oldVersion + 1));
+                db.execSQL("CREATE TABLE BrowsePluginModel (_id INTEGER PRIMARY KEY AUTOINCREMENT,NAME TEXT)");
                 oldVersion++;
         }
         db.setTransactionSuccessful();
