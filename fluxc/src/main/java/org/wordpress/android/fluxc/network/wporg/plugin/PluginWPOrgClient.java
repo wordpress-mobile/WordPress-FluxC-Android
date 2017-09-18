@@ -69,7 +69,8 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
             this.error = error;
         }
 
-        FetchedPluginDirectoryPayload(List<PluginInfoModel> plugins, List<PluginDirectoryModel> browsePlugins, int page) {
+        FetchedPluginDirectoryPayload(List<PluginInfoModel> plugins, List<PluginDirectoryModel> browsePlugins,
+                                      int page) {
             this.plugins = plugins;
             this.browsePlugins = browsePlugins;
             this.page = page;
@@ -126,7 +127,7 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
                             @Override
                             public void onResponse(FetchPluginDirectoryResponse response) {
                                 FetchedPluginDirectoryPayload fetchedPluginDirectoryPayload =
-                                        pluginDirectoryPayloadFromResponse(response, fetchPayload);
+                                        pluginDirectoryPayloadFromResponse(response);
                                 mDispatcher.dispatch(PluginActionBuilder.
                                         newFetchedPluginDirectoryAction(fetchedPluginDirectoryPayload));
                             }
@@ -165,15 +166,14 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         return pluginInfo;
     }
 
-    private FetchedPluginDirectoryPayload pluginDirectoryPayloadFromResponse(FetchPluginDirectoryResponse response,
-                                                                             FetchPluginDirectoryPayload fetchPayload) {
+    private FetchedPluginDirectoryPayload pluginDirectoryPayloadFromResponse(FetchPluginDirectoryResponse response) {
         List<PluginInfoModel> plugins = new ArrayList<>();
         List<PluginDirectoryModel> pluginDirectoryModels = new ArrayList<>();
         for (FetchPluginInfoResponse pluginInfoResponse : response.plugins) {
             PluginInfoModel pluginInfo = pluginInfoModelFromResponse(pluginInfoResponse);
             plugins.add(pluginInfo);
+
             PluginDirectoryModel directoryModel = new PluginDirectoryModel();
-            directoryModel.setType(fetchPayload.searchType.name());
             directoryModel.setName(pluginInfo.getName());
             pluginDirectoryModels.add(directoryModel);
         }

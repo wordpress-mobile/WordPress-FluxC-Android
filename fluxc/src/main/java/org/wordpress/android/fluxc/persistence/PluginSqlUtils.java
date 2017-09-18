@@ -2,10 +2,13 @@ package org.wordpress.android.fluxc.persistence;
 
 import android.support.annotation.NonNull;
 
+import com.wellsql.generated.PluginDirectoryModelTable;
 import com.wellsql.generated.PluginInfoModelTable;
 import com.wellsql.generated.PluginModelTable;
 import com.yarolegovich.wellsql.WellSql;
 
+import org.wordpress.android.fluxc.model.PluginDirectoryModel;
+import org.wordpress.android.fluxc.model.PluginDirectoryType;
 import org.wordpress.android.fluxc.model.PluginInfoModel;
 import org.wordpress.android.fluxc.model.PluginModel;
 import org.wordpress.android.fluxc.model.SiteModel;
@@ -69,6 +72,29 @@ public class PluginSqlUtils {
             return WellSql.update(PluginInfoModel.class).whereId(oldId)
                     .put(pluginInfo, new UpdateAllExceptId<>(PluginInfoModel.class)).execute();
         }
+    }
+
+    public static void insertOrReplacePluginDirectory(List<PluginDirectoryModel> pluginDirectoryList,
+                                                      PluginDirectoryType directoryType,
+                                                      boolean shouldReplace) {
+        // We should be removing the directory when we get the first page
+        if (shouldReplace) {
+            removePluginDirectory(directoryType);
+        }
+
+        // Make sure the directory models have the correct type set
+        for (PluginDirectoryModel pluginDirectory : pluginDirectoryList) {
+            pluginDirectory.setType(directoryType.name());
+        }
+
+        WellSql.insert(pluginDirectoryList).asSingleTransaction(true).execute();
+    }
+
+    private static void removePluginDirectory(PluginDirectoryType directoryType) {
+        WellSql.delete(PluginDirectoryModel.class)
+                .where()
+                .equals(PluginDirectoryModelTable.TYPE, directoryType)
+                .endWhere().execute();
     }
 
     public static PluginModel getPluginByName(SiteModel site, String name) {
