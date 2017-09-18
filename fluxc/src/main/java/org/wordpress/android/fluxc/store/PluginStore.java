@@ -54,6 +54,10 @@ public class PluginStore extends Store {
         public PluginInfoModel pluginInfo;
     }
 
+    public static class OnPluginDirectoryChanged extends OnChanged<FetchPluginInfoError> {
+        public int page;
+    }
+
     public static class OnSitePluginChanged extends OnChanged<UpdateSitePluginError> {
         public SiteModel site;
         public PluginModel plugin;
@@ -178,7 +182,18 @@ public class PluginStore extends Store {
     }
 
     private void fetchedPluginDirectory(FetchedPluginDirectoryPayload payload) {
+        OnPluginDirectoryChanged onPluginDirectoryChanged = new OnPluginDirectoryChanged();
 
+        if (payload.isError()) {
+            onPluginDirectoryChanged.error = payload.error;
+        } else {
+            onPluginDirectoryChanged.page = payload.page;
+            for (PluginInfoModel pluginInfo : payload.plugins) {
+                PluginSqlUtils.insertOrUpdatePluginInfo(pluginInfo);
+            }
+        }
+
+        emitChange(onPluginDirectoryChanged);
     }
 
     private void updatedSitePlugin(UpdatedSitePluginPayload payload) {
