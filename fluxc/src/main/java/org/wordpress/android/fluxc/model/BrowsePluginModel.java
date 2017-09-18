@@ -13,6 +13,7 @@ public class BrowsePluginModel implements Identifiable, Serializable {
     @PrimaryKey @Column
     private int mId;
     @Column private String mName;
+    @Column private String mType;
 
     @Override
     public void setId(int id) {
@@ -30,6 +31,14 @@ public class BrowsePluginModel implements Identifiable, Serializable {
 
     public void setName(String name) {
         mName = name;
+    }
+
+    public String getType() {
+        return mType;
+    }
+
+    public void setType(String type) {
+        mType = type;
     }
 }
 

@@ -135,7 +135,8 @@ public class WellSqlConfig extends DefaultWellConfig {
                 oldVersion++;
             case 14:
                 AppLog.d(T.DB, "Migrating to version " + (oldVersion + 1));
-                db.execSQL("CREATE TABLE BrowsePluginModel (_id INTEGER PRIMARY KEY AUTOINCREMENT,NAME TEXT)");
+                db.execSQL("CREATE TABLE BrowsePluginModel (_id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                        + "NAME TEXT,TYPE TEXT)");
                 oldVersion++;
         }
         db.setTransactionSuccessful();
