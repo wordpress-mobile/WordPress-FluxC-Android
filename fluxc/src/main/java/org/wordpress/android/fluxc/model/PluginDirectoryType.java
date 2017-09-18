@@ -1,8 +1,8 @@
 package org.wordpress.android.fluxc.model;
 
 public enum PluginDirectoryType {
-    FEATURED,
-    SEARCH;
+    NEW,
+    POPULAR;
 
     public String toString() {
         return this.name();
@@ -16,6 +16,6 @@ public enum PluginDirectoryType {
                 }
             }
         }
-        return FEATURED;
+        return NEW;
     }
 }

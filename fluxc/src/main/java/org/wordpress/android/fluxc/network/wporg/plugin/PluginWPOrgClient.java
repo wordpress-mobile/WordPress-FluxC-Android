@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.Payload;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.WPORGAPI;
 import org.wordpress.android.fluxc.model.PluginDirectoryModel;
+import org.wordpress.android.fluxc.model.PluginDirectoryType;
 import org.wordpress.android.fluxc.model.PluginInfoModel;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseErrorListener;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
@@ -49,10 +50,12 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
     public static class FetchPluginDirectoryPayload extends Payload {
         public int page;
         public int pageSize;
+        public PluginDirectoryType searchType;
 
         public FetchPluginDirectoryPayload() {
             page = 1;
             pageSize = 30;
+            searchType = PluginDirectoryType.POPULAR;
         }
     }
 
@@ -114,16 +117,16 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         add(request);
     }
 
-    public void fetchPluginDirectory(FetchPluginDirectoryPayload payload) {
+    public void fetchPluginDirectory(final FetchPluginDirectoryPayload fetchPayload) {
         String url = WPORGAPI.plugins.info.version("1.1").getUrl();
-        Map<String, String> params = getPluginDirectoryParams(payload);
+        Map<String, String> params = getPluginDirectoryParams(fetchPayload);
         final WPOrgAPIGsonRequest<FetchPluginDirectoryResponse> request =
                 new WPOrgAPIGsonRequest<>(Method.GET, url, params, null, FetchPluginDirectoryResponse.class,
                         new Listener<FetchPluginDirectoryResponse>() {
                             @Override
                             public void onResponse(FetchPluginDirectoryResponse response) {
                                 FetchedPluginDirectoryPayload fetchedPluginDirectoryPayload =
-                                        pluginDirectoryPayloadFromResponse(response);
+                                        pluginDirectoryPayloadFromResponse(response, fetchPayload);
                                 mDispatcher.dispatch(PluginActionBuilder.
                                         newFetchedPluginDirectoryAction(fetchedPluginDirectoryPayload));
                             }
@@ -148,6 +151,7 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         params.put("page", String.valueOf(payload.page));
         params.put("per_page", String.valueOf(payload.pageSize));
         params.put("fields", "icons");
+        params.put("search", payload.searchType.name());
         return params;
     }
 
@@ -161,18 +165,17 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         return pluginInfo;
     }
 
-    private PluginDirectoryModel browsePluginModelFromResponse(FetchPluginInfoResponse response) {
-        PluginDirectoryModel pluginDirectoryModel = new PluginDirectoryModel();
-        pluginDirectoryModel.setName(response.name);
-        return pluginDirectoryModel;
-    }
-
-    private FetchedPluginDirectoryPayload pluginDirectoryPayloadFromResponse(FetchPluginDirectoryResponse response) {
+    private FetchedPluginDirectoryPayload pluginDirectoryPayloadFromResponse(FetchPluginDirectoryResponse response,
+                                                                             FetchPluginDirectoryPayload fetchPayload) {
         List<PluginInfoModel> plugins = new ArrayList<>();
         List<PluginDirectoryModel> pluginDirectoryModels = new ArrayList<>();
         for (FetchPluginInfoResponse pluginInfoResponse : response.plugins) {
-            plugins.add(pluginInfoModelFromResponse(pluginInfoResponse));
-            pluginDirectoryModels.add(browsePluginModelFromResponse(pluginInfoResponse));
+            PluginInfoModel pluginInfo = pluginInfoModelFromResponse(pluginInfoResponse);
+            plugins.add(pluginInfo);
+            PluginDirectoryModel directoryModel = new PluginDirectoryModel();
+            directoryModel.setType(fetchPayload.searchType.name());
+            directoryModel.setName(pluginInfo.getName());
+            pluginDirectoryModels.add(directoryModel);
         }
         return new FetchedPluginDirectoryPayload(plugins, pluginDirectoryModels, response.info.page);
     }
