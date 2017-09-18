@@ -50,29 +50,32 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
     public static class FetchPluginDirectoryPayload extends Payload {
         public int page;
         public int pageSize;
-        public PluginDirectoryType searchType;
+        public PluginDirectoryType directoryType;
 
         public FetchPluginDirectoryPayload() {
             page = 1;
             pageSize = 30;
-            searchType = PluginDirectoryType.POPULAR;
+            directoryType = PluginDirectoryType.POPULAR;
         }
     }
 
     public static class FetchedPluginDirectoryPayload extends Payload {
-        public int page;
         public List<PluginInfoModel> plugins;
-        public List<PluginDirectoryModel> browsePlugins;
+        public List<PluginDirectoryModel> pluginDirectoryList;
+        public PluginDirectoryType directoryType;
+        public int page;
+
         public FetchPluginInfoError error;
 
         FetchedPluginDirectoryPayload(FetchPluginInfoError error) {
             this.error = error;
         }
 
-        FetchedPluginDirectoryPayload(List<PluginInfoModel> plugins, List<PluginDirectoryModel> browsePlugins,
-                                      int page) {
+        FetchedPluginDirectoryPayload(List<PluginInfoModel> plugins, List<PluginDirectoryModel> pluginDirectoryList,
+                                      PluginDirectoryType directoryType, int page) {
             this.plugins = plugins;
-            this.browsePlugins = browsePlugins;
+            this.pluginDirectoryList = pluginDirectoryList;
+            this.directoryType = directoryType;
             this.page = page;
         }
     }
@@ -127,7 +130,7 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
                             @Override
                             public void onResponse(FetchPluginDirectoryResponse response) {
                                 FetchedPluginDirectoryPayload fetchedPluginDirectoryPayload =
-                                        pluginDirectoryPayloadFromResponse(response);
+                                        pluginDirectoryPayloadFromResponse(response, fetchPayload.directoryType);
                                 mDispatcher.dispatch(PluginActionBuilder.
                                         newFetchedPluginDirectoryAction(fetchedPluginDirectoryPayload));
                             }
@@ -152,7 +155,7 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         params.put("page", String.valueOf(payload.page));
         params.put("per_page", String.valueOf(payload.pageSize));
         params.put("fields", "icons");
-        params.put("search", payload.searchType.name());
+        params.put("search", payload.directoryType.name());
         return params;
     }
 
@@ -166,17 +169,18 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         return pluginInfo;
     }
 
-    private FetchedPluginDirectoryPayload pluginDirectoryPayloadFromResponse(FetchPluginDirectoryResponse response) {
+    private FetchedPluginDirectoryPayload pluginDirectoryPayloadFromResponse(FetchPluginDirectoryResponse response,
+                                                                             PluginDirectoryType directoryType) {
         List<PluginInfoModel> plugins = new ArrayList<>();
-        List<PluginDirectoryModel> pluginDirectoryModels = new ArrayList<>();
+        List<PluginDirectoryModel> pluginDirectoryList = new ArrayList<>();
         for (FetchPluginInfoResponse pluginInfoResponse : response.plugins) {
             PluginInfoModel pluginInfo = pluginInfoModelFromResponse(pluginInfoResponse);
             plugins.add(pluginInfo);
 
             PluginDirectoryModel directoryModel = new PluginDirectoryModel();
             directoryModel.setName(pluginInfo.getName());
-            pluginDirectoryModels.add(directoryModel);
+            pluginDirectoryList.add(directoryModel);
         }
-        return new FetchedPluginDirectoryPayload(plugins, pluginDirectoryModels, response.info.page);
+        return new FetchedPluginDirectoryPayload(plugins, pluginDirectoryList, directoryType, response.info.page);
     }
 }
