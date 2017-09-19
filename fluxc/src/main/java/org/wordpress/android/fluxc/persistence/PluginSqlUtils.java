@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.model.PluginInfoModel;
 import org.wordpress.android.fluxc.model.PluginModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PluginSqlUtils {
@@ -110,5 +111,24 @@ public class PluginSqlUtils {
                 .where().equals(PluginInfoModelTable.SLUG, slug)
                 .endWhere().getAsModel();
         return result.isEmpty() ? null : result.get(0);
+    }
+
+    public List<PluginInfoModel> getPluginInfosByType(PluginDirectoryType directoryType) {
+        List<PluginInfoModel> pluginInfoList = new ArrayList<>();
+        List<PluginDirectoryModel> directoryResult = WellSql.select(PluginDirectoryModel.class)
+                .where()
+                .equals(PluginDirectoryModelTable.TYPE, directoryType)
+                .endWhere().getAsModel();
+        if (directoryResult.isEmpty()) {
+            return pluginInfoList;
+        }
+
+        for (PluginDirectoryModel pluginDirectory : directoryResult) {
+            List<PluginInfoModel> pluginInfoResult = WellSql.select(PluginInfoModel.class)
+                    .where().equals(PluginInfoModelTable.NAME, pluginDirectory.getName())
+                    .endWhere().getAsModel();
+            pluginInfoList.addAll(pluginInfoResult);
+        }
+        return pluginInfoList;
     }
 }
