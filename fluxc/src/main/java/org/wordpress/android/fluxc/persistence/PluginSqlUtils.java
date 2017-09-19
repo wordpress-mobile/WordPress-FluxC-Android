@@ -113,7 +113,7 @@ public class PluginSqlUtils {
         return result.isEmpty() ? null : result.get(0);
     }
 
-    public List<PluginInfoModel> getPluginInfosByType(PluginDirectoryType directoryType) {
+    public static List<PluginInfoModel> getPluginInfosByType(PluginDirectoryType directoryType) {
         List<PluginInfoModel> pluginInfoList = new ArrayList<>();
         List<PluginDirectoryModel> directoryResult = WellSql.select(PluginDirectoryModel.class)
                 .where()
