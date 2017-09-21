@@ -39,9 +39,9 @@ We have some tests connecting to real HTTP servers, URL and credentials are defi
 
 ## Setting up Checkstyle
 
-The FluxC project uses [Checkstyle](http://checkstyle.sourceforge.net/). You can run checkstyle using `./gradlew checkstyle`.
+The FluxC project uses [Checkstyle](http://checkstyle.sourceforge.net/). You can run checkstyle using `./gradlew checkstyle`.  You can also view errors and warnings in realtime with the Checkstyle plugin.  When importing the project into Android Studio, Checkstyle should be set up automatically.  If it is not, follow the steps below.
 
-You can also view errors and warnings in realtime by installing the CheckStyle-IDEA plugin in Android Studio here:
+You can install the CheckStyle-IDEA plugin in Android Studio here:
 
 `Android Studio > Preferences... > Plugins > CheckStyle-IDEA`
 
