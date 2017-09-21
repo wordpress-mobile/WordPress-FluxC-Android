@@ -25,7 +25,7 @@ import okhttp3.ResponseBody;
 import okio.BufferedSource;
 import okio.Okio;
 
-class FailingInterceptor implements Interceptor {
+class ResponseMockingInterceptor implements Interceptor {
     @Override
     public Response intercept(@NonNull Interceptor.Chain chain) throws IOException {
         Request request = chain.request();

@@ -56,7 +56,7 @@ public class MockedNetworkModule {
     @Provides
     public OkHttpClient provideOkHttpClientInstance(OkHttpClient.Builder builder) {
         return builder
-                .addInterceptor(new FailingInterceptor())
+                .addInterceptor(new ResponseMockingInterceptor())
                 .build();
     }
 
