@@ -13,8 +13,11 @@ import com.yarolegovich.wellsql.mapper.SQLiteMapper;
 import org.wordpress.android.fluxc.model.AccountModel;
 import org.wordpress.android.fluxc.model.CommentModel;
 import org.wordpress.android.fluxc.model.MediaModel;
+import org.wordpress.android.fluxc.model.PluginInfoModel;
+import org.wordpress.android.fluxc.model.PluginModel;
 import org.wordpress.android.fluxc.model.PostFormatModel;
 import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.RoleModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.TaxonomyModel;
 import org.wordpress.android.fluxc.model.TermModel;
@@ -41,11 +44,14 @@ public class WellSqlConfig extends DefaultWellConfig {
         add(SiteModel.class);
         add(TaxonomyModel.class);
         add(TermModel.class);
+        add(RoleModel.class);
+        add(PluginModel.class);
+        add(PluginInfoModel.class);
     }};
 
     @Override
     public int getDbVersion() {
-        return 10;
+        return 14;
     }
 
     @Override
@@ -104,6 +110,26 @@ public class WellSqlConfig extends DefaultWellConfig {
             case 9:
                 AppLog.d(T.DB, "Migrating to version " + (oldVersion + 1));
                 db.execSQL("alter table SiteModel add MAX_UPLOAD_SIZE integer;");
+                oldVersion++;
+            case 10:
+                AppLog.d(T.DB, "Migrating to version " + (oldVersion + 1));
+                db.execSQL("alter table SiteModel add MEMORY_LIMIT integer;");
+                oldVersion++;
+            case 11:
+                AppLog.d(T.DB, "Migrating to version " + (oldVersion + 1));
+                db.execSQL("CREATE TABLE RoleModel (_id INTEGER PRIMARY KEY AUTOINCREMENT,SITE_ID INTEGER,"
+                        + "NAME TEXT,DISPLAY_NAME TEXT)");
+                oldVersion++;
+            case 12:
+                AppLog.d(T.DB, "Migrating to version " + (oldVersion + 1));
+                db.execSQL("CREATE TABLE PluginModel (_id INTEGER PRIMARY KEY AUTOINCREMENT,LOCAL_SITE_ID INTEGER,"
+                        + "NAME TEXT,DISPLAY_NAME TEXT,PLUGIN_URL TEXT,VERSION TEXT,SLUG TEXT,DESCRIPTION TEXT,"
+                        + "AUTHOR_NAME TEXT,AUTHOR_URL TEXT,IS_ACTIVE INTEGER,IS_AUTO_UPDATE_ENABLED INTEGER)");
+                oldVersion++;
+            case 13:
+                AppLog.d(T.DB, "Migrating to version " + (oldVersion + 1));
+                db.execSQL("CREATE TABLE PluginInfoModel (_id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                        + "NAME TEXT,SLUG TEXT,VERSION TEXT,RATING TEXT,ICON TEXT)");
                 oldVersion++;
         }
         db.setTransactionSuccessful();

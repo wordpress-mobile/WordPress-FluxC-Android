@@ -36,7 +36,8 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
 
     private enum TestEvents {
         MEDIA_UPLOADED,
-        ERROR_REQUEST_TOO_LARGE,
+        ERROR_EXCEEDS_FILESIZE_LIMIT,
+        ERROR_EXCEEDS_MEMORY_LIMIT,
         SITE_CHANGED,
         SITE_REMOVED,
         NONE
@@ -54,7 +55,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.NONE;
     }
 
-    public void testUploadMediaLowUploadLimit() throws InterruptedException {
+    public void testUploadMediaLowFilesizeLimit() throws InterruptedException {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_JETPACK_UPLOAD_LIMIT,
                 BuildConfig.TEST_WPCOM_PASSWORD_JETPACK_UPLOAD_LIMIT);
 
@@ -66,7 +67,26 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
 
         // Attempt to upload an image that exceeds the site's maximum upload_max_filesize or post_max_size
         MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
-        mNextEvent = TestEvents.ERROR_REQUEST_TOO_LARGE;
+        mNextEvent = TestEvents.ERROR_EXCEEDS_FILESIZE_LIMIT;
+        uploadMedia(site, testMedia);
+
+        signOutWPCom();
+    }
+
+    public void testUploadMediaLowMemoryLimit() throws InterruptedException {
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
+
+        SiteModel site = mSiteStore.getSites().get(0);
+
+        // Make a call to /sites/$site/ to pull all the Jetpack options
+        fetchSite(site);
+        site = mSiteStore.getSites().get(0);
+        site.setMemoryLimit(1985); // Artificially set the site's memory limit, in bytes
+
+        // Attempt to upload an image that exceeds the site's memory limit
+        MediaModel testMedia = newMediaModel(site, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        mNextEvent = TestEvents.ERROR_EXCEEDS_MEMORY_LIMIT;
         uploadMedia(site, testMedia);
 
         signOutWPCom();
@@ -76,8 +96,12 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
     @Subscribe
     public void onMediaUploaded(OnMediaUploaded event) {
         if (event.isError()) {
-            if (event.error.type == MediaErrorType.REQUEST_TOO_LARGE) {
-                assertEquals(TestEvents.ERROR_REQUEST_TOO_LARGE, mNextEvent);
+            if (event.error.type == MediaErrorType.EXCEEDS_FILESIZE_LIMIT) {
+                assertEquals(TestEvents.ERROR_EXCEEDS_FILESIZE_LIMIT, mNextEvent);
+                mCountDownLatch.countDown();
+                return;
+            } else if (event.error.type == MediaErrorType.EXCEEDS_MEMORY_LIMIT) {
+                assertEquals(TestEvents.ERROR_EXCEEDS_MEMORY_LIMIT, mNextEvent);
                 mCountDownLatch.countDown();
                 return;
             }

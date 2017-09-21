@@ -10,6 +10,7 @@ import com.yarolegovich.wellsql.core.annotation.RawConstraints;
 import com.yarolegovich.wellsql.core.annotation.Table;
 
 import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -22,7 +23,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 @Table
 @RawConstraints({"UNIQUE (SITE_ID, URL)"})
-public class SiteModel extends Payload implements Identifiable, Serializable {
+public class SiteModel extends Payload<BaseNetworkError> implements Identifiable, Serializable {
     @Retention(SOURCE)
     @IntDef({ORIGIN_UNKNOWN, ORIGIN_WPCOM_REST, ORIGIN_XMLRPC})
     public @interface SiteOrigin {}
@@ -47,6 +48,7 @@ public class SiteModel extends Payload implements Identifiable, Serializable {
     @Column private String mTimezone; // Expressed as an offset relative to GMT (e.g. '-8')
     @Column private String mFrameNonce; // only wpcom and Jetpack sites
     @Column private long mMaxUploadSize; // only set for Jetpack sites
+    @Column private long mMemoryLimit; // only set for Jetpack sites
     @Column private int mOrigin = ORIGIN_UNKNOWN; // Does this site come from a WPCOM REST or XMLRPC fetch_sites call?
 
     // Self hosted specifics
@@ -427,6 +429,18 @@ public class SiteModel extends Payload implements Identifiable, Serializable {
 
     public boolean hasMaxUploadSize() {
         return mMaxUploadSize > 0;
+    }
+
+    public long getMemoryLimit() {
+        return mMemoryLimit;
+    }
+
+    public void setMemoryLimit(long memoryLimit) {
+        mMemoryLimit = memoryLimit;
+    }
+
+    public boolean hasMemoryLimit() {
+        return mMemoryLimit > 0;
     }
 
     public String getPlanShortName() {

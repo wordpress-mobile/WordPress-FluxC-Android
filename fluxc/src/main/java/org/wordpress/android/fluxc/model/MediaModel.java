@@ -6,19 +6,20 @@ import com.yarolegovich.wellsql.core.annotation.PrimaryKey;
 import com.yarolegovich.wellsql.core.annotation.Table;
 
 import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.StringUtils;
 
 import java.io.Serializable;
 
 @Table
-public class MediaModel extends Payload implements Identifiable, Serializable {
+public class MediaModel extends Payload<BaseNetworkError> implements Identifiable, Serializable {
     public enum MediaUploadState {
         QUEUED, UPLOADING, DELETING, DELETED, FAILED, UPLOADED;
 
         public static MediaUploadState fromString(String stringState) {
             if (stringState != null) {
-                for (MediaUploadState state: MediaUploadState.values()) {
+                for (MediaUploadState state : MediaUploadState.values()) {
                     if (stringState.equalsIgnoreCase(state.toString())) {
                         return state;
                     }

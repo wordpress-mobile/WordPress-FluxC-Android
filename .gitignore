@@ -26,11 +26,25 @@ local.properties
 .classpath
 .project
 
-# Intellij project files
+# IntelliJ/Android Studio project files
 *.iml
 *.ipr
 *.iws
-.idea/
+/.idea/*
+
+# IntelliJ/Android Studio exceptions
+!/.idea/vcs.xml
+!/.idea/fileTemplates/
+!/.idea/inspectionProfiles/
+!/.idea/scopes/
+!/.idea/codeStyleSettings.xml
+!/.idea/encodings.xml
+!/.idea/copyright/
+!/.idea/compiler.xml
+# Enforce plugins
+!/.idea/externalDependencies.xml
+# Checkstyle configuration
+!/.idea/checkstyle-idea.xml
 
 # Gradle
 .gradle/

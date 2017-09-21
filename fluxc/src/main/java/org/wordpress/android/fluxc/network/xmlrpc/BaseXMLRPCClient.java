@@ -5,7 +5,6 @@ import com.android.volley.RequestQueue;
 
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
-import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.BaseRequest;
 import org.wordpress.android.fluxc.network.BaseRequest.OnAuthFailedListener;
 import org.wordpress.android.fluxc.network.BaseRequest.OnParseErrorListener;
@@ -13,13 +12,10 @@ import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.discovery.DiscoveryRequest;
 import org.wordpress.android.fluxc.network.discovery.DiscoveryXMLRPCRequest;
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticateErrorPayload;
 import org.wordpress.android.fluxc.utils.ErrorUtils.OnUnexpectedError;
 
-public class BaseXMLRPCClient {
-    private AccessToken mAccessToken;
-    private SiteModel mSiteModel;
+public abstract class BaseXMLRPCClient {
     private final RequestQueue mRequestQueue;
     protected final Dispatcher mDispatcher;
     protected UserAgent mUserAgent;
@@ -28,11 +24,10 @@ public class BaseXMLRPCClient {
     protected OnAuthFailedListener mOnAuthFailedListener;
     protected OnParseErrorListener mOnParseErrorListener;
 
-    public BaseXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, AccessToken accessToken,
-                            UserAgent userAgent, HTTPAuthManager httpAuthManager) {
+    public BaseXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, UserAgent userAgent,
+                            HTTPAuthManager httpAuthManager) {
         mRequestQueue = requestQueue;
         mDispatcher = dispatcher;
-        mAccessToken = accessToken;
         mUserAgent = userAgent;
         mHTTPAuthManager = httpAuthManager;
         mOnAuthFailedListener = new OnAuthFailedListener() {
@@ -49,15 +44,15 @@ public class BaseXMLRPCClient {
         };
     }
 
-    public Request add(XMLRPCRequest request) {
+    protected Request add(XMLRPCRequest request) {
         return mRequestQueue.add(setRequestAuthParams(request));
     }
 
-    public Request add(DiscoveryRequest request) {
+    protected Request add(DiscoveryRequest request) {
         return mRequestQueue.add(setRequestAuthParams(request));
     }
 
-    public Request add(DiscoveryXMLRPCRequest request) {
+    protected Request add(DiscoveryXMLRPCRequest request) {
         return mRequestQueue.add(setRequestAuthParams(request));
     }
 
@@ -67,5 +62,21 @@ public class BaseXMLRPCClient {
         request.setUserAgent(mUserAgent.getUserAgent());
         request.setHTTPAuthHeaderOnMatchingURL(mHTTPAuthManager);
         return request;
+    }
+
+    protected void reportParseError(Object response, String xmlrpcUrl, Class clazz) {
+        if (response == null) return;
+
+        try {
+            clazz.cast(response);
+        } catch (ClassCastException e) {
+            OnUnexpectedError onUnexpectedError = new OnUnexpectedError(e,
+                    "XML-RPC response parse error: " + e.getMessage());
+            if (xmlrpcUrl != null) {
+                onUnexpectedError.addExtra(OnUnexpectedError.KEY_URL, xmlrpcUrl);
+            }
+            onUnexpectedError.addExtra(OnUnexpectedError.KEY_RESPONSE, response.toString());
+            mOnParseErrorListener.onParseError(onUnexpectedError);
+        }
     }
 }

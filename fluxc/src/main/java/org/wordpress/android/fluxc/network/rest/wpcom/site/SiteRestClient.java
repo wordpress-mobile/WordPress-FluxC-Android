@@ -9,6 +9,7 @@ import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 import com.google.gson.reflect.TypeToken;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wordpress.android.fluxc.Dispatcher;
@@ -16,10 +17,12 @@ import org.wordpress.android.fluxc.Payload;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST;
 import org.wordpress.android.fluxc.model.PostFormatModel;
+import org.wordpress.android.fluxc.model.RoleModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.SitesModel;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseErrorListener;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType;
 import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest;
@@ -27,19 +30,31 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AppSecrets;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.SiteWPComRestResponse.SitesResponse;
+import org.wordpress.android.fluxc.network.rest.wpcom.site.UserRoleWPComRestResponse.UserRolesResponse;
 import org.wordpress.android.fluxc.store.SiteStore.ConnectSiteInfoPayload;
 import org.wordpress.android.fluxc.store.SiteStore.DeleteSiteError;
 import org.wordpress.android.fluxc.store.SiteStore.FetchedPostFormatsPayload;
+import org.wordpress.android.fluxc.store.SiteStore.FetchedUserRolesPayload;
 import org.wordpress.android.fluxc.store.SiteStore.NewSiteError;
 import org.wordpress.android.fluxc.store.SiteStore.NewSiteErrorType;
+import org.wordpress.android.fluxc.store.SiteStore.PostFormatsError;
+import org.wordpress.android.fluxc.store.SiteStore.PostFormatsErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.SiteError;
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.SiteVisibility;
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsResponsePayload;
+import org.wordpress.android.fluxc.store.SiteStore.UserRolesError;
+import org.wordpress.android.fluxc.store.SiteStore.UserRolesErrorType;
+import org.wordpress.android.util.AppLog;
+import org.wordpress.android.util.AppLog.T;
+import org.wordpress.android.util.StringUtils;
 import org.wordpress.android.util.UrlUtils;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,38 +68,31 @@ public class SiteRestClient extends BaseWPComRestClient {
 
     private final AppSecrets mAppSecrets;
 
-    public static class NewSiteResponsePayload extends Payload {
-        public NewSiteResponsePayload() {
-        }
+    public static class NewSiteResponsePayload extends Payload<NewSiteError> {
+        public NewSiteResponsePayload() {}
         public long newSiteRemoteId;
-        public NewSiteError error;
         public boolean dryRun;
     }
 
-    public static class DeleteSiteResponsePayload extends Payload {
-        public DeleteSiteResponsePayload() {
-        }
+    public static class DeleteSiteResponsePayload extends Payload<DeleteSiteError> {
+        public DeleteSiteResponsePayload() {}
         public SiteModel site;
-        public DeleteSiteError error;
     }
 
-    public static class ExportSiteResponsePayload extends Payload {
-        public ExportSiteResponsePayload() {
-        }
+    public static class ExportSiteResponsePayload extends Payload<BaseNetworkError> {
+        public ExportSiteResponsePayload() {}
     }
 
-    public static class IsWPComResponsePayload extends Payload {
-        public IsWPComResponsePayload() {
-        }
+    public static class IsWPComResponsePayload extends Payload<BaseNetworkError> {
+        public IsWPComResponsePayload() {}
         public String url;
         public boolean isWPCom;
     }
 
-    public static class FetchWPComSiteResponsePayload extends Payload {
+    public static class FetchWPComSiteResponsePayload extends Payload<SiteError> {
         public FetchWPComSiteResponsePayload() {}
         public String checkedUrl;
         public SiteModel site;
-        public SiteError error;
     }
 
     @Inject
@@ -101,17 +109,25 @@ public class SiteRestClient extends BaseWPComRestClient {
                 new Listener<SitesResponse>() {
                     @Override
                     public void onResponse(SitesResponse response) {
-                        List<SiteModel> siteArray = new ArrayList<>();
-                        for (SiteWPComRestResponse siteResponse : response.sites) {
-                            siteArray.add(siteResponseToSiteModel(siteResponse));
+                        if (response != null) {
+                            List<SiteModel> siteArray = new ArrayList<>();
+
+                            for (SiteWPComRestResponse siteResponse : response.sites) {
+                                siteArray.add(siteResponseToSiteModel(siteResponse));
+                            }
+                            mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesAction(new SitesModel(siteArray)));
+                        } else {
+                            AppLog.e(T.API, "Received empty response to /me/sites/");
+                            SitesModel payload = new SitesModel(Collections.<SiteModel>emptyList());
+                            payload.error = new BaseNetworkError(GenericErrorType.INVALID_RESPONSE);
+                            mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesAction(payload));
                         }
-                        mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesAction(new SitesModel(siteArray)));
                     }
                 },
                 new BaseErrorListener() {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        SitesModel payload = new SitesModel(new ArrayList<SiteModel>());
+                        SitesModel payload = new SitesModel(Collections.<SiteModel>emptyList());
                         payload.error = error;
                         mDispatcher.dispatch(SiteActionBuilder.newFetchedSitesAction(payload));
                     }
@@ -127,8 +143,15 @@ public class SiteRestClient extends BaseWPComRestClient {
                 new Listener<SiteWPComRestResponse>() {
                     @Override
                     public void onResponse(SiteWPComRestResponse response) {
-                        SiteModel site = siteResponseToSiteModel(response);
-                        mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(site));
+                        if (response != null) {
+                            SiteModel site = siteResponseToSiteModel(response);
+                            mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(site));
+                        } else {
+                            AppLog.e(T.API, "Received empty response to /sites/$site/ for " + site.getUrl());
+                            SiteModel payload = new SiteModel();
+                            payload.error = new BaseNetworkError(GenericErrorType.INVALID_RESPONSE);
+                            mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(payload));
+                        }
                     }
                 },
                 new BaseErrorListener() {
@@ -213,9 +236,42 @@ public class SiteRestClient extends BaseWPComRestClient {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         FetchedPostFormatsPayload payload = new FetchedPostFormatsPayload(site,
-                                new ArrayList<PostFormatModel>());
-                        payload.error = error;
+                                Collections.<PostFormatModel>emptyList());
+                        // TODO: what other kind of error could we get here?
+                        payload.error = new PostFormatsError(PostFormatsErrorType.GENERIC_ERROR);
                         mDispatcher.dispatch(SiteActionBuilder.newFetchedPostFormatsAction(payload));
+                    }
+                }
+        );
+        add(request);
+    }
+
+    public void fetchUserRoles(@NonNull final SiteModel site) {
+        String url = WPCOMREST.sites.site(site.getSiteId()).roles.getUrlV1_1();
+        final WPComGsonRequest<UserRolesResponse> request = WPComGsonRequest.buildGetRequest(url, null,
+                UserRolesResponse.class,
+                new Listener<UserRolesResponse>() {
+                    @Override
+                    public void onResponse(UserRolesResponse response) {
+                        List<RoleModel> roleArray = new ArrayList<>();
+                        for (UserRoleWPComRestResponse roleResponse : response.roles) {
+                            RoleModel roleModel = new RoleModel();
+                            roleModel.setName(roleResponse.name);
+                            roleModel.setDisplayName(roleResponse.display_name);
+                            roleArray.add(roleModel);
+                        }
+                        mDispatcher.dispatch(SiteActionBuilder.newFetchedUserRolesAction(new
+                                FetchedUserRolesPayload(site, roleArray)));
+                    }
+                },
+                new BaseErrorListener() {
+                    @Override
+                    public void onErrorResponse(@NonNull BaseNetworkError error) {
+                        FetchedUserRolesPayload payload = new FetchedUserRolesPayload(site,
+                                Collections.<RoleModel>emptyList());
+                        // TODO: what other kind of error could we get here?
+                        payload.error = new UserRolesError(UserRolesErrorType.GENERIC_ERROR);
+                        mDispatcher.dispatch(SiteActionBuilder.newFetchedUserRolesAction(payload));
                     }
                 }
         );
@@ -316,20 +372,24 @@ public class SiteRestClient extends BaseWPComRestClient {
     }
 
     public void fetchWPComSiteByUrl(@NonNull final String siteUrl) {
-        URI uri;
+        String sanitizedUrl;
         try {
-            uri = URI.create(UrlUtils.addUrlSchemeIfNeeded(siteUrl, false));
+            URI uri = URI.create(UrlUtils.addUrlSchemeIfNeeded(siteUrl, false));
+            sanitizedUrl = URLEncoder.encode(UrlUtils.removeScheme(uri.toString()), "UTF-8");
         } catch (IllegalArgumentException e) {
             FetchWPComSiteResponsePayload payload = new FetchWPComSiteResponsePayload();
             payload.checkedUrl = siteUrl;
             payload.error = new SiteError(SiteErrorType.INVALID_SITE);
             mDispatcher.dispatch(SiteActionBuilder.newFetchedWpcomSiteByUrlAction(payload));
             return;
+        } catch (UnsupportedEncodingException e) {
+            // This should be impossible (it means an Android device without UTF-8 support)
+            throw new IllegalStateException(e);
         }
 
-        String url = WPCOMREST.sites.siteUrl(uri.getHost()).getUrlV1_1();
+        String requestUrl = WPCOMREST.sites.siteUrl(sanitizedUrl).getUrlV1_1();
 
-        final WPComGsonRequest<SiteWPComRestResponse> request = WPComGsonRequest.buildGetRequest(url, null,
+        final WPComGsonRequest<SiteWPComRestResponse> request = WPComGsonRequest.buildGetRequest(requestUrl, null,
                 SiteWPComRestResponse.class,
                 new Listener<SiteWPComRestResponse>() {
                     @Override
@@ -434,8 +494,8 @@ public class SiteRestClient extends BaseWPComRestClient {
         SiteModel site = new SiteModel();
         site.setSiteId(from.ID);
         site.setUrl(from.URL);
-        site.setName(from.name);
-        site.setDescription(from.description);
+        site.setName(StringEscapeUtils.unescapeHtml4(from.name));
+        site.setDescription(StringEscapeUtils.unescapeHtml4(from.description));
         site.setIsJetpackConnected(from.jetpack);
         site.setIsJetpackInstalled(from.jetpack);
         site.setIsVisible(from.visible);
@@ -450,11 +510,24 @@ public class SiteRestClient extends BaseWPComRestClient {
             site.setTimezone(from.options.gmt_offset);
             site.setFrameNonce(from.options.frame_nonce);
             site.setUnmappedUrl(from.options.unmapped_url);
+
             try {
                 site.setMaxUploadSize(Long.valueOf(from.options.max_upload_size));
             } catch (NumberFormatException e) {
                 // Do nothing - the value probably wasn't set ('false'), but we don't want to overwrite any existing
                 // value we stored earlier, as /me/sites/ and /sites/$site/ can return different responses for this
+            }
+
+            // Set the memory limit for media uploads on the site. Normally, this is just WP_MAX_MEMORY_LIMIT,
+            // but it's possible for a site to have its php memory_limit > WP_MAX_MEMORY_LIMIT, and have
+            // WP_MEMORY_LIMIT == memory_limit, in which WP_MEMORY_LIMIT reflects the real limit for media uploads.
+            long wpMemoryLimit = StringUtils.stringToLong(from.options.wp_memory_limit);
+            long wpMaxMemoryLimit = StringUtils.stringToLong(from.options.wp_max_memory_limit);
+            if (wpMemoryLimit > 0 || wpMaxMemoryLimit > 0) {
+                // Only update the value if we received one from the server - otherwise, the original value was
+                // probably not set ('false'), but we don't want to overwrite any existing value we stored earlier,
+                // as /me/sites/ and /sites/$site/ can return different responses for this
+                site.setMemoryLimit(Math.max(wpMemoryLimit, wpMaxMemoryLimit));
             }
         }
         if (from.plan != null) {

@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.PostFormatModel;
+import org.wordpress.android.fluxc.model.RoleModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
@@ -15,6 +16,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnUserRolesChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.OnWPComSiteFetched;
@@ -39,6 +41,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         NONE,
         SITE_CHANGED,
         POST_FORMATS_CHANGED,
+        USER_ROLES_CHANGED,
         SITE_REMOVED,
         FETCHED_CONNECT_SITE_INFO,
         FETCHED_WPCOM_SITE_BY_URL,
@@ -91,6 +94,24 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertNotSame(0, postFormats.size());
     }
 
+    public void testFetchUserRoles() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        // Get the first site
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+
+        // Fetch user roles
+        mDispatcher.dispatch(SiteActionBuilder.newFetchUserRolesAction(firstSite));
+        mNextEvent = TestEvents.USER_ROLES_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Test fetched user roles
+        List<RoleModel> roles = mSiteStore.getUserRoles(firstSite);
+        assertNotSame(0, roles.size());
+    }
+
     public void testFetchConnectSiteInfo() throws InterruptedException {
         String site = "http://www.example.com";
         mDispatcher.dispatch(SiteActionBuilder.newFetchConnectSiteInfoAction(site));
@@ -107,6 +128,20 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     public void testFetchWPComSiteByUrl() throws InterruptedException {
         String site = "http://en.blog.wordpress.com";
+        mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
+        mNextEvent = TestEvents.FETCHED_WPCOM_SITE_BY_URL;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Sites in subfolders should be handled and return a response distinct from their host
+        site = "http://en.blog.wordpress.com/nonexistentsubdomain";
+        mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
+        mNextEvent = TestEvents.ERROR_UNKNOWN_SITE;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // A Jetpack-connected site in a subfolder should have a successful response
+        site = BuildConfig.TEST_WPORG_URL_JETPACK_SUBFOLDER;
         mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
         mNextEvent = TestEvents.FETCHED_WPCOM_SITE_BY_URL;
         mCountDownLatch = new CountDownLatch(1);
@@ -208,6 +243,16 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
+    public void onUserRolesChanged(OnUserRolesChanged event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.USER_ROLES_CHANGED, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
     public void onFetchedConnectSiteInfo(OnConnectSiteInfoChecked event) {
         if (event.isError()) {
             if (mNextEvent.equals(TestEvents.ERROR_INVALID_SITE)) {
@@ -234,7 +279,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
                 mCountDownLatch.countDown();
                 return;
             }
-            throw new AssertionError("Unexpected error occured with type: " + event.error.type);
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.FETCHED_WPCOM_SITE_BY_URL, mNextEvent);
         mCountDownLatch.countDown();

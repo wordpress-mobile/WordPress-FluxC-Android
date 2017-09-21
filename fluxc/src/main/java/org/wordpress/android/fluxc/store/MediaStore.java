@@ -17,7 +17,7 @@ import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.MediaModel.MediaUploadState;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
-import org.wordpress.android.fluxc.network.BaseRequest;
+import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.fluxc.network.rest.wpcom.media.MediaRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.media.RestUploadRequestBody;
 import org.wordpress.android.fluxc.network.xmlrpc.media.MediaXMLRPCClient;
@@ -38,7 +38,7 @@ import javax.inject.Singleton;
 
 @Singleton
 public class MediaStore extends Store {
-    public static final int NUM_MEDIA_PER_FETCH = 50;
+    public static final int DEFAULT_NUM_MEDIA_PER_FETCH = 50;
 
     //
     // Payloads
@@ -47,9 +47,8 @@ public class MediaStore extends Store {
     /**
      * Actions: FETCH(ED)_MEDIA, PUSH(ED)_MEDIA, UPLOAD(ED)_MEDIA, DELETE(D)_MEDIA, UPDATE_MEDIA, and REMOVE_MEDIA
      */
-    public static class MediaPayload extends Payload {
+    public static class MediaPayload extends Payload<MediaError> {
         public SiteModel site;
-        public MediaError error;
         public MediaModel media;
         public MediaPayload(SiteModel site, MediaModel media) {
             this(site, media, null);
@@ -64,33 +63,35 @@ public class MediaStore extends Store {
     /**
      * Actions: FETCH_MEDIA_LIST
      */
-    public static class FetchMediaListPayload extends Payload {
+    public static class FetchMediaListPayload extends Payload<BaseNetworkError> {
         public SiteModel site;
         public boolean loadMore;
         public String mimeType;
+        public int number = DEFAULT_NUM_MEDIA_PER_FETCH;
 
         public FetchMediaListPayload(SiteModel site) {
             this.site = site;
         }
 
-        public FetchMediaListPayload(SiteModel site, boolean loadMore) {
+        public FetchMediaListPayload(SiteModel site, int number, boolean loadMore) {
             this.site = site;
             this.loadMore = loadMore;
+            this.number = number;
         }
 
-        public FetchMediaListPayload(SiteModel site, boolean loadMore, String mimeType) {
+        public FetchMediaListPayload(SiteModel site, int number, boolean loadMore, String mimeType) {
             this.site = site;
             this.loadMore = loadMore;
             this.mimeType = mimeType;
+            this.number = number;
         }
     }
 
     /**
      * Actions: FETCHED_MEDIA_LIST
      */
-    public static class FetchMediaListResponsePayload extends Payload {
+    public static class FetchMediaListResponsePayload extends Payload<MediaError> {
         public SiteModel site;
-        public MediaError error;
         public List<MediaModel> mediaList;
         public boolean loadedMore;
         public boolean canLoadMore;
@@ -107,9 +108,7 @@ public class MediaStore extends Store {
             this.mimeType = mimeType;
         }
 
-        public FetchMediaListResponsePayload(SiteModel site,
-                                             MediaError error,
-                                             String mimeType) {
+        public FetchMediaListResponsePayload(SiteModel site, MediaError error, String mimeType) {
             this.mediaList = new ArrayList<>();
             this.site = site;
             this.error = error;
@@ -120,12 +119,11 @@ public class MediaStore extends Store {
     /**
      * Actions: UPLOADED_MEDIA, CANCELED_MEDIA_UPLOAD
      */
-    public static class ProgressPayload extends Payload {
+    public static class ProgressPayload extends Payload<MediaError> {
         public MediaModel media;
         public float progress;
         public boolean completed;
         public boolean canceled;
-        public MediaError error;
         public ProgressPayload(MediaModel media, float progress, boolean completed, boolean canceled) {
             this(media, progress, completed, null);
             this.canceled = canceled;
@@ -141,7 +139,7 @@ public class MediaStore extends Store {
     /**
      * Actions: CANCEL_MEDIA_UPLOAD
      */
-    public static class CancelMediaPayload extends Payload {
+    public static class CancelMediaPayload extends Payload<BaseNetworkError> {
         public SiteModel site;
         public MediaModel media;
         public boolean delete;
@@ -257,6 +255,8 @@ public class MediaStore extends Store {
         NULL_MEDIA_ARG,
         MALFORMED_MEDIA_ARG,
         DB_QUERY_FAILURE,
+        EXCEEDS_FILESIZE_LIMIT,
+        EXCEEDS_MEMORY_LIMIT,
 
         // network errors, occur in response to network requests
         AUTHORIZATION_REQUIRED,
@@ -274,7 +274,7 @@ public class MediaStore extends Store {
         // unknown/unspecified
         GENERIC_ERROR;
 
-        public static MediaErrorType fromBaseNetworkError(BaseRequest.BaseNetworkError baseError) {
+        public static MediaErrorType fromBaseNetworkError(BaseNetworkError baseError) {
             switch (baseError.type) {
                 case NOT_FOUND:
                     return MediaErrorType.NOT_FOUND;
@@ -645,9 +645,9 @@ public class MediaStore extends Store {
             }
         }
         if (payload.site.isUsingWpComRestApi()) {
-            mMediaRestClient.fetchMediaList(payload.site, offset, payload.mimeType);
+            mMediaRestClient.fetchMediaList(payload.site, payload.number, offset, payload.mimeType);
         } else {
-            mMediaXmlrpcClient.fetchMediaList(payload.site, offset, payload.mimeType);
+            mMediaXmlrpcClient.fetchMediaList(payload.site, payload.number, offset, payload.mimeType);
         }
     }
 
@@ -729,26 +729,47 @@ public class MediaStore extends Store {
         emitChange(onMediaUploaded);
     }
 
+    private void updateFetchedMediaList(@NonNull FetchMediaListResponsePayload payload) {
+        // if we loaded another page, simply add the fetched media and be done
+        if (payload.loadedMore) {
+            for (MediaModel media : payload.mediaList) {
+                updateMedia(media, false);
+            }
+            return;
+        }
+
+        // build separate lists of existing and new media
+        List<MediaModel> existingMediaList = new ArrayList<>();
+        List<MediaModel> newMediaList = new ArrayList<>();
+        for (MediaModel fetchedMedia : payload.mediaList) {
+            MediaModel media = getSiteMediaWithId(payload.site, fetchedMedia.getMediaId());
+            if (media != null) {
+                // retain the local ID, then update this media item
+                fetchedMedia.setId(media.getId());
+                existingMediaList.add(fetchedMedia);
+                updateMedia(fetchedMedia, false);
+            } else {
+                newMediaList.add(fetchedMedia);
+            }
+        }
+
+        // remove media that is NOT in the existing list
+        MediaSqlUtils.deleteUploadedSiteMediaNotInList(
+                payload.site, existingMediaList, payload.mimeType);
+
+        // add new media
+        for (MediaModel media : newMediaList) {
+            updateMedia(media, false);
+        }
+    }
+
     private void handleMediaListFetched(@NonNull FetchMediaListResponsePayload payload) {
         OnMediaListFetched onMediaListFetched;
 
         if (payload.isError()) {
             onMediaListFetched = new OnMediaListFetched(payload.site, payload.error, payload.mimeType);
         } else {
-            // Clear existing media if this is a fresh fetch (loadMore = false in the original request)
-            // This is the simplest way of keeping our local media in sync with remote media (in case of deletions)
-            if (!payload.loadedMore) {
-                if (TextUtils.isEmpty(payload.mimeType)) {
-                    MediaSqlUtils.deleteAllUploadedSiteMedia(payload.site);
-                } else {
-                    MediaSqlUtils.deleteAllUploadedSiteMediaWithMimeType(payload.site, payload.mimeType);
-                }
-            }
-            if (!payload.mediaList.isEmpty()) {
-                for (MediaModel media : payload.mediaList) {
-                    updateMedia(media, false);
-                }
-            }
+            updateFetchedMediaList(payload);
             onMediaListFetched = new OnMediaListFetched(payload.site, payload.canLoadMore, payload.mimeType);
         }
 

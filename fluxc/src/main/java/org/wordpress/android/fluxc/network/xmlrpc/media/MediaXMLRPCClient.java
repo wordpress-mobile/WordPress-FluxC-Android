@@ -8,6 +8,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.XMLRPC;
@@ -21,13 +22,11 @@ import org.wordpress.android.fluxc.network.BaseUploadRequestBody.ProgressListene
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.HTTPAuthModel;
 import org.wordpress.android.fluxc.network.UserAgent;
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCException;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCFault;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLSerializerUtils;
-import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListResponsePayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaError;
 import org.wordpress.android.fluxc.store.MediaStore.MediaErrorType;
@@ -74,9 +73,8 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
     private ConcurrentHashMap<Integer, Call> mCurrentUploadCalls = new ConcurrentHashMap<>();
 
     public MediaXMLRPCClient(Dispatcher dispatcher, RequestQueue requestQueue, OkHttpClient okHttpClient,
-                             AccessToken accessToken, UserAgent userAgent,
-                             HTTPAuthManager httpAuthManager) {
-        super(dispatcher, requestQueue, accessToken, userAgent, httpAuthManager);
+                             UserAgent userAgent, HTTPAuthManager httpAuthManager) {
+        super(dispatcher, requestQueue, userAgent, httpAuthManager);
         mOkHttpClient = okHttpClient;
     }
 
@@ -244,10 +242,10 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
     /**
      * ref: https://codex.wordpress.org/XML-RPC_WordPress_API/Media#wp.getMediaLibrary
      */
-    public void fetchMediaList(final SiteModel site, final int offset, final String mimeType) {
+    public void fetchMediaList(final SiteModel site, final int number, final int offset, final String mimeType) {
         List<Object> params = getBasicParams(site, null);
         Map<String, Object> queryParams = new HashMap<>();
-        queryParams.put("number", MediaStore.NUM_MEDIA_PER_FETCH);
+        queryParams.put("number", number);
         if (offset > 0) {
             queryParams.put("offset", offset);
         }
@@ -263,7 +261,7 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
                         List<MediaModel> mediaList = getMediaListFromXmlrpcResponse(response, site.getId());
                         if (mediaList != null) {
                             AppLog.v(T.MEDIA, "Fetched media list for site via XMLRPC.GET_MEDIA_LIBRARY");
-                            boolean canLoadMore = mediaList.size() == MediaStore.NUM_MEDIA_PER_FETCH;
+                            boolean canLoadMore = mediaList.size() == number;
                             notifyMediaListFetched(site, mediaList, offset > 0, canLoadMore, mimeType);
                         } else {
                             AppLog.w(T.MEDIA, "could not parse XMLRPC.GET_MEDIA_LIBRARY response: "
@@ -490,9 +488,9 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
         MediaModel media = new MediaModel();
         media.setMediaId(MapUtils.getMapLong(response, "attachment_id"));
         media.setPostId(MapUtils.getMapLong(response, "parent"));
-        media.setTitle(MapUtils.getMapStr(response, "title"));
-        media.setCaption(MapUtils.getMapStr(response, "caption"));
-        media.setDescription(MapUtils.getMapStr(response, "description"));
+        media.setTitle(StringEscapeUtils.unescapeHtml4(MapUtils.getMapStr(response, "title")));
+        media.setCaption(StringEscapeUtils.unescapeHtml4(MapUtils.getMapStr(response, "caption")));
+        media.setDescription(StringEscapeUtils.unescapeHtml4(MapUtils.getMapStr(response, "description")));
         media.setVideoPressGuid(MapUtils.getMapStr(response, "videopress_shortcode"));
         media.setThumbnailUrl(MapUtils.getMapStr(response, "thumbnail"));
         Date uploadDate = MapUtils.getMapDate(response, "date_created_gmt");

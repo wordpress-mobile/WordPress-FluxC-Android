@@ -9,6 +9,7 @@ import com.android.volley.Response.Listener;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,7 +27,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.media.MediaWPComRestResponse.MultipleMediaResponse;
-import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListResponsePayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaError;
 import org.wordpress.android.fluxc.store.MediaStore.MediaErrorType;
@@ -57,7 +57,7 @@ import okhttp3.ResponseBody;
  *
  * <ul>
  *     <li>Fetch existing media from a WP.com site
- *     (via {@link #fetchMediaList(SiteModel, int, String)} and {@link #fetchMedia(SiteModel, MediaModel)}</li>
+ *     (via {@link #fetchMediaList(SiteModel, int, int, String)} and {@link #fetchMedia(SiteModel, MediaModel)}</li>
  *     <li>Push new media to a WP.com site
  *     (via {@link #uploadMedia(SiteModel, MediaModel)})</li>
  *     <li>Push updates to existing media to a WP.com site
@@ -139,11 +139,22 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
 
         String url = WPCOMREST.sites.site(site.getSiteId()).media.new_.getUrlV1_1();
         RestUploadRequestBody body = new RestUploadRequestBody(media, getEditRequestParams(media), this);
+
+        // Abort upload if it exceeds the site upload limit
         if (site.hasMaxUploadSize() && body.contentLength() > site.getMaxUploadSize()) {
-            // Abort upload if it exceeds the site upload limit
             AppLog.d(T.MEDIA, "Media size of " + body.contentLength() + " exceeds site limit of "
                     + site.getMaxUploadSize());
-            MediaError error = new MediaError(MediaErrorType.REQUEST_TOO_LARGE);
+            MediaError error = new MediaError(MediaErrorType.EXCEEDS_FILESIZE_LIMIT);
+            notifyMediaUploaded(media, error);
+            return;
+        }
+
+        // Abort upload if it exceeds the 'safe' memory limit for the site
+        double maxFilesizeForMemoryLimit = MediaUtils.getMaxFilesizeForMemoryLimit(site.getMemoryLimit());
+        if (site.hasMemoryLimit() && body.contentLength() > maxFilesizeForMemoryLimit) {
+            AppLog.d(T.MEDIA, "Media size of " + body.contentLength() + " exceeds safe memory limit of "
+                    + maxFilesizeForMemoryLimit + " for this site");
+            MediaError error = new MediaError(MediaErrorType.EXCEEDS_MEMORY_LIMIT);
             notifyMediaUploaded(media, error);
             return;
         }
@@ -218,9 +229,9 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
      * NOTE: Only media item data is gathered, the actual media file can be downloaded from the URL
      * provided in the response {@link MediaModel}'s (via {@link MediaModel#getUrl()}).
      */
-    public void fetchMediaList(final SiteModel site, final int offset, final String mimeType) {
+    public void fetchMediaList(final SiteModel site, final int number, final int offset, final String mimeType) {
         final Map<String, String> params = new HashMap<>();
-        params.put("number", String.valueOf(MediaStore.NUM_MEDIA_PER_FETCH));
+        params.put("number", String.valueOf(number));
         if (offset > 0) {
             params.put("offset", String.valueOf(offset));
         }
@@ -235,7 +246,7 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
                         List<MediaModel> mediaList = getMediaListFromRestResponse(response, site.getId());
                         if (mediaList != null) {
                             AppLog.v(T.MEDIA, "Fetched media list for site with size: " + mediaList.size());
-                            boolean canLoadMore = mediaList.size() == MediaStore.NUM_MEDIA_PER_FETCH;
+                            boolean canLoadMore = mediaList.size() == number;
                             notifyMediaListFetched(site, mediaList, offset > 0, canLoadMore, mimeType);
                         } else {
                             AppLog.w(T.MEDIA, "could not parse Fetch all media response: " + response);
@@ -496,12 +507,16 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
         media.setFileName(from.file);
         media.setFileExtension(from.extension);
         media.setMimeType(from.mime_type);
-        media.setTitle(from.title);
-        media.setCaption(from.caption);
-        media.setDescription(from.description);
-        media.setAlt(from.alt);
+        media.setTitle(StringEscapeUtils.unescapeHtml4(from.title));
+        media.setCaption(StringEscapeUtils.unescapeHtml4(from.caption));
+        media.setDescription(StringEscapeUtils.unescapeHtml4(from.description));
+        media.setAlt(StringEscapeUtils.unescapeHtml4(from.alt));
         if (from.thumbnails != null) {
-            media.setThumbnailUrl(from.thumbnails.thumbnail);
+            if (!TextUtils.isEmpty(from.thumbnails.fmt_std)) {
+                media.setThumbnailUrl(from.thumbnails.fmt_std);
+            } else {
+                media.setThumbnailUrl(from.thumbnails.thumbnail);
+            }
         }
         media.setHeight(from.height);
         media.setWidth(from.width);
