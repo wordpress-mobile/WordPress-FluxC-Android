@@ -17,8 +17,8 @@ import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.wporg.BaseWPOrgAPIClient;
 import org.wordpress.android.fluxc.network.wporg.WPOrgAPIGsonRequest;
 import org.wordpress.android.fluxc.network.wporg.plugin.FetchPluginInfoResponse.BrowsePluginResponse;
-import org.wordpress.android.fluxc.store.PluginStore.FetchPluginInfoError;
 import org.wordpress.android.fluxc.store.PluginStore.FetchPluginInfoErrorType;
+import org.wordpress.android.fluxc.store.Store.OnChangedError;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,13 +43,21 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         }
     }
 
-    public static class BrowsePluginPayload extends Payload {
+    public static class FetchPluginDirectoryPayload extends Payload {
         public int page;
         public int pageSize;
 
-        public BrowsePluginPayload() {
+        public FetchPluginDirectoryPayload() {
             page = 1;
             pageSize = 30;
+        }
+    }
+
+    public static class FetchPluginInfoError implements OnChangedError {
+        public FetchPluginInfoErrorType type;
+
+        public FetchPluginInfoError(FetchPluginInfoErrorType type) {
+            this.type = type;
         }
     }
 
@@ -86,9 +94,9 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         add(request);
     }
 
-    public void fetchPlugins(BrowsePluginPayload payload) {
+    public void fetchPluginDirectory(FetchPluginDirectoryPayload payload) {
         String url = WPORGAPI.plugins.info.version("1.1").getUrl();
-        Map<String, String> params = getBrowsePluginParams(payload);
+        Map<String, String> params = getPluginDirectoryParams(payload);
         final WPOrgAPIGsonRequest<BrowsePluginResponse> request =
                 new WPOrgAPIGsonRequest<>(Method.GET, url, params, null, BrowsePluginResponse.class,
                         new Listener<BrowsePluginResponse>() {
@@ -105,7 +113,7 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         add(request);
     }
 
-    private Map<String, String> getBrowsePluginParams(BrowsePluginPayload payload) {
+    private Map<String, String> getPluginDirectoryParams(FetchPluginDirectoryPayload payload) {
         Map<String, String> params = new HashMap<>();
         // This parameter is necessary for browse plugin actions
         params.put("action", "query_plugins");

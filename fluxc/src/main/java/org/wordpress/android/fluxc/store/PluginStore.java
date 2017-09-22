@@ -1,11 +1,8 @@
 package org.wordpress.android.fluxc.store;
 
-import android.support.annotation.NonNull;
-
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
-import org.wordpress.android.fluxc.Payload;
 import org.wordpress.android.fluxc.action.PluginAction;
 import org.wordpress.android.fluxc.annotations.action.Action;
 import org.wordpress.android.fluxc.annotations.action.IAction;
@@ -13,8 +10,13 @@ import org.wordpress.android.fluxc.model.PluginInfoModel;
 import org.wordpress.android.fluxc.model.PluginModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient;
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient.FetchSitePluginsError;
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient.FetchedSitePluginsPayload;
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient.UpdateSitePluginError;
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient.UpdateSitePluginPayload;
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient.UpdatedSitePluginPayload;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient;
-import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.BrowsePluginPayload;
+import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.FetchPluginInfoError;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient.FetchedPluginInfoPayload;
 import org.wordpress.android.fluxc.persistence.PluginSqlUtils;
 import org.wordpress.android.util.AppLog;
@@ -24,77 +26,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 public class PluginStore extends Store {
-    // Payloads
-    public static class UpdatePluginPayload extends Payload {
-        public SiteModel site;
-        public PluginModel plugin;
-
-        public UpdatePluginPayload(SiteModel site, PluginModel plugin) {
-            this.site = site;
-            this.plugin = plugin;
-        }
-    }
-
-    public static class FetchedPluginsPayload extends Payload {
-        public SiteModel site;
-        public List<PluginModel> plugins;
-        public FetchPluginsError error;
-
-        public FetchedPluginsPayload(FetchPluginsError error) {
-            this.error = error;
-        }
-
-        public FetchedPluginsPayload(@NonNull SiteModel site, @NonNull List<PluginModel> plugins) {
-            this.site = site;
-            this.plugins = plugins;
-        }
-    }
-
-    public static class UpdatedPluginPayload extends Payload {
-        public SiteModel site;
-        public PluginModel plugin;
-        public UpdatePluginError error;
-
-        public UpdatedPluginPayload(SiteModel site, PluginModel plugin) {
-            this.site = site;
-            this.plugin = plugin;
-        }
-
-        public UpdatedPluginPayload(SiteModel site, UpdatePluginError error) {
-            this.error = error;
-        }
-    }
-
-    public static class FetchPluginsError implements OnChangedError {
-        public FetchPluginsErrorType type;
-        public String message;
-        public FetchPluginsError(FetchPluginsErrorType type) {
-            this(type, "");
-        }
-
-        FetchPluginsError(FetchPluginsErrorType type, String message) {
-            this.type = type;
-            this.message = message;
-        }
-    }
-
-    public static class FetchPluginInfoError implements OnChangedError {
-        public FetchPluginInfoErrorType type;
-
-        public FetchPluginInfoError(FetchPluginInfoErrorType type) {
-            this.type = type;
-        }
-    }
-
-    public static class UpdatePluginError implements OnChangedError {
-        public UpdatePluginErrorType type;
-        public String message;
-
-        public UpdatePluginError(UpdatePluginErrorType type) {
-            this.type = type;
-        }
-    }
-
     public enum FetchPluginsErrorType {
         GENERIC_ERROR,
         UNAUTHORIZED,
@@ -105,15 +36,15 @@ public class PluginStore extends Store {
         GENERIC_ERROR
     }
 
-    public enum UpdatePluginErrorType {
+    public enum UpdateSitePluginErrorType {
         GENERIC_ERROR,
         UNAUTHORIZED,
         NOT_AVAILABLE // Return for non-jetpack sites
     }
 
-    public static class OnPluginsChanged extends OnChanged<FetchPluginsError> {
+    public static class OnSitePluginsChanged extends OnChanged<FetchSitePluginsError> {
         public SiteModel site;
-        public OnPluginsChanged(SiteModel site) {
+        public OnSitePluginsChanged(SiteModel site) {
             this.site = site;
         }
     }
@@ -122,10 +53,10 @@ public class PluginStore extends Store {
         public PluginInfoModel pluginInfo;
     }
 
-    public static class OnPluginChanged extends OnChanged<UpdatePluginError> {
+    public static class OnSitePluginChanged extends OnChanged<UpdateSitePluginError> {
         public SiteModel site;
         public PluginModel plugin;
-        public OnPluginChanged(SiteModel site) {
+        public OnSitePluginChanged(SiteModel site) {
             this.site = site;
         }
     }
@@ -154,25 +85,25 @@ public class PluginStore extends Store {
         }
         switch ((PluginAction) actionType) {
             // REST actions
-            case FETCH_PLUGINS:
-                fetchPlugins((SiteModel) action.getPayload());
+            case FETCH_SITE_PLUGINS:
+                fetchSitePlugins((SiteModel) action.getPayload());
                 break;
-            case UPDATE_PLUGIN:
-                updatePlugin((UpdatePluginPayload) action.getPayload());
+            case UPDATE_SITE_PLUGIN:
+                updateSitePlugin((UpdateSitePluginPayload) action.getPayload());
                 break;
             // WPORG actions
             case FETCH_PLUGIN_INFO:
                 fetchPluginInfo((String) action.getPayload());
                 break;
-            case FETCH_WPORG_PLUGINS:
-                fetchWpOrgPlugins((BrowsePluginPayload) action.getPayload());
+            case FETCH_PLUGIN_DIRECTORY:
+                fetchPluginDirectory((PluginWPOrgClient.FetchPluginDirectoryPayload) action.getPayload());
                 break;
             // REST responses
-            case FETCHED_PLUGINS:
-                fetchedPlugins((FetchedPluginsPayload) action.getPayload());
+            case FETCHED_SITE_PLUGINS:
+                fetchedSitePlugins((FetchedSitePluginsPayload) action.getPayload());
                 break;
-            case UPDATED_PLUGIN:
-                updatedPlugin((UpdatedPluginPayload) action.getPayload());
+            case UPDATED_SITE_PLUGIN:
+                updatedSitePlugin((UpdatedSitePluginPayload) action.getPayload());
                 break;
             // WPORG responses
             case FETCHED_PLUGIN_INFO:
@@ -181,11 +112,11 @@ public class PluginStore extends Store {
         }
     }
 
-    public List<PluginModel> getPlugins(SiteModel site) {
+    public List<PluginModel> getSitePlugins(SiteModel site) {
         return PluginSqlUtils.getPlugins(site);
     }
 
-    public PluginModel getPluginByName(SiteModel site, String name) {
+    public PluginModel getSitePluginByName(SiteModel site, String name) {
         return PluginSqlUtils.getPluginByName(site, name);
     }
 
@@ -193,23 +124,23 @@ public class PluginStore extends Store {
         return PluginSqlUtils.getPluginInfoBySlug(slug);
     }
 
-    private void fetchPlugins(SiteModel site) {
+    private void fetchSitePlugins(SiteModel site) {
         if (site.isUsingWpComRestApi() && site.isJetpackConnected()) {
-            mPluginRestClient.fetchPlugins(site);
+            mPluginRestClient.fetchSitePlugins(site);
         } else {
-            FetchPluginsError error = new FetchPluginsError(FetchPluginsErrorType.NOT_AVAILABLE);
-            FetchedPluginsPayload payload = new FetchedPluginsPayload(error);
-            fetchedPlugins(payload);
+            FetchSitePluginsError error = new FetchSitePluginsError(FetchPluginsErrorType.NOT_AVAILABLE);
+            FetchedSitePluginsPayload payload = new FetchedSitePluginsPayload(error);
+            fetchedSitePlugins(payload);
         }
     }
 
-    private void updatePlugin(UpdatePluginPayload payload) {
+    private void updateSitePlugin(UpdateSitePluginPayload payload) {
         if (payload.site.isUsingWpComRestApi() && payload.site.isJetpackConnected()) {
             mPluginRestClient.updatePlugin(payload.site, payload.plugin);
         } else {
-            UpdatePluginError error = new UpdatePluginError(UpdatePluginErrorType.NOT_AVAILABLE);
-            UpdatedPluginPayload errorPayload = new UpdatedPluginPayload(payload.site, error);
-            updatedPlugin(errorPayload);
+            UpdateSitePluginError error = new UpdateSitePluginError(UpdateSitePluginErrorType.NOT_AVAILABLE);
+            UpdatedSitePluginPayload errorPayload = new UpdatedSitePluginPayload(payload.site, error);
+            updatedSitePlugin(errorPayload);
         }
     }
 
@@ -217,12 +148,12 @@ public class PluginStore extends Store {
         mPluginWPOrgClient.fetchPluginInfo(plugin);
     }
 
-    private void fetchWpOrgPlugins(BrowsePluginPayload payload) {
-        mPluginWPOrgClient.fetchPlugins(payload);
+    private void fetchPluginDirectory(PluginWPOrgClient.FetchPluginDirectoryPayload payload) {
+        mPluginWPOrgClient.fetchPluginDirectory(payload);
     }
 
-    private void fetchedPlugins(FetchedPluginsPayload payload) {
-        OnPluginsChanged event = new OnPluginsChanged(payload.site);
+    private void fetchedSitePlugins(FetchedSitePluginsPayload payload) {
+        OnSitePluginsChanged event = new OnSitePluginsChanged(payload.site);
         if (payload.isError()) {
             event.error = payload.error;
         } else {
@@ -242,8 +173,8 @@ public class PluginStore extends Store {
         emitChange(event);
     }
 
-    private void updatedPlugin(UpdatedPluginPayload payload) {
-        OnPluginChanged event = new OnPluginChanged(payload.site);
+    private void updatedSitePlugin(UpdatedSitePluginPayload payload) {
+        OnSitePluginChanged event = new OnSitePluginChanged(payload.site);
         if (payload.isError()) {
             event.error = payload.error;
         } else {

@@ -9,14 +9,14 @@ import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.PluginModel;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient.UpdateSitePluginPayload;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.PluginStore;
-import org.wordpress.android.fluxc.store.PluginStore.OnPluginChanged;
-import org.wordpress.android.fluxc.store.PluginStore.OnPluginsChanged;
-import org.wordpress.android.fluxc.store.PluginStore.UpdatePluginPayload;
+import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginChanged;
+import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
@@ -54,7 +54,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.NONE;
     }
 
-    public void testFetchPlugins() throws InterruptedException {
+    public void testFetchSitePlugins() throws InterruptedException {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
 
@@ -62,17 +62,17 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         SiteModel site = mSiteStore.getSites().get(0);
-        mDispatcher.dispatch(PluginActionBuilder.newFetchPluginsAction(site));
+        mDispatcher.dispatch(PluginActionBuilder.newFetchSitePluginsAction(site));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        List<PluginModel> plugins = mPluginStore.getPlugins(site);
+        List<PluginModel> plugins = mPluginStore.getSitePlugins(site);
         assertTrue(plugins.size() > 0);
 
         signOutWPCom();
     }
 
-    public void testUpdatePlugin() throws InterruptedException {
+    public void testUpdateSitePlugin() throws InterruptedException {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
 
@@ -84,11 +84,11 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         SiteModel site = mSiteStore.getSites().get(0);
-        mDispatcher.dispatch(PluginActionBuilder.newFetchPluginsAction(site));
+        mDispatcher.dispatch(PluginActionBuilder.newFetchSitePluginsAction(site));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        List<PluginModel> plugins = mPluginStore.getPlugins(site);
+        List<PluginModel> plugins = mPluginStore.getSitePlugins(site);
         assertTrue(plugins.size() > 0);
         PluginModel plugin = plugins.get(0);
         boolean isActive = !plugin.isActive();
@@ -97,12 +97,12 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.UPDATED_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
-        UpdatePluginPayload payload = new UpdatePluginPayload(site, plugin);
-        mDispatcher.dispatch(PluginActionBuilder.newUpdatePluginAction(payload));
+        UpdateSitePluginPayload payload = new UpdateSitePluginPayload(site, plugin);
+        mDispatcher.dispatch(PluginActionBuilder.newUpdateSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        PluginModel newPlugin = mPluginStore.getPluginByName(site, plugin.getName());
+        PluginModel newPlugin = mPluginStore.getSitePluginByName(site, plugin.getName());
         assertNotNull(newPlugin);
         assertEquals(newPlugin.isActive(), isActive);
 
@@ -153,7 +153,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onPluginsChanged(OnPluginsChanged event) {
+    public void onSitePluginsChanged(OnSitePluginsChanged event) {
         AppLog.i(T.API, "Received onPluginsChanged");
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred in onPluginsChanged with type: "
@@ -165,7 +165,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onPluginChanged(OnPluginChanged event) {
+    public void onSitePluginChanged(OnSitePluginChanged event) {
         AppLog.i(T.API, "Received onPluginChanged");
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred in onPluginChanged with type: "
