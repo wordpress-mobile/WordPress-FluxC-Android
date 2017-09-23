@@ -279,7 +279,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
                 mCountDownLatch.countDown();
                 return;
             }
-            throw new AssertionError("Unexpected error occured with type: " + event.error.type);
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.FETCHED_WPCOM_SITE_BY_URL, mNextEvent);
         mCountDownLatch.countDown();
