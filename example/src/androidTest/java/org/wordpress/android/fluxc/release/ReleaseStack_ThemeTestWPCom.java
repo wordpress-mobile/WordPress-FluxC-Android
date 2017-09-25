@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.release;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.ThemeActionBuilder;
-import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.ThemeStore;
 
 import java.util.concurrent.CountDownLatch;
@@ -17,7 +16,6 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
         FETCHED_THEMES,
     }
 
-    @Inject SiteStore mSiteStore;
     @Inject ThemeStore mThemeStore;
     private TestEvents mNextEvent;
 
