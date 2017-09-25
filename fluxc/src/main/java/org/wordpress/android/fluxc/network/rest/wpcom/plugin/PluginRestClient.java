@@ -37,7 +37,7 @@ import javax.inject.Singleton;
 @Singleton
 public class PluginRestClient extends BaseWPComRestClient {
     // Payloads
-    public static class UpdateSitePluginPayload extends Payload {
+    public static class UpdateSitePluginPayload extends Payload<BaseNetworkError> {
         public SiteModel site;
         public PluginModel plugin;
 
@@ -47,7 +47,7 @@ public class PluginRestClient extends BaseWPComRestClient {
         }
     }
 
-    public static class FetchedSitePluginsPayload extends Payload {
+    public static class FetchedSitePluginsPayload extends Payload<FetchSitePluginsError> {
         public SiteModel site;
         public List<PluginModel> plugins;
         public FetchSitePluginsError error;
@@ -62,7 +62,7 @@ public class PluginRestClient extends BaseWPComRestClient {
         }
     }
 
-    public static class UpdatedSitePluginPayload extends Payload {
+    public static class UpdatedSitePluginPayload extends Payload<UpdateSitePluginError> {
         public SiteModel site;
         public PluginModel plugin;
         public UpdateSitePluginError error;

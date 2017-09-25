@@ -34,7 +34,7 @@ import javax.inject.Singleton;
 public class PluginWPOrgClient extends BaseWPOrgAPIClient {
     private final Dispatcher mDispatcher;
 
-    public static class FetchedPluginInfoPayload extends Payload {
+    public static class FetchedPluginInfoPayload extends Payload<FetchPluginInfoError> {
         public PluginInfoModel pluginInfo;
         public FetchPluginInfoError error;
 
@@ -47,7 +47,7 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         }
     }
 
-    public static class FetchPluginDirectoryPayload extends Payload {
+    public static class FetchPluginDirectoryPayload extends Payload<BaseNetworkError> {
         public int page;
         public int pageSize;
         public PluginDirectoryType directoryType;
@@ -59,7 +59,7 @@ public class PluginWPOrgClient extends BaseWPOrgAPIClient {
         }
     }
 
-    public static class FetchedPluginDirectoryPayload extends Payload {
+    public static class FetchedPluginDirectoryPayload extends Payload<FetchPluginInfoError> {
         public List<PluginInfoModel> plugins;
         public List<PluginDirectoryModel> pluginDirectoryList;
         public PluginDirectoryType directoryType;
