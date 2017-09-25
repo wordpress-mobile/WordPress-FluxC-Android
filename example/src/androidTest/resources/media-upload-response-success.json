@@ -1,0 +1,50 @@
+{
+  "media":[
+    {
+      "ID":9999,
+      "URL":"https://place.com/photo.jpg",
+      "guid":"http:\/\/place.com\/photo.jpg",
+      "date":"2017-08-11T12:17:49+00:00",
+      "post_ID":0,
+      "author_ID":12345,
+      "file":"photo.jpg",
+      "mime_type":"image\/jpeg",
+      "extension":"jpg",
+      "title":"",
+      "caption":"Test Caption",
+      "description":"",
+      "alt":"",
+      "icon":"",
+      "thumbnails":{
+        "thumbnail":"https:\/\/place.com\/photo.jpg?w=150",
+        "medium":"https:\/\/place.com\/photo.jpg?w=300",
+        "large":"https:\/\/place.com\/photo.jpg?w=880"
+      },
+      "height":585,
+      "width":880,
+      "exif":{
+        "aperture":"0",
+        "credit":"",
+        "camera":"",
+        "caption":"",
+        "created_timestamp":"0",
+        "copyright":"",
+        "focal_length":"0",
+        "iso":"0",
+        "shutter_speed":"0",
+        "title":"",
+        "orientation":"0",
+        "keywords":[
+
+        ]
+      },
+      "meta":{
+        "links":{
+          "self":"",
+          "help":"",
+          "site":""
+        }
+      }
+    }
+  ]
+}
