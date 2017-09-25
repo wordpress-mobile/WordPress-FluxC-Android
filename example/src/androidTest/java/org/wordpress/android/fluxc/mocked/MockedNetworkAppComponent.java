@@ -19,7 +19,8 @@ import dagger.Component;
         ReleaseStoreModule.class
 })
 public interface MockedNetworkAppComponent {
-    void inject(AccountStoreTest object);
+    void inject(MockedStack_AccountTest object);
     void inject(MockedStack_SiteTest object);
+    void inject(MockedStack_UploadTest object);
 }
 
