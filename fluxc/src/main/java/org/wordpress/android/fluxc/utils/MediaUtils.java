@@ -4,7 +4,9 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.wordpress.android.fluxc.model.MediaModel;
-import org.wordpress.android.fluxc.network.BaseUploadRequestBody;
+import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.network.rest.wpcom.media.RestUploadRequestBody;
+import org.wordpress.android.fluxc.network.xmlrpc.media.XmlrpcUploadRequestBody;
 
 import java.io.File;
 import java.util.Collections;
@@ -137,8 +139,11 @@ public class MediaUtils {
     // File operations
     //
 
-    public static String getMediaValidationError(@NonNull MediaModel media) {
-        return BaseUploadRequestBody.hasRequiredData(media);
+    public static String getMediaValidationError(@NonNull MediaModel media, @NonNull SiteModel site) {
+        if (site.isUsingWpComRestApi()) {
+            return RestUploadRequestBody.hasRequiredData(media);
+        }
+        return XmlrpcUploadRequestBody.hasRequiredData(media);
     }
 
     /**
