@@ -139,8 +139,8 @@ public class MediaUtils {
     // File operations
     //
 
-    public static String getMediaValidationError(@NonNull MediaModel media, @NonNull SiteModel site) {
-        if (site.isUsingWpComRestApi()) {
+    public static String getMediaValidationError(@NonNull MediaModel media, boolean isAccessedViaWPCOMRest) {
+        if (isAccessedViaWPCOMRest) {
             return RestUploadRequestBody.hasRequiredData(media);
         }
         return XmlrpcUploadRequestBody.hasRequiredData(media);

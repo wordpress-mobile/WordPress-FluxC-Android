@@ -631,7 +631,7 @@ public class MediaStore extends Store {
     }
 
     private void performUploadMedia(MediaPayload payload) {
-        String errorMessage = MediaUtils.getMediaValidationError(payload.media, payload.site);
+        String errorMessage = MediaUtils.getMediaValidationError(payload.media, payload.site.isUsingWpComRestApi());
         if (errorMessage != null) {
             AppLog.e(AppLog.T.MEDIA, "Media doesn't have required data: " + errorMessage);
             payload.media.setUploadState(MediaUploadState.FAILED);
