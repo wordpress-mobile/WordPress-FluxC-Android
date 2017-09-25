@@ -75,7 +75,7 @@ public class XmlrpcUploadRequestBody extends BaseUploadRequestBody {
      *
      * @return null if {@code media} is valid, otherwise a string describing why it's invalid
      */
-    public static String hasRequiredData(MediaModel media) {
+    public static String hasRequiredSelfHostedData(MediaModel media) {
         if (media == null) return "media cannot be null";
 
         // validate MIME type is recognized
@@ -103,8 +103,8 @@ public class XmlrpcUploadRequestBody extends BaseUploadRequestBody {
     }
 
     @Override
-    protected String hasAllRequiredData(MediaModel media) {
-        return hasRequiredData(media);
+    protected String hasRequiredData(MediaModel media) {
+        return hasRequiredSelfHostedData(media);
     }
 
     @Override

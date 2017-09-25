@@ -26,7 +26,7 @@ public abstract class BaseUploadRequestBody extends RequestBody {
         void onProgress(MediaModel media, float progress);
     }
 
-    protected abstract String hasAllRequiredData(MediaModel media);
+    protected abstract String hasRequiredData(MediaModel media);
 
     private final MediaModel mMedia;
     private final ProgressListener mListener;
@@ -36,7 +36,7 @@ public abstract class BaseUploadRequestBody extends RequestBody {
         if (listener == null) {
             throw new IllegalArgumentException("progress listener cannot be null");
         }
-        String mediaError = hasAllRequiredData(media);
+        String mediaError = hasRequiredData(media);
         if (mediaError != null) {
             throw new IllegalArgumentException(mediaError);
         }

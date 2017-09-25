@@ -139,13 +139,13 @@ public class MediaUtils {
     // File operations
     //
 
-    public static String getMediaValidationError(@NonNull MediaModel media, boolean isAccessedViaWPCOMRest) {
-        if (isAccessedViaWPCOMRest) {
-            return RestUploadRequestBody.hasRequiredData(media);
+    public static String getMediaValidationError(@NonNull MediaModel media, boolean isAccessedViaWPCOMRestAPI) {
+        if (isAccessedViaWPCOMRestAPI) {
+            return RestUploadRequestBody.hasRequiredWPCOMData(media);
         }
-        return XmlrpcUploadRequestBody.hasRequiredData(media);
+        return XmlrpcUploadRequestBody.hasRequiredSelfHostedData(media);
     }
-
+    
     /**
      * Queries filesystem to determine if a given file can be read.
      */
