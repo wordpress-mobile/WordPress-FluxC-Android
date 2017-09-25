@@ -58,7 +58,7 @@ public class MainFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ((ExampleApp) getActivity().getApplication()).component().inject(this);
+        ((ExampleApp) getActivity().getApplication()).getComponent().inject(this);
     }
 
     @Override

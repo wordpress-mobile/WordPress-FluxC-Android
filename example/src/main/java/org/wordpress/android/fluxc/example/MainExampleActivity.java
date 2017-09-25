@@ -11,7 +11,7 @@ public class MainExampleActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ((ExampleApp) getApplication()).component().inject(this);
+        ((ExampleApp) getApplication()).getComponent().inject(this);
         setContentView(R.layout.activity_example);
 
         if (savedInstanceState == null) {

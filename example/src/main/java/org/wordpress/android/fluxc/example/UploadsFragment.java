@@ -56,7 +56,7 @@ public class UploadsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ((ExampleApp) getActivity().getApplication()).component().inject(this);
+        ((ExampleApp) getActivity().getApplication()).getComponent().inject(this);
         if (mSiteStore.hasSite()) {
             mSite = mSiteStore.getSites().get(0);
         }

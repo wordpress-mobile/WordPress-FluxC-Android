@@ -16,9 +16,7 @@ open class ExampleApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        component().inject(this)
+        component.inject(this)
         WellSql.init(WellSqlConfig(applicationContext))
     }
-
-    fun component(): AppComponent = component
 }
