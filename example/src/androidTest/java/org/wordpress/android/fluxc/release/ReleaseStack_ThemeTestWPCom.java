@@ -9,10 +9,12 @@ import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.generated.ThemeActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.model.ThemeModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.ThemeStore;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +25,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
         NONE,
         FETCHED_THEMES,
         FETCHED_CURRENT_THEME,
+        ACTIVATED_THEME,
         SITE_CHANGED,
         SITE_REMOVED
     }
@@ -31,6 +34,8 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
     @Inject SiteStore mSiteStore;
     @Inject ThemeStore mThemeStore;
     private TestEvents mNextEvent;
+    private ThemeModel mCurrentTheme;
+    private ThemeModel mActivatedTheme;
 
     @Override
     protected void setUp() throws Exception {
@@ -40,6 +45,41 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
         init();
         // Reset expected test event
         mNextEvent = TestEvents.NONE;
+        mCurrentTheme = null;
+        mActivatedTheme = null;
+    }
+
+    public void testActivateTheme() throws InterruptedException {
+        // get all themes available
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.FETCHED_THEMES;
+        mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        List<ThemeModel> themes = mThemeStore.getWpThemes();
+        assertTrue(themes.size() > 1);
+
+        // get current active theme on a site
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        SiteModel wpComSite = getWPComSite();
+        assertNotNull(wpComSite);
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
+        mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(wpComSite));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertNotNull(mCurrentTheme);
+
+        // activate a different theme
+        ThemeModel themeToActivate = mCurrentTheme.getThemeId().equals(themes.get(0).getThemeId()) ? themes.get(1) : themes.get(0);
+        assertNotNull(themeToActivate);
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.ACTIVATED_THEME;
+        ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(wpComSite, themeToActivate);
+        mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertNotNull(mActivatedTheme);
+        assertEquals(mActivatedTheme.getThemeId(), themeToActivate.getThemeId());
+
+        signOutWPCom();
     }
 
     public void testFetchWPComThemes() throws InterruptedException {
@@ -67,8 +107,20 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
         mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(wpComSite));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertNotNull(mCurrentTheme);
 
         signOutWPCom();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onThemeActivated(ThemeStore.OnThemeActivated event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME);
+        mActivatedTheme = event.theme;
+        mCountDownLatch.countDown();
     }
 
     @SuppressWarnings("unused")
@@ -91,6 +143,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
             assertTrue(mThemeStore.getWpComThemes().size() > 0);
         } else if (mNextEvent == TestEvents.FETCHED_CURRENT_THEME) {
             assertNotNull(event.theme);
+            mCurrentTheme = event.theme;
             mCountDownLatch.countDown();
         }
     }
