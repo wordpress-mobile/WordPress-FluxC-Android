@@ -30,4 +30,5 @@ public interface AppComponent {
     void inject(AccountFragment object);
     void inject(SignedOutActionsFragment object);
     void inject(TaxonomiesFragment object);
+    void inject(UploadsFragment object);
 }
