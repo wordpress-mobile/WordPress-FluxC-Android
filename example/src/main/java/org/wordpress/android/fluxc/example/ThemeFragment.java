@@ -2,15 +2,18 @@ package org.wordpress.android.fluxc.example;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.generated.ThemeActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.model.ThemeModel;
 import org.wordpress.android.fluxc.store.ThemeStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 
@@ -40,10 +43,53 @@ public class ThemeFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_themes, container, false);
+        final View view = inflater.inflate(R.layout.fragment_themes, container, false);
+
+        view.findViewById(R.id.activate_theme_wpcom).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String id = getThemeIdFromInput(view);
+                if (TextUtils.isEmpty(id)) {
+                    prependToLog("Please enter a theme id");
+                    return;
+                }
+
+                SiteModel site = getWPComSite();
+                if (site == null) {
+                    prependToLog("No WP.com site found, unable to test.");
+                } else {
+                    ThemeModel theme = new ThemeModel();
+                    theme.setLocalSiteId(site.getSiteId());
+                    theme.setThemeId(id);
+                    ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
+                    mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
+                }
+            }
+        });
+
+        view.findViewById(R.id.activate_theme_jp).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String id = getThemeIdFromInput(view);
+                if (TextUtils.isEmpty(id)) {
+                    prependToLog("Please enter a theme id");
+                    return;
+                }
+
+                SiteModel site = getJetpackConnectedSite();
+                if (site == null) {
+                    prependToLog("No Jetpack connected site found, unable to test.");
+                } else {
+                    ThemeModel theme = new ThemeModel();
+                    theme.setLocalSiteId(site.getSiteId());
+                    theme.setThemeId(id);
+                    ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
+                    mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
+                }
+            }
+        });
 
         view.findViewById(R.id.fetch_wpcom_themes).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -93,8 +139,19 @@ public class ThemeFragment extends Fragment {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onCurrentThemesFetched(ThemeStore.OnCurrentThemeFetched event) {
-        prependToLog("onCurrentThemesFetched: ");
+    public void onThemeActivated(ThemeStore.OnThemeActivated event) {
+        prependToLog("onThemeActivated: ");
+        if (event.isError()) {
+            prependToLog("error: " + event.error.message);
+        } else {
+            prependToLog("success: theme = " + event.theme.getThemeId());
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onCurrentThemeFetched(ThemeStore.OnCurrentThemeFetched event) {
+        prependToLog("onCurrentThemeFetched: ");
         if (event.isError()) {
             prependToLog("error: " + event.error.message);
         } else {
@@ -142,5 +199,13 @@ public class ThemeFragment extends Fragment {
 
     private void prependToLog(final String s) {
         ((MainExampleActivity) getActivity()).prependToLog(s);
+    }
+
+    private String getThemeIdFromInput(View root) {
+        TextView themeIdInput = root == null ? null : (TextView) root.findViewById(R.id.theme_id);
+        if (themeIdInput != null) {
+            return themeIdInput.getText().toString();
+        }
+        return null;
     }
 }
