@@ -17,14 +17,14 @@ import org.wordpress.android.fluxc.model.ThemeModel;
 import org.wordpress.android.fluxc.store.ThemeStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 public class ThemeFragment extends Fragment {
     @Inject SiteStore mSiteStore;
     @Inject ThemeStore mThemeStore;
     @Inject Dispatcher mDispatcher;
-
-    private TextView mIdField;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,17 +45,15 @@ public class ThemeFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_themes, container, false);
-
-        mIdField = (TextView) view.findViewById(R.id.theme_id);
+        final View view = inflater.inflate(R.layout.fragment_themes, container, false);
 
         view.findViewById(R.id.activate_theme_wpcom).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (TextUtils.isEmpty(mIdField.getText().toString())) {
+                String id = getThemeIdFromInput(view);
+                if (TextUtils.isEmpty(id)) {
                     prependToLog("Please enter a theme id");
                     return;
                 }
@@ -66,7 +64,7 @@ public class ThemeFragment extends Fragment {
                 } else {
                     ThemeModel theme = new ThemeModel();
                     theme.setLocalSiteId(site.getSiteId());
-                    theme.setThemeId(mIdField.getText().toString());
+                    theme.setThemeId(id);
                     ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
                     mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
                 }
@@ -76,7 +74,8 @@ public class ThemeFragment extends Fragment {
         view.findViewById(R.id.activate_theme_jp).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (TextUtils.isEmpty(mIdField.getText().toString())) {
+                String id = getThemeIdFromInput(view);
+                if (TextUtils.isEmpty(id)) {
                     prependToLog("Please enter a theme id");
                     return;
                 }
@@ -87,9 +86,53 @@ public class ThemeFragment extends Fragment {
                 } else {
                     ThemeModel theme = new ThemeModel();
                     theme.setLocalSiteId(site.getSiteId());
-                    theme.setThemeId(mIdField.getText().toString());
+                    theme.setThemeId(id);
                     ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
                     mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
+                }
+            }
+        });
+
+        view.findViewById(R.id.install_theme_jp).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String id = getThemeIdFromInput(view);
+                if (TextUtils.isEmpty(id)) {
+                    prependToLog("Please enter a theme id");
+                    return;
+                }
+
+                SiteModel site = getJetpackConnectedSite();
+                if (site == null) {
+                    prependToLog("No Jetpack connected site found, unable to test.");
+                } else {
+                    ThemeModel theme = new ThemeModel();
+                    theme.setLocalSiteId(site.getSiteId());
+                    theme.setThemeId(id);
+                    ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
+                    mDispatcher.dispatch(ThemeActionBuilder.newInstallThemeAction(payload));
+                }
+            }
+        });
+
+        view.findViewById(R.id.delete_theme_jp).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String id = getThemeIdFromInput(view);
+                if (TextUtils.isEmpty(id)) {
+                    prependToLog("Please enter a theme id");
+                    return;
+                }
+
+                SiteModel site = getJetpackConnectedSite();
+                if (site == null) {
+                    prependToLog("No Jetpack connected site found, unable to test.");
+                } else {
+                    ThemeModel theme = new ThemeModel();
+                    theme.setLocalSiteId(site.getSiteId());
+                    theme.setThemeId(id);
+                    ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
+                    mDispatcher.dispatch(ThemeActionBuilder.newDeleteThemeAction(payload));
                 }
             }
         });
@@ -172,7 +215,8 @@ public class ThemeFragment extends Fragment {
             prependToLog("success: WP.com theme count = " + mThemeStore.getWpThemes().size());
             SiteModel jpSite = getJetpackConnectedSite();
             if (jpSite != null) {
-                prependToLog("Installed theme count = " + mThemeStore.getThemesForSite(jpSite).size());
+                List<ThemeModel> themes = mThemeStore.getThemesForSite(jpSite);
+                prependToLog("Installed theme count = " + themes.size());
             }
         }
     }
@@ -202,5 +246,13 @@ public class ThemeFragment extends Fragment {
 
     private void prependToLog(final String s) {
         ((MainExampleActivity) getActivity()).prependToLog(s);
+    }
+
+    private String getThemeIdFromInput(View root) {
+        TextView themeIdInput = root == null ? null : (TextView) root.findViewById(R.id.theme_id);
+        if (themeIdInput != null) {
+            return themeIdInput.getText().toString();
+        }
+        return null;
     }
 }
