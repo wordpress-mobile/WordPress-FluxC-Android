@@ -45,4 +45,5 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_TaxonomyTestWPCom test);
     void inject(ReleaseStack_TaxonomyTestXMLRPC test);
     void inject(ReleaseStack_UploadTest test);
+    void inject(ReleaseStack_ThemeTestWPCom test);
 }

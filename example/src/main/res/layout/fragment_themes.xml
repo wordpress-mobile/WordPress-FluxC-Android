@@ -30,4 +30,22 @@
         android:layout_height="wrap_content"
         android:text="Fetch current theme WP.com" />
 
+    <EditText
+        android:id="@+id/theme_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter the theme's id here" />
+
+    <Button
+        android:id="@+id/activate_theme_wpcom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Activate theme WP.com" />
+
+    <Button
+        android:id="@+id/activate_theme_jp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Activate theme Jetpack" />
+
 </LinearLayout>
