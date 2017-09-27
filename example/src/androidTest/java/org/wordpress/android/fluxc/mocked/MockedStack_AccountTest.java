@@ -12,7 +12,7 @@ import javax.inject.Inject;
 /**
  * Tests using a Mocked Network app component. Test the Store itself and not the underlying network component(s).
  */
-public class AccountStoreTest extends MockedStack_Base {
+public class MockedStack_AccountTest extends MockedStack_Base {
     @Inject Dispatcher mDispatcher;
     @Inject AccountStore mAccountStore;
 
