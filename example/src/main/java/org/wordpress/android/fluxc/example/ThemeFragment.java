@@ -17,6 +17,8 @@ import org.wordpress.android.fluxc.model.ThemeModel;
 import org.wordpress.android.fluxc.store.ThemeStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 public class ThemeFragment extends Fragment {
@@ -87,6 +89,28 @@ public class ThemeFragment extends Fragment {
                     theme.setThemeId(id);
                     ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
                     mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
+                }
+            }
+        });
+
+        view.findViewById(R.id.install_theme_jp).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String id = getThemeIdFromInput(view);
+                if (TextUtils.isEmpty(id)) {
+                    prependToLog("Please enter a theme id");
+                    return;
+                }
+
+                SiteModel site = getJetpackConnectedSite();
+                if (site == null) {
+                    prependToLog("No Jetpack connected site found, unable to test.");
+                } else {
+                    ThemeModel theme = new ThemeModel();
+                    theme.setLocalSiteId(site.getSiteId());
+                    theme.setThemeId(id);
+                    ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
+                    mDispatcher.dispatch(ThemeActionBuilder.newInstallThemeAction(payload));
                 }
             }
         });
@@ -169,7 +193,8 @@ public class ThemeFragment extends Fragment {
             prependToLog("success: WP.com theme count = " + mThemeStore.getWpThemes().size());
             SiteModel jpSite = getJetpackConnectedSite();
             if (jpSite != null) {
-                prependToLog("Installed theme count = " + mThemeStore.getThemesForSite(jpSite).size());
+                List<ThemeModel> themes = mThemeStore.getThemesForSite(jpSite);
+                prependToLog("Installed theme count = " + themes.size());
             }
         }
     }

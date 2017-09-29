@@ -48,4 +48,10 @@
         android:layout_height="wrap_content"
         android:text="Activate theme Jetpack" />
 
+    <Button
+        android:id="@+id/install_theme_jp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Install WP.com theme on Jetpack site" />
+
 </LinearLayout>
