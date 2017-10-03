@@ -30,6 +30,12 @@
         android:layout_height="wrap_content"
         android:text="Fetch current theme WP.com" />
 
+    <Button
+        android:id="@+id/search_themes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Search Themes" />
+
     <EditText
         android:id="@+id/theme_id"
         android:layout_width="match_parent"
