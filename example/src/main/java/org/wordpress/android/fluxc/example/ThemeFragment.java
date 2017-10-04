@@ -129,6 +129,28 @@ public class ThemeFragment extends Fragment {
             }
         });
 
+        view.findViewById(R.id.delete_theme_jp).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String id = getThemeIdFromInput(view);
+                if (TextUtils.isEmpty(id)) {
+                    prependToLog("Please enter a theme id");
+                    return;
+                }
+
+                SiteModel site = getJetpackConnectedSite();
+                if (site == null) {
+                    prependToLog("No Jetpack connected site found, unable to test.");
+                } else {
+                    ThemeModel theme = new ThemeModel();
+                    theme.setLocalSiteId(site.getSiteId());
+                    theme.setThemeId(id);
+                    ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
+                    mDispatcher.dispatch(ThemeActionBuilder.newDeleteThemeAction(payload));
+                }
+            }
+        });
+
         view.findViewById(R.id.fetch_wpcom_themes).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
