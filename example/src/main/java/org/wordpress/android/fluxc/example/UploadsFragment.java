@@ -50,6 +50,7 @@ public class UploadsFragment extends Fragment {
     private SiteModel mSite;
     private MediaModel mCurrentMediaUpload;
 
+    private View mUploadButton;
     private View mCancelButton;
 
     @Override
@@ -67,7 +68,8 @@ public class UploadsFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_uploads, container, false);
 
-        view.findViewById(R.id.upload_media_post).setOnClickListener(new View.OnClickListener() {
+        mUploadButton = view.findViewById(R.id.upload_media_post);
+        mUploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mSite == null) {
@@ -147,11 +149,13 @@ public class UploadsFragment extends Fragment {
         if (!event.isError()) {
             if (event.canceled) {
                 prependToLog("Upload canceled: " + event.media.getFileName());
+                mUploadButton.setEnabled(true);
                 mCancelButton.setEnabled(false);
                 mCurrentMediaUpload = null;
             } else if (event.completed) {
                 prependToLog("Successfully uploaded localId=" + mCurrentMediaUpload.getId()
                              + " - url=" + event.media.getUrl());
+                mUploadButton.setEnabled(true);
                 mCancelButton.setEnabled(false);
                 mCurrentMediaUpload = null;
                 if (event.media.getLocalPostId() > 0) {
@@ -176,6 +180,8 @@ public class UploadsFragment extends Fragment {
         } else {
             prependToLog("Upload error: " + event.error.type + ", message: " + event.error.message);
             mCurrentMediaUpload = null;
+            mUploadButton.setEnabled(true);
+            mCancelButton.setEnabled(false);
         }
     }
 
@@ -215,6 +221,7 @@ public class UploadsFragment extends Fragment {
         prependToLog("Dispatching upload event for media localId=" + mCurrentMediaUpload.getId());
 
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+        mUploadButton.setEnabled(false);
         mCancelButton.setEnabled(true);
     }
 
