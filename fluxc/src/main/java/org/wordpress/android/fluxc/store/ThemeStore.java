@@ -275,7 +275,7 @@ public class ThemeStore extends Store {
     }
 
     private void installTheme(@NonNull ActivateThemePayload payload) {
-        if (payload.site.isJetpackConnected()) {
+        if (payload.site.isJetpackConnected() && payload.site.isUsingWpComRestApi()) {
             mThemeRestClient.installTheme(payload.site, payload.theme);
         } else {
             payload.error = new ActivateThemeError(ThemeErrorType.NOT_AVAILABLE);
@@ -308,7 +308,7 @@ public class ThemeStore extends Store {
         if (payload.site.isJetpackConnected() && payload.site.isUsingWpComRestApi()) {
             mThemeRestClient.deleteTheme(payload.site, payload.theme);
         } else {
-            payload.error = new ActivateThemeError("not_available", null);
+            payload.error = new ActivateThemeError(ThemeErrorType.NOT_AVAILABLE);
             handleThemeDeleted(payload);
         }
     }
