@@ -63,6 +63,10 @@ Checkstyle 8.1 breaks backward compatibility with previous versions including th
 
 <img src="https://user-images.githubusercontent.com/3827611/29678543-38a5d492-88bc-11e7-8271-45c7d4946fd4.png" alt="Android Studio Checkstyle Error Message" width="400" />
 
+## Using ktlint
+
+The FluxC project uses [ktlint](https://github.com/shyiko/ktlint) for Kotlin linting. You can run ktlint using `./gradlew ktlint`, and you can also run `./gradlew ktlintFormat` for auto-formatting. There is no IDEA plugin (like Checkstyle's) at this time.
+
 ## Contributing
 
 ### Actions
