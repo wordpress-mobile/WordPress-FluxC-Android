@@ -115,6 +115,20 @@ public class ThemeFragment extends Fragment {
             }
         });
 
+        view.findViewById(R.id.search_themes).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String term = getThemeIdFromInput(view);
+                if (TextUtils.isEmpty(term)) {
+                    prependToLog("Please enter a search term");
+                    return;
+                }
+
+                ThemeStore.SearchThemesPayload payload = new ThemeStore.SearchThemesPayload(term);
+                mDispatcher.dispatch(ThemeActionBuilder.newSearchThemesAction(payload));
+            }
+        });
+
         view.findViewById(R.id.delete_theme_jp).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -202,6 +216,17 @@ public class ThemeFragment extends Fragment {
             prependToLog("error: " + event.error.message);
         } else {
             prependToLog("success: theme = " + event.theme.getName());
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onThemesSearched(ThemeStore.OnThemesSearched event) {
+        prependToLog("onThemesSearched: ");
+        if (event.isError()) {
+            prependToLog("error: " + event.error.message);
+        } else {
+            prependToLog("success: result count = " + event.searchResults.size());
         }
     }
 
