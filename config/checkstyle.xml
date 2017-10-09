@@ -218,7 +218,6 @@
 
         <module name="UpperEll"/>
 
-        <module name="FileContentsHolder"/> <!-- Required by comment suppression filters -->
         <module name="SuppressWarningsHolder"/> <!-- Required by suppression via annotation filter -->
 
         <module name="OneStatementPerLine"/>
