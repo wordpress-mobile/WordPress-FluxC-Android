@@ -69,7 +69,8 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
         assertNotNull(mCurrentTheme);
 
         // activate a different theme
-        ThemeModel themeToActivate = mCurrentTheme.getThemeId().equals(themes.get(0).getThemeId()) ? themes.get(1) : themes.get(0);
+        ThemeModel themeToActivate = mCurrentTheme.getThemeId().equals(themes.get(0).getThemeId())
+                ? themes.get(1) : themes.get(0);
         assertNotNull(themeToActivate);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.ACTIVATED_THEME;
