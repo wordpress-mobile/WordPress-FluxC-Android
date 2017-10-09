@@ -9,7 +9,7 @@
         <entry key="location-1" value="BUNDLED:(bundled):Google Checks" />
         <entry key="location-2" value="LOCAL_FILE:$PRJ_DIR$/config/checkstyle.xml:FluxC Style" />
         <entry key="scan-before-checkin" value="false" />
-        <entry key="scanscope" value="JavaOnlyWithTests" />
+        <entry key="scanscope" value="AllSourcesWithTests" />
         <entry key="suppress-errors" value="false" />
       </map>
     </option>

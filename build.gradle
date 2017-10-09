@@ -1,6 +1,8 @@
 allprojects {
     apply plugin: 'checkstyle'
 
+    ext.kotlin_version = '1.1.51'
+
     repositories {
         jcenter()
     }
@@ -8,6 +10,7 @@ allprojects {
     task checkstyle(type: Checkstyle) {
         source 'src'
         include '**/*.java'
+        include '**/*.kt'
         exclude '**/gen/**'
 
         classpath = files()
@@ -16,5 +19,27 @@ allprojects {
     checkstyle {
         toolVersion = '7.6.1'
         configFile file("${project.rootDir}/config/checkstyle.xml")
+    }
+}
+
+subprojects {
+    configurations {
+        ktlint
+    }
+
+    dependencies {
+        ktlint 'com.github.shyiko:ktlint:0.9.2'
+    }
+
+    task ktlint(type: JavaExec) {
+        main = "com.github.shyiko.ktlint.Main"
+        classpath = configurations.ktlint
+        args "src/**/*.kt"
+    }
+
+    task ktlintFormat(type: JavaExec) {
+        main = "com.github.shyiko.ktlint.Main"
+        classpath = configurations.ktlint
+        args "-F", "src/**/*.kt"
     }
 }
