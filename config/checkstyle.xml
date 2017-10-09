@@ -65,7 +65,7 @@
 
     <!-- Specific to FluxC / WordPress -->
     <module name="RegexpSingleline">
-      <property name="format" value="dotcom"/>
+      <property name="format" value=".*dotcom(?!.*checkstyle ignore)"/>
       <property name="ignoreCase" value="true"/>
       <property name="message" value="Kim is not happy, you should not use _dotcom_, use _wpcom_ instead"/>
       <property name="severity" value="error"/>
@@ -73,7 +73,7 @@
 
     <!-- Specific to FluxC / WordPress -->
     <module name="RegexpSingleline">
-      <property name="format" value="dotorg"/>
+      <property name="format" value=".*dotorg(?!.*checkstyle ignore)"/>
       <property name="ignoreCase" value="true"/>
       <property name="message" value="You should not use _dotorg_, use _selfHosted_ instead"/>
       <property name="severity" value="error"/>
