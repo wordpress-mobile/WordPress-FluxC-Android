@@ -1,0 +1,22 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="org.wordpress.android.fluxc.example.MediaFragment">
+
+    <Button
+        android:id="@+id/upload_media_post"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Upload post with local media" />
+
+    <Button
+        android:id="@+id/cancel_upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:text="Cancel" />
+
+</LinearLayout>

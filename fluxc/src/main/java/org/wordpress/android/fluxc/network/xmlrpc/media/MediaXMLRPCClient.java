@@ -8,8 +8,10 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
+import org.wordpress.android.fluxc.generated.UploadActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.XMLRPC;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.MediaModel.MediaUploadState;
@@ -417,7 +419,7 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
 
     private void notifyMediaProgress(MediaModel media, float progress, MediaError error) {
         ProgressPayload payload = new ProgressPayload(media, progress, false, error);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadedMediaAction(payload));
+        mDispatcher.dispatch(UploadActionBuilder.newUploadedMediaAction(payload));
     }
 
     private void notifyMediaUploaded(MediaModel media, MediaError error) {
@@ -427,7 +429,7 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
         }
 
         ProgressPayload payload = new ProgressPayload(media, 1.f, error == null, error);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadedMediaAction(payload));
+        mDispatcher.dispatch(UploadActionBuilder.newUploadedMediaAction(payload));
     }
 
     private void notifyMediaListFetched(SiteModel site,
@@ -487,9 +489,9 @@ public class MediaXMLRPCClient extends BaseXMLRPCClient implements ProgressListe
         MediaModel media = new MediaModel();
         media.setMediaId(MapUtils.getMapLong(response, "attachment_id"));
         media.setPostId(MapUtils.getMapLong(response, "parent"));
-        media.setTitle(MapUtils.getMapStr(response, "title"));
-        media.setCaption(MapUtils.getMapStr(response, "caption"));
-        media.setDescription(MapUtils.getMapStr(response, "description"));
+        media.setTitle(StringEscapeUtils.unescapeHtml4(MapUtils.getMapStr(response, "title")));
+        media.setCaption(StringEscapeUtils.unescapeHtml4(MapUtils.getMapStr(response, "caption")));
+        media.setDescription(StringEscapeUtils.unescapeHtml4(MapUtils.getMapStr(response, "description")));
         media.setVideoPressGuid(MapUtils.getMapStr(response, "videopress_shortcode"));
         media.setThumbnailUrl(MapUtils.getMapStr(response, "thumbnail"));
         Date uploadDate = MapUtils.getMapDate(response, "date_created_gmt");

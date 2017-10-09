@@ -57,6 +57,12 @@
         <property name="severity" value="error"/>
     </module>
 
+    <module name="RegexpSingleline">
+        <property name="format" value="extends Payload[^&lt;]"/>
+        <property name="message" value="Payload should not be used as a raw type"/>
+        <property name="severity" value="error"/>
+    </module>
+
     <!-- Specific to FluxC / WordPress -->
     <module name="RegexpSingleline">
       <property name="format" value="dotcom"/>

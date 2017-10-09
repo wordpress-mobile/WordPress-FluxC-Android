@@ -77,4 +77,10 @@
         android:layout_height="wrap_content"
         android:text="Taxonomies" />
 
+    <Button
+        android:id="@+id/uploads"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Uploads" />
+
 </LinearLayout>

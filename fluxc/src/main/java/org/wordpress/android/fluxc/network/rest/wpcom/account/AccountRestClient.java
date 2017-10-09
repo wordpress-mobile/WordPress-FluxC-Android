@@ -7,6 +7,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wordpress.android.fluxc.Dispatcher;
@@ -23,6 +24,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AppSecrets;
+import org.wordpress.android.fluxc.store.AccountStore.AccountSocialError;
 import org.wordpress.android.fluxc.store.AccountStore.IsAvailableError;
 import org.wordpress.android.fluxc.store.AccountStore.NewUserError;
 import org.wordpress.android.fluxc.store.AccountStore.NewUserErrorType;
@@ -38,9 +40,11 @@ import javax.inject.Singleton;
 
 @Singleton
 public class AccountRestClient extends BaseWPComRestClient {
+    private static final String SOCIAL_LOGIN_ENDPOINT_VERSION = "1";
+
     private final AppSecrets mAppSecrets;
 
-    public static class AccountRestPayload extends Payload {
+    public static class AccountRestPayload extends Payload<BaseNetworkError> {
         public AccountRestPayload(AccountModel account, BaseNetworkError error) {
             this.account = account;
             this.error = error;
@@ -48,24 +52,32 @@ public class AccountRestClient extends BaseWPComRestClient {
         public AccountModel account;
     }
 
-    public static class AccountPushSettingsResponsePayload extends Payload {
+    public static class AccountPushSettingsResponsePayload extends Payload<BaseNetworkError> {
         public AccountPushSettingsResponsePayload(BaseNetworkError error) {
             this.error = error;
         }
         public Map<String, Object> settings;
     }
 
-    public static class NewAccountResponsePayload extends Payload {
-        public NewUserError error;
+    public static class AccountPushSocialResponsePayload extends Payload<AccountSocialError> {
+        public AccountPushSocialResponsePayload(AccountSocialResponse response) {
+            this.bearerToken = response.bearer_token;
+        }
+        public AccountPushSocialResponsePayload(BaseNetworkError error) {
+            this.error = new AccountSocialError(error.volleyError.networkResponse.data);
+        }
+        public String bearerToken;
+    }
+
+    public static class NewAccountResponsePayload extends Payload<NewUserError> {
         public boolean dryRun;
     }
 
-    public static class IsAvailableResponsePayload extends Payload {
+    public static class IsAvailableResponsePayload extends Payload<IsAvailableError> {
         public IsAvailable type;
         public String value;
         public boolean isAvailable;
         public List<String> suggestions;
-        public IsAvailableError error;
     }
 
     public enum IsAvailable {
@@ -183,6 +195,49 @@ public class AccountRestClient extends BaseWPComRestClient {
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         AccountPushSettingsResponsePayload payload = new AccountPushSettingsResponsePayload(error);
                         mDispatcher.dispatch(AccountActionBuilder.newPushedSettingsAction(payload));
+                    }
+                }
+        ));
+    }
+
+    /**
+     * Performs an HTTP POST call to https://wordpress.com/wp-login.php.  Upon receiving a response
+     * (success or error) a {@link AccountAction#PUSHED_SOCIAL} action is dispatched with a payload
+     * of type {@link AccountPushSocialResponsePayload}.
+     *
+     * {@link AccountPushSocialResponsePayload#isError()} can be used to check the request result.
+     *
+     * No HTTP POST call is made if the given parameter map is null or contains no entries.
+     *
+     * @param idToken       OpenID Connect Token (JWT) from the service the user is using to
+     *                      authenticate their account.
+     * @param service       Slug representing the service for the given token (e.g. google).
+     */
+    public void pushSocialLogin(@NonNull String idToken, @NonNull String service) {
+        String url = "https://wordpress.com/wp-login.php";
+
+        Map<String, String> params = new HashMap<>();
+        params.put("action", "social-login-endpoint");
+        params.put("version", SOCIAL_LOGIN_ENDPOINT_VERSION);
+        params.put("id_token", idToken);
+        params.put("service", service);
+        params.put("get_bearer_token", "true");
+        params.put("client_id", mAppSecrets.getAppId());
+        params.put("client_secret", mAppSecrets.getAppSecret());
+
+        addUnauthedRequest(new AccountSocialRequest(url, params,
+                new Listener<AccountSocialResponse>() {
+                    @Override
+                    public void onResponse(AccountSocialResponse response) {
+                        AccountPushSocialResponsePayload payload = new AccountPushSocialResponsePayload(response);
+                        mDispatcher.dispatch(AccountActionBuilder.newPushedSocialAction(payload));
+                    }
+                },
+                new BaseErrorListener() {
+                    @Override
+                    public void onErrorResponse(@NonNull BaseNetworkError error) {
+                        AccountPushSocialResponsePayload payload = new AccountPushSocialResponsePayload(error);
+                        mDispatcher.dispatch(AccountActionBuilder.newPushedSocialAction(payload));
                     }
                 }
         ));
@@ -313,7 +368,7 @@ public class AccountRestClient extends BaseWPComRestClient {
     private AccountModel responseToAccountModel(AccountResponse from) {
         AccountModel account = new AccountModel();
         account.setUserId(from.ID);
-        account.setDisplayName(from.display_name);
+        account.setDisplayName(StringEscapeUtils.unescapeHtml4(from.display_name));
         account.setUserName(from.username);
         account.setEmail(from.email);
         account.setPrimarySiteId(from.primary_blog);
@@ -330,10 +385,10 @@ public class AccountRestClient extends BaseWPComRestClient {
     private AccountModel responseToAccountSettingsModel(AccountSettingsResponse from) {
         AccountModel account = new AccountModel();
         account.setUserName(from.user_login);
-        account.setDisplayName(from.display_name);
-        account.setFirstName(from.first_name);
-        account.setLastName(from.last_name);
-        account.setAboutMe(from.description);
+        account.setDisplayName(StringEscapeUtils.unescapeHtml4(from.display_name));
+        account.setFirstName(StringEscapeUtils.unescapeHtml4(from.first_name));
+        account.setLastName(StringEscapeUtils.unescapeHtml4(from.last_name));
+        account.setAboutMe(StringEscapeUtils.unescapeHtml4(from.description));
         account.setNewEmail(from.new_user_email);
         account.setAvatarUrl(from.avatar_URL);
         account.setPendingEmailChange(from.user_email_change_pending);
@@ -348,10 +403,18 @@ public class AccountRestClient extends BaseWPComRestClient {
         old.copyAccountAttributes(accountModel);
         old.setId(accountModel.getId());
         old.copyAccountSettingsAttributes(accountModel);
-        if (from.containsKey("display_name")) accountModel.setDisplayName((String) from.get("display_name"));
-        if (from.containsKey("first_name")) accountModel.setFirstName((String) from.get("first_name"));
-        if (from.containsKey("last_name")) accountModel.setLastName((String) from.get("last_name"));
-        if (from.containsKey("description")) accountModel.setAboutMe((String) from.get("description"));
+        if (from.containsKey("display_name")) {
+            accountModel.setDisplayName(StringEscapeUtils.unescapeHtml4((String) from.get("display_name")));
+        }
+        if (from.containsKey("first_name")) {
+            accountModel.setFirstName(StringEscapeUtils.unescapeHtml4((String) from.get("first_name")));
+        }
+        if (from.containsKey("last_name")) {
+            accountModel.setLastName(StringEscapeUtils.unescapeHtml4((String) from.get("last_name")));
+        }
+        if (from.containsKey("description")) {
+            accountModel.setAboutMe(StringEscapeUtils.unescapeHtml4((String) from.get("description")));
+        }
         if (from.containsKey("user_email")) accountModel.setEmail((String) from.get("user_email"));
         if (from.containsKey("user_email_change_pending")) {
             accountModel.setPendingEmailChange((Boolean) from.get("user_email_change_pending"));
