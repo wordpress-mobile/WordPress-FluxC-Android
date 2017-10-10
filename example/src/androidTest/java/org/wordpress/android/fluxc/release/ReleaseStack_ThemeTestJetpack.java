@@ -151,6 +151,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
         if (listContainsThemeWithId(themes, themeId)) {
             // delete edin before attempting to install
+            themeToInstall.setId(getThemeFromList(themes, themeId).getId());
             ThemeStore.ActivateThemePayload delete = new ThemeStore.ActivateThemePayload(jetpackSite, themeToInstall);
             mCountDownLatch = new CountDownLatch(1);
             mNextEvent = TestEvents.DELETED_THEME;
@@ -291,12 +292,16 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         return null;
     }
 
-    private boolean listContainsThemeWithId(List<ThemeModel> list, String themeId) {
+    private ThemeModel getThemeFromList(List<ThemeModel> list, String themeId) {
         for (ThemeModel theme : list) {
             if (themeId.equals(theme.getThemeId())) {
-                return true;
+                return theme;
             }
         }
-        return false;
+        return null;
+    }
+
+    private boolean listContainsThemeWithId(List<ThemeModel> list, String themeId) {
+        return getThemeFromList(list, themeId) != null;
     }
 }
