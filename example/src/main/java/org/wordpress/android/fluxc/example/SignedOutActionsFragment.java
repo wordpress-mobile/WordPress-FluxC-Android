@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -110,7 +111,7 @@ public class SignedOutActionsFragment extends Fragment {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
             @Override
-            public void onClick(String username, String email, String password) {
+            public void onClick(@NonNull String username, @NonNull String email, @NonNull String password) {
                 newAccountAction(username, email, password);
             }
         }, "Username", "Email", "Password");
