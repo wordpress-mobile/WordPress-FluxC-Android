@@ -173,7 +173,7 @@ public class ThemeStoreUnitTest {
         assertEquals(0, mThemeStore.getThemesForSite(site).size());
     }
 
-    private ThemeModel generateTestTheme(long siteId, String themeId, String themeName) {
+    private ThemeModel generateTestTheme(int siteId, String themeId, String themeName) {
         ThemeModel theme = new ThemeModel();
         theme.setLocalSiteId(siteId);
         theme.setThemeId(themeId);
