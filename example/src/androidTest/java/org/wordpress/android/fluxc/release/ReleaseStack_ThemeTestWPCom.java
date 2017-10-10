@@ -72,8 +72,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
         assertNotNull(mCurrentTheme);
 
         // activate a different theme
-        ThemeModel themeToActivate = mCurrentTheme.getThemeId().equals(themes.get(0).getThemeId())
-                ? themes.get(1) : themes.get(0);
+        ThemeModel themeToActivate = getNewNonPremiumTheme(mCurrentTheme.getThemeId(), themes);
         assertNotNull(themeToActivate);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.ACTIVATED_THEME;
@@ -249,8 +248,17 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
 
     private SiteModel getWPComSite() {
         for (SiteModel site : mSiteStore.getSites()) {
-            if (site.isWPCom()) {
+            if (site.isWPCom() && site.getHasCapabilityEditThemeOptions()) {
                 return site;
+            }
+        }
+        return null;
+    }
+
+    private ThemeModel getNewNonPremiumTheme(String oldThemeId, List<ThemeModel> themes) {
+        for (ThemeModel theme : themes) {
+            if (!theme.getThemeId().equals(oldThemeId) && theme.getPrice() == 0.f) {
+                return theme;
             }
         }
         return null;
