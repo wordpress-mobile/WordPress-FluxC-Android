@@ -9,10 +9,12 @@ import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.generated.ThemeActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.model.ThemeModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.ThemeStore;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +25,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         NONE,
         FETCHED_INSTALLED_THEMES,
         FETCHED_CURRENT_THEME,
+        ACTIVATED_THEME,
         SITE_CHANGED,
         SITE_REMOVED
     }
@@ -30,6 +33,8 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     @Inject AccountStore mAccountStore;
     @Inject SiteStore mSiteStore;
     @Inject ThemeStore mThemeStore;
+    private ThemeModel mCurrentTheme;
+    private ThemeModel mActivatedTheme;
 
     private TestEvents mNextEvent;
 
@@ -41,6 +46,8 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         init();
         // Reset expected test event
         mNextEvent = TestEvents.NONE;
+        mCurrentTheme = null;
+        mActivatedTheme = null;
     }
 
     public void testFetchInstalledThemes() throws InterruptedException {
@@ -84,6 +91,39 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     public void testActivateTheme() throws InterruptedException {
+        // get current active theme on a site
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
+        SiteModel jetpackSite = getJetpackSite();
+        assertNotNull(jetpackSite);
+
+        // get all themes available
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.FETCHED_INSTALLED_THEMES;
+        mDispatcher.dispatch(ThemeActionBuilder.newFetchInstalledThemesAction(jetpackSite));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        List<ThemeModel> themes = mThemeStore.getThemesForSite(jetpackSite);
+        assertTrue(themes.size() > 1);
+
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
+        mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(jetpackSite));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertNotNull(mCurrentTheme);
+
+        // activate a different theme
+        ThemeModel themeToActivate = mCurrentTheme.getThemeId().equals(themes.get(0).getThemeId())
+                ? themes.get(1) : themes.get(0);
+        assertNotNull(themeToActivate);
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.ACTIVATED_THEME;
+        ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(jetpackSite, themeToActivate);
+        mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertNotNull(mActivatedTheme);
+        assertEquals(mActivatedTheme.getThemeId(), themeToActivate.getThemeId());
+
+        signOutWPCom();
     }
 
     public void testInstallTheme() throws InterruptedException {
@@ -96,9 +136,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
 
-        if (mNextEvent == TestEvents.FETCHED_INSTALLED_THEMES) {
-            mCountDownLatch.countDown();
-        }
+        mCountDownLatch.countDown();
     }
 
     @SuppressWarnings("unused")
@@ -110,8 +148,20 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
         if (mNextEvent == TestEvents.FETCHED_CURRENT_THEME) {
             assertNotNull(event.theme);
+            mCurrentTheme = event.theme;
             mCountDownLatch.countDown();
         }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onThemeActivated(ThemeStore.OnThemeActivated event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME);
+        mActivatedTheme = event.theme;
+        mCountDownLatch.countDown();
     }
 
     @SuppressWarnings("unused")
