@@ -51,18 +51,6 @@ Once installed, you can configure the plugin here:
 
 From there, add and enable the configuration file for FluxC, located at [config/checkstyle.xml](https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/develop/config/checkstyle.xml).
 
-### Compatibility
-
-Checkstyle 8.1 breaks backward compatibility with previous versions including the current configuration file.  Be sure to target Checkstyle 8.0 or lower when configuring the CheckStyle-IDEA plugin in Android Studio. If you see the following error(s), check your plugin target.
-
-    org.infernus.idea.checkstyle.exception.CheckStylePluginException: <html><b>The Checkstyle rules file could not be parsed.</b><br>SuppressionCommentFilter is not allowed as a child in Checker<br>The file has been blacklisted for 60s.</html>
-	    at org.infernus.idea.checkstyle.checker.CheckerFactory.blacklistAndShowMessage(CheckerFactory.java:197)
-	    at org.infernus.idea.checkstyle.checker.CheckerFactory.blacklistAndShowMessage(CheckerFactory.java:213)
-	    at org.infernus.idea.checkstyle.checker.CheckerFactory.createChecker(CheckerFactory.java:145)
-	    ...
-
-<img src="https://user-images.githubusercontent.com/3827611/29678543-38a5d492-88bc-11e7-8271-45c7d4946fd4.png" alt="Android Studio Checkstyle Error Message" width="400" />
-
 ## Using ktlint
 
 The FluxC project uses [ktlint](https://github.com/shyiko/ktlint) for Kotlin linting. You can run ktlint using `./gradlew ktlint`, and you can also run `./gradlew ktlintFormat` for auto-formatting. There is no IDEA plugin (like Checkstyle's) at this time.
