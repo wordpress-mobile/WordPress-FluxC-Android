@@ -26,6 +26,8 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         FETCHED_INSTALLED_THEMES,
         FETCHED_CURRENT_THEME,
         ACTIVATED_THEME,
+        INSTALLED_THEME,
+        DELETED_THEME,
         SITE_CHANGED,
         SITE_REMOVED
     }
@@ -91,13 +93,12 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     public void testActivateTheme() throws InterruptedException {
-        // get current active theme on a site
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
         SiteModel jetpackSite = getJetpackSite();
         assertNotNull(jetpackSite);
 
-        // get all themes available
+        // get installed themes
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.FETCHED_INSTALLED_THEMES;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchInstalledThemesAction(jetpackSite));
@@ -127,6 +128,49 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     public void testInstallTheme() throws InterruptedException {
+        final String themeId = "edin-wpcom";
+        final ThemeModel themeToInstall = new ThemeModel();
+        themeToInstall.setName("Edin");
+        themeToInstall.setThemeId(themeId);
+
+        // get current active theme on a site
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
+        SiteModel jetpackSite = getJetpackSite();
+        assertNotNull(jetpackSite);
+        assertTrue(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
+
+        // get installed themes
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.FETCHED_INSTALLED_THEMES;
+        mDispatcher.dispatch(ThemeActionBuilder.newFetchInstalledThemesAction(jetpackSite));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        List<ThemeModel> themes = mThemeStore.getThemesForSite(jetpackSite);
+        assertFalse(themes.isEmpty());
+
+        if (listContainsThemeWithId(themes, themeId)) {
+            // delete edin before attempting to install
+            ThemeStore.ActivateThemePayload delete = new ThemeStore.ActivateThemePayload(jetpackSite, themeToInstall);
+            mCountDownLatch = new CountDownLatch(1);
+            mNextEvent = TestEvents.DELETED_THEME;
+            mDispatcher.dispatch(ThemeActionBuilder.newDeleteThemeAction(delete));
+            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+            assertNotNull(mActivatedTheme);
+            assertEquals(themeId, mActivatedTheme.getThemeId());
+            assertFalse(listContainsThemeWithId(mThemeStore.getThemesForSite(jetpackSite), themeId));
+            mActivatedTheme = null;
+        }
+
+        // install the theme
+        ThemeStore.ActivateThemePayload install = new ThemeStore.ActivateThemePayload(jetpackSite, themeToInstall);
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.INSTALLED_THEME;
+        mDispatcher.dispatch(ThemeActionBuilder.newInstallThemeAction(install));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(listContainsThemeWithId(mThemeStore.getThemesForSite(jetpackSite), themeId));
+
+        signOutWPCom();
     }
 
     @SuppressWarnings("unused")
@@ -159,7 +203,9 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME);
+        assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME
+                || mNextEvent == TestEvents.INSTALLED_THEME
+                || mNextEvent == TestEvents.DELETED_THEME);
         mActivatedTheme = event.theme;
         mCountDownLatch.countDown();
     }
@@ -243,5 +289,14 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             }
         }
         return null;
+    }
+
+    private boolean listContainsThemeWithId(List<ThemeModel> list, String themeId) {
+        for (ThemeModel theme : list) {
+            if (themeId.equals(theme.getThemeId())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
