@@ -69,6 +69,11 @@
         <property name="message" value="Stores must be annotated with @Singleton"/>
     </module>
 
+    <module name="RegexpMultiline">
+        <property name="format" value="(?&lt;!^@Singleton)\n.*extends \w.*Client[\s{]"/>
+        <property name="message" value="Network clients must be annotated with @Singleton"/>
+    </module>
+
     <!-- Specific to FluxC / WordPress -->
     <module name="RegexpSingleline">
       <property name="format" value=".*dotcom(?!.*checkstyle ignore)"/>
