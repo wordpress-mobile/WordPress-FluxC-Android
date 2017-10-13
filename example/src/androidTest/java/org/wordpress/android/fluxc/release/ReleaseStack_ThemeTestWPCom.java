@@ -58,7 +58,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
         mNextEvent = TestEvents.FETCHED_THEMES;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        List<ThemeModel> themes = mThemeStore.getWpThemes();
+        List<ThemeModel> themes = mThemeStore.getWpComThemes();
         assertTrue(themes.size() > 1);
 
         // get current active theme on a site
@@ -167,13 +167,10 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
 
-        if (mNextEvent == TestEvents.FETCHED_THEMES) {
-            assertTrue(mThemeStore.getWpComThemes().size() > 0);
-        } else if (mNextEvent == TestEvents.FETCHED_CURRENT_THEME) {
-            assertNotNull(event.theme);
-            mCurrentTheme = event.theme;
-            mCountDownLatch.countDown();
-        }
+        assertTrue(mNextEvent == TestEvents.FETCHED_CURRENT_THEME);
+        assertNotNull(event.theme);
+        mCurrentTheme = event.theme;
+        mCountDownLatch.countDown();
     }
 
     @SuppressWarnings("unused")
