@@ -209,7 +209,6 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-
         mCountDownLatch.countDown();
     }
 
@@ -220,11 +219,10 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
 
-        if (mNextEvent == TestEvents.FETCHED_CURRENT_THEME) {
-            assertNotNull(event.theme);
-            mCurrentTheme = event.theme;
-            mCountDownLatch.countDown();
-        }
+        assertTrue(mNextEvent == TestEvents.FETCHED_CURRENT_THEME);
+        assertNotNull(event.theme);
+        mCurrentTheme = event.theme;
+        mCountDownLatch.countDown();
     }
 
     @SuppressWarnings("unused")
@@ -255,7 +253,6 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-
         mCountDownLatch.countDown();
     }
 
@@ -265,7 +262,6 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-
         mCountDownLatch.countDown();
     }
 
