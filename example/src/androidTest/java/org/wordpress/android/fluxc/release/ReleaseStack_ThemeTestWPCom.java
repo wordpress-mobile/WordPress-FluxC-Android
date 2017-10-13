@@ -58,7 +58,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
         mNextEvent = TestEvents.FETCHED_THEMES;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        List<ThemeModel> themes = mThemeStore.getWpThemes();
+        List<ThemeModel> themes = mThemeStore.getWpComThemes();
         assertTrue(themes.size() > 1);
 
         // get current active theme on a site
@@ -93,7 +93,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
 
         // verify response received and WP themes list is not empty
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        assertTrue(mThemeStore.getWpThemes().size() > 0);
+        assertTrue(mThemeStore.getWpComThemes().size() > 0);
     }
 
     public void testFetchCurrentTheme() throws InterruptedException {

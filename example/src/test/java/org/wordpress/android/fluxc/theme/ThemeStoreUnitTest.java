@@ -95,15 +95,15 @@ public class ThemeStoreUnitTest {
 
         // first add 20 themes and make sure the count is correct
         ThemeSqlUtils.insertOrReplaceWpThemes(firstTestThemes);
-        assertEquals(firstTestThemes.size(), mThemeStore.getWpThemes().size());
+        assertEquals(firstTestThemes.size(), mThemeStore.getWpComThemes().size());
 
         // next add a larger list of themes (with 20 being duplicates) and make sure the count is correct
         ThemeSqlUtils.insertOrReplaceWpThemes(secondTestThemes);
-        assertEquals(secondTestThemes.size(), mThemeStore.getWpThemes().size());
+        assertEquals(secondTestThemes.size(), mThemeStore.getWpComThemes().size());
 
         // lastly add a smaller list of themes (all duplicates) and make sure count is correct
         ThemeSqlUtils.insertOrReplaceWpThemes(thirdTestThemes);
-        assertEquals(thirdTestThemes.size(), mThemeStore.getWpThemes().size());
+        assertEquals(thirdTestThemes.size(), mThemeStore.getWpComThemes().size());
     }
 
     @Test
@@ -134,13 +134,13 @@ public class ThemeStoreUnitTest {
         final List<ThemeModel> secondTestThemes = generateThemesTestList(30);
 
         // insert themes and verify count
-        assertEquals(0, mThemeStore.getWpThemesCursor().getCount());
+        assertEquals(0, mThemeStore.getWpComThemesCursor().getCount());
         ThemeSqlUtils.insertOrReplaceWpThemes(firstTestThemes);
-        assertEquals(firstTestThemes.size(), mThemeStore.getWpThemesCursor().getCount());
+        assertEquals(firstTestThemes.size(), mThemeStore.getWpComThemesCursor().getCount());
 
         // insert new themes list and verify count
         ThemeSqlUtils.insertOrReplaceWpThemes(secondTestThemes);
-        assertEquals(secondTestThemes.size(), mThemeStore.getWpThemesCursor().getCount());
+        assertEquals(secondTestThemes.size(), mThemeStore.getWpComThemesCursor().getCount());
     }
 
     @Test
@@ -148,13 +148,13 @@ public class ThemeStoreUnitTest {
         final List<ThemeModel> testThemes = generateThemesTestList(20);
 
         // insert and verify count
-        assertEquals(0, mThemeStore.getWpThemesCursor().getCount());
+        assertEquals(0, mThemeStore.getWpComThemesCursor().getCount());
         ThemeSqlUtils.insertOrReplaceWpThemes(testThemes);
-        assertEquals(testThemes.size(), mThemeStore.getWpThemes().size());
+        assertEquals(testThemes.size(), mThemeStore.getWpComThemes().size());
 
         // remove and verify count
         ThemeSqlUtils.removeThemesWithNoSite();
-        assertEquals(0, mThemeStore.getWpThemes().size());
+        assertEquals(0, mThemeStore.getWpComThemes().size());
     }
 
     @Test
