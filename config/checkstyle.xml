@@ -57,10 +57,16 @@
         <property name="severity" value="error"/>
     </module>
 
+    <!-- Specific to FluxC -->
     <module name="RegexpSingleline">
         <property name="format" value="extends Payload[^&lt;]"/>
         <property name="message" value="Payload should not be used as a raw type"/>
         <property name="severity" value="error"/>
+    </module>
+
+    <module name="RegexpMultiline">
+        <property name="format" value="(?&lt;!^@Singleton)\n.*extends Store[\s{]"/>
+        <property name="message" value="Stores must be annotated with @Singleton"/>
     </module>
 
     <!-- Specific to FluxC / WordPress -->
