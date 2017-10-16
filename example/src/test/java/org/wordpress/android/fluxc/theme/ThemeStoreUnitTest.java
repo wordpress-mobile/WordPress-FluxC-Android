@@ -88,21 +88,21 @@ public class ThemeStoreUnitTest {
     }
 
     @Test
-    public void testInsertOrReplaceWpThemes() {
+    public void testInsertOrReplaceWpComThemes() {
         final List<ThemeModel> firstTestThemes = generateThemesTestList(20);
         final List<ThemeModel> secondTestThemes = generateThemesTestList(30);
         final List<ThemeModel> thirdTestThemes = generateThemesTestList(10);
 
         // first add 20 themes and make sure the count is correct
-        ThemeSqlUtils.insertOrReplaceWpThemes(firstTestThemes);
+        ThemeSqlUtils.insertOrReplaceWpComThemes(firstTestThemes);
         assertEquals(firstTestThemes.size(), mThemeStore.getWpComThemes().size());
 
         // next add a larger list of themes (with 20 being duplicates) and make sure the count is correct
-        ThemeSqlUtils.insertOrReplaceWpThemes(secondTestThemes);
+        ThemeSqlUtils.insertOrReplaceWpComThemes(secondTestThemes);
         assertEquals(secondTestThemes.size(), mThemeStore.getWpComThemes().size());
 
         // lastly add a smaller list of themes (all duplicates) and make sure count is correct
-        ThemeSqlUtils.insertOrReplaceWpThemes(thirdTestThemes);
+        ThemeSqlUtils.insertOrReplaceWpComThemes(thirdTestThemes);
         assertEquals(thirdTestThemes.size(), mThemeStore.getWpComThemes().size());
     }
 
@@ -129,31 +129,31 @@ public class ThemeStoreUnitTest {
     }
 
     @Test
-    public void testGetWpThemesAsCursor() {
+    public void testGetWpComThemesAsCursor() {
         final List<ThemeModel> firstTestThemes = generateThemesTestList(20);
         final List<ThemeModel> secondTestThemes = generateThemesTestList(30);
 
         // insert themes and verify count
         assertEquals(0, mThemeStore.getWpComThemesCursor().getCount());
-        ThemeSqlUtils.insertOrReplaceWpThemes(firstTestThemes);
+        ThemeSqlUtils.insertOrReplaceWpComThemes(firstTestThemes);
         assertEquals(firstTestThemes.size(), mThemeStore.getWpComThemesCursor().getCount());
 
         // insert new themes list and verify count
-        ThemeSqlUtils.insertOrReplaceWpThemes(secondTestThemes);
+        ThemeSqlUtils.insertOrReplaceWpComThemes(secondTestThemes);
         assertEquals(secondTestThemes.size(), mThemeStore.getWpComThemesCursor().getCount());
     }
 
     @Test
-    public void testRemoveThemesWithNoSite() {
+    public void testRemoveWpComThemes() {
         final List<ThemeModel> testThemes = generateThemesTestList(20);
 
         // insert and verify count
         assertEquals(0, mThemeStore.getWpComThemesCursor().getCount());
-        ThemeSqlUtils.insertOrReplaceWpThemes(testThemes);
+        ThemeSqlUtils.insertOrReplaceWpComThemes(testThemes);
         assertEquals(testThemes.size(), mThemeStore.getWpComThemes().size());
 
         // remove and verify count
-        ThemeSqlUtils.removeThemesWithNoSite();
+        ThemeSqlUtils.removeWpComThemes();
         assertEquals(0, mThemeStore.getWpComThemes().size());
     }
 
