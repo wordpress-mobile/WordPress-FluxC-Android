@@ -201,6 +201,8 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         themeToDelete.setId(listTheme.getId());
         deleteTheme(jetpackSite, themeToDelete);
         assertFalse(listContainsThemeWithId(mThemeStore.getThemesForSite(jetpackSite), themeId));
+
+        signOutWPCom();
     }
 
     @SuppressWarnings("unused")
