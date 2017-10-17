@@ -237,7 +237,7 @@ public class ThemeFragment extends Fragment {
         if (event.isError()) {
             prependToLog("error: " + event.error.message);
         } else {
-            prependToLog("success: WP.com theme count = " + mThemeStore.getWpThemes().size());
+            prependToLog("success: WP.com theme count = " + mThemeStore.getWpComThemes().size());
             SiteModel jpSite = getJetpackConnectedSite();
             if (jpSite != null) {
                 List<ThemeModel> themes = mThemeStore.getThemesForSite(jpSite);
