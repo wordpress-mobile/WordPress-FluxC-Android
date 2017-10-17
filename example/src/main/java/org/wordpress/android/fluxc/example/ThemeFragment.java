@@ -63,7 +63,7 @@ public class ThemeFragment extends Fragment {
                     prependToLog("No WP.com site found, unable to test.");
                 } else {
                     ThemeModel theme = new ThemeModel();
-                    theme.setLocalSiteId(site.getSiteId());
+                    theme.setLocalSiteId(site.getId());
                     theme.setThemeId(id);
                     ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
                     mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
@@ -85,7 +85,7 @@ public class ThemeFragment extends Fragment {
                     prependToLog("No Jetpack connected site found, unable to test.");
                 } else {
                     ThemeModel theme = new ThemeModel();
-                    theme.setLocalSiteId(site.getSiteId());
+                    theme.setLocalSiteId(site.getId());
                     theme.setThemeId(id);
                     ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
                     mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
@@ -107,7 +107,7 @@ public class ThemeFragment extends Fragment {
                     prependToLog("No Jetpack connected site found, unable to test.");
                 } else {
                     ThemeModel theme = new ThemeModel();
-                    theme.setLocalSiteId(site.getSiteId());
+                    theme.setLocalSiteId(site.getId());
                     theme.setThemeId(id);
                     ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
                     mDispatcher.dispatch(ThemeActionBuilder.newInstallThemeAction(payload));
@@ -143,7 +143,7 @@ public class ThemeFragment extends Fragment {
                     prependToLog("No Jetpack connected site found, unable to test.");
                 } else {
                     ThemeModel theme = new ThemeModel();
-                    theme.setLocalSiteId(site.getSiteId());
+                    theme.setLocalSiteId(site.getId());
                     theme.setThemeId(id);
                     ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
                     mDispatcher.dispatch(ThemeActionBuilder.newDeleteThemeAction(payload));
