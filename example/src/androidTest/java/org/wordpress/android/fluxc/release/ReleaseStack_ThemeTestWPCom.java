@@ -44,7 +44,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
         }
 
         if (mNextEvent == TestEvents.FETCHED_THEMES) {
-            assertTrue(mThemeStore.getWpThemes().size() > 0);
+            assertTrue(mThemeStore.getWpComThemes().size() > 0);
             mCountDownLatch.countDown();
         }
     }

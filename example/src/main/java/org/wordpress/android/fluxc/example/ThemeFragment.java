@@ -63,7 +63,7 @@ public class ThemeFragment extends Fragment {
                     prependToLog("No WP.com site found, unable to test.");
                 } else {
                     ThemeModel theme = new ThemeModel();
-                    theme.setLocalSiteId(site.getSiteId());
+                    theme.setLocalSiteId(site.getId());
                     theme.setThemeId(id);
                     ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
                     mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
@@ -85,7 +85,7 @@ public class ThemeFragment extends Fragment {
                     prependToLog("No Jetpack connected site found, unable to test.");
                 } else {
                     ThemeModel theme = new ThemeModel();
-                    theme.setLocalSiteId(site.getSiteId());
+                    theme.setLocalSiteId(site.getId());
                     theme.setThemeId(id);
                     ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
                     mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
@@ -107,7 +107,7 @@ public class ThemeFragment extends Fragment {
                     prependToLog("No Jetpack connected site found, unable to test.");
                 } else {
                     ThemeModel theme = new ThemeModel();
-                    theme.setLocalSiteId(site.getSiteId());
+                    theme.setLocalSiteId(site.getId());
                     theme.setThemeId(id);
                     ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
                     mDispatcher.dispatch(ThemeActionBuilder.newInstallThemeAction(payload));
@@ -143,7 +143,7 @@ public class ThemeFragment extends Fragment {
                     prependToLog("No Jetpack connected site found, unable to test.");
                 } else {
                     ThemeModel theme = new ThemeModel();
-                    theme.setLocalSiteId(site.getSiteId());
+                    theme.setLocalSiteId(site.getId());
                     theme.setThemeId(id);
                     ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(site, theme);
                     mDispatcher.dispatch(ThemeActionBuilder.newDeleteThemeAction(payload));
@@ -237,7 +237,7 @@ public class ThemeFragment extends Fragment {
         if (event.isError()) {
             prependToLog("error: " + event.error.message);
         } else {
-            prependToLog("success: WP.com theme count = " + mThemeStore.getWpThemes().size());
+            prependToLog("success: WP.com theme count = " + mThemeStore.getWpComThemes().size());
             SiteModel jpSite = getJetpackConnectedSite();
             if (jpSite != null) {
                 List<ThemeModel> themes = mThemeStore.getThemesForSite(jpSite);
