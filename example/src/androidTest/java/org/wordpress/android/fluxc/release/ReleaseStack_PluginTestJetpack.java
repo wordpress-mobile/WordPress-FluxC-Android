@@ -66,7 +66,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        List<PluginModel> plugins = mPluginStore.getPlugins(site);
+        List<PluginModel> plugins = mPluginStore.getSitePlugins(site);
         assertTrue(plugins.size() > 0);
 
         signOutWPCom();
@@ -88,7 +88,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        List<PluginModel> plugins = mPluginStore.getPlugins(site);
+        List<PluginModel> plugins = mPluginStore.getSitePlugins(site);
         assertTrue(plugins.size() > 0);
         PluginModel plugin = plugins.get(0);
         boolean isActive = !plugin.isActive();
@@ -102,7 +102,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        PluginModel newPlugin = mPluginStore.getPluginByName(site, plugin.getName());
+        PluginModel newPlugin = mPluginStore.getSitePluginByName(site, plugin.getName());
         assertNotNull(newPlugin);
         assertEquals(newPlugin.isActive(), isActive);
 
