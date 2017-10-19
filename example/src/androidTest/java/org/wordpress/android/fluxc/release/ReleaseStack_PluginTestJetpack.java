@@ -14,8 +14,8 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.PluginStore;
-import org.wordpress.android.fluxc.store.PluginStore.OnPluginChanged;
-import org.wordpress.android.fluxc.store.PluginStore.OnPluginsChanged;
+import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginChanged;
+import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsChanged;
 import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
@@ -153,10 +153,10 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onPluginsChanged(OnPluginsChanged event) {
-        AppLog.i(T.API, "Received onPluginsChanged");
+    public void onSitePluginsChanged(OnSitePluginsChanged event) {
+        AppLog.i(T.API, "Received onSitePluginsChanged");
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred in onPluginsChanged with type: "
+            throw new AssertionError("Unexpected error occurred in onSitePluginsChanged with type: "
                     + event.error.type);
         }
         assertEquals(mNextEvent, TestEvents.PLUGINS_FETCHED);
@@ -165,10 +165,10 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onPluginChanged(OnPluginChanged event) {
-        AppLog.i(T.API, "Received onPluginChanged");
+    public void onSitePluginChanged(OnSitePluginChanged event) {
+        AppLog.i(T.API, "Received onSitePluginChanged");
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred in onPluginChanged with type: "
+            throw new AssertionError("Unexpected error occurred in onSitePluginChanged with type: "
                     + event.error.type);
         }
         assertEquals(mNextEvent, TestEvents.UPDATED_PLUGIN);
