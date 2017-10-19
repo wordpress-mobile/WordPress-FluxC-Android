@@ -1,4 +1,4 @@
-package org.wordpress.android.fluxc.example;
+package org.wordpress.android.fluxc.example.di;
 
 import com.facebook.stetho.okhttp3.StethoInterceptor;
 

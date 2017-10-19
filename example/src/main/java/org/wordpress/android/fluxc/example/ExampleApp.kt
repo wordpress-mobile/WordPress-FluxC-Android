@@ -6,6 +6,8 @@ import com.yarolegovich.wellsql.WellSql
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
+import org.wordpress.android.fluxc.example.di.AppComponent
+import org.wordpress.android.fluxc.example.di.DaggerAppComponent
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import javax.inject.Inject
 

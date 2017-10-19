@@ -1,11 +1,21 @@
-package org.wordpress.android.fluxc.example
+package org.wordpress.android.fluxc.example.di
 
 import android.app.Application
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.AndroidInjectionModule
 import dagger.android.AndroidInjector
-import org.wordpress.android.fluxc.example.di.ApplicationModule
+import org.wordpress.android.fluxc.example.AccountFragment
+import org.wordpress.android.fluxc.example.CommentsFragment
+import org.wordpress.android.fluxc.example.ExampleApp
+import org.wordpress.android.fluxc.example.MainExampleActivity
+import org.wordpress.android.fluxc.example.MainFragment
+import org.wordpress.android.fluxc.example.MediaFragment
+import org.wordpress.android.fluxc.example.PostsFragment
+import org.wordpress.android.fluxc.example.SignedOutActionsFragment
+import org.wordpress.android.fluxc.example.SitesFragment
+import org.wordpress.android.fluxc.example.TaxonomiesFragment
+import org.wordpress.android.fluxc.example.UploadsFragment
 import org.wordpress.android.fluxc.module.ReleaseBaseModule
 import org.wordpress.android.fluxc.module.ReleaseNetworkModule
 import org.wordpress.android.fluxc.module.ReleaseOkHttpClientModule
