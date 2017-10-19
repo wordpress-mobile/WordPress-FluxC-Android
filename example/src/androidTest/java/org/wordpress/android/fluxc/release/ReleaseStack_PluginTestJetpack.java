@@ -16,7 +16,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.PluginStore;
 import org.wordpress.android.fluxc.store.PluginStore.OnPluginChanged;
 import org.wordpress.android.fluxc.store.PluginStore.OnPluginsChanged;
-import org.wordpress.android.fluxc.store.PluginStore.UpdatePluginPayload;
+import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
@@ -97,7 +97,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.UPDATED_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
-        UpdatePluginPayload payload = new UpdatePluginPayload(site, plugin);
+        UpdateSitePluginPayload payload = new UpdateSitePluginPayload(site, plugin);
         mDispatcher.dispatch(PluginActionBuilder.newUpdateSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
