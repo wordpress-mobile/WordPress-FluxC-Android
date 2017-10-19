@@ -186,6 +186,12 @@ TEST_WPORG_PASSWORD_JETPACK_SUBFOLDER = FIXME
 TEST_WPORG_URL_JETPACK_SUBFOLDER = FIXME
 TEST_WPORG_URL_JETPACK_SUBFOLDER_ENDPOINT = FIXME
 
+# Self hosted - Jetpack site with two themes installed
+TEST_WPCOM_USERNAME_JETPACK_TWO_THEMES = FIXME
+TEST_WPCOM_PASSWORD_JETPACK_TWO_THEMES = FIXME
+TEST_THEME1 = FIXME
+TEST_THEME2 = FIXME
+
 ## Local
 # These files should be at least 500KB, otherwise they may cause cancellation tests to fail on fast enough connections
 
