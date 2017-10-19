@@ -198,6 +198,22 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             assertNotNull(listTheme);
         }
 
+        // get active theme
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
+        mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(jetpackSite));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // if Edin is active update site's active theme to something else
+        if (themeId.equals(mCurrentTheme.getThemeId())) {
+            mCountDownLatch = new CountDownLatch(1);
+            mNextEvent = TestEvents.ACTIVATED_THEME;
+            ThemeModel toActivate = getOtherTheme(themes, themeId);
+            ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(jetpackSite, toActivate);
+            mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
+            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        }
+
         themeToDelete.setId(listTheme.getId());
         deleteTheme(jetpackSite, themeToDelete);
         assertFalse(listContainsThemeWithId(mThemeStore.getThemesForSite(jetpackSite), themeId));
@@ -345,5 +361,14 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     private boolean listContainsThemeWithId(List<ThemeModel> list, String themeId) {
         return getThemeFromList(list, themeId) != null;
+    }
+
+    private ThemeModel getOtherTheme(List<ThemeModel> themes, String idToIgnore) {
+        for (ThemeModel theme : themes) {
+            if (!idToIgnore.equals(theme.getThemeId())) {
+                return theme;
+            }
+        }
+        return null;
     }
 }
