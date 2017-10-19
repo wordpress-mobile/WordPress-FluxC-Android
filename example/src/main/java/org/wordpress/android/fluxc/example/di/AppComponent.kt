@@ -8,7 +8,6 @@ import dagger.android.AndroidInjector
 import org.wordpress.android.fluxc.example.AccountFragment
 import org.wordpress.android.fluxc.example.CommentsFragment
 import org.wordpress.android.fluxc.example.ExampleApp
-import org.wordpress.android.fluxc.example.MainExampleActivity
 import org.wordpress.android.fluxc.example.MainFragment
 import org.wordpress.android.fluxc.example.MediaFragment
 import org.wordpress.android.fluxc.example.PostsFragment
@@ -28,11 +27,11 @@ import javax.inject.Singleton
         AppSecretsModule::class,
         ReleaseOkHttpClientModule::class,
         ReleaseBaseModule::class,
-        ReleaseNetworkModule::class))
+        ReleaseNetworkModule::class,
+        MainActivityModule::class))
 interface AppComponent : AndroidInjector<ExampleApp> {
     override fun inject(app: ExampleApp)
 
-    fun inject(activity: MainExampleActivity)
     fun inject(fragment: SitesFragment)
     fun inject(fragment: MainFragment)
     fun inject(fragment: MediaFragment)
@@ -43,7 +42,6 @@ interface AppComponent : AndroidInjector<ExampleApp> {
     fun inject(fragment: TaxonomiesFragment)
     fun inject(fragment: ThemeFragment)
     fun inject(fragment: UploadsFragment)
-
     // Allows us to inject the application without having to instantiate any modules, and provides the Application
     // in the app graph
     @Component.Builder
