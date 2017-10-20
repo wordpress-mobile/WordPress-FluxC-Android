@@ -182,6 +182,10 @@ TEST_WPORG_PASSWORD_JETPACK_SUBFOLDER = FIXME
 TEST_WPORG_URL_JETPACK_SUBFOLDER = FIXME
 TEST_WPORG_URL_JETPACK_SUBFOLDER_ENDPOINT = FIXME
 
+# WP.com - Account with only one site: a Jetpack site with beta versions enabled: http://do.wpmt.co/jp-beta/
+TEST_WPCOM_USERNAME_JETPACK_BETA_SITE = FIXME
+TEST_WPCOM_PASSWORD_JETPACK_BETA_SITE = FIXME
+
 ## Local
 # These files should be at least 500KB, otherwise they may cause cancellation tests to fail on fast enough connections
 
