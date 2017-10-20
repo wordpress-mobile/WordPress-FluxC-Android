@@ -38,6 +38,8 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     @Inject ThemeStore mThemeStore;
     private ThemeModel mCurrentTheme;
     private ThemeModel mActivatedTheme;
+    private ThemeModel mInstalledTheme;
+    private ThemeModel mDeletedTheme;
 
     private TestEvents mNextEvent;
 
@@ -148,8 +150,8 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             deleteTheme(jetpackSite, themeToInstall);
 
             // mActivatedTheme is set in onThemeActivated
-            assertNotNull(mActivatedTheme);
-            assertEquals(themeId, mActivatedTheme.getThemeId());
+            assertNotNull(mDeletedTheme);
+            assertEquals(themeId, mDeletedTheme.getThemeId());
 
             // make sure theme is no longer available for site (delete was successful)
             assertFalse(listContainsThemeWithId(mThemeStore.getThemesForSite(jetpackSite), themeId));
@@ -187,8 +189,8 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             installTheme(jetpackSite, themeToDelete);
 
             // mActivatedTheme is set in onThemeActivated
-            assertNotNull(mActivatedTheme);
-            assertEquals(themeId, mActivatedTheme.getThemeId());
+            assertNotNull(mInstalledTheme);
+            assertEquals(themeId, mInstalledTheme.getThemeId());
 
             // make sure theme is available for site (install was successful)
             listTheme = getThemeFromList(mThemeStore.getThemesForSite(jetpackSite), themeId);
@@ -247,10 +249,30 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME
-                || mNextEvent == TestEvents.INSTALLED_THEME
-                || mNextEvent == TestEvents.DELETED_THEME);
+        assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME);
         mActivatedTheme = event.theme;
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onThemeInstalled(ThemeStore.OnThemeInstalled event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertTrue(mNextEvent == TestEvents.INSTALLED_THEME);
+        mInstalledTheme = event.theme;
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onThemeDeleted(ThemeStore.OnThemeDeleted event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertTrue(mNextEvent == TestEvents.DELETED_THEME);
+        mDeletedTheme = event.theme;
         mCountDownLatch.countDown();
     }
 
