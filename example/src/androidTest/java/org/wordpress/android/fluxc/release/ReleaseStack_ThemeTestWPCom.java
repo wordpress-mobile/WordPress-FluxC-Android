@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.model.ThemeModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.ThemeStore;
+import org.wordpress.android.fluxc.store.ThemeStore.ActivateThemePayload;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -76,7 +77,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
         assertNotNull(themeToActivate);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.ACTIVATED_THEME;
-        ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(wpComSite, themeToActivate);
+        ActivateThemePayload payload = new ActivateThemePayload(wpComSite, themeToActivate);
         mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertNotNull(mActivatedTheme);

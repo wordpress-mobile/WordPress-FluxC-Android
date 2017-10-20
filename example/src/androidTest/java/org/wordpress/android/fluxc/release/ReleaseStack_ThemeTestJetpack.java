@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.model.ThemeModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.ThemeStore;
+import org.wordpress.android.fluxc.store.ThemeStore.ActivateThemePayload;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -118,7 +119,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         assertNotNull(themeToActivate);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.ACTIVATED_THEME;
-        ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(jetpackSite, themeToActivate);
+        ActivateThemePayload payload = new ActivateThemePayload(jetpackSite, themeToActivate);
         mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertNotNull(mActivatedTheme);
@@ -209,7 +210,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             mCountDownLatch = new CountDownLatch(1);
             mNextEvent = TestEvents.ACTIVATED_THEME;
             ThemeModel toActivate = getOtherTheme(themes, themeId);
-            ThemeStore.ActivateThemePayload payload = new ThemeStore.ActivateThemePayload(jetpackSite, toActivate);
+            ActivateThemePayload payload = new ActivateThemePayload(jetpackSite, toActivate);
             mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
             assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         }
@@ -326,7 +327,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     private void installTheme(SiteModel site, ThemeModel theme) throws InterruptedException {
-        ThemeStore.ActivateThemePayload install = new ThemeStore.ActivateThemePayload(site, theme);
+        ActivateThemePayload install = new ActivateThemePayload(site, theme);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.INSTALLED_THEME;
         mDispatcher.dispatch(ThemeActionBuilder.newInstallThemeAction(install));
@@ -334,7 +335,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     private void deleteTheme(SiteModel site, ThemeModel theme) throws InterruptedException {
-        ThemeStore.ActivateThemePayload delete = new ThemeStore.ActivateThemePayload(site, theme);
+        ActivateThemePayload delete = new ActivateThemePayload(site, theme);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.DELETED_THEME;
         mDispatcher.dispatch(ThemeActionBuilder.newDeleteThemeAction(delete));
