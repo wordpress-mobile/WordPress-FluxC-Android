@@ -59,8 +59,6 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
         mNextEvent = TestEvents.FETCHED_THEMES;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        List<ThemeModel> themes = mThemeStore.getWpComThemes();
-        assertTrue(themes.size() > 1);
 
         // get current active theme on a site
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
@@ -73,7 +71,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
         assertNotNull(mCurrentTheme);
 
         // activate a different theme
-        ThemeModel themeToActivate = getNewNonPremiumTheme(mCurrentTheme.getThemeId(), themes);
+        ThemeModel themeToActivate = getNewNonPremiumTheme(mCurrentTheme.getThemeId(), mThemeStore.getWpComThemes());
         assertNotNull(themeToActivate);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.ACTIVATED_THEME;
