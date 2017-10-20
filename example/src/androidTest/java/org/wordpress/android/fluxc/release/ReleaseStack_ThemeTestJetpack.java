@@ -89,6 +89,8 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.FETCHED_INSTALLED_THEMES;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchInstalledThemesAction(jetpackSite));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // make sure there are at least 2 themes, one that's active and one that will be activated
         List<ThemeModel> themes = mThemeStore.getThemesForSite(jetpackSite);
         assertTrue(themes.size() > 1);
 
@@ -119,7 +121,6 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     public void testInstallTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
-        assertTrue(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
 
         final String themeId = "edin-wpcom";
         final ThemeModel themeToInstall = new ThemeModel();
@@ -132,6 +133,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         mDispatcher.dispatch(ThemeActionBuilder.newFetchInstalledThemesAction(jetpackSite));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
+        // make sure installed themes were successfully fetched
         List<ThemeModel> themes = mThemeStore.getThemesForSite(jetpackSite);
         assertFalse(themes.isEmpty());
 
