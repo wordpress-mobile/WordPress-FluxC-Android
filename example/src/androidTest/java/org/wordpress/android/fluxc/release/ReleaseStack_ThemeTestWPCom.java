@@ -87,6 +87,9 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
     }
 
     public void testFetchWPComThemes() throws InterruptedException {
+        // verify themes don't already exist in store
+        assertTrue(mThemeStore.getWpComThemes().isEmpty());
+
         // no need to sign into account, this is a test for an endpoint that does not require authentication
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.FETCHED_THEMES;
@@ -94,7 +97,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
 
         // verify response received and WP themes list is not empty
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        assertTrue(mThemeStore.getWpComThemes().size() > 0);
+        assertFalse(mThemeStore.getWpComThemes().isEmpty());
     }
 
     public void testFetchCurrentTheme() throws InterruptedException {
