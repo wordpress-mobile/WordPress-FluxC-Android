@@ -98,15 +98,19 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertNotNull(mCurrentTheme);
 
-        // activate a different theme
+        // select a different theme to activate
         ThemeModel themeToActivate = mCurrentTheme.getThemeId().equals(themes.get(0).getThemeId())
                 ? themes.get(1) : themes.get(0);
         assertNotNull(themeToActivate);
+
+        // activate it
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.ACTIVATED_THEME;
         ActivateThemePayload payload = new ActivateThemePayload(jetpackSite, themeToActivate);
         mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // mActivatedTheme is set in onThemeActivated
         assertNotNull(mActivatedTheme);
         assertEquals(mActivatedTheme.getThemeId(), themeToActivate.getThemeId());
 
@@ -133,12 +137,19 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
         // delete edin before attempting to install
         if (listContainsThemeWithId(themes, themeId)) {
+            // find local ThemeModel with matching themeId for delete call
             ThemeModel listTheme = getThemeFromList(themes, themeId);
             assertNotNull(listTheme);
+
+            // delete existing theme from site
             themeToInstall.setId(listTheme.getId());
             deleteTheme(jetpackSite, themeToInstall);
+
+            // mActivatedTheme is set in onThemeActivated
             assertNotNull(mActivatedTheme);
             assertEquals(themeId, mActivatedTheme.getThemeId());
+
+            // make sure theme is no longer available for site (delete was successful)
             assertFalse(listContainsThemeWithId(mThemeStore.getThemesForSite(jetpackSite), themeId));
             mActivatedTheme = null;
         }
@@ -172,8 +183,12 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         // install edin before attempting to delete
         if (listTheme == null) {
             installTheme(jetpackSite, themeToDelete);
+
+            // mActivatedTheme is set in onThemeActivated
             assertNotNull(mActivatedTheme);
             assertEquals(themeId, mActivatedTheme.getThemeId());
+
+            // make sure theme is available for site (install was successful)
             listTheme = getThemeFromList(mThemeStore.getThemesForSite(jetpackSite), themeId);
             assertNotNull(listTheme);
         }
