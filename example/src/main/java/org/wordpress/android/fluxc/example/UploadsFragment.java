@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.example;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -36,6 +37,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import dagger.android.AndroidInjection;
+
 import static android.app.Activity.RESULT_OK;
 
 public class UploadsFragment extends Fragment {
@@ -54,9 +57,9 @@ public class UploadsFragment extends Fragment {
     private View mCancelButton;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        ((ExampleApp) getActivity().getApplication()).getComponent().inject(this);
+    public void onAttach(Context context) {
+        AndroidInjection.inject(this);
+        super.onAttach(context);
         if (mSiteStore.hasSite()) {
             mSite = mSiteStore.getSites().get(0);
         }

@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.example;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,14 +28,16 @@ import org.wordpress.android.util.AppLog.T;
 
 import javax.inject.Inject;
 
+import dagger.android.AndroidInjection;
+
 public class SitesFragment extends Fragment {
     @Inject SiteStore mSiteStore;
     @Inject Dispatcher mDispatcher;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        ((ExampleApp) getActivity().getApplication()).getComponent().inject(this);
+    public void onAttach(Context context) {
+        AndroidInjection.inject(this);
+        super.onAttach(context);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.example;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -21,15 +22,17 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import dagger.android.AndroidInjection;
+
 public class ThemeFragment extends Fragment {
     @Inject SiteStore mSiteStore;
     @Inject ThemeStore mThemeStore;
     @Inject Dispatcher mDispatcher;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        ((ExampleApp) getActivity().getApplication()).getComponent().inject(this);
+    public void onAttach(Context context) {
+        AndroidInjection.inject(this);
+        super.onAttach(context);
     }
 
     @Override
