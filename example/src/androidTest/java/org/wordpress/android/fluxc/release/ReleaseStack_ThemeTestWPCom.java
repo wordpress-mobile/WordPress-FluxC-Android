@@ -152,6 +152,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_Base {
         }
         assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME);
         mActivatedTheme = event.theme;
+        mCurrentTheme = event.theme;
         mCountDownLatch.countDown();
     }
 
