@@ -54,13 +54,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     public void testFetchInstalledThemes() throws InterruptedException {
-        // sign into a WP.com account with a Jetpack site
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
-
-        // verify Jetpack site is available
-        SiteModel jetpackSite = getJetpackSite();
-        assertNotNull(jetpackSite);
+        final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
         // fetch installed themes
         mNextEvent = TestEvents.FETCHED_INSTALLED_THEMES;
@@ -75,13 +69,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     public void testFetchCurrentTheme() throws InterruptedException {
-        // sign into a WP.com account with a Jetpack site
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
-
-        // verify Jetpack site is available
-        SiteModel jetpackSite = getJetpackSite();
-        assertNotNull(jetpackSite);
+        final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
         // fetch current theme
         mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
@@ -94,10 +82,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     public void testActivateTheme() throws InterruptedException {
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
-        SiteModel jetpackSite = getJetpackSite();
-        assertNotNull(jetpackSite);
+        final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
         // get installed themes
         mCountDownLatch = new CountDownLatch(1);
@@ -129,16 +114,13 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     public void testInstallTheme() throws InterruptedException {
+        final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
+        assertTrue(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
+
         final String themeId = "edin-wpcom";
         final ThemeModel themeToInstall = new ThemeModel();
         themeToInstall.setName("Edin");
         themeToInstall.setThemeId(themeId);
-
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
-        SiteModel jetpackSite = getJetpackSite();
-        assertNotNull(jetpackSite);
-        assertTrue(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
 
         // get installed themes
         mCountDownLatch = new CountDownLatch(1);
@@ -169,16 +151,13 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     public void testDeleteTheme() throws InterruptedException {
+        final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
+        assertTrue(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
+
         final String themeId = "edin-wpcom";
         final ThemeModel themeToDelete = new ThemeModel();
         themeToDelete.setName("Edin");
         themeToDelete.setThemeId(themeId);
-
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
-        SiteModel jetpackSite = getJetpackSite();
-        assertNotNull(jetpackSite);
-        assertTrue(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
 
         // get installed themes
         mCountDownLatch = new CountDownLatch(1);
@@ -292,6 +271,17 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         }
         assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
         mCountDownLatch.countDown();
+    }
+
+    private SiteModel signIntoWpComAccountWithJetpackSite() throws InterruptedException {
+        // sign into a WP.com account with a Jetpack site
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
+
+        // verify Jetpack site is available
+        final SiteModel jetpackSite = getJetpackSite();
+        assertNotNull(jetpackSite);
+        return jetpackSite;
     }
 
     private void authenticateWPComAndFetchSites(String username, String password) throws InterruptedException {
