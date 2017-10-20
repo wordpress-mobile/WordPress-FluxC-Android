@@ -14,7 +14,7 @@ import javax.inject.Inject
 open class ExampleApp : Application(), HasActivityInjector {
     @Inject lateinit var activityInjector: DispatchingAndroidInjector<Activity>
 
-    open val component: AppComponent by lazy {
+    protected open val component: AppComponent by lazy {
         DaggerAppComponent.builder()
                 .application(this)
                 .build()
