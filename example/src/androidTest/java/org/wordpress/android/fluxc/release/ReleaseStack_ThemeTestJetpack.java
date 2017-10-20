@@ -205,8 +205,9 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (themeId.equals(mCurrentTheme.getThemeId())) {
             mCountDownLatch = new CountDownLatch(1);
             mNextEvent = TestEvents.ACTIVATED_THEME;
-            ThemeModel toActivate = getOtherTheme(themes, themeId);
-            ActivateThemePayload payload = new ActivateThemePayload(jetpackSite, toActivate);
+            ThemeModel themeToActivate = getOtherTheme(themes, themeId);
+            assertNotNull(themeToActivate);
+            ActivateThemePayload payload = new ActivateThemePayload(jetpackSite, themeToActivate);
             mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
             assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         }
