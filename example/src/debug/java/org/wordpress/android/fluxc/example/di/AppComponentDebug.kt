@@ -14,8 +14,7 @@ import javax.inject.Singleton
         DebugOkHttpClientModule::class,
         ReleaseBaseModule::class,
         ReleaseNetworkModule::class,
-        MainActivityModule::class,
-        FragmentsModule::class))
+        MainActivityModule::class))
 interface AppComponentDebug : AppComponent {
     @Component.Builder
     interface Builder : AppComponent.Builder

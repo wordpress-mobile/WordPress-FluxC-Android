@@ -6,6 +6,6 @@ import org.wordpress.android.fluxc.example.MainExampleActivity
 
 @Module
 internal abstract class MainActivityModule {
-    @ContributesAndroidInjector
+    @ContributesAndroidInjector(modules = arrayOf(FragmentsModule::class))
     abstract fun provideMainActivityInjector(): MainExampleActivity
 }

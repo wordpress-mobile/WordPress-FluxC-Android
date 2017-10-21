@@ -19,8 +19,7 @@ import javax.inject.Singleton
         ReleaseOkHttpClientModule::class,
         ReleaseBaseModule::class,
         ReleaseNetworkModule::class,
-        MainActivityModule::class,
-        FragmentsModule::class))
+        MainActivityModule::class))
 interface AppComponent : AndroidInjector<ExampleApp> {
     override fun inject(app: ExampleApp)
 
