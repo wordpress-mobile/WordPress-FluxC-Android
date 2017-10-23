@@ -124,6 +124,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         List<MediaModel> mediaModelList = new ArrayList<>();
         mediaModelList.add(testMedia);
         mUploadStore.registerPostModel(mPost, mediaModelList);
+        assertTrue(mUploadStore.isRegisteredPostModel(mPost));
 
         // PostUploadModel exists and has correct state and associated media
         assertEquals(1, mUploadStore.getPendingPosts().size());
@@ -218,6 +219,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         List<MediaModel> mediaModelList = new ArrayList<>();
         mediaModelList.add(testMedia);
         mUploadStore.registerPostModel(mPost, mediaModelList);
+        assertTrue(mUploadStore.isRegisteredPostModel(mPost));
 
         mNextEvent = TestEvents.CANCELLED_POST;
         mDispatcher.dispatch(UploadActionBuilder.newCancelPostAction(mPost));
@@ -282,6 +284,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         List<MediaModel> mediaModelList = new ArrayList<>();
         mediaModelList.add(testMedia);
         mUploadStore.registerPostModel(mPost, mediaModelList);
+        assertTrue(mUploadStore.isRegisteredPostModel(mPost));
 
         // MediaUploadModel exists and has correct state
         MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
@@ -337,6 +340,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         List<MediaModel> mediaModelList = new ArrayList<>();
         mediaModelList.add(testMedia);
         mUploadStore.registerPostModel(mPost, mediaModelList);
+        assertTrue(mUploadStore.isRegisteredPostModel(mPost));
 
         // MediaUploadModel exists and has correct state
         MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
