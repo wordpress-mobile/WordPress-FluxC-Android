@@ -149,7 +149,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             themeToInstall.setId(listTheme.getId());
             deleteTheme(jetpackSite, themeToInstall);
 
-            // mActivatedTheme is set in onThemeActivated
+            // mDeletedTheme is set in onThemeDeleted
             assertNotNull(mDeletedTheme);
             assertEquals(themeId, mDeletedTheme.getThemeId());
 
@@ -188,7 +188,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (listTheme == null) {
             installTheme(jetpackSite, themeToDelete);
 
-            // mActivatedTheme is set in onThemeActivated
+            // mInstalledTheme is set in onThemeInstalled
             assertNotNull(mInstalledTheme);
             assertEquals(themeId, mInstalledTheme.getThemeId());
 
