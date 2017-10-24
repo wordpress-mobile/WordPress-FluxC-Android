@@ -122,7 +122,7 @@ public class MediaFragment extends Fragment {
                             fetchMedia(mSite, media);
                         }
                     }
-                }, "comma-separate media IDs", null, null);
+                }, "comma-separate media IDs", "", "");
                 dialog.show(getFragmentManager(), "media-ids-dialog");
             }
         });
