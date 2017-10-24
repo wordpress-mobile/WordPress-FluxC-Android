@@ -85,6 +85,7 @@ class MainFragment : Fragment() {
         media.setOnClickListener(getOnClickListener(MediaFragment()))
         taxonomies.setOnClickListener(getOnClickListener(TaxonomiesFragment()))
         uploads.setOnClickListener(getOnClickListener(UploadsFragment()))
+        themes.setOnClickListener(getOnClickListener(ThemeFragment()))
     }
 
     // Private methods

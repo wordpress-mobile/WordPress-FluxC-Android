@@ -26,4 +26,5 @@ interface AppComponent {
     fun inject(fragment: SignedOutActionsFragment)
     fun inject(fragment: TaxonomiesFragment)
     fun inject(fragment: UploadsFragment)
+    fun inject(fragment: ThemeFragment)
 }
