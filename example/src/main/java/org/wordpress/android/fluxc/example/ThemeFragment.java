@@ -199,6 +199,28 @@ public class ThemeFragment extends Fragment {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onThemeInstalled(ThemeStore.OnThemeInstalled event) {
+        prependToLog("onThemeInstalled: ");
+        if (event.isError()) {
+            prependToLog("error: " + event.error.message);
+        } else {
+            prependToLog("success: theme = " + event.theme.getThemeId());
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onThemeDeleted(ThemeStore.OnThemeDeleted event) {
+        prependToLog("onThemeDeleted: ");
+        if (event.isError()) {
+            prependToLog("error: " + event.error.message);
+        } else {
+            prependToLog("success: theme = " + event.theme.getThemeId());
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onThemeActivated(ThemeStore.OnThemeActivated event) {
         prependToLog("onThemeActivated: ");
         if (event.isError()) {
