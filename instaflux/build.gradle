@@ -50,13 +50,16 @@ android.buildTypes.all { buildType ->
 dependencies {
     compile project(':fluxc');
 
-    compile 'com.google.dagger:dagger:2.0.2'
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support:support-v4:25.3.1'
     compile 'com.android.support:recyclerview-v7:25.3.1'
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
 
     compile 'com.squareup.picasso:picasso:2.5.2'
-    kapt 'com.google.dagger:dagger-compiler:2.0.2'
+
+    // Dagger
+    compile 'com.google.dagger:dagger:2.11'
+    kapt 'com.google.dagger:dagger-compiler:2.11'
     provided 'org.glassfish:javax.annotation:10.0-b28'
 }
