@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import kotlinx.android.synthetic.main.fragment_themes.*
 
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -20,9 +21,9 @@ import org.wordpress.android.fluxc.store.SiteStore
 import javax.inject.Inject
 
 class ThemeFragment : Fragment() {
-    @Inject internal var mSiteStore: SiteStore? = null
-    @Inject internal var mThemeStore: ThemeStore? = null
-    @Inject internal var mDispatcher: Dispatcher? = null
+    @Inject internal lateinit var siteStore: SiteStore
+    @Inject internal lateinit var themeStore: ThemeStore
+    @Inject internal lateinit var dispatcher: Dispatcher
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,135 +32,128 @@ class ThemeFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        mDispatcher!!.register(this)
+        dispatcher.register(this)
     }
 
     override fun onStop() {
         super.onStop()
-        mDispatcher!!.unregister(this)
+        dispatcher.unregister(this)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle): View? {
-        // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_themes, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?
+            = inflater.inflate(R.layout.fragment_themes, container, false)
 
-        view.findViewById(R.id.activate_theme_wpcom).setOnClickListener(View.OnClickListener {
+    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        activate_theme_wpcom.setOnClickListener {
             val id = getThemeIdFromInput(view)
             if (TextUtils.isEmpty(id)) {
                 prependToLog("Please enter a theme id")
-                return@OnClickListener
-            }
-
-            val site = wpComSite
-            if (site == null) {
-                prependToLog("No WP.com site found, unable to test.")
             } else {
-                val theme = ThemeModel()
-                theme.localSiteId = site.id
-                theme.themeId = id
-                val payload = ThemeStore.ActivateThemePayload(site, theme)
-                mDispatcher!!.dispatch(ThemeActionBuilder.newActivateThemeAction(payload))
+                val site = wpComSite
+                if (site == null) {
+                    prependToLog("No WP.com site found, unable to test.")
+                } else {
+                    val theme = ThemeModel()
+                    theme.localSiteId = site.id
+                    theme.themeId = id
+                    val payload = ThemeStore.ActivateThemePayload(site, theme)
+                    dispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload))
+                }
             }
-        })
+        }
 
-        view.findViewById(R.id.activate_theme_jp).setOnClickListener(View.OnClickListener {
+        activate_theme_jp.setOnClickListener {
             val id = getThemeIdFromInput(view)
             if (TextUtils.isEmpty(id)) {
                 prependToLog("Please enter a theme id")
-                return@OnClickListener
-            }
-
-            val site = jetpackConnectedSite
-            if (site == null) {
-                prependToLog("No Jetpack connected site found, unable to test.")
             } else {
-                val theme = ThemeModel()
-                theme.localSiteId = site.id
-                theme.themeId = id
-                val payload = ThemeStore.ActivateThemePayload(site, theme)
-                mDispatcher!!.dispatch(ThemeActionBuilder.newActivateThemeAction(payload))
+                val site = jetpackConnectedSite
+                if (site == null) {
+                    prependToLog("No Jetpack connected site found, unable to test.")
+                } else {
+                    val theme = ThemeModel()
+                    theme.localSiteId = site.id
+                    theme.themeId = id
+                    val payload = ThemeStore.ActivateThemePayload(site, theme)
+                    dispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload))
+                }
             }
-        })
+        }
 
-        view.findViewById(R.id.install_theme_jp).setOnClickListener(View.OnClickListener {
+        install_theme_jp.setOnClickListener {
             val id = getThemeIdFromInput(view)
             if (TextUtils.isEmpty(id)) {
                 prependToLog("Please enter a theme id")
-                return@OnClickListener
-            }
-
-            val site = jetpackConnectedSite
-            if (site == null) {
-                prependToLog("No Jetpack connected site found, unable to test.")
             } else {
-                val theme = ThemeModel()
-                theme.localSiteId = site.id
-                theme.themeId = id
-                val payload = ThemeStore.ActivateThemePayload(site, theme)
-                mDispatcher!!.dispatch(ThemeActionBuilder.newInstallThemeAction(payload))
+                val site = jetpackConnectedSite
+                if (site == null) {
+                    prependToLog("No Jetpack connected site found, unable to test.")
+                } else {
+                    val theme = ThemeModel()
+                    theme.localSiteId = site.id
+                    theme.themeId = id
+                    val payload = ThemeStore.ActivateThemePayload(site, theme)
+                    dispatcher.dispatch(ThemeActionBuilder.newInstallThemeAction(payload))
+                }
             }
-        })
+        }
 
-        view.findViewById(R.id.search_themes).setOnClickListener(View.OnClickListener {
+        search_themes.setOnClickListener {
             val term = getThemeIdFromInput(view)
             if (TextUtils.isEmpty(term)) {
                 prependToLog("Please enter a search term")
-                return@OnClickListener
+            } else {
+                dispatcher.dispatch(ThemeActionBuilder.newSearchThemesAction(ThemeStore.SearchThemesPayload(term!!)))
             }
+        }
 
-            val payload = ThemeStore.SearchThemesPayload(term!!)
-            mDispatcher!!.dispatch(ThemeActionBuilder.newSearchThemesAction(payload))
-        })
-
-        view.findViewById(R.id.delete_theme_jp).setOnClickListener(View.OnClickListener {
+        delete_theme_jp.setOnClickListener {
             val id = getThemeIdFromInput(view)
             if (TextUtils.isEmpty(id)) {
                 prependToLog("Please enter a theme id")
-                return@OnClickListener
-            }
-
-            val site = jetpackConnectedSite
-            if (site == null) {
-                prependToLog("No Jetpack connected site found, unable to test.")
             } else {
-                val theme = ThemeModel()
-                theme.localSiteId = site.id
-                theme.themeId = id
-                val payload = ThemeStore.ActivateThemePayload(site, theme)
-                mDispatcher!!.dispatch(ThemeActionBuilder.newDeleteThemeAction(payload))
-            }
-        })
-
-        view.findViewById(R.id.fetch_wpcom_themes).setOnClickListener { mDispatcher!!.dispatch(ThemeActionBuilder.newFetchWpComThemesAction()) }
-
-        view.findViewById(R.id.fetch_installed_themes).setOnClickListener {
-            val jetpackSite = jetpackConnectedSite
-            if (jetpackSite == null) {
-                prependToLog("No Jetpack connected site found, unable to test.")
-            } else {
-                mDispatcher!!.dispatch(ThemeActionBuilder.newFetchInstalledThemesAction(jetpackSite))
+                val site = jetpackConnectedSite
+                if (site == null) {
+                    prependToLog("No Jetpack connected site found, unable to test.")
+                } else {
+                    val theme = ThemeModel()
+                    theme.localSiteId = site.id
+                    theme.themeId = id
+                    val payload = ThemeStore.ActivateThemePayload(site, theme)
+                    dispatcher.dispatch(ThemeActionBuilder.newDeleteThemeAction(payload))
+                }
             }
         }
 
-        view.findViewById(R.id.fetch_current_theme_jp).setOnClickListener {
-            val jetpackSite = jetpackConnectedSite
-            if (jetpackSite == null) {
+        fetch_wpcom_themes.setOnClickListener {
+            dispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction())
+        }
+
+        fetch_installed_themes.setOnClickListener {
+            if (jetpackConnectedSite == null) {
                 prependToLog("No Jetpack connected site found, unable to test.")
             } else {
-                mDispatcher!!.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(jetpackSite))
+                dispatcher.dispatch(ThemeActionBuilder.newFetchInstalledThemesAction(jetpackConnectedSite))
             }
         }
 
-        view.findViewById(R.id.fetch_current_theme_wpcom).setOnClickListener {
-            val wpcomSite = wpComSite
-            if (wpcomSite == null) {
+        fetch_current_theme_jp.setOnClickListener {
+            if (jetpackConnectedSite == null) {
+                prependToLog("No Jetpack connected site found, unable to test.")
+            } else {
+                dispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(jetpackConnectedSite))
+            }
+        }
+
+        fetch_current_theme_wpcom.setOnClickListener {
+            if (wpComSite == null) {
                 prependToLog("No WP.com site found, unable to test.")
             } else {
-                mDispatcher!!.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(wpcomSite))
+                dispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(wpComSite))
             }
         }
-
-        return view
     }
 
     @Suppress("unused")
@@ -224,10 +218,10 @@ class ThemeFragment : Fragment() {
         if (event.isError) {
             prependToLog("error: " + event.error.message)
         } else {
-            prependToLog("success: WP.com theme count = " + mThemeStore!!.wpComThemes.size)
+            prependToLog("success: WP.com theme count = " + themeStore.wpComThemes.size)
             val jpSite = jetpackConnectedSite
             if (jpSite != null) {
-                val themes = mThemeStore!!.getThemesForSite(jpSite)
+                val themes = themeStore.getThemesForSite(jpSite)
                 prependToLog("Installed theme count = " + themes.size)
             }
         }
