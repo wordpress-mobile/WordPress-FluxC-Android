@@ -24,26 +24,6 @@ class ThemeFragment : Fragment() {
     @Inject internal var mThemeStore: ThemeStore? = null
     @Inject internal var mDispatcher: Dispatcher? = null
 
-    private val wpComSite: SiteModel?
-        get() {
-            for (site in mSiteStore!!.sites) {
-                if (site != null && site.isWPCom) {
-                    return site
-                }
-            }
-            return null
-        }
-
-    private val jetpackConnectedSite: SiteModel?
-        get() {
-            for (site in mSiteStore!!.sites) {
-                if (site != null && site.isJetpackConnected) {
-                    return site
-                }
-            }
-            return null
-        }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         (activity.application as ExampleApp).component.inject(this)
@@ -253,12 +233,20 @@ class ThemeFragment : Fragment() {
         }
     }
 
-    private fun prependToLog(s: String) {
-        (activity as MainExampleActivity).prependToLog(s)
-    }
+    private fun prependToLog(s: String) = (activity as MainExampleActivity).prependToLog(s)
 
     private fun getThemeIdFromInput(root: View?): String? {
         val themeIdInput = if (root == null) null else root.findViewById(R.id.theme_id) as TextView
         return themeIdInput?.text?.toString()
     }
+
+    private val wpComSite: SiteModel?
+        get() {
+            return siteStore.sites.firstOrNull { it != null && it.isWPCom }
+        }
+
+    private val jetpackConnectedSite: SiteModel?
+        get() {
+            return siteStore.sites.firstOrNull { it != null && it.isJetpackConnected }
+        }
 }
