@@ -182,6 +182,7 @@ class ThemeFragment : Fragment() {
         return view
     }
 
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onThemeInstalled(event: ThemeStore.OnThemeInstalled) {
         prependToLog("onThemeInstalled: ")
@@ -192,6 +193,7 @@ class ThemeFragment : Fragment() {
         }
     }
 
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onThemeDeleted(event: ThemeStore.OnThemeDeleted) {
         prependToLog("onThemeDeleted: ")
@@ -202,6 +204,7 @@ class ThemeFragment : Fragment() {
         }
     }
 
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onThemeActivated(event: ThemeStore.OnThemeActivated) {
         prependToLog("onThemeActivated: ")
@@ -212,6 +215,7 @@ class ThemeFragment : Fragment() {
         }
     }
 
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onCurrentThemeFetched(event: ThemeStore.OnCurrentThemeFetched) {
         prependToLog("onCurrentThemeFetched: ")
@@ -222,6 +226,7 @@ class ThemeFragment : Fragment() {
         }
     }
 
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onThemesSearched(event: ThemeStore.OnThemesSearched) {
         prependToLog("onThemesSearched: ")
@@ -232,6 +237,7 @@ class ThemeFragment : Fragment() {
         }
     }
 
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onThemesChanged(event: ThemeStore.OnThemesChanged) {
         prependToLog("onThemesChanged: ")
@@ -245,10 +251,6 @@ class ThemeFragment : Fragment() {
                 prependToLog("Installed theme count = " + themes.size)
             }
         }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onSiteChanged(event: SiteStore.OnSiteChanged) {
     }
 
     private fun prependToLog(s: String) {
