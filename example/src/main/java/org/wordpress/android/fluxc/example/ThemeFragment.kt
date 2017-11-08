@@ -51,7 +51,7 @@ class ThemeFragment : Fragment() {
             if (TextUtils.isEmpty(id)) {
                 prependToLog("Please enter a theme id")
             } else {
-                val site = wpComSite
+                val site = getWpComSite()
                 if (site == null) {
                     prependToLog("No WP.com site found, unable to test.")
                 } else {
@@ -69,7 +69,7 @@ class ThemeFragment : Fragment() {
             if (TextUtils.isEmpty(id)) {
                 prependToLog("Please enter a theme id")
             } else {
-                val site = jetpackConnectedSite
+                val site = getJetpackConnectedSite()
                 if (site == null) {
                     prependToLog("No Jetpack connected site found, unable to test.")
                 } else {
@@ -87,7 +87,7 @@ class ThemeFragment : Fragment() {
             if (TextUtils.isEmpty(id)) {
                 prependToLog("Please enter a theme id")
             } else {
-                val site = jetpackConnectedSite
+                val site = getJetpackConnectedSite()
                 if (site == null) {
                     prependToLog("No Jetpack connected site found, unable to test.")
                 } else {
@@ -114,7 +114,7 @@ class ThemeFragment : Fragment() {
             if (TextUtils.isEmpty(id)) {
                 prependToLog("Please enter a theme id")
             } else {
-                val site = jetpackConnectedSite
+                val site = getJetpackConnectedSite()
                 if (site == null) {
                     prependToLog("No Jetpack connected site found, unable to test.")
                 } else {
@@ -132,26 +132,26 @@ class ThemeFragment : Fragment() {
         }
 
         fetch_installed_themes.setOnClickListener {
-            if (jetpackConnectedSite == null) {
+            if (getJetpackConnectedSite() == null) {
                 prependToLog("No Jetpack connected site found, unable to test.")
             } else {
-                dispatcher.dispatch(ThemeActionBuilder.newFetchInstalledThemesAction(jetpackConnectedSite))
+                dispatcher.dispatch(ThemeActionBuilder.newFetchInstalledThemesAction(getJetpackConnectedSite()))
             }
         }
 
         fetch_current_theme_jp.setOnClickListener {
-            if (jetpackConnectedSite == null) {
+            if (getJetpackConnectedSite() == null) {
                 prependToLog("No Jetpack connected site found, unable to test.")
             } else {
-                dispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(jetpackConnectedSite))
+                dispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(getJetpackConnectedSite()))
             }
         }
 
         fetch_current_theme_wpcom.setOnClickListener {
-            if (wpComSite == null) {
+            if (getWpComSite() == null) {
                 prependToLog("No WP.com site found, unable to test.")
             } else {
-                dispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(wpComSite))
+                dispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(getWpComSite()))
             }
         }
     }
@@ -219,7 +219,7 @@ class ThemeFragment : Fragment() {
             prependToLog("error: " + event.error.message)
         } else {
             prependToLog("success: WP.com theme count = " + themeStore.wpComThemes.size)
-            val jpSite = jetpackConnectedSite
+            val jpSite = getJetpackConnectedSite()
             if (jpSite != null) {
                 val themes = themeStore.getThemesForSite(jpSite)
                 prependToLog("Installed theme count = " + themes.size)
@@ -234,13 +234,11 @@ class ThemeFragment : Fragment() {
         return themeIdInput?.text?.toString()
     }
 
-    private val wpComSite: SiteModel?
-        get() {
-            return siteStore.sites.firstOrNull { it != null && it.isWPCom }
-        }
+    private fun getWpComSite(): SiteModel? {
+        return siteStore.sites.firstOrNull { it != null && it.isWPCom }
+    }
 
-    private val jetpackConnectedSite: SiteModel?
-        get() {
-            return siteStore.sites.firstOrNull { it != null && it.isJetpackConnected }
-        }
+    private fun getJetpackConnectedSite(): SiteModel? {
+        return siteStore.sites.firstOrNull { it != null && it.isJetpackConnected }
+    }
 }
