@@ -105,7 +105,7 @@ class ThemeFragment : Fragment() {
             if (TextUtils.isEmpty(term)) {
                 prependToLog("Please enter a search term")
             } else {
-                dispatcher.dispatch(ThemeActionBuilder.newSearchThemesAction(ThemeStore.SearchThemesPayload(term!!)))
+                dispatcher.dispatch(ThemeActionBuilder.newSearchThemesAction(ThemeStore.SearchThemesPayload(term)))
             }
         }
 
@@ -229,9 +229,9 @@ class ThemeFragment : Fragment() {
 
     private fun prependToLog(s: String) = (activity as MainExampleActivity).prependToLog(s)
 
-    private fun getThemeIdFromInput(root: View?): String? {
+    private fun getThemeIdFromInput(root: View?): String {
         val themeIdInput = if (root == null) null else root.findViewById(R.id.theme_id) as TextView
-        return themeIdInput?.text?.toString()
+        return themeIdInput?.text?.toString() ?: ""
     }
 
     private fun getWpComSite(): SiteModel? {
