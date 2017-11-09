@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.PluginStore;
 import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginPayload;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginChanged;
+import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginDeleted;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsChanged;
 import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
@@ -33,7 +34,8 @@ import javax.inject.Inject;
 public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
-    @Inject PluginStore mPluginStore;
+    @Inject
+    PluginStore mPluginStore;
 
     enum TestEvents {
         NONE,
@@ -200,6 +202,18 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
                     + event.error.type);
         }
         assertEquals(mNextEvent, TestEvents.UPDATED_PLUGIN);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onSitePluginDeleted(OnSitePluginDeleted event) {
+        AppLog.i(T.API, "Received onSitePluginDeleted");
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred in onSitePluginDeleted with type: "
+                    + event.error.type);
+        }
+        assertEquals(mNextEvent, TestEvents.DELETED_PLUGIN);
         mCountDownLatch.countDown();
     }
 
