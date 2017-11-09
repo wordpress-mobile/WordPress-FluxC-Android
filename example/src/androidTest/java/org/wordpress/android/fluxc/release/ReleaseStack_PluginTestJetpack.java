@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.PluginStore;
+import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginPayload;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginChanged;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsChanged;
 import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginPayload;
@@ -38,6 +39,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         NONE,
         PLUGINS_FETCHED,
         UPDATED_PLUGIN,
+        DELETED_PLUGIN,
         SITE_CHANGED,
         SITE_REMOVED
     }
@@ -107,6 +109,32 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         assertEquals(newPlugin.isActive(), isActive);
 
         signOutWPCom();
+    }
+
+    public void testInstallSitePlugin() throws InterruptedException {
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
+
+        String pluginToInstall = "hello";
+
+        // Fetch the list of installed plugins to make sure `Hello Dolly` is not installed
+
+        mNextEvent = TestEvents.PLUGINS_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        SiteModel site = mSiteStore.getSites().get(0);
+        mDispatcher.dispatch(PluginActionBuilder.newFetchSitePluginsAction(site));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        List<PluginModel> installedPlugins = mPluginStore.getSitePlugins(site);
+        for (PluginModel installedPlugin : installedPlugins) {
+            if (installedPlugin.getName().equals(pluginToInstall)) {
+                // delete plugin first
+                deleteSitePlugin(site, installedPlugin);
+            }
+        }
+
     }
 
     @SuppressWarnings("unused")
@@ -205,6 +233,14 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.SITE_REMOVED;
         mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
 
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void deleteSitePlugin(SiteModel site, PluginModel plugin) throws InterruptedException {
+        mDispatcher.dispatch(PluginActionBuilder.newDeleteSitePluginAction(
+                new DeleteSitePluginPayload(site, plugin)));
+        mNextEvent = TestEvents.DELETED_PLUGIN;
+        mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
