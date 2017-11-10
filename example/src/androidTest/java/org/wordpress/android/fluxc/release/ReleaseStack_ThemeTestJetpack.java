@@ -75,12 +75,9 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     public void testFetchCurrentTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
-        // fetch current theme
-        mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(jetpackSite));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // fetch active theme
+        fetchCurrentThemes(jetpackSite);
+        assertNotNull(mCurrentTheme);
 
         signOutWPCom();
     }
@@ -95,10 +92,8 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         List<ThemeModel> themes = mThemeStore.getThemesForSite(jetpackSite);
         assertTrue(themes.size() > 1);
 
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
-        mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(jetpackSite));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // fetch active theme
+        fetchCurrentThemes(jetpackSite);
         assertNotNull(mCurrentTheme);
 
         // select a different theme to activate
@@ -190,11 +185,8 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             assertNotNull(listTheme);
         }
 
-        // get active theme
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
-        mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(jetpackSite));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // fetch active theme
+        fetchCurrentThemes(jetpackSite);
 
         // if Edin is active update site's active theme to something else
         if (themeId.equals(mCurrentTheme.getThemeId())) {
@@ -426,6 +418,13 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.FETCHED_INSTALLED_THEMES;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchInstalledThemesAction(jetpackSite));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void fetchCurrentThemes(@NonNull SiteModel jetpackSite) throws InterruptedException {
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
+        mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(jetpackSite));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
