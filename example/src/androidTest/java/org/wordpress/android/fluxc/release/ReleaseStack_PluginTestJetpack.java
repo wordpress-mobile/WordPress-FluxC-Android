@@ -15,8 +15,10 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.PluginStore;
 import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginPayload;
+import org.wordpress.android.fluxc.store.PluginStore.InstallSitePluginPayload;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginChanged;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginDeleted;
+import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginInstalled;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsChanged;
 import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
@@ -42,6 +44,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         PLUGINS_FETCHED,
         UPDATED_PLUGIN,
         DELETED_PLUGIN,
+        INSTALLED_PLUGIN,
         SITE_CHANGED,
         SITE_REMOVED
     }
@@ -137,6 +140,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
             }
         }
 
+        // Install the Hello Dolly plugin
+        installSitePlugin(site, pluginToInstall);
     }
 
     @SuppressWarnings("unused")
@@ -217,6 +222,18 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onSitePluginInstalled(OnSitePluginInstalled event) {
+        AppLog.i(T.API, "Received onSitePluginInstalled");
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred in onSitePluginInstalled with type: "
+                    + event.error.type);
+        }
+        assertEquals(mNextEvent, TestEvents.INSTALLED_PLUGIN);
+        mCountDownLatch.countDown();
+    }
+
     private void authenticateWPComAndFetchSites(String username, String password) throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
@@ -254,6 +271,14 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mDispatcher.dispatch(PluginActionBuilder.newDeleteSitePluginAction(
                 new DeleteSitePluginPayload(site, plugin)));
         mNextEvent = TestEvents.DELETED_PLUGIN;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void installSitePlugin(SiteModel site, String pluginName) throws InterruptedException {
+        mDispatcher.dispatch(PluginActionBuilder.newInstallSitePluginAction(
+                new InstallSitePluginPayload(site, pluginName)));
+        mNextEvent = TestEvents.INSTALLED_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
