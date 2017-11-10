@@ -24,11 +24,14 @@ import javax.inject.Inject;
 public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     enum TestEvents {
         NONE,
+        FETCHED_WPCOM_THEMES,
         FETCHED_INSTALLED_THEMES,
         FETCHED_CURRENT_THEME,
         ACTIVATED_THEME,
         INSTALLED_THEME,
         DELETED_THEME,
+        REMOVED_THEME,
+        REMOVED_SITE_THEMES,
         SITE_CHANGED,
         SITE_REMOVED
     }
@@ -278,6 +281,16 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
+    public void onThemesRemoved(ThemeStore.OnThemeRemoved event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.REMOVED_THEME, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
     public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
@@ -353,6 +366,20 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_REMOVED;
         mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void removeTheme(@NonNull ThemeModel theme) throws InterruptedException {
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.REMOVED_THEME;
+        mDispatcher.dispatch(ThemeActionBuilder.newRemoveThemeAction(theme));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void removeSiteThemes(@NonNull SiteModel site) throws InterruptedException {
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.REMOVED_SITE_THEMES;
+        mDispatcher.dispatch(ThemeActionBuilder.newRemoveSiteThemesAction(site));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
