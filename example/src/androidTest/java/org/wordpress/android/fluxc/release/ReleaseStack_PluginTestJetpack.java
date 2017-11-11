@@ -120,7 +120,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
 
-        String pluginToInstall = "hello";
+        String pluginSlugToInstall = "buddypress";
 
         // Fetch the list of installed plugins to make sure `Hello Dolly` is not installed
 
@@ -134,14 +134,14 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         List<PluginModel> installedPlugins = mPluginStore.getSitePlugins(site);
         for (PluginModel installedPlugin : installedPlugins) {
-            if (installedPlugin.getName().equals(pluginToInstall)) {
+            if (installedPlugin.getSlug().equals(pluginSlugToInstall)) {
                 // delete plugin first
                 deleteSitePlugin(site, installedPlugin);
             }
         }
 
-        // Install the Hello Dolly plugin
-        installSitePlugin(site, pluginToInstall);
+        // Install the Buddypress plugin
+        installSitePlugin(site, pluginSlugToInstall);
     }
 
     @SuppressWarnings("unused")
