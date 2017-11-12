@@ -62,16 +62,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     public void testFetchSitePlugins() throws InterruptedException {
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
-
-        mNextEvent = TestEvents.PLUGINS_FETCHED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        SiteModel site = mSiteStore.getSites().get(0);
-        mDispatcher.dispatch(PluginActionBuilder.newFetchSitePluginsAction(site));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        SiteModel site = fetchSingleJetpackSitePlugins();
 
         List<PluginModel> plugins = mPluginStore.getSitePlugins(site);
         assertTrue(plugins.size() > 0);
@@ -80,20 +71,10 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     public void testUpdateSitePlugin() throws InterruptedException {
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
-
         // In order to have a reliable test, let's first fetch the list of plugins, pick the first plugin
         // and change it's active status, so we can make sure when we run the test multiple times, each time
         // an action is actually taken. This wouldn't be the case if we always activate the plugin.
-
-        mNextEvent = TestEvents.PLUGINS_FETCHED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        SiteModel site = mSiteStore.getSites().get(0);
-        mDispatcher.dispatch(PluginActionBuilder.newFetchSitePluginsAction(site));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        SiteModel site = fetchSingleJetpackSitePlugins();
 
         List<PluginModel> plugins = mPluginStore.getSitePlugins(site);
         assertTrue(plugins.size() > 0);
@@ -117,20 +98,9 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     public void testInstallSitePlugin() throws InterruptedException {
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
-
         String pluginSlugToInstall = "buddypress";
-
-        // Fetch the list of installed plugins to make sure `Hello Dolly` is not installed
-
-        mNextEvent = TestEvents.PLUGINS_FETCHED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        SiteModel site = mSiteStore.getSites().get(0);
-        mDispatcher.dispatch(PluginActionBuilder.newFetchSitePluginsAction(site));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // Fetch the list of installed plugins to make sure `BuddyPress` is not installed
+        SiteModel site = fetchSingleJetpackSitePlugins();
 
         List<PluginModel> installedPlugins = mPluginStore.getSitePlugins(site);
         for (PluginModel installedPlugin : installedPlugins) {
@@ -265,6 +235,21 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private SiteModel fetchSingleJetpackSitePlugins() throws InterruptedException {
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
+
+        mNextEvent = TestEvents.PLUGINS_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        SiteModel site = mSiteStore.getSites().get(0);
+        mDispatcher.dispatch(PluginActionBuilder.newFetchSitePluginsAction(site));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        return site;
     }
 
     private void deleteSitePlugin(SiteModel site, PluginModel plugin) throws InterruptedException {
