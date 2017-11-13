@@ -36,8 +36,7 @@ import javax.inject.Inject;
 public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
-    @Inject
-    PluginStore mPluginStore;
+    @Inject PluginStore mPluginStore;
 
     enum TestEvents {
         NONE,
@@ -50,6 +49,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     private TestEvents mNextEvent;
+    private PluginModel mInstalledPlugin;
 
     @Override
     protected void setUp() throws Exception {
@@ -59,6 +59,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         init();
         // Reset expected test event
         mNextEvent = TestEvents.NONE;
+        mInstalledPlugin = null;
     }
 
     public void testFetchSitePlugins() throws InterruptedException {
@@ -97,21 +98,29 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
-    public void testInstallSitePlugin() throws InterruptedException {
+    // It's both easier and more efficient to combine install & delete tests since we need to make sure we have the
+    // plugin installed for the delete test and the plugin is not installed for the install test
+    public void testInstallAndDeleteSitePlugin() throws InterruptedException {
         String pluginSlugToInstall = "buddypress";
         // Fetch the list of installed plugins to make sure `BuddyPress` is not installed
         SiteModel site = fetchSingleJetpackSitePlugins();
 
-        List<PluginModel> installedPlugins = mPluginStore.getSitePlugins(site);
-        for (PluginModel installedPlugin : installedPlugins) {
-            if (installedPlugin.getSlug().equals(pluginSlugToInstall)) {
+        List<PluginModel> sitePlugins = mPluginStore.getSitePlugins(site);
+        for (PluginModel sitePlugin : sitePlugins) {
+            if (sitePlugin.getSlug().equals(pluginSlugToInstall)) {
                 // delete plugin first
-                deleteSitePlugin(site, installedPlugin);
+                deleteSitePlugin(site, sitePlugin);
             }
         }
 
         // Install the Buddypress plugin
         installSitePlugin(site, pluginSlugToInstall);
+
+        // mInstalledPlugin should be set in onSitePluginInstalled
+        assertNotNull(mInstalledPlugin);
+
+        // Delete the newly installed Buddypress plugin
+        deleteSitePlugin(site, mInstalledPlugin);
     }
 
     @SuppressWarnings("unused")
@@ -201,6 +210,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
                     + event.error.type);
         }
         assertEquals(mNextEvent, TestEvents.INSTALLED_PLUGIN);
+        mInstalledPlugin = event.plugin;
         mCountDownLatch.countDown();
     }
 
