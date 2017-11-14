@@ -121,6 +121,11 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         // Delete the newly installed React plugin
         deleteSitePlugin(site, mInstalledPlugin);
+
+        List<PluginModel> updatedPlugins = mPluginStore.getSitePlugins(site);
+        for (PluginModel sitePlugin : updatedPlugins) {
+            assertFalse(sitePlugin.getSlug().equals(pluginSlugToInstall));
+        }
     }
 
     @SuppressWarnings("unused")
