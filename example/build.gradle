@@ -67,7 +67,8 @@ android.buildTypes.all { buildType ->
 }
 
 dependencies {
-    implementation project(':fluxc');
+    implementation project(':fluxc')
+    implementation project(':plugins:woocommerce')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlinVersion"
 
