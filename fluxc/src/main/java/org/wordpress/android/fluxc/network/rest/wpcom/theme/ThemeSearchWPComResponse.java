@@ -1,17 +1,10 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.theme;
 
-import java.util.Map;
+import java.util.List;
 
-public class ThemeWPComResponse {
-    public class MultipleWPComThemesResponse {
-        public Map<String, ThemeWPComResponse> themes;
-        public int count;
-    }
-
-    public class Price {
-        public int value;
-        public String currency;
-        public String display;
+public class ThemeSearchWPComResponse {
+    public class ThemeSearchArrayResponse {
+        public List<ThemeSearchWPComResponse> themes;
     }
 
     public String id;
@@ -30,7 +23,5 @@ public class ThemeWPComResponse {
     public String date_updated;
     public String language;
     public String download_uri;
-    public Price price;
-    public int rank_popularity;
-    public int rank_trending;
+    public String price;
 }
