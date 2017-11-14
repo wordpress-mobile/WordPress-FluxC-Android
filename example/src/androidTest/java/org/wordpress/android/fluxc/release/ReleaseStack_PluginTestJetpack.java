@@ -101,8 +101,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     // It's both easier and more efficient to combine install & delete tests since we need to make sure we have the
     // plugin installed for the delete test and the plugin is not installed for the install test
     public void testInstallAndDeleteSitePlugin() throws InterruptedException {
-        String pluginSlugToInstall = "buddypress";
-        // Fetch the list of installed plugins to make sure `BuddyPress` is not installed
+        String pluginSlugToInstall = "react";
+        // Fetch the list of installed plugins to make sure `React` is not installed
         SiteModel site = fetchSingleJetpackSitePlugins();
 
         List<PluginModel> sitePlugins = mPluginStore.getSitePlugins(site);
@@ -113,13 +113,13 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
             }
         }
 
-        // Install the Buddypress plugin
+        // Install the React plugin
         installSitePlugin(site, pluginSlugToInstall);
 
         // mInstalledPlugin should be set in onSitePluginInstalled
         assertNotNull(mInstalledPlugin);
 
-        // Delete the newly installed Buddypress plugin
+        // Delete the newly installed React plugin
         deleteSitePlugin(site, mInstalledPlugin);
     }
 
