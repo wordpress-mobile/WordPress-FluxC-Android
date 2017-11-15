@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginChanged;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginDeleted;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginInstalled;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsChanged;
+import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginErrorType;
 import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
@@ -45,7 +46,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         DELETED_PLUGIN,
         INSTALLED_PLUGIN,
         SITE_CHANGED,
-        SITE_REMOVED
+        SITE_REMOVED,
+        UNKNOWN_PLUGIN
     }
 
     private TestEvents mNextEvent;
@@ -128,6 +130,21 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         }
     }
 
+    public void testUnknownPluginError() throws InterruptedException {
+        SiteModel site = authenticateAndRetrieveSingleJetpackSite();
+
+        PluginModel plugin = new PluginModel();
+        plugin.setName("this-plugin-does-not-exist");
+
+        mNextEvent = TestEvents.UNKNOWN_PLUGIN;
+        mCountDownLatch = new CountDownLatch(1);
+
+        UpdateSitePluginPayload payload = new UpdateSitePluginPayload(site, plugin);
+        mDispatcher.dispatch(PluginActionBuilder.newUpdateSitePluginAction(payload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -187,10 +204,15 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     public void onSitePluginChanged(OnSitePluginChanged event) {
         AppLog.i(T.API, "Received onSitePluginChanged");
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred in onSitePluginChanged with type: "
-                    + event.error.type);
+            if (event.error.type.equals(UpdateSitePluginErrorType.UNKNOWN_PLUGIN)) {
+                assertEquals(mNextEvent, TestEvents.UNKNOWN_PLUGIN);
+            } else {
+                throw new AssertionError("Unexpected error occurred in onSitePluginChanged with type: "
+                        + event.error.type);
+            }
+        } else {
+            assertEquals(mNextEvent, TestEvents.UPDATED_PLUGIN);
         }
-        assertEquals(mNextEvent, TestEvents.UPDATED_PLUGIN);
         mCountDownLatch.countDown();
     }
 
@@ -253,18 +275,21 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     private SiteModel fetchSingleJetpackSitePlugins() throws InterruptedException {
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
+        SiteModel site = authenticateAndRetrieveSingleJetpackSite();
 
         mNextEvent = TestEvents.PLUGINS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
-
-        SiteModel site = mSiteStore.getSites().get(0);
         mDispatcher.dispatch(PluginActionBuilder.newFetchSitePluginsAction(site));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         return site;
+    }
+
+    private SiteModel authenticateAndRetrieveSingleJetpackSite() throws InterruptedException {
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_JETPACK_BETA_SITE,
+                BuildConfig.TEST_WPCOM_PASSWORD_JETPACK_BETA_SITE);
+        return mSiteStore.getSites().get(0);
     }
 
     private void deleteSitePlugin(SiteModel site, PluginModel plugin) throws InterruptedException {
