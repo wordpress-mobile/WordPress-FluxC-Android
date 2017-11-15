@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.PluginStore;
 import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginErrorType;
 import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginPayload;
+import org.wordpress.android.fluxc.store.PluginStore.InstallSitePluginErrorType;
 import org.wordpress.android.fluxc.store.PluginStore.InstallSitePluginPayload;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginChanged;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginDeleted;
@@ -45,6 +46,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         DELETE_PLUGIN_ERROR,
         DELETED_PLUGIN,
         INSTALLED_PLUGIN,
+        INSTALL_PLUGIN_ERROR_NO_PACKAGE,
         PLUGINS_FETCHED,
         SITE_CHANGED,
         SITE_REMOVED,
@@ -164,6 +166,12 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         deleteSitePlugin(site, activePluginToTest, TestEvents.DELETE_PLUGIN_ERROR);
     }
 
+    public void testInstallPluginNoPackageError() throws InterruptedException {
+        SiteModel site = fetchSingleJetpackSitePlugins();
+        installSitePlugin(site, "this-plugin-does-not-exist", TestEvents.INSTALL_PLUGIN_ERROR_NO_PACKAGE);
+        assertNull(mInstalledPlugin);
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -257,10 +265,15 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     public void onSitePluginInstalled(OnSitePluginInstalled event) {
         AppLog.i(T.API, "Received onSitePluginInstalled");
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred in onSitePluginInstalled with type: "
-                    + event.error.type);
+            if (event.error.type.equals(InstallSitePluginErrorType.NO_PACKAGE)) {
+                assertEquals(mNextEvent, TestEvents.INSTALL_PLUGIN_ERROR_NO_PACKAGE);
+            } else {
+                throw new AssertionError("Unexpected error occurred in onSitePluginInstalled with type: "
+                        + event.error.type);
+            }
+        } else {
+            assertEquals(mNextEvent, TestEvents.INSTALLED_PLUGIN);
         }
-        assertEquals(mNextEvent, TestEvents.INSTALLED_PLUGIN);
         mInstalledPlugin = event.plugin;
         mCountDownLatch.countDown();
     }
@@ -327,13 +340,17 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mNextEvent = testEvent;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
     }
 
-    private void installSitePlugin(SiteModel site, String pluginName) throws InterruptedException {
+    private void installSitePlugin(SiteModel site, String pluginSlug) throws InterruptedException {
+        installSitePlugin(site, pluginSlug, TestEvents.INSTALLED_PLUGIN);
+    }
+
+    private void installSitePlugin(SiteModel site, String pluginSlug,
+                                   TestEvents testEvent) throws InterruptedException {
         mDispatcher.dispatch(PluginActionBuilder.newInstallSitePluginAction(
-                new InstallSitePluginPayload(site, pluginName)));
-        mNextEvent = TestEvents.INSTALLED_PLUGIN;
+                new InstallSitePluginPayload(site, pluginSlug)));
+        mNextEvent = testEvent;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
