@@ -42,14 +42,14 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     enum TestEvents {
         NONE,
-        PLUGINS_FETCHED,
-        UPDATED_PLUGIN,
+        DELETE_PLUGIN_ERROR,
         DELETED_PLUGIN,
         INSTALLED_PLUGIN,
+        PLUGINS_FETCHED,
         SITE_CHANGED,
         SITE_REMOVED,
         UNKNOWN_PLUGIN,
-        DELETE_PLUGIN_ERROR
+        UPDATED_PLUGIN
     }
 
     private TestEvents mNextEvent;
