@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.PluginStore;
+import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginErrorType;
 import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginPayload;
 import org.wordpress.android.fluxc.store.PluginStore.InstallSitePluginPayload;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginChanged;
@@ -47,7 +48,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         INSTALLED_PLUGIN,
         SITE_CHANGED,
         SITE_REMOVED,
-        UNKNOWN_PLUGIN
+        UNKNOWN_PLUGIN,
+        DELETE_PLUGIN_ERROR
     }
 
     private TestEvents mNextEvent;
@@ -145,6 +147,23 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    public void testDeleteActivePluginError() throws InterruptedException {
+        SiteModel site = fetchSingleJetpackSitePlugins();
+
+        PluginModel activePluginToTest = null;
+
+        List<PluginModel> sitePlugins = mPluginStore.getSitePlugins(site);
+        for (PluginModel sitePlugin : sitePlugins) {
+            if (sitePlugin.isActive()) {
+                activePluginToTest = sitePlugin;
+                break;
+            }
+        }
+
+        // Trying to delete an active plugin should result in DELETE_PLUGIN_ERROR
+        deleteSitePlugin(site, activePluginToTest, TestEvents.DELETE_PLUGIN_ERROR);
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -221,10 +240,15 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     public void onSitePluginDeleted(OnSitePluginDeleted event) {
         AppLog.i(T.API, "Received onSitePluginDeleted");
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred in onSitePluginDeleted with type: "
-                    + event.error.type);
+            if (event.error.type.equals(DeleteSitePluginErrorType.DELETE_PLUGIN_ERROR)) {
+                assertEquals(mNextEvent, TestEvents.DELETE_PLUGIN_ERROR);
+            } else {
+                throw new AssertionError("Unexpected error occurred in onSitePluginDeleted with type: "
+                        + event.error.type);
+            }
+        } else {
+            assertEquals(mNextEvent, TestEvents.DELETED_PLUGIN);
         }
-        assertEquals(mNextEvent, TestEvents.DELETED_PLUGIN);
         mCountDownLatch.countDown();
     }
 
@@ -293,11 +317,17 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     private void deleteSitePlugin(SiteModel site, PluginModel plugin) throws InterruptedException {
+        deleteSitePlugin(site, plugin, TestEvents.DELETED_PLUGIN);
+    }
+
+    private void deleteSitePlugin(SiteModel site, PluginModel plugin,
+                                  TestEvents testEvent) throws InterruptedException {
         mDispatcher.dispatch(PluginActionBuilder.newDeleteSitePluginAction(
                 new DeleteSitePluginPayload(site, plugin)));
-        mNextEvent = TestEvents.DELETED_PLUGIN;
+        mNextEvent = testEvent;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
     }
 
     private void installSitePlugin(SiteModel site, String pluginName) throws InterruptedException {
