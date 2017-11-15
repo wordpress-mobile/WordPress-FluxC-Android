@@ -21,7 +21,7 @@ import org.wordpress.android.fluxc.store.PluginStore.InstallSitePluginPayload;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginUpdated;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginDeleted;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginInstalled;
-import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsChanged;
+import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsFetched;
 import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginErrorType;
 import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
@@ -226,10 +226,10 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onSitePluginsChanged(OnSitePluginsChanged event) {
-        AppLog.i(T.API, "Received onSitePluginsChanged");
+    public void onSitePluginsFetched(OnSitePluginsFetched event) {
+        AppLog.i(T.API, "Received onSitePluginsFetched");
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred in onSitePluginsChanged with type: "
+            throw new AssertionError("Unexpected error occurred in onSitePluginsFetched with type: "
                     + event.error.type);
         }
         assertEquals(mNextEvent, TestEvents.PLUGINS_FETCHED);
