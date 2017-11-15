@@ -114,6 +114,11 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         List<PluginModel> sitePlugins = mPluginStore.getSitePlugins(site);
         for (PluginModel sitePlugin : sitePlugins) {
             if (sitePlugin.getSlug().equals(pluginSlugToInstall)) {
+                // We need to deactivate the plugin to be able to uninstall it
+                if (sitePlugin.isActive()) {
+                    deactivatePlugin(site, sitePlugin);
+                }
+
                 // delete plugin first
                 deleteSitePlugin(site, sitePlugin);
             }
@@ -124,6 +129,11 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         // mInstalledPlugin should be set in onSitePluginInstalled
         assertNotNull(mInstalledPlugin);
+
+        // We need to deactivate the plugin to be able to uninstall it
+        if (mInstalledPlugin.isActive()) {
+            deactivatePlugin(site, mInstalledPlugin);
+        }
 
         // Delete the newly installed React plugin
         deleteSitePlugin(site, mInstalledPlugin);
@@ -352,6 +362,17 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
                 new InstallSitePluginPayload(site, pluginSlug)));
         mNextEvent = testEvent;
         mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void deactivatePlugin(SiteModel site, PluginModel plugin) throws InterruptedException {
+        mNextEvent = TestEvents.UPDATED_PLUGIN;
+        mCountDownLatch = new CountDownLatch(1);
+
+        plugin.setIsActive(false);
+        UpdateSitePluginPayload payload = new UpdateSitePluginPayload(site, plugin);
+        mDispatcher.dispatch(PluginActionBuilder.newUpdateSitePluginAction(payload));
+
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
