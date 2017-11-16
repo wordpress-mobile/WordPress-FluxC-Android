@@ -1,8 +1,6 @@
 allprojects {
     apply plugin: 'checkstyle'
 
-    ext.kotlin_version = '1.1.51'
-
     repositories {
         jcenter()
     }
@@ -42,4 +40,11 @@ subprojects {
         classpath = configurations.ktlint
         args "-F", "src/**/*.kt"
     }
+}
+
+ext {
+    kotlinVersion = '1.1.51'
+
+    daggerVersion = '2.11'
+    supportLibraryVersion = '25.3.1'
 }
