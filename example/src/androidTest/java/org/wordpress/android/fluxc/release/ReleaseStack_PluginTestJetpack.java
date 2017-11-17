@@ -14,8 +14,15 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.PluginStore;
+import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginErrorType;
+import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginPayload;
+import org.wordpress.android.fluxc.store.PluginStore.InstallSitePluginErrorType;
+import org.wordpress.android.fluxc.store.PluginStore.InstallSitePluginPayload;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginChanged;
+import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginDeleted;
+import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginInstalled;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsChanged;
+import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginErrorType;
 import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
@@ -36,13 +43,19 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     enum TestEvents {
         NONE,
+        DELETE_PLUGIN_ERROR,
+        DELETED_PLUGIN,
+        INSTALLED_PLUGIN,
+        INSTALL_PLUGIN_ERROR_NO_PACKAGE,
         PLUGINS_FETCHED,
-        UPDATED_PLUGIN,
         SITE_CHANGED,
-        SITE_REMOVED
+        SITE_REMOVED,
+        UNKNOWN_PLUGIN,
+        UPDATED_PLUGIN
     }
 
     private TestEvents mNextEvent;
+    private PluginModel mInstalledPlugin;
 
     @Override
     protected void setUp() throws Exception {
@@ -52,19 +65,11 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         init();
         // Reset expected test event
         mNextEvent = TestEvents.NONE;
+        mInstalledPlugin = null;
     }
 
     public void testFetchSitePlugins() throws InterruptedException {
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
-
-        mNextEvent = TestEvents.PLUGINS_FETCHED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        SiteModel site = mSiteStore.getSites().get(0);
-        mDispatcher.dispatch(PluginActionBuilder.newFetchSitePluginsAction(site));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        SiteModel site = fetchSingleJetpackSitePlugins();
 
         List<PluginModel> plugins = mPluginStore.getSitePlugins(site);
         assertTrue(plugins.size() > 0);
@@ -73,20 +78,10 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     public void testUpdateSitePlugin() throws InterruptedException {
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
-
         // In order to have a reliable test, let's first fetch the list of plugins, pick the first plugin
         // and change it's active status, so we can make sure when we run the test multiple times, each time
         // an action is actually taken. This wouldn't be the case if we always activate the plugin.
-
-        mNextEvent = TestEvents.PLUGINS_FETCHED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        SiteModel site = mSiteStore.getSites().get(0);
-        mDispatcher.dispatch(PluginActionBuilder.newFetchSitePluginsAction(site));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        SiteModel site = fetchSingleJetpackSitePlugins();
 
         List<PluginModel> plugins = mPluginStore.getSitePlugins(site);
         assertTrue(plugins.size() > 0);
@@ -107,6 +102,84 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         assertEquals(newPlugin.isActive(), isActive);
 
         signOutWPCom();
+    }
+
+    // It's both easier and more efficient to combine install & delete tests since we need to make sure we have the
+    // plugin installed for the delete test and the plugin is not installed for the install test
+    public void testInstallAndDeleteSitePlugin() throws InterruptedException {
+        String pluginSlugToInstall = "react";
+        // Fetch the list of installed plugins to make sure `React` is not installed
+        SiteModel site = fetchSingleJetpackSitePlugins();
+
+        List<PluginModel> sitePlugins = mPluginStore.getSitePlugins(site);
+        for (PluginModel sitePlugin : sitePlugins) {
+            if (sitePlugin.getSlug().equals(pluginSlugToInstall)) {
+                // We need to deactivate the plugin to be able to uninstall it
+                if (sitePlugin.isActive()) {
+                    deactivatePlugin(site, sitePlugin);
+                }
+
+                // delete plugin first
+                deleteSitePlugin(site, sitePlugin);
+            }
+        }
+
+        // Install the React plugin
+        installSitePlugin(site, pluginSlugToInstall);
+
+        // mInstalledPlugin should be set in onSitePluginInstalled
+        assertNotNull(mInstalledPlugin);
+
+        // We need to deactivate the plugin to be able to uninstall it
+        if (mInstalledPlugin.isActive()) {
+            deactivatePlugin(site, mInstalledPlugin);
+        }
+
+        // Delete the newly installed React plugin
+        deleteSitePlugin(site, mInstalledPlugin);
+
+        List<PluginModel> updatedPlugins = mPluginStore.getSitePlugins(site);
+        for (PluginModel sitePlugin : updatedPlugins) {
+            assertFalse(sitePlugin.getSlug().equals(pluginSlugToInstall));
+        }
+    }
+
+    public void testUnknownPluginError() throws InterruptedException {
+        SiteModel site = authenticateAndRetrieveSingleJetpackSite();
+
+        PluginModel plugin = new PluginModel();
+        plugin.setName("this-plugin-does-not-exist");
+
+        mNextEvent = TestEvents.UNKNOWN_PLUGIN;
+        mCountDownLatch = new CountDownLatch(1);
+
+        UpdateSitePluginPayload payload = new UpdateSitePluginPayload(site, plugin);
+        mDispatcher.dispatch(PluginActionBuilder.newUpdateSitePluginAction(payload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testDeleteActivePluginError() throws InterruptedException {
+        SiteModel site = fetchSingleJetpackSitePlugins();
+
+        PluginModel activePluginToTest = null;
+
+        List<PluginModel> sitePlugins = mPluginStore.getSitePlugins(site);
+        for (PluginModel sitePlugin : sitePlugins) {
+            if (sitePlugin.isActive()) {
+                activePluginToTest = sitePlugin;
+                break;
+            }
+        }
+
+        // Trying to delete an active plugin should result in DELETE_PLUGIN_ERROR
+        deleteSitePlugin(site, activePluginToTest, TestEvents.DELETE_PLUGIN_ERROR);
+    }
+
+    public void testInstallPluginNoPackageError() throws InterruptedException {
+        SiteModel site = fetchSingleJetpackSitePlugins();
+        installSitePlugin(site, "this-plugin-does-not-exist", TestEvents.INSTALL_PLUGIN_ERROR_NO_PACKAGE);
+        assertNull(mInstalledPlugin);
     }
 
     @SuppressWarnings("unused")
@@ -168,10 +241,50 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     public void onSitePluginChanged(OnSitePluginChanged event) {
         AppLog.i(T.API, "Received onSitePluginChanged");
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred in onSitePluginChanged with type: "
-                    + event.error.type);
+            if (event.error.type.equals(UpdateSitePluginErrorType.UNKNOWN_PLUGIN)) {
+                assertEquals(mNextEvent, TestEvents.UNKNOWN_PLUGIN);
+            } else {
+                throw new AssertionError("Unexpected error occurred in onSitePluginChanged with type: "
+                        + event.error.type);
+            }
+        } else {
+            assertEquals(mNextEvent, TestEvents.UPDATED_PLUGIN);
         }
-        assertEquals(mNextEvent, TestEvents.UPDATED_PLUGIN);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onSitePluginDeleted(OnSitePluginDeleted event) {
+        AppLog.i(T.API, "Received onSitePluginDeleted");
+        if (event.isError()) {
+            if (event.error.type.equals(DeleteSitePluginErrorType.DELETE_PLUGIN_ERROR)) {
+                assertEquals(mNextEvent, TestEvents.DELETE_PLUGIN_ERROR);
+            } else {
+                throw new AssertionError("Unexpected error occurred in onSitePluginDeleted with type: "
+                        + event.error.type);
+            }
+        } else {
+            assertEquals(mNextEvent, TestEvents.DELETED_PLUGIN);
+        }
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onSitePluginInstalled(OnSitePluginInstalled event) {
+        AppLog.i(T.API, "Received onSitePluginInstalled");
+        if (event.isError()) {
+            if (event.error.type.equals(InstallSitePluginErrorType.NO_PACKAGE)) {
+                assertEquals(mNextEvent, TestEvents.INSTALL_PLUGIN_ERROR_NO_PACKAGE);
+            } else {
+                throw new AssertionError("Unexpected error occurred in onSitePluginInstalled with type: "
+                        + event.error.type);
+            }
+        } else {
+            assertEquals(mNextEvent, TestEvents.INSTALLED_PLUGIN);
+        }
+        mInstalledPlugin = event.plugin;
         mCountDownLatch.countDown();
     }
 
@@ -204,6 +317,61 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_REMOVED;
         mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private SiteModel fetchSingleJetpackSitePlugins() throws InterruptedException {
+        SiteModel site = authenticateAndRetrieveSingleJetpackSite();
+
+        mNextEvent = TestEvents.PLUGINS_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PluginActionBuilder.newFetchSitePluginsAction(site));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        return site;
+    }
+
+    private SiteModel authenticateAndRetrieveSingleJetpackSite() throws InterruptedException {
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_JETPACK_BETA_SITE,
+                BuildConfig.TEST_WPCOM_PASSWORD_JETPACK_BETA_SITE);
+        return mSiteStore.getSites().get(0);
+    }
+
+    private void deleteSitePlugin(SiteModel site, PluginModel plugin) throws InterruptedException {
+        deleteSitePlugin(site, plugin, TestEvents.DELETED_PLUGIN);
+    }
+
+    private void deleteSitePlugin(SiteModel site, PluginModel plugin,
+                                  TestEvents testEvent) throws InterruptedException {
+        mDispatcher.dispatch(PluginActionBuilder.newDeleteSitePluginAction(
+                new DeleteSitePluginPayload(site, plugin)));
+        mNextEvent = testEvent;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void installSitePlugin(SiteModel site, String pluginSlug) throws InterruptedException {
+        installSitePlugin(site, pluginSlug, TestEvents.INSTALLED_PLUGIN);
+    }
+
+    private void installSitePlugin(SiteModel site, String pluginSlug,
+                                   TestEvents testEvent) throws InterruptedException {
+        mDispatcher.dispatch(PluginActionBuilder.newInstallSitePluginAction(
+                new InstallSitePluginPayload(site, pluginSlug)));
+        mNextEvent = testEvent;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void deactivatePlugin(SiteModel site, PluginModel plugin) throws InterruptedException {
+        mNextEvent = TestEvents.UPDATED_PLUGIN;
+        mCountDownLatch = new CountDownLatch(1);
+
+        plugin.setIsActive(false);
+        UpdateSitePluginPayload payload = new UpdateSitePluginPayload(site, plugin);
+        mDispatcher.dispatch(PluginActionBuilder.newUpdateSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
