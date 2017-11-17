@@ -5,6 +5,7 @@ import android.test.InstrumentationTestCase;
 
 import com.yarolegovich.wellsql.WellSql;
 
+import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.module.AppContextModule;
 import org.wordpress.android.fluxc.persistence.WellSqlConfig;
 
@@ -25,5 +26,9 @@ public class MockedStack_Base extends InstrumentationTestCase {
         WellSqlConfig config = new WellSqlConfig(mAppContext);
         WellSql.init(config);
         config.reset();
+    }
+
+    String getSampleImagePath() {
+        return TestUtils.getSampleImagePath(getInstrumentation().getContext(), getInstrumentation().getTargetContext());
     }
 }

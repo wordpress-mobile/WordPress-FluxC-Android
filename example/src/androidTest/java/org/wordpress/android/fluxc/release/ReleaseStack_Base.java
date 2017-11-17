@@ -6,6 +6,7 @@ import android.test.InstrumentationTestCase;
 import com.yarolegovich.wellsql.WellSql;
 
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.module.AppContextModule;
 import org.wordpress.android.fluxc.persistence.WellSqlConfig;
 
@@ -48,5 +49,13 @@ public class ReleaseStack_Base extends InstrumentationTestCase {
 
     protected void init() throws Exception {
         mDispatcher.register(this);
+    }
+
+    String getSampleImagePath() {
+        return TestUtils.getSampleImagePath(getInstrumentation().getContext(), getInstrumentation().getTargetContext());
+    }
+
+    String getSampleVideoPath() {
+        return TestUtils.getSampleVideoPath(getInstrumentation().getContext(), getInstrumentation().getTargetContext());
     }
 }
