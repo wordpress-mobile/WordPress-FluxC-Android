@@ -80,7 +80,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     public void testDeleteMedia() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -104,7 +104,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     public void testFetchMediaList() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -154,7 +154,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     public void testFetchMediaThatExists() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -180,7 +180,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     public void testEditMedia() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -206,7 +206,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     public void testUploadImage() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -222,7 +222,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     public void testUploadImageAttachedToPost() throws InterruptedException {
         // Upload media attached to remotely saved post
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         testMedia.setLocalPostId(5);
         testMedia.setPostId(1);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
@@ -238,7 +238,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         deleteMedia(testMedia);
 
         // Upload media attached to a local draft
-        testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         testMedia.setLocalPostId(5);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
@@ -255,7 +255,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     public void testCancelImageUpload() throws InterruptedException {
         // First, try canceling an image with the default behavior (canceled image is deleted from the store)
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CANCELED_MEDIA;
         MediaPayload payload = new MediaPayload(sSite, testMedia);
@@ -272,7 +272,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(0, mMediaStore.getSiteMediaCount(sSite));
 
         // Now, try canceling with delete=false (canceled image should be marked as failed and kept in the store)
-        testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CANCELED_MEDIA;
         payload = new MediaPayload(sSite, testMedia);
@@ -418,7 +418,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     public void testUploadVideo() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_VIDEO, MediaUtils.MIME_TYPE_VIDEO);
+        MediaModel testMedia = newMediaModel(getSampleVideoPath(), MediaUtils.MIME_TYPE_VIDEO);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -444,7 +444,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         site.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_WORDPRESS_4_3_ENDPOINT);
 
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
 
         MediaPayload payload = new MediaPayload(site, testMedia);
@@ -477,7 +477,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         site.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_WORDPRESS_4_3_ENDPOINT);
 
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_VIDEO, MediaUtils.MIME_TYPE_VIDEO);
+        MediaModel testMedia = newMediaModel(getSampleVideoPath(), MediaUtils.MIME_TYPE_VIDEO);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
 
         MediaPayload payload = new MediaPayload(site, testMedia);
@@ -585,7 +585,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     private void addMediaModelToUploadArray(String title) {
-        MediaModel mediaModel = newMediaModel(title, BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel mediaModel = newMediaModel(title, getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mUploadedMediaModels.put(mediaModel.getId(), mediaModel);
     }
 

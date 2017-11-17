@@ -4,7 +4,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.action.UploadAction;
-import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.generated.UploadActionBuilder;
@@ -76,7 +75,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
     public void testUploadImage() throws InterruptedException {
         // Start uploading media
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         MediaPayload payload = new MediaPayload(sSite, testMedia);
         mCountDownLatch = new CountDownLatch(1);
@@ -113,7 +112,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
     public void testUploadInvalidMedia() throws InterruptedException {
         // Start uploading media
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, "not-even-close/to-an-actual-mime-type");
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "not-even-close/to-an-actual-mime-type");
         mNextEvent = TestEvents.MEDIA_ERROR_MALFORMED;
         MediaPayload payload = new MediaPayload(sSite, testMedia);
         mCountDownLatch = new CountDownLatch(1);
@@ -140,7 +139,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
     public void testCancelImageUpload() throws InterruptedException {
         // First, try canceling an image with the default behavior (canceled image is deleted from the store)
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CANCELED_MEDIA;
         MediaPayload payload = new MediaPayload(sSite, testMedia);
@@ -161,7 +160,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         assertNull(mediaUploadModel);
 
         // Now, try canceling with delete=false (canceled image should be marked as failed and kept in the store)
-        testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CANCELED_MEDIA;
         payload = new MediaPayload(sSite, testMedia);
@@ -250,7 +249,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
     public void testRegisterPostAndUploadMedia() throws InterruptedException {
         // Start uploading media
-        MediaModel testMedia = newMediaModel(BuildConfig.TEST_LOCAL_IMAGE, MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         MediaPayload payload = new MediaPayload(sSite, testMedia);
         mCountDownLatch = new CountDownLatch(1);
