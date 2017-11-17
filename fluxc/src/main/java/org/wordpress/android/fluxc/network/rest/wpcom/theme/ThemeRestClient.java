@@ -57,9 +57,12 @@ public class ThemeRestClient extends BaseWPComRestClient {
                     @Override
                     public void onResponse(JetpackThemeResponse response) {
                         AppLog.d(AppLog.T.API, "Received response to Jetpack theme deletion request.");
-                        ThemeModel responseTheme = createThemeFromJetpackResponse(response);
+
+                        // add local data to response data required for database removal
+                        final ThemeModel responseTheme = createThemeFromJetpackResponse(response);
                         responseTheme.setId(theme.getId());
                         responseTheme.setLocalSiteId(site.getId());
+
                         ActivateThemePayload payload = new ActivateThemePayload(site, responseTheme);
                         mDispatcher.dispatch(ThemeActionBuilder.newDeletedThemeAction(payload));
                     }
@@ -83,8 +86,11 @@ public class ThemeRestClient extends BaseWPComRestClient {
                     @Override
                     public void onResponse(JetpackThemeResponse response) {
                         AppLog.d(AppLog.T.API, "Received response to Jetpack theme installation request.");
-                        ThemeModel responseTheme = createThemeFromJetpackResponse(response);
+
+                        // associate local site ID to response theme
+                        final ThemeModel responseTheme = createThemeFromJetpackResponse(response);
                         responseTheme.setLocalSiteId(site.getId());
+
                         ActivateThemePayload payload = new ActivateThemePayload(site, responseTheme);
                         mDispatcher.dispatch(ThemeActionBuilder.newInstalledThemeAction(payload));
                     }
@@ -255,8 +261,8 @@ public class ThemeRestClient extends BaseWPComRestClient {
                 }));
     }
 
-    private static ThemeModel createThemeFromWPComResponse(WPComThemeResponse response) {
-        ThemeModel theme = new ThemeModel();
+    private static @NonNull ThemeModel createThemeFromWPComResponse(WPComThemeResponse response) {
+        final ThemeModel theme = new ThemeModel();
         theme.setThemeId(response.id);
         theme.setSlug(response.slug);
         theme.setStylesheet(response.stylesheet);
@@ -276,8 +282,8 @@ public class ThemeRestClient extends BaseWPComRestClient {
         return theme;
     }
 
-    private static ThemeModel createThemeFromJetpackResponse(JetpackThemeResponse response) {
-        ThemeModel theme = new ThemeModel();
+    private static @NonNull ThemeModel createThemeFromJetpackResponse(JetpackThemeResponse response) {
+        final ThemeModel theme = new ThemeModel();
         theme.setThemeId(response.id);
         theme.setName(response.name);
         theme.setThemeUrl(response.theme_uri);
