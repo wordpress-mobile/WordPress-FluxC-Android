@@ -1,10 +1,12 @@
 package org.wordpress.android.fluxc.example
 
 import android.app.Fragment
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.fragment_posts.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -30,9 +32,9 @@ class PostsFragment : Fragment() {
 
     private var searchOffset = 0
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        (activity.application as ExampleApp).component.inject(this)
+    override fun onAttach(context: Context?) {
+        AndroidInjection.inject(this)
+        super.onAttach(context)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?

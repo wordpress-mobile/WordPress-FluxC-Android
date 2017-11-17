@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -33,15 +34,17 @@ import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
 
 import javax.inject.Inject;
 
+import dagger.android.AndroidInjection;
+
 
 public class SignedOutActionsFragment extends Fragment {
     @Inject AccountStore mAccountStore;
     @Inject Dispatcher mDispatcher;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        ((ExampleApp) getActivity().getApplication()).getComponent().inject(this);
+    public void onAttach(Context context) {
+        AndroidInjection.inject(this);
+        super.onAttach(context);
     }
 
     @Override

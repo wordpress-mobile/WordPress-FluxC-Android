@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.mocked;
 
-import org.wordpress.android.fluxc.example.AppSecretsModule;
+import org.wordpress.android.fluxc.example.di.AppSecretsModule;
 import org.wordpress.android.fluxc.module.AppContextModule;
 import org.wordpress.android.fluxc.module.MockedNetworkModule;
 import org.wordpress.android.fluxc.module.ReleaseBaseModule;

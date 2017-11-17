@@ -1,23 +1,23 @@
 package org.wordpress.android.fluxc.example
 
 import android.app.Fragment
+import android.content.Context
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.fragment_themes.*
-
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.ThemeActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.ThemeModel
-import org.wordpress.android.fluxc.store.ThemeStore
 import org.wordpress.android.fluxc.store.SiteStore
-
+import org.wordpress.android.fluxc.store.ThemeStore
 import javax.inject.Inject
 
 class ThemeFragment : Fragment() {
@@ -25,9 +25,9 @@ class ThemeFragment : Fragment() {
     @Inject internal lateinit var themeStore: ThemeStore
     @Inject internal lateinit var dispatcher: Dispatcher
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        (activity.application as ExampleApp).component.inject(this)
+    override fun onAttach(context: Context?) {
+        AndroidInjection.inject(this)
+        super.onAttach(context)
     }
 
     override fun onStart() {
