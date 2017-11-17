@@ -15,6 +15,7 @@ repositories {
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 25
@@ -64,10 +65,6 @@ android.buildTypes.all { buildType ->
     testProperties.any { property ->
         buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(), "\"${property.value}\""
     }
-}
-
-kapt {
-    generateStubs = true
 }
 
 dependencies {
