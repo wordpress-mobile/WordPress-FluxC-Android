@@ -37,7 +37,7 @@ subprojects {
     }
 
     dependencies {
-        ktlint 'com.github.shyiko:ktlint:0.9.2'
+        ktlint 'com.github.shyiko:ktlint:0.12.1'
     }
 
     task ktlint(type: JavaExec) {
@@ -54,7 +54,7 @@ subprojects {
 }
 
 ext {
-    kotlinVersion = '1.1.51'
+    kotlinVersion = '1.2.0'
 
     daggerVersion = '2.11'
     supportLibraryVersion = '25.3.1'
