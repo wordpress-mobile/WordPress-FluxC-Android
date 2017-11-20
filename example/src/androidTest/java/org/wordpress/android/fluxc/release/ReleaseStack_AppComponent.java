@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
-import org.wordpress.android.fluxc.example.AppSecretsModule;
+import org.wordpress.android.fluxc.example.di.AppSecretsModule;
 import org.wordpress.android.fluxc.module.AppContextModule;
 import org.wordpress.android.fluxc.module.MockedToolsModule;
 import org.wordpress.android.fluxc.module.ReleaseBaseModule;
@@ -42,7 +42,7 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_SiteTestXMLRPC test);
     void inject(ReleaseStack_TaxonomyTestWPCom test);
     void inject(ReleaseStack_TaxonomyTestXMLRPC test);
-    void inject(ReleaseStack_UploadTest test);
-    void inject(ReleaseStack_ThemeTestWPCom test);
     void inject(ReleaseStack_ThemeTestJetpack test);
+    void inject(ReleaseStack_ThemeTestWPCom test);
+    void inject(ReleaseStack_UploadTest test);
 }
