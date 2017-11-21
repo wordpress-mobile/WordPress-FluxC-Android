@@ -1,4 +1,4 @@
-package org.wordpress.android.fluxc.example.di;
+package org.wordpress.android.fluxc.module;
 
 import org.wordpress.android.fluxc.network.BaseRequest;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;

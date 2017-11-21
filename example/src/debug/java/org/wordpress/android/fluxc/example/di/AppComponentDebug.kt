@@ -4,6 +4,7 @@ import android.app.Application
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.AndroidInjectionModule
+import org.wordpress.android.fluxc.module.DebugOkHttpClientModule
 import org.wordpress.android.fluxc.module.ReleaseBaseModule
 import org.wordpress.android.fluxc.module.ReleaseNetworkModule
 import javax.inject.Singleton
