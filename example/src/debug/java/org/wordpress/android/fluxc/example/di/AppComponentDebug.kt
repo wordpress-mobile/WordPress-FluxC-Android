@@ -15,6 +15,7 @@ import javax.inject.Singleton
         ApplicationModule::class,
         AppSecretsModule::class,
         DebugOkHttpClientModule::class,
+        InterceptorModule::class,
         ReleaseBaseModule::class,
         ReleaseNetworkModule::class,
         MainActivityModule::class))
