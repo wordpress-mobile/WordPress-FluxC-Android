@@ -1,7 +1,5 @@
 package org.wordpress.android.fluxc.example.di;
 
-import com.facebook.stetho.okhttp3.StethoInterceptor;
-
 import org.wordpress.android.fluxc.network.BaseRequest;
 import org.wordpress.android.fluxc.network.MemorizingTrustManager;
 import org.wordpress.android.util.AppLog;
@@ -20,19 +18,21 @@ import javax.net.ssl.TrustManager;
 
 import dagger.Module;
 import dagger.Provides;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 
 @Module
 public class DebugOkHttpClientModule {
     @Provides
     @Named("regular")
-    public OkHttpClient.Builder provideOkHttpClientBuilder() {
-        return new OkHttpClient.Builder().addNetworkInterceptor(new StethoInterceptor());
+    public OkHttpClient.Builder provideOkHttpClientBuilder(Interceptor interceptor) {
+        return new OkHttpClient.Builder().addNetworkInterceptor(interceptor);
     }
 
     @Provides
     @Named("custom-ssl")
-    public OkHttpClient.Builder provideOkHttpClientBuilderCustomSSL(MemorizingTrustManager memorizingTrustManager) {
+    public OkHttpClient.Builder provideOkHttpClientBuilderCustomSSL(MemorizingTrustManager memorizingTrustManager,
+                                                                    Interceptor interceptor) {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         try {
             final SSLContext sslContext = SSLContext.getInstance("TLS");
@@ -42,7 +42,7 @@ public class DebugOkHttpClientModule {
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             AppLog.e(T.API, e);
         }
-        builder.addNetworkInterceptor(new StethoInterceptor());
+        builder.addNetworkInterceptor(interceptor);
         return builder;
     }
 
