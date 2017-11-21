@@ -19,8 +19,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
-import org.wordpress.android.fluxc.network.rest.wpcom.theme.WPComThemeResponse.ThemeListResponse;
-import org.wordpress.android.fluxc.network.rest.wpcom.theme.WPComThemeResponse.WPComThemeMapResponse;
+import org.wordpress.android.fluxc.network.rest.wpcom.theme.WPComThemeResponse.WPComThemeListResponse;
 import org.wordpress.android.fluxc.network.rest.wpcom.theme.JetpackThemeResponse.JetpackThemeListResponse;
 import org.wordpress.android.fluxc.store.ThemeStore.ThemesError;
 import org.wordpress.android.fluxc.store.ThemeStore.SearchedThemesPayload;
@@ -140,10 +139,10 @@ public class ThemeRestClient extends BaseWPComRestClient {
      */
     public void fetchWpComThemes() {
         String url = WPCOMREST.themes.getUrlV1_2() + "?" + WP_THEME_FETCH_NUMBER_PARAM;
-        add(WPComGsonRequest.buildGetRequest(url, null, ThemeListResponse.class,
-                new Response.Listener<ThemeListResponse>() {
+        add(WPComGsonRequest.buildGetRequest(url, null, WPComThemeListResponse.class,
+                new Response.Listener<WPComThemeListResponse>() {
                     @Override
-                    public void onResponse(ThemeListResponse response) {
+                    public void onResponse(WPComThemeListResponse response) {
                         AppLog.d(AppLog.T.API, "Received response to WP.com themes fetch request.");
                         FetchedThemesPayload payload = new FetchedThemesPayload(null);
                         payload.themes = createThemeListFromArrayResponse(response);
@@ -212,39 +211,13 @@ public class ThemeRestClient extends BaseWPComRestClient {
                 }));
     }
 
-    /**
-     * [Undocumented!] Endpoint: v1.2/sites/$siteId/themes
-     * @see <a href="https://developer.wordpress.com/docs/api/1.1/get/sites/%24site/themes/">Previous version</a>
-     */
-    public void fetchWpComSiteThemes(@NonNull final SiteModel site) {
-        String url = WPCOMREST.sites.site(site.getSiteId()).themes.getUrlV1_2();
-        add(WPComGsonRequest.buildGetRequest(url, null, WPComThemeMapResponse.class,
-                new Response.Listener<WPComThemeMapResponse>() {
-                    @Override
-                    public void onResponse(WPComThemeMapResponse response) {
-                        AppLog.d(AppLog.T.API, "Received response to themes fetch request for WP.com site.");
-                        FetchedThemesPayload payload =
-                                new FetchedThemesPayload(site, createThemeListFromWPComResponse(response));
-                        mDispatcher.dispatch(ThemeActionBuilder.newFetchedWpComThemesAction(payload));
-                    }
-                }, new BaseRequest.BaseErrorListener() {
-                    @Override
-                    public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        AppLog.e(AppLog.T.API, "Received error response to themes fetch request for WP.com site.");
-                        FetchedThemesPayload payload = new FetchedThemesPayload(site, null);
-                        payload.error = new ThemesError(((WPComGsonNetworkError) error).apiError, error.message);
-                        mDispatcher.dispatch(ThemeActionBuilder.newFetchedWpComThemesAction(payload));
-                    }
-                }));
-    }
-
     /** [Undocumented!] Endpoint: v1.2/themes?search=$term */
     public void searchThemes(@NonNull final String searchTerm) {
         String url = WPCOMREST.themes.getUrlV1_2() + "?search=" + searchTerm;
-        add(WPComGsonRequest.buildGetRequest(url, null, ThemeListResponse.class,
-                new Response.Listener<ThemeListResponse>() {
+        add(WPComGsonRequest.buildGetRequest(url, null, WPComThemeListResponse.class,
+                new Response.Listener<WPComThemeListResponse>() {
                     @Override
-                    public void onResponse(ThemeListResponse response) {
+                    public void onResponse(WPComThemeListResponse response) {
                         AppLog.d(AppLog.T.API, "Received response to search themes request.");
                         SearchedThemesPayload payload =
                                 new SearchedThemesPayload(searchTerm, createThemeListFromArrayResponse(response));
@@ -305,16 +278,7 @@ public class ThemeRestClient extends BaseWPComRestClient {
         return theme;
     }
 
-    /** Creates a list of ThemeModels from the WP.com /v1.1/themes REST response. */
-    private static List<ThemeModel> createThemeListFromWPComResponse(WPComThemeMapResponse response) {
-        final List<ThemeModel> themeList = new ArrayList<>();
-        for (WPComThemeResponse item : response.themes.values()) {
-            themeList.add(createThemeFromWPComResponse(item));
-        }
-        return themeList;
-    }
-
-    private static List<ThemeModel> createThemeListFromArrayResponse(ThemeListResponse response) {
+    private static List<ThemeModel> createThemeListFromArrayResponse(WPComThemeListResponse response) {
         final List<ThemeModel> themeList = new ArrayList<>();
         for (WPComThemeResponse item : response.themes) {
             themeList.add(createThemeFromWPComResponse(item));
