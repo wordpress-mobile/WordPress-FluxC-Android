@@ -72,28 +72,34 @@ class ResponseMockingInterceptor implements Interceptor {
     }
 
     private Response buildMediaErrorResponse(Request request) {
-        String responseJson = getStringFromResourceFile("media-upload-response-failure.json");
-        return buildResponse(request, responseJson, 404);
+        return buildErrorResponse(request, "media-upload-response-failure.json", 404);
     }
 
     private Response buildMediaSuccessResponse(Request request) {
-        String responseJson = getStringFromResourceFile("media-upload-response-success.json");
-        return buildResponse(request, responseJson, 200);
+        return buildSuccessResponse(request, "media-upload-response-success.json");
     }
 
     private Response buildPostSuccessResponse(Request request) {
-        String responseJson = getStringFromResourceFile("post-upload-response-success.json");
-        return buildResponse(request, responseJson, 200);
+        return buildSuccessResponse(request, "post-upload-response-success.json");
     }
 
     private Response buildJetpackTunnelRootSuccessResponse(Request request) {
-        String responseJson = getStringFromResourceFile("jetpack-tunnel-root-response-success.json");
-        return buildResponse(request, responseJson, 200);
+        return buildSuccessResponse(request, "jetpack-tunnel-root-response-success.json");
     }
 
     private Response buildJetpackTunnelRootFailureResponse(Request request) {
-        String responseJson = getStringFromResourceFile("jetpack-tunnel-root-response-failure.json");
-        return buildResponse(request, responseJson, 404);
+        return buildErrorResponse(request, "jetpack-tunnel-root-response-failure.json", 404);
+    }
+
+    private Response buildSuccessResponse(Request request, String resourceFileName) {
+        String responseJson = getStringFromResourceFile(resourceFileName);
+        return buildResponse(request, responseJson, 200);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private Response buildErrorResponse(Request request, String resourceFileName, int errorCode) {
+        String responseJson = getStringFromResourceFile(resourceFileName);
+        return buildResponse(request, responseJson, errorCode);
     }
 
     private static Response buildResponse(Request request, final String responseJson, int responseCode) {
