@@ -46,6 +46,9 @@ public class MockedNetworkModule {
     // Induces the mocked media upload to fail when set as the author id of the MediaModel
     public static final int MEDIA_FAILURE_AUTHOR_CODE = 31337;
 
+    // Induces the mocked request to fail when
+    public static final long FAILURE_SITE_ID = 11111;
+
     @Singleton
     @Provides
     public OkHttpClient.Builder provideOkHttpClientBuilder() {

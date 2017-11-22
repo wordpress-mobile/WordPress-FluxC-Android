@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.module;
 
+import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import org.wordpress.android.fluxc.TestUtils;
@@ -47,9 +48,27 @@ class ResponseMockingInterceptor implements Interceptor {
         } else if (requestUrl.contains("posts/new")) {
             // WP.com post upload request
             return buildPostSuccessResponse(request);
-        } else {
-            throw new IllegalStateException("Interceptor was given a request with no mocks - URL: " + requestUrl);
+        } else if (requestUrl.contains("jetpack-blogs")) {
+            String path = "";
+            String pathRequestParam = Uri.parse(requestUrl).getQueryParameter("path");
+            if (pathRequestParam != null) {
+                // GET request
+                String[] params = pathRequestParam.split("&");
+                path = params[0];
+            } else {
+                // POST request
+                // TODO
+            }
+            switch (path) {
+                case "/":
+                    if (requestUrl.contains(String.valueOf(MockedNetworkModule.FAILURE_SITE_ID))) {
+                        return buildJetpackTunnelRootFailureResponse(request);
+                    } else {
+                        // TODO
+                    }
+            }
         }
+        throw new IllegalStateException("Interceptor was given a request with no mocks - URL: " + requestUrl);
     }
 
     private Response buildMediaErrorResponse(Request request) {
@@ -65,6 +84,11 @@ class ResponseMockingInterceptor implements Interceptor {
     private Response buildPostSuccessResponse(Request request) {
         String responseJson = getStringFromResourceFile("post-upload-response-success.json");
         return buildResponse(request, responseJson, 200);
+    }
+
+    private Response buildJetpackTunnelRootFailureResponse(Request request) {
+        String responseJson = getStringFromResourceFile("jetpack-tunnel-root-response-failure.json");
+        return buildResponse(request, responseJson, 404);
     }
 
     private static Response buildResponse(Request request, final String responseJson, int responseCode) {
