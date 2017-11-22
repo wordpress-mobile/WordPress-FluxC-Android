@@ -64,7 +64,7 @@ class ResponseMockingInterceptor implements Interceptor {
                     if (requestUrl.contains(String.valueOf(MockedNetworkModule.FAILURE_SITE_ID))) {
                         return buildJetpackTunnelRootFailureResponse(request);
                     } else {
-                        // TODO
+                        return buildJetpackTunnelRootSuccessResponse(request);
                     }
             }
         }
@@ -83,6 +83,11 @@ class ResponseMockingInterceptor implements Interceptor {
 
     private Response buildPostSuccessResponse(Request request) {
         String responseJson = getStringFromResourceFile("post-upload-response-success.json");
+        return buildResponse(request, responseJson, 200);
+    }
+
+    private Response buildJetpackTunnelRootSuccessResponse(Request request) {
+        String responseJson = getStringFromResourceFile("jetpack-tunnel-root-response-success.json");
         return buildResponse(request, responseJson, 200);
     }
 
