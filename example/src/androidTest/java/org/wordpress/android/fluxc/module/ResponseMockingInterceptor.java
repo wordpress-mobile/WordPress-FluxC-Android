@@ -3,6 +3,8 @@ package org.wordpress.android.fluxc.module;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
+import com.google.gson.Gson;
+
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.network.rest.wpcom.media.RestUploadRequestBody;
 import org.wordpress.android.util.AppLog;
@@ -14,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -21,8 +24,10 @@ import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okio.Buffer;
 import okio.BufferedSource;
 import okio.Okio;
 
@@ -49,7 +54,7 @@ class ResponseMockingInterceptor implements Interceptor {
             // WP.com post upload request
             return buildPostSuccessResponse(request);
         } else if (requestUrl.contains("jetpack-blogs")) {
-            String path = "";
+            String path;
             String pathRequestParam = Uri.parse(requestUrl).getQueryParameter("path");
             if (pathRequestParam != null) {
                 // GET request
@@ -57,7 +62,9 @@ class ResponseMockingInterceptor implements Interceptor {
                 path = params[0];
             } else {
                 // POST request
-                // TODO
+                Map bodyMap = new Gson().fromJson(getRequestBody(request.body()), Map.class);
+                String[] params = ((String) bodyMap.get("path")).split("&");
+                path = params[0];
             }
             switch (path) {
                 case "/":
@@ -66,6 +73,8 @@ class ResponseMockingInterceptor implements Interceptor {
                     } else {
                         return buildJetpackTunnelRootSuccessResponse(request);
                     }
+                case "/wp/v2/settings/":
+                    return buildJetpackTunnelWPV2SettingsSuccessResponse(request);
             }
         }
         throw new IllegalStateException("Interceptor was given a request with no mocks - URL: " + requestUrl);
@@ -89,6 +98,10 @@ class ResponseMockingInterceptor implements Interceptor {
 
     private Response buildJetpackTunnelRootFailureResponse(Request request) {
         return buildErrorResponse(request, "jetpack-tunnel-root-response-failure.json", 404);
+    }
+
+    private Response buildJetpackTunnelWPV2SettingsSuccessResponse(Request request) {
+        return buildSuccessResponse(request, "jetpack-tunnel-wp-v2-settings-response-success.json");
     }
 
     private Response buildSuccessResponse(Request request, String resourceFileName) {
@@ -150,6 +163,16 @@ class ResponseMockingInterceptor implements Interceptor {
         } catch (IOException e) {
             AppLog.e(T.TESTS, "Could not load response JSON file.");
             return null;
+        }
+    }
+
+    private String getRequestBody(RequestBody body) throws IOException {
+        final Buffer buffer = new Buffer();
+        if (body != null) {
+            body.writeTo(buffer);
+            return buffer.readUtf8();
+        } else {
+            return "";
         }
     }
 }

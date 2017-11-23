@@ -81,6 +81,8 @@ dependencies {
         exclude group: "com.mcxiaoke.volley";
     }
 
+    implementation 'com.google.code.gson:gson:2.8.0'
+
     // Dagger
     implementation "com.google.dagger:dagger:$daggerVersion"
     kapt "com.google.dagger:dagger-compiler:$daggerVersion"

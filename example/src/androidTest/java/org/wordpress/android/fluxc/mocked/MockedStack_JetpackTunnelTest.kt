@@ -3,12 +3,14 @@ package org.wordpress.android.fluxc.mocked
 import android.content.Context
 import android.net.Uri
 import com.android.volley.RequestQueue
+import com.google.gson.Gson
 import junit.framework.Assert
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.module.MockedNetworkModule
 import org.wordpress.android.fluxc.network.BaseRequest.BaseErrorListener
+import org.wordpress.android.fluxc.network.Response
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.discovery.RootWPAPIRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -28,6 +30,8 @@ import javax.inject.Singleton
  */
 class MockedStack_JetpackTunnelTest : MockedStack_Base() {
     @Inject internal lateinit var jetpackTunnelClient: JetpackTunnelClientForTests
+
+    private val gson by lazy { Gson() }
 
     @Throws(Exception::class)
     override fun setUp() {
@@ -94,6 +98,45 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
     }
 
+    fun testSuccessfulPostRequest() {
+        val countDownLatch = CountDownLatch(1)
+        val url = "/wp/v2/settings/"
+
+        val requestBody = mapOf<String, Any>("title" to "New Title", "description" to "New Description")
+
+        val request = WPComJPTunnelGsonRequest.buildPostRequest(url, 567, requestBody,
+                SettingsAPIResponse::class.java,
+                { response: SettingsAPIResponse? ->
+                    run {
+                        // Verify that the successful response is correctly parsed
+                        assertEquals("New Title", response?.title)
+                        assertEquals("New Description", response?.description)
+                        assertNull(response?.language)
+                        countDownLatch.countDown()
+                    }
+                },
+                BaseErrorListener {
+                    error -> run {
+                        throw AssertionError("Unexpected BaseNetworkError: "
+                                + (error as WPComGsonNetworkError).apiError + " - " + error.message)
+                    }
+                })
+
+        // Verify that the request was built and wrapped as expected
+        assertEquals(WPCOMREST.jetpack_blogs.site(567).rest_api.urlV1_1, UrlUtils.removeQuery(request?.url))
+        val parsedUri = Uri.parse(request?.url)
+        assertEquals(0, parsedUri.queryParameterNames.size)
+        val body = String(request?.body!!)
+        val generatedBody = gson.fromJson(body, HashMap<String, String>()::class.java)
+        assertEquals(3, generatedBody.size)
+        assertEquals("/wp/v2/settings/&_method=post", generatedBody["path"])
+        assertEquals("true", generatedBody["json"])
+        assertEquals("{\"title\":\"New Title\",\"description\":\"New Description\"}", generatedBody["body"])
+
+        jetpackTunnelClient.exposedAdd(request)
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+    }
+
     @Singleton
     class JetpackTunnelClientForTests @Inject constructor(appContext: Context, dispatcher: Dispatcher,
                                                           requestQueue: RequestQueue, accessToken: AccessToken,
@@ -103,5 +146,11 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
          * Wraps and exposes the protected [add] method so that tests can add requests directly.
          */
         fun <T> exposedAdd(request: WPComGsonRequest<T>?) { add(request) }
+    }
+
+    class SettingsAPIResponse : Response {
+        val title: String? = null
+        val description: String? = null
+        val language: String? = null
     }
 }
