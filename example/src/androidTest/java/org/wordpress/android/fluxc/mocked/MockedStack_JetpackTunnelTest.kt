@@ -137,6 +137,52 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
     }
 
+    fun testCreatePutRequest() {
+        val url = "/wp/v2/settings/"
+
+        val requestBody = mapOf<String, Any>("title" to "New Title", "description" to "New Description")
+
+        val request = WPComJPTunnelGsonRequest.buildPutRequest(url, 567, requestBody,
+                Any::class.java,
+                { _: Any? -> },
+                BaseErrorListener { _ -> }
+        )
+
+        // Verify that the request was built and wrapped as expected
+        assertEquals(WPCOMREST.jetpack_blogs.site(567).rest_api.urlV1_1, UrlUtils.removeQuery(request?.url))
+        val parsedUri = Uri.parse(request?.url)
+        assertEquals(0, parsedUri.queryParameterNames.size)
+        val body = String(request?.body!!)
+        val generatedBody = Gson().fromJson(body, HashMap<String, String>()::class.java)
+        assertEquals(3, generatedBody.size)
+        assertEquals("/wp/v2/settings/&_method=put", generatedBody["path"])
+        assertEquals("true", generatedBody["json"])
+        assertEquals("{\"title\":\"New Title\",\"description\":\"New Description\"}", generatedBody["body"])
+    }
+
+    fun testCreatePatchRequest() {
+        val url = "/wp/v2/settings/"
+
+        val requestBody = mapOf<String, Any>("title" to "New Title", "description" to "New Description")
+
+        val request = WPComJPTunnelGsonRequest.buildPatchRequest(url, 567, requestBody,
+                Any::class.java,
+                { _: Any? -> },
+                BaseErrorListener { _ -> }
+        )
+
+        // Verify that the request was built and wrapped as expected
+        assertEquals(WPCOMREST.jetpack_blogs.site(567).rest_api.urlV1_1, UrlUtils.removeQuery(request?.url))
+        val parsedUri = Uri.parse(request?.url)
+        assertEquals(0, parsedUri.queryParameterNames.size)
+        val body = String(request?.body!!)
+        val generatedBody = Gson().fromJson(body, HashMap<String, String>()::class.java)
+        assertEquals(3, generatedBody.size)
+        assertEquals("/wp/v2/settings/&_method=patch", generatedBody["path"])
+        assertEquals("true", generatedBody["json"])
+        assertEquals("{\"title\":\"New Title\",\"description\":\"New Description\"}", generatedBody["body"])
+    }
+
     @Singleton
     class JetpackTunnelClientForTests @Inject constructor(appContext: Context, dispatcher: Dispatcher,
                                                           requestQueue: RequestQueue, accessToken: AccessToken,
