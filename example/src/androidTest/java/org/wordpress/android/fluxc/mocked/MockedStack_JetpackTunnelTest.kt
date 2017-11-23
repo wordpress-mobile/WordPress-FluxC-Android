@@ -40,7 +40,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
         val url = "/"
 
         val request = WPComJPTunnelGsonRequest.buildGetRequest(url, MockedNetworkModule.FAILURE_SITE_ID, mapOf(),
-                RootWPAPIRestResponse::class,
+                RootWPAPIRestResponse::class.java,
                 { _: RootWPAPIRestResponse? ->
                     throw AssertionError("Unexpected success!")
                 },
@@ -63,7 +63,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
         val params = mapOf("context" to "view")
 
         val request = WPComJPTunnelGsonRequest.buildGetRequest(url, 567, params,
-                RootWPAPIRestResponse::class,
+                RootWPAPIRestResponse::class.java,
                 { response: RootWPAPIRestResponse? ->
                     run {
                         // Verify that the successful response is correctly parsed
