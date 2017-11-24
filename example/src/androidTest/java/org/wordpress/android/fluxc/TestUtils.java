@@ -2,7 +2,9 @@ package org.wordpress.android.fluxc;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
+import org.wordpress.android.fluxc.example.test.BuildConfig;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -63,10 +65,16 @@ public class TestUtils {
     }
 
     public static String getSampleImagePath(@NonNull Context context, @NonNull Context targetContext) {
+        if (!TextUtils.isEmpty(BuildConfig.TEST_LOCAL_IMAGE)) {
+            return BuildConfig.TEST_LOCAL_IMAGE;
+        }
         return copyAndGetAssetPath(context, targetContext, SAMPLE_IMAGE);
     }
 
     public static String getSampleVideoPath(@NonNull Context context, @NonNull Context targetContext) {
+        if (!TextUtils.isEmpty(BuildConfig.TEST_LOCAL_VIDEO)) {
+            return BuildConfig.TEST_LOCAL_VIDEO;
+        }
         return copyAndGetAssetPath(context, targetContext, SAMPLE_VIDEO);
     }
 }
