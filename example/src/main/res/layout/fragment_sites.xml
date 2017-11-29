@@ -6,6 +6,12 @@
               tools:context="org.wordpress.android.fluxc.example.SitesFragment">
 
     <Button
+        android:id="@+id/fetch_profile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch Profile" />
+
+    <Button
         android:id="@+id/new_site"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
