@@ -150,7 +150,7 @@ public class SitesFragment extends Fragment {
             prependToLog("onProfileFetched error: " + event.error.type);
             AppLog.e(T.TESTS, "onProfileFetched error: " + event.error.type);
         } else {
-            prependToLog("onProfileFetched: email = " + event.payload.account.getEmail());
+            prependToLog("onProfileFetched: email = " + event.site.getEmail());
         }
     }
 
