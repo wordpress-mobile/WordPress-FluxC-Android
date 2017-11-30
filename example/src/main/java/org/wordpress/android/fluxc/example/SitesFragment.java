@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.NewSitePayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnNewSiteCreated;
+import org.wordpress.android.fluxc.store.SiteStore.OnProfileFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteDeleted;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteExported;
@@ -144,16 +145,23 @@ public class SitesFragment extends Fragment {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onProfileFetched(OnProfileFetched event) {
+        if (event.isError()) {
+            prependToLog("onProfileFetched error: " + event.error.type);
+            AppLog.e(T.TESTS, "onProfileFetched error: " + event.error.type);
+        } else {
+            prependToLog("onProfileFetched: email = " + event.site.getEmail());
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSiteChanged(OnSiteChanged event) {
         if (event.isError()) {
             prependToLog("SiteChanged error: " + event.error.type);
             AppLog.e(T.TESTS, "SiteChanged error: " + event.error.type);
         } else {
             prependToLog("SiteChanged: rowsAffected = " + event.rowsAffected);
-
-            SiteModel site = mSiteStore.getSites().get(0);
-            prependToLog("SiteChanged: email = " + site.getEmail());
-            prependToLog("SiteChanged: display_name = " + site.getDisplayName());
         }
     }
 
