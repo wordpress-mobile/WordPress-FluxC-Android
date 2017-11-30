@@ -52,7 +52,7 @@ public class SitesFragment extends Fragment {
             public void onClick(View v) {
                 SiteModel site = mSiteStore.getSites().get(0);
                 // Fetch site
-                mDispatcher.dispatch(SiteActionBuilder.newFetchProfileAction(site));
+                mDispatcher.dispatch(SiteActionBuilder.newFetchProfileXmlRpcAction(site));
             }
         });
 
