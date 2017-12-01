@@ -183,7 +183,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
 
     private ThemeModel getNewNonPremiumTheme(String oldThemeId, List<ThemeModel> themes) {
         for (ThemeModel theme : themes) {
-            if (!theme.getThemeId().equals(oldThemeId) && theme.getPrice() == 0.f) {
+            if (!theme.getThemeId().equals(oldThemeId) && theme.getFree()) {
                 return theme;
             }
         }
