@@ -18,12 +18,12 @@ import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginErrorType;
 import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginPayload;
 import org.wordpress.android.fluxc.store.PluginStore.InstallSitePluginErrorType;
 import org.wordpress.android.fluxc.store.PluginStore.InstallSitePluginPayload;
-import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginUpdated;
+import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginConfigured;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginDeleted;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginInstalled;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsFetched;
-import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginErrorType;
-import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginPayload;
+import org.wordpress.android.fluxc.store.PluginStore.ConfigureSitePluginErrorType;
+import org.wordpress.android.fluxc.store.PluginStore.ConfigureSitePluginPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
@@ -51,7 +51,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         SITE_CHANGED,
         SITE_REMOVED,
         UNKNOWN_PLUGIN,
-        UPDATED_PLUGIN
+        CONFIGURED_PLUGIN
     }
 
     private TestEvents mNextEvent;
@@ -77,7 +77,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
-    public void testUpdateSitePlugin() throws InterruptedException {
+    public void testConfigureSitePlugin() throws InterruptedException {
         // In order to have a reliable test, let's first fetch the list of plugins, pick the first plugin
         // and change it's active status, so we can make sure when we run the test multiple times, each time
         // an action is actually taken. This wouldn't be the case if we always activate the plugin.
@@ -89,11 +89,11 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         boolean isActive = !plugin.isActive();
         plugin.setIsActive(isActive);
 
-        mNextEvent = TestEvents.UPDATED_PLUGIN;
+        mNextEvent = TestEvents.CONFIGURED_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
-        UpdateSitePluginPayload payload = new UpdateSitePluginPayload(site, plugin);
-        mDispatcher.dispatch(PluginActionBuilder.newUpdateSitePluginAction(payload));
+        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, plugin);
+        mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -153,8 +153,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.UNKNOWN_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
-        UpdateSitePluginPayload payload = new UpdateSitePluginPayload(site, plugin);
-        mDispatcher.dispatch(PluginActionBuilder.newUpdateSitePluginAction(payload));
+        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, plugin);
+        mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -238,17 +238,17 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onSitePluginUpdated(OnSitePluginUpdated event) {
-        AppLog.i(T.API, "Received onSitePluginUpdated");
+    public void onSitePluginConfigured(OnSitePluginConfigured event) {
+        AppLog.i(T.API, "Received onSitePluginConfigured");
         if (event.isError()) {
-            if (event.error.type.equals(UpdateSitePluginErrorType.UNKNOWN_PLUGIN)) {
+            if (event.error.type.equals(ConfigureSitePluginErrorType.UNKNOWN_PLUGIN)) {
                 assertEquals(mNextEvent, TestEvents.UNKNOWN_PLUGIN);
             } else {
-                throw new AssertionError("Unexpected error occurred in onSitePluginUpdated with type: "
+                throw new AssertionError("Unexpected error occurred in onSitePluginConfigured with type: "
                         + event.error.type);
             }
         } else {
-            assertEquals(mNextEvent, TestEvents.UPDATED_PLUGIN);
+            assertEquals(mNextEvent, TestEvents.CONFIGURED_PLUGIN);
         }
         mCountDownLatch.countDown();
     }
@@ -366,12 +366,12 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     private void deactivatePlugin(SiteModel site, PluginModel plugin) throws InterruptedException {
-        mNextEvent = TestEvents.UPDATED_PLUGIN;
+        mNextEvent = TestEvents.CONFIGURED_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
         plugin.setIsActive(false);
-        UpdateSitePluginPayload payload = new UpdateSitePluginPayload(site, plugin);
-        mDispatcher.dispatch(PluginActionBuilder.newUpdateSitePluginAction(payload));
+        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, plugin);
+        mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
