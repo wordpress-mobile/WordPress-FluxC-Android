@@ -51,7 +51,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         SITE_CHANGED,
         SITE_REMOVED,
         UNKNOWN_PLUGIN,
-        UPDATED_PLUGIN
+        CONFIGURED_PLUGIN
     }
 
     private TestEvents mNextEvent;
@@ -77,7 +77,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
-    public void testUpdateSitePlugin() throws InterruptedException {
+    public void testConfigureSitePlugin() throws InterruptedException {
         // In order to have a reliable test, let's first fetch the list of plugins, pick the first plugin
         // and change it's active status, so we can make sure when we run the test multiple times, each time
         // an action is actually taken. This wouldn't be the case if we always activate the plugin.
@@ -89,7 +89,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         boolean isActive = !plugin.isActive();
         plugin.setIsActive(isActive);
 
-        mNextEvent = TestEvents.UPDATED_PLUGIN;
+        mNextEvent = TestEvents.CONFIGURED_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
         ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, plugin);
@@ -248,7 +248,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
                         + event.error.type);
             }
         } else {
-            assertEquals(mNextEvent, TestEvents.UPDATED_PLUGIN);
+            assertEquals(mNextEvent, TestEvents.CONFIGURED_PLUGIN);
         }
         mCountDownLatch.countDown();
     }
@@ -366,7 +366,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     private void deactivatePlugin(SiteModel site, PluginModel plugin) throws InterruptedException {
-        mNextEvent = TestEvents.UPDATED_PLUGIN;
+        mNextEvent = TestEvents.CONFIGURED_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
         plugin.setIsActive(false);
