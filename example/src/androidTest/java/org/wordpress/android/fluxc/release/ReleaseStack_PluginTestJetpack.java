@@ -93,7 +93,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         UpdateSitePluginPayload payload = new UpdateSitePluginPayload(site, plugin);
-        mDispatcher.dispatch(PluginActionBuilder.newUpdateSitePluginAction(payload));
+        mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -154,7 +154,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         UpdateSitePluginPayload payload = new UpdateSitePluginPayload(site, plugin);
-        mDispatcher.dispatch(PluginActionBuilder.newUpdateSitePluginAction(payload));
+        mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -371,7 +371,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         plugin.setIsActive(false);
         UpdateSitePluginPayload payload = new UpdateSitePluginPayload(site, plugin);
-        mDispatcher.dispatch(PluginActionBuilder.newUpdateSitePluginAction(payload));
+        mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
