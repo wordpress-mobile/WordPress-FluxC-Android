@@ -23,7 +23,7 @@ import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginDeleted;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginInstalled;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsFetched;
 import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginErrorType;
-import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginPayload;
+import org.wordpress.android.fluxc.store.PluginStore.ConfigureSitePluginPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
@@ -92,7 +92,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.UPDATED_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
-        UpdateSitePluginPayload payload = new UpdateSitePluginPayload(site, plugin);
+        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, plugin);
         mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -153,7 +153,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.UNKNOWN_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
-        UpdateSitePluginPayload payload = new UpdateSitePluginPayload(site, plugin);
+        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, plugin);
         mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -370,7 +370,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
 
         plugin.setIsActive(false);
-        UpdateSitePluginPayload payload = new UpdateSitePluginPayload(site, plugin);
+        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, plugin);
         mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
