@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.NewSitePayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnNewSiteCreated;
+import org.wordpress.android.fluxc.store.SiteStore.OnProfileFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteDeleted;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteExported;
@@ -45,6 +46,15 @@ public class SitesFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_sites, container, false);
+
+        view.findViewById(R.id.fetch_profile).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SiteModel site = mSiteStore.getSites().get(0);
+                // Fetch site
+                mDispatcher.dispatch(SiteActionBuilder.newFetchProfileXmlRpcAction(site));
+            }
+        });
 
         view.findViewById(R.id.new_site).setOnClickListener(new OnClickListener() {
             @Override
@@ -131,6 +141,17 @@ public class SitesFragment extends Fragment {
             }
         }, "Site Name", "Site Title", "Unused");
         newFragment.show(ft, "dialog");
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onProfileFetched(OnProfileFetched event) {
+        if (event.isError()) {
+            prependToLog("onProfileFetched error: " + event.error.type);
+            AppLog.e(T.TESTS, "onProfileFetched error: " + event.error.type);
+        } else {
+            prependToLog("onProfileFetched: email = " + event.site.getEmail());
+        }
     }
 
     @SuppressWarnings("unused")
