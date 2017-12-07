@@ -59,6 +59,9 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertEquals(1, mSiteStore.getSitesAccessedViaWPComRestCount());
         assertEquals(0, mSiteStore.getSitesAccessedViaXMLRPCCount());
 
+        SiteModel site = mSiteStore.getSites().get(0);
+        assertNotNull(site.getJetpackVersion());
+
         signOutWPCom();
 
         assertFalse(mSiteStore.hasSite());
