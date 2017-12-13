@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.PluginModel;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.persistence.PluginSqlUtils;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
@@ -174,6 +175,31 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         // Trying to delete an active plugin should result in DELETE_PLUGIN_ERROR
         deleteSitePlugin(site, activePluginToTest, TestEvents.DELETE_PLUGIN_ERROR);
+    }
+
+    // Trying to remove a plugin that doesn't exist in remote should remove the plugin from DB
+    public void testDeleteUnknownPlugin() throws InterruptedException {
+        SiteModel site = fetchSingleJetpackSitePlugins();
+
+        String pluginName = "this-plugin-does-not-exist";
+        PluginModel plugin = new PluginModel();
+        plugin.setName(pluginName);
+        plugin.setLocalSiteId(site.getId());
+        PluginSqlUtils.insertOrUpdateSitePlugin(plugin);
+
+        PluginModel insertedPlugin = mPluginStore.getSitePluginByName(site, pluginName);
+        assertNotNull(insertedPlugin);
+
+        mNextEvent = TestEvents.DELETED_PLUGIN;
+        mCountDownLatch = new CountDownLatch(1);
+
+        DeleteSitePluginPayload payload = new DeleteSitePluginPayload(site, plugin);
+        mDispatcher.dispatch(PluginActionBuilder.newDeleteSitePluginAction(payload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Make sure the plugin is removed from DB
+        assertNull(mPluginStore.getSitePluginByName(site, pluginName));
     }
 
     public void testInstallPluginNoPackageError() throws InterruptedException {
