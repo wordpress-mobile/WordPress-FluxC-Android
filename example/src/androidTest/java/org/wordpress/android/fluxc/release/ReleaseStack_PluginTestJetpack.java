@@ -144,7 +144,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         }
     }
 
-    public void testUnknownPluginError() throws InterruptedException {
+    public void testConfigureUnknownPluginError() throws InterruptedException {
         SiteModel site = authenticateAndRetrieveSingleJetpackSite();
 
         PluginModel plugin = new PluginModel();
