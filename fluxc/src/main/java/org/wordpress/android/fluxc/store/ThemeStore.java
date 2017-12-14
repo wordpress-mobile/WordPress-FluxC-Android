@@ -33,7 +33,7 @@ public class ThemeStore extends Store {
             this.error = error;
         }
 
-        public FetchedCurrentThemePayload(@NonNull SiteModel site, @NonNull ThemeModel theme) {
+        public FetchedCurrentThemePayload(SiteModel site, ThemeModel theme) {
             this.site = site;
             this.theme = theme;
         }
@@ -47,7 +47,7 @@ public class ThemeStore extends Store {
             this.error = error;
         }
 
-        public FetchedThemesPayload(@NonNull SiteModel site, @NonNull List<ThemeModel> themes) {
+        public FetchedThemesPayload(SiteModel site, List<ThemeModel> themes) {
             this.site = site;
             this.themes = themes;
         }
@@ -70,7 +70,8 @@ public class ThemeStore extends Store {
             this.themes = themes;
         }
 
-        public SearchedThemesPayload(ThemesError error) {
+        public SearchedThemesPayload(@NonNull String searchTerm, ThemesError error) {
+            this.searchTerm = searchTerm;
             this.error = error;
         }
     }
