@@ -183,10 +183,12 @@ TEST_WPORG_URL_JETPACK_SUBFOLDER = FIXME
 TEST_WPORG_URL_JETPACK_SUBFOLDER_ENDPOINT = FIXME
 
 # WP.com - Account with only one site: a Jetpack site with beta versions enabled: http://do.wpmt.co/jp-beta/
+# Path (on device) to a test image for uploading, e.g. /sdcard/Pictures/flux-capacitor-schematics.png
 TEST_WPCOM_USERNAME_JETPACK_BETA_SITE = FIXME
 TEST_WPCOM_PASSWORD_JETPACK_BETA_SITE = FIXME
 
 # Local files to override default samples. Keep the empty string to use default samples.
 # These files should be at least 500KB, otherwise they may cause cancellation tests to fail on fast enough connections.
+# Path (on device) to a test video for uploading, e.g. /sdcard/Video/1985-10-26-Einstein-temporal-experiment.mp4
 TEST_LOCAL_IMAGE =
 TEST_LOCAL_VIDEO =
