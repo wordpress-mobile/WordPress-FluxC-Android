@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import android.text.TextUtils;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -58,6 +60,9 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertEquals(0, mSiteStore.getWPComSitesCount());
         assertEquals(1, mSiteStore.getSitesAccessedViaWPComRestCount());
         assertEquals(0, mSiteStore.getSitesAccessedViaXMLRPCCount());
+
+        SiteModel site = mSiteStore.getSites().get(0);
+        assertFalse(TextUtils.isEmpty(site.getJetpackVersion()));
 
         signOutWPCom();
 

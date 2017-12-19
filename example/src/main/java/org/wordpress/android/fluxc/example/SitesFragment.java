@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.example;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +19,7 @@ import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.NewSitePayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnNewSiteCreated;
+import org.wordpress.android.fluxc.store.SiteStore.OnProfileFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteDeleted;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteExported;
@@ -27,14 +29,16 @@ import org.wordpress.android.util.AppLog.T;
 
 import javax.inject.Inject;
 
+import dagger.android.AndroidInjection;
+
 public class SitesFragment extends Fragment {
     @Inject SiteStore mSiteStore;
     @Inject Dispatcher mDispatcher;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        ((ExampleApp) getActivity().getApplication()).getComponent().inject(this);
+    public void onAttach(Context context) {
+        AndroidInjection.inject(this);
+        super.onAttach(context);
     }
 
     @Override
@@ -42,6 +46,15 @@ public class SitesFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_sites, container, false);
+
+        view.findViewById(R.id.fetch_profile).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SiteModel site = mSiteStore.getSites().get(0);
+                // Fetch site
+                mDispatcher.dispatch(SiteActionBuilder.newFetchProfileXmlRpcAction(site));
+            }
+        });
 
         view.findViewById(R.id.new_site).setOnClickListener(new OnClickListener() {
             @Override
@@ -128,6 +141,17 @@ public class SitesFragment extends Fragment {
             }
         }, "Site Name", "Site Title", "Unused");
         newFragment.show(ft, "dialog");
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onProfileFetched(OnProfileFetched event) {
+        if (event.isError()) {
+            prependToLog("onProfileFetched error: " + event.error.type);
+            AppLog.e(T.TESTS, "onProfileFetched error: " + event.error.type);
+        } else {
+            prependToLog("onProfileFetched: email = " + event.site.getEmail());
+        }
     }
 
     @SuppressWarnings("unused")

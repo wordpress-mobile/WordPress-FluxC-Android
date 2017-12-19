@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnProfileFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
@@ -42,7 +43,8 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         INVALID_SSL_CERTIFICATE,
         SITE_CHANGED,
         POST_FORMATS_CHANGED,
-        SITE_REMOVED
+        SITE_REMOVED,
+        FETCHED_PROFILE
     }
 
     private TestEvents mNextEvent;
@@ -55,6 +57,12 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         init();
         // Reset expected test event
         mNextEvent = TestEvents.NONE;
+    }
+
+    public void testXMLRPCSimpleFetchProfile() throws InterruptedException {
+        fetchProfile(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
     }
 
     public void testXMLRPCSimpleFetchSites() throws InterruptedException {
@@ -232,6 +240,19 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
+    public void onProfileFetched(OnProfileFetched event) {
+        AppLog.i(T.TESTS, "Received OnProfileFetched, profile email: " + event.site.getEmail());
+        if (event.isError()) {
+            AppLog.i(T.TESTS, "OnProfileFetched has error: " + event.error.type);
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE, event.site.getDisplayName());
+        assertEquals(TestEvents.FETCHED_PROFILE, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
     public void onSiteRemoved(OnSiteRemoved event) {
         AppLog.i(T.TESTS, "Received OnSiteRemoved, site count: " + mSiteStore.getSitesCount());
         if (event.isError()) {
@@ -267,6 +288,29 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         }
         assertEquals(TestEvents.POST_FORMATS_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
+    }
+
+    private void fetchProfile(String username, String password, String endpointUrl) throws InterruptedException {
+        RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
+        payload.username = username;
+        payload.password = password;
+        payload.url = endpointUrl;
+
+        // Expecting to receive a OnSiteChanged event
+        mNextEvent = TestEvents.SITE_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
+        // Wait for a network response / onAuthenticationChanged error event
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Fetch the site user's Profile
+        SiteModel site = mSiteStore.getSitesAccessedViaXMLRPC().get(0);
+        mNextEvent = TestEvents.FETCHED_PROFILE;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchProfileXmlRpcAction(site));
+        // Wait for a network response
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchSites(String username, String password, String endpointUrl) throws InterruptedException {
