@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.model.post.ContentType;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
@@ -40,6 +41,7 @@ import javax.inject.Inject;
 import dagger.android.AndroidInjection;
 
 import static android.app.Activity.RESULT_OK;
+import static org.wordpress.android.fluxc.model.post.ContentType.*;
 
 public class UploadsFragment extends Fragment {
     private static final int RESULT_PICK_MEDIA = 1;
@@ -201,7 +203,7 @@ public class UploadsFragment extends Fragment {
     private void uploadMediaInPost(@NonNull SiteModel site, @NonNull String mediaUri) {
         prependToLog("Uploading media to " + site.getName());
 
-        PostModel examplePost = mPostStore.instantiatePostModel(mSite, false);
+        PostModel examplePost = mPostStore.instantiatePostModel(mSite, POST);
         examplePost.setTitle("From example activity");
         examplePost.setContent("Hi there, I'm a post from FluxC! [image]");
         mDispatcher.dispatch(PostActionBuilder.newUpdatePostAction(examplePost));

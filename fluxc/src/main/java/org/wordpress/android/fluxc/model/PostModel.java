@@ -13,6 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.model.post.ContentType;
 import org.wordpress.android.fluxc.model.post.PostLocation;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.util.AppLog;
@@ -22,6 +23,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static org.wordpress.android.fluxc.model.post.ContentType.PAGE;
 
 @Table
 public class PostModel extends Payload<BaseNetworkError> implements Cloneable, Identifiable, Serializable {
@@ -48,9 +51,9 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
     @Column private String mSlug;
     @Column private double mLatitude = PostLocation.INVALID_LATITUDE;
     @Column private double mLongitude = PostLocation.INVALID_LONGITUDE;
+    @Column private int mContentType;
 
     // Page specific
-    @Column private boolean mIsPage;
     @Column private long mParentId;
     @Column private String mParentTitle;
 
@@ -259,12 +262,16 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
         mLongitude = longitude;
     }
 
-    public boolean isPage() {
-        return mIsPage;
+    public ContentType getContentType() {
+        return ContentType.getContentType(mContentType);
     }
 
-    public void setIsPage(boolean isPage) {
-        mIsPage = isPage;
+    public void setContentType(ContentType contentType) {
+        mContentType = contentType.getValue();
+    }
+
+    public void setContentType(int contentTypeValue) {
+        mContentType = contentTypeValue;
     }
 
     public long getParentId() {
@@ -353,7 +360,7 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
                 && getFeaturedImageId() == otherPost.getFeaturedImageId()
                 && Double.compare(otherPost.getLatitude(), getLatitude()) == 0
                 && Double.compare(otherPost.getLongitude(), getLongitude()) == 0
-                && isPage() == otherPost.isPage()
+                && getContentType() == otherPost.getContentType()
                 && isLocalDraft() == otherPost.isLocalDraft() && isLocallyChanged() == otherPost.isLocallyChanged()
                 && getHasCapabilityPublishPost() == otherPost.getHasCapabilityPublishPost()
                 && getHasCapabilityEditPost() == otherPost.getHasCapabilityEditPost()
@@ -410,7 +417,7 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
 
     public boolean supportsLocation() {
         // Right now, we only disable for pages.
-        return !isPage();
+        return getContentType() == PAGE;
     }
 
     public boolean hasLocation() {

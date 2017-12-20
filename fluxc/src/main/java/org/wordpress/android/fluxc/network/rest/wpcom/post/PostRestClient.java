@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.PostsModel;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.model.post.ContentType;
 import org.wordpress.android.fluxc.model.post.PostLocation;
 import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseErrorListener;
@@ -28,9 +29,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.taxonomy.TermWPComRestResp
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostResponsePayload;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsResponsePayload;
-import org.wordpress.android.fluxc.store.PostStore.SearchPostsResponsePayload;
 import org.wordpress.android.fluxc.store.PostStore.PostError;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
+import org.wordpress.android.fluxc.store.PostStore.SearchPostsResponsePayload;
 import org.wordpress.android.util.StringUtils;
 
 import java.util.ArrayList;
@@ -40,6 +41,8 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import static org.wordpress.android.fluxc.model.post.ContentType.PAGE;
 
 @Singleton
 public class PostRestClient extends BaseWPComRestClient {
@@ -84,7 +87,7 @@ public class PostRestClient extends BaseWPComRestClient {
         add(request);
     }
 
-    public void fetchPosts(final SiteModel site, final boolean getPages, final List<PostStatus> statusList,
+    public void fetchPosts(final SiteModel site, final ContentType contentType, final List<PostStatus> statusList,
                            final int offset) {
         String url = WPCOMREST.sites.site(site.getSiteId()).posts.getUrlV1_1();
 
@@ -93,7 +96,7 @@ public class PostRestClient extends BaseWPComRestClient {
         params.put("context", "edit");
         params.put("number", String.valueOf(PostStore.NUM_POSTS_PER_FETCH));
 
-        if (getPages) {
+        if (contentType == PAGE) {
             params.put("type", "page");
         }
 
@@ -121,7 +124,7 @@ public class PostRestClient extends BaseWPComRestClient {
                         boolean canLoadMore = postArray.size() == PostStore.NUM_POSTS_PER_FETCH;
 
                         FetchPostsResponsePayload payload = new FetchPostsResponsePayload(new PostsModel(postArray),
-                                site, getPages, offset > 0, canLoadMore);
+                                site, contentType, offset > 0, canLoadMore);
                         mDispatcher.dispatch(PostActionBuilder.newFetchedPostsAction(payload));
                     }
                 },
@@ -278,7 +281,7 @@ public class PostRestClient extends BaseWPComRestClient {
         post.setSlug(from.slug);
         post.setStatus(from.status);
         post.setPassword(from.password);
-        post.setIsPage(from.type.equals("page"));
+        post.setContentType(ContentType.valueOf(from.type));
 
         if (from.post_thumbnail != null) {
             post.setFeaturedImageId(from.post_thumbnail.ID);
@@ -332,12 +335,18 @@ public class PostRestClient extends BaseWPComRestClient {
             params.put("date", post.getDateCreated());
         }
 
-        if (!post.isPage()) {
-            if (!TextUtils.isEmpty(post.getPostFormat())) {
-                params.put("format", post.getPostFormat());
-            }
-        } else {
-            params.put("type", "page");
+        //FIXME
+        switch (post.getContentType()) {
+            case POST:
+                if (!TextUtils.isEmpty(post.getPostFormat())) {
+                    params.put("format", post.getPostFormat());
+                }
+                break;
+            case PAGE:
+                params.put("type", "page");
+                break;
+            case PORTFOLIO:
+                //TODO
         }
 
         params.put("password", StringUtils.notNullStr(post.getPassword()));

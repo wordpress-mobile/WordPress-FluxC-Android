@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.PostAction
 import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.post.ContentType.*
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged
@@ -49,7 +50,7 @@ class PostsFragment : Fragment() {
         }
 
         create_new_post_first_site.setOnClickListener {
-            val examplePost = postStore.instantiatePostModel(getFirstSite(), false)
+            val examplePost = postStore.instantiatePostModel(getFirstSite(), POST)
             examplePost.title = "From example activity"
             examplePost.content = "Hi there, I'm a post from FluxC!"
             examplePost.featuredImageId = 0

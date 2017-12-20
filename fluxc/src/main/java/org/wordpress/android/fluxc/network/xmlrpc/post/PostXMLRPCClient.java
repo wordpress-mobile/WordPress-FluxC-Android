@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.generated.endpoint.XMLRPC;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.PostsModel;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.model.post.ContentType;
 import org.wordpress.android.fluxc.model.post.PostLocation;
 import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseErrorListener;
@@ -44,6 +45,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Singleton;
+
+import static org.wordpress.android.fluxc.model.post.ContentType.PAGE;
+import static org.wordpress.android.fluxc.model.post.ContentType.POST;
 
 @Singleton
 public class PostXMLRPCClient extends BaseXMLRPCClient {
@@ -85,39 +89,40 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                         }
                     }
                 }, new BaseErrorListener() {
-                    @Override
-                    public void onErrorResponse(@NonNull BaseNetworkError error) {
-                        // Possible non-generic errors:
-                        // 404 - "Invalid post ID."
-                        FetchPostResponsePayload payload = new FetchPostResponsePayload(post, site);
-                        // TODO: Check the error message and flag this as UNKNOWN_POST if applicable
-                        // Convert GenericErrorType to PostErrorType where applicable
-                        PostError postError;
-                        switch (error.type) {
-                            case AUTHORIZATION_REQUIRED:
-                                postError = new PostError(PostErrorType.UNAUTHORIZED, error.message);
-                                break;
-                            default:
-                                postError = new PostError(PostErrorType.GENERIC_ERROR, error.message);
-                        }
-                        payload.error = postError;
-                        payload.origin = origin;
-                        mDispatcher.dispatch(PostActionBuilder.newFetchedPostAction(payload));
-                    }
-                });
+            @Override
+            public void onErrorResponse(@NonNull BaseNetworkError error) {
+                // Possible non-generic errors:
+                // 404 - "Invalid post ID."
+                FetchPostResponsePayload payload = new FetchPostResponsePayload(post, site);
+                // TODO: Check the error message and flag this as UNKNOWN_POST if applicable
+                // Convert GenericErrorType to PostErrorType where applicable
+                PostError postError;
+                switch (error.type) {
+                    case AUTHORIZATION_REQUIRED:
+                        postError = new PostError(PostErrorType.UNAUTHORIZED, error.message);
+                        break;
+                    default:
+                        postError = new PostError(PostErrorType.GENERIC_ERROR, error.message);
+                }
+                payload.error = postError;
+                payload.origin = origin;
+                mDispatcher.dispatch(PostActionBuilder.newFetchedPostAction(payload));
+            }
+        });
 
         add(request);
     }
 
-    public void fetchPosts(final SiteModel site, final boolean getPages, final int offset) {
+    public void fetchPosts(final SiteModel site, final ContentType contentType, final int offset) {
         Map<String, Object> contentStruct = new HashMap<>();
 
         contentStruct.put("number", PostStore.NUM_POSTS_PER_FETCH);
         contentStruct.put("offset", offset);
 
-        if (getPages) {
+        if (contentType == PAGE) {
             contentStruct.put("post_type", "page");
         }
+        //TODO add portfolio
 
         List<Object> params = new ArrayList<>(4);
         params.add(site.getSelfHostedSiteId());
@@ -136,8 +141,8 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
 
                         PostsModel posts = postsResponseToPostsModel(response, site);
 
-                        FetchPostsResponsePayload payload = new FetchPostsResponsePayload(posts, site, getPages,
-                                offset > 0, canLoadMore);
+                        FetchPostsResponsePayload payload = new FetchPostsResponsePayload(posts, site,
+                                contentType, offset > 0, canLoadMore);
 
                         if (posts != null) {
                             mDispatcher.dispatch(PostActionBuilder.newFetchedPostsAction(payload));
@@ -377,10 +382,11 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         post.setStatus(MapUtils.getMapStr(postMap, "post_status"));
 
         if ("page".equals(MapUtils.getMapStr(postMap, "post_type"))) {
-            post.setIsPage(true);
+            post.setContentType(PAGE);
         }
+        //TODO add portfolio
 
-        if (post.isPage()) {
+        if (post.getContentType() == PAGE) {
             post.setParentId(MapUtils.getMapLong(postMap, "wp_page_parent_id"));
             post.setParentTitle(MapUtils.getMapStr(postMap, "wp_page_parent"));
             post.setSlug(MapUtils.getMapStr(postMap, "wp_slug"));
@@ -402,13 +408,14 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         Map<String, Object> contentStruct = new HashMap<>();
 
         // Post format
-        if (!post.isPage()) {
+        if (post.getContentType() == POST) {
             if (!TextUtils.isEmpty(post.getPostFormat())) {
                 contentStruct.put("post_format", post.getPostFormat());
             }
         }
 
-        contentStruct.put("post_type", post.isPage() ? "page" : "post");
+        //TODO add portfolio
+        contentStruct.put("post_type", post.getContentType() == PAGE ? "page" : "post");
         contentStruct.put("post_title", post.getTitle());
 
         String dateCreated = post.getDateCreated();
@@ -432,7 +439,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
 
         contentStruct.put("post_content", content);
 
-        if (!post.isPage()) {
+        if (post.getContentType() == POST) {
             // Handle taxonomies
 
             if (post.isLocalDraft()) {

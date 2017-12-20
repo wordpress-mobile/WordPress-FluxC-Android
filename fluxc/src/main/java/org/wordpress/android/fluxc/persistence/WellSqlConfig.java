@@ -173,6 +173,13 @@ public class WellSqlConfig extends DefaultWellConfig {
                 AppLog.d(T.DB, "Migrating to version " + (oldVersion + 1));
                 db.execSQL("alter table TermModel add POST_COUNT integer;");
                 oldVersion++;
+            case 20:
+                AppLog.d(T.DB, "Migrating to version " + (oldVersion + 1));
+                db.execSQL("alter table PostModel rename to PostModelOld");
+                helper.createTable(PostModel.class);
+                db.execSQL("INSERT INTO PostModel SELECT * FROM PostModelOld");
+                db.execSQL("drop table PostModelOld");
+                oldVersion++;
         }
         db.setTransactionSuccessful();
         db.endTransaction();
