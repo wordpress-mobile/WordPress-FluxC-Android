@@ -39,6 +39,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         POSTED,
         FETCH_ERROR,
         SENT_AUTH_EMAIL,
+        AUTH_EMAIL_ERROR_INVALID,
+        AUTH_EMAIL_ERROR_USER_EXISTS,
         AUTH_EMAIL_ERROR_NO_SUCH_USER
     }
 
@@ -218,6 +220,31 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    public void testSendAuthEmailSignup() throws InterruptedException {
+        mNextEvent = TestEvents.SENT_AUTH_EMAIL;
+        String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
+        AuthEmailPayload payload = new AccountStore.AuthEmailPayload(unknownEmail, true);
+        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testSendAuthEmailSignupInvalid() throws InterruptedException {
+        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_INVALID;
+        AuthEmailPayload payload = new AccountStore.AuthEmailPayload("email@domain", true);
+        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testSendAuthEmailSignupUserExists() throws InterruptedException {
+        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_USER_EXISTS;
+        AuthEmailPayload payload = new AccountStore.AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, true);
+        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -274,7 +301,11 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         if (event.isError()) {
             AppLog.i(AppLog.T.API, "OnAuthEmailSent has error: " + event.error.type + " - " + event.error.message);
             if (event.error.type == AuthEmailErrorType.INVALID_EMAIL) {
-                assertEquals(mNextEvent, TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER);
+                assertTrue(mNextEvent == TestEvents.AUTH_EMAIL_ERROR_INVALID
+                        || mNextEvent == TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER);
+                mCountDownLatch.countDown();
+            } else if (event.error.type == AuthEmailErrorType.USER_EXISTS) {
+                assertEquals(mNextEvent, TestEvents.AUTH_EMAIL_ERROR_USER_EXISTS);
                 mCountDownLatch.countDown();
             } else {
                 throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
