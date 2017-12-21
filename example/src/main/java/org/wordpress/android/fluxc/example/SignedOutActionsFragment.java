@@ -159,12 +159,12 @@ public class SignedOutActionsFragment extends Fragment {
         AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
         final EditText editText = new EditText(getActivity());
         editText.setSingleLine();
-        alert.setMessage("Send magic link login e-mail:");
+        alert.setMessage("Send magic link login to (e-mail or username):");
         alert.setView(editText);
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                String email = editText.getText().toString();
-                AuthEmailPayload authEmailPayload = new AuthEmailPayload(email, false);
+                String emailOrUsername = editText.getText().toString();
+                AuthEmailPayload authEmailPayload = new AuthEmailPayload(emailOrUsername, false);
                 mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(authEmailPayload));
             }
         });
