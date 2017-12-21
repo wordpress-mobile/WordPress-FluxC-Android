@@ -301,8 +301,11 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         if (event.isError()) {
             AppLog.i(AppLog.T.API, "OnAuthEmailSent has error: " + event.error.type + " - " + event.error.message);
             if (event.error.type == AuthEmailErrorType.INVALID_EMAIL) {
-                assertTrue(mNextEvent == TestEvents.AUTH_EMAIL_ERROR_INVALID
-                        || mNextEvent == TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER);
+                if (event.isSignup) {
+                    assertTrue(mNextEvent == TestEvents.AUTH_EMAIL_ERROR_INVALID);
+                } else {
+                    assertTrue(mNextEvent == TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER);
+                }
                 mCountDownLatch.countDown();
             } else if (event.error.type == AuthEmailErrorType.USER_EXISTS) {
                 assertEquals(mNextEvent, TestEvents.AUTH_EMAIL_ERROR_USER_EXISTS);
