@@ -166,7 +166,7 @@ public class SignedOutActionsFragment extends Fragment {
         final EditText editText = new EditText(getActivity());
         editText.setSingleLine();
         alert.setMessage(
-                isSignup ? "Send magic link signup to e-mail:": "Send magic link login to (e-mail or username):");
+                isSignup ? "Send magic link signup to e-mail:" : "Send magic link login to (e-mail or username):");
         alert.setView(editText);
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
