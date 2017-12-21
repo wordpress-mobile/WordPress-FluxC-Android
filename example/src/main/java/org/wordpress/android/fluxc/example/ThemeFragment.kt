@@ -218,7 +218,16 @@ class ThemeFragment : Fragment() {
         if (event.isError) {
             prependToLog("error: " + event.error.message)
         } else {
-            prependToLog("success: WP.com theme count = " + themeStore.wpComThemes.size)
+            prependToLog("success: WP.com themes fetched count = " + themeStore.wpComThemes.size)
+
+            listOf("starting-blog", "starting-website", "starting-portfolio").forEach { category ->
+                val mobileFriendlyThemes = themeStore.getWpComMobileFriendlyThemes(category);
+                prependToLog(category + " theme count = " + mobileFriendlyThemes.size)
+                mobileFriendlyThemes.forEach { theme ->
+                    prependToLog(category + " theme: " + theme.name)
+                }
+            }
+
             val jpSite = getJetpackConnectedSite()
             if (jpSite != null) {
                 val themes = themeStore.getThemesForSite(jpSite)
