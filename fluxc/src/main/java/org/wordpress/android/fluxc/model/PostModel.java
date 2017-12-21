@@ -51,7 +51,7 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
     @Column private String mSlug;
     @Column private double mLatitude = PostLocation.INVALID_LATITUDE;
     @Column private double mLongitude = PostLocation.INVALID_LONGITUDE;
-    @Column private int mContentType;
+    @Column private String mType;
 
     // Page specific
     @Column private long mParentId;
@@ -263,15 +263,19 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
     }
 
     public ContentType getContentType() {
-        return ContentType.getContentType(mContentType);
+        return ContentType.valueOf(mType);
     }
 
     public void setContentType(ContentType contentType) {
-        mContentType = contentType.getValue();
+        mType = contentType.getValue();
     }
 
-    public void setContentType(int contentTypeValue) {
-        mContentType = contentTypeValue;
+    public void setType(String type) {
+        mType = type;
+    }
+
+    public String getType() {
+        return mType;
     }
 
     public long getParentId() {

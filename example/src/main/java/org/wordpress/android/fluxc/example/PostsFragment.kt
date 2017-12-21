@@ -14,7 +14,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.PostAction
 import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.post.ContentType.*
+import org.wordpress.android.fluxc.model.post.ContentType.POST
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged
@@ -47,6 +47,15 @@ class PostsFragment : Fragment() {
         fetch_first_site_posts.setOnClickListener {
             val payload = FetchPostsPayload(getFirstSite())
             dispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload))
+        }
+
+        fetch_first_site_pages.setOnClickListener {
+            val payload = FetchPostsPayload(getFirstSite())
+            dispatcher.dispatch(PostActionBuilder.newFetchPagesAction(payload))
+        }
+
+        fetch_first_site_portfolios.setOnClickListener {
+            //TODO
         }
 
         create_new_post_first_site.setOnClickListener {
@@ -92,10 +101,20 @@ class PostsFragment : Fragment() {
         val firstSite = getFirstSite()
         if (!postStore.getPostsForSite(firstSite).isEmpty()) {
             if (event.causeOfChange == PostAction.FETCH_POSTS || event.causeOfChange == PostAction.FETCH_PAGES) {
-                prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.name)
+                val fetchedContentType = getFetchedContentType(event.causeOfChange)
+
+                prependToLog("Fetched " + event.rowsAffected + " " + fetchedContentType + " from: " + firstSite.name)
             } else if (event.causeOfChange == PostAction.DELETE_POST) {
                 prependToLog("Post deleted!")
             }
+        }
+    }
+
+    private fun getFetchedContentType(causeOfChange: PostAction?): String {
+        when (causeOfChange) {
+        //TODO add portfolios
+            PostAction.FETCH_PAGES -> return "pages"
+            else -> return "posts"
         }
     }
 
@@ -131,7 +150,7 @@ class PostsFragment : Fragment() {
         dispatcher.dispatch(PostActionBuilder.newSearchPostsAction(payload))
     }
 
-    private fun getFirstSite(): SiteModel = siteStore.sites[0]
+    private fun getFirstSite(): SiteModel = siteStore.sites[1]
 
     private fun prependToLog(s: String) = (activity as MainExampleActivity).prependToLog(s)
 }

@@ -57,8 +57,9 @@ public class WellSqlConfig extends DefaultWellConfig {
     }};
 
     @Override
+    //TODO set to 20
     public int getDbVersion() {
-        return 20;
+        return 22;
     }
 
     @Override
@@ -180,6 +181,15 @@ public class WellSqlConfig extends DefaultWellConfig {
                 db.execSQL("INSERT INTO PostModel SELECT * FROM PostModelOld");
                 db.execSQL("drop table PostModelOld");
                 oldVersion++;
+            case 21:
+                AppLog.d(T.DB, "Migrating to version " + (oldVersion + 1));
+                db.execSQL("alter table PostModel rename to PostModelOld");
+                helper.createTable(PostModel.class);
+                db.execSQL("INSERT INTO PostModel SELECT * FROM PostModelOld");
+                db.execSQL("drop table PostModelOld");
+                db.execSQL("update PostModel set CONTENT_TYPE = post where CONTENT_TYPE = 0");
+                oldVersion++;
+
         }
         db.setTransactionSuccessful();
         db.endTransaction();

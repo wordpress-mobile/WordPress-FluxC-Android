@@ -225,6 +225,7 @@ public class PostRestClient extends BaseWPComRestClient {
 
         Map<String, String> params = new HashMap<>();
 
+        //TODO refactor
         if (pages) {
             params.put("type", "page");
         }
@@ -281,7 +282,7 @@ public class PostRestClient extends BaseWPComRestClient {
         post.setSlug(from.slug);
         post.setStatus(from.status);
         post.setPassword(from.password);
-        post.setContentType(ContentType.valueOf(from.type));
+        post.setType(from.type);
 
         if (from.post_thumbnail != null) {
             post.setFeaturedImageId(from.post_thumbnail.ID);
