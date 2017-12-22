@@ -159,7 +159,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(newValue, String.valueOf(mAccountStore.getAccount().getPrimarySiteId()));
     }
 
-    public void testWPComUsernameGenericError() throws InterruptedException {
+    public void testChangeWPComUsernameGenericError() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
             mNextEvent = TestEvents.AUTHENTICATE;
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
@@ -180,7 +180,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(address, String.valueOf(mAccountStore.getAccount().getWebAddress()));
     }
 
-    public void testWPComUsernameInvalidAccountError() throws InterruptedException {
+    public void testChangeWPComUsernameInvalidAccountError() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
             mNextEvent = TestEvents.AUTHENTICATE;
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
