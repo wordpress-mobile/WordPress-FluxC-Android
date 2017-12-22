@@ -43,8 +43,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         SENT_AUTH_EMAIL,
         AUTH_EMAIL_ERROR_INVALID,
         AUTH_EMAIL_ERROR_NO_SUCH_USER,
-        USERNAME_ERROR_GENERIC,
-        USERNAME_ERROR_INVALID
+        CHANGE_USERNAME_ERROR_GENERIC,
+        CHANGE_USERNAME_ERROR_INVALID
     }
 
     private TestEvents mNextEvent;
@@ -158,7 +158,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     }
 
     public void testWPComUsernameError() throws InterruptedException {
-        mNextEvent = TestEvents.USERNAME_ERROR_GENERIC;
+        mNextEvent = TestEvents.CHANGE_USERNAME_ERROR_GENERIC;
         String username = mAccountStore.getAccount().getUserName();
         String address = mAccountStore.getAccount().getWebAddress();
         PushUsernamePayload payloadGenericError = new PushUsernamePayload(username,
@@ -169,7 +169,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(username, String.valueOf(mAccountStore.getAccount().getUserName()));
         assertEquals(address, String.valueOf(mAccountStore.getAccount().getWebAddress()));
 
-        mNextEvent = TestEvents.USERNAME_ERROR_INVALID;
+        mNextEvent = TestEvents.CHANGE_USERNAME_ERROR_INVALID;
         PushUsernamePayload payloadInvalidAction = new PushUsernamePayload(username,
                 AccountUsernameActionType.valueOf("invalid action"));
         mDispatcher.dispatch(AccountActionBuilder.newPushUsernameAction(payloadInvalidAction));
@@ -313,14 +313,14 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
             switch (event.error.type) {
                 case INVALID_ACTION:
-                    assertEquals(mNextEvent, TestEvents.USERNAME_ERROR_INVALID);
+                    assertEquals(mNextEvent, TestEvents.CHANGE_USERNAME_ERROR_INVALID);
                     mCountDownLatch.countDown();
                     break;
                 case INVALID_INPUT:
                     // Cannot test; FluxC annotates parameters as @NonNull and error occurs when a parameter is missing.
                     break;
                 case GENERIC_ERROR:
-                    assertEquals(mNextEvent, TestEvents.USERNAME_ERROR_GENERIC);
+                    assertEquals(mNextEvent, TestEvents.CHANGE_USERNAME_ERROR_GENERIC);
                     mCountDownLatch.countDown();
                     break;
                 default:
