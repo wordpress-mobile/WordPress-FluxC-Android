@@ -45,8 +45,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AUTH_EMAIL_ERROR_INVALID,
         AUTH_EMAIL_ERROR_NO_SUCH_USER,
         AUTH_EMAIL_ERROR_USER_EXISTS,
-        CHANGE_USERNAME_ERROR_GENERIC,
-        CHANGE_USERNAME_ERROR_INVALID
+        CHANGE_USERNAME_ERROR_INVALID_ACTION,
+        CHANGE_USERNAME_ERROR_INVALID_INPUT
     }
 
     private TestEvents mNextEvent;
@@ -159,18 +159,18 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(newValue, String.valueOf(mAccountStore.getAccount().getPrimarySiteId()));
     }
 
-    public void testChangeWPComUsernameGenericError() throws InterruptedException {
+    public void testChangeWPComUsernameInvalidAccountError() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
             mNextEvent = TestEvents.AUTHENTICATE;
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         }
 
-        mNextEvent = TestEvents.CHANGE_USERNAME_ERROR_GENERIC;
+        mNextEvent = TestEvents.CHANGE_USERNAME_ERROR_INVALID_ACTION;
         String username = mAccountStore.getAccount().getUserName();
         String address = mAccountStore.getAccount().getWebAddress();
 
         PushUsernamePayload payload = new PushUsernamePayload(username,
-                AccountUsernameActionType.KEEP_OLD_SITE_AND_ADDRESS);
+                AccountUsernameActionType.valueOf("invalid action"));
         mDispatcher.dispatch(AccountActionBuilder.newPushUsernameAction(payload));
 
         mCountDownLatch = new CountDownLatch(1);
@@ -180,18 +180,18 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(address, String.valueOf(mAccountStore.getAccount().getWebAddress()));
     }
 
-    public void testChangeWPComUsernameInvalidAccountError() throws InterruptedException {
+    public void testChangeWPComUsernameInvalidInputError() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
             mNextEvent = TestEvents.AUTHENTICATE;
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         }
 
-        mNextEvent = TestEvents.CHANGE_USERNAME_ERROR_INVALID;
+        mNextEvent = TestEvents.CHANGE_USERNAME_ERROR_INVALID_INPUT;
         String username = mAccountStore.getAccount().getUserName();
         String address = mAccountStore.getAccount().getWebAddress();
 
         PushUsernamePayload payload = new PushUsernamePayload(username,
-                AccountUsernameActionType.valueOf("invalid action"));
+                AccountUsernameActionType.KEEP_OLD_SITE_AND_ADDRESS);
         mDispatcher.dispatch(AccountActionBuilder.newPushUsernameAction(payload));
 
         mCountDownLatch = new CountDownLatch(1);
@@ -375,15 +375,14 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
             AppLog.i(AppLog.T.API, "OnUsernameChanged has error: " + event.error.type + " - " + event.error.message);
 
             switch (event.error.type) {
+                case GENERIC_ERROR:
+                    throw new AssertionError("Error should not be tested: " + event.error.type);
                 case INVALID_ACTION:
-                    assertEquals(mNextEvent, TestEvents.CHANGE_USERNAME_ERROR_INVALID);
+                    assertEquals(mNextEvent, TestEvents.CHANGE_USERNAME_ERROR_INVALID_ACTION);
                     mCountDownLatch.countDown();
                     break;
                 case INVALID_INPUT:
-                    // Cannot test; FluxC annotates parameters as @NonNull and error occurs when a parameter is missing.
-                    throw new AssertionError("Error should not be tested: " + event.error.type);
-                case GENERIC_ERROR:
-                    assertEquals(mNextEvent, TestEvents.CHANGE_USERNAME_ERROR_GENERIC);
+                    assertEquals(mNextEvent, TestEvents.CHANGE_USERNAME_ERROR_INVALID_INPUT);
                     mCountDownLatch.countDown();
                     break;
                 default:
