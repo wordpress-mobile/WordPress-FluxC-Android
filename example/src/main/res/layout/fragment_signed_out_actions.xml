@@ -18,6 +18,12 @@
         android:text="Send Magic Link E-mail" />
 
     <Button
+        android:id="@+id/magic_link_signup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send Magic Link Signup E-mail" />
+
+    <Button
         android:id="@+id/check_url_wpcom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

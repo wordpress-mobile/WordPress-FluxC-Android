@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailErrorType;
+import org.wordpress.android.fluxc.store.AccountStore.AuthEmailPayload;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
@@ -39,6 +40,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         FETCH_ERROR,
         SENT_AUTH_EMAIL,
         AUTH_EMAIL_ERROR_INVALID,
+        AUTH_EMAIL_ERROR_USER_EXISTS,
         AUTH_EMAIL_ERROR_NO_SUCH_USER
     }
 
@@ -186,14 +188,25 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     public void testSendAuthEmail() throws InterruptedException {
         mNextEvent = TestEvents.SENT_AUTH_EMAIL;
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(BuildConfig.TEST_WPCOM_EMAIL_TEST1));
+        AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, false);
+        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testSendAuthEmailViaUsername() throws InterruptedException {
+        mNextEvent = TestEvents.SENT_AUTH_EMAIL;
+        AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1, false);
+        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testSendAuthEmailInvalid() throws InterruptedException {
-        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_INVALID;
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction("notanemail"));
+        // even for an invalid email address, the v1.3 /auth/send-login-email endpoint returns "User does not exist"
+        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER;
+        AuthEmailPayload payload = new AuthEmailPayload("email@domain", false);
+        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -201,7 +214,33 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     public void testSendAuthEmailNoSuchUser() throws InterruptedException {
         mNextEvent = TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER;
         String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(unknownEmail));
+        AuthEmailPayload payload = new AuthEmailPayload(unknownEmail, false);
+        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testSendAuthEmailSignup() throws InterruptedException {
+        mNextEvent = TestEvents.SENT_AUTH_EMAIL;
+        String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
+        AuthEmailPayload payload = new AuthEmailPayload(unknownEmail, true);
+        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testSendAuthEmailSignupInvalid() throws InterruptedException {
+        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_INVALID;
+        AuthEmailPayload payload = new AuthEmailPayload("email@domain", true);
+        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testSendAuthEmailSignupUserExists() throws InterruptedException {
+        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_USER_EXISTS;
+        AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, true);
+        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -261,11 +300,15 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AppLog.i(AppLog.T.API, "Received OnAuthEmailSent");
         if (event.isError()) {
             AppLog.i(AppLog.T.API, "OnAuthEmailSent has error: " + event.error.type + " - " + event.error.message);
-            if (event.error.type == AuthEmailErrorType.INVALID_INPUT) {
-                assertEquals(mNextEvent, TestEvents.AUTH_EMAIL_ERROR_INVALID);
+            if (event.error.type == AuthEmailErrorType.INVALID_EMAIL) {
+                if (event.isSignup) {
+                    assertTrue(mNextEvent == TestEvents.AUTH_EMAIL_ERROR_INVALID);
+                } else {
+                    assertTrue(mNextEvent == TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER);
+                }
                 mCountDownLatch.countDown();
-            } else if (event.error.type == AuthEmailErrorType.NO_SUCH_USER) {
-                assertEquals(mNextEvent, TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER);
+            } else if (event.error.type == AuthEmailErrorType.USER_EXISTS) {
+                assertEquals(mNextEvent, TestEvents.AUTH_EMAIL_ERROR_USER_EXISTS);
                 mCountDownLatch.countDown();
             } else {
                 throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
