@@ -45,7 +45,6 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AUTH_EMAIL_ERROR_INVALID,
         AUTH_EMAIL_ERROR_NO_SUCH_USER,
         AUTH_EMAIL_ERROR_USER_EXISTS,
-        CHANGE_USERNAME_ERROR_INVALID_ACTION,
         CHANGE_USERNAME_ERROR_INVALID_INPUT
     }
 
@@ -157,27 +156,6 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         assertEquals(newValue, String.valueOf(mAccountStore.getAccount().getPrimarySiteId()));
-    }
-
-    public void testChangeWPComUsernameInvalidAccountError() throws InterruptedException {
-        if (!mAccountStore.hasAccessToken()) {
-            mNextEvent = TestEvents.AUTHENTICATE;
-            authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-        }
-
-        mNextEvent = TestEvents.CHANGE_USERNAME_ERROR_INVALID_ACTION;
-        String username = mAccountStore.getAccount().getUserName();
-        String address = mAccountStore.getAccount().getWebAddress();
-
-        PushUsernamePayload payload = new PushUsernamePayload(username,
-                AccountUsernameActionType.valueOf("invalid action"));
-        mDispatcher.dispatch(AccountActionBuilder.newPushUsernameAction(payload));
-
-        mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        assertEquals(username, String.valueOf(mAccountStore.getAccount().getUserName()));
-        assertEquals(address, String.valueOf(mAccountStore.getAccount().getWebAddress()));
     }
 
     public void testChangeWPComUsernameInvalidInputError() throws InterruptedException {
@@ -378,9 +356,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
                 case GENERIC_ERROR:
                     throw new AssertionError("Error should not be tested: " + event.error.type);
                 case INVALID_ACTION:
-                    assertEquals(mNextEvent, TestEvents.CHANGE_USERNAME_ERROR_INVALID_ACTION);
-                    mCountDownLatch.countDown();
-                    break;
+                    throw new AssertionError("Error should not occur with action type enum: " + event.error.type);
                 case INVALID_INPUT:
                     assertEquals(mNextEvent, TestEvents.CHANGE_USERNAME_ERROR_INVALID_INPUT);
                     mCountDownLatch.countDown();
