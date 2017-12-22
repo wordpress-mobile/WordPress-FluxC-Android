@@ -157,24 +157,34 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(newValue, String.valueOf(mAccountStore.getAccount().getPrimarySiteId()));
     }
 
-    public void testWPComUsernameError() throws InterruptedException {
+    public void testWPComUsernameGenericError() throws InterruptedException {
         mNextEvent = TestEvents.CHANGE_USERNAME_ERROR_GENERIC;
         String username = mAccountStore.getAccount().getUserName();
         String address = mAccountStore.getAccount().getWebAddress();
-        PushUsernamePayload payloadGenericError = new PushUsernamePayload(username,
+
+        PushUsernamePayload payload = new PushUsernamePayload(username,
                 AccountUsernameActionType.KEEP_OLD_SITE_AND_ADDRESS);
-        mDispatcher.dispatch(AccountActionBuilder.newPushUsernameAction(payloadGenericError));
+        mDispatcher.dispatch(AccountActionBuilder.newPushUsernameAction(payload));
+
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
         assertEquals(username, String.valueOf(mAccountStore.getAccount().getUserName()));
         assertEquals(address, String.valueOf(mAccountStore.getAccount().getWebAddress()));
+    }
 
+    public void testWPComUsernameInvalidAccountError() throws InterruptedException {
         mNextEvent = TestEvents.CHANGE_USERNAME_ERROR_INVALID;
-        PushUsernamePayload payloadInvalidAction = new PushUsernamePayload(username,
+        String username = mAccountStore.getAccount().getUserName();
+        String address = mAccountStore.getAccount().getWebAddress();
+
+        PushUsernamePayload payload = new PushUsernamePayload(username,
                 AccountUsernameActionType.valueOf("invalid action"));
-        mDispatcher.dispatch(AccountActionBuilder.newPushUsernameAction(payloadInvalidAction));
+        mDispatcher.dispatch(AccountActionBuilder.newPushUsernameAction(payload));
+
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
         assertEquals(username, String.valueOf(mAccountStore.getAccount().getUserName()));
         assertEquals(address, String.valueOf(mAccountStore.getAccount().getWebAddress()));
     }
