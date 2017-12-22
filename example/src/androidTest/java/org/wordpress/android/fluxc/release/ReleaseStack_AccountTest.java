@@ -194,7 +194,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    public void testSendAuthEmailUsername() throws InterruptedException {
+    public void testSendAuthEmailViaUsername() throws InterruptedException {
         mNextEvent = TestEvents.SENT_AUTH_EMAIL;
         AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1, false);
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
