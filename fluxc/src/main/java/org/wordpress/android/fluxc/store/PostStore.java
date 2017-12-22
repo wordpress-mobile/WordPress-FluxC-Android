@@ -80,24 +80,24 @@ public class PostStore extends Store {
         public PostsModel posts;
         public SiteModel site;
         public String searchTerm;
-        public boolean isPages;
+        public ContentType contentType;
         public boolean loadedMore;
         public boolean canLoadMore;
 
-        public SearchPostsResponsePayload(PostsModel posts, SiteModel site, String searchTerm, boolean isPages,
+        public SearchPostsResponsePayload(PostsModel posts, SiteModel site, String searchTerm, ContentType contentType,
                                           boolean loadedMore, boolean canLoadMore) {
             this.posts = posts;
             this.site = site;
             this.searchTerm = searchTerm;
-            this.isPages = isPages;
+            this.contentType = contentType;
             this.loadedMore = loadedMore;
             this.canLoadMore = canLoadMore;
         }
 
-        public SearchPostsResponsePayload(SiteModel site, String searchTerm, boolean isPages, PostError error) {
+        public SearchPostsResponsePayload(SiteModel site, String searchTerm, ContentType contentType, PostError error) {
             this.site = site;
             this.searchTerm = searchTerm;
-            this.isPages = isPages;
+            this.contentType = contentType;
             this.error = error;
         }
     }
@@ -240,7 +240,8 @@ public class PostStore extends Store {
         return instantiatePostModel(site, contentType, null, null);
     }
 
-    public PostModel instantiatePostModel(SiteModel site, ContentType contentType, List<Long> categoryIds, String postFormat) {
+    public PostModel instantiatePostModel(SiteModel site, ContentType contentType,
+                                          List<Long> categoryIds, String postFormat) {
         PostModel post = new PostModel();
         post.setLocalSiteId(site.getId());
         post.setIsLocalDraft(true);
@@ -432,10 +433,13 @@ public class PostStore extends Store {
                 removeAllPosts();
                 break;
             case SEARCH_POSTS:
-                searchPosts((SearchPostsPayload) action.getPayload(), false);
+                searchPosts((SearchPostsPayload) action.getPayload(), POST);
                 break;
             case SEARCH_PAGES:
-                searchPosts((SearchPostsPayload) action.getPayload(), true);
+                searchPosts((SearchPostsPayload) action.getPayload(), PAGE);
+                break;
+            case SEARCH_PORTFOLIOS:
+                searchPosts((SearchPostsPayload) action.getPayload(), PAGE);
                 break;
             case SEARCHED_POSTS:
                 handleSearchPostsCompleted((SearchPostsResponsePayload) action.getPayload());
@@ -475,9 +479,9 @@ public class PostStore extends Store {
         }
     }
 
-    private void searchPosts(SearchPostsPayload payload, boolean pages) {
+    private void searchPosts(SearchPostsPayload payload, ContentType contentType) {
         if (payload.site.isUsingWpComRestApi()) {
-            mPostRestClient.searchPosts(payload.site, payload.searchTerm, pages, payload.offset);
+            mPostRestClient.searchPosts(payload.site, payload.searchTerm, contentType, payload.offset);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
             PostError error =

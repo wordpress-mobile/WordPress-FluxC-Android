@@ -217,15 +217,13 @@ public class PostRestClient extends BaseWPComRestClient {
         add(request);
     }
 
-    public void searchPosts(final SiteModel site, final String searchTerm, final boolean pages, final int offset) {
+    public void searchPosts(final SiteModel site, final String searchTerm,
+                            final ContentType contentType, final int offset) {
         String url = WPCOMREST.sites.site(site.getSiteId()).posts.getUrlV1_1();
 
         Map<String, String> params = new HashMap<>();
 
-        //TODO refactor
-        if (pages) {
-            params.put("type", "page");
-        }
+        params.put("type", contentType.getValue());
         params.put("number", String.valueOf(PostStore.NUM_POSTS_PER_FETCH));
         params.put("offset", String.valueOf(offset));
         params.put("search", searchTerm);
@@ -249,7 +247,7 @@ public class PostRestClient extends BaseWPComRestClient {
                         PostsModel postsModel = new PostsModel(postArray);
 
                         SearchPostsResponsePayload payload = new SearchPostsResponsePayload(
-                                postsModel, site, searchTerm, pages, loadedMore, canLoadMore);
+                                postsModel, site, searchTerm, contentType, loadedMore, canLoadMore);
                         mDispatcher.dispatch(PostActionBuilder.newSearchedPostsAction(payload));
                     }
                 },
@@ -258,7 +256,7 @@ public class PostRestClient extends BaseWPComRestClient {
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         PostError postError = new PostError(((WPComGsonNetworkError) error).apiError, error.message);
                         SearchPostsResponsePayload payload =
-                                new SearchPostsResponsePayload(site, searchTerm, pages, postError);
+                                new SearchPostsResponsePayload(site, searchTerm, contentType, postError);
                         mDispatcher.dispatch(PostActionBuilder.newSearchedPostsAction(payload));
                     }
                 }

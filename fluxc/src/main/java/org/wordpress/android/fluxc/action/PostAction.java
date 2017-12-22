@@ -30,6 +30,8 @@ public enum PostAction implements IAction {
     SEARCH_POSTS,
     @Action(payloadType = SearchPostsPayload.class)
     SEARCH_PAGES,
+    @Action(payloadType = SearchPostsPayload.class)
+    SEARCH_PORTFOLIOS,
 
     // Remote responses
     @Action(payloadType = FetchPostsResponsePayload.class)
