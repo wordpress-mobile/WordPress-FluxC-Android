@@ -86,7 +86,8 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         assertFalse(mThemeStore.getWpComThemes().isEmpty());
 
         // verify that we have the 3 mobile-friendly categories being non empty
-        for (String category : new String[] {"starting-blog", "starting-website", "starting-portfolio"}) {
+        for (String category : new String[]{ThemeStore.MOBILE_FRIENDLY_CATEGORY_BLOG,
+                ThemeStore.MOBILE_FRIENDLY_CATEGORY_WEBSITE, ThemeStore.MOBILE_FRIENDLY_CATEGORY_PORTFOLIO}) {
             assertEquals(4, mThemeStore.getWpComMobileFriendlyThemes(category).size());
         }
     }
