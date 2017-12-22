@@ -282,7 +282,12 @@ public class PostStore extends Store {
         return PostSqlUtils.getPostsForSite(site, PAGE);
     }
 
-    //TODO add portfolio
+    /**
+     * Returns all portfolios in the store for the given site as a {@link PostModel} list.
+     */
+    public List<PostModel> getPortfoliosForSite(SiteModel site) {
+        return PostSqlUtils.getPostsForSite(site, PORTFOLIO);
+    }
 
     /**
      * Returns the number of posts in the store for the given site.
@@ -296,6 +301,13 @@ public class PostStore extends Store {
      */
     public int getPagesCountForSite(SiteModel site) {
         return getPagesForSite(site).size();
+    }
+
+    /**
+     * Returns the number of portfolios in the store for the given site.
+     */
+    public int getPortfoliosCountForSite(SiteModel site) {
+        return getPortfoliosForSite(site).size();
     }
 
     /**
@@ -313,6 +325,13 @@ public class PostStore extends Store {
     }
 
     /**
+     * Returns all uploaded pages in the store for the given site.
+     */
+    public List<PostModel> getUploadedPortfoliosForSite(SiteModel site) {
+        return PostSqlUtils.getUploadedPostsForSite(site, PORTFOLIO);
+    }
+
+    /**
      * Returns the number of uploaded posts in the store for the given site.
      */
     public int getUploadedPostsCountForSite(SiteModel site) {
@@ -324,6 +343,13 @@ public class PostStore extends Store {
      */
     public int getUploadedPagesCountForSite(SiteModel site) {
         return getUploadedPagesForSite(site).size();
+    }
+
+    /**
+     * Returns the number of uploaded portfolios in the store for the given site.
+     */
+    public int getUploadedPortfoliosCountForSite(SiteModel site) {
+        return getUploadedPortfoliosForSite(site).size();
     }
 
     /**
