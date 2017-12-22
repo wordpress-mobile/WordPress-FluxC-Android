@@ -338,7 +338,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
                     break;
                 case INVALID_INPUT:
                     // Cannot test; FluxC annotates parameters as @NonNull and error occurs when a parameter is missing.
-                    break;
+                    throw new AssertionError("Error should not be tested: " + event.error.type);
                 case GENERIC_ERROR:
                     assertEquals(mNextEvent, TestEvents.CHANGE_USERNAME_ERROR_GENERIC);
                     mCountDownLatch.countDown();
