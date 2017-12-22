@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.ThemeStore;
 import org.wordpress.android.fluxc.store.ThemeStore.ActivateThemePayload;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -83,6 +84,11 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         // verify response received and WP themes list is not empty
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertFalse(mThemeStore.getWpComThemes().isEmpty());
+
+        // verify that we have the 3 mobile-friendly categories being non empty
+        for (String category : new String[] {"starting-blog", "starting-website", "starting-portfolio"}) {
+            assertEquals(4, mThemeStore.getWpComMobileFriendlyThemes(category).size());
+        }
     }
 
     public void testFetchCurrentTheme() throws InterruptedException {
