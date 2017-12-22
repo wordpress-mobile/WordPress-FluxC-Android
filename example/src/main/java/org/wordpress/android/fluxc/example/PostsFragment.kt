@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.store.PostStore.OnPostsSearched
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
 import org.wordpress.android.fluxc.store.PostStore.SearchPostsPayload
 import org.wordpress.android.fluxc.store.SiteStore
+import java.util.Arrays
 import java.util.Collections
 import javax.inject.Inject
 
@@ -55,7 +56,8 @@ class PostsFragment : Fragment() {
         }
 
         fetch_first_site_portfolios.setOnClickListener {
-            //TODO
+            val payload = FetchPostsPayload(getFirstSite())
+            dispatcher.dispatch(PostActionBuilder.newFetchPortfoliosAction(payload))
         }
 
         create_new_post_first_site.setOnClickListener {
@@ -100,7 +102,7 @@ class PostsFragment : Fragment() {
 
         val firstSite = getFirstSite()
         if (!postStore.getPostsForSite(firstSite).isEmpty()) {
-            if (event.causeOfChange == PostAction.FETCH_POSTS || event.causeOfChange == PostAction.FETCH_PAGES) {
+            if (event.causeOfChange in Arrays.asList(PostAction.FETCH_POSTS, PostAction.FETCH_PAGES, PostAction.FETCH_PORTFOLIOS)) {
                 val fetchedContentType = getFetchedContentType(event.causeOfChange)
 
                 prependToLog("Fetched " + event.rowsAffected + " " + fetchedContentType + " from: " + firstSite.name)
@@ -111,10 +113,10 @@ class PostsFragment : Fragment() {
     }
 
     private fun getFetchedContentType(causeOfChange: PostAction?): String {
-        when (causeOfChange) {
-        //TODO add portfolios
-            PostAction.FETCH_PAGES -> return "pages"
-            else -> return "posts"
+        return when (causeOfChange) {
+            PostAction.FETCH_PORTFOLIOS -> "portfolios"
+            PostAction.FETCH_PAGES -> "pages"
+            else -> "posts"
         }
     }
 

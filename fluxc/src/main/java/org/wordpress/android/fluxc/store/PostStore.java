@@ -32,6 +32,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import static org.wordpress.android.fluxc.model.post.ContentType.PAGE;
+import static org.wordpress.android.fluxc.model.post.ContentType.PORTFOLIO;
 import static org.wordpress.android.fluxc.model.post.ContentType.POST;
 
 @Singleton
@@ -371,6 +372,9 @@ public class PostStore extends Store {
             case FETCH_PAGES:
                 fetchPosts((FetchPostsPayload) action.getPayload(), PAGE);
                 break;
+            case FETCH_PORTFOLIOS:
+                fetchPosts((FetchPostsPayload) action.getPayload(), PORTFOLIO);
+                break;
             case FETCHED_POSTS:
                 handleFetchPostsCompleted((FetchPostsResponsePayload) action.getPayload());
                 break;
@@ -501,7 +505,7 @@ public class PostStore extends Store {
                 onPostChanged.causeOfChange = PostAction.FETCH_POSTS;
                 break;
             case PORTFOLIO:
-                //TODO
+                onPostChanged.causeOfChange = PostAction.FETCH_PORTFOLIOS;
                 break;
         }
 

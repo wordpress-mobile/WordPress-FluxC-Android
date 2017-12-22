@@ -18,6 +18,8 @@ public enum PostAction implements IAction {
     FETCH_POSTS,
     @Action(payloadType = FetchPostsPayload.class)
     FETCH_PAGES,
+    @Action(payloadType = FetchPostsPayload.class)
+    FETCH_PORTFOLIOS,
     @Action(payloadType = RemotePostPayload.class)
     FETCH_POST,
     @Action(payloadType = RemotePostPayload.class)

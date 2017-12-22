@@ -263,7 +263,7 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
     }
 
     public ContentType getContentType() {
-        return ContentType.valueOf(mType);
+        return ContentType.getContentType(mType);
     }
 
     public void setContentType(ContentType contentType) {

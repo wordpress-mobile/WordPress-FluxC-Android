@@ -42,7 +42,7 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import static org.wordpress.android.fluxc.model.post.ContentType.PAGE;
+import static org.wordpress.android.fluxc.model.post.ContentType.POST;
 
 @Singleton
 public class PostRestClient extends BaseWPComRestClient {
@@ -95,10 +95,7 @@ public class PostRestClient extends BaseWPComRestClient {
 
         params.put("context", "edit");
         params.put("number", String.valueOf(PostStore.NUM_POSTS_PER_FETCH));
-
-        if (contentType == PAGE) {
-            params.put("type", "page");
-        }
+        params.put("type", contentType.getValue());
 
         if (statusList.size() > 0) {
             params.put("status", PostStatus.postStatusListToString(statusList));
@@ -336,19 +333,13 @@ public class PostRestClient extends BaseWPComRestClient {
             params.put("date", post.getDateCreated());
         }
 
-        //FIXME
-        switch (post.getContentType()) {
-            case POST:
-                if (!TextUtils.isEmpty(post.getPostFormat())) {
-                    params.put("format", post.getPostFormat());
-                }
-                break;
-            case PAGE:
-                params.put("type", "page");
-                break;
-            case PORTFOLIO:
-                //TODO
+        if (post.getContentType() == POST) {
+            if (!TextUtils.isEmpty(post.getPostFormat())) {
+                params.put("format", post.getPostFormat());
+            }
         }
+
+        params.put("type", post.getType());
 
         params.put("password", StringUtils.notNullStr(post.getPassword()));
 
