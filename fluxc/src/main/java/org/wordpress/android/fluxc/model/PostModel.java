@@ -262,18 +262,32 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
         mLongitude = longitude;
     }
 
+    /**
+     * Returns {@link ContentType} enum value of post type.
+     */
     public ContentType getContentType() {
         return ContentType.getContentType(mType);
     }
 
+    /**
+     * Set post type based on {@link ContentType} enum value.
+     */
     public void setContentType(ContentType contentType) {
         mType = contentType.getValue();
     }
 
+    /**
+     * Set post type based on String value.
+     */
+    // This method is necessary for com.wellsql.generated.PostModelMapper.
     public void setType(String type) {
         mType = type;
     }
 
+    /**
+     * Returns String value of post type.
+     */
+    // This method is necessary for com.wellsql.generated.PostModelMapper.
     public String getType() {
         return mType;
     }
@@ -421,7 +435,7 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
 
     public boolean supportsLocation() {
         // Right now, we only disable for pages.
-        return getContentType() == PAGE;
+        return getContentType() != PAGE;
     }
 
     public boolean hasLocation() {

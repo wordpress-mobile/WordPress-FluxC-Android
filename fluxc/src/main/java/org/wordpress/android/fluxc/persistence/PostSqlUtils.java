@@ -80,7 +80,8 @@ public class PostSqlUtils {
                 .getAsModel();
     }
 
-    public static List<PostModel> getPostsForSiteWithFormat(SiteModel site, List<String> postFormat, ContentType contentType) {
+    public static List<PostModel> getPostsForSiteWithFormat(SiteModel site,
+                                                            List<String> postFormat, ContentType contentType) {
         if (site == null) {
             return Collections.emptyList();
         }

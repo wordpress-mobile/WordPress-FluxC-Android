@@ -19,8 +19,7 @@ public enum ContentType {
                 return contentType;
             }
         }
-        //this should never happen
+        // This should never happen.
         return POST;
     }
 }
-

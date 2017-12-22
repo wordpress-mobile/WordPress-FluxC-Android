@@ -31,9 +31,9 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import static org.wordpress.android.fluxc.model.post.ContentType.POST;
 import static org.wordpress.android.fluxc.model.post.ContentType.PAGE;
 import static org.wordpress.android.fluxc.model.post.ContentType.PORTFOLIO;
-import static org.wordpress.android.fluxc.model.post.ContentType.POST;
 
 @Singleton
 public class PostStore extends Store {

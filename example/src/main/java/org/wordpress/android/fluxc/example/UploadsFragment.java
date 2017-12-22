@@ -20,7 +20,6 @@ import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
-import org.wordpress.android.fluxc.model.post.ContentType;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
@@ -41,7 +40,7 @@ import javax.inject.Inject;
 import dagger.android.AndroidInjection;
 
 import static android.app.Activity.RESULT_OK;
-import static org.wordpress.android.fluxc.model.post.ContentType.*;
+import static org.wordpress.android.fluxc.model.post.ContentType.POST;
 
 public class UploadsFragment extends Fragment {
     private static final int RESULT_PICK_MEDIA = 1;
@@ -159,7 +158,7 @@ public class UploadsFragment extends Fragment {
                 mCurrentMediaUpload = null;
             } else if (event.completed) {
                 prependToLog("Successfully uploaded localId=" + mCurrentMediaUpload.getId()
-                             + " - url=" + event.media.getUrl());
+                        + " - url=" + event.media.getUrl());
                 mUploadButton.setEnabled(true);
                 mCancelButton.setEnabled(false);
                 mCurrentMediaUpload = null;

@@ -152,7 +152,7 @@ class PostsFragment : Fragment() {
         dispatcher.dispatch(PostActionBuilder.newSearchPostsAction(payload))
     }
 
-    private fun getFirstSite(): SiteModel = siteStore.sites[1]
+    private fun getFirstSite(): SiteModel = siteStore.sites[0]
 
     private fun prependToLog(s: String) = (activity as MainExampleActivity).prependToLog(s)
 }

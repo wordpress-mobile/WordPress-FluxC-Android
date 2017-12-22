@@ -118,11 +118,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
 
         contentStruct.put("number", PostStore.NUM_POSTS_PER_FETCH);
         contentStruct.put("offset", offset);
-
-        if (contentType == PAGE) {
-            contentStruct.put("post_type", "page");
-        }
-        //TODO add portfolio
+        contentStruct.put("post_type", contentType.getValue());
 
         List<Object> params = new ArrayList<>(4);
         params.add(site.getSelfHostedSiteId());
@@ -381,10 +377,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         post.setPassword(MapUtils.getMapStr(postMap, "post_password"));
         post.setStatus(MapUtils.getMapStr(postMap, "post_status"));
 
-        if ("page".equals(MapUtils.getMapStr(postMap, "post_type"))) {
-            post.setContentType(PAGE);
-        }
-        //TODO add portfolio
+        post.setType(MapUtils.getMapStr(postMap, "post_type"));
 
         if (post.getContentType() == PAGE) {
             post.setParentId(MapUtils.getMapLong(postMap, "wp_page_parent_id"));
@@ -414,8 +407,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
             }
         }
 
-        //TODO add portfolio
-        contentStruct.put("post_type", post.getContentType() == PAGE ? "page" : "post");
+        contentStruct.put("post_type", post.getContentType().getValue());
         contentStruct.put("post_title", post.getTitle());
 
         String dateCreated = post.getDateCreated();
