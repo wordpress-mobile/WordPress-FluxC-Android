@@ -356,7 +356,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
                 case GENERIC_ERROR:
                     throw new AssertionError("Error should not be tested: " + event.error.type);
                 case INVALID_ACTION:
-                    throw new AssertionError("Error should not occur with action type enum: " + event.error.type);
+                    throw new AssertionError("Error should not occur with action type enum: " + event.type);
                 case INVALID_INPUT:
                     assertEquals(mNextEvent, TestEvents.CHANGE_USERNAME_ERROR_INVALID_INPUT);
                     mCountDownLatch.countDown();
