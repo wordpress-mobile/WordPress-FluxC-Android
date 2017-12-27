@@ -51,6 +51,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import static org.wordpress.android.fluxc.model.post.ContentType.POST;
+
 public class PostActivity extends AppCompatActivity {
     @Inject AccountStore mAccountStore;
     @Inject SiteStore mSiteStore;
@@ -193,10 +195,10 @@ public class PostActivity extends AppCompatActivity {
 
     private void createMediaPost(MediaModel media) {
         mMedia = media;
-        PostModel post = mPostStore.instantiatePostModel(mSite, false, null, "image");
+        PostModel post = mPostStore.instantiatePostModel(mSite, POST, null, "image");
         String postContent = "<img src=\"" + mMedia.getUrl()
-                             + "\" width=\"" + mMedia.getWidth()
-                             + "\" height=\"" + mMedia.getHeight() + "\" />";
+                        + "\" width=\"" + mMedia.getWidth()
+                        + "\" height=\"" + mMedia.getHeight() + "\" />";
         post.setContent(postContent);
 
         PostStore.RemotePostPayload payload = new PostStore.RemotePostPayload(post, mSite);

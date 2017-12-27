@@ -40,6 +40,7 @@ import javax.inject.Inject;
 import dagger.android.AndroidInjection;
 
 import static android.app.Activity.RESULT_OK;
+import static org.wordpress.android.fluxc.model.post.ContentType.POST;
 
 public class UploadsFragment extends Fragment {
     private static final int RESULT_PICK_MEDIA = 1;
@@ -157,7 +158,7 @@ public class UploadsFragment extends Fragment {
                 mCurrentMediaUpload = null;
             } else if (event.completed) {
                 prependToLog("Successfully uploaded localId=" + mCurrentMediaUpload.getId()
-                             + " - url=" + event.media.getUrl());
+                        + " - url=" + event.media.getUrl());
                 mUploadButton.setEnabled(true);
                 mCancelButton.setEnabled(false);
                 mCurrentMediaUpload = null;
@@ -201,7 +202,7 @@ public class UploadsFragment extends Fragment {
     private void uploadMediaInPost(@NonNull SiteModel site, @NonNull String mediaUri) {
         prependToLog("Uploading media to " + site.getName());
 
-        PostModel examplePost = mPostStore.instantiatePostModel(mSite, false);
+        PostModel examplePost = mPostStore.instantiatePostModel(mSite, POST);
         examplePost.setTitle("From example activity");
         examplePost.setContent("Hi there, I'm a post from FluxC! [image]");
         mDispatcher.dispatch(PostActionBuilder.newUpdatePostAction(examplePost));

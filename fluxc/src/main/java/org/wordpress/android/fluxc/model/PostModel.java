@@ -13,6 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wordpress.android.fluxc.Payload;
+import org.wordpress.android.fluxc.model.post.ContentType;
 import org.wordpress.android.fluxc.model.post.PostLocation;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.util.AppLog;
@@ -22,6 +23,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static org.wordpress.android.fluxc.model.post.ContentType.PAGE;
 
 @Table
 public class PostModel extends Payload<BaseNetworkError> implements Cloneable, Identifiable, Serializable {
@@ -48,9 +51,9 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
     @Column private String mSlug;
     @Column private double mLatitude = PostLocation.INVALID_LATITUDE;
     @Column private double mLongitude = PostLocation.INVALID_LONGITUDE;
+    @Column private String mType;
 
     // Page specific
-    @Column private boolean mIsPage;
     @Column private long mParentId;
     @Column private String mParentTitle;
 
@@ -259,12 +262,34 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
         mLongitude = longitude;
     }
 
-    public boolean isPage() {
-        return mIsPage;
+    /**
+     * Returns {@link ContentType} enum value of post type.
+     */
+    public ContentType getContentType() {
+        return ContentType.getContentType(mType);
     }
 
-    public void setIsPage(boolean isPage) {
-        mIsPage = isPage;
+    /**
+     * Set post type based on {@link ContentType} enum value.
+     */
+    public void setContentType(ContentType contentType) {
+        mType = contentType.getValue();
+    }
+
+    /**
+     * Set post type based on String value.
+     */
+    // This method is necessary for com.wellsql.generated.PostModelMapper.
+    public void setType(String type) {
+        mType = type;
+    }
+
+    /**
+     * Returns String value of post type.
+     */
+    // This method is necessary for com.wellsql.generated.PostModelMapper.
+    public String getType() {
+        return mType;
     }
 
     public long getParentId() {
@@ -353,7 +378,7 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
                 && getFeaturedImageId() == otherPost.getFeaturedImageId()
                 && Double.compare(otherPost.getLatitude(), getLatitude()) == 0
                 && Double.compare(otherPost.getLongitude(), getLongitude()) == 0
-                && isPage() == otherPost.isPage()
+                && getContentType() == otherPost.getContentType()
                 && isLocalDraft() == otherPost.isLocalDraft() && isLocallyChanged() == otherPost.isLocallyChanged()
                 && getHasCapabilityPublishPost() == otherPost.getHasCapabilityPublishPost()
                 && getHasCapabilityEditPost() == otherPost.getHasCapabilityEditPost()
@@ -410,7 +435,7 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
 
     public boolean supportsLocation() {
         // Right now, we only disable for pages.
-        return !isPage();
+        return getContentType() != PAGE;
     }
 
     public boolean hasLocation() {
