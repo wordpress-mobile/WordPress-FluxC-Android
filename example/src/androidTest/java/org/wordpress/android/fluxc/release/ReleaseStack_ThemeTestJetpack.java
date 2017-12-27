@@ -265,7 +265,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onThemesChanged(ThemeStore.OnThemesChanged event) {
+    public void onSiteThemesChanged(ThemeStore.OnSiteThemesChanged event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }

@@ -213,8 +213,8 @@ class ThemeFragment : Fragment() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onThemesChanged(event: ThemeStore.OnThemesChanged) {
-        prependToLog("onThemesChanged: ")
+    fun onSiteThemesChanged(event: ThemeStore.OnSiteThemesChanged) {
+        prependToLog("onSiteThemesChanged: ")
         if (event.isError) {
             prependToLog("error: " + event.error.message)
         } else {
