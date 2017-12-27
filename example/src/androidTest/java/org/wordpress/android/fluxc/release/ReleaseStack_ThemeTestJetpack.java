@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.TestUtils;
+import org.wordpress.android.fluxc.action.ThemeAction;
 import org.wordpress.android.fluxc.example.test.BuildConfig;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
@@ -268,6 +269,24 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
+        if (event.origin == ThemeAction.FETCH_INSTALLED_THEMES) {
+            assertEquals(mNextEvent, TestEvents.FETCHED_INSTALLED_THEMES);
+            mCountDownLatch.countDown();
+        } else if (event.origin == ThemeAction.REMOVE_SITE_THEMES) {
+            assertEquals(mNextEvent, TestEvents.REMOVED_SITE_THEMES);
+            mCountDownLatch.countDown();
+        } else {
+            throw new AssertionError("Unexpected event occurred from origin: " + event.origin);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onWpComThemesChanged(ThemeStore.OnWpComThemesChanged event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(mNextEvent, TestEvents.FETCHED_WPCOM_THEMES);
         mCountDownLatch.countDown();
     }
 
