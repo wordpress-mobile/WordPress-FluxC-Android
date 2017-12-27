@@ -296,7 +296,7 @@ public class TaxonomyStore extends Store {
                 handleFetchSingleTermCompleted((FetchTermResponsePayload) action.getPayload());
                 break;
             case PUSH_TERM:
-                pushTerm((RemoteTermPayload) action.getPayload());
+                pushTerm((PushTermPayload) action.getPayload());
                 break;
             case PUSHED_TERM:
                 handlePushTermCompleted((RemoteTermPayload) action.getPayload());
@@ -407,12 +407,12 @@ public class TaxonomyStore extends Store {
         }
     }
 
-    private void pushTerm(RemoteTermPayload payload) {
+    private void pushTerm(PushTermPayload payload) {
         if (payload.site.isUsingWpComRestApi()) {
-            mTaxonomyRestClient.pushTerm(payload.term, payload.site);
+            mTaxonomyRestClient.pushTerm(payload.term, payload.site, payload.isNewTerm);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
-            mTaxonomyXMLRPCClient.pushTerm(payload.term, payload.site);
+            mTaxonomyXMLRPCClient.pushTerm(payload.term, payload.site, payload.isNewTerm);
         }
     }
 

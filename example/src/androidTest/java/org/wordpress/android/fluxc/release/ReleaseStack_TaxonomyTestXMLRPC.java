@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.store.TaxonomyStore;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermsPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.OnTaxonomyChanged;
 import org.wordpress.android.fluxc.store.TaxonomyStore.OnTermUploaded;
+import org.wordpress.android.fluxc.store.TaxonomyStore.PushTermPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.RemoteTermPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.TaxonomyError;
 import org.wordpress.android.fluxc.store.TaxonomyStore.TaxonomyErrorType;
@@ -181,7 +182,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
-        RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
+        PushTermPayload pushPayload = new PushTermPayload(mTerm, sSite, true);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -206,7 +207,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
-        RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
+        PushTermPayload pushPayload = new PushTermPayload(mTerm, sSite, true);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -340,7 +341,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.TERM_UPLOADED;
         mCountDownLatch = new CountDownLatch(1);
 
-        RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
+        PushTermPayload pushPayload = new PushTermPayload(term, sSite, true);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));

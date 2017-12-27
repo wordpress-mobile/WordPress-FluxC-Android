@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.network.xmlrpc.BaseXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.XMLRPCRequest;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermResponsePayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermsResponsePayload;
+import org.wordpress.android.fluxc.store.TaxonomyStore.PushTermPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.RemoteTermPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.TaxonomyError;
 import org.wordpress.android.fluxc.store.TaxonomyStore.TaxonomyErrorType;
@@ -149,7 +150,7 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
         add(request);
     }
 
-    public void pushTerm(final TermModel term, final SiteModel site) {
+    public void pushTerm(final TermModel term, final SiteModel site, final boolean isNewTerm) {
         Map<String, Object> contentStruct = termModelToContentStruct(term);
 
         List<Object> params = new ArrayList<>(4);
@@ -164,7 +165,7 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
                     public void onResponse(Object response) {
                         term.setRemoteTermId(Long.valueOf((String) response));
 
-                        RemoteTermPayload payload = new RemoteTermPayload(term, site);
+                        PushTermPayload payload = new PushTermPayload(term, site, isNewTerm);
                         mDispatcher.dispatch(TaxonomyActionBuilder.newPushedTermAction(payload));
                     }
                 },
@@ -176,7 +177,7 @@ public class TaxonomyXMLRPCClient extends BaseXMLRPCClient {
                         // 403 - "Parent term does not exist."
                         // 403 - "The term name cannot be empty."
                         // 500 - "A term with the name provided already exists with this parent."
-                        RemoteTermPayload payload = new RemoteTermPayload(term, site);
+                        PushTermPayload payload = new PushTermPayload(term, site, isNewTerm);
                         // TODO: Check the error message and flag this as one of the above specific errors if applicable
                         // Convert GenericErrorType to PostErrorType where applicable
                         TaxonomyError taxonomyError;

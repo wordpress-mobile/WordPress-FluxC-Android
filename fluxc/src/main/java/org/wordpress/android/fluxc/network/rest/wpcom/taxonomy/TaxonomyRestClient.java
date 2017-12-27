@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.taxonomy.TermWPComRestResponse.TermsResponse;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermResponsePayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermsResponsePayload;
+import org.wordpress.android.fluxc.store.TaxonomyStore.PushTermPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.RemoteTermPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.TaxonomyError;
 import org.wordpress.android.util.StringUtils;
@@ -116,7 +117,7 @@ public class TaxonomyRestClient extends BaseWPComRestClient {
         add(request);
     }
 
-    public void pushTerm(final TermModel term, final SiteModel site) {
+    public void pushTerm(final TermModel term, final SiteModel site, final boolean isNewTerm) {
         final String taxonomy = term.getTaxonomy();
         String url = WPCOMREST.sites.site(site.getSiteId()).taxonomies.taxonomy(taxonomy).terms.new_.getUrlV1_1();
 
@@ -133,7 +134,7 @@ public class TaxonomyRestClient extends BaseWPComRestClient {
                         uploadedTerm.setLocalSiteId(site.getId());
                         uploadedTerm.setTaxonomy(taxonomy);
 
-                        RemoteTermPayload payload = new RemoteTermPayload(uploadedTerm, site);
+                        PushTermPayload payload = new PushTermPayload(uploadedTerm, site, isNewTerm);
                         mDispatcher.dispatch(TaxonomyActionBuilder.newPushedTermAction(payload));
                     }
                 },
@@ -141,7 +142,7 @@ public class TaxonomyRestClient extends BaseWPComRestClient {
                     @Override
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         // Possible non-generic errors: 400 invalid_taxonomy, 409 duplicate
-                        RemoteTermPayload payload = new RemoteTermPayload(term, site);
+                        PushTermPayload payload = new PushTermPayload(term, site, isNewTerm);
                         payload.error = new TaxonomyError(((WPComGsonNetworkError) error).apiError, error.message);
                         mDispatcher.dispatch(TaxonomyActionBuilder.newPushedTermAction(payload));
                     }
