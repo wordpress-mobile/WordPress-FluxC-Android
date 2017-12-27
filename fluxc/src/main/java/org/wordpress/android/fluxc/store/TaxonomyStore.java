@@ -67,6 +67,17 @@ public class TaxonomyStore extends Store {
         }
     }
 
+    public static class PushTermPayload extends RemoteTermPayload {
+        public TermModel term;
+        public SiteModel site;
+        public boolean isNewTerm;
+
+        public PushTermPayload(TermModel term, SiteModel site, boolean isNewTerm) {
+            super(term, site);
+            this.isNewTerm = isNewTerm;
+        }
+    }
+
     public static class FetchTermResponsePayload extends RemoteTermPayload {
         public TaxonomyAction origin = TaxonomyAction.FETCH_TERM; // Used to track fetching newly uploaded XML-RPC terms
 

@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.model.TermModel;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermResponsePayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermsPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermsResponsePayload;
+import org.wordpress.android.fluxc.store.TaxonomyStore.PushTermPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.RemoteTermPayload;
 
 @ActionEnum
@@ -21,7 +22,7 @@ public enum TaxonomyAction implements IAction {
     FETCH_TERMS,
     @Action(payloadType = RemoteTermPayload.class)
     FETCH_TERM,
-    @Action(payloadType = RemoteTermPayload.class)
+    @Action(payloadType = PushTermPayload.class)
     PUSH_TERM,
 
     // Remote responses
@@ -29,7 +30,7 @@ public enum TaxonomyAction implements IAction {
     FETCHED_TERMS,
     @Action(payloadType = FetchTermResponsePayload.class)
     FETCHED_TERM,
-    @Action(payloadType = RemoteTermPayload.class)
+    @Action(payloadType = PushTermPayload.class)
     PUSHED_TERM,
 
     // Local actions
