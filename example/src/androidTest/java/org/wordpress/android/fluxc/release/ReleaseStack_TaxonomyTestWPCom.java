@@ -117,7 +117,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         setupTermAttributes();
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadNewTerm(mTerm);
 
         TermModel uploadedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
 
@@ -133,7 +133,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         setupTermAttributes();
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadNewTerm(mTerm);
 
         TermModel uploadedTerm = mTaxonomyStore.getTagsForSite(sSite).get(0);
 
@@ -152,7 +152,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         setupTermAttributes();
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadNewTerm(mTerm);
 
         TermModel uploadedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
 
@@ -188,7 +188,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         setupTermAttributes();
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadNewTerm(mTerm);
 
         // Upload the same term again
         mNextEvent = TestEvents.ERROR_DUPLICATE;
@@ -320,7 +320,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         return term;
     }
 
-    private void uploadTerm(TermModel term) throws InterruptedException {
+    private void uploadNewTerm(TermModel term) throws InterruptedException {
         mNextEvent = TestEvents.TERM_UPLOADED;
         mCountDownLatch = new CountDownLatch(1);
 

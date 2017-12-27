@@ -126,7 +126,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         setupTermAttributes();
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadNewTerm(mTerm);
 
         TermModel uploadedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
 
@@ -142,7 +142,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         setupTermAttributes();
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadNewTerm(mTerm);
 
         TermModel uploadedTerm = mTaxonomyStore.getTagsForSite(sSite).get(0);
 
@@ -161,7 +161,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         setupTermAttributes();
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadNewTerm(mTerm);
 
         TermModel uploadedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
 
@@ -201,7 +201,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         setupTermAttributes();
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadNewTerm(mTerm);
 
         // Upload the same term again
         mNextEvent = TestEvents.ERROR_GENERIC;
@@ -337,7 +337,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         return term;
     }
 
-    private void uploadTerm(TermModel term) throws InterruptedException {
+    private void uploadNewTerm(TermModel term) throws InterruptedException {
         mNextEvent = TestEvents.TERM_UPLOADED;
         mCountDownLatch = new CountDownLatch(1);
 
