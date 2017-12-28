@@ -44,7 +44,6 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     private TestEvents mNextEvent;
     private TaxonomyError mLastTaxonomyError;
-    private TermModel mTerm;
 
     @Override
     protected void setUp() throws Exception {
@@ -121,11 +120,11 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     public void testUploadNewCategory() throws InterruptedException {
         // Instantiate new category
-        createNewCategory();
-        setupTermAttributes();
+        TermModel term = createNewCategory();
+        setupTermAttributes(term);
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadTerm(term);
 
         TermModel uploadedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
 
@@ -136,17 +135,17 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     public void testUpdateExistingCategory() throws InterruptedException {
-        createNewCategory();
-        testUpdateExistingTerm(mTerm);
+        TermModel term = createNewCategory();
+        testUpdateExistingTerm(term);
     }
 
     public void testUploadNewTag() throws InterruptedException {
         // Instantiate new tag
-        createNewTag();
-        setupTermAttributes();
+        TermModel term = createNewTag();
+        setupTermAttributes(term);
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadTerm(term);
 
         TermModel uploadedTerm = mTaxonomyStore.getTagsForSite(sSite).get(0);
 
@@ -157,8 +156,8 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     public void testUpdateExistingTag() throws InterruptedException {
-        createNewTag();
-        testUpdateExistingTerm(mTerm);
+        TermModel term = createNewTag();
+        testUpdateExistingTerm(term);
     }
 
     public void testUploadNewCategoryAsTerm() throws InterruptedException {
@@ -166,11 +165,11 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         taxonomyModel.setName(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
 
         // Instantiate new term
-        createNewTerm(taxonomyModel);
-        setupTermAttributes();
+        TermModel termModel = createNewTerm(taxonomyModel);
+        setupTermAttributes(termModel);
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadTerm(termModel);
 
         TermModel uploadedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
 
@@ -185,13 +184,13 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         taxonomyModel.setName("roads");
 
         // Instantiate new term
-        createNewTerm(taxonomyModel);
-        setupTermAttributes();
+        TermModel term = createNewTerm(taxonomyModel);
+        setupTermAttributes(term);
 
         mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
-        RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
+        RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -206,17 +205,17 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     public void testUploadNewCategoryDuplicate() throws InterruptedException {
         // Instantiate new category
-        createNewCategory();
-        setupTermAttributes();
+        TermModel term = createNewCategory();
+        setupTermAttributes(term);
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadTerm(term);
 
         // Upload the same term again
         mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
-        RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
+        RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -308,9 +307,9 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch.countDown();
     }
 
-    private void setupTermAttributes() {
-        mTerm.setName(TERM_DEFAULT_NAME + "-" + RandomStringUtils.randomAlphanumeric(4));
-        mTerm.setDescription(TERM_DEFAULT_DESCRIPTION);
+    private void setupTermAttributes(TermModel term) {
+        term.setName(TERM_DEFAULT_NAME + "-" + RandomStringUtils.randomAlphanumeric(4));
+        term.setDescription(TERM_DEFAULT_DESCRIPTION);
     }
 
     private TermModel createNewCategory() throws InterruptedException {
@@ -320,7 +319,6 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNotSame(0, term.getId());
         assertNotSame(0, term.getLocalSiteId());
 
-        mTerm = term;
         return term;
     }
 
@@ -331,7 +329,6 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNotSame(0, term.getId());
         assertNotSame(0, term.getLocalSiteId());
 
-        mTerm = term;
         return term;
     }
 
@@ -342,7 +339,6 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNotSame(0, term.getId());
         assertNotSame(0, term.getLocalSiteId());
 
-        mTerm = term;
         return term;
     }
 
@@ -357,7 +353,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     private void testUpdateExistingTerm(TermModel term) throws InterruptedException {
-        setupTermAttributes();
+        setupTermAttributes(term);
 
         // Upload new term to site
         uploadTerm(term);
