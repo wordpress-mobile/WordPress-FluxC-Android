@@ -24,7 +24,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.taxonomy.TermWPComRestResp
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermResponsePayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermsResponsePayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.PushTermPayload;
-import org.wordpress.android.fluxc.store.TaxonomyStore.RemoteTermPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.TaxonomyError;
 import org.wordpress.android.util.StringUtils;
 
