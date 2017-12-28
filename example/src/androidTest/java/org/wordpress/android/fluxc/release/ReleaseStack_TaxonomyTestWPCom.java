@@ -126,26 +126,8 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     }
 
     public void testUpdateExistingCategory() throws InterruptedException {
-        // Instantiate new category
         TermModel term = createNewCategory();
-        setupTermAttributes(term);
-
-        // Upload new term to site
-        uploadTerm(term);
-
-        TermModel uploadedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
-        assertEquals(1, WellSqlUtils.getTotalTermsCount());
-        assertNotSame(0, uploadedTerm.getRemoteTermId());
-
-        String newDescription = "newDescription";
-        assertFalse(newDescription.equals(uploadedTerm.getDescription()));
-        uploadedTerm.setDescription(newDescription);
-
-        uploadTerm(uploadedTerm);
-        assertEquals(1, WellSqlUtils.getTotalTermsCount()); // make sure we still have only one term
-        TermModel updatedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
-        assertEquals(updatedTerm.getRemoteTermId(), uploadedTerm.getRemoteTermId());
-        assertEquals(updatedTerm.getDescription(), newDescription);
+        testUpdateExistingTerm(term);
     }
 
     public void testUploadNewTag() throws InterruptedException {
@@ -162,6 +144,11 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(1, mTaxonomyStore.getTagsForSite(sSite).size());
 
         assertNotSame(0, uploadedTerm.getRemoteTermId());
+    }
+
+    public void testUpdateExistingTag() throws InterruptedException {
+        TermModel term = createNewTag();
+        testUpdateExistingTerm(term);
     }
 
     public void testUploadNewCategoryAsTerm() throws InterruptedException {
@@ -346,5 +333,26 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void testUpdateExistingTerm(TermModel term) throws InterruptedException {
+        setupTermAttributes(term);
+
+        // Upload new term to site
+        uploadTerm(term);
+
+        TermModel uploadedTerm = mTaxonomyStore.getTermsForSite(sSite, term.getTaxonomy()).get(0);
+        assertEquals(1, WellSqlUtils.getTotalTermsCount());
+        assertNotSame(0, uploadedTerm.getRemoteTermId());
+
+        String newDescription = "newDescription";
+        assertFalse(newDescription.equals(uploadedTerm.getDescription()));
+        uploadedTerm.setDescription(newDescription);
+
+        uploadTerm(uploadedTerm);
+        assertEquals(1, WellSqlUtils.getTotalTermsCount()); // make sure we still have only one term
+        TermModel updatedTerm = mTaxonomyStore.getTermsForSite(sSite, term.getTaxonomy()).get(0);
+        assertEquals(updatedTerm.getRemoteTermId(), uploadedTerm.getRemoteTermId());
+        assertEquals(updatedTerm.getDescription(), newDescription);
     }
 }
