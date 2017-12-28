@@ -221,8 +221,7 @@ public class PostStore extends Store {
     // Ensures that the UploadStore is initialized whenever the PostStore is,
     // to ensure actions are shadowed and repeated by the UploadStore
     @SuppressWarnings("unused")
-    @Inject
-    UploadStore mUploadStore;
+    @Inject UploadStore mUploadStore;
 
     @Inject
     public PostStore(Dispatcher dispatcher, PostRestClient postRestClient, PostXMLRPCClient postXMLRPCClient) {
@@ -439,7 +438,7 @@ public class PostStore extends Store {
                 searchPosts((SearchPostsPayload) action.getPayload(), PAGE);
                 break;
             case SEARCH_PORTFOLIOS:
-                searchPosts((SearchPostsPayload) action.getPayload(), PAGE);
+                searchPosts((SearchPostsPayload) action.getPayload(), PORTFOLIO);
                 break;
             case SEARCHED_POSTS:
                 handleSearchPostsCompleted((SearchPostsResponsePayload) action.getPayload());

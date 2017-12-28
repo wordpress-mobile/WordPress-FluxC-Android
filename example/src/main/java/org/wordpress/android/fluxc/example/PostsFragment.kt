@@ -101,8 +101,12 @@ class PostsFragment : Fragment() {
         }
 
         val firstSite = getFirstSite()
-        if (!postStore.getPostsForSite(firstSite).isEmpty()) {
-            if (event.causeOfChange in Arrays.asList(PostAction.FETCH_POSTS, PostAction.FETCH_PAGES, PostAction.FETCH_PORTFOLIOS)) {
+        if (!postStore.getPostsForSite(firstSite).isEmpty() ||
+                !postStore.getPagesForSite(firstSite).isEmpty() ||
+                !postStore.getPortfoliosForSite(firstSite).isEmpty()) {
+            if (event.causeOfChange in
+                    listOf(PostAction.FETCH_POSTS, PostAction.FETCH_PAGES, PostAction.FETCH_PORTFOLIOS)) {
+
                 val fetchedContentType = getFetchedContentType(event.causeOfChange)
 
                 prependToLog("Fetched " + event.rowsAffected + " " + fetchedContentType + " from: " + firstSite.name)
