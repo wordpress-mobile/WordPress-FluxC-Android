@@ -19,7 +19,7 @@ import javax.inject.Inject;
 public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
     enum TestEvents {
         NONE,
-        FETCHED_THEMES,
+        FETCHED_WPCOM_THEMES,
         FETCHED_CURRENT_THEME,
         SEARCHED_THEMES,
         ACTIVATED_THEME,
@@ -48,7 +48,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
     public void testActivateTheme() throws InterruptedException {
         // get all themes available
         mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.FETCHED_THEMES;
+        mNextEvent = TestEvents.FETCHED_WPCOM_THEMES;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -77,7 +77,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
 
         // no need to sign into account, this is a test for an endpoint that does not require authentication
         mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.FETCHED_THEMES;
+        mNextEvent = TestEvents.FETCHED_WPCOM_THEMES;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
 
         // verify response received and WP themes list is not empty
@@ -134,10 +134,11 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onThemesChanged(ThemeStore.OnThemesChanged event) {
+    public void onWpComThemesChanged(ThemeStore.OnWpComThemesChanged event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
+        assertEquals(mNextEvent, TestEvents.FETCHED_WPCOM_THEMES);
         mCountDownLatch.countDown();
     }
 

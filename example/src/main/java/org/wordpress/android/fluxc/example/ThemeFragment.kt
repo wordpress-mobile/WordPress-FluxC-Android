@@ -213,17 +213,27 @@ class ThemeFragment : Fragment() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onThemesChanged(event: ThemeStore.OnThemesChanged) {
-        prependToLog("onThemesChanged: ")
+    fun onSiteThemesChanged(event: ThemeStore.OnSiteThemesChanged) {
+        prependToLog("onSiteThemesChanged: ")
         if (event.isError) {
             prependToLog("error: " + event.error.message)
         } else {
-            prependToLog("success: WP.com theme count = " + themeStore.wpComThemes.size)
             val jpSite = getJetpackConnectedSite()
             if (jpSite != null) {
                 val themes = themeStore.getThemesForSite(jpSite)
                 prependToLog("Installed theme count = " + themes.size)
             }
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onWpComThemesChanged(event: ThemeStore.OnWpComThemesChanged) {
+        prependToLog("onWpComThemesChanged: ")
+        if (event.isError) {
+            prependToLog("error: " + event.error.message)
+        } else {
+            prependToLog("success: WP.com theme count = " + themeStore.wpComThemes.size)
         }
     }
 
