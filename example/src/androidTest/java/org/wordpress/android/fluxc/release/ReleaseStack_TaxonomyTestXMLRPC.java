@@ -135,6 +135,11 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
 
+    public void testUpdateExistingCategory() throws InterruptedException {
+        createNewCategory();
+        testUpdateExistingTerm(mTerm);
+    }
+
     public void testUploadNewTag() throws InterruptedException {
         // Instantiate new tag
         createNewTag();
@@ -149,6 +154,11 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(1, mTaxonomyStore.getTagsForSite(sSite).size());
 
         assertNotSame(0, uploadedTerm.getRemoteTermId());
+    }
+
+    public void testUpdateExistingTag() throws InterruptedException {
+        createNewTag();
+        testUpdateExistingTerm(mTerm);
     }
 
     public void testUploadNewCategoryAsTerm() throws InterruptedException {
@@ -344,5 +354,26 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void testUpdateExistingTerm(TermModel term) throws InterruptedException {
+        setupTermAttributes();
+
+        // Upload new term to site
+        uploadTerm(term);
+
+        TermModel uploadedTerm = mTaxonomyStore.getTermsForSite(sSite, term.getTaxonomy()).get(0);
+        assertEquals(1, WellSqlUtils.getTotalTermsCount());
+        assertNotSame(0, uploadedTerm.getRemoteTermId());
+
+        String newDescription = "newDescription";
+        assertFalse(newDescription.equals(uploadedTerm.getDescription()));
+        uploadedTerm.setDescription(newDescription);
+
+        uploadTerm(uploadedTerm);
+        assertEquals(1, WellSqlUtils.getTotalTermsCount()); // make sure we still have only one term
+        TermModel updatedTerm = mTaxonomyStore.getTermsForSite(sSite, term.getTaxonomy()).get(0);
+        assertEquals(updatedTerm.getRemoteTermId(), uploadedTerm.getRemoteTermId());
+        assertEquals(updatedTerm.getDescription(), newDescription);
     }
 }
