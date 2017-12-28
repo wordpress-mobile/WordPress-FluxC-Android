@@ -126,6 +126,29 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
 
+    public void testUpdateExistingCategory() throws InterruptedException {
+        // Instantiate new category
+        createNewCategory();
+        setupTermAttributes();
+
+        // Upload new term to site
+        uploadTerm(mTerm);
+
+        TermModel uploadedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
+        assertEquals(1, WellSqlUtils.getTotalTermsCount());
+        assertNotSame(0, uploadedTerm.getRemoteTermId());
+
+        String newDescription = "newDescription";
+        assertFalse(newDescription.equals(uploadedTerm.getDescription()));
+        uploadedTerm.setDescription(newDescription);
+
+        uploadTerm(uploadedTerm);
+        assertEquals(1, WellSqlUtils.getTotalTermsCount()); // make sure we still have only one term
+        TermModel updatedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
+        assertEquals(updatedTerm.getRemoteTermId(), uploadedTerm.getRemoteTermId());
+        assertEquals(updatedTerm.getDescription(), newDescription);
+    }
+
     public void testUploadNewTag() throws InterruptedException {
         // Instantiate new tag
         createNewTag();
