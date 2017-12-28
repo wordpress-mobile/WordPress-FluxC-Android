@@ -211,7 +211,8 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // Upload new term to site
         uploadTerm(term);
 
-        // Upload the same term again
+        // Upload the same term again after setting it's remote id to 0 so it doesn't trigger an update
+        term.setRemoteTermId(0);
         mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
