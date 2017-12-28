@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.store.TaxonomyStore;
 import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermsPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.OnTaxonomyChanged;
 import org.wordpress.android.fluxc.store.TaxonomyStore.OnTermUploaded;
+import org.wordpress.android.fluxc.store.TaxonomyStore.PushTermPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.RemoteTermPayload;
 import org.wordpress.android.fluxc.store.TaxonomyStore.TaxonomyErrorType;
 import org.wordpress.android.fluxc.utils.WellSqlUtils;
@@ -116,7 +117,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         setupTermAttributes();
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadNewTerm(mTerm);
 
         TermModel uploadedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
 
@@ -132,7 +133,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         setupTermAttributes();
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadNewTerm(mTerm);
 
         TermModel uploadedTerm = mTaxonomyStore.getTagsForSite(sSite).get(0);
 
@@ -151,7 +152,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         setupTermAttributes();
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadNewTerm(mTerm);
 
         TermModel uploadedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
 
@@ -172,7 +173,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ERROR_INVALID_TAXONOMY;
         mCountDownLatch = new CountDownLatch(1);
 
-        RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
+        PushTermPayload pushPayload = new PushTermPayload(mTerm, sSite, true);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -187,13 +188,13 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         setupTermAttributes();
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadNewTerm(mTerm);
 
         // Upload the same term again
         mNextEvent = TestEvents.ERROR_DUPLICATE;
         mCountDownLatch = new CountDownLatch(1);
 
-        RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
+        PushTermPayload pushPayload = new PushTermPayload(mTerm, sSite, true);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -319,11 +320,11 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         return term;
     }
 
-    private void uploadTerm(TermModel term) throws InterruptedException {
+    private void uploadNewTerm(TermModel term) throws InterruptedException {
         mNextEvent = TestEvents.TERM_UPLOADED;
         mCountDownLatch = new CountDownLatch(1);
 
-        RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
+        PushTermPayload pushPayload = new PushTermPayload(term, sSite, true);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));

@@ -67,6 +67,18 @@ public class TaxonomyStore extends Store {
         }
     }
 
+    public static class PushTermPayload extends Payload<TaxonomyError> {
+        public TermModel term;
+        public SiteModel site;
+        public boolean isNewTerm;
+
+        public PushTermPayload(TermModel term, SiteModel site, boolean isNewTerm) {
+            this.term = term;
+            this.site = site;
+            this.isNewTerm = isNewTerm;
+        }
+    }
+
     public static class FetchTermResponsePayload extends RemoteTermPayload {
         public TaxonomyAction origin = TaxonomyAction.FETCH_TERM; // Used to track fetching newly uploaded XML-RPC terms
 
@@ -93,9 +105,11 @@ public class TaxonomyStore extends Store {
 
     public static class OnTermUploaded extends OnChanged<TaxonomyError> {
         public TermModel term;
+        public boolean isNewTerm;
 
-        public OnTermUploaded(TermModel term) {
+        public OnTermUploaded(TermModel term, boolean isNewTerm) {
             this.term = term;
+            this.isNewTerm = isNewTerm;
         }
     }
 
@@ -285,10 +299,10 @@ public class TaxonomyStore extends Store {
                 handleFetchSingleTermCompleted((FetchTermResponsePayload) action.getPayload());
                 break;
             case PUSH_TERM:
-                pushTerm((RemoteTermPayload) action.getPayload());
+                pushTerm((PushTermPayload) action.getPayload());
                 break;
             case PUSHED_TERM:
-                handlePushTermCompleted((RemoteTermPayload) action.getPayload());
+                handlePushTermCompleted((PushTermPayload) action.getPayload());
                 break;
             case REMOVE_ALL_TERMS:
                 removeAllTerms();
@@ -356,7 +370,7 @@ public class TaxonomyStore extends Store {
 
     private void handleFetchSingleTermCompleted(FetchTermResponsePayload payload) {
         if (payload.origin == TaxonomyAction.PUSH_TERM) {
-            OnTermUploaded onTermUploaded = new OnTermUploaded(payload.term);
+            OnTermUploaded onTermUploaded = new OnTermUploaded(payload.term, true);
             if (payload.isError()) {
                 onTermUploaded.error = payload.error;
             } else {
@@ -376,9 +390,9 @@ public class TaxonomyStore extends Store {
         }
     }
 
-    private void handlePushTermCompleted(RemoteTermPayload payload) {
+    private void handlePushTermCompleted(PushTermPayload payload) {
         if (payload.isError()) {
-            OnTermUploaded onTermUploaded = new OnTermUploaded(payload.term);
+            OnTermUploaded onTermUploaded = new OnTermUploaded(payload.term, payload.isNewTerm);
             onTermUploaded.error = payload.error;
             emitChange(onTermUploaded);
         } else {
@@ -386,7 +400,7 @@ public class TaxonomyStore extends Store {
                 // The WP.COM REST API response contains the modified term, so we're already in sync with the server
                 // All we need to do is store it and emit OnTaxonomyChanged
                 updateTerm(payload.term);
-                emitChange(new OnTermUploaded(payload.term));
+                emitChange(new OnTermUploaded(payload.term, payload.isNewTerm));
             } else {
                 // XML-RPC does not respond to new/edit term calls with the resulting term - request it from the server
                 // This needs to complete for us to obtain the slug for a newly created term
@@ -396,12 +410,12 @@ public class TaxonomyStore extends Store {
         }
     }
 
-    private void pushTerm(RemoteTermPayload payload) {
+    private void pushTerm(PushTermPayload payload) {
         if (payload.site.isUsingWpComRestApi()) {
-            mTaxonomyRestClient.pushTerm(payload.term, payload.site);
+            mTaxonomyRestClient.pushTerm(payload.term, payload.site, payload.isNewTerm);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
-            mTaxonomyXMLRPCClient.pushTerm(payload.term, payload.site);
+            mTaxonomyXMLRPCClient.pushTerm(payload.term, payload.site, payload.isNewTerm);
         }
     }
 

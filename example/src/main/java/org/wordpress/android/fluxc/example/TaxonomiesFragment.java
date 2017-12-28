@@ -18,7 +18,7 @@ import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.TaxonomyStore;
 import org.wordpress.android.fluxc.store.TaxonomyStore.OnTaxonomyChanged;
 import org.wordpress.android.fluxc.store.TaxonomyStore.OnTermUploaded;
-import org.wordpress.android.fluxc.store.TaxonomyStore.RemoteTermPayload;
+import org.wordpress.android.fluxc.store.TaxonomyStore.PushTermPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -95,7 +95,7 @@ public class TaxonomiesFragment extends Fragment {
         newCategory.setName("FluxC-category-" + new Random().nextLong());
         newCategory.setDescription("From FluxC example app");
 
-        RemoteTermPayload payload = new RemoteTermPayload(newCategory, getFirstSite());
+        PushTermPayload payload = new PushTermPayload(newCategory, getFirstSite(), true);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(payload));
     }
 
