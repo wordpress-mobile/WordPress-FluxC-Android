@@ -58,7 +58,7 @@ class ThemeFragment : Fragment() {
                     val theme = ThemeModel()
                     theme.localSiteId = site.id
                     theme.themeId = id
-                    val payload = ThemeStore.ActivateThemePayload(site, theme)
+                    val payload = ThemeStore.SiteThemePayload(site, theme)
                     dispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload))
                 }
             }
@@ -76,7 +76,7 @@ class ThemeFragment : Fragment() {
                     val theme = ThemeModel()
                     theme.localSiteId = site.id
                     theme.themeId = id
-                    val payload = ThemeStore.ActivateThemePayload(site, theme)
+                    val payload = ThemeStore.SiteThemePayload(site, theme)
                     dispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload))
                 }
             }
@@ -94,7 +94,7 @@ class ThemeFragment : Fragment() {
                     val theme = ThemeModel()
                     theme.localSiteId = site.id
                     theme.themeId = id
-                    val payload = ThemeStore.ActivateThemePayload(site, theme)
+                    val payload = ThemeStore.SiteThemePayload(site, theme)
                     dispatcher.dispatch(ThemeActionBuilder.newInstallThemeAction(payload))
                 }
             }
@@ -112,7 +112,7 @@ class ThemeFragment : Fragment() {
                     val theme = ThemeModel()
                     theme.localSiteId = site.id
                     theme.themeId = id
-                    val payload = ThemeStore.ActivateThemePayload(site, theme)
+                    val payload = ThemeStore.SiteThemePayload(site, theme)
                     dispatcher.dispatch(ThemeActionBuilder.newDeleteThemeAction(payload))
                 }
             }
