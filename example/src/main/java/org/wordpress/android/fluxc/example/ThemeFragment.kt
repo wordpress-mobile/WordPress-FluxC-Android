@@ -100,15 +100,6 @@ class ThemeFragment : Fragment() {
             }
         }
 
-        search_themes.setOnClickListener {
-            val term = getThemeIdFromInput(view)
-            if (TextUtils.isEmpty(term)) {
-                prependToLog("Please enter a search term")
-            } else {
-                dispatcher.dispatch(ThemeActionBuilder.newSearchThemesAction(ThemeStore.SearchThemesPayload(term)))
-            }
-        }
-
         delete_theme_jp.setOnClickListener {
             val id = getThemeIdFromInput(view)
             if (TextUtils.isEmpty(id)) {
@@ -197,17 +188,6 @@ class ThemeFragment : Fragment() {
             prependToLog("error: " + event.error.message)
         } else {
             prependToLog("success: theme = " + event.theme.name)
-        }
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onThemesSearched(event: ThemeStore.OnThemesSearched) {
-        prependToLog("onThemesSearched: ")
-        if (event.isError) {
-            prependToLog("error: " + event.error.message)
-        } else {
-            prependToLog("success: result count = " + event.searchResults.size)
         }
     }
 
