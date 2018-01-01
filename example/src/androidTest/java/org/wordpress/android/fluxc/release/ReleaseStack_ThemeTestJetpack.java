@@ -132,21 +132,11 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
         // delete edin before attempting to install
         if (listContainsThemeWithId(themes, themeId)) {
-            // find local ThemeModel with matching themeId for delete call
-            ThemeModel listTheme = getThemeFromList(themes, themeId);
-            assertNotNull(listTheme);
-
             // delete existing theme from site
-            themeToInstall.setId(listTheme.getId());
             deleteTheme(jetpackSite, themeToInstall);
-
-            // mDeletedTheme is set in onThemeDeleted
-            assertNotNull(mDeletedTheme);
-            assertEquals(themeId, mDeletedTheme.getThemeId());
 
             // make sure theme is no longer available for site (delete was successful)
             assertFalse(listContainsThemeWithId(mThemeStore.getThemesForSite(jetpackSite), themeId));
-            mActivatedTheme = null;
         }
 
         // install the theme
