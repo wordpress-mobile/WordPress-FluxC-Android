@@ -27,8 +27,6 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
     @Inject ThemeStore mThemeStore;
 
     private TestEvents mNextEvent;
-    private ThemeModel mCurrentTheme;
-    private ThemeModel mActivatedTheme;
 
     @Override
     protected void setUp() throws Exception {
@@ -38,8 +36,6 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         init();
         // Reset expected test event
         mNextEvent = TestEvents.NONE;
-        mCurrentTheme = null;
-        mActivatedTheme = null;
     }
 
     public void testFetchCurrentTheme() throws InterruptedException {
@@ -97,8 +93,6 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME);
-        mActivatedTheme = event.theme;
-        mCurrentTheme = event.theme;
         mCountDownLatch.countDown();
     }
 
@@ -120,8 +114,6 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         }
 
         assertTrue(mNextEvent == TestEvents.FETCHED_CURRENT_THEME);
-        assertNotNull(event.theme);
-        mCurrentTheme = event.theme;
         mCountDownLatch.countDown();
     }
 
