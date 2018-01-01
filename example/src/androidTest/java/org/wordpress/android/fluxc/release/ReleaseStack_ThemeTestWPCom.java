@@ -45,17 +45,22 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         assertNotNull(currentTheme);
     }
 
+    public void testFetchWPComThemes() throws InterruptedException {
+        // verify themes don't already exist in store
+        assertTrue(mThemeStore.getWpComThemes().isEmpty());
+        fetchWpComThemes();
+        // verify response received and WP themes list is not empty
+        assertFalse(mThemeStore.getWpComThemes().isEmpty());
+    }
+
     public void testActivateTheme() throws InterruptedException {
         // Make sure no theme is active at first
         assertNull(mThemeStore.getActiveThemeForSite(sSite));
         ThemeModel currentTheme = fetchCurrentTheme();
         assertNotNull(currentTheme);
 
-        // get all themes available
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.FETCHED_WPCOM_THEMES;
-        mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // Fetch wp.com themes to activate a different theme
+        fetchWpComThemes();
 
         // activate a different theme
         ThemeModel themeToActivate = getNewNonPremiumTheme(currentTheme.getThemeId(), mThemeStore.getWpComThemes());
@@ -70,20 +75,6 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         ThemeModel activatedTheme = mThemeStore.getActiveThemeForSite(sSite);
         assertNotNull(activatedTheme);
         assertEquals(activatedTheme.getThemeId(), themeToActivate.getThemeId());
-    }
-
-    public void testFetchWPComThemes() throws InterruptedException {
-        // verify themes don't already exist in store
-        assertTrue(mThemeStore.getWpComThemes().isEmpty());
-
-        // no need to sign into account, this is a test for an endpoint that does not require authentication
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.FETCHED_WPCOM_THEMES;
-        mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
-
-        // verify response received and WP themes list is not empty
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        assertFalse(mThemeStore.getWpComThemes().isEmpty());
     }
 
     @SuppressWarnings("unused")
@@ -161,5 +152,13 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         return mThemeStore.getActiveThemeForSite(sSite);
+    }
+
+    private void fetchWpComThemes() throws InterruptedException {
+        // no need to sign into account, this is a test for an endpoint that does not require authentication
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.FETCHED_WPCOM_THEMES;
+        mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
