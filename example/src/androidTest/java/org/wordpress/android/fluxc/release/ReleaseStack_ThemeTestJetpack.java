@@ -167,35 +167,6 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
-    public void testRemoveTheme() throws InterruptedException {
-        // sign in and fetch WP.com themes and installed themes
-        final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
-
-        // verify initial state, no themes in store
-        assertEquals(0, mThemeStore.getWpComThemes().size());
-        assertEquals(0, mThemeStore.getThemesForSite(jetpackSite).size());
-
-        // fetch themes for site and WP.com themes
-        fetchInstalledThemes(jetpackSite);
-        fetchWpComThemes();
-
-        final List<ThemeModel> wpComThemes = mThemeStore.getWpComThemes();
-        final List<ThemeModel> installedThemes = mThemeStore.getThemesForSite(jetpackSite);
-        assertTrue(installedThemes.size() > 0);
-        assertTrue(wpComThemes.size() > 0);
-
-        // remove a theme from each and verify
-        final ThemeModel wpComRemove = wpComThemes.get(0);
-        final ThemeModel installedRemove = installedThemes.get(0);
-        removeTheme(jetpackSite, wpComRemove);
-        assertEquals(wpComThemes.size() - 1, mThemeStore.getWpComThemes().size());
-        removeTheme(jetpackSite, installedRemove);
-        assertEquals(installedThemes.size() - 1, mThemeStore.getThemesForSite(jetpackSite).size());
-
-        // sign out
-        signOutWPCom();
-    }
-
     public void testRemoveSiteThemes() throws InterruptedException {
         // sign in and fetch WP.com themes and installed themes
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
@@ -436,13 +407,6 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         deleteTheme(jetpackSite, theme);
         // make sure theme is no longer available for site (delete was successful)
         assertNull(mThemeStore.getInstalledThemeByThemeId(jetpackSite, theme.getThemeId()));
-    }
-
-    private void removeTheme(@NonNull SiteModel site, @NonNull ThemeModel theme) throws InterruptedException {
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.REMOVED_THEME;
-        mDispatcher.dispatch(ThemeActionBuilder.newRemoveThemeAction(new SiteThemePayload(site, theme)));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void removeSiteThemes(@NonNull SiteModel site) throws InterruptedException {
