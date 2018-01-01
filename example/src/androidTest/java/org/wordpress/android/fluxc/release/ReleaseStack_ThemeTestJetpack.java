@@ -168,27 +168,26 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     }
 
     public void testRemoveSiteThemes() throws InterruptedException {
-        // sign in and fetch WP.com themes and installed themes
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
         // verify initial state, no themes in store
-        assertEquals(0, mThemeStore.getWpComThemes().size());
-        assertEquals(0, mThemeStore.getThemesForSite(jetpackSite).size());
+        assertTrue(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
+        assertTrue(mThemeStore.getWpComThemes().isEmpty());
 
         // fetch themes for site and WP.com themes
         fetchInstalledThemes(jetpackSite);
         fetchWpComThemes();
 
-        final int wpComThemesCount = mThemeStore.getWpComThemes().size();
-        assertTrue(wpComThemesCount > 0);
-        assertTrue(mThemeStore.getThemesForSite(jetpackSite).size() > 0);
+        // Verify fetches were successful
+        assertFalse(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
+        assertFalse(mThemeStore.getWpComThemes().isEmpty());
 
         // remove the site's themes
         removeSiteThemes(jetpackSite);
 
-        // verify they are removed and that WP.com themes are still there
-        assertEquals(wpComThemesCount, mThemeStore.getWpComThemes().size());
-        assertEquals(0, mThemeStore.getThemesForSite(jetpackSite).size());
+        // verify site themes are removed and that WP.com themes are still there
+        assertTrue(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
+        assertFalse(mThemeStore.getWpComThemes().isEmpty());
 
         // sign out
         signOutWPCom();
