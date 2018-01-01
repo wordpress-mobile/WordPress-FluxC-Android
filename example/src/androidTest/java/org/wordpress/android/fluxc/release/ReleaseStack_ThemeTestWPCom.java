@@ -42,17 +42,17 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         mActivatedTheme = null;
     }
 
+    public void testFetchCurrentTheme() throws InterruptedException {
+        // Make sure no theme is active at first
+        assertNull(mThemeStore.getActiveThemeForSite(sSite));
+        ThemeModel currentTheme = fetchCurrentTheme();
+        assertNotNull(currentTheme);
+    }
+
     public void testActivateTheme() throws InterruptedException {
         // Make sure no theme is active at first
         assertNull(mThemeStore.getActiveThemeForSite(sSite));
-
-        // get current active theme on a site
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
-        mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(sSite));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        ThemeModel currentTheme = mThemeStore.getActiveThemeForSite(sSite);
+        ThemeModel currentTheme = fetchCurrentTheme();
         assertNotNull(currentTheme);
 
         // get all themes available
@@ -88,16 +88,6 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         // verify response received and WP themes list is not empty
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertFalse(mThemeStore.getWpComThemes().isEmpty());
-    }
-
-    public void testFetchCurrentTheme() throws InterruptedException {
-        // fetch current theme
-        mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(sSite));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        assertNotNull(mCurrentTheme);
     }
 
     @SuppressWarnings("unused")
@@ -169,5 +159,15 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
             }
         }
         return null;
+    }
+
+    private ThemeModel fetchCurrentTheme() throws InterruptedException {
+        // fetch current theme
+        mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(sSite));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        return mThemeStore.getActiveThemeForSite(sSite);
     }
 }
