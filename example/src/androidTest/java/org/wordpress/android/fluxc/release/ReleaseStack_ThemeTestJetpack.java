@@ -104,8 +104,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         assertNotNull(currentTheme);
 
         // select a different theme to activate
-        ThemeModel themeToActivate = currentTheme.getThemeId().equals(themes.get(0).getThemeId())
-                ? themes.get(1) : themes.get(0);
+        ThemeModel themeToActivate = getOtherTheme(themes, currentTheme.getThemeId());
         assertNotNull(themeToActivate);
 
         // activate it
@@ -499,7 +498,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         return null;
     }
 
-    private ThemeModel getThemeFromList(List<ThemeModel> list, String themeId) {
+    private ThemeModel getThemeFromList(@NonNull List<ThemeModel> list, @NonNull String themeId) {
         for (ThemeModel theme : list) {
             if (themeId.equals(theme.getThemeId())) {
                 return theme;
@@ -508,11 +507,11 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         return null;
     }
 
-    private boolean listContainsThemeWithId(List<ThemeModel> list, String themeId) {
+    private boolean listContainsThemeWithId(@NonNull List<ThemeModel> list, @NonNull String themeId) {
         return getThemeFromList(list, themeId) != null;
     }
 
-    private ThemeModel getOtherTheme(List<ThemeModel> themes, String idToIgnore) {
+    private ThemeModel getOtherTheme(@NonNull List<ThemeModel> themes, @NonNull String idToIgnore) {
         for (ThemeModel theme : themes) {
             if (!idToIgnore.equals(theme.getThemeId())) {
                 return theme;
