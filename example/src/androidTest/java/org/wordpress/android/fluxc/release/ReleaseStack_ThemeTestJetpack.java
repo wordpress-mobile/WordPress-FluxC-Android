@@ -216,9 +216,9 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         // remove a theme from each and verify
         final ThemeModel wpComRemove = wpComThemes.get(0);
         final ThemeModel installedRemove = installedThemes.get(0);
-        removeTheme(wpComRemove);
+        removeTheme(jetpackSite, wpComRemove);
         assertEquals(wpComThemes.size() - 1, mThemeStore.getWpComThemes().size());
-        removeTheme(installedRemove);
+        removeTheme(jetpackSite, installedRemove);
         assertEquals(installedThemes.size() - 1, mThemeStore.getThemesForSite(jetpackSite).size());
 
         // sign out
@@ -449,10 +449,10 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         return mThemeStore.getActiveThemeForSite(jetpackSite);
     }
 
-    private void removeTheme(@NonNull ThemeModel theme) throws InterruptedException {
+    private void removeTheme(@NonNull SiteModel site, @NonNull ThemeModel theme) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.REMOVED_THEME;
-        mDispatcher.dispatch(ThemeActionBuilder.newRemoveThemeAction(theme));
+        mDispatcher.dispatch(ThemeActionBuilder.newRemoveThemeAction(new SiteThemePayload(site, theme)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
