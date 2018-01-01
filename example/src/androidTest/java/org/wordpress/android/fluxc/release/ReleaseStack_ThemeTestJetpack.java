@@ -126,8 +126,9 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         // fetch installed themes
         fetchInstalledThemes(jetpackSite);
 
-        // make sure installed themes were successfully fetched
-        assertFalse(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
+        // make sure there are at least 2 themes, one that's active and one that may be activated
+        List<ThemeModel> themes = mThemeStore.getThemesForSite(jetpackSite);
+        assertTrue(themes.size() > 1);
 
         // If the theme is already installed, delete it first
         if (isThemeInstalled(jetpackSite, themeToInstall.getThemeId())) {
@@ -150,8 +151,9 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         // fetch installed themes
         fetchInstalledThemes(jetpackSite);
 
-        // make sure installed themes were successfully fetched
-        assertFalse(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
+        // make sure there are at least 2 themes, one that's active and one that may be activated
+        List<ThemeModel> themes = mThemeStore.getThemesForSite(jetpackSite);
+        assertTrue(themes.size() > 1);
 
         // Install edin if necessary before attempting to delete
         if (!isThemeInstalled(jetpackSite, themeToDelete.getThemeId())) {
