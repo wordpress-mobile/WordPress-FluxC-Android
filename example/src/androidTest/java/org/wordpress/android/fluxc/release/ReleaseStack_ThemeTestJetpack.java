@@ -49,6 +49,8 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     private TestEvents mNextEvent;
 
+    private static final String EDIN_THEME_ID = "edin-wpcom";
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -118,10 +120,8 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     public void testInstallTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
-        final String themeId = "edin-wpcom";
         final ThemeModel themeToInstall = new ThemeModel();
-        themeToInstall.setName("Edin");
-        themeToInstall.setThemeId(themeId);
+        themeToInstall.setThemeId(EDIN_THEME_ID);
 
         // fetch installed themes
         fetchInstalledThemes(jetpackSite);
@@ -131,17 +131,17 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         assertFalse(themes.isEmpty());
 
         // delete edin before attempting to install
-        if (listContainsThemeWithId(themes, themeId)) {
+        if (listContainsThemeWithId(themes, EDIN_THEME_ID)) {
             // delete existing theme from site
             deleteTheme(jetpackSite, themeToInstall);
 
             // make sure theme is no longer available for site (delete was successful)
-            assertFalse(listContainsThemeWithId(mThemeStore.getThemesForSite(jetpackSite), themeId));
+            assertFalse(listContainsThemeWithId(mThemeStore.getThemesForSite(jetpackSite), EDIN_THEME_ID));
         }
 
         // install the theme
         installTheme(jetpackSite, themeToInstall);
-        assertTrue(listContainsThemeWithId(mThemeStore.getThemesForSite(jetpackSite), themeId));
+        assertTrue(listContainsThemeWithId(mThemeStore.getThemesForSite(jetpackSite), EDIN_THEME_ID));
 
         signOutWPCom();
     }
@@ -150,17 +150,15 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
         assertTrue(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
 
-        final String themeId = "edin-wpcom";
         final ThemeModel themeToDelete = new ThemeModel();
-        themeToDelete.setName("Edin");
-        themeToDelete.setThemeId(themeId);
+        themeToDelete.setThemeId(EDIN_THEME_ID);
 
         // fetch installed themes
         fetchInstalledThemes(jetpackSite);
 
         List<ThemeModel> themes = mThemeStore.getThemesForSite(jetpackSite);
         assertFalse(themes.isEmpty());
-        ThemeModel listTheme = getThemeFromList(themes, themeId);
+        ThemeModel listTheme = getThemeFromList(themes, EDIN_THEME_ID);
 
         // install edin before attempting to delete
         if (listTheme == null) {
@@ -168,10 +166,10 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
             // mInstalledTheme is set in onThemeInstalled
             assertNotNull(mInstalledTheme);
-            assertEquals(themeId, mInstalledTheme.getThemeId());
+            assertEquals(EDIN_THEME_ID, mInstalledTheme.getThemeId());
 
             // make sure theme is available for site (install was successful)
-            listTheme = getThemeFromList(mThemeStore.getThemesForSite(jetpackSite), themeId);
+            listTheme = getThemeFromList(mThemeStore.getThemesForSite(jetpackSite), EDIN_THEME_ID);
             assertNotNull(listTheme);
         }
 
@@ -179,10 +177,10 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         fetchCurrentTheme(jetpackSite);
 
         // if Edin is active update site's active theme to something else
-        if (themeId.equals(mCurrentTheme.getThemeId())) {
+        if (EDIN_THEME_ID.equals(mCurrentTheme.getThemeId())) {
             mCountDownLatch = new CountDownLatch(1);
             mNextEvent = TestEvents.ACTIVATED_THEME;
-            ThemeModel themeToActivate = getOtherTheme(themes, themeId);
+            ThemeModel themeToActivate = getOtherTheme(themes, EDIN_THEME_ID);
             assertNotNull(themeToActivate);
             SiteThemePayload payload = new SiteThemePayload(jetpackSite, themeToActivate);
             mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
@@ -191,7 +189,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
         themeToDelete.setId(listTheme.getId());
         deleteTheme(jetpackSite, themeToDelete);
-        assertFalse(listContainsThemeWithId(mThemeStore.getThemesForSite(jetpackSite), themeId));
+        assertFalse(listContainsThemeWithId(mThemeStore.getThemesForSite(jetpackSite), EDIN_THEME_ID));
 
         signOutWPCom();
     }
