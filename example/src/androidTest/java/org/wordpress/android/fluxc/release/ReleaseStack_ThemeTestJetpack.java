@@ -64,6 +64,9 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     public void testFetchInstalledThemes() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
+        // verify that installed themes list is empty first
+        assertTrue(mThemeStore.getThemesForSite(jetpackSite).size() == 0);
+
         // fetch installed themes
         fetchInstalledThemes(jetpackSite);
 
