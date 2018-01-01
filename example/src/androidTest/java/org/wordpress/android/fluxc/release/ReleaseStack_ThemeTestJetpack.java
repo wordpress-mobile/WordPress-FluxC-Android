@@ -79,9 +79,12 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     public void testFetchCurrentTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
+        // Verify there is no active theme for the site at the start
+        assertNull(mThemeStore.getActiveThemeForSite(jetpackSite));
+
         // fetch active theme
-        fetchCurrentThemes(jetpackSite);
-        assertNotNull(mCurrentTheme);
+        ThemeModel currentTheme = fetchCurrentTheme(jetpackSite);
+        assertNotNull(currentTheme);
 
         signOutWPCom();
     }
@@ -97,7 +100,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         assertTrue(themes.size() > 1);
 
         // fetch active theme
-        fetchCurrentThemes(jetpackSite);
+        fetchCurrentTheme(jetpackSite);
         assertNotNull(mCurrentTheme);
 
         // select a different theme to activate
@@ -190,7 +193,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         }
 
         // fetch active theme
-        fetchCurrentThemes(jetpackSite);
+        fetchCurrentTheme(jetpackSite);
 
         // if Edin is active update site's active theme to something else
         if (themeId.equals(mCurrentTheme.getThemeId())) {
@@ -443,11 +446,13 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void fetchCurrentThemes(@NonNull SiteModel jetpackSite) throws InterruptedException {
+    private ThemeModel fetchCurrentTheme(@NonNull SiteModel jetpackSite) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(jetpackSite));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        return mThemeStore.getActiveThemeForSite(jetpackSite);
     }
 
     private void removeTheme(@NonNull ThemeModel theme) throws InterruptedException {
