@@ -65,11 +65,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         // activate a different theme
         ThemeModel themeToActivate = getNewNonPremiumTheme(currentTheme.getThemeId(), mThemeStore.getWpComThemes());
         assertNotNull(themeToActivate);
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.ACTIVATED_THEME;
-        SiteThemePayload payload = new SiteThemePayload(sSite, themeToActivate);
-        mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        activateTheme(themeToActivate);
 
         // Assert that the activation was successful
         ThemeModel activatedTheme = mThemeStore.getActiveThemeForSite(sSite);
@@ -159,6 +155,14 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.FETCHED_WPCOM_THEMES;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void activateTheme(ThemeModel themeToActivate) throws InterruptedException {
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.ACTIVATED_THEME;
+        SiteThemePayload payload = new SiteThemePayload(sSite, themeToActivate);
+        mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
