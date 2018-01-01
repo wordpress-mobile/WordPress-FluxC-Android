@@ -100,24 +100,18 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         assertTrue(themes.size() > 1);
 
         // fetch active theme
-        fetchCurrentTheme(jetpackSite);
-        assertNotNull(mCurrentTheme);
+        ThemeModel currentTheme = fetchCurrentTheme(jetpackSite);
+        assertNotNull(currentTheme);
 
         // select a different theme to activate
-        ThemeModel themeToActivate = mCurrentTheme.getThemeId().equals(themes.get(0).getThemeId())
+        ThemeModel themeToActivate = currentTheme.getThemeId().equals(themes.get(0).getThemeId())
                 ? themes.get(1) : themes.get(0);
         assertNotNull(themeToActivate);
 
         // activate it
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.ACTIVATED_THEME;
-        SiteThemePayload payload = new SiteThemePayload(jetpackSite, themeToActivate);
-        mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        // mActivatedTheme is set in onThemeActivated
-        assertNotNull(mActivatedTheme);
-        assertEquals(mActivatedTheme.getThemeId(), themeToActivate.getThemeId());
+        ThemeModel activatedTheme = activateTheme(jetpackSite, themeToActivate);
+        assertNotNull(activatedTheme);
+        assertEquals(activatedTheme.getThemeId(), themeToActivate.getThemeId());
 
         signOutWPCom();
     }
@@ -450,6 +444,17 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(jetpackSite));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        return mThemeStore.getActiveThemeForSite(jetpackSite);
+    }
+
+    private ThemeModel activateTheme(@NonNull SiteModel jetpackSite, @NonNull ThemeModel themeToActivate)
+            throws InterruptedException {
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.ACTIVATED_THEME;
+        SiteThemePayload payload = new SiteThemePayload(jetpackSite, themeToActivate);
+        mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         return mThemeStore.getActiveThemeForSite(jetpackSite);
