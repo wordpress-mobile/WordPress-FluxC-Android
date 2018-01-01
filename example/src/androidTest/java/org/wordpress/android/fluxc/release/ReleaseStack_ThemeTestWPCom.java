@@ -43,29 +43,37 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
     }
 
     public void testActivateTheme() throws InterruptedException {
-        // get all themes available
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.FETCHED_WPCOM_THEMES;
-        mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // Make sure no theme is active at first
+        assertNull(mThemeStore.getActiveThemeForSite(sSite));
 
         // get current active theme on a site
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(sSite));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        assertNotNull(mCurrentTheme);
+
+        ThemeModel currentTheme = mThemeStore.getActiveThemeForSite(sSite);
+        assertNotNull(currentTheme);
+
+        // get all themes available
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.FETCHED_WPCOM_THEMES;
+        mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // activate a different theme
-        ThemeModel themeToActivate = getNewNonPremiumTheme(mCurrentTheme.getThemeId(), mThemeStore.getWpComThemes());
+        ThemeModel themeToActivate = getNewNonPremiumTheme(currentTheme.getThemeId(), mThemeStore.getWpComThemes());
         assertNotNull(themeToActivate);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.ACTIVATED_THEME;
         SiteThemePayload payload = new SiteThemePayload(sSite, themeToActivate);
         mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        assertNotNull(mActivatedTheme);
-        assertEquals(mActivatedTheme.getThemeId(), themeToActivate.getThemeId());
+
+        // Assert that the activation was successful
+        ThemeModel activatedTheme = mThemeStore.getActiveThemeForSite(sSite);
+        assertNotNull(activatedTheme);
+        assertEquals(activatedTheme.getThemeId(), themeToActivate.getThemeId());
     }
 
     public void testFetchWPComThemes() throws InterruptedException {
