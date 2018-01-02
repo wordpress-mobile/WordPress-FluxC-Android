@@ -35,6 +35,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         TERMS_FETCHED,
         TERM_UPDATED,
         TERM_UPLOADED,
+        TERM_DELETED,
         ERROR_INVALID_TAXONOMY,
         ERROR_DUPLICATE,
         ERROR_UNAUTHORIZED,
@@ -149,6 +150,17 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     public void testUpdateExistingTag() throws InterruptedException {
         TermModel term = createNewTag();
         testUpdateExistingTerm(term);
+    }
+
+    public void testDeleteTag() throws InterruptedException {
+        TermModel term = createNewTag();
+        setupTermAttributes(term);
+
+        uploadTerm(term);
+        assertEquals(1, WellSqlUtils.getTotalTermsCount());
+
+        deleteTerm(term);
+        assertEquals(0, WellSqlUtils.getTotalTermsCount());
     }
 
     public void testUploadNewCategoryAsTerm() throws InterruptedException {
@@ -331,6 +343,16 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
 
         RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void deleteTerm(TermModel term) throws InterruptedException {
+        mNextEvent = TestEvents.TERM_DELETED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
+        mDispatcher.dispatch(TaxonomyActionBuilder.newDeletedTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
