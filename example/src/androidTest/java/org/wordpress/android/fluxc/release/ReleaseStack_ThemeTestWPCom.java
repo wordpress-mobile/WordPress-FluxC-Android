@@ -21,8 +21,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         NONE,
         FETCHED_WPCOM_THEMES,
         FETCHED_CURRENT_THEME,
-        SEARCHED_THEMES,
-        ACTIVATED_THEME,
+        ACTIVATED_THEME
     }
 
     @Inject ThemeStore mThemeStore;
@@ -30,7 +29,6 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
     private TestEvents mNextEvent;
     private ThemeModel mCurrentTheme;
     private ThemeModel mActivatedTheme;
-    private List<ThemeModel> mSearchResults;
 
     @Override
     protected void setUp() throws Exception {
@@ -42,7 +40,6 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.NONE;
         mCurrentTheme = null;
         mActivatedTheme = null;
-        mSearchResults = null;
     }
 
     public void testActivateTheme() throws InterruptedException {
@@ -93,31 +90,6 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertNotNull(mCurrentTheme);
-    }
-
-    public void testSearchThemes() throws InterruptedException {
-        // "Twenty *teen" themes
-        final String searchTerm = "twenty";
-
-        ThemeStore.SearchThemesPayload payload = new ThemeStore.SearchThemesPayload(searchTerm);
-        mNextEvent = TestEvents.SEARCHED_THEMES;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(ThemeActionBuilder.newSearchThemesAction(payload));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        assertNotNull(mSearchResults);
-        assertFalse(mSearchResults.isEmpty());
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe
-    public void onThemesSearched(ThemeStore.OnThemesSearched event) {
-        if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
-        }
-        assertTrue(mNextEvent == TestEvents.SEARCHED_THEMES);
-        mSearchResults = event.searchResults;
-        mCountDownLatch.countDown();
     }
 
     @SuppressWarnings("unused")
