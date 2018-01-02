@@ -41,13 +41,18 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.wordpress.android.fluxc.model.post.ContentType.POST;
+
 public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
     private static final String POST_DEFAULT_TITLE = "UploadTest base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
 
-    @Inject MediaStore mMediaStore;
-    @Inject PostStore mPostStore;
-    @Inject UploadStore mUploadStore;
+    @Inject
+    MediaStore mMediaStore;
+    @Inject
+    PostStore mPostStore;
+    @Inject
+    UploadStore mUploadStore;
 
     private enum TestEvents {
         CANCELED_MEDIA,
@@ -360,7 +365,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
                 throw new AssertionError("Unexpected cancellation for media: " + event.media.getId());
             }
         } else if (event.completed) {
-             if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
+            if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
                 mLastUploadedId = event.media.getMediaId();
             } else {
                 throw new AssertionError("Unexpected completion for media: " + event.media.getId());
@@ -443,7 +448,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
     }
 
     private PostModel createNewPost() throws InterruptedException {
-        mPost = mPostStore.instantiatePostModel(sSite, false);
+        mPost = mPostStore.instantiatePostModel(sSite, POST);
         return mPost;
     }
 
