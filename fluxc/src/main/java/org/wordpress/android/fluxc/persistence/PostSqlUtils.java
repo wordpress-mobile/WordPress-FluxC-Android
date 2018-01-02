@@ -6,7 +6,7 @@ import com.yarolegovich.wellsql.WellSql;
 
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
-import org.wordpress.android.fluxc.model.post.ContentType;
+import org.wordpress.android.fluxc.model.post.PostType;
 
 import java.util.Collections;
 import java.util.List;
@@ -65,7 +65,7 @@ public class PostSqlUtils {
         return insertOrUpdatePost(post, true);
     }
 
-    public static List<PostModel> getPostsForSite(SiteModel site, ContentType contentType) {
+    public static List<PostModel> getPostsForSite(SiteModel site, PostType postType) {
         if (site == null) {
             return Collections.emptyList();
         }
@@ -73,7 +73,7 @@ public class PostSqlUtils {
         return WellSql.select(PostModel.class)
                 .where().beginGroup()
                 .equals(PostModelTable.LOCAL_SITE_ID, site.getId())
-                .equals(PostModelTable.TYPE, contentType.getValue())
+                .equals(PostModelTable.TYPE, postType.getValue())
                 .endGroup().endWhere()
                 .orderBy(PostModelTable.IS_LOCAL_DRAFT, SelectQuery.ORDER_DESCENDING)
                 .orderBy(PostModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
@@ -81,7 +81,7 @@ public class PostSqlUtils {
     }
 
     public static List<PostModel> getPostsForSiteWithFormat(SiteModel site,
-                                                            List<String> postFormat, ContentType contentType) {
+                                                            List<String> postFormat, PostType postType) {
         if (site == null) {
             return Collections.emptyList();
         }
@@ -90,14 +90,14 @@ public class PostSqlUtils {
                 .where().beginGroup()
                 .equals(PostModelTable.LOCAL_SITE_ID, site.getId())
                 .isIn(PostModelTable.POST_FORMAT, postFormat)
-                .equals(PostModelTable.TYPE, contentType.getValue())
+                .equals(PostModelTable.TYPE, postType.getValue())
                 .endGroup().endWhere()
                 .orderBy(PostModelTable.IS_LOCAL_DRAFT, SelectQuery.ORDER_DESCENDING)
                 .orderBy(PostModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
                 .getAsModel();
     }
 
-    public static List<PostModel> getUploadedPostsForSite(SiteModel site, ContentType contentType) {
+    public static List<PostModel> getUploadedPostsForSite(SiteModel site, PostType postType) {
         if (site == null) {
             return Collections.emptyList();
         }
@@ -105,7 +105,7 @@ public class PostSqlUtils {
         return WellSql.select(PostModel.class)
                 .where().beginGroup()
                 .equals(PostModelTable.LOCAL_SITE_ID, site.getId())
-                .equals(PostModelTable.TYPE, contentType.getValue())
+                .equals(PostModelTable.TYPE, postType.getValue())
                 .equals(PostModelTable.IS_LOCAL_DRAFT, false)
                 .endGroup().endWhere()
                 .orderBy(PostModelTable.IS_LOCAL_DRAFT, SelectQuery.ORDER_DESCENDING)
@@ -133,7 +133,7 @@ public class PostSqlUtils {
                 .execute();
     }
 
-    public static int deleteUploadedPostsForSite(SiteModel site, ContentType contentType) {
+    public static int deleteUploadedPostsForSite(SiteModel site, PostType postType) {
         if (site == null) {
             return 0;
         }
@@ -141,7 +141,7 @@ public class PostSqlUtils {
         return WellSql.delete(PostModel.class)
                 .where().beginGroup()
                 .equals(PostModelTable.LOCAL_SITE_ID, site.getId())
-                .equals(PostModelTable.TYPE, contentType.getValue())
+                .equals(PostModelTable.TYPE, postType.getValue())
                 .equals(PostModelTable.IS_LOCAL_DRAFT, false)
                 .equals(PostModelTable.IS_LOCALLY_CHANGED, false)
                 .endGroup()

@@ -40,7 +40,7 @@ import javax.inject.Inject;
 import dagger.android.AndroidInjection;
 
 import static android.app.Activity.RESULT_OK;
-import static org.wordpress.android.fluxc.model.post.ContentType.POST;
+import static org.wordpress.android.fluxc.model.post.PostType.POST;
 
 public class UploadsFragment extends Fragment {
     private static final int RESULT_PICK_MEDIA = 1;

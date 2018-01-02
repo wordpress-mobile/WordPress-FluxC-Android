@@ -17,7 +17,7 @@ import org.wordpress.android.fluxc.generated.endpoint.XMLRPC;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.PostsModel;
 import org.wordpress.android.fluxc.model.SiteModel;
-import org.wordpress.android.fluxc.model.post.ContentType;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.model.post.PostLocation;
 import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseErrorListener;
@@ -46,8 +46,8 @@ import java.util.Map;
 
 import javax.inject.Singleton;
 
-import static org.wordpress.android.fluxc.model.post.ContentType.PAGE;
-import static org.wordpress.android.fluxc.model.post.ContentType.POST;
+import static org.wordpress.android.fluxc.model.post.PostType.PAGE;
+import static org.wordpress.android.fluxc.model.post.PostType.POST;
 
 @Singleton
 public class PostXMLRPCClient extends BaseXMLRPCClient {
@@ -113,12 +113,12 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         add(request);
     }
 
-    public void fetchPosts(final SiteModel site, final ContentType contentType, final int offset) {
+    public void fetchPosts(final SiteModel site, final PostType postType, final int offset) {
         Map<String, Object> contentStruct = new HashMap<>();
 
         contentStruct.put("number", PostStore.NUM_POSTS_PER_FETCH);
         contentStruct.put("offset", offset);
-        contentStruct.put("post_type", contentType.getValue());
+        contentStruct.put("post_type", postType.getValue());
 
         List<Object> params = new ArrayList<>(4);
         params.add(site.getSelfHostedSiteId());
@@ -138,7 +138,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                         PostsModel posts = postsResponseToPostsModel(response, site);
 
                         FetchPostsResponsePayload payload = new FetchPostsResponsePayload(posts, site,
-                                contentType, offset > 0, canLoadMore);
+                                postType, offset > 0, canLoadMore);
 
                         if (posts != null) {
                             mDispatcher.dispatch(PostActionBuilder.newFetchedPostsAction(payload));
@@ -379,7 +379,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
 
         post.setType(MapUtils.getMapStr(postMap, "post_type"));
 
-        if (post.getContentType() == PAGE) {
+        if (post.getPostType() == PAGE) {
             post.setParentId(MapUtils.getMapLong(postMap, "wp_page_parent_id"));
             post.setParentTitle(MapUtils.getMapStr(postMap, "wp_page_parent"));
             post.setSlug(MapUtils.getMapStr(postMap, "wp_slug"));
@@ -401,13 +401,13 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         Map<String, Object> contentStruct = new HashMap<>();
 
         // Post format
-        if (post.getContentType() == POST) {
+        if (post.getPostType() == POST) {
             if (!TextUtils.isEmpty(post.getPostFormat())) {
                 contentStruct.put("post_format", post.getPostFormat());
             }
         }
 
-        contentStruct.put("post_type", post.getContentType().getValue());
+        contentStruct.put("post_type", post.getPostType().getValue());
         contentStruct.put("post_title", post.getTitle());
 
         String dateCreated = post.getDateCreated();
@@ -431,7 +431,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
 
         contentStruct.put("post_content", content);
 
-        if (post.getContentType() == POST) {
+        if (post.getPostType() == POST) {
             // Handle taxonomies
 
             if (post.isLocalDraft()) {

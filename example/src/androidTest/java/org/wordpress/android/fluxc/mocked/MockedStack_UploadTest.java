@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import static org.wordpress.android.fluxc.model.post.ContentType.POST;
+import static org.wordpress.android.fluxc.model.post.PostType.POST;
 
 /**
  * Tests using a Mocked Network app component. Test the Store itself and not the underlying network component(s).

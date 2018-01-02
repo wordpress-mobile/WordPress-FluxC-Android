@@ -29,9 +29,9 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.wordpress.android.fluxc.model.post.ContentType.PAGE;
-import static org.wordpress.android.fluxc.model.post.ContentType.PORTFOLIO;
-import static org.wordpress.android.fluxc.model.post.ContentType.POST;
+import static org.wordpress.android.fluxc.model.post.PostType.PAGE;
+import static org.wordpress.android.fluxc.model.post.PostType.PORTFOLIO;
+import static org.wordpress.android.fluxc.model.post.PostType.POST;
 
 @RunWith(RobolectricTestRunner.class)
 public class PostStoreUnitTest {
@@ -276,17 +276,17 @@ public class PostStoreUnitTest {
         PostModel post = new PostModel();
         post.setLocalSiteId(6);
         post.setRemotePostId(42);
-        post.setContentType(POST);
+        post.setPostType(POST);
         PostSqlUtils.insertPostForResult(post);
 
         PostModel page = new PostModel();
-        page.setContentType(PAGE);
+        page.setPostType(PAGE);
         page.setLocalSiteId(6);
         page.setRemotePostId(43);
         PostSqlUtils.insertPostForResult(page);
 
         PostModel portfolio = new PostModel();
-        portfolio.setContentType(PORTFOLIO);
+        portfolio.setPostType(PORTFOLIO);
         portfolio.setLocalSiteId(6);
         portfolio.setRemotePostId(44);
         PostSqlUtils.insertPostForResult(portfolio);
@@ -297,9 +297,9 @@ public class PostStoreUnitTest {
         assertEquals(1, mPostStore.getPagesCountForSite(site));
         assertEquals(1, mPostStore.getPortfoliosCountForSite(site));
 
-        assertTrue(PostTestUtils.getPosts().get(0).getContentType() == POST);
-        assertTrue(PostTestUtils.getPosts().get(1).getContentType() == PAGE);
-        assertTrue(PostTestUtils.getPosts().get(2).getContentType() == PORTFOLIO);
+        assertTrue(PostTestUtils.getPosts().get(0).getPostType() == POST);
+        assertTrue(PostTestUtils.getPosts().get(1).getPostType() == PAGE);
+        assertTrue(PostTestUtils.getPosts().get(2).getPostType() == PORTFOLIO);
 
         assertEquals(1, mPostStore.getUploadedPostsCountForSite(site));
         assertEquals(1, mPostStore.getUploadedPagesCountForSite(site));
@@ -314,21 +314,21 @@ public class PostStoreUnitTest {
         PostModel post = new PostModel();
         post.setLocalSiteId(6);
         post.setRemotePostId(42);
-        post.setContentType(POST);
+        post.setPostType(POST);
         post.setDateCreated(DateTimeUtils.iso8601UTCFromDate(new Date()));
         PostSqlUtils.insertPostForResult(post);
 
         PostModel localDraft = new PostModel();
         localDraft.setLocalSiteId(6);
         localDraft.setIsLocalDraft(true);
-        localDraft.setContentType(POST);
+        localDraft.setPostType(POST);
         localDraft.setDateCreated("2016-01-01T07:00:00+00:00");
         PostSqlUtils.insertPostForResult(localDraft);
 
         PostModel scheduledPost = new PostModel();
         scheduledPost.setLocalSiteId(6);
         scheduledPost.setRemotePostId(23);
-        scheduledPost.setContentType(POST);
+        scheduledPost.setPostType(POST);
         scheduledPost.setDateCreated("2056-01-01T07:00:00+00:00");
         PostSqlUtils.insertPostForResult(scheduledPost);
 

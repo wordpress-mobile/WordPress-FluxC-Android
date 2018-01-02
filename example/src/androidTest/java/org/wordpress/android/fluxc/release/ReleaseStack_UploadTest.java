@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import static org.wordpress.android.fluxc.model.post.ContentType.POST;
+import static org.wordpress.android.fluxc.model.post.PostType.POST;
 
 public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
     private static final String POST_DEFAULT_TITLE = "UploadTest base post";

@@ -15,7 +15,7 @@ import org.wordpress.android.fluxc.annotations.action.IAction;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.PostsModel;
 import org.wordpress.android.fluxc.model.SiteModel;
-import org.wordpress.android.fluxc.model.post.ContentType;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostRestClient;
@@ -31,9 +31,9 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import static org.wordpress.android.fluxc.model.post.ContentType.POST;
-import static org.wordpress.android.fluxc.model.post.ContentType.PAGE;
-import static org.wordpress.android.fluxc.model.post.ContentType.PORTFOLIO;
+import static org.wordpress.android.fluxc.model.post.PostType.POST;
+import static org.wordpress.android.fluxc.model.post.PostType.PAGE;
+import static org.wordpress.android.fluxc.model.post.PostType.PORTFOLIO;
 
 @Singleton
 public class PostStore extends Store {
@@ -80,40 +80,40 @@ public class PostStore extends Store {
         public PostsModel posts;
         public SiteModel site;
         public String searchTerm;
-        public ContentType contentType;
+        public PostType postType;
         public boolean loadedMore;
         public boolean canLoadMore;
 
-        public SearchPostsResponsePayload(PostsModel posts, SiteModel site, String searchTerm, ContentType contentType,
+        public SearchPostsResponsePayload(PostsModel posts, SiteModel site, String searchTerm, PostType postType,
                                           boolean loadedMore, boolean canLoadMore) {
             this.posts = posts;
             this.site = site;
             this.searchTerm = searchTerm;
-            this.contentType = contentType;
+            this.postType = postType;
             this.loadedMore = loadedMore;
             this.canLoadMore = canLoadMore;
         }
 
-        public SearchPostsResponsePayload(SiteModel site, String searchTerm, ContentType contentType, PostError error) {
+        public SearchPostsResponsePayload(SiteModel site, String searchTerm, PostType postType, PostError error) {
             this.site = site;
             this.searchTerm = searchTerm;
-            this.contentType = contentType;
+            this.postType = postType;
             this.error = error;
         }
     }
 
     public static class FetchPostsResponsePayload extends Payload<PostError> {
-        public ContentType contentType;
+        public PostType postType;
         public PostsModel posts;
         public SiteModel site;
         public boolean loadedMore;
         public boolean canLoadMore;
 
-        public FetchPostsResponsePayload(PostsModel posts, SiteModel site, ContentType contentType, boolean loadedMore,
+        public FetchPostsResponsePayload(PostsModel posts, SiteModel site, PostType postType, boolean loadedMore,
                                          boolean canLoadMore) {
             this.posts = posts;
             this.site = site;
-            this.contentType = contentType;
+            this.postType = postType;
             this.loadedMore = loadedMore;
             this.canLoadMore = canLoadMore;
         }
@@ -235,16 +235,16 @@ public class PostStore extends Store {
         AppLog.d(AppLog.T.API, "PostStore onRegister");
     }
 
-    public PostModel instantiatePostModel(SiteModel site, ContentType contentType) {
-        return instantiatePostModel(site, contentType, null, null);
+    public PostModel instantiatePostModel(SiteModel site, PostType postType) {
+        return instantiatePostModel(site, postType, null, null);
     }
 
-    public PostModel instantiatePostModel(SiteModel site, ContentType contentType,
+    public PostModel instantiatePostModel(SiteModel site, PostType postType,
                                           List<Long> categoryIds, String postFormat) {
         PostModel post = new PostModel();
         post.setLocalSiteId(site.getId());
         post.setIsLocalDraft(true);
-        post.setContentType(contentType);
+        post.setPostType(postType);
         post.setDateLocallyChanged((DateTimeUtils.iso8601FromDate(DateTimeUtils.nowUTC())));
         if (categoryIds != null && !categoryIds.isEmpty()) {
             post.setCategoryIdList(categoryIds);
@@ -464,23 +464,23 @@ public class PostStore extends Store {
         }
     }
 
-    private void fetchPosts(FetchPostsPayload payload, ContentType contentType) {
+    private void fetchPosts(FetchPostsPayload payload, PostType postType) {
         int offset = 0;
         if (payload.loadMore) {
-            offset = PostSqlUtils.getUploadedPostsForSite(payload.site, contentType).size();
+            offset = PostSqlUtils.getUploadedPostsForSite(payload.site, postType).size();
         }
 
         if (payload.site.isUsingWpComRestApi()) {
-            mPostRestClient.fetchPosts(payload.site, contentType, DEFAULT_POST_STATUS_LIST, offset);
+            mPostRestClient.fetchPosts(payload.site, postType, DEFAULT_POST_STATUS_LIST, offset);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
-            mPostXMLRPCClient.fetchPosts(payload.site, contentType, offset);
+            mPostXMLRPCClient.fetchPosts(payload.site, postType, offset);
         }
     }
 
-    private void searchPosts(SearchPostsPayload payload, ContentType contentType) {
+    private void searchPosts(SearchPostsPayload payload, PostType postType) {
         if (payload.site.isUsingWpComRestApi()) {
-            mPostRestClient.searchPosts(payload.site, payload.searchTerm, contentType, payload.offset);
+            mPostRestClient.searchPosts(payload.site, payload.searchTerm, postType, payload.offset);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
             PostError error =
@@ -515,7 +515,7 @@ public class PostStore extends Store {
             // This is the simplest way of keeping our local posts in sync with remote posts (in case of deletions,
             // or if the user manual changed some post IDs)
             if (!payload.loadedMore) {
-                PostSqlUtils.deleteUploadedPostsForSite(payload.site, payload.contentType);
+                PostSqlUtils.deleteUploadedPostsForSite(payload.site, payload.postType);
             }
 
             int rowsAffected = 0;
@@ -526,7 +526,7 @@ public class PostStore extends Store {
             onPostChanged = new OnPostChanged(rowsAffected, payload.canLoadMore);
         }
 
-        switch (payload.contentType) {
+        switch (payload.postType) {
             case PAGE:
                 onPostChanged.causeOfChange = PostAction.FETCH_PAGES;
                 break;

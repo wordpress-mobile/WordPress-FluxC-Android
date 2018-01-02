@@ -1,11 +1,11 @@
 package org.wordpress.android.fluxc.model.post;
 
-public enum ContentType {
+public enum PostType {
     POST("post"), PAGE("page"), PORTFOLIO("jetpack-portfolio");
 
     private final String mValue;
 
-    ContentType(String value) {
+    PostType(String value) {
         mValue = value;
     }
 
@@ -13,10 +13,10 @@ public enum ContentType {
         return mValue;
     }
 
-    public static ContentType getContentType(String type) {
-        for (ContentType contentType : values()) {
-            if (contentType.getValue().equals(type)) {
-                return contentType;
+    public static PostType getPostType(String type) {
+        for (PostType postType : values()) {
+            if (postType.getValue().equals(type)) {
+                return postType;
             }
         }
         // This should never happen.

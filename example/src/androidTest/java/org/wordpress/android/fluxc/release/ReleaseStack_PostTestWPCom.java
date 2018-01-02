@@ -29,8 +29,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import static org.wordpress.android.fluxc.model.post.ContentType.PAGE;
-import static org.wordpress.android.fluxc.model.post.ContentType.POST;
+import static org.wordpress.android.fluxc.model.post.PostType.PAGE;
+import static org.wordpress.android.fluxc.model.post.PostType.POST;
 
 public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     @Inject PostStore mPostStore;
@@ -367,7 +367,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     public void testUploadAndEditPage() throws InterruptedException {
         createNewPost();
-        mPost.setContentType(PAGE);
+        mPost.setPostType(PAGE);
         mPost.setTitle("A fully featured page");
         mPost.setContent("Some content here! <strong>Bold text</strong>.");
         mPost.setDateCreated(DateTimeUtils.iso8601UTCFromDate(new Date()));
@@ -394,7 +394,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     public void testFullFeaturedPageUpload() throws InterruptedException {
         createNewPost();
 
-        mPost.setContentType(PAGE);
+        mPost.setPostType(PAGE);
 
         mPost.setTitle("A fully featured page");
         mPost.setContent("Some content here! <strong>Bold text</strong>.\r\n\r\nA new paragraph.");

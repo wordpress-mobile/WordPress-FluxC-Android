@@ -14,7 +14,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.PostsModel;
 import org.wordpress.android.fluxc.model.SiteModel;
-import org.wordpress.android.fluxc.model.post.ContentType;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.model.post.PostLocation;
 import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseErrorListener;
@@ -42,7 +42,7 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import static org.wordpress.android.fluxc.model.post.ContentType.POST;
+import static org.wordpress.android.fluxc.model.post.PostType.POST;
 
 @Singleton
 public class PostRestClient extends BaseWPComRestClient {
@@ -87,7 +87,7 @@ public class PostRestClient extends BaseWPComRestClient {
         add(request);
     }
 
-    public void fetchPosts(final SiteModel site, final ContentType contentType, final List<PostStatus> statusList,
+    public void fetchPosts(final SiteModel site, final PostType postType, final List<PostStatus> statusList,
                            final int offset) {
         String url = WPCOMREST.sites.site(site.getSiteId()).posts.getUrlV1_1();
 
@@ -95,7 +95,7 @@ public class PostRestClient extends BaseWPComRestClient {
 
         params.put("context", "edit");
         params.put("number", String.valueOf(PostStore.NUM_POSTS_PER_FETCH));
-        params.put("type", contentType.getValue());
+        params.put("type", postType.getValue());
 
         if (statusList.size() > 0) {
             params.put("status", PostStatus.postStatusListToString(statusList));
@@ -121,7 +121,7 @@ public class PostRestClient extends BaseWPComRestClient {
                         boolean canLoadMore = postArray.size() == PostStore.NUM_POSTS_PER_FETCH;
 
                         FetchPostsResponsePayload payload = new FetchPostsResponsePayload(new PostsModel(postArray),
-                                site, contentType, offset > 0, canLoadMore);
+                                site, postType, offset > 0, canLoadMore);
                         mDispatcher.dispatch(PostActionBuilder.newFetchedPostsAction(payload));
                     }
                 },
@@ -218,12 +218,12 @@ public class PostRestClient extends BaseWPComRestClient {
     }
 
     public void searchPosts(final SiteModel site, final String searchTerm,
-                            final ContentType contentType, final int offset) {
+                            final PostType postType, final int offset) {
         String url = WPCOMREST.sites.site(site.getSiteId()).posts.getUrlV1_1();
 
         Map<String, String> params = new HashMap<>();
 
-        params.put("type", contentType.getValue());
+        params.put("type", postType.getValue());
         params.put("number", String.valueOf(PostStore.NUM_POSTS_PER_FETCH));
         params.put("offset", String.valueOf(offset));
         params.put("search", searchTerm);
@@ -247,7 +247,7 @@ public class PostRestClient extends BaseWPComRestClient {
                         PostsModel postsModel = new PostsModel(postArray);
 
                         SearchPostsResponsePayload payload = new SearchPostsResponsePayload(
-                                postsModel, site, searchTerm, contentType, loadedMore, canLoadMore);
+                                postsModel, site, searchTerm, postType, loadedMore, canLoadMore);
                         mDispatcher.dispatch(PostActionBuilder.newSearchedPostsAction(payload));
                     }
                 },
@@ -256,7 +256,7 @@ public class PostRestClient extends BaseWPComRestClient {
                     public void onErrorResponse(@NonNull BaseNetworkError error) {
                         PostError postError = new PostError(((WPComGsonNetworkError) error).apiError, error.message);
                         SearchPostsResponsePayload payload =
-                                new SearchPostsResponsePayload(site, searchTerm, contentType, postError);
+                                new SearchPostsResponsePayload(site, searchTerm, postType, postError);
                         mDispatcher.dispatch(PostActionBuilder.newSearchedPostsAction(payload));
                     }
                 }
@@ -331,7 +331,7 @@ public class PostRestClient extends BaseWPComRestClient {
             params.put("date", post.getDateCreated());
         }
 
-        if (post.getContentType() == POST) {
+        if (post.getPostType() == POST) {
             if (!TextUtils.isEmpty(post.getPostFormat())) {
                 params.put("format", post.getPostFormat());
             }

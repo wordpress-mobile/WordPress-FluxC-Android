@@ -51,7 +51,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import static org.wordpress.android.fluxc.model.post.ContentType.POST;
+import static org.wordpress.android.fluxc.model.post.PostType.POST;
 
 public class PostActivity extends AppCompatActivity {
     @Inject AccountStore mAccountStore;

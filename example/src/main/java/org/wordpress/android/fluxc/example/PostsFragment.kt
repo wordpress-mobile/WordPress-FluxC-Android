@@ -14,7 +14,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.PostAction
 import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.post.ContentType.POST
+import org.wordpress.android.fluxc.model.post.PostType.POST
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged
@@ -23,7 +23,6 @@ import org.wordpress.android.fluxc.store.PostStore.OnPostsSearched
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
 import org.wordpress.android.fluxc.store.PostStore.SearchPostsPayload
 import org.wordpress.android.fluxc.store.SiteStore
-import java.util.Arrays
 import java.util.Collections
 import javax.inject.Inject
 

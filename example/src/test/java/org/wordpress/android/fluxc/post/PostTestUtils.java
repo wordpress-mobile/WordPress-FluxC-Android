@@ -6,7 +6,7 @@ import org.wordpress.android.fluxc.model.PostModel;
 
 import java.util.List;
 
-import static org.wordpress.android.fluxc.model.post.ContentType.POST;
+import static org.wordpress.android.fluxc.model.post.PostType.POST;
 
 public class PostTestUtils {
     public static final double EXAMPLE_LATITUDE = 44.8378;
@@ -23,7 +23,7 @@ public class PostTestUtils {
         example.setTitle("A test post");
         example.setContent("Bunch of content here");
         example.setPostFormat(postFormat);
-        example.setContentType(POST);
+        example.setPostType(POST);
         return example;
     }
 
@@ -33,7 +33,7 @@ public class PostTestUtils {
         example.setTitle("A test post");
         example.setContent("Bunch of content here");
         example.setIsLocalDraft(true);
-        example.setContentType(POST);
+        example.setPostType(POST);
         return example;
     }
 
@@ -44,7 +44,7 @@ public class PostTestUtils {
         example.setTitle("A test post");
         example.setContent("Bunch of content here");
         example.setIsLocallyChanged(true);
-        example.setContentType(POST);
+        example.setPostType(POST);
         return example;
     }
 
