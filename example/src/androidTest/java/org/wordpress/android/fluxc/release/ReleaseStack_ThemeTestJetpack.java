@@ -119,9 +119,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     public void testInstallTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
-
-        final ThemeModel themeToInstall = new ThemeModel();
-        themeToInstall.setThemeId(EDIN_THEME_ID);
+        final String themeId = EDIN_THEME_ID;
 
         // fetch installed themes
         fetchInstalledThemes(jetpackSite);
@@ -131,22 +129,23 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         assertTrue(themes.size() > 1);
 
         // If the theme is already installed, delete it first
-        if (isThemeInstalled(jetpackSite, themeToInstall.getThemeId())) {
-            deactivateAndDeleteTheme(jetpackSite, themeToInstall);
+        ThemeModel installedTheme = mThemeStore.getInstalledThemeByThemeId(jetpackSite, themeId);
+        if (installedTheme != null) {
+            deactivateAndDeleteTheme(jetpackSite, installedTheme);
         }
 
         // install the theme
+        ThemeModel themeToInstall = new ThemeModel();
+        themeToInstall.setThemeId(themeId);
         installTheme(jetpackSite, themeToInstall);
-        assertNotNull(mThemeStore.getInstalledThemeByThemeId(jetpackSite, themeToInstall.getThemeId()));
+        assertTrue(isThemeInstalled(jetpackSite, themeId));
 
         signOutWPCom();
     }
 
     public void testDeleteTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
-
-        final ThemeModel themeToDelete = new ThemeModel();
-        themeToDelete.setThemeId(EDIN_THEME_ID);
+        final String themeId = EDIN_THEME_ID;
 
         // fetch installed themes
         fetchInstalledThemes(jetpackSite);
@@ -156,14 +155,18 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         assertTrue(themes.size() > 1);
 
         // Install edin if necessary before attempting to delete
-        if (!isThemeInstalled(jetpackSite, themeToDelete.getThemeId())) {
-            installTheme(jetpackSite, themeToDelete);
+        if (!isThemeInstalled(jetpackSite, themeId)) {
+            ThemeModel themeToInstall = new ThemeModel();
+            themeToInstall.setThemeId(themeId);
+            installTheme(jetpackSite, themeToInstall);
 
             // make sure theme is available for site (install was successful)
-            assertNotNull(mThemeStore.getInstalledThemeByThemeId(jetpackSite, themeToDelete.getThemeId()));
+            assertTrue(isThemeInstalled(jetpackSite, themeId));
         }
 
-        // if Edin is active update site's active theme to something else
+        // if Edin is active update site's active theme to something else and delete Edin
+        final ThemeModel themeToDelete = new ThemeModel();
+        themeToDelete.setThemeId(EDIN_THEME_ID);
         deactivateAndDeleteTheme(jetpackSite, themeToDelete);
 
         signOutWPCom();
@@ -407,7 +410,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         // delete existing theme from site
         deleteTheme(jetpackSite, theme);
         // make sure theme is no longer available for site (delete was successful)
-        assertNull(mThemeStore.getInstalledThemeByThemeId(jetpackSite, theme.getThemeId()));
+        assertFalse(isThemeInstalled(jetpackSite, theme.getThemeId()));
     }
 
     private void removeSiteThemes(@NonNull SiteModel site) throws InterruptedException {
@@ -417,7 +420,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void installTheme(SiteModel site, ThemeModel theme) throws InterruptedException {
+    private void installTheme(@NonNull SiteModel site, @NonNull ThemeModel theme) throws InterruptedException {
         SiteThemePayload install = new SiteThemePayload(site, theme);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.INSTALLED_THEME;
