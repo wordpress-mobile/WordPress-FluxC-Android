@@ -42,10 +42,6 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     @Inject AccountStore mAccountStore;
     @Inject SiteStore mSiteStore;
     @Inject ThemeStore mThemeStore;
-    private ThemeModel mCurrentTheme;
-    private ThemeModel mActivatedTheme;
-    private ThemeModel mInstalledTheme;
-    private ThemeModel mDeletedTheme;
 
     private TestEvents mNextEvent;
 
@@ -59,8 +55,6 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         init();
         // Reset expected test event
         mNextEvent = TestEvents.NONE;
-        mCurrentTheme = null;
-        mActivatedTheme = null;
     }
 
     public void testFetchInstalledThemes() throws InterruptedException {
@@ -234,7 +228,6 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
         assertTrue(mNextEvent == TestEvents.FETCHED_CURRENT_THEME);
         assertNotNull(event.theme);
-        mCurrentTheme = event.theme;
         mCountDownLatch.countDown();
     }
 
@@ -245,7 +238,6 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME);
-        mActivatedTheme = event.theme;
         mCountDownLatch.countDown();
     }
 
@@ -256,7 +248,6 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertTrue(mNextEvent == TestEvents.INSTALLED_THEME);
-        mInstalledTheme = event.theme;
         mCountDownLatch.countDown();
     }
 
@@ -267,7 +258,6 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertTrue(mNextEvent == TestEvents.DELETED_THEME);
-        mDeletedTheme = event.theme;
         mCountDownLatch.countDown();
     }
 
@@ -399,8 +389,8 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             throws InterruptedException {
         // An active theme can't be deleted, first activate a different theme
         if (theme.getActive()) {
-            ThemeModel otherThemeToActivate = getOtherTheme(mThemeStore.getThemesForSite(jetpackSite)
-                    , EDIN_THEME_ID);
+            ThemeModel otherThemeToActivate = getOtherTheme(mThemeStore.getThemesForSite(jetpackSite),
+                    EDIN_THEME_ID);
             assertNotNull(otherThemeToActivate);
             activateTheme(jetpackSite, otherThemeToActivate);
 
