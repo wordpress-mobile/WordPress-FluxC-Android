@@ -359,7 +359,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
 
         RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
-        mDispatcher.dispatch(TaxonomyActionBuilder.newDeletedTermAction(pushPayload));
+        mDispatcher.dispatch(TaxonomyActionBuilder.newDeleteTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
