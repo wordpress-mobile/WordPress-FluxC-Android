@@ -35,6 +35,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         TERMS_FETCHED,
         TERM_UPDATED,
         TERM_UPLOADED,
+        TERM_DELETED,
         ERROR_INVALID_TAXONOMY,
         ERROR_DUPLICATE,
         ERROR_UNAUTHORIZED,
@@ -151,6 +152,18 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         testUpdateExistingTerm(term);
     }
 
+    public void testDeleteTag() throws InterruptedException {
+        TermModel term = createNewTag();
+        setupTermAttributes(term);
+
+        uploadTerm(term);
+        assertEquals(1, WellSqlUtils.getTotalTermsCount());
+
+        term = mTaxonomyStore.getTagsForSite(sSite).get(0);
+        deleteTerm(term);
+        assertEquals(0, WellSqlUtils.getTotalTermsCount());
+    }
+
     public void testUploadNewCategoryAsTerm() throws InterruptedException {
         TaxonomyModel taxonomyModel = new TaxonomyModel();
         taxonomyModel.setName(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
@@ -256,6 +269,12 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
                     mCountDownLatch.countDown();
                 }
                 break;
+            case REMOVE_TERM:
+                if (mNextEvent.equals(TestEvents.TERM_DELETED)) {
+                    AppLog.i(T.API, "Deleted " + event.rowsAffected + " term");
+                    mCountDownLatch.countDown();
+                }
+                break;
         }
     }
 
@@ -331,6 +350,16 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
 
         RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void deleteTerm(TermModel term) throws InterruptedException {
+        mNextEvent = TestEvents.TERM_DELETED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
+        mDispatcher.dispatch(TaxonomyActionBuilder.newDeleteTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

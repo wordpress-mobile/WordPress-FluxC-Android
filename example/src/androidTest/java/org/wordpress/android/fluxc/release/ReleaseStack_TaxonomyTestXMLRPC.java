@@ -36,6 +36,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         TERMS_FETCHED,
         TERM_UPDATED,
         TERM_UPLOADED,
+        TERM_DELETED,
         ERROR_INVALID_TAXONOMY,
         ERROR_DUPLICATE,
         ERROR_UNAUTHORIZED,
@@ -226,6 +227,18 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals("A term with the name provided already exists with this parent.", mLastTaxonomyError.message);
     }
 
+    public void testDeleteTag() throws InterruptedException {
+        TermModel term = createNewTag();
+        setupTermAttributes(term);
+
+        uploadTerm(term);
+        assertEquals(1, WellSqlUtils.getTotalTermsCount());
+
+        term = mTaxonomyStore.getTagsForSite(sSite).get(0);
+        deleteTerm(term);
+        assertEquals(0, WellSqlUtils.getTotalTermsCount());
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onTaxonomyChanged(OnTaxonomyChanged event) {
@@ -270,6 +283,12 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
             case UPDATE_TERM:
                 if (mNextEvent.equals(TestEvents.TERM_UPDATED)) {
                     AppLog.i(T.API, "Fetched " + event.rowsAffected + " term");
+                    mCountDownLatch.countDown();
+                }
+                break;
+            case REMOVE_TERM:
+                if (mNextEvent.equals(TestEvents.TERM_DELETED)) {
+                    AppLog.i(T.API, "Deleted " + event.rowsAffected + " term");
                     mCountDownLatch.countDown();
                 }
                 break;
@@ -372,5 +391,15 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         TermModel updatedTerm = mTaxonomyStore.getTermsForSite(sSite, term.getTaxonomy()).get(0);
         assertEquals(updatedTerm.getRemoteTermId(), uploadedTerm.getRemoteTermId());
         assertEquals(updatedTerm.getDescription(), newDescription);
+    }
+
+    private void deleteTerm(TermModel term) throws InterruptedException {
+        mNextEvent = TestEvents.TERM_DELETED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
+        mDispatcher.dispatch(TaxonomyActionBuilder.newDeleteTermAction(pushPayload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
