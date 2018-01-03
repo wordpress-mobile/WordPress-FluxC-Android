@@ -159,6 +159,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         uploadTerm(term);
         assertEquals(1, WellSqlUtils.getTotalTermsCount());
 
+        term = mTaxonomyStore.getTagsForSite(sSite).get(0);
         deleteTerm(term);
         assertEquals(0, WellSqlUtils.getTotalTermsCount());
     }
