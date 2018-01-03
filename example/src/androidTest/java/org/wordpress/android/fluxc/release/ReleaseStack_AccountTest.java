@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.AccountStore.AccountUsernameActionType;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailErrorType;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailPayload;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
@@ -15,7 +16,9 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
+import org.wordpress.android.fluxc.store.AccountStore.OnUsernameChanged;
 import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload;
+import org.wordpress.android.fluxc.store.AccountStore.PushUsernamePayload;
 import org.wordpress.android.util.AppLog;
 
 import java.util.HashMap;
@@ -40,8 +43,9 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         FETCH_ERROR,
         SENT_AUTH_EMAIL,
         AUTH_EMAIL_ERROR_INVALID,
+        AUTH_EMAIL_ERROR_NO_SUCH_USER,
         AUTH_EMAIL_ERROR_USER_EXISTS,
-        AUTH_EMAIL_ERROR_NO_SUCH_USER
+        CHANGE_USERNAME_ERROR_INVALID_INPUT
     }
 
     private TestEvents mNextEvent;
@@ -152,6 +156,27 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         assertEquals(newValue, String.valueOf(mAccountStore.getAccount().getPrimarySiteId()));
+    }
+
+    public void testChangeWPComUsernameInvalidInputError() throws InterruptedException {
+        if (!mAccountStore.hasAccessToken()) {
+            mNextEvent = TestEvents.AUTHENTICATE;
+            authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        }
+
+        mNextEvent = TestEvents.CHANGE_USERNAME_ERROR_INVALID_INPUT;
+        String username = mAccountStore.getAccount().getUserName();
+        String address = mAccountStore.getAccount().getWebAddress();
+
+        PushUsernamePayload payload = new PushUsernamePayload(username,
+                AccountUsernameActionType.KEEP_OLD_SITE_AND_ADDRESS);
+        mDispatcher.dispatch(AccountActionBuilder.newPushUsernameAction(payload));
+
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(username, String.valueOf(mAccountStore.getAccount().getUserName()));
+        assertEquals(address, String.valueOf(mAccountStore.getAccount().getWebAddress()));
     }
 
     public void testWPComSignOut() throws InterruptedException {
@@ -316,6 +341,29 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         } else {
             assertEquals(mNextEvent, TestEvents.SENT_AUTH_EMAIL);
             mCountDownLatch.countDown();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onUsernameChanged(OnUsernameChanged event) {
+        AppLog.i(AppLog.T.API, "Received OnUsernameChanged");
+
+        if (event.isError()) {
+            AppLog.i(AppLog.T.API, "OnUsernameChanged has error: " + event.error.type + " - " + event.error.message);
+
+            switch (event.error.type) {
+                case GENERIC_ERROR:
+                    throw new AssertionError("Error should not be tested: " + event.error.type);
+                case INVALID_ACTION:
+                    throw new AssertionError("Error should not occur with action type enum: " + event.type);
+                case INVALID_INPUT:
+                    assertEquals(mNextEvent, TestEvents.CHANGE_USERNAME_ERROR_INVALID_INPUT);
+                    mCountDownLatch.countDown();
+                    break;
+                default:
+                    throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            }
         }
     }
 
