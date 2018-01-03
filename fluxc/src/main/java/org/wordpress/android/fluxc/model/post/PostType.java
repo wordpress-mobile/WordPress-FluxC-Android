@@ -19,7 +19,6 @@ public enum PostType {
                 return postType;
             }
         }
-        // This should never happen.
         return POST;
     }
 }

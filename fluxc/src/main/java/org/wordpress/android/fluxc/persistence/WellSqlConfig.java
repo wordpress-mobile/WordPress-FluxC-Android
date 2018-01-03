@@ -176,7 +176,14 @@ public class WellSqlConfig extends DefaultWellConfig {
             case 20:
                 AppLog.d(T.DB, "Migrating to version " + (oldVersion + 1));
                 db.execSQL("alter table PostModel rename to PostModelOld");
-                helper.createTable(PostModel.class);
+                db.execSQL("CREATE TABLE PostModel (_id INTEGER PRIMARY KEY AUTOINCREMENT,LOCAL_SITE_ID INTEGER,"
+                        + "REMOTE_SITE_ID INTEGER,REMOTE_POST_ID INTEGER,TITLE TEXT,CONTENT TEXT,DATE_CREATED TEXT,"
+                        + "CATEGORY_IDS TEXT,CUSTOM_FIELDS TEXT,LINK TEXT,EXCERPT TEXT,TAG_NAMES TEXT,STATUS TEXT,"
+                        + "PASSWORD TEXT,FEATURED_IMAGE_ID INTEGER,POST_FORMAT TEXT,SLUG TEXT,LATITUDE REAL,"
+                        + "LONGITUDE REAL,TYPE TEXT,PARENT_ID INTEGER,PARENT_TITLE TEXT,IS_LOCAL_DRAFT INTEGER,"
+                        + "IS_LOCALLY_CHANGED INTEGER,DATE_LOCALLY_CHANGED TEXT,"
+                        + "LAST_KNOWN_REMOTE_FEATURED_IMAGE_ID INTEGER,HAS_CAPABILITY_PUBLISH_POST INTEGER,"
+                        + "HAS_CAPABILITY_EDIT_POST INTEGER,HAS_CAPABILITY_DELETE_POST INTEGER)");
                 db.execSQL("INSERT INTO PostModel SELECT * FROM PostModelOld");
                 db.execSQL("drop table PostModelOld");
                 db.execSQL("update PostModel set TYPE = 'post' where TYPE = '0'");
