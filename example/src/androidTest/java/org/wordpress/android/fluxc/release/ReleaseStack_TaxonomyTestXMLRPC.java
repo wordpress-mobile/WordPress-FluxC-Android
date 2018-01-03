@@ -285,6 +285,12 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
                     mCountDownLatch.countDown();
                 }
                 break;
+            case REMOVE_TERM:
+                if (mNextEvent.equals(TestEvents.TERM_DELETED)) {
+                    AppLog.i(T.API, "Deleted " + event.rowsAffected + " term");
+                    mCountDownLatch.countDown();
+                }
+                break;
         }
     }
 
