@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.PostAction
 import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.post.PostType.POST
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged
@@ -48,8 +49,18 @@ class PostsFragment : Fragment() {
             dispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload))
         }
 
+        fetch_first_site_pages.setOnClickListener {
+            val payload = FetchPostsPayload(getFirstSite())
+            dispatcher.dispatch(PostActionBuilder.newFetchPagesAction(payload))
+        }
+
+        fetch_first_site_portfolios.setOnClickListener {
+            val payload = FetchPostsPayload(getFirstSite())
+            dispatcher.dispatch(PostActionBuilder.newFetchPortfoliosAction(payload))
+        }
+
         create_new_post_first_site.setOnClickListener {
-            val examplePost = postStore.instantiatePostModel(getFirstSite(), false)
+            val examplePost = postStore.instantiatePostModel(getFirstSite(), POST)
             examplePost.title = "From example activity"
             examplePost.content = "Hi there, I'm a post from FluxC!"
             examplePost.featuredImageId = 0
@@ -89,12 +100,26 @@ class PostsFragment : Fragment() {
         }
 
         val firstSite = getFirstSite()
-        if (!postStore.getPostsForSite(firstSite).isEmpty()) {
-            if (event.causeOfChange == PostAction.FETCH_POSTS || event.causeOfChange == PostAction.FETCH_PAGES) {
-                prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.name)
+        if (!postStore.getPostsForSite(firstSite).isEmpty() ||
+                !postStore.getPagesForSite(firstSite).isEmpty() ||
+                !postStore.getPortfoliosForSite(firstSite).isEmpty()) {
+            if (event.causeOfChange in
+                    listOf(PostAction.FETCH_POSTS, PostAction.FETCH_PAGES, PostAction.FETCH_PORTFOLIOS)) {
+
+                val fetchedContentType = getFetchedContentType(event.causeOfChange)
+
+                prependToLog("Fetched " + event.rowsAffected + " " + fetchedContentType + " from: " + firstSite.name)
             } else if (event.causeOfChange == PostAction.DELETE_POST) {
                 prependToLog("Post deleted!")
             }
+        }
+    }
+
+    private fun getFetchedContentType(causeOfChange: PostAction?): String {
+        return when (causeOfChange) {
+            PostAction.FETCH_PORTFOLIOS -> "portfolios"
+            PostAction.FETCH_PAGES -> "pages"
+            else -> "posts"
         }
     }
 

@@ -29,6 +29,9 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.wordpress.android.fluxc.model.post.PostType.PAGE;
+import static org.wordpress.android.fluxc.model.post.PostType.POST;
+
 public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     @Inject PostStore mPostStore;
 
@@ -79,7 +82,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mDispatcher.dispatch(PostActionBuilder.newRemovePostAction(mPost));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(0, PostSqlUtils.getPostsForSite(sSite, false).size());
+        assertEquals(0, PostSqlUtils.getPostsForSite(sSite, POST).size());
     }
 
     public void testUploadNewPost() throws InterruptedException {
@@ -364,7 +367,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     public void testUploadAndEditPage() throws InterruptedException {
         createNewPost();
-        mPost.setIsPage(true);
+        mPost.setPostType(PAGE);
         mPost.setTitle("A fully featured page");
         mPost.setContent("Some content here! <strong>Bold text</strong>.");
         mPost.setDateCreated(DateTimeUtils.iso8601UTCFromDate(new Date()));
@@ -391,7 +394,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     public void testFullFeaturedPageUpload() throws InterruptedException {
         createNewPost();
 
-        mPost.setIsPage(true);
+        mPost.setPostType(PAGE);
 
         mPost.setTitle("A fully featured page");
         mPost.setContent("Some content here! <strong>Bold text</strong>.\r\n\r\nA new paragraph.");
@@ -782,7 +785,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private PostModel createNewPost() throws InterruptedException {
-        PostModel post = mPostStore.instantiatePostModel(sSite, false);
+        PostModel post = mPostStore.instantiatePostModel(sSite, POST);
 
         assertTrue(post.isLocalDraft());
         assertEquals(0, post.getRemotePostId());

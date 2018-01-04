@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.annotations.action.IAction;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.PostsModel;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostRestClient;
@@ -29,6 +30,10 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import static org.wordpress.android.fluxc.model.post.PostType.POST;
+import static org.wordpress.android.fluxc.model.post.PostType.PAGE;
+import static org.wordpress.android.fluxc.model.post.PostType.PORTFOLIO;
 
 @Singleton
 public class PostStore extends Store {
@@ -75,40 +80,40 @@ public class PostStore extends Store {
         public PostsModel posts;
         public SiteModel site;
         public String searchTerm;
-        public boolean isPages;
+        public PostType postType;
         public boolean loadedMore;
         public boolean canLoadMore;
 
-        public SearchPostsResponsePayload(PostsModel posts, SiteModel site, String searchTerm, boolean isPages,
+        public SearchPostsResponsePayload(PostsModel posts, SiteModel site, String searchTerm, PostType postType,
                                           boolean loadedMore, boolean canLoadMore) {
             this.posts = posts;
             this.site = site;
             this.searchTerm = searchTerm;
-            this.isPages = isPages;
+            this.postType = postType;
             this.loadedMore = loadedMore;
             this.canLoadMore = canLoadMore;
         }
 
-        public SearchPostsResponsePayload(SiteModel site, String searchTerm, boolean isPages, PostError error) {
+        public SearchPostsResponsePayload(SiteModel site, String searchTerm, PostType postType, PostError error) {
             this.site = site;
             this.searchTerm = searchTerm;
-            this.isPages = isPages;
+            this.postType = postType;
             this.error = error;
         }
     }
 
     public static class FetchPostsResponsePayload extends Payload<PostError> {
+        public PostType postType;
         public PostsModel posts;
         public SiteModel site;
-        public boolean isPages;
         public boolean loadedMore;
         public boolean canLoadMore;
 
-        public FetchPostsResponsePayload(PostsModel posts, SiteModel site, boolean isPages, boolean loadedMore,
+        public FetchPostsResponsePayload(PostsModel posts, SiteModel site, PostType postType, boolean loadedMore,
                                          boolean canLoadMore) {
             this.posts = posts;
             this.site = site;
-            this.isPages = isPages;
+            this.postType = postType;
             this.loadedMore = loadedMore;
             this.canLoadMore = canLoadMore;
         }
@@ -230,15 +235,16 @@ public class PostStore extends Store {
         AppLog.d(AppLog.T.API, "PostStore onRegister");
     }
 
-    public PostModel instantiatePostModel(SiteModel site, boolean isPage) {
-        return instantiatePostModel(site, isPage, null, null);
+    public PostModel instantiatePostModel(SiteModel site, PostType postType) {
+        return instantiatePostModel(site, postType, null, null);
     }
 
-    public PostModel instantiatePostModel(SiteModel site, boolean isPage, List<Long> categoryIds, String postFormat) {
+    public PostModel instantiatePostModel(SiteModel site, PostType postType,
+                                          List<Long> categoryIds, String postFormat) {
         PostModel post = new PostModel();
         post.setLocalSiteId(site.getId());
         post.setIsLocalDraft(true);
-        post.setIsPage(isPage);
+        post.setPostType(postType);
         post.setDateLocallyChanged((DateTimeUtils.iso8601FromDate(DateTimeUtils.nowUTC())));
         if (categoryIds != null && !categoryIds.isEmpty()) {
             post.setCategoryIdList(categoryIds);
@@ -259,21 +265,28 @@ public class PostStore extends Store {
      * Returns all posts in the store for the given site as a {@link PostModel} list.
      */
     public List<PostModel> getPostsForSite(SiteModel site) {
-        return PostSqlUtils.getPostsForSite(site, false);
+        return PostSqlUtils.getPostsForSite(site, POST);
     }
 
     /**
      * Returns posts with given format in the store for the given site as a {@link PostModel} list.
      */
     public List<PostModel> getPostsForSiteWithFormat(SiteModel site, List<String> postFormat) {
-        return PostSqlUtils.getPostsForSiteWithFormat(site, postFormat, false);
+        return PostSqlUtils.getPostsForSiteWithFormat(site, postFormat, POST);
     }
 
     /**
      * Returns all pages in the store for the given site as a {@link PostModel} list.
      */
     public List<PostModel> getPagesForSite(SiteModel site) {
-        return PostSqlUtils.getPostsForSite(site, true);
+        return PostSqlUtils.getPostsForSite(site, PAGE);
+    }
+
+    /**
+     * Returns all portfolios in the store for the given site as a {@link PostModel} list.
+     */
+    public List<PostModel> getPortfoliosForSite(SiteModel site) {
+        return PostSqlUtils.getPostsForSite(site, PORTFOLIO);
     }
 
     /**
@@ -291,17 +304,31 @@ public class PostStore extends Store {
     }
 
     /**
+     * Returns the number of portfolios in the store for the given site.
+     */
+    public int getPortfoliosCountForSite(SiteModel site) {
+        return getPortfoliosForSite(site).size();
+    }
+
+    /**
      * Returns all uploaded posts in the store for the given site.
      */
     public List<PostModel> getUploadedPostsForSite(SiteModel site) {
-        return PostSqlUtils.getUploadedPostsForSite(site, false);
+        return PostSqlUtils.getUploadedPostsForSite(site, POST);
     }
 
     /**
      * Returns all uploaded pages in the store for the given site.
      */
     public List<PostModel> getUploadedPagesForSite(SiteModel site) {
-        return PostSqlUtils.getUploadedPostsForSite(site, true);
+        return PostSqlUtils.getUploadedPostsForSite(site, PAGE);
+    }
+
+    /**
+     * Returns all uploaded pages in the store for the given site.
+     */
+    public List<PostModel> getUploadedPortfoliosForSite(SiteModel site) {
+        return PostSqlUtils.getUploadedPostsForSite(site, PORTFOLIO);
     }
 
     /**
@@ -316,6 +343,13 @@ public class PostStore extends Store {
      */
     public int getUploadedPagesCountForSite(SiteModel site) {
         return getUploadedPagesForSite(site).size();
+    }
+
+    /**
+     * Returns the number of uploaded portfolios in the store for the given site.
+     */
+    public int getUploadedPortfoliosCountForSite(SiteModel site) {
+        return getUploadedPortfoliosForSite(site).size();
     }
 
     /**
@@ -359,10 +393,13 @@ public class PostStore extends Store {
 
         switch ((PostAction) actionType) {
             case FETCH_POSTS:
-                fetchPosts((FetchPostsPayload) action.getPayload(), false);
+                fetchPosts((FetchPostsPayload) action.getPayload(), POST);
                 break;
             case FETCH_PAGES:
-                fetchPosts((FetchPostsPayload) action.getPayload(), true);
+                fetchPosts((FetchPostsPayload) action.getPayload(), PAGE);
+                break;
+            case FETCH_PORTFOLIOS:
+                fetchPosts((FetchPostsPayload) action.getPayload(), PORTFOLIO);
                 break;
             case FETCHED_POSTS:
                 handleFetchPostsCompleted((FetchPostsResponsePayload) action.getPayload());
@@ -395,10 +432,13 @@ public class PostStore extends Store {
                 removeAllPosts();
                 break;
             case SEARCH_POSTS:
-                searchPosts((SearchPostsPayload) action.getPayload(), false);
+                searchPosts((SearchPostsPayload) action.getPayload(), POST);
                 break;
             case SEARCH_PAGES:
-                searchPosts((SearchPostsPayload) action.getPayload(), true);
+                searchPosts((SearchPostsPayload) action.getPayload(), PAGE);
+                break;
+            case SEARCH_PORTFOLIOS:
+                searchPosts((SearchPostsPayload) action.getPayload(), PORTFOLIO);
                 break;
             case SEARCHED_POSTS:
                 handleSearchPostsCompleted((SearchPostsResponsePayload) action.getPayload());
@@ -424,23 +464,23 @@ public class PostStore extends Store {
         }
     }
 
-    private void fetchPosts(FetchPostsPayload payload, boolean pages) {
+    private void fetchPosts(FetchPostsPayload payload, PostType postType) {
         int offset = 0;
         if (payload.loadMore) {
-            offset = PostSqlUtils.getUploadedPostsForSite(payload.site, pages).size();
+            offset = PostSqlUtils.getUploadedPostsForSite(payload.site, postType).size();
         }
 
         if (payload.site.isUsingWpComRestApi()) {
-            mPostRestClient.fetchPosts(payload.site, pages, DEFAULT_POST_STATUS_LIST, offset);
+            mPostRestClient.fetchPosts(payload.site, postType, DEFAULT_POST_STATUS_LIST, offset);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
-            mPostXMLRPCClient.fetchPosts(payload.site, pages, offset);
+            mPostXMLRPCClient.fetchPosts(payload.site, postType, offset);
         }
     }
 
-    private void searchPosts(SearchPostsPayload payload, boolean pages) {
+    private void searchPosts(SearchPostsPayload payload, PostType postType) {
         if (payload.site.isUsingWpComRestApi()) {
-            mPostRestClient.searchPosts(payload.site, payload.searchTerm, pages, payload.offset);
+            mPostRestClient.searchPosts(payload.site, payload.searchTerm, postType, payload.offset);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
             PostError error =
@@ -475,7 +515,7 @@ public class PostStore extends Store {
             // This is the simplest way of keeping our local posts in sync with remote posts (in case of deletions,
             // or if the user manual changed some post IDs)
             if (!payload.loadedMore) {
-                PostSqlUtils.deleteUploadedPostsForSite(payload.site, payload.isPages);
+                PostSqlUtils.deleteUploadedPostsForSite(payload.site, payload.postType);
             }
 
             int rowsAffected = 0;
@@ -486,10 +526,16 @@ public class PostStore extends Store {
             onPostChanged = new OnPostChanged(rowsAffected, payload.canLoadMore);
         }
 
-        if (payload.isPages) {
-            onPostChanged.causeOfChange = PostAction.FETCH_PAGES;
-        } else {
-            onPostChanged.causeOfChange = PostAction.FETCH_POSTS;
+        switch (payload.postType) {
+            case PAGE:
+                onPostChanged.causeOfChange = PostAction.FETCH_PAGES;
+                break;
+            case POST:
+                onPostChanged.causeOfChange = PostAction.FETCH_POSTS;
+                break;
+            case PORTFOLIO:
+                onPostChanged.causeOfChange = PostAction.FETCH_PORTFOLIOS;
+                break;
         }
 
         emitChange(onPostChanged);

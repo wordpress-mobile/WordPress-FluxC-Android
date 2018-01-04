@@ -29,8 +29,12 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.wordpress.android.fluxc.model.post.PostType.PAGE;
+import static org.wordpress.android.fluxc.model.post.PostType.POST;
+
 public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
-    @Inject PostStore mPostStore;
+    @Inject
+    PostStore mPostStore;
 
     private static final String POST_DEFAULT_TITLE = "PostTestXMLRPC base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
@@ -356,7 +360,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     public void testUploadAndEditPage() throws InterruptedException {
         createNewPost();
-        mPost.setIsPage(true);
+        mPost.setPostType(PAGE);
         mPost.setTitle("A fully featured page");
         mPost.setContent("Some content here! <strong>Bold text</strong>.");
         mPost.setDateCreated(DateTimeUtils.iso8601UTCFromDate(new Date()));
@@ -383,7 +387,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
     public void testFullFeaturedPageUpload() throws InterruptedException {
         createNewPost();
 
-        mPost.setIsPage(true);
+        mPost.setPostType(PAGE);
 
         mPost.setTitle("A fully featured page");
         mPost.setContent("Some content here! <strong>Bold text</strong>.");
@@ -1001,7 +1005,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         if (site == null) {
             site = sSite;
         }
-        PostModel post = mPostStore.instantiatePostModel(site, false);
+        PostModel post = mPostStore.instantiatePostModel(site, POST);
 
         assertTrue(post.isLocalDraft());
         assertEquals(0, post.getRemotePostId());

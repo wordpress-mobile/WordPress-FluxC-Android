@@ -38,6 +38,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.wordpress.android.fluxc.model.post.PostType.POST;
+
 /**
  * Tests using a Mocked Network app component. Test the Store itself and not the underlying network component(s).
  */
@@ -45,10 +47,14 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     private static final String POST_DEFAULT_TITLE = "UploadTest base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
 
-    @Inject Dispatcher mDispatcher;
-    @Inject MediaStore mMediaStore;
-    @Inject PostStore mPostStore;
-    @Inject UploadStore mUploadStore;
+    @Inject
+    Dispatcher mDispatcher;
+    @Inject
+    MediaStore mMediaStore;
+    @Inject
+    PostStore mPostStore;
+    @Inject
+    UploadStore mUploadStore;
 
     private enum TestEvents {
         NONE,
@@ -461,7 +467,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     }
 
     private PostModel createNewPost(SiteModel site) throws InterruptedException {
-        mPost = mPostStore.instantiatePostModel(site, false);
+        mPost = mPostStore.instantiatePostModel(site, POST);
         return mPost;
     }
 
