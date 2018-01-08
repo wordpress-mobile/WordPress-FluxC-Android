@@ -36,6 +36,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         TERMS_FETCHED,
         TERM_UPDATED,
         TERM_UPLOADED,
+        TERM_DELETED,
         ERROR_INVALID_TAXONOMY,
         ERROR_DUPLICATE,
         ERROR_UNAUTHORIZED,
@@ -44,7 +45,6 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     private TestEvents mNextEvent;
     private TaxonomyError mLastTaxonomyError;
-    private TermModel mTerm;
 
     @Override
     protected void setUp() throws Exception {
@@ -121,11 +121,11 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     public void testUploadNewCategory() throws InterruptedException {
         // Instantiate new category
-        createNewCategory();
-        setupTermAttributes();
+        TermModel term = createNewCategory();
+        setupTermAttributes(term);
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadTerm(term);
 
         TermModel uploadedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
 
@@ -135,13 +135,18 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
 
+    public void testUpdateExistingCategory() throws InterruptedException {
+        TermModel term = createNewCategory();
+        testUpdateExistingTerm(term);
+    }
+
     public void testUploadNewTag() throws InterruptedException {
         // Instantiate new tag
-        createNewTag();
-        setupTermAttributes();
+        TermModel term = createNewTag();
+        setupTermAttributes(term);
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadTerm(term);
 
         TermModel uploadedTerm = mTaxonomyStore.getTagsForSite(sSite).get(0);
 
@@ -151,16 +156,21 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
 
+    public void testUpdateExistingTag() throws InterruptedException {
+        TermModel term = createNewTag();
+        testUpdateExistingTerm(term);
+    }
+
     public void testUploadNewCategoryAsTerm() throws InterruptedException {
         TaxonomyModel taxonomyModel = new TaxonomyModel();
         taxonomyModel.setName(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
 
         // Instantiate new term
-        createNewTerm(taxonomyModel);
-        setupTermAttributes();
+        TermModel termModel = createNewTerm(taxonomyModel);
+        setupTermAttributes(termModel);
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadTerm(termModel);
 
         TermModel uploadedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
 
@@ -175,13 +185,13 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         taxonomyModel.setName("roads");
 
         // Instantiate new term
-        createNewTerm(taxonomyModel);
-        setupTermAttributes();
+        TermModel term = createNewTerm(taxonomyModel);
+        setupTermAttributes(term);
 
         mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
-        RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
+        RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -196,17 +206,18 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     public void testUploadNewCategoryDuplicate() throws InterruptedException {
         // Instantiate new category
-        createNewCategory();
-        setupTermAttributes();
+        TermModel term = createNewCategory();
+        setupTermAttributes(term);
 
         // Upload new term to site
-        uploadTerm(mTerm);
+        uploadTerm(term);
 
-        // Upload the same term again
+        // Upload the same term again after setting it's remote id to 0 so it doesn't trigger an update
+        term.setRemoteTermId(0);
         mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
 
-        RemoteTermPayload pushPayload = new RemoteTermPayload(mTerm, sSite);
+        RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -214,6 +225,18 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // TODO: This will fail for non-English sites - we should be checking for a DUPLICATE error instead
         // (once we make the fixes needed for TaxonomyXMLRPCClient to correctly identify taxonomy errors)
         assertEquals("A term with the name provided already exists with this parent.", mLastTaxonomyError.message);
+    }
+
+    public void testDeleteTag() throws InterruptedException {
+        TermModel term = createNewTag();
+        setupTermAttributes(term);
+
+        uploadTerm(term);
+        assertEquals(1, WellSqlUtils.getTotalTermsCount());
+
+        term = mTaxonomyStore.getTagsForSite(sSite).get(0);
+        deleteTerm(term);
+        assertEquals(0, WellSqlUtils.getTotalTermsCount());
     }
 
     @SuppressWarnings("unused")
@@ -263,6 +286,12 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
                     mCountDownLatch.countDown();
                 }
                 break;
+            case REMOVE_TERM:
+                if (mNextEvent.equals(TestEvents.TERM_DELETED)) {
+                    AppLog.i(T.API, "Deleted " + event.rowsAffected + " term");
+                    mCountDownLatch.countDown();
+                }
+                break;
         }
     }
 
@@ -298,9 +327,9 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch.countDown();
     }
 
-    private void setupTermAttributes() {
-        mTerm.setName(TERM_DEFAULT_NAME + "-" + RandomStringUtils.randomAlphanumeric(4));
-        mTerm.setDescription(TERM_DEFAULT_DESCRIPTION);
+    private void setupTermAttributes(TermModel term) {
+        term.setName(TERM_DEFAULT_NAME + "-" + RandomStringUtils.randomAlphanumeric(4));
+        term.setDescription(TERM_DEFAULT_DESCRIPTION);
     }
 
     private TermModel createNewCategory() throws InterruptedException {
@@ -310,7 +339,6 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNotSame(0, term.getId());
         assertNotSame(0, term.getLocalSiteId());
 
-        mTerm = term;
         return term;
     }
 
@@ -321,7 +349,6 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNotSame(0, term.getId());
         assertNotSame(0, term.getLocalSiteId());
 
-        mTerm = term;
         return term;
     }
 
@@ -332,7 +359,6 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNotSame(0, term.getId());
         assertNotSame(0, term.getLocalSiteId());
 
-        mTerm = term;
         return term;
     }
 
@@ -342,6 +368,37 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void testUpdateExistingTerm(TermModel term) throws InterruptedException {
+        setupTermAttributes(term);
+
+        // Upload new term to site
+        uploadTerm(term);
+
+        TermModel uploadedTerm = mTaxonomyStore.getTermsForSite(sSite, term.getTaxonomy()).get(0);
+        assertEquals(1, WellSqlUtils.getTotalTermsCount());
+        assertNotSame(0, uploadedTerm.getRemoteTermId());
+
+        String newDescription = "newDescription";
+        assertFalse(newDescription.equals(uploadedTerm.getDescription()));
+        uploadedTerm.setDescription(newDescription);
+
+        uploadTerm(uploadedTerm);
+        assertEquals(1, WellSqlUtils.getTotalTermsCount()); // make sure we still have only one term
+        TermModel updatedTerm = mTaxonomyStore.getTermsForSite(sSite, term.getTaxonomy()).get(0);
+        assertEquals(updatedTerm.getRemoteTermId(), uploadedTerm.getRemoteTermId());
+        assertEquals(updatedTerm.getDescription(), newDescription);
+    }
+
+    private void deleteTerm(TermModel term) throws InterruptedException {
+        mNextEvent = TestEvents.TERM_DELETED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
+        mDispatcher.dispatch(TaxonomyActionBuilder.newDeleteTermAction(pushPayload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
