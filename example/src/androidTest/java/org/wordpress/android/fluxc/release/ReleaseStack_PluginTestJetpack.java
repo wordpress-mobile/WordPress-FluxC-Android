@@ -44,15 +44,15 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     enum TestEvents {
         NONE,
-        DELETE_PLUGIN_ERROR,
-        DELETED_PLUGIN,
-        INSTALLED_PLUGIN,
-        INSTALL_PLUGIN_ERROR_NO_PACKAGE,
-        PLUGINS_FETCHED,
+        DELETE_SITE_PLUGIN_ERROR,
+        DELETED_SITE_PLUGIN,
+        INSTALLED_SITE_PLUGIN,
+        INSTALL_SITE_PLUGIN_ERROR_NO_PACKAGE,
+        SITE_PLUGINS_FETCHED,
         SITE_CHANGED,
         SITE_REMOVED,
-        UNKNOWN_PLUGIN,
-        CONFIGURED_PLUGIN
+        UNKNOWN_SITE_PLUGIN,
+        CONFIGURED_SITE_PLUGIN
     }
 
     private TestEvents mNextEvent;
@@ -90,7 +90,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         boolean isActive = !plugin.isActive();
         plugin.setIsActive(isActive);
 
-        mNextEvent = TestEvents.CONFIGURED_PLUGIN;
+        mNextEvent = TestEvents.CONFIGURED_SITE_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
         ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, plugin);
@@ -151,7 +151,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         SitePluginModel plugin = new SitePluginModel();
         plugin.setName("this-plugin-does-not-exist");
 
-        mNextEvent = TestEvents.UNKNOWN_PLUGIN;
+        mNextEvent = TestEvents.UNKNOWN_SITE_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
         ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, plugin);
@@ -173,8 +173,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
             }
         }
 
-        // Trying to delete an active plugin should result in DELETE_PLUGIN_ERROR
-        deleteSitePlugin(site, activePluginToTest, TestEvents.DELETE_PLUGIN_ERROR);
+        // Trying to delete an active plugin should result in DELETE_SITE_PLUGIN_ERROR
+        deleteSitePlugin(site, activePluginToTest, TestEvents.DELETE_SITE_PLUGIN_ERROR);
     }
 
     // Trying to remove a plugin that doesn't exist in remote should remove the plugin from DB
@@ -190,7 +190,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         SitePluginModel insertedPlugin = mPluginStore.getSitePluginByName(site, pluginName);
         assertNotNull(insertedPlugin);
 
-        mNextEvent = TestEvents.DELETED_PLUGIN;
+        mNextEvent = TestEvents.DELETED_SITE_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
         DeleteSitePluginPayload payload = new DeleteSitePluginPayload(site, plugin);
@@ -204,7 +204,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     public void testInstallPluginNoPackageError() throws InterruptedException {
         SiteModel site = fetchSingleJetpackSitePlugins();
-        installSitePlugin(site, "this-plugin-does-not-exist", TestEvents.INSTALL_PLUGIN_ERROR_NO_PACKAGE);
+        installSitePlugin(site, "this-plugin-does-not-exist", TestEvents.INSTALL_SITE_PLUGIN_ERROR_NO_PACKAGE);
         assertNull(mInstalledPlugin);
     }
 
@@ -258,7 +258,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred in onSitePluginsFetched with type: "
                     + event.error.type);
         }
-        assertEquals(mNextEvent, TestEvents.PLUGINS_FETCHED);
+        assertEquals(mNextEvent, TestEvents.SITE_PLUGINS_FETCHED);
         mCountDownLatch.countDown();
     }
 
@@ -268,13 +268,13 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         AppLog.i(T.API, "Received onSitePluginConfigured");
         if (event.isError()) {
             if (event.error.type.equals(ConfigureSitePluginErrorType.UNKNOWN_PLUGIN)) {
-                assertEquals(mNextEvent, TestEvents.UNKNOWN_PLUGIN);
+                assertEquals(mNextEvent, TestEvents.UNKNOWN_SITE_PLUGIN);
             } else {
                 throw new AssertionError("Unexpected error occurred in onSitePluginConfigured with type: "
                         + event.error.type);
             }
         } else {
-            assertEquals(mNextEvent, TestEvents.CONFIGURED_PLUGIN);
+            assertEquals(mNextEvent, TestEvents.CONFIGURED_SITE_PLUGIN);
         }
         mCountDownLatch.countDown();
     }
@@ -285,13 +285,13 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         AppLog.i(T.API, "Received onSitePluginDeleted");
         if (event.isError()) {
             if (event.error.type.equals(DeleteSitePluginErrorType.DELETE_PLUGIN_ERROR)) {
-                assertEquals(mNextEvent, TestEvents.DELETE_PLUGIN_ERROR);
+                assertEquals(mNextEvent, TestEvents.DELETE_SITE_PLUGIN_ERROR);
             } else {
                 throw new AssertionError("Unexpected error occurred in onSitePluginDeleted with type: "
                         + event.error.type);
             }
         } else {
-            assertEquals(mNextEvent, TestEvents.DELETED_PLUGIN);
+            assertEquals(mNextEvent, TestEvents.DELETED_SITE_PLUGIN);
         }
         mCountDownLatch.countDown();
     }
@@ -302,13 +302,13 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         AppLog.i(T.API, "Received onSitePluginInstalled");
         if (event.isError()) {
             if (event.error.type.equals(InstallSitePluginErrorType.NO_PACKAGE)) {
-                assertEquals(mNextEvent, TestEvents.INSTALL_PLUGIN_ERROR_NO_PACKAGE);
+                assertEquals(mNextEvent, TestEvents.INSTALL_SITE_PLUGIN_ERROR_NO_PACKAGE);
             } else {
                 throw new AssertionError("Unexpected error occurred in onSitePluginInstalled with type: "
                         + event.error.type);
             }
         } else {
-            assertEquals(mNextEvent, TestEvents.INSTALLED_PLUGIN);
+            assertEquals(mNextEvent, TestEvents.INSTALLED_SITE_PLUGIN);
         }
         mInstalledPlugin = event.plugin;
         mCountDownLatch.countDown();
@@ -350,7 +350,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     private SiteModel fetchSingleJetpackSitePlugins() throws InterruptedException {
         SiteModel site = authenticateAndRetrieveSingleJetpackSite();
 
-        mNextEvent = TestEvents.PLUGINS_FETCHED;
+        mNextEvent = TestEvents.SITE_PLUGINS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(PluginActionBuilder.newFetchSitePluginsAction(site));
 
@@ -366,7 +366,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     private void deleteSitePlugin(SiteModel site, SitePluginModel plugin) throws InterruptedException {
-        deleteSitePlugin(site, plugin, TestEvents.DELETED_PLUGIN);
+        deleteSitePlugin(site, plugin, TestEvents.DELETED_SITE_PLUGIN);
     }
 
     private void deleteSitePlugin(SiteModel site, SitePluginModel plugin,
@@ -379,7 +379,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     private void installSitePlugin(SiteModel site, String pluginSlug) throws InterruptedException {
-        installSitePlugin(site, pluginSlug, TestEvents.INSTALLED_PLUGIN);
+        installSitePlugin(site, pluginSlug, TestEvents.INSTALLED_SITE_PLUGIN);
     }
 
     private void installSitePlugin(SiteModel site, String pluginSlug,
@@ -392,7 +392,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     private void deactivatePlugin(SiteModel site, SitePluginModel plugin) throws InterruptedException {
-        mNextEvent = TestEvents.CONFIGURED_PLUGIN;
+        mNextEvent = TestEvents.CONFIGURED_SITE_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
         plugin.setIsActive(false);
