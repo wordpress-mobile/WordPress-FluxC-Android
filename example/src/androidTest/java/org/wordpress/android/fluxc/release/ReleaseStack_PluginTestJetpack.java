@@ -7,7 +7,7 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
-import org.wordpress.android.fluxc.model.PluginModel;
+import org.wordpress.android.fluxc.model.SitePluginModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.persistence.PluginSqlUtils;
 import org.wordpress.android.fluxc.store.AccountStore;
@@ -56,7 +56,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     private TestEvents mNextEvent;
-    private PluginModel mInstalledPlugin;
+    private SitePluginModel mInstalledPlugin;
 
     @Override
     protected void setUp() throws Exception {
@@ -72,7 +72,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     public void testFetchSitePlugins() throws InterruptedException {
         SiteModel site = fetchSingleJetpackSitePlugins();
 
-        List<PluginModel> plugins = mPluginStore.getSitePlugins(site);
+        List<SitePluginModel> plugins = mPluginStore.getSitePlugins(site);
         assertTrue(plugins.size() > 0);
 
         signOutWPCom();
@@ -84,9 +84,9 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         // an action is actually taken. This wouldn't be the case if we always activate the plugin.
         SiteModel site = fetchSingleJetpackSitePlugins();
 
-        List<PluginModel> plugins = mPluginStore.getSitePlugins(site);
+        List<SitePluginModel> plugins = mPluginStore.getSitePlugins(site);
         assertTrue(plugins.size() > 0);
-        PluginModel plugin = plugins.get(0);
+        SitePluginModel plugin = plugins.get(0);
         boolean isActive = !plugin.isActive();
         plugin.setIsActive(isActive);
 
@@ -98,7 +98,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        PluginModel newPlugin = mPluginStore.getSitePluginByName(site, plugin.getName());
+        SitePluginModel newPlugin = mPluginStore.getSitePluginByName(site, plugin.getName());
         assertNotNull(newPlugin);
         assertEquals(newPlugin.isActive(), isActive);
 
@@ -112,8 +112,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         // Fetch the list of installed plugins to make sure `React` is not installed
         SiteModel site = fetchSingleJetpackSitePlugins();
 
-        List<PluginModel> sitePlugins = mPluginStore.getSitePlugins(site);
-        for (PluginModel sitePlugin : sitePlugins) {
+        List<SitePluginModel> sitePlugins = mPluginStore.getSitePlugins(site);
+        for (SitePluginModel sitePlugin : sitePlugins) {
             if (sitePlugin.getSlug().equals(pluginSlugToInstall)) {
                 // We need to deactivate the plugin to be able to uninstall it
                 if (sitePlugin.isActive()) {
@@ -139,8 +139,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         // Delete the newly installed React plugin
         deleteSitePlugin(site, mInstalledPlugin);
 
-        List<PluginModel> updatedPlugins = mPluginStore.getSitePlugins(site);
-        for (PluginModel sitePlugin : updatedPlugins) {
+        List<SitePluginModel> updatedPlugins = mPluginStore.getSitePlugins(site);
+        for (SitePluginModel sitePlugin : updatedPlugins) {
             assertFalse(sitePlugin.getSlug().equals(pluginSlugToInstall));
         }
     }
@@ -148,7 +148,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     public void testConfigureUnknownPluginError() throws InterruptedException {
         SiteModel site = authenticateAndRetrieveSingleJetpackSite();
 
-        PluginModel plugin = new PluginModel();
+        SitePluginModel plugin = new SitePluginModel();
         plugin.setName("this-plugin-does-not-exist");
 
         mNextEvent = TestEvents.UNKNOWN_PLUGIN;
@@ -163,10 +163,10 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     public void testDeleteActivePluginError() throws InterruptedException {
         SiteModel site = fetchSingleJetpackSitePlugins();
 
-        PluginModel activePluginToTest = null;
+        SitePluginModel activePluginToTest = null;
 
-        List<PluginModel> sitePlugins = mPluginStore.getSitePlugins(site);
-        for (PluginModel sitePlugin : sitePlugins) {
+        List<SitePluginModel> sitePlugins = mPluginStore.getSitePlugins(site);
+        for (SitePluginModel sitePlugin : sitePlugins) {
             if (sitePlugin.isActive()) {
                 activePluginToTest = sitePlugin;
                 break;
@@ -182,12 +182,12 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         SiteModel site = fetchSingleJetpackSitePlugins();
 
         String pluginName = "this-plugin-does-not-exist";
-        PluginModel plugin = new PluginModel();
+        SitePluginModel plugin = new SitePluginModel();
         plugin.setName(pluginName);
         plugin.setLocalSiteId(site.getId());
         PluginSqlUtils.insertOrUpdateSitePlugin(plugin);
 
-        PluginModel insertedPlugin = mPluginStore.getSitePluginByName(site, pluginName);
+        SitePluginModel insertedPlugin = mPluginStore.getSitePluginByName(site, pluginName);
         assertNotNull(insertedPlugin);
 
         mNextEvent = TestEvents.DELETED_PLUGIN;
@@ -365,11 +365,11 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         return mSiteStore.getSites().get(0);
     }
 
-    private void deleteSitePlugin(SiteModel site, PluginModel plugin) throws InterruptedException {
+    private void deleteSitePlugin(SiteModel site, SitePluginModel plugin) throws InterruptedException {
         deleteSitePlugin(site, plugin, TestEvents.DELETED_PLUGIN);
     }
 
-    private void deleteSitePlugin(SiteModel site, PluginModel plugin,
+    private void deleteSitePlugin(SiteModel site, SitePluginModel plugin,
                                   TestEvents testEvent) throws InterruptedException {
         mDispatcher.dispatch(PluginActionBuilder.newDeleteSitePluginAction(
                 new DeleteSitePluginPayload(site, plugin)));
@@ -391,7 +391,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void deactivatePlugin(SiteModel site, PluginModel plugin) throws InterruptedException {
+    private void deactivatePlugin(SiteModel site, SitePluginModel plugin) throws InterruptedException {
         mNextEvent = TestEvents.CONFIGURED_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
