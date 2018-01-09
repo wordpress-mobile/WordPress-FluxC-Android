@@ -50,7 +50,7 @@ public class ReleaseStack_PluginInfoTest extends ReleaseStack_Base {
         }
 
         assertEquals(TestEvents.PLUGIN_INFO_FETCHED, mNextEvent);
-        WPOrgPluginModel pluginInfo = mPluginStore.getPluginInfoBySlug(mSlug);
+        WPOrgPluginModel pluginInfo = mPluginStore.getWPOrgPluginBySlug(mSlug);
         assertNotNull(pluginInfo);
         mCountDownLatch.countDown();
     }
