@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.release;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
-import org.wordpress.android.fluxc.model.DotOrgPluginModel;
+import org.wordpress.android.fluxc.model.WPOrgPluginModel;
 import org.wordpress.android.fluxc.store.PluginStore;
 import org.wordpress.android.fluxc.store.PluginStore.OnPluginInfoChanged;
 
@@ -50,7 +50,7 @@ public class ReleaseStack_PluginInfoTest extends ReleaseStack_Base {
         }
 
         assertEquals(TestEvents.PLUGIN_INFO_FETCHED, mNextEvent);
-        DotOrgPluginModel pluginInfo = mPluginStore.getPluginInfoBySlug(mSlug);
+        WPOrgPluginModel pluginInfo = mPluginStore.getPluginInfoBySlug(mSlug);
         assertNotNull(pluginInfo);
         mCountDownLatch.countDown();
     }
