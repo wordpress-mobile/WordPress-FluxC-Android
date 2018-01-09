@@ -5,19 +5,19 @@ import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.model.WPOrgPluginModel;
 import org.wordpress.android.fluxc.store.PluginStore;
-import org.wordpress.android.fluxc.store.PluginStore.OnPluginInfoChanged;
+import org.wordpress.android.fluxc.store.PluginStore.OnWPOrgPluginFetched;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-public class ReleaseStack_PluginInfoTest extends ReleaseStack_Base {
+public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     @Inject PluginStore mPluginStore;
 
     enum TestEvents {
         NONE,
-        PLUGIN_INFO_FETCHED,
+        WPORG_PLUGIN_FETCHED,
     }
 
     private TestEvents mNextEvent;
@@ -33,25 +33,25 @@ public class ReleaseStack_PluginInfoTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.NONE;
     }
 
-    public void testFetchPluginInfo() throws InterruptedException {
-        mNextEvent = TestEvents.PLUGIN_INFO_FETCHED;
+    public void testFetchWPOrgPlugin() throws InterruptedException {
+        mNextEvent = TestEvents.WPORG_PLUGIN_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PluginActionBuilder.newFetchPluginInfoAction(mSlug));
+        mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginAction(mSlug));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onPluginInfoChanged(OnPluginInfoChanged event) {
+    public void onWPOrgPluginFetched(OnWPOrgPluginFetched event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
 
-        assertEquals(TestEvents.PLUGIN_INFO_FETCHED, mNextEvent);
-        WPOrgPluginModel pluginInfo = mPluginStore.getWPOrgPluginBySlug(mSlug);
-        assertNotNull(pluginInfo);
+        assertEquals(TestEvents.WPORG_PLUGIN_FETCHED, mNextEvent);
+        WPOrgPluginModel wpOrgPlugin = mPluginStore.getWPOrgPluginBySlug(mSlug);
+        assertNotNull(wpOrgPlugin);
         mCountDownLatch.countDown();
     }
 }
