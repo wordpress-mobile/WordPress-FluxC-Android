@@ -3,8 +3,10 @@ package org.wordpress.android.fluxc.release;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
+import org.wordpress.android.fluxc.model.plugin.PluginDirectoryType;
 import org.wordpress.android.fluxc.model.plugin.WPOrgPluginModel;
 import org.wordpress.android.fluxc.store.PluginStore;
+import org.wordpress.android.fluxc.store.PluginStore.FetchPluginDirectoryPayload;
 import org.wordpress.android.fluxc.store.PluginStore.OnPluginDirectoryFetched;
 import org.wordpress.android.fluxc.store.PluginStore.OnWPOrgPluginFetched;
 
@@ -49,8 +51,8 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     public void testFetchPluginDirectory() throws InterruptedException {
         mNextEvent = TestEvents.PLUGIN_DIRECTORY_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
-
-        mDispatcher.dispatch(PluginActionBuilder.newFetchPluginDirectoryAction(null));
+        FetchPluginDirectoryPayload payload = new FetchPluginDirectoryPayload(PluginDirectoryType.NEW, false);
+        mDispatcher.dispatch(PluginActionBuilder.newFetchPluginDirectoryAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
