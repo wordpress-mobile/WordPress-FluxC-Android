@@ -8,7 +8,9 @@ import org.wordpress.android.fluxc.model.plugin.WPOrgPluginModel;
 import org.wordpress.android.fluxc.store.PluginStore;
 import org.wordpress.android.fluxc.store.PluginStore.FetchPluginDirectoryPayload;
 import org.wordpress.android.fluxc.store.PluginStore.OnPluginDirectoryFetched;
+import org.wordpress.android.fluxc.store.PluginStore.OnPluginDirectorySearched;
 import org.wordpress.android.fluxc.store.PluginStore.OnWPOrgPluginFetched;
+import org.wordpress.android.fluxc.store.PluginStore.SearchPluginDirectoryPayload;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -20,8 +22,9 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
 
     enum TestEvents {
         NONE,
+        PLUGIN_DIRECTORY_FETCHED,
+        PLUGIN_DIRECTORY_SEARCHED,
         WPORG_PLUGIN_FETCHED,
-        PLUGIN_DIRECTORY_FETCHED
     }
 
     private TestEvents mNextEvent;
@@ -60,15 +63,14 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         // TODO: either add a check or a new test for pagination
     }
 
-    @SuppressWarnings("unused")
-    @Subscribe
-    public void onWPOrgPluginFetched(OnWPOrgPluginFetched event) {
-        if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
-        }
+    public void testSearchPluginDirectory() throws InterruptedException {
+        mNextEvent = TestEvents.PLUGIN_DIRECTORY_SEARCHED;
+        mCountDownLatch = new CountDownLatch(1);
+        SearchPluginDirectoryPayload payload = new SearchPluginDirectoryPayload("Writing", 0);
+        mDispatcher.dispatch(PluginActionBuilder.newSearchPluginDirectoryAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(TestEvents.WPORG_PLUGIN_FETCHED, mNextEvent);
-        mCountDownLatch.countDown();
+        // TODO: either add a new test for searching a new page
     }
 
     @SuppressWarnings("unused")
@@ -78,6 +80,29 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.PLUGIN_DIRECTORY_FETCHED, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onPluginDirectorySearched(OnPluginDirectorySearched event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.PLUGIN_DIRECTORY_SEARCHED, mNextEvent);
+        // Assert that we got some plugins
+        assertTrue(event.plugins != null && event.plugins.size() > 0);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onWPOrgPluginFetched(OnWPOrgPluginFetched event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+
+        assertEquals(TestEvents.WPORG_PLUGIN_FETCHED, mNextEvent);
         mCountDownLatch.countDown();
     }
 }
