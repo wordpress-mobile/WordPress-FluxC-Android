@@ -158,9 +158,9 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             assertTrue(isThemeInstalled(jetpackSite, themeId));
         }
 
+        // Get the theme from store to make sure the "active" state is correct, so we can deactivate it before deletion
+        ThemeModel themeToDelete = mThemeStore.getInstalledThemeByThemeId(jetpackSite, EDIN_THEME_ID);
         // if Edin is active update site's active theme to something else and delete Edin
-        final ThemeModel themeToDelete = new ThemeModel();
-        themeToDelete.setThemeId(EDIN_THEME_ID);
         deactivateAndDeleteTheme(jetpackSite, themeToDelete);
 
         signOutWPCom();
