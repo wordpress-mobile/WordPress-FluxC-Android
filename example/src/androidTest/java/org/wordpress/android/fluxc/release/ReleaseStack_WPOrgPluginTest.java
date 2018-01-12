@@ -55,6 +55,9 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         mDispatcher.dispatch(PluginActionBuilder.newFetchPluginDirectoryAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // TODO: check whether the fetched items are in Store
+        // TODO: either add a check or a new test for pagination
     }
 
     @SuppressWarnings("unused")
