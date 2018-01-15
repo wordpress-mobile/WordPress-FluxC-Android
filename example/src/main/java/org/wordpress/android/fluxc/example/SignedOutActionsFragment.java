@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.DomainSuggestionResponse;
 import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.AccountStore.AuthEmailPayload;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
@@ -62,7 +63,14 @@ public class SignedOutActionsFragment extends Fragment {
         view.findViewById(R.id.magic_link_email).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                showMagicLinkDialog();
+                showMagicLinkDialog(false);
+            }
+        });
+
+        view.findViewById(R.id.magic_link_signup).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMagicLinkDialog(true);
             }
         });
 
@@ -153,17 +161,18 @@ public class SignedOutActionsFragment extends Fragment {
         alert.show();
     }
 
-
-    private void showMagicLinkDialog() {
+    private void showMagicLinkDialog(final boolean isSignup) {
         AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
         final EditText editText = new EditText(getActivity());
         editText.setSingleLine();
-        alert.setMessage("Send magic link login e-mail:");
+        alert.setMessage(
+                isSignup ? "Send magic link signup to e-mail:" : "Send magic link login to (e-mail or username):");
         alert.setView(editText);
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                String email = editText.getText().toString();
-                mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(email));
+                String emailOrUsername = editText.getText().toString();
+                AuthEmailPayload authEmailPayload = new AuthEmailPayload(emailOrUsername, isSignup);
+                mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(authEmailPayload));
             }
         });
         alert.show();

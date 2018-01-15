@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.TestUtils;
+import org.wordpress.android.fluxc.action.ThemeAction;
 import org.wordpress.android.fluxc.example.test.BuildConfig;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
@@ -15,7 +16,7 @@ import org.wordpress.android.fluxc.model.ThemeModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.ThemeStore;
-import org.wordpress.android.fluxc.store.ThemeStore.ActivateThemePayload;
+import org.wordpress.android.fluxc.store.ThemeStore.SiteThemePayload;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -41,12 +42,10 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     @Inject AccountStore mAccountStore;
     @Inject SiteStore mSiteStore;
     @Inject ThemeStore mThemeStore;
-    private ThemeModel mCurrentTheme;
-    private ThemeModel mActivatedTheme;
-    private ThemeModel mInstalledTheme;
-    private ThemeModel mDeletedTheme;
 
     private TestEvents mNextEvent;
+
+    private static final String EDIN_THEME_ID = "edin-wpcom";
 
     @Override
     protected void setUp() throws Exception {
@@ -56,12 +55,13 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         init();
         // Reset expected test event
         mNextEvent = TestEvents.NONE;
-        mCurrentTheme = null;
-        mActivatedTheme = null;
     }
 
     public void testFetchInstalledThemes() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
+
+        // verify that installed themes list is empty first
+        assertTrue(mThemeStore.getThemesForSite(jetpackSite).size() == 0);
 
         // fetch installed themes
         fetchInstalledThemes(jetpackSite);
@@ -75,9 +75,12 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     public void testFetchCurrentTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
+        // Verify there is no active theme for the site at the start
+        assertNull(mThemeStore.getActiveThemeForSite(jetpackSite));
+
         // fetch active theme
-        fetchCurrentThemes(jetpackSite);
-        assertNotNull(mCurrentTheme);
+        ThemeModel currentTheme = fetchCurrentTheme(jetpackSite);
+        assertNotNull(currentTheme);
 
         signOutWPCom();
     }
@@ -93,170 +96,97 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         assertTrue(themes.size() > 1);
 
         // fetch active theme
-        fetchCurrentThemes(jetpackSite);
-        assertNotNull(mCurrentTheme);
+        ThemeModel currentTheme = fetchCurrentTheme(jetpackSite);
+        assertNotNull(currentTheme);
 
         // select a different theme to activate
-        ThemeModel themeToActivate = mCurrentTheme.getThemeId().equals(themes.get(0).getThemeId())
-                ? themes.get(1) : themes.get(0);
+        ThemeModel themeToActivate = getOtherTheme(themes, currentTheme.getThemeId());
         assertNotNull(themeToActivate);
 
         // activate it
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.ACTIVATED_THEME;
-        ActivateThemePayload payload = new ActivateThemePayload(jetpackSite, themeToActivate);
-        mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        // mActivatedTheme is set in onThemeActivated
-        assertNotNull(mActivatedTheme);
-        assertEquals(mActivatedTheme.getThemeId(), themeToActivate.getThemeId());
+        ThemeModel activatedTheme = activateTheme(jetpackSite, themeToActivate);
+        assertNotNull(activatedTheme);
+        assertEquals(activatedTheme.getThemeId(), themeToActivate.getThemeId());
 
         signOutWPCom();
     }
 
     public void testInstallTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
-
-        final String themeId = "edin-wpcom";
-        final ThemeModel themeToInstall = new ThemeModel();
-        themeToInstall.setName("Edin");
-        themeToInstall.setThemeId(themeId);
+        final String themeId = EDIN_THEME_ID;
 
         // fetch installed themes
         fetchInstalledThemes(jetpackSite);
 
-        // make sure installed themes were successfully fetched
+        // make sure there are at least 2 themes, one that's active and one that may be activated
         List<ThemeModel> themes = mThemeStore.getThemesForSite(jetpackSite);
-        assertFalse(themes.isEmpty());
+        assertTrue(themes.size() > 1);
 
-        // delete edin before attempting to install
-        if (listContainsThemeWithId(themes, themeId)) {
-            // find local ThemeModel with matching themeId for delete call
-            ThemeModel listTheme = getThemeFromList(themes, themeId);
-            assertNotNull(listTheme);
-
-            // delete existing theme from site
-            themeToInstall.setId(listTheme.getId());
-            deleteTheme(jetpackSite, themeToInstall);
-
-            // mDeletedTheme is set in onThemeDeleted
-            assertNotNull(mDeletedTheme);
-            assertEquals(themeId, mDeletedTheme.getThemeId());
-
-            // make sure theme is no longer available for site (delete was successful)
-            assertFalse(listContainsThemeWithId(mThemeStore.getThemesForSite(jetpackSite), themeId));
-            mActivatedTheme = null;
+        // If the theme is already installed, delete it first
+        ThemeModel installedTheme = mThemeStore.getInstalledThemeByThemeId(jetpackSite, themeId);
+        if (installedTheme != null) {
+            deactivateAndDeleteTheme(jetpackSite, installedTheme);
         }
 
         // install the theme
+        ThemeModel themeToInstall = new ThemeModel();
+        themeToInstall.setThemeId(themeId);
         installTheme(jetpackSite, themeToInstall);
-        assertTrue(listContainsThemeWithId(mThemeStore.getThemesForSite(jetpackSite), themeId));
+        assertTrue(isThemeInstalled(jetpackSite, themeId));
 
         signOutWPCom();
     }
 
     public void testDeleteTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
-        assertTrue(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
-
-        final String themeId = "edin-wpcom";
-        final ThemeModel themeToDelete = new ThemeModel();
-        themeToDelete.setName("Edin");
-        themeToDelete.setThemeId(themeId);
+        final String themeId = EDIN_THEME_ID;
 
         // fetch installed themes
         fetchInstalledThemes(jetpackSite);
 
+        // make sure there are at least 2 themes, one that's active and one that may be activated
         List<ThemeModel> themes = mThemeStore.getThemesForSite(jetpackSite);
-        assertFalse(themes.isEmpty());
-        ThemeModel listTheme = getThemeFromList(themes, themeId);
+        assertTrue(themes.size() > 1);
 
-        // install edin before attempting to delete
-        if (listTheme == null) {
-            installTheme(jetpackSite, themeToDelete);
-
-            // mInstalledTheme is set in onThemeInstalled
-            assertNotNull(mInstalledTheme);
-            assertEquals(themeId, mInstalledTheme.getThemeId());
+        // Install edin if necessary before attempting to delete
+        if (!isThemeInstalled(jetpackSite, themeId)) {
+            ThemeModel themeToInstall = new ThemeModel();
+            themeToInstall.setThemeId(themeId);
+            installTheme(jetpackSite, themeToInstall);
 
             // make sure theme is available for site (install was successful)
-            listTheme = getThemeFromList(mThemeStore.getThemesForSite(jetpackSite), themeId);
-            assertNotNull(listTheme);
+            assertTrue(isThemeInstalled(jetpackSite, themeId));
         }
 
-        // fetch active theme
-        fetchCurrentThemes(jetpackSite);
+        // Get the theme from store to make sure the "active" state is correct, so we can deactivate it before deletion
+        ThemeModel themeToDelete = mThemeStore.getInstalledThemeByThemeId(jetpackSite, EDIN_THEME_ID);
+        // if Edin is active update site's active theme to something else and delete Edin
+        deactivateAndDeleteTheme(jetpackSite, themeToDelete);
 
-        // if Edin is active update site's active theme to something else
-        if (themeId.equals(mCurrentTheme.getThemeId())) {
-            mCountDownLatch = new CountDownLatch(1);
-            mNextEvent = TestEvents.ACTIVATED_THEME;
-            ThemeModel themeToActivate = getOtherTheme(themes, themeId);
-            assertNotNull(themeToActivate);
-            ActivateThemePayload payload = new ActivateThemePayload(jetpackSite, themeToActivate);
-            mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
-            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        }
-
-        themeToDelete.setId(listTheme.getId());
-        deleteTheme(jetpackSite, themeToDelete);
-        assertFalse(listContainsThemeWithId(mThemeStore.getThemesForSite(jetpackSite), themeId));
-
-        signOutWPCom();
-    }
-
-    public void testRemoveTheme() throws InterruptedException {
-        // sign in and fetch WP.com themes and installed themes
-        final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
-
-        // verify initial state, no themes in store
-        assertEquals(0, mThemeStore.getWpComThemes().size());
-        assertEquals(0, mThemeStore.getThemesForSite(jetpackSite).size());
-
-        // fetch themes for site and WP.com themes
-        fetchInstalledThemes(jetpackSite);
-        fetchWpComThemes();
-
-        final List<ThemeModel> wpComThemes = mThemeStore.getWpComThemes();
-        final List<ThemeModel> installedThemes = mThemeStore.getThemesForSite(jetpackSite);
-        assertTrue(installedThemes.size() > 0);
-        assertTrue(wpComThemes.size() > 0);
-
-        // remove a theme from each and verify
-        final ThemeModel wpComRemove = wpComThemes.get(0);
-        final ThemeModel installedRemove = installedThemes.get(0);
-        removeTheme(wpComRemove);
-        assertEquals(wpComThemes.size() - 1, mThemeStore.getWpComThemes().size());
-        removeTheme(installedRemove);
-        assertEquals(installedThemes.size() - 1, mThemeStore.getThemesForSite(jetpackSite).size());
-
-        // sign out
         signOutWPCom();
     }
 
     public void testRemoveSiteThemes() throws InterruptedException {
-        // sign in and fetch WP.com themes and installed themes
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
         // verify initial state, no themes in store
-        assertEquals(0, mThemeStore.getWpComThemes().size());
-        assertEquals(0, mThemeStore.getThemesForSite(jetpackSite).size());
+        assertTrue(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
+        assertTrue(mThemeStore.getWpComThemes().isEmpty());
 
         // fetch themes for site and WP.com themes
         fetchInstalledThemes(jetpackSite);
         fetchWpComThemes();
 
-        final int wpComThemesCount = mThemeStore.getWpComThemes().size();
-        assertTrue(wpComThemesCount > 0);
-        assertTrue(mThemeStore.getThemesForSite(jetpackSite).size() > 0);
+        // Verify fetches were successful
+        assertFalse(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
+        assertFalse(mThemeStore.getWpComThemes().isEmpty());
 
         // remove the site's themes
         removeSiteThemes(jetpackSite);
 
-        // verify they are removed and that WP.com themes are still there
-        assertEquals(wpComThemesCount, mThemeStore.getWpComThemes().size());
-        assertEquals(0, mThemeStore.getThemesForSite(jetpackSite).size());
+        // verify site themes are removed and that WP.com themes are still there
+        assertTrue(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
+        assertFalse(mThemeStore.getWpComThemes().isEmpty());
 
         // sign out
         signOutWPCom();
@@ -264,10 +194,28 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onThemesChanged(ThemeStore.OnThemesChanged event) {
+    public void onSiteThemesChanged(ThemeStore.OnSiteThemesChanged event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
+        if (event.origin == ThemeAction.FETCH_INSTALLED_THEMES) {
+            assertEquals(mNextEvent, TestEvents.FETCHED_INSTALLED_THEMES);
+            mCountDownLatch.countDown();
+        } else if (event.origin == ThemeAction.REMOVE_SITE_THEMES) {
+            assertEquals(mNextEvent, TestEvents.REMOVED_SITE_THEMES);
+            mCountDownLatch.countDown();
+        } else {
+            throw new AssertionError("Unexpected event occurred from origin: " + event.origin);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onWpComThemesChanged(ThemeStore.OnWpComThemesChanged event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(mNextEvent, TestEvents.FETCHED_WPCOM_THEMES);
         mCountDownLatch.countDown();
     }
 
@@ -280,7 +228,6 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
         assertTrue(mNextEvent == TestEvents.FETCHED_CURRENT_THEME);
         assertNotNull(event.theme);
-        mCurrentTheme = event.theme;
         mCountDownLatch.countDown();
     }
 
@@ -291,7 +238,6 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME);
-        mActivatedTheme = event.theme;
         mCountDownLatch.countDown();
     }
 
@@ -302,7 +248,6 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertTrue(mNextEvent == TestEvents.INSTALLED_THEME);
-        mInstalledTheme = event.theme;
         mCountDownLatch.countDown();
     }
 
@@ -313,7 +258,6 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertTrue(mNextEvent == TestEvents.DELETED_THEME);
-        mDeletedTheme = event.theme;
         mCountDownLatch.countDown();
     }
 
@@ -421,18 +365,42 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void fetchCurrentThemes(@NonNull SiteModel jetpackSite) throws InterruptedException {
+    private ThemeModel fetchCurrentTheme(@NonNull SiteModel jetpackSite) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(jetpackSite));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        return mThemeStore.getActiveThemeForSite(jetpackSite);
     }
 
-    private void removeTheme(@NonNull ThemeModel theme) throws InterruptedException {
+    private ThemeModel activateTheme(@NonNull SiteModel jetpackSite, @NonNull ThemeModel themeToActivate)
+            throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.REMOVED_THEME;
-        mDispatcher.dispatch(ThemeActionBuilder.newRemoveThemeAction(theme));
+        mNextEvent = TestEvents.ACTIVATED_THEME;
+        SiteThemePayload payload = new SiteThemePayload(jetpackSite, themeToActivate);
+        mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        return mThemeStore.getActiveThemeForSite(jetpackSite);
+    }
+
+    private void deactivateAndDeleteTheme(@NonNull SiteModel jetpackSite, @NonNull ThemeModel theme)
+            throws InterruptedException {
+        // An active theme can't be deleted, first activate a different theme
+        if (theme.getActive()) {
+            ThemeModel otherThemeToActivate = getOtherTheme(mThemeStore.getThemesForSite(jetpackSite),
+                    EDIN_THEME_ID);
+            assertNotNull(otherThemeToActivate);
+            activateTheme(jetpackSite, otherThemeToActivate);
+
+            // Make sure another theme is activated
+            assertFalse(theme.getThemeId().equals(mThemeStore.getActiveThemeForSite(jetpackSite).getThemeId()));
+        }
+        // delete existing theme from site
+        deleteTheme(jetpackSite, theme);
+        // make sure theme is no longer available for site (delete was successful)
+        assertFalse(isThemeInstalled(jetpackSite, theme.getThemeId()));
     }
 
     private void removeSiteThemes(@NonNull SiteModel site) throws InterruptedException {
@@ -442,16 +410,16 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void installTheme(SiteModel site, ThemeModel theme) throws InterruptedException {
-        ActivateThemePayload install = new ActivateThemePayload(site, theme);
+    private void installTheme(@NonNull SiteModel site, @NonNull ThemeModel theme) throws InterruptedException {
+        SiteThemePayload install = new SiteThemePayload(site, theme);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.INSTALLED_THEME;
         mDispatcher.dispatch(ThemeActionBuilder.newInstallThemeAction(install));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void deleteTheme(SiteModel site, ThemeModel theme) throws InterruptedException {
-        ActivateThemePayload delete = new ActivateThemePayload(site, theme);
+    private void deleteTheme(@NonNull SiteModel site, @NonNull ThemeModel theme) throws InterruptedException {
+        SiteThemePayload delete = new SiteThemePayload(site, theme);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.DELETED_THEME;
         mDispatcher.dispatch(ThemeActionBuilder.newDeleteThemeAction(delete));
@@ -467,25 +435,17 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         return null;
     }
 
-    private ThemeModel getThemeFromList(List<ThemeModel> list, String themeId) {
-        for (ThemeModel theme : list) {
-            if (themeId.equals(theme.getThemeId())) {
-                return theme;
-            }
-        }
-        return null;
-    }
-
-    private boolean listContainsThemeWithId(List<ThemeModel> list, String themeId) {
-        return getThemeFromList(list, themeId) != null;
-    }
-
-    private ThemeModel getOtherTheme(List<ThemeModel> themes, String idToIgnore) {
+    private ThemeModel getOtherTheme(@NonNull List<ThemeModel> themes, @NonNull String idToIgnore) {
         for (ThemeModel theme : themes) {
             if (!idToIgnore.equals(theme.getThemeId())) {
                 return theme;
             }
         }
         return null;
+    }
+
+    // Make sure to fetch installed themes before calling this
+    private boolean isThemeInstalled(@NonNull SiteModel jetpackSite, @NonNull String themeId) {
+        return mThemeStore.getInstalledThemeByThemeId(jetpackSite, themeId) != null;
     }
 }
