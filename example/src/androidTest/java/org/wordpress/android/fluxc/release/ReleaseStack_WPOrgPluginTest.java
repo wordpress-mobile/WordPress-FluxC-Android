@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import junit.framework.Assert;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
@@ -12,6 +14,7 @@ import org.wordpress.android.fluxc.store.PluginStore.OnPluginDirectorySearched;
 import org.wordpress.android.fluxc.store.PluginStore.OnWPOrgPluginFetched;
 import org.wordpress.android.fluxc.store.PluginStore.SearchPluginDirectoryPayload;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -51,16 +54,40 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         assertNotNull(wpOrgPlugin);
     }
 
+    // This is a long set of tests that makes sure the pagination works correctly
     public void testFetchPluginDirectory() throws InterruptedException {
-        mNextEvent = TestEvents.PLUGIN_DIRECTORY_FETCHED;
-        mCountDownLatch = new CountDownLatch(1);
-        FetchPluginDirectoryPayload payload = new FetchPluginDirectoryPayload(PluginDirectoryType.NEW, false);
-        mDispatcher.dispatch(PluginActionBuilder.newFetchPluginDirectoryAction(payload));
+        PluginDirectoryType primaryType = PluginDirectoryType.NEW;
+        Assert.assertTrue(mPluginStore.getPluginDirectory(primaryType).size() == 0);
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        fetchPluginDirectory(primaryType, false);
 
-        // TODO: check whether the fetched items are in Store
-        // TODO: either add a check or a new test for pagination
+        List<WPOrgPluginModel> firstPluginList = mPluginStore.getPluginDirectory(primaryType);
+        Assert.assertTrue(firstPluginList.size() > 0);
+
+        // Do another fetch this time loading the second page
+        fetchPluginDirectory(primaryType, true);
+
+        // Assert that new items are fetched
+        List<WPOrgPluginModel> secondPluginList = mPluginStore.getPluginDirectory(primaryType);
+        Assert.assertTrue(secondPluginList.size() > firstPluginList.size());
+
+        // Do one more fetch this time a different directory type and make sure it didn't affect the primary one
+        PluginDirectoryType secondaryType = PluginDirectoryType.POPULAR;
+        Assert.assertTrue(mPluginStore.getPluginDirectory(secondaryType).size() == 0);
+
+        fetchPluginDirectory(secondaryType, false);
+
+        // Assert no new items fetched for primary type, but instead they are fetched for the secondary type
+        List<WPOrgPluginModel> thirdPluginList = mPluginStore.getPluginDirectory(primaryType);
+        Assert.assertTrue(thirdPluginList.size() == secondPluginList.size());
+        Assert.assertTrue(mPluginStore.getPluginDirectory(secondaryType).size() > 0);
+
+        // Do one more FRESH fetch to make sure that previous items are deleted
+        fetchPluginDirectory(primaryType, false);
+
+        // Assert the number of items is the same as the first fetch
+        List<WPOrgPluginModel> fourthPluginList = mPluginStore.getPluginDirectory(primaryType);
+        Assert.assertTrue(firstPluginList.size() == fourthPluginList.size());
     }
 
     public void testSearchPluginDirectory() throws InterruptedException {
@@ -104,5 +131,15 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
 
         assertEquals(TestEvents.WPORG_PLUGIN_FETCHED, mNextEvent);
         mCountDownLatch.countDown();
+    }
+
+    // Network helpers
+
+    private void fetchPluginDirectory(PluginDirectoryType directoryType, boolean loadMore) throws InterruptedException {
+        mNextEvent = TestEvents.PLUGIN_DIRECTORY_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+        FetchPluginDirectoryPayload payload = new FetchPluginDirectoryPayload(directoryType, loadMore);
+        mDispatcher.dispatch(PluginActionBuilder.newFetchPluginDirectoryAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
