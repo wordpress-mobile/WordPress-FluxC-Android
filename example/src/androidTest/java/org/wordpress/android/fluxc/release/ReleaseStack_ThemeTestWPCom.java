@@ -51,6 +51,12 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         fetchWpComThemes();
         // verify response received and WP themes list is not empty
         assertFalse(mThemeStore.getWpComThemes().isEmpty());
+
+        // verify that we have the 3 mobile-friendly categories being non empty
+        for (String category : new String[]{ThemeStore.MOBILE_FRIENDLY_CATEGORY_BLOG,
+                ThemeStore.MOBILE_FRIENDLY_CATEGORY_WEBSITE, ThemeStore.MOBILE_FRIENDLY_CATEGORY_PORTFOLIO}) {
+            assertTrue(mThemeStore.getWpComMobileFriendlyThemes(category).size() > 0);
+        }
     }
 
     public void testActivateTheme() throws InterruptedException {

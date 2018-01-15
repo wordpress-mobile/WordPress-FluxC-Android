@@ -213,7 +213,16 @@ class ThemeFragment : Fragment() {
         if (event.isError) {
             prependToLog("error: " + event.error.message)
         } else {
-            prependToLog("success: WP.com theme count = " + themeStore.wpComThemes.size)
+            prependToLog("success: WP.com themes fetched count = " + themeStore.wpComThemes.size)
+
+            listOf(ThemeStore.MOBILE_FRIENDLY_CATEGORY_BLOG, ThemeStore.MOBILE_FRIENDLY_CATEGORY_WEBSITE,
+                    ThemeStore.MOBILE_FRIENDLY_CATEGORY_PORTFOLIO).forEach { category ->
+                val mobileFriendlyThemes = themeStore.getWpComMobileFriendlyThemes(category)
+                prependToLog(category + " theme count = " + mobileFriendlyThemes.size)
+                mobileFriendlyThemes.forEach { theme ->
+                    prependToLog(category + " theme: " + theme.name)
+                }
+            }
         }
     }
 
