@@ -20,6 +20,7 @@ allprojects {
         source 'src'
         include '**/*.java'
         include '**/*.kt'
+        include '**/*.xml'
         exclude '**/gen/**'
 
         classpath = files()
@@ -37,7 +38,7 @@ subprojects {
     }
 
     dependencies {
-        ktlint 'com.github.shyiko:ktlint:0.12.1'
+        ktlint 'com.github.shyiko:ktlint:0.14.0'
     }
 
     task ktlint(type: JavaExec) {
@@ -54,7 +55,7 @@ subprojects {
 }
 
 ext {
-    kotlinVersion = '1.2.0'
+    kotlinVersion = '1.2.10'
 
     daggerVersion = '2.11'
     supportLibraryVersion = '25.3.1'
