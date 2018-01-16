@@ -21,6 +21,8 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
+    private static final int FETCH_PLUGIN_DIRECTORY_PAGE_SIZE = 50; // from PluginWPOrgClient
+
     @Inject PluginStore mPluginStore;
 
     enum TestEvents {
@@ -31,6 +33,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     }
 
     private TestEvents mNextEvent;
+    private int mSearchOffset;
 
     @Override
     protected void setUp() throws Exception {
@@ -91,13 +94,15 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     }
 
     public void testSearchPluginDirectory() throws InterruptedException {
-        mNextEvent = TestEvents.PLUGIN_DIRECTORY_SEARCHED;
-        mCountDownLatch = new CountDownLatch(1);
-        SearchPluginDirectoryPayload payload = new SearchPluginDirectoryPayload("Writing", 0);
-        mDispatcher.dispatch(PluginActionBuilder.newSearchPluginDirectoryAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // This search term is picked because it has more than 100 results to test pagination
+        String searchTerm = "Writing";
 
-        // TODO: either add a new test for searching a new page
+        // Initial search
+        mSearchOffset = 0;
+        searchPluginDirectory(searchTerm, mSearchOffset);
+
+        // Search second page: We know that each page will return 50 items and "Writing" has more than 50 items
+        searchPluginDirectory(searchTerm, 50);
     }
 
     @SuppressWarnings("unused")
@@ -112,14 +117,23 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onPluginDirectorySearched(OnPluginDirectorySearched event) {
+    public void onPluginDirectorySearched(OnPluginDirectorySearched event) throws InterruptedException {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.PLUGIN_DIRECTORY_SEARCHED, mNextEvent);
         // Assert that we got some plugins
         assertTrue(event.plugins != null && event.plugins.size() > 0);
+        assertEquals(mSearchOffset, event.offset);
+        assertNotNull(event.searchTerm);
+        assertTrue(event.canLoadMore);
         mCountDownLatch.countDown();
+
+        // Test searching a second page
+        if (mSearchOffset == FETCH_PLUGIN_DIRECTORY_PAGE_SIZE) {
+            mSearchOffset = event.plugins.size();
+            searchPluginDirectory(event.searchTerm, mSearchOffset);
+        }
     }
 
     @SuppressWarnings("unused")
@@ -140,6 +154,14 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         FetchPluginDirectoryPayload payload = new FetchPluginDirectoryPayload(directoryType, loadMore);
         mDispatcher.dispatch(PluginActionBuilder.newFetchPluginDirectoryAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void searchPluginDirectory(String searchTerm, int offset) throws InterruptedException {
+        mNextEvent = TestEvents.PLUGIN_DIRECTORY_SEARCHED;
+        mCountDownLatch = new CountDownLatch(1);
+        SearchPluginDirectoryPayload payload = new SearchPluginDirectoryPayload(searchTerm, offset);
+        mDispatcher.dispatch(PluginActionBuilder.newSearchPluginDirectoryAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
