@@ -40,8 +40,8 @@ class ThemeFragment : Fragment() {
         dispatcher.unregister(this)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View?
-            = inflater.inflate(R.layout.fragment_themes, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+            inflater.inflate(R.layout.fragment_themes, container, false)
 
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -58,7 +58,7 @@ class ThemeFragment : Fragment() {
                     val theme = ThemeModel()
                     theme.localSiteId = site.id
                     theme.themeId = id
-                    val payload = ThemeStore.ActivateThemePayload(site, theme)
+                    val payload = ThemeStore.SiteThemePayload(site, theme)
                     dispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload))
                 }
             }
@@ -76,7 +76,7 @@ class ThemeFragment : Fragment() {
                     val theme = ThemeModel()
                     theme.localSiteId = site.id
                     theme.themeId = id
-                    val payload = ThemeStore.ActivateThemePayload(site, theme)
+                    val payload = ThemeStore.SiteThemePayload(site, theme)
                     dispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload))
                 }
             }
@@ -94,18 +94,9 @@ class ThemeFragment : Fragment() {
                     val theme = ThemeModel()
                     theme.localSiteId = site.id
                     theme.themeId = id
-                    val payload = ThemeStore.ActivateThemePayload(site, theme)
+                    val payload = ThemeStore.SiteThemePayload(site, theme)
                     dispatcher.dispatch(ThemeActionBuilder.newInstallThemeAction(payload))
                 }
-            }
-        }
-
-        search_themes.setOnClickListener {
-            val term = getThemeIdFromInput(view)
-            if (TextUtils.isEmpty(term)) {
-                prependToLog("Please enter a search term")
-            } else {
-                dispatcher.dispatch(ThemeActionBuilder.newSearchThemesAction(ThemeStore.SearchThemesPayload(term)))
             }
         }
 
@@ -121,7 +112,7 @@ class ThemeFragment : Fragment() {
                     val theme = ThemeModel()
                     theme.localSiteId = site.id
                     theme.themeId = id
-                    val payload = ThemeStore.ActivateThemePayload(site, theme)
+                    val payload = ThemeStore.SiteThemePayload(site, theme)
                     dispatcher.dispatch(ThemeActionBuilder.newDeleteThemeAction(payload))
                 }
             }
@@ -202,27 +193,35 @@ class ThemeFragment : Fragment() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onThemesSearched(event: ThemeStore.OnThemesSearched) {
-        prependToLog("onThemesSearched: ")
+    fun onSiteThemesChanged(event: ThemeStore.OnSiteThemesChanged) {
+        prependToLog("onSiteThemesChanged: ")
         if (event.isError) {
             prependToLog("error: " + event.error.message)
         } else {
-            prependToLog("success: result count = " + event.searchResults.size)
+            val jpSite = getJetpackConnectedSite()
+            if (jpSite != null) {
+                val themes = themeStore.getThemesForSite(jpSite)
+                prependToLog("Installed theme count = " + themes.size)
+            }
         }
     }
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onThemesChanged(event: ThemeStore.OnThemesChanged) {
-        prependToLog("onThemesChanged: ")
+    fun onWpComThemesChanged(event: ThemeStore.OnWpComThemesChanged) {
+        prependToLog("onWpComThemesChanged: ")
         if (event.isError) {
             prependToLog("error: " + event.error.message)
         } else {
-            prependToLog("success: WP.com theme count = " + themeStore.wpComThemes.size)
-            val jpSite = getJetpackConnectedSite()
-            if (jpSite != null) {
-                val themes = themeStore.getThemesForSite(jpSite)
-                prependToLog("Installed theme count = " + themes.size)
+            prependToLog("success: WP.com themes fetched count = " + themeStore.wpComThemes.size)
+
+            listOf(ThemeStore.MOBILE_FRIENDLY_CATEGORY_BLOG, ThemeStore.MOBILE_FRIENDLY_CATEGORY_WEBSITE,
+                    ThemeStore.MOBILE_FRIENDLY_CATEGORY_PORTFOLIO).forEach { category ->
+                val mobileFriendlyThemes = themeStore.getWpComMobileFriendlyThemes(category)
+                prependToLog(category + " theme count = " + mobileFriendlyThemes.size)
+                mobileFriendlyThemes.forEach { theme ->
+                    prependToLog(category + " theme: " + theme.name)
+                }
             }
         }
     }
