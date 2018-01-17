@@ -98,11 +98,10 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         String searchTerm = "Writing";
 
         // Initial search
-        mSearchOffset = 0;
-        searchPluginDirectory(searchTerm, mSearchOffset);
+        searchPluginDirectory(searchTerm, 0);
 
         // Search second page: We know that each page will return 50 items and "Writing" has more than 50 items
-        searchPluginDirectory(searchTerm, 50);
+        searchPluginDirectory(searchTerm, FETCH_PLUGIN_DIRECTORY_PAGE_SIZE);
     }
 
     @SuppressWarnings("unused")
@@ -128,12 +127,6 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         assertNotNull(event.searchTerm);
         assertTrue(event.canLoadMore);
         mCountDownLatch.countDown();
-
-        // Test searching a second page
-        if (mSearchOffset == FETCH_PLUGIN_DIRECTORY_PAGE_SIZE) {
-            mSearchOffset = event.plugins.size();
-            searchPluginDirectory(event.searchTerm, mSearchOffset);
-        }
     }
 
     @SuppressWarnings("unused")
@@ -158,6 +151,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     }
 
     private void searchPluginDirectory(String searchTerm, int offset) throws InterruptedException {
+        mSearchOffset = offset;
         mNextEvent = TestEvents.PLUGIN_DIRECTORY_SEARCHED;
         mCountDownLatch = new CountDownLatch(1);
         SearchPluginDirectoryPayload payload = new SearchPluginDirectoryPayload(searchTerm, offset);
