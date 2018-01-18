@@ -21,8 +21,6 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
-    private static final int FETCH_PLUGIN_DIRECTORY_PAGE_SIZE = 50; // from PluginWPOrgClient
-
     @Inject PluginStore mPluginStore;
 
     enum TestEvents {
@@ -33,7 +31,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     }
 
     private TestEvents mNextEvent;
-    private int mSearchOffset;
+    private int mSearchPage;
 
     @Override
     protected void setUp() throws Exception {
@@ -97,11 +95,11 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         // This search term is picked because it has more than 100 results to test pagination
         String searchTerm = "Writing";
 
-        // Initial search
-        searchPluginDirectory(searchTerm, 0);
+        // Search first page
+        searchPluginDirectory(searchTerm, 1);
 
-        // Search second page: We know that each page will return 50 items and "Writing" has more than 50 items
-        searchPluginDirectory(searchTerm, FETCH_PLUGIN_DIRECTORY_PAGE_SIZE);
+        // Search second page
+        searchPluginDirectory(searchTerm, 2);
     }
 
     @SuppressWarnings("unused")
@@ -123,7 +121,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         assertEquals(TestEvents.PLUGIN_DIRECTORY_SEARCHED, mNextEvent);
         // Assert that we got some plugins
         assertTrue(event.plugins != null && event.plugins.size() > 0);
-        assertEquals(mSearchOffset, event.offset);
+        assertEquals(mSearchPage, event.page);
         assertNotNull(event.searchTerm);
         assertTrue(event.canLoadMore);
         mCountDownLatch.countDown();
@@ -150,11 +148,11 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void searchPluginDirectory(String searchTerm, int offset) throws InterruptedException {
-        mSearchOffset = offset;
+    private void searchPluginDirectory(String searchTerm, int page) throws InterruptedException {
+        mSearchPage = page;
         mNextEvent = TestEvents.PLUGIN_DIRECTORY_SEARCHED;
         mCountDownLatch = new CountDownLatch(1);
-        SearchPluginDirectoryPayload payload = new SearchPluginDirectoryPayload(searchTerm, offset);
+        SearchPluginDirectoryPayload payload = new SearchPluginDirectoryPayload(searchTerm, page);
         mDispatcher.dispatch(PluginActionBuilder.newSearchPluginDirectoryAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
