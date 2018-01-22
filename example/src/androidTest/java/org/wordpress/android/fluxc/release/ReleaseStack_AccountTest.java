@@ -48,7 +48,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AUTH_EMAIL_ERROR_NO_SUCH_USER,
         AUTH_EMAIL_ERROR_USER_EXISTS,
         CHANGE_USERNAME_ERROR_INVALID_INPUT,
-        FETCH_USERNAME_SUGGESTIONS_ERROR_NO_NAME
+        FETCH_USERNAME_SUGGESTIONS_ERROR_NO_NAME,
+        FETCH_USERNAME_SUGGESTIONS_SUCCESS
     }
 
     private TestEvents mNextEvent;
@@ -186,6 +187,16 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.FETCH_USERNAME_SUGGESTIONS_ERROR_NO_NAME;
 
         FetchUsernameSuggestionsPayload payload = new FetchUsernameSuggestionsPayload("");
+        mDispatcher.dispatch(AccountActionBuilder.newFetchUsernameSuggestionsAction(payload));
+
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testFetchWPComUsernameSuggestionsSuccess() throws InterruptedException {
+        mNextEvent = TestEvents.FETCH_USERNAME_SUGGESTIONS_SUCCESS;
+
+        FetchUsernameSuggestionsPayload payload = new FetchUsernameSuggestionsPayload("username");
         mDispatcher.dispatch(AccountActionBuilder.newFetchUsernameSuggestionsAction(payload));
 
         mCountDownLatch = new CountDownLatch(1);
@@ -401,6 +412,9 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
                 default:
                     throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
+        } else if (event.suggestions.size() != 0) {
+            assertEquals(mNextEvent, TestEvents.FETCH_USERNAME_SUGGESTIONS_SUCCESS);
+            mCountDownLatch.countDown();
         }
     }
 
