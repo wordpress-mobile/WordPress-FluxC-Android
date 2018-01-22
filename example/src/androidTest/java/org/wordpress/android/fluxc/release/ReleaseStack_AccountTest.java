@@ -13,10 +13,12 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthEmailErrorType;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailPayload;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType;
+import org.wordpress.android.fluxc.store.AccountStore.FetchUsernameSuggestionsPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnUsernameChanged;
+import org.wordpress.android.fluxc.store.AccountStore.OnUsernameSuggestionsFetched;
 import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload;
 import org.wordpress.android.fluxc.store.AccountStore.PushUsernamePayload;
 import org.wordpress.android.util.AppLog;
@@ -45,7 +47,9 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AUTH_EMAIL_ERROR_INVALID,
         AUTH_EMAIL_ERROR_NO_SUCH_USER,
         AUTH_EMAIL_ERROR_USER_EXISTS,
-        CHANGE_USERNAME_ERROR_INVALID_INPUT
+        CHANGE_USERNAME_ERROR_INVALID_INPUT,
+        FETCH_USERNAME_SUGGESTIONS_ERROR_NO_NAME,
+        FETCH_USERNAME_SUGGESTIONS_SUCCESS
     }
 
     private TestEvents mNextEvent;
@@ -177,6 +181,26 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
         assertEquals(username, String.valueOf(mAccountStore.getAccount().getUserName()));
         assertEquals(address, String.valueOf(mAccountStore.getAccount().getWebAddress()));
+    }
+
+    public void testFetchWPComUsernameSuggestionsNoNameError() throws InterruptedException {
+        mNextEvent = TestEvents.FETCH_USERNAME_SUGGESTIONS_ERROR_NO_NAME;
+
+        FetchUsernameSuggestionsPayload payload = new FetchUsernameSuggestionsPayload("");
+        mDispatcher.dispatch(AccountActionBuilder.newFetchUsernameSuggestionsAction(payload));
+
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    public void testFetchWPComUsernameSuggestionsSuccess() throws InterruptedException {
+        mNextEvent = TestEvents.FETCH_USERNAME_SUGGESTIONS_SUCCESS;
+
+        FetchUsernameSuggestionsPayload payload = new FetchUsernameSuggestionsPayload("username");
+        mDispatcher.dispatch(AccountActionBuilder.newFetchUsernameSuggestionsAction(payload));
+
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testWPComSignOut() throws InterruptedException {
@@ -364,6 +388,33 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
                 default:
                     throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
+        }
+    }
+
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onUsernameSuggestionsFetched(OnUsernameSuggestionsFetched event) {
+        AppLog.i(AppLog.T.API, "Received OnUsernameSuggestionsFetched");
+
+        if (event.isError()) {
+            AppLog.i(AppLog.T.API, "OnUsernameSuggestionsFetched: " + event.error.type + " - " + event.error.message);
+
+            switch (event.error.type) {
+                case GENERIC_ERROR:
+                    throw new AssertionError("Error should not be tested: " + event.error.type);
+                case REST_MISSING_CALLBACK_PARAM:
+                    throw new AssertionError("Error should not occur with name parameter");
+                case REST_NO_NAME:
+                    assertEquals(mNextEvent, TestEvents.FETCH_USERNAME_SUGGESTIONS_ERROR_NO_NAME);
+                    mCountDownLatch.countDown();
+                    break;
+                default:
+                    throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            }
+        } else if (event.suggestions.size() != 0) {
+            assertEquals(mNextEvent, TestEvents.FETCH_USERNAME_SUGGESTIONS_SUCCESS);
+            mCountDownLatch.countDown();
         }
     }
 
