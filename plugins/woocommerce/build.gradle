@@ -50,6 +50,9 @@ dependencies {
         exclude group: "com.mcxiaoke.volley"
     }
 
+    api 'org.wordpress:wellsql:1.3.0'
+    kapt 'org.wordpress:wellsql-processor:1.3.0'
+
     // FluxC annotations
     api project(':fluxc-annotations')
     kapt project(':fluxc-processor')
