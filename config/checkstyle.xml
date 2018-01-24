@@ -57,6 +57,11 @@
         <property name="severity" value="error"/>
     </module>
 
+    <module name="RegexpSingleline">
+        <property name="format" value="^(?!.*\bclass\b).*\S.*@Inject"/>
+        <property name="message" value="In-line inject annotation should precede the rest of the declaration"/>
+    </module>
+
     <!-- Specific to FluxC -->
     <module name="RegexpSingleline">
         <property name="format" value="extends Payload[^&lt;]"/>
