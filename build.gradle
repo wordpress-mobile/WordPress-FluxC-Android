@@ -55,7 +55,7 @@ subprojects {
 }
 
 ext {
-    kotlinVersion = '1.2.10'
+    kotlinVersion = '1.2.20'
 
     daggerVersion = '2.11'
     supportLibraryVersion = '25.3.1'
