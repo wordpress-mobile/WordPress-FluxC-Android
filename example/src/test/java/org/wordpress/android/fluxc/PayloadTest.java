@@ -1,13 +1,13 @@
 package org.wordpress.android.fluxc;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.wordpress.android.fluxc.network.BaseRequest;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
@@ -31,7 +31,7 @@ public class PayloadTest {
 
         CloneablePayload errorlessClone = errorlessPayload.clone();
 
-        assertFalse(errorlessPayload == errorlessClone);
+        Assert.assertFalse(errorlessPayload == errorlessClone);
         assertNull(errorlessPayload.error);
         assertNull(errorlessClone.error);
 
@@ -42,10 +42,10 @@ public class PayloadTest {
 
         CloneablePayload errorClone = errorPayload.clone();
 
-        assertFalse(errorPayload == errorClone);
+        Assert.assertFalse(errorPayload == errorClone);
 
         // The error field should be cloned
         assertNotEquals(errorClone.error, errorPayload.error);
-        assertEquals(errorClone.error.type, errorPayload.error.type);
+        Assert.assertEquals(errorClone.error.type, errorPayload.error.type);
     }
 }

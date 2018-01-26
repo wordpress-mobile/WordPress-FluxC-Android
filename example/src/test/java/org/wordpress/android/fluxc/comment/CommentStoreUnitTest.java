@@ -5,6 +5,8 @@ import android.content.Context;
 import com.yarolegovich.wellsql.SelectQuery;
 import com.yarolegovich.wellsql.WellSql;
 
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,9 +22,6 @@ import org.wordpress.android.util.DateTimeUtils;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
 public class CommentStoreUnitTest {
@@ -49,7 +48,7 @@ public class CommentStoreUnitTest {
 
         // Get comment by site and remote id
         CommentModel queriedComment = CommentSqlUtils.getCommentBySiteAndRemoteId(siteModel, remoteCommentId);
-        assertEquals("Best ponies come from the future.", queriedComment.getContent());
+        Assert.assertEquals("Best ponies come from the future.", queriedComment.getContent());
     }
 
     @Test
@@ -61,20 +60,20 @@ public class CommentStoreUnitTest {
 
         // Get comment by site and remote id
         CommentModel queriedComment = CommentSqlUtils.getCommentBySiteAndRemoteId(siteModel, 10);
-        assertEquals("Pony #10", queriedComment.getContent());
+        Assert.assertEquals("Pony #10", queriedComment.getContent());
 
         // Get comment by site and remote id
         queriedComment = CommentSqlUtils.getCommentBySiteAndRemoteId(siteModel, 11);
-        assertEquals("Pony #11", queriedComment.getContent());
+        Assert.assertEquals("Pony #11", queriedComment.getContent());
 
         // Get comment by site and remote id
         queriedComment = CommentSqlUtils.getCommentBySiteAndRemoteId(siteModel, 12);
-        assertEquals("Pony #12", queriedComment.getContent());
+        Assert.assertEquals("Pony #12", queriedComment.getContent());
     }
 
     @Test
     public void testFailToGetCommentBySiteAndRemoteId() {
-        assertEquals(null, CommentSqlUtils.getCommentBySiteAndRemoteId(new SiteModel(), 42));
+        Assert.assertEquals(null, CommentSqlUtils.getCommentBySiteAndRemoteId(new SiteModel(), 42));
     }
 
 
@@ -90,7 +89,7 @@ public class CommentStoreUnitTest {
         for (CommentModel comment : ascComments.subList(1, ascComments.size())) {
             Date d0 = DateTimeUtils.dateFromIso8601(previousComment.getDatePublished());
             Date d1 = DateTimeUtils.dateFromIso8601(comment.getDatePublished());
-            assertTrue("ascending comment list seems incorrectly ordered", d0.before(d1));
+            Assert.assertTrue("ascending comment list seems incorrectly ordered", d0.before(d1));
             previousComment = comment;
         }
     }
@@ -107,7 +106,7 @@ public class CommentStoreUnitTest {
         for (CommentModel comment : ascComments.subList(1, ascComments.size())) {
             Date d0 = DateTimeUtils.dateFromIso8601(previousComment.getDatePublished());
             Date d1 = DateTimeUtils.dateFromIso8601(comment.getDatePublished());
-            assertTrue("descending comment list seems incorrectly ordered", d1.before(d0));
+            Assert.assertTrue("descending comment list seems incorrectly ordered", d1.before(d0));
             previousComment = comment;
         }
     }
@@ -122,16 +121,16 @@ public class CommentStoreUnitTest {
         // Get APPROVED comments
         List<CommentModel> queriedComments = CommentSqlUtils.getCommentsForSite(siteModel, SelectQuery.ORDER_ASCENDING,
                 CommentStatus.APPROVED);
-        assertEquals(8, queriedComments.size());
+        Assert.assertEquals(8, queriedComments.size());
 
         // Get TRASH comments
         queriedComments = CommentSqlUtils.getCommentsForSite(siteModel, SelectQuery.ORDER_ASCENDING,
                 CommentStatus.TRASH);
-        assertEquals(1, queriedComments.size());
+        Assert.assertEquals(1, queriedComments.size());
 
         // Get ALL comments
         queriedComments = CommentSqlUtils.getCommentsForSite(siteModel, SelectQuery.ORDER_ASCENDING, CommentStatus.ALL);
-        assertEquals(15, queriedComments.size());
+        Assert.assertEquals(15, queriedComments.size());
     }
 
     @Test
@@ -144,12 +143,12 @@ public class CommentStoreUnitTest {
         // Get APPROVED, UNAPPROVED and SPAM comments
         List<CommentModel> queriedComments = CommentSqlUtils.getCommentsForSite(siteModel, SelectQuery.ORDER_ASCENDING,
                 CommentStatus.APPROVED, CommentStatus.SPAM, CommentStatus.UNAPPROVED);
-        assertEquals(14, queriedComments.size());
+        Assert.assertEquals(14, queriedComments.size());
 
         // Get SPAM and UNAPPROVED comments
         queriedComments = CommentSqlUtils.getCommentsForSite(siteModel, SelectQuery.ORDER_ASCENDING,
                 CommentStatus.SPAM, CommentStatus.UNAPPROVED);
-        assertEquals(6, queriedComments.size());
+        Assert.assertEquals(6, queriedComments.size());
     }
 
     @Test
@@ -160,13 +159,13 @@ public class CommentStoreUnitTest {
         insertTestComments(siteModel);
 
         // Get APPROVED count
-        assertEquals(8, CommentSqlUtils.getCommentsCountForSite(siteModel, CommentStatus.APPROVED));
+        Assert.assertEquals(8, CommentSqlUtils.getCommentsCountForSite(siteModel, CommentStatus.APPROVED));
 
         // Get TRASH count
-        assertEquals(1, CommentSqlUtils.getCommentsCountForSite(siteModel, CommentStatus.TRASH));
+        Assert.assertEquals(1, CommentSqlUtils.getCommentsCountForSite(siteModel, CommentStatus.TRASH));
 
         // Get ALL comments
-        assertEquals(15, CommentSqlUtils.getCommentsCountForSite(siteModel, CommentStatus.ALL));
+        Assert.assertEquals(15, CommentSqlUtils.getCommentsCountForSite(siteModel, CommentStatus.ALL));
     }
 
     @Test
@@ -177,11 +176,11 @@ public class CommentStoreUnitTest {
         insertTestComments(siteModel);
 
         // Get SPAM and UNAPPROVED comments
-        assertEquals(6, CommentSqlUtils.getCommentsCountForSite(siteModel, CommentStatus.SPAM,
+        Assert.assertEquals(6, CommentSqlUtils.getCommentsCountForSite(siteModel, CommentStatus.SPAM,
                 CommentStatus.UNAPPROVED));
 
         // Get ALL (and SPAM) comments
-        assertEquals(15, CommentSqlUtils.getCommentsCountForSite(siteModel, CommentStatus.SPAM, CommentStatus.ALL));
+        Assert.assertEquals(15, CommentSqlUtils.getCommentsCountForSite(siteModel, CommentStatus.SPAM, CommentStatus.ALL));
     }
 
     @Test
@@ -195,14 +194,14 @@ public class CommentStoreUnitTest {
         insertTestComments(site2);
 
         // Make sure the comments are inserted successfully before
-        assertEquals(15, CommentSqlUtils.getCommentsCountForSite(site1, CommentStatus.ALL));
-        assertEquals(15, CommentSqlUtils.getCommentsCountForSite(site2, CommentStatus.ALL));
+        Assert.assertEquals(15, CommentSqlUtils.getCommentsCountForSite(site1, CommentStatus.ALL));
+        Assert.assertEquals(15, CommentSqlUtils.getCommentsCountForSite(site2, CommentStatus.ALL));
 
         CommentSqlUtils.deleteAllComments();
 
         // Test if all the comments are deleted successfully
-        assertEquals(0, CommentSqlUtils.getCommentsCountForSite(site1, CommentStatus.ALL));
-        assertEquals(0, CommentSqlUtils.getCommentsCountForSite(site2, CommentStatus.ALL));
+        Assert.assertEquals(0, CommentSqlUtils.getCommentsCountForSite(site1, CommentStatus.ALL));
+        Assert.assertEquals(0, CommentSqlUtils.getCommentsCountForSite(site2, CommentStatus.ALL));
     }
 
     private void insertTestComments(SiteModel siteModel) {

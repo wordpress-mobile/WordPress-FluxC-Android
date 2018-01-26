@@ -1,12 +1,11 @@
 package org.wordpress.android.fluxc.taxonomy;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.wordpress.android.fluxc.model.TermModel;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
 public class TermModelTest {
@@ -16,8 +15,8 @@ public class TermModelTest {
         TermModel testCategory2 = TaxonomyTestUtils.generateSampleCategory();
 
         testCategory2.setRemoteTermId(testCategory.getRemoteTermId() + 1);
-        assertFalse(testCategory.equals(testCategory2));
+        Assert.assertFalse(testCategory.equals(testCategory2));
         testCategory2.setRemoteTermId(testCategory.getRemoteTermId());
-        assertTrue(testCategory.equals(testCategory2));
+        Assert.assertTrue(testCategory.equals(testCategory2));
     }
 }

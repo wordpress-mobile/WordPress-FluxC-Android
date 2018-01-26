@@ -3,6 +3,8 @@ package org.wordpress.android.fluxc.release;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 
+import junit.framework.Assert;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -71,7 +73,7 @@ public class ReleaseStack_FluxCImageLoaderTest extends ReleaseStack_Base {
                                     // Network request hasn't happened yet, keep waiting
                                     return;
                                 }
-                                assertNotNull(response.getBitmap());
+                                Assert.assertNotNull(response.getBitmap());
                                 mCountDownLatch.countDown();
                             }
 
@@ -87,7 +89,7 @@ public class ReleaseStack_FluxCImageLoaderTest extends ReleaseStack_Base {
 
         runTestOnUiThread(loadImageTask);
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @SuppressWarnings("unused")
@@ -97,8 +99,8 @@ public class ReleaseStack_FluxCImageLoaderTest extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertTrue(mSiteStore.hasSite());
-        assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
+        Assert.assertTrue(mSiteStore.hasSite());
+        Assert.assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -108,7 +110,7 @@ public class ReleaseStack_FluxCImageLoaderTest extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TestEvents.FETCHED_MEDIA_LIST, mNextEvent);
+        Assert.assertEquals(TestEvents.FETCHED_MEDIA_LIST, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -127,7 +129,7 @@ public class ReleaseStack_FluxCImageLoaderTest extends ReleaseStack_Base {
         // Retry to fetch sites,we expect a site refresh
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchSiteMedia(SiteModel site) throws InterruptedException {
@@ -138,8 +140,8 @@ public class ReleaseStack_FluxCImageLoaderTest extends ReleaseStack_Base {
                 site, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        assertFalse(mMediaStore.getAllSiteMedia(site).isEmpty());
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertFalse(mMediaStore.getAllSiteMedia(site).isEmpty());
     }
 }
 

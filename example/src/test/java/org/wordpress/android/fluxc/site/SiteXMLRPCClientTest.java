@@ -8,6 +8,8 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.yarolegovich.wellsql.WellSql;
 
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,8 +36,6 @@ import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -75,7 +75,7 @@ public class SiteXMLRPCClientTest {
                     deliverResponse.setAccessible(true);
                     deliverResponse.invoke(request, o.result);
                 } catch (Exception e) {
-                    assertTrue("Unexpected exception: " + e, false);
+                    Assert.assertTrue("Unexpected exception: " + e, false);
                 }
                 mCountDownLatch.countDown();
                 return null;
@@ -139,7 +139,7 @@ public class SiteXMLRPCClientTest {
                           + "  </struct>\n"
                           + "</value></param></params></methodResponse>";
         mSiteXMLRPCClient.fetchSite(site);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @Test
@@ -159,9 +159,9 @@ public class SiteXMLRPCClientTest {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 // Expect an OnUnexpectedError to be emitted with a parse error
                 OnUnexpectedError event = invocation.getArgumentAt(0, OnUnexpectedError.class);
-                assertEquals(site.getXmlRpcUrl(), event.extras.get(OnUnexpectedError.KEY_URL));
-                assertEquals("whoops", event.extras.get(OnUnexpectedError.KEY_RESPONSE));
-                assertEquals(ClassCastException.class, event.exception.getClass());
+                Assert.assertEquals(site.getXmlRpcUrl(), event.extras.get(OnUnexpectedError.KEY_URL));
+                Assert.assertEquals("whoops", event.extras.get(OnUnexpectedError.KEY_RESPONSE));
+                Assert.assertEquals(ClassCastException.class, event.exception.getClass());
 
                 mCountDownLatch.countDown();
                 return null;
@@ -173,11 +173,11 @@ public class SiteXMLRPCClientTest {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 // Expect UPDATE_SITE to be dispatched with an INVALID_RESPONSE error
                 Action action = invocation.getArgumentAt(0, Action.class);
-                assertEquals(SiteAction.UPDATE_SITE, action.getType());
+                Assert.assertEquals(SiteAction.UPDATE_SITE, action.getType());
 
                 SiteModel result = (SiteModel) action.getPayload();
-                assertTrue(result.isError());
-                assertEquals(GenericErrorType.INVALID_RESPONSE, result.error.type);
+                Assert.assertTrue(result.isError());
+                Assert.assertEquals(GenericErrorType.INVALID_RESPONSE, result.error.type);
 
                 mCountDownLatch.countDown();
                 return null;
@@ -186,7 +186,7 @@ public class SiteXMLRPCClientTest {
 
         mCountDownLatch = new CountDownLatch(3);
         mSiteXMLRPCClient.fetchSite(site);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @Test
@@ -208,7 +208,7 @@ public class SiteXMLRPCClientTest {
 
         mCountDownLatch = new CountDownLatch(1);
         mSiteXMLRPCClient.fetchSites(xmlrpcUrl, "thedoc", "gr3@tsc0tt");
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @Test
@@ -224,9 +224,9 @@ public class SiteXMLRPCClientTest {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 // Expect an OnUnexpectedError to be emitted with a parse error
                 OnUnexpectedError event = invocation.getArgumentAt(0, OnUnexpectedError.class);
-                assertEquals(xmlrpcUrl, event.extras.get(OnUnexpectedError.KEY_URL));
-                assertEquals("disaster!", event.extras.get(OnUnexpectedError.KEY_RESPONSE));
-                assertEquals(ClassCastException.class, event.exception.getClass());
+                Assert.assertEquals(xmlrpcUrl, event.extras.get(OnUnexpectedError.KEY_URL));
+                Assert.assertEquals("disaster!", event.extras.get(OnUnexpectedError.KEY_RESPONSE));
+                Assert.assertEquals(ClassCastException.class, event.exception.getClass());
 
                 mCountDownLatch.countDown();
                 return null;
@@ -238,11 +238,11 @@ public class SiteXMLRPCClientTest {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 // Expect UPDATE_SITES to be dispatched with an INVALID_RESPONSE error
                 Action action = invocation.getArgumentAt(0, Action.class);
-                assertEquals(SiteAction.FETCHED_SITES_XML_RPC, action.getType());
+                Assert.assertEquals(SiteAction.FETCHED_SITES_XML_RPC, action.getType());
 
                 SitesModel result = (SitesModel) action.getPayload();
-                assertTrue(result.isError());
-                assertEquals(GenericErrorType.INVALID_RESPONSE, result.error.type);
+                Assert.assertTrue(result.isError());
+                Assert.assertEquals(GenericErrorType.INVALID_RESPONSE, result.error.type);
 
                 mCountDownLatch.countDown();
                 return null;
@@ -251,6 +251,6 @@ public class SiteXMLRPCClientTest {
 
         mCountDownLatch = new CountDownLatch(3);
         mSiteXMLRPCClient.fetchSites(xmlrpcUrl, "thedoc", "gr3@tsc0tt");
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }

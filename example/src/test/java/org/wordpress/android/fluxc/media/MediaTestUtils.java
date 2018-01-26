@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.media;
 
+import junit.framework.Assert;
+
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.persistence.MediaSqlUtils;
 import org.wordpress.android.fluxc.utils.MediaUtils;
@@ -7,8 +9,6 @@ import org.wordpress.android.fluxc.utils.MediaUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.Assert.assertTrue;
 
 public class MediaTestUtils {
     public static int insertMediaIntoDatabase(MediaModel media) {
@@ -18,7 +18,7 @@ public class MediaTestUtils {
     public static List<MediaModel> insertRandomMediaIntoDatabase(int localSiteId, int count) {
         List<MediaModel> insertedMedia = generateRandomizedMediaList(count, localSiteId);
         for (MediaModel media : insertedMedia) {
-            assertTrue(MediaSqlUtils.insertOrUpdateMedia(media) == 1);
+            Assert.assertTrue(MediaSqlUtils.insertOrUpdateMedia(media) == 1);
         }
         return insertedMedia;
     }

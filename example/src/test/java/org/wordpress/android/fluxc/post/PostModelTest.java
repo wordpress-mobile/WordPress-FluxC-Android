@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.post;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -11,9 +13,6 @@ import org.wordpress.android.fluxc.network.BaseRequest;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.wordpress.android.fluxc.post.PostTestUtils.EXAMPLE_LATITUDE;
 import static org.wordpress.android.fluxc.post.PostTestUtils.EXAMPLE_LONGITUDE;
 
@@ -25,9 +24,9 @@ public class PostModelTest {
         PostModel testPost2 = PostTestUtils.generateSampleUploadedPost();
 
         testPost2.setRemotePostId(testPost.getRemotePostId() + 1);
-        assertFalse(testPost.equals(testPost2));
+        Assert.assertFalse(testPost.equals(testPost2));
         testPost2.setRemotePostId(testPost.getRemotePostId());
-        assertTrue(testPost.equals(testPost2));
+        Assert.assertTrue(testPost.equals(testPost2));
     }
 
     @Test
@@ -45,11 +44,11 @@ public class PostModelTest {
 
         PostModel clonedPost = (PostModel) testPost.clone();
 
-        assertFalse(testPost == clonedPost);
-        assertTrue(testPost.equals(clonedPost));
+        Assert.assertFalse(testPost == clonedPost);
+        Assert.assertTrue(testPost.equals(clonedPost));
 
         // The inherited error should also be cloned
-        assertFalse(testPost.error == clonedPost.error);
+        Assert.assertFalse(testPost.error == clonedPost.error);
     }
 
     @Test
@@ -57,18 +56,18 @@ public class PostModelTest {
         PostModel testPost = PostTestUtils.generateSampleLocalDraftPost();
 
         testPost.setCategoryIdList(null);
-        assertTrue(testPost.getCategoryIdList().isEmpty());
+        Assert.assertTrue(testPost.getCategoryIdList().isEmpty());
 
         List<Long> categoryIds = new ArrayList<>();
         testPost.setCategoryIdList(categoryIds);
-        assertTrue(testPost.getCategoryIdList().isEmpty());
+        Assert.assertTrue(testPost.getCategoryIdList().isEmpty());
 
         categoryIds.add((long) 5);
         categoryIds.add((long) 6);
         testPost.setCategoryIdList(categoryIds);
 
-        assertEquals(2, testPost.getCategoryIdList().size());
-        assertTrue(categoryIds.containsAll(testPost.getCategoryIdList())
+        Assert.assertEquals(2, testPost.getCategoryIdList().size());
+        Assert.assertTrue(categoryIds.containsAll(testPost.getCategoryIdList())
                    && testPost.getCategoryIdList().containsAll(categoryIds));
     }
 
@@ -77,38 +76,38 @@ public class PostModelTest {
         PostModel testPost = PostTestUtils.generateSampleLocalDraftPost();
 
         // Expect no location if none was set
-        assertFalse(testPost.hasLocation());
-        assertFalse(testPost.getLocation().isValid());
-        assertFalse(testPost.shouldDeleteLatitude());
-        assertFalse(testPost.shouldDeleteLongitude());
+        Assert.assertFalse(testPost.hasLocation());
+        Assert.assertFalse(testPost.getLocation().isValid());
+        Assert.assertFalse(testPost.shouldDeleteLatitude());
+        Assert.assertFalse(testPost.shouldDeleteLongitude());
 
         // Verify state when location is set
         testPost.setLocation(new PostLocation(EXAMPLE_LATITUDE, EXAMPLE_LONGITUDE));
 
-        assertTrue(testPost.hasLocation());
-        assertEquals(EXAMPLE_LATITUDE, testPost.getLatitude(), 0);
-        assertEquals(EXAMPLE_LONGITUDE, testPost.getLongitude(), 0);
-        assertEquals(new PostLocation(EXAMPLE_LATITUDE, EXAMPLE_LONGITUDE), testPost.getLocation());
-        assertFalse(testPost.shouldDeleteLatitude());
-        assertFalse(testPost.shouldDeleteLongitude());
+        Assert.assertTrue(testPost.hasLocation());
+        Assert.assertEquals(EXAMPLE_LATITUDE, testPost.getLatitude(), 0);
+        Assert.assertEquals(EXAMPLE_LONGITUDE, testPost.getLongitude(), 0);
+        Assert.assertEquals(new PostLocation(EXAMPLE_LATITUDE, EXAMPLE_LONGITUDE), testPost.getLocation());
+        Assert.assertFalse(testPost.shouldDeleteLatitude());
+        Assert.assertFalse(testPost.shouldDeleteLongitude());
 
         // (0, 0) is a valid location
         testPost.setLocation(0, 0);
 
-        assertTrue(testPost.hasLocation());
-        assertEquals(0, testPost.getLatitude(), 0);
-        assertEquals(0, testPost.getLongitude(), 0);
-        assertEquals(new PostLocation(0, 0), testPost.getLocation());
-        assertFalse(testPost.shouldDeleteLatitude());
-        assertFalse(testPost.shouldDeleteLongitude());
+        Assert.assertTrue(testPost.hasLocation());
+        Assert.assertEquals(0, testPost.getLatitude(), 0);
+        Assert.assertEquals(0, testPost.getLongitude(), 0);
+        Assert.assertEquals(new PostLocation(0, 0), testPost.getLocation());
+        Assert.assertFalse(testPost.shouldDeleteLatitude());
+        Assert.assertFalse(testPost.shouldDeleteLongitude());
 
         // Clearing the location should remove the location, and flag it for deletion on the server
         testPost.clearLocation();
 
-        assertFalse(testPost.hasLocation());
-        assertFalse(testPost.getLocation().isValid());
-        assertTrue(testPost.shouldDeleteLatitude());
-        assertTrue(testPost.shouldDeleteLongitude());
+        Assert.assertFalse(testPost.hasLocation());
+        Assert.assertFalse(testPost.getLocation().isValid());
+        Assert.assertTrue(testPost.shouldDeleteLatitude());
+        Assert.assertTrue(testPost.shouldDeleteLongitude());
     }
 
     @Test
@@ -117,9 +116,9 @@ public class PostModelTest {
 
         testPost.setTagNames("pony,             ,ponies");
         List<String> tags = testPost.getTagNameList();
-        assertTrue(tags.contains("pony"));
-        assertTrue(tags.contains("ponies"));
-        assertEquals(2, tags.size());
+        Assert.assertTrue(tags.contains("pony"));
+        Assert.assertTrue(tags.contains("ponies"));
+        Assert.assertEquals(2, tags.size());
     }
 
     @Test
@@ -129,9 +128,9 @@ public class PostModelTest {
         testPost.setTagNames("    pony   , ponies    , #popopopopopony");
         List<String> tags = testPost.getTagNameList();
 
-        assertTrue(tags.contains("pony"));
-        assertTrue(tags.contains("ponies"));
-        assertTrue(tags.contains("#popopopopopony"));
-        assertEquals(3, tags.size());
+        Assert.assertTrue(tags.contains("pony"));
+        Assert.assertTrue(tags.contains("ponies"));
+        Assert.assertTrue(tags.contains("#popopopopopony"));
+        Assert.assertEquals(3, tags.size());
     }
 }

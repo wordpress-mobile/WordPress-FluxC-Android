@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import junit.framework.Assert;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
@@ -61,10 +63,10 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
 
         mDispatcher.dispatch(TaxonomyActionBuilder.newFetchCategoriesAction(sSite));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         List<TermModel> categories = mTaxonomyStore.getCategoriesForSite(sSite);
-        assertTrue(categories.size() > 0);
+        Assert.assertTrue(categories.size() > 0);
     }
 
     public void testFetchTags() throws InterruptedException {
@@ -73,10 +75,10 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
 
         mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTagsAction(sSite));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         List<TermModel> tags = mTaxonomyStore.getTagsForSite(sSite);
-        assertTrue(tags.size() > 0);
+        Assert.assertTrue(tags.size() > 0);
     }
 
     public void testFetchTermsForInvalidTaxonomy() throws InterruptedException {
@@ -89,7 +91,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         FetchTermsPayload payload = new FetchTermsPayload(sSite, taxonomyModel);
         mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermsAction(payload));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testFetchSingleCategory() throws InterruptedException {
@@ -101,13 +103,13 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         term.setSlug("uncategorized");
         mDispatcher.dispatch(TaxonomyActionBuilder.newFetchTermAction(new RemoteTermPayload(term, sSite)));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(1, WellSqlUtils.getTotalTermsCount());
+        Assert.assertEquals(1, WellSqlUtils.getTotalTermsCount());
         TermModel fetchedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
 
-        assertEquals("uncategorized", fetchedTerm.getSlug());
-        assertNotSame(0, fetchedTerm.getRemoteTermId());
+        Assert.assertEquals("uncategorized", fetchedTerm.getSlug());
+        Assert.assertNotSame(0, fetchedTerm.getRemoteTermId());
     }
 
     public void testUploadNewCategory() throws InterruptedException {
@@ -120,10 +122,10 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
 
         TermModel uploadedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
 
-        assertEquals(1, WellSqlUtils.getTotalTermsCount());
-        assertEquals(1, mTaxonomyStore.getCategoriesForSite(sSite).size());
+        Assert.assertEquals(1, WellSqlUtils.getTotalTermsCount());
+        Assert.assertEquals(1, mTaxonomyStore.getCategoriesForSite(sSite).size());
 
-        assertNotSame(0, uploadedTerm.getRemoteTermId());
+        Assert.assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
 
     public void testUpdateExistingCategory() throws InterruptedException {
@@ -141,10 +143,10 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
 
         TermModel uploadedTerm = mTaxonomyStore.getTagsForSite(sSite).get(0);
 
-        assertEquals(1, WellSqlUtils.getTotalTermsCount());
-        assertEquals(1, mTaxonomyStore.getTagsForSite(sSite).size());
+        Assert.assertEquals(1, WellSqlUtils.getTotalTermsCount());
+        Assert.assertEquals(1, mTaxonomyStore.getTagsForSite(sSite).size());
 
-        assertNotSame(0, uploadedTerm.getRemoteTermId());
+        Assert.assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
 
     public void testUpdateExistingTag() throws InterruptedException {
@@ -157,11 +159,11 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         setupTermAttributes(term);
 
         uploadTerm(term);
-        assertEquals(1, WellSqlUtils.getTotalTermsCount());
+        Assert.assertEquals(1, WellSqlUtils.getTotalTermsCount());
 
         term = mTaxonomyStore.getTagsForSite(sSite).get(0);
         deleteTerm(term);
-        assertEquals(0, WellSqlUtils.getTotalTermsCount());
+        Assert.assertEquals(0, WellSqlUtils.getTotalTermsCount());
     }
 
     public void testUploadNewCategoryAsTerm() throws InterruptedException {
@@ -177,10 +179,10 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
 
         TermModel uploadedTerm = mTaxonomyStore.getCategoriesForSite(sSite).get(0);
 
-        assertEquals(1, WellSqlUtils.getTotalTermsCount());
-        assertEquals(1, mTaxonomyStore.getCategoriesForSite(sSite).size());
+        Assert.assertEquals(1, WellSqlUtils.getTotalTermsCount());
+        Assert.assertEquals(1, mTaxonomyStore.getCategoriesForSite(sSite).size());
 
-        assertNotSame(0, uploadedTerm.getRemoteTermId());
+        Assert.assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
 
     public void testUploadTermForInvalidTaxonomy() throws InterruptedException {
@@ -197,10 +199,10 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         TermModel failedTerm = mTaxonomyStore.getTermsForSite(sSite, "roads").get(0);
-        assertEquals(0, failedTerm.getRemoteTermId());
+        Assert.assertEquals(0, failedTerm.getRemoteTermId());
     }
 
     public void testUploadNewCategoryDuplicate() throws InterruptedException {
@@ -218,7 +220,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     // TODO: Add tests for existing custom taxonomies
@@ -230,15 +232,15 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         if (event.isError()) {
             AppLog.i(T.API, "OnTaxonomyChanged has error: " + event.error.type + " - " + event.error.message);
             if (mNextEvent.equals(TestEvents.ERROR_INVALID_TAXONOMY)) {
-                assertEquals(TaxonomyErrorType.INVALID_TAXONOMY, event.error.type);
+                Assert.assertEquals(TaxonomyErrorType.INVALID_TAXONOMY, event.error.type);
                 mCountDownLatch.countDown();
                 return;
             } else if (mNextEvent.equals(TestEvents.ERROR_UNAUTHORIZED)) {
-                assertEquals(TaxonomyErrorType.UNAUTHORIZED, event.error.type);
+                Assert.assertEquals(TaxonomyErrorType.UNAUTHORIZED, event.error.type);
                 mCountDownLatch.countDown();
                 return;
             } else if (mNextEvent.equals(TestEvents.ERROR_GENERIC)) {
-                assertEquals(TaxonomyErrorType.GENERIC_ERROR, event.error.type);
+                Assert.assertEquals(TaxonomyErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
                 return;
             }
@@ -285,26 +287,26 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         if (event.isError()) {
             AppLog.i(T.API, "OnTermUploaded has error: " + event.error.type + " - " + event.error.message);
             if (mNextEvent.equals(TestEvents.ERROR_INVALID_TAXONOMY)) {
-                assertEquals(TaxonomyErrorType.INVALID_TAXONOMY, event.error.type);
+                Assert.assertEquals(TaxonomyErrorType.INVALID_TAXONOMY, event.error.type);
                 mCountDownLatch.countDown();
                 return;
             } else if (mNextEvent.equals(TestEvents.ERROR_DUPLICATE)) {
-                assertEquals(TaxonomyErrorType.DUPLICATE, event.error.type);
+                Assert.assertEquals(TaxonomyErrorType.DUPLICATE, event.error.type);
                 mCountDownLatch.countDown();
                 return;
             } else if (mNextEvent.equals(TestEvents.ERROR_UNAUTHORIZED)) {
-                assertEquals(TaxonomyErrorType.UNAUTHORIZED, event.error.type);
+                Assert.assertEquals(TaxonomyErrorType.UNAUTHORIZED, event.error.type);
                 mCountDownLatch.countDown();
                 return;
             } else if (mNextEvent.equals(TestEvents.ERROR_GENERIC)) {
-                assertEquals(TaxonomyErrorType.GENERIC_ERROR, event.error.type);
+                Assert.assertEquals(TaxonomyErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
                 return;
             }
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TestEvents.TERM_UPLOADED, mNextEvent);
-        assertNotSame(0, event.term.getRemoteTermId());
+        Assert.assertEquals(TestEvents.TERM_UPLOADED, mNextEvent);
+        Assert.assertNotSame(0, event.term.getRemoteTermId());
 
         mCountDownLatch.countDown();
     }
@@ -317,9 +319,9 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     private TermModel createNewCategory() {
         TermModel term = mTaxonomyStore.instantiateCategory(sSite);
 
-        assertEquals(0, term.getRemoteTermId());
-        assertNotSame(0, term.getId());
-        assertNotSame(0, term.getLocalSiteId());
+        Assert.assertEquals(0, term.getRemoteTermId());
+        Assert.assertNotSame(0, term.getId());
+        Assert.assertNotSame(0, term.getLocalSiteId());
 
         return term;
     }
@@ -327,9 +329,9 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     private TermModel createNewTag() {
         TermModel term = mTaxonomyStore.instantiateTag(sSite);
 
-        assertEquals(0, term.getRemoteTermId());
-        assertNotSame(0, term.getId());
-        assertNotSame(0, term.getLocalSiteId());
+        Assert.assertEquals(0, term.getRemoteTermId());
+        Assert.assertNotSame(0, term.getId());
+        Assert.assertNotSame(0, term.getLocalSiteId());
 
         return term;
     }
@@ -337,9 +339,9 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     private TermModel createNewTerm(TaxonomyModel taxonomy) {
         TermModel term = mTaxonomyStore.instantiateTerm(sSite, taxonomy);
 
-        assertEquals(0, term.getRemoteTermId());
-        assertNotSame(0, term.getId());
-        assertNotSame(0, term.getLocalSiteId());
+        Assert.assertEquals(0, term.getRemoteTermId());
+        Assert.assertNotSame(0, term.getId());
+        Assert.assertNotSame(0, term.getLocalSiteId());
 
         return term;
     }
@@ -351,7 +353,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newPushTermAction(pushPayload));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void deleteTerm(TermModel term) throws InterruptedException {
@@ -361,7 +363,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         RemoteTermPayload pushPayload = new RemoteTermPayload(term, sSite);
         mDispatcher.dispatch(TaxonomyActionBuilder.newDeleteTermAction(pushPayload));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void testUpdateExistingTerm(TermModel term) throws InterruptedException {
@@ -371,17 +373,17 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         uploadTerm(term);
 
         TermModel uploadedTerm = mTaxonomyStore.getTermsForSite(sSite, term.getTaxonomy()).get(0);
-        assertEquals(1, WellSqlUtils.getTotalTermsCount());
-        assertNotSame(0, uploadedTerm.getRemoteTermId());
+        Assert.assertEquals(1, WellSqlUtils.getTotalTermsCount());
+        Assert.assertNotSame(0, uploadedTerm.getRemoteTermId());
 
         String newDescription = "newDescription";
-        assertFalse(newDescription.equals(uploadedTerm.getDescription()));
+        Assert.assertFalse(newDescription.equals(uploadedTerm.getDescription()));
         uploadedTerm.setDescription(newDescription);
 
         uploadTerm(uploadedTerm);
-        assertEquals(1, WellSqlUtils.getTotalTermsCount()); // make sure we still have only one term
+        Assert.assertEquals(1, WellSqlUtils.getTotalTermsCount()); // make sure we still have only one term
         TermModel updatedTerm = mTaxonomyStore.getTermsForSite(sSite, term.getTaxonomy()).get(0);
-        assertEquals(updatedTerm.getRemoteTermId(), uploadedTerm.getRemoteTermId());
-        assertEquals(updatedTerm.getDescription(), newDescription);
+        Assert.assertEquals(updatedTerm.getRemoteTermId(), uploadedTerm.getRemoteTermId());
+        Assert.assertEquals(updatedTerm.getDescription(), newDescription);
     }
 }

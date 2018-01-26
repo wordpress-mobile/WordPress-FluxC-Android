@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import junit.framework.Assert;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -76,7 +78,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testInvalidUrlFetchSites() throws InterruptedException {
@@ -90,7 +92,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testNonWordPressFetchSites() throws InterruptedException {
@@ -104,7 +106,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testWPComUrlFetchSites() throws InterruptedException {
@@ -118,7 +120,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testXMLRPCSimpleFetchSites() throws InterruptedException {
@@ -374,7 +376,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testXMLRPCForbiddenDiscovery() throws InterruptedException {
@@ -388,7 +390,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testXMLRPCMissingMethodDiscovery() throws InterruptedException {
@@ -402,7 +404,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testWPAPISimpleFetchSites() throws InterruptedException {
@@ -417,7 +419,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
             mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
             // Wait for a network response / onChanged event
-            assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+            Assert.assertEquals(true, mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
             // TODO: Fetch site (and migrate this test to use checkSelfHostedSimpleFetchForSite)
         }
@@ -446,7 +448,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         fetchSites();
     }
@@ -465,7 +467,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onAuthenticationChanged error event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Add an exception for the last certificate
         mMemorizingTrustManager.storeLastFailure();
@@ -477,7 +479,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onAuthenticationChanged error event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         fetchSites();
 
@@ -497,7 +499,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onAuthenticationChanged error event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Set known HTTP Auth credentials
         mHTTPAuthManager.addHTTPAuthCredentials(authUsername, authPassword, mUrl, null);
@@ -509,7 +511,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
 
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         fetchSites();
     }
@@ -525,7 +527,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private static String addBadProtocolToUrl(String url) {
@@ -539,9 +541,9 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type " + event.error.type);
         }
-        assertTrue(mSiteStore.hasSite());
-        assertTrue(mSiteStore.hasSiteAccessedViaXMLRPC());
-        assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
+        Assert.assertTrue(mSiteStore.hasSite());
+        Assert.assertTrue(mSiteStore.hasSiteAccessedViaXMLRPC());
+        Assert.assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -552,9 +554,9 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type " + event.error.type);
         }
-        assertFalse(mSiteStore.hasSite());
-        assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
-        assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
+        Assert.assertFalse(mSiteStore.hasSite());
+        Assert.assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
+        Assert.assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -571,21 +573,21 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
             // ERROR :(
             AppLog.i(T.API, "Discovery error: " + event.error);
             if (event.error == DiscoveryError.INVALID_URL) {
-                assertEquals(TestEvents.INVALID_URL_ERROR, mNextEvent);
+                Assert.assertEquals(TestEvents.INVALID_URL_ERROR, mNextEvent);
             } else if (event.error == DiscoveryError.NO_SITE_ERROR) {
-                assertEquals(TestEvents.NO_SITE_ERROR, mNextEvent);
+                Assert.assertEquals(TestEvents.NO_SITE_ERROR, mNextEvent);
             } else if (event.error == DiscoveryError.WORDPRESS_COM_SITE) {
-                assertEquals(TestEvents.WORDPRESS_COM_SITE, mNextEvent);
+                Assert.assertEquals(TestEvents.WORDPRESS_COM_SITE, mNextEvent);
             } else if (event.error == DiscoveryError.HTTP_AUTH_REQUIRED) {
-                assertEquals(TestEvents.HTTP_AUTH_REQUIRED, mNextEvent);
+                Assert.assertEquals(TestEvents.HTTP_AUTH_REQUIRED, mNextEvent);
             } else if (event.error == DiscoveryError.ERRONEOUS_SSL_CERTIFICATE) {
-                assertEquals(TestEvents.ERRONEOUS_SSL_CERTIFICATE, mNextEvent);
+                Assert.assertEquals(TestEvents.ERRONEOUS_SSL_CERTIFICATE, mNextEvent);
             } else if (event.error == DiscoveryError.XMLRPC_BLOCKED) {
-                assertEquals(TestEvents.XMLRPC_BLOCKED, mNextEvent);
+                Assert.assertEquals(TestEvents.XMLRPC_BLOCKED, mNextEvent);
             } else if (event.error == DiscoveryError.XMLRPC_FORBIDDEN) {
-                assertEquals(TestEvents.XMLRPC_FORBIDDEN, mNextEvent);
+                Assert.assertEquals(TestEvents.XMLRPC_FORBIDDEN, mNextEvent);
             } else if (event.error == DiscoveryError.MISSING_XMLRPC_METHOD) {
-                assertEquals(TestEvents.MISSING_XMLRPC_METHOD, mNextEvent);
+                Assert.assertEquals(TestEvents.MISSING_XMLRPC_METHOD, mNextEvent);
             } else {
                 throw new AssertionError("Didn't get the correct error, expected: " + mNextEvent + ", and got: "
                         + event.error);
@@ -597,16 +599,16 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
             AppLog.i(T.API, "Discovery succeeded, XML-RPC endpoint: " + event.xmlRpcEndpoint + ", WP-API endpoint: "
                     + event.wpRestEndpoint);
             if (mNextEvent.equals(TestEvents.DISCOVERY_SUCCEEDED_WPAPI)) {
-                assertTrue(event.wpRestEndpoint != null && !event.wpRestEndpoint.isEmpty());
+                Assert.assertTrue(event.wpRestEndpoint != null && !event.wpRestEndpoint.isEmpty());
                 mUrl = event.wpRestEndpoint;
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TestEvents.DISCOVERY_SUCCEEDED_XMLRPC)) {
-                assertTrue(event.xmlRpcEndpoint != null && !event.xmlRpcEndpoint.isEmpty());
+                Assert.assertTrue(event.xmlRpcEndpoint != null && !event.xmlRpcEndpoint.isEmpty());
                 mUrl = event.xmlRpcEndpoint;
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TestEvents.DISCOVERY_SUCCEEDED_XMLRPC_ONLY)) {
-                assertTrue(event.xmlRpcEndpoint != null && !event.xmlRpcEndpoint.isEmpty());
-                assertTrue(event.wpRestEndpoint == null || event.wpRestEndpoint.isEmpty());
+                Assert.assertTrue(event.xmlRpcEndpoint != null && !event.xmlRpcEndpoint.isEmpty());
+                Assert.assertTrue(event.wpRestEndpoint == null || event.wpRestEndpoint.isEmpty());
                 mUrl = event.xmlRpcEndpoint;
                 mCountDownLatch.countDown();
             }

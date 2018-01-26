@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import junit.framework.Assert;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -97,18 +99,18 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
     public void onMediaUploaded(OnMediaUploaded event) {
         if (event.isError()) {
             if (event.error.type == MediaErrorType.EXCEEDS_FILESIZE_LIMIT) {
-                assertEquals(TestEvents.ERROR_EXCEEDS_FILESIZE_LIMIT, mNextEvent);
+                Assert.assertEquals(TestEvents.ERROR_EXCEEDS_FILESIZE_LIMIT, mNextEvent);
                 mCountDownLatch.countDown();
                 return;
             } else if (event.error.type == MediaErrorType.EXCEEDS_MEMORY_LIMIT) {
-                assertEquals(TestEvents.ERROR_EXCEEDS_MEMORY_LIMIT, mNextEvent);
+                Assert.assertEquals(TestEvents.ERROR_EXCEEDS_MEMORY_LIMIT, mNextEvent);
                 mCountDownLatch.countDown();
                 return;
             }
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         if (event.completed) {
-            assertEquals(TestEvents.MEDIA_UPLOADED, mNextEvent);
+            Assert.assertEquals(TestEvents.MEDIA_UPLOADED, mNextEvent);
             mCountDownLatch.countDown();
         }
     }
@@ -137,7 +139,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         MediaPayload payload = new MediaPayload(site, media);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @SuppressWarnings("unused")
@@ -166,8 +168,8 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertTrue(mSiteStore.hasSite());
-        assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
+        Assert.assertTrue(mSiteStore.hasSite());
+        Assert.assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -178,7 +180,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
+        Assert.assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -190,19 +192,19 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         // Correct user we should get an OnAuthenticationChanged message
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch account from REST API, and wait for OnAccountChanged event
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchSite(SiteModel site) throws InterruptedException {
@@ -211,7 +213,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
 
         mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(site));
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void signOutWPCom() throws InterruptedException {
@@ -220,6 +222,6 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.SITE_REMOVED;
         mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }

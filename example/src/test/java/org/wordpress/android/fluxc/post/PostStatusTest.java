@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.post;
 
+import junit.framework.Assert;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -8,8 +10,6 @@ import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.util.DateTimeUtils;
 
 import java.util.Date;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(RobolectricTestRunner.class)
 public class PostStatusTest {
@@ -20,11 +20,11 @@ public class PostStatusTest {
 
         // Test published post with past date
         post.setDateCreated(DateTimeUtils.iso8601UTCFromDate(new Date()));
-        assertEquals(PostStatus.PUBLISHED, PostStatus.fromPost(post));
+        Assert.assertEquals(PostStatus.PUBLISHED, PostStatus.fromPost(post));
 
         // Test "published" post with future date
         post.setDateCreated(DateTimeUtils.iso8601UTCFromDate(new Date(System.currentTimeMillis() + 500000)));
-        assertEquals(PostStatus.SCHEDULED, PostStatus.fromPost(post));
+        Assert.assertEquals(PostStatus.SCHEDULED, PostStatus.fromPost(post));
     }
 
     @Test
@@ -32,6 +32,6 @@ public class PostStatusTest {
         PostModel post = new PostModel();
         post.setStatus("publish");
 
-        assertEquals(PostStatus.PUBLISHED, PostStatus.fromPost(post));
+        Assert.assertEquals(PostStatus.PUBLISHED, PostStatus.fromPost(post));
     }
 }

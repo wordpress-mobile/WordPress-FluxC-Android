@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteException;
 import com.wellsql.generated.SiteModelTable;
 import com.yarolegovich.wellsql.WellSql;
 
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,12 +32,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.wordpress.android.fluxc.site.SiteUtils.generateJetpackSiteOverRestOnly;
 import static org.wordpress.android.fluxc.site.SiteUtils.generateJetpackSiteOverXMLRPC;
 import static org.wordpress.android.fluxc.site.SiteUtils.generatePostFormats;
@@ -64,9 +62,9 @@ public class SiteStoreUnitTest {
         siteModel.setSiteId(42);
         WellSql.insert(siteModel).execute();
 
-        assertEquals(1, mSiteStore.getSitesCount());
+        Assert.assertEquals(1, mSiteStore.getSitesCount());
 
-        assertEquals(42, mSiteStore.getSites().get(0).getSiteId());
+        Assert.assertEquals(42, mSiteStore.getSites().get(0).getSiteId());
     }
 
     @Test
@@ -76,53 +74,53 @@ public class SiteStoreUnitTest {
         SiteModel site = generateWPComSite();
         SiteSqlUtils.insertOrUpdateSite(site);
 
-        assertTrue(mSiteStore.hasSiteWithLocalId(site.getId()));
-        assertEquals(site.getSiteId(), mSiteStore.getSiteByLocalId(site.getId()).getSiteId());
+        Assert.assertTrue(mSiteStore.hasSiteWithLocalId(site.getId()));
+        Assert.assertEquals(site.getSiteId(), mSiteStore.getSiteByLocalId(site.getId()).getSiteId());
     }
 
     @Test
     public void testHasSiteAndgetCountMethods() throws DuplicateSiteException {
         WellSqlTestUtils.setupWordPressComAccount();
 
-        assertFalse(mSiteStore.hasSite());
-        assertTrue(mSiteStore.getSites().isEmpty());
+        Assert.assertFalse(mSiteStore.hasSite());
+        Assert.assertTrue(mSiteStore.getSites().isEmpty());
 
         // Test counts with .COM site
         SiteModel wpComSite = generateWPComSite();
         SiteSqlUtils.insertOrUpdateSite(wpComSite);
 
-        assertTrue(mSiteStore.hasSite());
-        assertTrue(mSiteStore.hasWPComSite());
-        assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
+        Assert.assertTrue(mSiteStore.hasSite());
+        Assert.assertTrue(mSiteStore.hasWPComSite());
+        Assert.assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
 
-        assertEquals(1, mSiteStore.getSitesCount());
-        assertEquals(1, mSiteStore.getWPComSitesCount());
+        Assert.assertEquals(1, mSiteStore.getSitesCount());
+        Assert.assertEquals(1, mSiteStore.getWPComSitesCount());
 
         // Test counts with one .COM and one self-hosted site
         SiteModel selfHostedSite = generateSelfHostedNonJPSite();
         SiteSqlUtils.insertOrUpdateSite(selfHostedSite);
 
-        assertTrue(mSiteStore.hasSite());
-        assertTrue(mSiteStore.hasWPComSite());
-        assertTrue(mSiteStore.hasSiteAccessedViaXMLRPC());
+        Assert.assertTrue(mSiteStore.hasSite());
+        Assert.assertTrue(mSiteStore.hasWPComSite());
+        Assert.assertTrue(mSiteStore.hasSiteAccessedViaXMLRPC());
 
-        assertEquals(2, mSiteStore.getSitesCount());
-        assertEquals(1, mSiteStore.getWPComSitesCount());
-        assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
-        assertEquals(1, mSiteStore.getSitesAccessedViaWPComRestCount());
+        Assert.assertEquals(2, mSiteStore.getSitesCount());
+        Assert.assertEquals(1, mSiteStore.getWPComSitesCount());
+        Assert.assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
+        Assert.assertEquals(1, mSiteStore.getSitesAccessedViaWPComRestCount());
 
         // Test counts with one .COM, one self-hosted and one Jetpack site
         SiteModel jetpackSiteOverRest = generateJetpackSiteOverRestOnly();
         SiteSqlUtils.insertOrUpdateSite(jetpackSiteOverRest);
 
-        assertTrue(mSiteStore.hasSite());
-        assertTrue(mSiteStore.hasWPComSite());
-        assertTrue(mSiteStore.hasSiteAccessedViaXMLRPC());
+        Assert.assertTrue(mSiteStore.hasSite());
+        Assert.assertTrue(mSiteStore.hasWPComSite());
+        Assert.assertTrue(mSiteStore.hasSiteAccessedViaXMLRPC());
 
-        assertEquals(3, mSiteStore.getSitesCount());
-        assertEquals(1, mSiteStore.getWPComSitesCount());
-        assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
-        assertEquals(2, mSiteStore.getSitesAccessedViaWPComRestCount());
+        Assert.assertEquals(3, mSiteStore.getSitesCount());
+        Assert.assertEquals(1, mSiteStore.getWPComSitesCount());
+        Assert.assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
+        Assert.assertEquals(2, mSiteStore.getSitesAccessedViaWPComRestCount());
     }
 
     @Test
@@ -155,10 +153,10 @@ public class SiteStoreUnitTest {
         jetpackOverRest.setOrigin(SiteModel.ORIGIN_WPCOM_REST);
         SiteSqlUtils.insertOrUpdateSite(jetpackOverRest);
 
-        assertEquals(3, mSiteStore.getSitesCount());
-        assertEquals(0, mSiteStore.getWPComSitesCount());
-        assertEquals(2, mSiteStore.getSitesAccessedViaXMLRPCCount());
-        assertEquals(1, mSiteStore.getSitesAccessedViaWPComRestCount());
+        Assert.assertEquals(3, mSiteStore.getSitesCount());
+        Assert.assertEquals(0, mSiteStore.getWPComSitesCount());
+        Assert.assertEquals(2, mSiteStore.getSitesAccessedViaXMLRPCCount());
+        Assert.assertEquals(1, mSiteStore.getSitesAccessedViaWPComRestCount());
 
         // User "install and connect" ponySite site to Jetpack via his connected .com account
 
@@ -167,11 +165,11 @@ public class SiteStoreUnitTest {
         ponySite.setOrigin(SiteModel.ORIGIN_WPCOM_REST);
         SiteSqlUtils.insertOrUpdateSite(ponySite);
 
-        assertEquals(3, mSiteStore.getSitesCount());
-        assertEquals(0, mSiteStore.getWPComSitesCount());
-        assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
+        Assert.assertEquals(3, mSiteStore.getSitesCount());
+        Assert.assertEquals(0, mSiteStore.getWPComSitesCount());
+        Assert.assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
         // Now ponySite is accessed via the WPCom REST API
-        assertEquals(2, mSiteStore.getSitesAccessedViaWPComRestCount());
+        Assert.assertEquals(2, mSiteStore.getSitesAccessedViaWPComRestCount());
     }
 
     @Test
@@ -188,7 +186,7 @@ public class SiteStoreUnitTest {
         // Attempt to use with id of self-hosted site
         SiteSqlUtils.setSiteVisibility(selfHostedNonJPSite, false);
         // The self-hosted site should not be affected
-        assertTrue(mSiteStore.getSiteByLocalId(selfHostedNonJPSite.getId()).isVisible());
+        Assert.assertTrue(mSiteStore.getSiteByLocalId(selfHostedNonJPSite.getId()).isVisible());
 
 
         SiteModel wpComSite = generateWPComSite();
@@ -196,8 +194,8 @@ public class SiteStoreUnitTest {
 
         // Attempt to use with legitimate .com site
         SiteSqlUtils.setSiteVisibility(selfHostedNonJPSite, false);
-        assertFalse(mSiteStore.getSiteByLocalId(wpComSite.getId()).isVisible());
-        assertFalse(mSiteStore.isWPComSiteVisibleByLocalId(wpComSite.getId()));
+        Assert.assertFalse(mSiteStore.getSiteByLocalId(wpComSite.getId()).isVisible());
+        Assert.assertFalse(mSiteStore.isWPComSiteVisibleByLocalId(wpComSite.getId()));
     }
 
     @Test
@@ -212,7 +210,7 @@ public class SiteStoreUnitTest {
             SiteSqlUtils.setSiteVisibility(site, false);
         }
         // The self-hosted site should not be affected
-        assertTrue(mSiteStore.getSiteByLocalId(selfHostedNonJPSite.getId()).isVisible());
+        Assert.assertTrue(mSiteStore.getSiteByLocalId(selfHostedNonJPSite.getId()).isVisible());
 
         SiteModel wpComSite1 = generateWPComSite();
         SiteModel wpComSite2 = generateWPComSite();
@@ -226,18 +224,18 @@ public class SiteStoreUnitTest {
         for (SiteModel site : mSiteStore.getWPComSites()) {
             SiteSqlUtils.setSiteVisibility(site, false);
         }
-        assertTrue(mSiteStore.getSiteByLocalId(selfHostedNonJPSite.getId()).isVisible());
-        assertFalse(mSiteStore.getSiteByLocalId(wpComSite1.getId()).isVisible());
-        assertFalse(mSiteStore.getSiteByLocalId(wpComSite2.getId()).isVisible());
+        Assert.assertTrue(mSiteStore.getSiteByLocalId(selfHostedNonJPSite.getId()).isVisible());
+        Assert.assertFalse(mSiteStore.getSiteByLocalId(wpComSite1.getId()).isVisible());
+        Assert.assertFalse(mSiteStore.getSiteByLocalId(wpComSite2.getId()).isVisible());
     }
 
     @Test
     public void testGetIdForIdMethods() throws DuplicateSiteException {
         WellSqlTestUtils.setupWordPressComAccount();
 
-        assertEquals(0, mSiteStore.getLocalIdForRemoteSiteId(555));
-        assertEquals(0, mSiteStore.getLocalIdForSelfHostedSiteIdAndXmlRpcUrl(2626, ""));
-        assertEquals(0, mSiteStore.getSiteIdForLocalId(5577));
+        Assert.assertEquals(0, mSiteStore.getLocalIdForRemoteSiteId(555));
+        Assert.assertEquals(0, mSiteStore.getLocalIdForSelfHostedSiteIdAndXmlRpcUrl(2626, ""));
+        Assert.assertEquals(0, mSiteStore.getSiteIdForLocalId(5577));
 
         SiteModel selfHostedSite = generateSelfHostedNonJPSite();
         SiteModel wpComSite = generateWPComSite();
@@ -246,22 +244,22 @@ public class SiteStoreUnitTest {
         SiteSqlUtils.insertOrUpdateSite(wpComSite);
         SiteSqlUtils.insertOrUpdateSite(jetpackSite);
 
-        assertEquals(selfHostedSite.getId(),
+        Assert.assertEquals(selfHostedSite.getId(),
                 mSiteStore.getLocalIdForRemoteSiteId(selfHostedSite.getSelfHostedSiteId()));
-        assertEquals(wpComSite.getId(), mSiteStore.getLocalIdForRemoteSiteId(wpComSite.getSiteId()));
+        Assert.assertEquals(wpComSite.getId(), mSiteStore.getLocalIdForRemoteSiteId(wpComSite.getSiteId()));
 
         // Should be able to look up a Jetpack site by .com and by .org id (assuming it's been set)
-        assertEquals(jetpackSite.getId(), mSiteStore.getLocalIdForRemoteSiteId(jetpackSite.getSiteId()));
-        assertEquals(jetpackSite.getId(), mSiteStore.getLocalIdForRemoteSiteId(jetpackSite.getSelfHostedSiteId()));
+        Assert.assertEquals(jetpackSite.getId(), mSiteStore.getLocalIdForRemoteSiteId(jetpackSite.getSiteId()));
+        Assert.assertEquals(jetpackSite.getId(), mSiteStore.getLocalIdForRemoteSiteId(jetpackSite.getSelfHostedSiteId()));
 
-        assertEquals(selfHostedSite.getId(), mSiteStore.getLocalIdForSelfHostedSiteIdAndXmlRpcUrl(
+        Assert.assertEquals(selfHostedSite.getId(), mSiteStore.getLocalIdForSelfHostedSiteIdAndXmlRpcUrl(
                 selfHostedSite.getSelfHostedSiteId(), selfHostedSite.getXmlRpcUrl()));
-        assertEquals(jetpackSite.getId(), mSiteStore.getLocalIdForSelfHostedSiteIdAndXmlRpcUrl(
+        Assert.assertEquals(jetpackSite.getId(), mSiteStore.getLocalIdForSelfHostedSiteIdAndXmlRpcUrl(
                 jetpackSite.getSelfHostedSiteId(), jetpackSite.getXmlRpcUrl()));
 
-        assertEquals(selfHostedSite.getSelfHostedSiteId(), mSiteStore.getSiteIdForLocalId(selfHostedSite.getId()));
-        assertEquals(wpComSite.getSiteId(), mSiteStore.getSiteIdForLocalId(wpComSite.getId()));
-        assertEquals(jetpackSite.getSiteId(), mSiteStore.getSiteIdForLocalId(jetpackSite.getId()));
+        Assert.assertEquals(selfHostedSite.getSelfHostedSiteId(), mSiteStore.getSiteIdForLocalId(selfHostedSite.getId()));
+        Assert.assertEquals(wpComSite.getSiteId(), mSiteStore.getSiteIdForLocalId(wpComSite.getId()));
+        Assert.assertEquals(jetpackSite.getSiteId(), mSiteStore.getSiteIdForLocalId(jetpackSite.getId()));
     }
 
     @Test
@@ -277,9 +275,9 @@ public class SiteStoreUnitTest {
         SiteSqlUtils.insertOrUpdateSite(wpComSite);
         SiteSqlUtils.insertOrUpdateSite(jetpackSiteOverXMLRPC);
 
-        assertEquals(1, SiteSqlUtils.getSitesAccessedViaWPComRest().getAsCursor().getCount());
-        assertNotNull(mSiteStore.getSiteBySiteId(wpComSite.getSiteId()));
-        assertNotNull(mSiteStore.getSiteBySiteId(jetpackSiteOverXMLRPC.getSiteId()));
+        Assert.assertEquals(1, SiteSqlUtils.getSitesAccessedViaWPComRest().getAsCursor().getCount());
+        Assert.assertNotNull(mSiteStore.getSiteBySiteId(wpComSite.getSiteId()));
+        Assert.assertNotNull(mSiteStore.getSiteBySiteId(jetpackSiteOverXMLRPC.getSiteId()));
         assertNull(mSiteStore.getSiteBySiteId(selfHostedSite.getSiteId()));
     }
 
@@ -295,8 +293,8 @@ public class SiteStoreUnitTest {
         SiteSqlUtils.insertOrUpdateSite(wpComSite);
         int affectedRows = SiteSqlUtils.deleteSite(wpComSite);
 
-        assertEquals(1, affectedRows);
-        assertEquals(0, mSiteStore.getSitesCount());
+        Assert.assertEquals(1, affectedRows);
+        Assert.assertEquals(0, mSiteStore.getSitesCount());
     }
 
     @Test
@@ -311,10 +309,10 @@ public class SiteStoreUnitTest {
         SiteSqlUtils.insertOrUpdateSite(jetpackSiteOverXMLRPC);
         SiteSqlUtils.insertOrUpdateSite(jetpackSiteOverRestOnly);
 
-        assertEquals(2, SiteSqlUtils.getSitesAccessedViaWPComRest().getAsCursor().getCount());
+        Assert.assertEquals(2, SiteSqlUtils.getSitesAccessedViaWPComRest().getAsCursor().getCount());
 
         List<SiteModel> wpComSites = SiteSqlUtils.getWPComSites().getAsModel();
-        assertEquals(1, wpComSites.size());
+        Assert.assertEquals(1, wpComSites.size());
         for (SiteModel site : wpComSites) {
             assertNotEquals(jetpackSiteOverXMLRPC.getId(), site.getId());
         }
@@ -335,16 +333,16 @@ public class SiteStoreUnitTest {
 
         // Previous site should be converted to a Jetpack site and we should see only one site
         int sitesCount = WellSql.select(SiteModel.class).getAsCursor().getCount();
-        assertEquals(1, sitesCount);
+        Assert.assertEquals(1, sitesCount);
 
         List<SiteModel> wpComSites = SiteSqlUtils.getWPComSites().getAsModel();
-        assertEquals(0, wpComSites.size());
-        assertEquals(1, SiteSqlUtils.getSitesAccessedViaWPComRest().getAsCursor().getCount());
+        Assert.assertEquals(0, wpComSites.size());
+        Assert.assertEquals(1, SiteSqlUtils.getSitesAccessedViaWPComRest().getAsCursor().getCount());
         List<SiteModel> jetpackSites =
                 SiteSqlUtils.getSitesWith(SiteModelTable.IS_JETPACK_CONNECTED, true).getAsModel();
-        assertEquals(jetpack.getSiteId(), jetpackSites.get(0).getSiteId());
-        assertTrue(jetpackSites.get(0).isJetpackConnected());
-        assertFalse(jetpackSites.get(0).isWPCom());
+        Assert.assertEquals(jetpack.getSiteId(), jetpackSites.get(0).getSiteId());
+        Assert.assertTrue(jetpackSites.get(0).isJetpackConnected());
+        Assert.assertFalse(jetpackSites.get(0).isWPCom());
     }
 
     @Test
@@ -364,9 +362,9 @@ public class SiteStoreUnitTest {
             // Caught !
             duplicate = true;
         }
-        assertTrue(duplicate);
+        Assert.assertTrue(duplicate);
         int sitesCount = WellSql.select(SiteModel.class).getAsCursor().getCount();
-        assertEquals(1, sitesCount);
+        Assert.assertEquals(1, sitesCount);
     }
 
     @Test
@@ -389,9 +387,9 @@ public class SiteStoreUnitTest {
             // Caught !
             duplicate = true;
         }
-        assertTrue(duplicate);
+        Assert.assertTrue(duplicate);
         int sitesCount = WellSql.select(SiteModel.class).getAsCursor().getCount();
-        assertEquals(1, sitesCount);
+        Assert.assertEquals(1, sitesCount);
     }
 
     @Test
@@ -414,9 +412,9 @@ public class SiteStoreUnitTest {
             // Caught !
             duplicate = true;
         }
-        assertTrue(duplicate);
+        Assert.assertTrue(duplicate);
         int sitesCount = WellSql.select(SiteModel.class).getAsCursor().getCount();
-        assertEquals(1, sitesCount);
+        Assert.assertEquals(1, sitesCount);
     }
 
     @Test
@@ -447,9 +445,9 @@ public class SiteStoreUnitTest {
             // Caught !
             duplicate = true;
         }
-        assertFalse(duplicate);
+        Assert.assertFalse(duplicate);
         int sitesCount = WellSql.select(SiteModel.class).getAsCursor().getCount();
-        assertEquals(1, sitesCount);
+        Assert.assertEquals(1, sitesCount);
     }
 
     @Test
@@ -460,12 +458,12 @@ public class SiteStoreUnitTest {
         // Set 3 post formats
         SiteSqlUtils.insertOrReplacePostFormats(site, generatePostFormats("Video", "Image", "Standard"));
         List<PostFormatModel> postFormats = mSiteStore.getPostFormats(site);
-        assertEquals(3, postFormats.size());
+        Assert.assertEquals(3, postFormats.size());
 
         // Set 1 post format
         SiteSqlUtils.insertOrReplacePostFormats(site, generatePostFormats("Standard"));
         postFormats = mSiteStore.getPostFormats(site);
-        assertEquals("Standard", postFormats.get(0).getDisplayName());
+        Assert.assertEquals("Standard", postFormats.get(0).getDisplayName());
     }
 
     @Test
@@ -486,10 +484,10 @@ public class SiteStoreUnitTest {
         SiteSqlUtils.insertOrUpdateSite(wpComSite3);
 
         List<SiteModel> matchingSites = SiteSqlUtils.getSitesByNameOrUrlMatching("eye");
-        assertEquals(2, matchingSites.size());
+        Assert.assertEquals(2, matchingSites.size());
 
         matchingSites = SiteSqlUtils.getSitesByNameOrUrlMatching("EYE");
-        assertEquals(2, matchingSites.size());
+        Assert.assertEquals(2, matchingSites.size());
     }
 
     @Test
@@ -508,10 +506,10 @@ public class SiteStoreUnitTest {
         SiteSqlUtils.insertOrUpdateSite(selfHostedSite);
 
         List<SiteModel> matchingSites = SiteSqlUtils.getSitesByNameOrUrlMatching("eye");
-        assertEquals(2, matchingSites.size());
+        Assert.assertEquals(2, matchingSites.size());
 
         matchingSites = SiteSqlUtils.getSitesByNameOrUrlMatching("EYE");
-        assertEquals(2, matchingSites.size());
+        Assert.assertEquals(2, matchingSites.size());
     }
 
     @Test
@@ -530,10 +528,10 @@ public class SiteStoreUnitTest {
         SiteSqlUtils.insertOrUpdateSite(selfHostedSite);
 
         List<SiteModel> matchingSites = SiteSqlUtils.getSitesAccessedViaWPComRestByNameOrUrlMatching("eye");
-        assertEquals(1, matchingSites.size());
+        Assert.assertEquals(1, matchingSites.size());
 
         matchingSites = SiteSqlUtils.getSitesAccessedViaWPComRestByNameOrUrlMatching("EYE");
-        assertEquals(1, matchingSites.size());
+        Assert.assertEquals(1, matchingSites.size());
     }
 
     @Test
@@ -551,11 +549,11 @@ public class SiteStoreUnitTest {
         SiteSqlUtils.insertOrUpdateSite(selfHostedSite);
 
         // first make sure sites are inserted successfully
-        assertEquals(4, mSiteStore.getSitesCount());
+        Assert.assertEquals(4, mSiteStore.getSitesCount());
 
         SiteSqlUtils.deleteAllSites();
 
-        assertEquals(0, mSiteStore.getSitesCount());
+        Assert.assertEquals(0, mSiteStore.getSitesCount());
     }
 
     @Test
@@ -574,8 +572,8 @@ public class SiteStoreUnitTest {
 
         SiteSqlUtils.insertOrUpdateSite(automatedTransferSite);
 
-        assertEquals(1, mSiteStore.getSitesCount());
-        assertEquals(0, mSiteStore.getWPComSitesCount());
+        Assert.assertEquals(1, mSiteStore.getSitesCount());
+        Assert.assertEquals(0, mSiteStore.getWPComSitesCount());
     }
 
     @Test
@@ -599,9 +597,9 @@ public class SiteStoreUnitTest {
         createOrUpdateSites.setAccessible(true);
         UpdateSitesResult res = (UpdateSitesResult) createOrUpdateSites.invoke(mSiteStore, sites);
 
-        assertTrue(res.duplicateSiteFound);
-        assertEquals(5, res.rowsAffected);
-        assertEquals(5, mSiteStore.getSitesCount());
+        Assert.assertTrue(res.duplicateSiteFound);
+        Assert.assertEquals(5, res.rowsAffected);
+        Assert.assertEquals(5, mSiteStore.getSitesCount());
     }
 
     @Test
@@ -623,9 +621,9 @@ public class SiteStoreUnitTest {
         createOrUpdateSites.setAccessible(true);
         UpdateSitesResult res = (UpdateSitesResult) createOrUpdateSites.invoke(mSiteStore, sites);
 
-        assertFalse(res.duplicateSiteFound);
-        assertEquals(5, res.rowsAffected);
-        assertEquals(5, mSiteStore.getSitesCount());
+        Assert.assertFalse(res.duplicateSiteFound);
+        Assert.assertEquals(5, res.rowsAffected);
+        Assert.assertEquals(5, mSiteStore.getSitesCount());
     }
 
     @Test
@@ -642,9 +640,9 @@ public class SiteStoreUnitTest {
         createOrUpdateSites.setAccessible(true);
         UpdateSitesResult res = (UpdateSitesResult) createOrUpdateSites.invoke(mSiteStore, sites);
 
-        assertFalse(res.duplicateSiteFound);
-        assertEquals(1, res.rowsAffected);
-        assertEquals(1, mSiteStore.getSitesCount());
+        Assert.assertFalse(res.duplicateSiteFound);
+        Assert.assertEquals(1, res.rowsAffected);
+        Assert.assertEquals(1, mSiteStore.getSitesCount());
 
         // Insert same site with different id (considered a duplicate)
         List<SiteModel> siteList2 = new ArrayList<>();
@@ -653,9 +651,9 @@ public class SiteStoreUnitTest {
         createOrUpdateSites.setAccessible(true);
         UpdateSitesResult res2 = (UpdateSitesResult) createOrUpdateSites.invoke(mSiteStore, sites2);
 
-        assertTrue(res2.duplicateSiteFound);
-        assertEquals(0, res2.rowsAffected);
-        assertEquals(1, mSiteStore.getSitesCount());
+        Assert.assertTrue(res2.duplicateSiteFound);
+        Assert.assertEquals(0, res2.rowsAffected);
+        Assert.assertEquals(1, mSiteStore.getSitesCount());
     }
 
     @Test
@@ -680,9 +678,9 @@ public class SiteStoreUnitTest {
             // Caught !
             duplicate = true;
         }
-        assertFalse(duplicate);
+        Assert.assertFalse(duplicate);
         int sitesCount = WellSql.select(SiteModel.class).getAsCursor().getCount();
-        assertEquals(1, sitesCount);
+        Assert.assertEquals(1, sitesCount);
     }
 
     @Test
@@ -709,9 +707,9 @@ public class SiteStoreUnitTest {
             // Caught !
             duplicate = true;
         }
-        assertFalse(duplicate);
+        Assert.assertFalse(duplicate);
         int sitesCount = WellSql.select(SiteModel.class).getAsCursor().getCount();
-        assertEquals(1, sitesCount);
+        Assert.assertEquals(1, sitesCount);
     }
 
     @Test
@@ -732,36 +730,36 @@ public class SiteStoreUnitTest {
             // can't catch `SQLiteConstraintException` in SiteSqlUtils.insertOrUpdateSite.
             duplicate = true;
         }
-        assertTrue(duplicate);
+        Assert.assertTrue(duplicate);
     }
 
     @Test
     public void testJetpackSelfHostedAndForceXMLRPC() {
         SiteModel jetpackSite = generateJetpackSiteOverXMLRPC();
         jetpackSite.setOrigin(SiteModel.ORIGIN_WPCOM_REST);
-        assertTrue(jetpackSite.isUsingWpComRestApi());
+        Assert.assertTrue(jetpackSite.isUsingWpComRestApi());
 
         // Force the origin, it should now use XMLRPC instead of REST.
         jetpackSite.setOrigin(SiteModel.ORIGIN_XMLRPC);
-        assertFalse(jetpackSite.isUsingWpComRestApi());
+        Assert.assertFalse(jetpackSite.isUsingWpComRestApi());
     }
 
     @Test
     public void testDefaultUsageWpComRestApi() {
         SiteModel wpComSite = generateWPComSite();
-        assertTrue(wpComSite.isUsingWpComRestApi());
+        Assert.assertTrue(wpComSite.isUsingWpComRestApi());
 
         SiteModel jetpack1 = generateJetpackSiteOverRestOnly();
-        assertTrue(jetpack1.isUsingWpComRestApi());
+        Assert.assertTrue(jetpack1.isUsingWpComRestApi());
 
         SiteModel jetpack2 = generateJetpackSiteOverXMLRPC();
-        assertFalse(jetpack2.isUsingWpComRestApi());
+        Assert.assertFalse(jetpack2.isUsingWpComRestApi());
 
         SiteModel pureSelfHosted1 = generateSelfHostedNonJPSite();
-        assertFalse(pureSelfHosted1.isUsingWpComRestApi());
+        Assert.assertFalse(pureSelfHosted1.isUsingWpComRestApi());
 
         SiteModel pureSelfHosted2 = generateSelfHostedSiteFutureJetpack();
-        assertFalse(pureSelfHosted2.isUsingWpComRestApi());
+        Assert.assertFalse(pureSelfHosted2.isUsingWpComRestApi());
     }
 
     @Test
@@ -806,9 +804,9 @@ public class SiteStoreUnitTest {
         createOrUpdateSites.setAccessible(true);
         UpdateSitesResult res = (UpdateSitesResult) createOrUpdateSites.invoke(mSiteStore, new SitesModel(allSites));
 
-        assertFalse(res.duplicateSiteFound);
-        assertTrue(res.rowsAffected == 15);
-        assertTrue(mSiteStore.getSitesCount() == 15);
+        Assert.assertFalse(res.duplicateSiteFound);
+        Assert.assertTrue(res.rowsAffected == 15);
+        Assert.assertTrue(mSiteStore.getSitesCount() == 15);
 
         // add 2 of each kind of site to keep
         sitesToKeep.addAll(allSites.subList(0, 6));
@@ -816,11 +814,11 @@ public class SiteStoreUnitTest {
         // remove six sites (2/3 * (15 - 6))
         SiteSqlUtils.removeWPComRestSitesAbsentFromList(sitesToKeep);
 
-        assertTrue(mSiteStore.getSitesCount() == 9);
+        Assert.assertTrue(mSiteStore.getSitesCount() == 9);
 
         // make sure all sites in sitesToKeep are in the store
         for (SiteModel site : sitesToKeep) {
-            assertTrue(mSiteStore.getSiteBySiteId(site.getSiteId()) != null);
+            Assert.assertTrue(mSiteStore.getSiteBySiteId(site.getSiteId()) != null);
         }
     }
 }

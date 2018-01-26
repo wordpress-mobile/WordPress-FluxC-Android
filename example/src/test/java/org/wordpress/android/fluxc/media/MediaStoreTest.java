@@ -4,6 +4,8 @@ import android.content.Context;
 
 import com.yarolegovich.wellsql.WellSql;
 
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,11 +28,7 @@ import org.wordpress.android.fluxc.utils.MediaUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
 import static org.wordpress.android.fluxc.media.MediaTestUtils.generateMedia;
 import static org.wordpress.android.fluxc.media.MediaTestUtils.generateMediaFromPath;
 import static org.wordpress.android.fluxc.media.MediaTestUtils.generateRandomizedMedia;
@@ -58,13 +56,13 @@ public class MediaStoreTest {
 
         // get all media via MediaStore
         List<MediaModel> storeMedia = mMediaStore.getAllSiteMedia(getTestSiteWithLocalId(testSiteId));
-        assertNotNull(storeMedia);
-        assertEquals(testMedia.size(), storeMedia.size());
+        Assert.assertNotNull(storeMedia);
+        Assert.assertEquals(testMedia.size(), storeMedia.size());
 
         // verify media
         for (MediaModel media : storeMedia) {
-            assertEquals(testSiteId, media.getLocalSiteId());
-            assertTrue(testMedia.contains(media));
+            Assert.assertEquals(testSiteId, media.getLocalSiteId());
+            Assert.assertTrue(testMedia.contains(media));
         }
     }
 
@@ -72,19 +70,19 @@ public class MediaStoreTest {
     public void testMediaCount() {
         final int testSiteId = 2;
         SiteModel testSite = getTestSiteWithLocalId(testSiteId);
-        assertTrue(mMediaStore.getSiteMediaCount(testSite) == 0);
+        Assert.assertTrue(mMediaStore.getSiteMediaCount(testSite) == 0);
 
         // count after insertion
         insertRandomMediaIntoDatabase(testSiteId, 5);
-        assertTrue(mMediaStore.getSiteMediaCount(testSite) == 5);
+        Assert.assertTrue(mMediaStore.getSiteMediaCount(testSite) == 5);
 
         // count after inserting with different site ID
         final int wrongSiteId = testSiteId + 1;
         SiteModel wrongSite = getTestSiteWithLocalId(wrongSiteId);
-        assertTrue(mMediaStore.getSiteMediaCount(wrongSite) == 0);
+        Assert.assertTrue(mMediaStore.getSiteMediaCount(wrongSite) == 0);
         insertRandomMediaIntoDatabase(wrongSiteId, 1);
-        assertTrue(mMediaStore.getSiteMediaCount(wrongSite) == 1);
-        assertTrue(mMediaStore.getSiteMediaCount(testSite) == 5);
+        Assert.assertTrue(mMediaStore.getSiteMediaCount(wrongSite) == 1);
+        Assert.assertTrue(mMediaStore.getSiteMediaCount(testSite) == 5);
     }
 
     @Test
@@ -92,18 +90,18 @@ public class MediaStoreTest {
         final int testSiteId = 24;
         final long testMediaId = 22;
         SiteModel testSite = getTestSiteWithLocalId(testSiteId);
-        assertTrue(mMediaStore.getSiteMediaCount(testSite) == 0);
-        assertFalse(mMediaStore.hasSiteMediaWithId(testSite, testMediaId));
+        Assert.assertTrue(mMediaStore.getSiteMediaCount(testSite) == 0);
+        Assert.assertFalse(mMediaStore.hasSiteMediaWithId(testSite, testMediaId));
 
         // add test media
         MediaModel testMedia = getBasicMedia();
         testMedia.setLocalSiteId(testSiteId);
         testMedia.setMediaId(testMediaId);
-        assertTrue(insertMediaIntoDatabase(testMedia) == 1);
+        Assert.assertTrue(insertMediaIntoDatabase(testMedia) == 1);
 
         // verify store has inserted media
-        assertTrue(mMediaStore.getSiteMediaCount(testSite) == 1);
-        assertTrue(mMediaStore.hasSiteMediaWithId(testSite, testMediaId));
+        Assert.assertTrue(mMediaStore.getSiteMediaCount(testSite) == 1);
+        Assert.assertTrue(mMediaStore.hasSiteMediaWithId(testSite, testMediaId));
     }
 
     @Test
@@ -111,13 +109,13 @@ public class MediaStoreTest {
         final int testSiteId = 25;
         final long testMediaId = 11;
         SiteModel testSite = getTestSiteWithLocalId(testSiteId);
-        assertFalse(mMediaStore.hasSiteMediaWithId(testSite, testMediaId));
+        Assert.assertFalse(mMediaStore.hasSiteMediaWithId(testSite, testMediaId));
 
         // add test media
         MediaModel testMedia = getBasicMedia();
         testMedia.setLocalSiteId(testSiteId);
         testMedia.setMediaId(testMediaId);
-        assertTrue(insertMediaIntoDatabase(testMedia) == 1);
+        Assert.assertTrue(insertMediaIntoDatabase(testMedia) == 1);
 
         // cannot get media with incorrect site ID
         final int wrongSiteId = testSiteId + 1;
@@ -126,8 +124,8 @@ public class MediaStoreTest {
 
         // verify stored media
         final MediaModel storeMedia = mMediaStore.getSiteMediaWithId(testSite, testMediaId);
-        assertNotNull(storeMedia);
-        assertEquals(testMedia, storeMedia);
+        Assert.assertNotNull(storeMedia);
+        Assert.assertEquals(testMedia, storeMedia);
     }
 
     @Test
@@ -137,7 +135,7 @@ public class MediaStoreTest {
         final int testSiteId = 55;
         SiteModel testSite = getTestSiteWithLocalId(testSiteId);
         List<MediaModel> insertedMedia = insertRandomMediaIntoDatabase(testSiteId, testListSize);
-        assertTrue(mMediaStore.getSiteMediaCount(testSite) == testListSize);
+        Assert.assertTrue(mMediaStore.getSiteMediaCount(testSite) == testListSize);
 
         // create whitelist
         List<Long> whitelist = new ArrayList<>(testListSize / 2);
@@ -146,10 +144,10 @@ public class MediaStoreTest {
         }
 
         final List<MediaModel> storeMedia = mMediaStore.getSiteMediaWithIds(testSite, whitelist);
-        assertNotNull(storeMedia);
-        assertTrue(storeMedia.size() == whitelist.size());
+        Assert.assertNotNull(storeMedia);
+        Assert.assertTrue(storeMedia.size() == whitelist.size());
         for (MediaModel media : storeMedia) {
-            assertTrue(whitelist.contains(media.getMediaId()));
+            Assert.assertTrue(whitelist.contains(media.getMediaId()));
         }
     }
 
@@ -163,24 +161,24 @@ public class MediaStoreTest {
 
         // insert media of different types
         MediaModel videoMedia = generateMediaFromPath(testSiteId, testVideoId, testVideoPath);
-        assertTrue(MediaUtils.isVideoMimeType(videoMedia.getMimeType()));
+        Assert.assertTrue(MediaUtils.isVideoMimeType(videoMedia.getMimeType()));
         MediaModel imageMedia = generateMediaFromPath(testSiteId, testImageId, testImagePath);
-        assertTrue(MediaUtils.isImageMimeType(imageMedia.getMimeType()));
+        Assert.assertTrue(MediaUtils.isImageMimeType(imageMedia.getMimeType()));
         insertMediaIntoDatabase(videoMedia);
         insertMediaIntoDatabase(imageMedia);
 
         final List<MediaModel> storeImages = mMediaStore.getSiteImages(getTestSiteWithLocalId(testSiteId));
-        assertNotNull(storeImages);
-        assertTrue(storeImages.size() == 1);
-        assertEquals(testImageId, storeImages.get(0).getMediaId());
-        assertTrue(MediaUtils.isImageMimeType(storeImages.get(0).getMimeType()));
+        Assert.assertNotNull(storeImages);
+        Assert.assertTrue(storeImages.size() == 1);
+        Assert.assertEquals(testImageId, storeImages.get(0).getMediaId());
+        Assert.assertTrue(MediaUtils.isImageMimeType(storeImages.get(0).getMimeType()));
     }
 
     @Test
     public void testGetSiteImageCount() {
         final int testSiteId = 9001;
         SiteModel testSite = getTestSiteWithLocalId(testSiteId);
-        assertTrue(mMediaStore.getSiteImageCount(testSite) == 0);
+        Assert.assertTrue(mMediaStore.getSiteImageCount(testSite) == 0);
 
         // insert both images and videos
         final int testListSize = 10;
@@ -191,31 +189,31 @@ public class MediaStoreTest {
         for (int i = 0; i < testListSize; ++i) {
             MediaModel testImage = generateMediaFromPath(testSiteId, i, String.format(testImagePath, i));
             MediaModel testVideo = generateMediaFromPath(testSiteId, i + testListSize, String.format(testVideoPath, i));
-            assertTrue(insertMediaIntoDatabase(testImage) == 1);
-            assertTrue(insertMediaIntoDatabase(testVideo) == 1);
+            Assert.assertTrue(insertMediaIntoDatabase(testImage) == 1);
+            Assert.assertTrue(insertMediaIntoDatabase(testVideo) == 1);
             testImages.add(testImage);
             testVideos.add(testVideo);
         }
 
-        assertTrue(mMediaStore.getSiteMediaCount(testSite) == testImages.size() + testVideos.size());
-        assertTrue(mMediaStore.getSiteImageCount(testSite) == testImages.size());
+        Assert.assertTrue(mMediaStore.getSiteMediaCount(testSite) == testImages.size() + testVideos.size());
+        Assert.assertTrue(mMediaStore.getSiteImageCount(testSite) == testImages.size());
     }
 
     @Test
     public void testGetSiteImagesBlacklist() {
         final int testSiteId = 3;
         SiteModel testSite = getTestSiteWithLocalId(testSiteId);
-        assertTrue(mMediaStore.getSiteImageCount(testSite) == 0);
+        Assert.assertTrue(mMediaStore.getSiteImageCount(testSite) == 0);
 
         final int testListSize = 10;
         final List<MediaModel> testImages = new ArrayList<>(testListSize);
         final String testImagePath = "/test/test_image%d.png";
         for (int i = 0; i < testListSize; ++i) {
             MediaModel image = generateMediaFromPath(testSiteId, i, String.format(testImagePath, i));
-            assertTrue(insertMediaIntoDatabase(image) == 1);
+            Assert.assertTrue(insertMediaIntoDatabase(image) == 1);
             testImages.add(image);
         }
-        assertTrue(mMediaStore.getSiteImageCount(testSite) == testListSize);
+        Assert.assertTrue(mMediaStore.getSiteImageCount(testSite) == testListSize);
 
         // create blacklist
         List<Long> blacklist = new ArrayList<>(testListSize / 2);
@@ -224,10 +222,10 @@ public class MediaStoreTest {
         }
 
         final List<MediaModel> storeMedia = mMediaStore.getSiteImagesExcludingIds(testSite, blacklist);
-        assertNotNull(storeMedia);
-        assertEquals(testListSize - blacklist.size(), storeMedia.size());
+        Assert.assertNotNull(storeMedia);
+        Assert.assertEquals(testListSize - blacklist.size(), storeMedia.size());
         for (MediaModel media : storeMedia) {
-            assertFalse(blacklist.contains(media.getMediaId()));
+            Assert.assertFalse(blacklist.contains(media.getMediaId()));
         }
     }
 
@@ -249,10 +247,10 @@ public class MediaStoreTest {
         }
 
         final List<MediaModel> storeMedia = mMediaStore.getUnattachedSiteMedia(getTestSiteWithLocalId(testSiteId));
-        assertNotNull(storeMedia);
-        assertTrue(storeMedia.size() == unattachedMedia.size());
+        Assert.assertNotNull(storeMedia);
+        Assert.assertTrue(storeMedia.size() == unattachedMedia.size());
         for (int i = 0; i < storeMedia.size(); ++i) {
-            assertTrue(storeMedia.contains(unattachedMedia.get(i)));
+            Assert.assertTrue(storeMedia.contains(unattachedMedia.get(i)));
         }
     }
 
@@ -270,7 +268,7 @@ public class MediaStoreTest {
             insertMediaIntoDatabase(attached);
             insertMediaIntoDatabase(unattached);
         }
-        assertTrue(mMediaStore.getUnattachedSiteMediaCount(getTestSiteWithLocalId(testSiteId)) == testPoolSize);
+        Assert.assertTrue(mMediaStore.getUnattachedSiteMediaCount(getTestSiteWithLocalId(testSiteId)) == testPoolSize);
     }
 
     @Test
@@ -295,22 +293,22 @@ public class MediaStoreTest {
         insertMediaIntoDatabase(remoteMedia);
 
         SiteModel testSite = getTestSiteWithLocalId(testSiteId);
-        assertEquals(2, mMediaStore.getSiteMediaCount(testSite));
+        Assert.assertEquals(2, mMediaStore.getSiteMediaCount(testSite));
 
         // verify local store media
         final List<MediaModel> localSiteMedia = mMediaStore.getLocalSiteMedia(testSite);
-        assertNotNull(localSiteMedia);
-        assertEquals(1, localSiteMedia.size());
-        assertNotNull(localSiteMedia.get(0));
-        assertEquals(localMediaId, localSiteMedia.get(0).getMediaId());
+        Assert.assertNotNull(localSiteMedia);
+        Assert.assertEquals(1, localSiteMedia.size());
+        Assert.assertNotNull(localSiteMedia.get(0));
+        Assert.assertEquals(localMediaId, localSiteMedia.get(0).getMediaId());
 
         // verify uploaded store media
         final List<MediaModel> uploadedSiteMedia = mMediaStore.getSiteMediaWithState(testSite,
                 MediaUploadState.UPLOADED);
-        assertNotNull(uploadedSiteMedia);
-        assertEquals(1, uploadedSiteMedia.size());
-        assertNotNull(uploadedSiteMedia.get(0));
-        assertEquals(remoteMediaId, uploadedSiteMedia.get(0).getMediaId());
+        Assert.assertNotNull(uploadedSiteMedia);
+        Assert.assertEquals(1, uploadedSiteMedia.size());
+        Assert.assertNotNull(uploadedSiteMedia.get(0));
+        Assert.assertEquals(remoteMediaId, uploadedSiteMedia.get(0).getMediaId());
     }
 
     @Test
@@ -324,13 +322,13 @@ public class MediaStoreTest {
         final String testVideoPressGuid = "thisisonlyatest";
         testVideo.setUrl(testUrl);
         testVideo.setVideoPressGuid(testVideoPressGuid);
-        assertTrue(insertMediaIntoDatabase(testVideo) == 1);
+        Assert.assertTrue(insertMediaIntoDatabase(testVideo) == 1);
 
         // retrieve video and verify
         final String storeUrl = mMediaStore
                 .getUrlForSiteVideoWithVideoPressGuid(getTestSiteWithLocalId(testSiteId), testVideoPressGuid);
-        assertNotNull(storeUrl);
-        assertEquals(testUrl, storeUrl);
+        Assert.assertNotNull(storeUrl);
+        Assert.assertEquals(testUrl, storeUrl);
     }
 
     @Test
@@ -342,13 +340,13 @@ public class MediaStoreTest {
         final String testUrl = "http://notarealurl.testfluxc.org/not/a/real/resource/path.mp4";
         testMedia.setThumbnailUrl(testUrl);
         testMedia.setMediaId(testMediaId);
-        assertTrue(insertMediaIntoDatabase(testMedia) == 1);
+        Assert.assertTrue(insertMediaIntoDatabase(testMedia) == 1);
 
         // retrieve media and verify
         final String storeUrl = mMediaStore
                 .getThumbnailUrlForSiteMediaWithId(getTestSiteWithLocalId(testSiteId), testMediaId);
-        assertNotNull(storeUrl);
-        assertEquals(testUrl, storeUrl);
+        Assert.assertNotNull(storeUrl);
+        Assert.assertEquals(testUrl, storeUrl);
     }
 
     @Test
@@ -363,15 +361,15 @@ public class MediaStoreTest {
             MediaModel testMedia = generateMedia(baseString, null, null, null);
             testMedia.setLocalSiteId(testSiteId);
             testMedia.setMediaId(i);
-            assertTrue(insertMediaIntoDatabase(testMedia) == 1);
+            Assert.assertTrue(insertMediaIntoDatabase(testMedia) == 1);
             baseString += String.valueOf(i);
         }
 
         for (int i = 0; i < testPoolSize; ++i) {
             List<MediaModel> storeMedia = mMediaStore
                     .searchSiteMedia(getTestSiteWithLocalId(testSiteId), testTitles[i]);
-            assertNotNull(storeMedia);
-            assertTrue(storeMedia.size() == testPoolSize - i);
+            Assert.assertNotNull(storeMedia);
+            Assert.assertTrue(storeMedia.size() == testPoolSize - i);
         }
     }
 
@@ -412,18 +410,18 @@ public class MediaStoreTest {
         PostModel post = new PostModel();
         post.setId(testLocalPostId);
         final MediaModel storeMedia = mMediaStore.getMediaForPostWithPath(post, testPath);
-        assertNotNull(storeMedia);
-        assertEquals(testPath, storeMedia.getFilePath());
-        assertEquals(postMediaId, storeMedia.getMediaId());
-        assertEquals(3, mMediaStore.getSiteMediaCount(getTestSiteWithLocalId(testSiteId)));
+        Assert.assertNotNull(storeMedia);
+        Assert.assertEquals(testPath, storeMedia.getFilePath());
+        Assert.assertEquals(postMediaId, storeMedia.getMediaId());
+        Assert.assertEquals(3, mMediaStore.getSiteMediaCount(getTestSiteWithLocalId(testSiteId)));
 
         // verify the correct media is in the store
         List<MediaModel> mediaModelList = mMediaStore.getMediaForPost(post);
-        assertNotNull(mediaModelList);
-        assertEquals(3, mediaModelList.size());
+        Assert.assertNotNull(mediaModelList);
+        Assert.assertEquals(3, mediaModelList.size());
         for (MediaModel media : mediaModelList) {
-            assertNotNull(media);
-            assertEquals(post.getId(), media.getLocalPostId());
+            Assert.assertNotNull(media);
+            Assert.assertEquals(post.getId(), media.getLocalPostId());
         }
     }
 
@@ -445,16 +443,16 @@ public class MediaStoreTest {
         }
 
         SiteModel testSite = getTestSiteWithLocalId(testSiteId);
-        assertEquals(count * 2, mMediaStore.getSiteMediaCount(testSite));
+        Assert.assertEquals(count * 2, mMediaStore.getSiteMediaCount(testSite));
 
         // verify store media updates as media is deleted
         for (int i = 0; i < count; ++i) {
             MediaModel next = mMediaStore.getNextSiteMediaToDelete(testSite);
-            assertNotNull(next);
-            assertEquals(MediaUploadState.DELETING, MediaUploadState.fromString(next.getUploadState()));
-            assertTrue(pendingDelete.contains(next));
+            Assert.assertNotNull(next);
+            Assert.assertEquals(MediaUploadState.DELETING, MediaUploadState.fromString(next.getUploadState()));
+            Assert.assertTrue(pendingDelete.contains(next));
             MediaSqlUtils.deleteMedia(next);
-            assertEquals(count * 2 - i - 1, mMediaStore.getSiteMediaCount(testSite));
+            Assert.assertEquals(count * 2 - i - 1, mMediaStore.getSiteMediaCount(testSite));
             pendingDelete.remove(next);
         }
     }
@@ -477,40 +475,40 @@ public class MediaStoreTest {
         }
 
         SiteModel testSite = getTestSiteWithLocalId(testSiteId);
-        assertEquals(count * 2, mMediaStore.getSiteMediaCount(testSite));
+        Assert.assertEquals(count * 2, mMediaStore.getSiteMediaCount(testSite));
 
         // verify store still has media to delete after deleting one
-        assertTrue(mMediaStore.hasSiteMediaToDelete(testSite));
+        Assert.assertTrue(mMediaStore.hasSiteMediaToDelete(testSite));
         MediaModel next = mMediaStore.getNextSiteMediaToDelete(testSite);
-        assertNotNull(next);
-        assertTrue(pendingDelete.contains(next));
+        Assert.assertNotNull(next);
+        Assert.assertTrue(pendingDelete.contains(next));
         MediaSqlUtils.deleteMedia(next);
         pendingDelete.remove(next);
-        assertEquals(count * 2 - 1, mMediaStore.getSiteMediaCount(testSite));
-        assertTrue(mMediaStore.hasSiteMediaToDelete(testSite));
+        Assert.assertEquals(count * 2 - 1, mMediaStore.getSiteMediaCount(testSite));
+        Assert.assertTrue(mMediaStore.hasSiteMediaToDelete(testSite));
 
         // verify store has no media to delete after removing all
         for (MediaModel pending : pendingDelete) {
             MediaSqlUtils.deleteMedia(pending);
         }
-        assertEquals(count, mMediaStore.getSiteMediaCount(testSite));
-        assertFalse(mMediaStore.hasSiteMediaToDelete(testSite));
+        Assert.assertEquals(count, mMediaStore.getSiteMediaCount(testSite));
+        Assert.assertFalse(mMediaStore.hasSiteMediaToDelete(testSite));
     }
 
     @Test
     public void testRemoveAllMedia() {
         SiteModel testSite1 = getTestSiteWithLocalId(1);
         insertRandomMediaIntoDatabase(testSite1.getId(), 5);
-        assertTrue(mMediaStore.getSiteMediaCount(testSite1) == 5);
+        Assert.assertTrue(mMediaStore.getSiteMediaCount(testSite1) == 5);
 
         SiteModel testSite2 = getTestSiteWithLocalId(2);
         insertRandomMediaIntoDatabase(testSite2.getId(), 7);
-        assertTrue(mMediaStore.getSiteMediaCount(testSite2) == 7);
+        Assert.assertTrue(mMediaStore.getSiteMediaCount(testSite2) == 7);
 
         MediaSqlUtils.deleteAllMedia();
 
-        assertTrue(mMediaStore.getSiteMediaCount(testSite1) == 0);
-        assertTrue(mMediaStore.getSiteMediaCount(testSite2) == 0);
+        Assert.assertTrue(mMediaStore.getSiteMediaCount(testSite1) == 0);
+        Assert.assertTrue(mMediaStore.getSiteMediaCount(testSite2) == 0);
     }
 
     private MediaModel getBasicMedia() {

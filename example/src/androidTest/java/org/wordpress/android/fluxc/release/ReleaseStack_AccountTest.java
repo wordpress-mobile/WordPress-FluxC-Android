@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import junit.framework.Assert;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
@@ -89,7 +91,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
         mCountDownLatch = new CountDownLatch(2);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testWPComPost() throws InterruptedException {
@@ -105,9 +107,9 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         payload.params.put("description", newValue);
         mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(newValue, mAccountStore.getAccount().getAboutMe());
+        Assert.assertEquals(newValue, mAccountStore.getAccount().getAboutMe());
     }
 
     public void testWPComPostNoChange() throws InterruptedException {
@@ -121,7 +123,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
         mCountDownLatch = new CountDownLatch(2);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         mNextEvent = TestEvents.POSTED;
         PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
@@ -131,9 +133,9 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         payload.params.put("description", newValue);
         mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(newValue, mAccountStore.getAccount().getAboutMe());
+        Assert.assertEquals(newValue, mAccountStore.getAccount().getAboutMe());
     }
 
     public void testWPComPostPrimarySiteIdNoChange() throws InterruptedException {
@@ -147,7 +149,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
         mCountDownLatch = new CountDownLatch(2);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         mNextEvent = TestEvents.POSTED;
         PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
@@ -157,9 +159,9 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         payload.params.put("primary_site_ID", newValue);
         mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(newValue, String.valueOf(mAccountStore.getAccount().getPrimarySiteId()));
+        Assert.assertEquals(newValue, String.valueOf(mAccountStore.getAccount().getPrimarySiteId()));
     }
 
     public void testChangeWPComUsernameInvalidInputError() throws InterruptedException {
@@ -177,10 +179,10 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AccountActionBuilder.newPushUsernameAction(payload));
 
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(username, String.valueOf(mAccountStore.getAccount().getUserName()));
-        assertEquals(address, String.valueOf(mAccountStore.getAccount().getWebAddress()));
+        Assert.assertEquals(username, String.valueOf(mAccountStore.getAccount().getUserName()));
+        Assert.assertEquals(address, String.valueOf(mAccountStore.getAccount().getWebAddress()));
     }
 
     public void testFetchWPComUsernameSuggestionsNoNameError() throws InterruptedException {
@@ -190,7 +192,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AccountActionBuilder.newFetchUsernameSuggestionsAction(payload));
 
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testFetchWPComUsernameSuggestionsSuccess() throws InterruptedException {
@@ -200,7 +202,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AccountActionBuilder.newFetchUsernameSuggestionsAction(payload));
 
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testWPComSignOut() throws InterruptedException {
@@ -210,10 +212,10 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(2); // Wait for OnAuthenticationChanged and OnAccountChanged
         mNextEvent = TestEvents.AUTHENTICATE;
         mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertFalse(mAccountStore.hasAccessToken());
-        assertEquals(0, mAccountStore.getAccount().getUserId());
+        Assert.assertFalse(mAccountStore.hasAccessToken());
+        Assert.assertEquals(0, mAccountStore.getAccount().getUserId());
     }
 
     public void testWPComSignOutCollision() throws InterruptedException {
@@ -225,14 +227,14 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         Thread.sleep(100);
         mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         mCountDownLatch = new CountDownLatch(1); // Wait for FETCH_ACCOUNT result
         mNextEvent = TestEvents.FETCH_ERROR;
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertFalse(mAccountStore.hasAccessToken());
-        assertEquals(0, mAccountStore.getAccount().getUserId());
+        Assert.assertFalse(mAccountStore.hasAccessToken());
+        Assert.assertEquals(0, mAccountStore.getAccount().getUserId());
     }
 
     public void testSendAuthEmail() throws InterruptedException {
@@ -240,7 +242,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, false);
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testSendAuthEmailViaUsername() throws InterruptedException {
@@ -248,7 +250,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1, false);
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testSendAuthEmailInvalid() throws InterruptedException {
@@ -257,7 +259,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AuthEmailPayload payload = new AuthEmailPayload("email@domain", false);
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testSendAuthEmailNoSuchUser() throws InterruptedException {
@@ -266,7 +268,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AuthEmailPayload payload = new AuthEmailPayload(unknownEmail, false);
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testSendAuthEmailSignup() throws InterruptedException {
@@ -275,7 +277,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AuthEmailPayload payload = new AuthEmailPayload(unknownEmail, true);
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testSendAuthEmailSignupInvalid() throws InterruptedException {
@@ -283,7 +285,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AuthEmailPayload payload = new AuthEmailPayload("email@domain", true);
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testSendAuthEmailSignupUserExists() throws InterruptedException {
@@ -291,7 +293,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, true);
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @SuppressWarnings("unused")
@@ -301,16 +303,16 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         if (event.isError()) {
             switch (mNextEvent) {
                 case AUTHENTICATE_2FA_ERROR:
-                    assertEquals(event.error.type, AuthenticationErrorType.NEEDS_2FA);
+                    Assert.assertEquals(event.error.type, AuthenticationErrorType.NEEDS_2FA);
                     break;
                 case INCORRECT_USERNAME_OR_PASSWORD_ERROR:
-                    assertEquals(event.error.type, AuthenticationErrorType.INCORRECT_USERNAME_OR_PASSWORD);
+                    Assert.assertEquals(event.error.type, AuthenticationErrorType.INCORRECT_USERNAME_OR_PASSWORD);
                     break;
                 default:
                     throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
         } else {
-            assertEquals(mNextEvent, TestEvents.AUTHENTICATE);
+            Assert.assertEquals(mNextEvent, TestEvents.AUTHENTICATE);
         }
         mCountDownLatch.countDown();
     }
@@ -322,7 +324,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         if (event.isError()) {
             switch (event.error.type) {
                 case ACCOUNT_FETCH_ERROR:
-                    assertEquals(mNextEvent, TestEvents.FETCH_ERROR);
+                    Assert.assertEquals(mNextEvent, TestEvents.FETCH_ERROR);
                     mCountDownLatch.countDown();
                     break;
                 default:
@@ -331,14 +333,14 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
             return;
         }
         if (event.causeOfChange == AccountAction.FETCH_ACCOUNT) {
-            assertEquals(mNextEvent, TestEvents.FETCHED);
-            assertEquals(BuildConfig.TEST_WPCOM_USERNAME_TEST1, mAccountStore.getAccount().getUserName());
+            Assert.assertEquals(mNextEvent, TestEvents.FETCHED);
+            Assert.assertEquals(BuildConfig.TEST_WPCOM_USERNAME_TEST1, mAccountStore.getAccount().getUserName());
         } else if (event.causeOfChange == AccountAction.FETCH_SETTINGS) {
-            assertEquals(mNextEvent, TestEvents.FETCHED);
-            assertEquals(BuildConfig.TEST_WPCOM_USERNAME_TEST1, mAccountStore.getAccount().getUserName());
+            Assert.assertEquals(mNextEvent, TestEvents.FETCHED);
+            Assert.assertEquals(BuildConfig.TEST_WPCOM_USERNAME_TEST1, mAccountStore.getAccount().getUserName());
         } else if (event.causeOfChange == AccountAction.PUSH_SETTINGS) {
-            assertEquals(mNextEvent, TestEvents.POSTED);
-            assertEquals(mExpectAccountInfosChanged, event.accountInfosChanged);
+            Assert.assertEquals(mNextEvent, TestEvents.POSTED);
+            Assert.assertEquals(mExpectAccountInfosChanged, event.accountInfosChanged);
         }
         mCountDownLatch.countDown();
     }
@@ -351,19 +353,19 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
             AppLog.i(AppLog.T.API, "OnAuthEmailSent has error: " + event.error.type + " - " + event.error.message);
             if (event.error.type == AuthEmailErrorType.INVALID_EMAIL) {
                 if (event.isSignup) {
-                    assertTrue(mNextEvent == TestEvents.AUTH_EMAIL_ERROR_INVALID);
+                    Assert.assertTrue(mNextEvent == TestEvents.AUTH_EMAIL_ERROR_INVALID);
                 } else {
-                    assertTrue(mNextEvent == TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER);
+                    Assert.assertTrue(mNextEvent == TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER);
                 }
                 mCountDownLatch.countDown();
             } else if (event.error.type == AuthEmailErrorType.USER_EXISTS) {
-                assertEquals(mNextEvent, TestEvents.AUTH_EMAIL_ERROR_USER_EXISTS);
+                Assert.assertEquals(mNextEvent, TestEvents.AUTH_EMAIL_ERROR_USER_EXISTS);
                 mCountDownLatch.countDown();
             } else {
                 throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
         } else {
-            assertEquals(mNextEvent, TestEvents.SENT_AUTH_EMAIL);
+            Assert.assertEquals(mNextEvent, TestEvents.SENT_AUTH_EMAIL);
             mCountDownLatch.countDown();
         }
     }
@@ -382,7 +384,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
                 case INVALID_ACTION:
                     throw new AssertionError("Error should not occur with action type enum: " + event.type);
                 case INVALID_INPUT:
-                    assertEquals(mNextEvent, TestEvents.CHANGE_USERNAME_ERROR_INVALID_INPUT);
+                    Assert.assertEquals(mNextEvent, TestEvents.CHANGE_USERNAME_ERROR_INVALID_INPUT);
                     mCountDownLatch.countDown();
                     break;
                 default:
@@ -406,14 +408,14 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
                 case REST_MISSING_CALLBACK_PARAM:
                     throw new AssertionError("Error should not occur with name parameter");
                 case REST_NO_NAME:
-                    assertEquals(mNextEvent, TestEvents.FETCH_USERNAME_SUGGESTIONS_ERROR_NO_NAME);
+                    Assert.assertEquals(mNextEvent, TestEvents.FETCH_USERNAME_SUGGESTIONS_ERROR_NO_NAME);
                     mCountDownLatch.countDown();
                     break;
                 default:
                     throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
         } else if (event.suggestions.size() != 0) {
-            assertEquals(mNextEvent, TestEvents.FETCH_USERNAME_SUGGESTIONS_SUCCESS);
+            Assert.assertEquals(mNextEvent, TestEvents.FETCH_USERNAME_SUGGESTIONS_SUCCESS);
             mCountDownLatch.countDown();
         }
     }
@@ -422,6 +424,6 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }

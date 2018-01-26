@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import junit.framework.Assert;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
@@ -39,7 +41,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
 
         mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginAction(mSlug));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @SuppressWarnings("unused")
@@ -49,9 +51,9 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
 
-        assertEquals(TestEvents.WPORG_PLUGIN_FETCHED, mNextEvent);
+        Assert.assertEquals(TestEvents.WPORG_PLUGIN_FETCHED, mNextEvent);
         WPOrgPluginModel wpOrgPlugin = mPluginStore.getWPOrgPluginBySlug(mSlug);
-        assertNotNull(wpOrgPlugin);
+        Assert.assertNotNull(wpOrgPlugin);
         mCountDownLatch.countDown();
     }
 }

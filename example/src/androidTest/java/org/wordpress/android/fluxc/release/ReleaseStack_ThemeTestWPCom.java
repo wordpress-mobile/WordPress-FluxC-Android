@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import junit.framework.Assert;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.TestUtils;
@@ -42,20 +44,20 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         // Make sure no theme is active at first
         assertNull(mThemeStore.getActiveThemeForSite(sSite));
         ThemeModel currentTheme = fetchCurrentTheme();
-        assertNotNull(currentTheme);
+        Assert.assertNotNull(currentTheme);
     }
 
     public void testFetchWPComThemes() throws InterruptedException {
         // verify themes don't already exist in store
-        assertTrue(mThemeStore.getWpComThemes().isEmpty());
+        Assert.assertTrue(mThemeStore.getWpComThemes().isEmpty());
         fetchWpComThemes();
         // verify response received and WP themes list is not empty
-        assertFalse(mThemeStore.getWpComThemes().isEmpty());
+        Assert.assertFalse(mThemeStore.getWpComThemes().isEmpty());
 
         // verify that we have the 3 mobile-friendly categories being non empty
         for (String category : new String[]{ThemeStore.MOBILE_FRIENDLY_CATEGORY_BLOG,
                 ThemeStore.MOBILE_FRIENDLY_CATEGORY_WEBSITE, ThemeStore.MOBILE_FRIENDLY_CATEGORY_PORTFOLIO}) {
-            assertTrue(mThemeStore.getWpComMobileFriendlyThemes(category).size() > 0);
+            Assert.assertTrue(mThemeStore.getWpComMobileFriendlyThemes(category).size() > 0);
         }
     }
 
@@ -63,20 +65,20 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         // Make sure no theme is active at first
         assertNull(mThemeStore.getActiveThemeForSite(sSite));
         ThemeModel currentTheme = fetchCurrentTheme();
-        assertNotNull(currentTheme);
+        Assert.assertNotNull(currentTheme);
 
         // Fetch wp.com themes to activate a different theme
         fetchWpComThemes();
 
         // activate a different theme
         ThemeModel themeToActivate = getNewNonPremiumTheme(currentTheme.getThemeId(), mThemeStore.getWpComThemes());
-        assertNotNull(themeToActivate);
+        Assert.assertNotNull(themeToActivate);
         activateTheme(themeToActivate);
 
         // Assert that the activation was successful
         ThemeModel activatedTheme = mThemeStore.getActiveThemeForSite(sSite);
-        assertNotNull(activatedTheme);
-        assertEquals(activatedTheme.getThemeId(), themeToActivate.getThemeId());
+        Assert.assertNotNull(activatedTheme);
+        Assert.assertEquals(activatedTheme.getThemeId(), themeToActivate.getThemeId());
     }
 
     @SuppressWarnings("unused")
@@ -85,7 +87,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME);
+        Assert.assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME);
         mCountDownLatch.countDown();
     }
 
@@ -95,7 +97,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(mNextEvent, TestEvents.FETCHED_WPCOM_THEMES);
+        Assert.assertEquals(mNextEvent, TestEvents.FETCHED_WPCOM_THEMES);
         mCountDownLatch.countDown();
     }
 
@@ -106,7 +108,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
 
-        assertTrue(mNextEvent == TestEvents.FETCHED_CURRENT_THEME);
+        Assert.assertTrue(mNextEvent == TestEvents.FETCHED_CURRENT_THEME);
         mCountDownLatch.countDown();
     }
 
@@ -151,7 +153,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(sSite));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         return mThemeStore.getActiveThemeForSite(sSite);
     }
@@ -161,7 +163,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.FETCHED_WPCOM_THEMES;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void activateTheme(ThemeModel themeToActivate) throws InterruptedException {
@@ -169,6 +171,6 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ACTIVATED_THEME;
         SiteThemePayload payload = new SiteThemePayload(sSite, themeToActivate);
         mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
