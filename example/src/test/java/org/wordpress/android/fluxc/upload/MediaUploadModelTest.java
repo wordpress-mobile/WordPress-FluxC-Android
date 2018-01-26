@@ -2,6 +2,8 @@ package org.wordpress.android.fluxc.upload;
 
 import android.text.TextUtils;
 
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,11 +12,7 @@ import org.wordpress.android.fluxc.model.MediaUploadModel;
 import org.wordpress.android.fluxc.store.MediaStore.MediaError;
 import org.wordpress.android.fluxc.store.MediaStore.MediaErrorType;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
 public class MediaUploadModelTest {
@@ -28,18 +26,18 @@ public class MediaUploadModelTest {
         MediaUploadModel mediaUploadModel2 = new MediaUploadModel(1);
 
         mediaUploadModel1.setUploadState(MediaUploadModel.FAILED);
-        assertFalse(mediaUploadModel1.equals(mediaUploadModel2));
+        Assert.assertFalse(mediaUploadModel1.equals(mediaUploadModel2));
 
         mediaUploadModel2.setUploadState(MediaUploadModel.FAILED);
 
         MediaError mediaError = new MediaError(MediaErrorType.EXCEEDS_MEMORY_LIMIT, "Too large!");
         mediaUploadModel1.setMediaError(mediaError);
-        assertFalse(mediaUploadModel1.equals(mediaUploadModel2));
+        Assert.assertFalse(mediaUploadModel1.equals(mediaUploadModel2));
 
         mediaUploadModel2.setErrorType(mediaError.type.toString());
         mediaUploadModel2.setErrorMessage(mediaError.message);
 
-        assertTrue(mediaUploadModel1.equals(mediaUploadModel2));
+        Assert.assertTrue(mediaUploadModel1.equals(mediaUploadModel2));
     }
 
     @Test
@@ -47,12 +45,12 @@ public class MediaUploadModelTest {
         MediaUploadModel mediaUploadModel = new MediaUploadModel(1);
 
         assertNull(mediaUploadModel.getMediaError());
-        assertTrue(TextUtils.isEmpty(mediaUploadModel.getErrorType()));
-        assertTrue(TextUtils.isEmpty(mediaUploadModel.getErrorMessage()));
+        Assert.assertTrue(TextUtils.isEmpty(mediaUploadModel.getErrorType()));
+        Assert.assertTrue(TextUtils.isEmpty(mediaUploadModel.getErrorMessage()));
 
         mediaUploadModel.setMediaError(new MediaError(MediaErrorType.EXCEEDS_MEMORY_LIMIT, "Too large!"));
-        assertNotNull(mediaUploadModel.getMediaError());
-        assertEquals(MediaErrorType.EXCEEDS_MEMORY_LIMIT, MediaErrorType.fromString(mediaUploadModel.getErrorType()));
-        assertEquals("Too large!", mediaUploadModel.getErrorMessage());
+        Assert.assertNotNull(mediaUploadModel.getMediaError());
+        Assert.assertEquals(MediaErrorType.EXCEEDS_MEMORY_LIMIT, MediaErrorType.fromString(mediaUploadModel.getErrorType()));
+        Assert.assertEquals("Too large!", mediaUploadModel.getErrorMessage());
     }
 }

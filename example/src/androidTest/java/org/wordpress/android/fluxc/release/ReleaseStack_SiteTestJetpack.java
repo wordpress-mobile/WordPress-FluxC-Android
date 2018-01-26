@@ -2,6 +2,8 @@ package org.wordpress.android.fluxc.release;
 
 import android.text.TextUtils;
 
+import junit.framework.Assert;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -56,52 +58,52 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
 
-        assertEquals(1, mSiteStore.getSitesCount());
-        assertEquals(0, mSiteStore.getWPComSitesCount());
-        assertEquals(1, mSiteStore.getSitesAccessedViaWPComRestCount());
-        assertEquals(0, mSiteStore.getSitesAccessedViaXMLRPCCount());
+        Assert.assertEquals(1, mSiteStore.getSitesCount());
+        Assert.assertEquals(0, mSiteStore.getWPComSitesCount());
+        Assert.assertEquals(1, mSiteStore.getSitesAccessedViaWPComRestCount());
+        Assert.assertEquals(0, mSiteStore.getSitesAccessedViaXMLRPCCount());
 
         SiteModel site = mSiteStore.getSites().get(0);
-        assertFalse(TextUtils.isEmpty(site.getJetpackVersion()));
+        Assert.assertFalse(TextUtils.isEmpty(site.getJetpackVersion()));
 
         signOutWPCom();
 
-        assertFalse(mSiteStore.hasSite());
-        assertFalse(mSiteStore.hasWPComSite());
-        assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
-        assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
+        Assert.assertFalse(mSiteStore.hasSite());
+        Assert.assertFalse(mSiteStore.hasWPComSite());
+        Assert.assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
+        Assert.assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
     }
 
     public void testWPComSingleJetpackSiteFetch() throws InterruptedException {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_ONE_JETPACK,
                 BuildConfig.TEST_WPCOM_PASSWORD_ONE_JETPACK);
 
-        assertEquals(2, mSiteStore.getSitesCount());
-        assertEquals(1, mSiteStore.getWPComSitesCount());
-        assertEquals(2, mSiteStore.getSitesAccessedViaWPComRestCount());
-        assertEquals(0, mSiteStore.getSitesAccessedViaXMLRPCCount());
+        Assert.assertEquals(2, mSiteStore.getSitesCount());
+        Assert.assertEquals(1, mSiteStore.getWPComSitesCount());
+        Assert.assertEquals(2, mSiteStore.getSitesAccessedViaWPComRestCount());
+        Assert.assertEquals(0, mSiteStore.getSitesAccessedViaXMLRPCCount());
 
         signOutWPCom();
 
-        assertFalse(mSiteStore.hasSite());
-        assertFalse(mSiteStore.hasWPComSite());
-        assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
+        Assert.assertFalse(mSiteStore.hasSite());
+        Assert.assertFalse(mSiteStore.hasWPComSite());
+        Assert.assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
     }
 
     public void testWPComMultipleJetpackSiteFetch() throws InterruptedException {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_MULTIPLE_JETPACK,
                 BuildConfig.TEST_WPCOM_PASSWORD_MULTIPLE_JETPACK);
 
-        assertEquals(3, mSiteStore.getSitesCount());
-        assertEquals(1, mSiteStore.getWPComSitesCount());
-        assertEquals(3, mSiteStore.getSitesAccessedViaWPComRestCount());
-        assertEquals(0, mSiteStore.getSitesAccessedViaXMLRPCCount());
+        Assert.assertEquals(3, mSiteStore.getSitesCount());
+        Assert.assertEquals(1, mSiteStore.getWPComSitesCount());
+        Assert.assertEquals(3, mSiteStore.getSitesAccessedViaWPComRestCount());
+        Assert.assertEquals(0, mSiteStore.getSitesAccessedViaXMLRPCCount());
 
         signOutWPCom();
 
-        assertFalse(mSiteStore.hasSite());
-        assertFalse(mSiteStore.hasWPComSite());
-        assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
+        Assert.assertFalse(mSiteStore.hasSite());
+        Assert.assertFalse(mSiteStore.hasWPComSite());
+        Assert.assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
     }
 
     public void testWPComJetpackMultisiteSiteFetch() throws InterruptedException {
@@ -111,15 +113,15 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         int sitesCount = mSiteStore.getSitesCount();
 
         // Only one non-Jetpack site exists, all the other fetched sites should be Jetpack sites
-        assertEquals(1, mSiteStore.getWPComSitesCount());
-        assertEquals(sitesCount, mSiteStore.getSitesAccessedViaWPComRestCount());
-        assertEquals(0, mSiteStore.getSitesAccessedViaXMLRPCCount());
+        Assert.assertEquals(1, mSiteStore.getWPComSitesCount());
+        Assert.assertEquals(sitesCount, mSiteStore.getSitesAccessedViaWPComRestCount());
+        Assert.assertEquals(0, mSiteStore.getSitesAccessedViaXMLRPCCount());
 
         signOutWPCom();
 
-        assertFalse(mSiteStore.hasSite());
-        assertFalse(mSiteStore.hasWPComSite());
-        assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
+        Assert.assertFalse(mSiteStore.hasSite());
+        Assert.assertFalse(mSiteStore.hasWPComSite());
+        Assert.assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
     }
 
     public void testXMLRPCNonJetpackSiteFetch() throws InterruptedException {
@@ -131,16 +133,16 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         // Fetch site details (including Jetpack status)
         fetchSite(mSiteStore.getSites().get(0));
 
-        assertEquals(1, mSiteStore.getSitesCount());
-        assertEquals(0, mSiteStore.getWPComSitesCount());
-        assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
-        assertEquals(0, mSiteStore.getSitesAccessedViaWPComRestCount());
+        Assert.assertEquals(1, mSiteStore.getSitesCount());
+        Assert.assertEquals(0, mSiteStore.getWPComSitesCount());
+        Assert.assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
+        Assert.assertEquals(0, mSiteStore.getSitesAccessedViaWPComRestCount());
 
         SiteModel site = mSiteStore.getSites().get(0);
 
-        assertFalse(site.isJetpackConnected());
-        assertFalse(site.isJetpackInstalled());
-        assertEquals(0, site.getSiteId());
+        Assert.assertFalse(site.isJetpackConnected());
+        Assert.assertFalse(site.isJetpackInstalled());
+        Assert.assertEquals(0, site.getSiteId());
     }
 
     public void testXMLRPCJetpackConnectedSiteFetch() throws InterruptedException {
@@ -152,15 +154,15 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         // Fetch site details (including Jetpack status)
         fetchSite(mSiteStore.getSites().get(0));
 
-        assertEquals(1, mSiteStore.getSitesCount());
-        assertEquals(0, mSiteStore.getWPComSitesCount());
-        assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
-        assertEquals(0, mSiteStore.getSitesAccessedViaWPComRestCount());
+        Assert.assertEquals(1, mSiteStore.getSitesCount());
+        Assert.assertEquals(0, mSiteStore.getWPComSitesCount());
+        Assert.assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
+        Assert.assertEquals(0, mSiteStore.getSitesAccessedViaWPComRestCount());
 
         SiteModel site = mSiteStore.getSites().get(0);
 
-        assertTrue(site.isJetpackConnected());
-        assertNotSame(0, site.getSiteId());
+        Assert.assertTrue(site.isJetpackConnected());
+        Assert.assertNotSame(0, site.getSiteId());
     }
 
     public void testXMLRPCJetpackDisconnectedSiteFetch() throws InterruptedException {
@@ -172,16 +174,16 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         // Fetch site details (including Jetpack status)
         fetchSite(mSiteStore.getSites().get(0));
 
-        assertEquals(1, mSiteStore.getSitesCount());
-        assertEquals(0, mSiteStore.getWPComSitesCount());
-        assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
-        assertEquals(0, mSiteStore.getSitesAccessedViaWPComRestCount());
+        Assert.assertEquals(1, mSiteStore.getSitesCount());
+        Assert.assertEquals(0, mSiteStore.getWPComSitesCount());
+        Assert.assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
+        Assert.assertEquals(0, mSiteStore.getSitesAccessedViaWPComRestCount());
 
         SiteModel site = mSiteStore.getSites().get(0);
 
-        assertFalse(site.isJetpackConnected());
-        assertTrue(site.isJetpackInstalled());
-        assertEquals(0, site.getSiteId());
+        Assert.assertFalse(site.isJetpackConnected());
+        Assert.assertTrue(site.isJetpackInstalled());
+        Assert.assertEquals(0, site.getSiteId());
     }
 
     public void testWPComJetpackToXMLRPCDuplicateSiteFetch() throws InterruptedException {
@@ -189,10 +191,10 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
 
-        assertEquals(1, mSiteStore.getSitesCount());
-        assertTrue(mSiteStore.hasSitesAccessedViaWPComRest());
-        assertFalse(mSiteStore.hasWPComSite());
-        assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
+        Assert.assertEquals(1, mSiteStore.getSitesCount());
+        Assert.assertTrue(mSiteStore.hasSitesAccessedViaWPComRest());
+        Assert.assertFalse(mSiteStore.hasWPComSite());
+        Assert.assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
 
         // Attempt to add the same Jetpack site as a self-hosted site
         RefreshSitesXMLRPCPayload xmlrpcPayload = new RefreshSitesXMLRPCPayload();
@@ -206,19 +208,19 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
 
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(xmlrpcPayload));
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Expect no DB changes
-        assertEquals(1, mSiteStore.getSitesCount());
-        assertTrue(mSiteStore.hasSitesAccessedViaWPComRest());
-        assertFalse(mSiteStore.hasWPComSite());
-        assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
+        Assert.assertEquals(1, mSiteStore.getSitesCount());
+        Assert.assertTrue(mSiteStore.hasSitesAccessedViaWPComRest());
+        Assert.assertFalse(mSiteStore.hasWPComSite());
+        Assert.assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
 
         signOutWPCom();
 
-        assertFalse(mSiteStore.hasSite());
-        assertFalse(mSiteStore.hasWPComSite());
-        assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
+        Assert.assertFalse(mSiteStore.hasSite());
+        Assert.assertFalse(mSiteStore.hasWPComSite());
+        Assert.assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
     }
 
     public void testXMLRPCJetpackToWPComDuplicateSiteFetch() throws InterruptedException {
@@ -230,30 +232,30 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         // Fetch site details (including Jetpack status)
         fetchSite(mSiteStore.getSites().get(0));
 
-        assertEquals(1, mSiteStore.getSitesCount());
+        Assert.assertEquals(1, mSiteStore.getSitesCount());
         // We added the site from an XMLRPC call, but it's a Jetpack site accessible via the .com REST API but accessed
         // via XMLRPC (ie. not pull from the REST call).
-        assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
+        Assert.assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
         // not considered a .com site
-        assertFalse(mSiteStore.hasWPComSite());
+        Assert.assertFalse(mSiteStore.hasWPComSite());
         // accessed via XMLRPC, that's why we consider it a "self hosted site"
-        assertTrue(mSiteStore.hasSiteAccessedViaXMLRPC());
+        Assert.assertTrue(mSiteStore.hasSiteAccessedViaXMLRPC());
 
         // Authenticate as WP.com user with a single site, which is the Jetpack site we already added as self-hosted
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
 
         // We expect the XML-RPC Jetpack site to be 'upgraded' to a WPcom Jetpack site
-        assertEquals(1, mSiteStore.getSitesCount());
-        assertTrue(mSiteStore.hasSitesAccessedViaWPComRest());
-        assertFalse(mSiteStore.hasWPComSite());
-        assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
+        Assert.assertEquals(1, mSiteStore.getSitesCount());
+        Assert.assertTrue(mSiteStore.hasSitesAccessedViaWPComRest());
+        Assert.assertFalse(mSiteStore.hasWPComSite());
+        Assert.assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
 
         signOutWPCom();
 
-        assertFalse(mSiteStore.hasSite());
-        assertFalse(mSiteStore.hasWPComSite());
-        assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
+        Assert.assertFalse(mSiteStore.hasSite());
+        Assert.assertFalse(mSiteStore.hasWPComSite());
+        Assert.assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
     }
 
     public void testWPComToXMLRPCJetpackDifferentAccountsSiteFetch() throws InterruptedException {
@@ -266,8 +268,8 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         int accessedViaWPComRestSiteCount = mSiteStore.getSitesAccessedViaWPComRestCount();
         int selfhostedSiteCount = mSiteStore.getSitesAccessedViaXMLRPCCount();
 
-        assertEquals(0, selfhostedSiteCount);
-        assertEquals(totalSiteCount, accessedViaWPComRestSiteCount);
+        Assert.assertEquals(0, selfhostedSiteCount);
+        Assert.assertEquals(totalSiteCount, accessedViaWPComRestSiteCount);
 
         // Add a Jetpack-connected site as self-hosted (connected to a different WP.com account than the one above)
         fetchSitesXMLRPC(BuildConfig.TEST_WPORG_USERNAME_SINGLE_JETPACK_ONLY,
@@ -278,26 +280,26 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         SiteModel selfHostedSite = mSiteStore.getSitesAccessedViaXMLRPC().get(0);
         fetchSite(selfHostedSite);
 
-        assertEquals(totalSiteCount + 1, mSiteStore.getSitesCount());
+        Assert.assertEquals(totalSiteCount + 1, mSiteStore.getSitesCount());
         // The site is accessible via WPCom (Jetpack connected) but accessed via XMLRPC, so previous
         // accessedViaWPComRestSiteCount must be the same
-        assertEquals(accessedViaWPComRestSiteCount, mSiteStore.getSitesAccessedViaWPComRestCount());
-        assertEquals(selfhostedSiteCount + 1, mSiteStore.getSitesAccessedViaXMLRPCCount());
-        assertEquals(wpComSiteCount, mSiteStore.getWPComSitesCount());
-        assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
+        Assert.assertEquals(accessedViaWPComRestSiteCount, mSiteStore.getSitesAccessedViaWPComRestCount());
+        Assert.assertEquals(selfhostedSiteCount + 1, mSiteStore.getSitesAccessedViaXMLRPCCount());
+        Assert.assertEquals(wpComSiteCount, mSiteStore.getWPComSitesCount());
+        Assert.assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
 
-        assertTrue(selfHostedSite.isJetpackConnected());
-        assertFalse(selfHostedSite.isWPCom());
+        Assert.assertTrue(selfHostedSite.isJetpackConnected());
+        Assert.assertFalse(selfHostedSite.isWPCom());
 
         signOutWPCom();
 
         // Expect all WP.com sites to be removed
-        assertEquals(0, mSiteStore.getWPComSitesCount());
-        assertEquals(0, mSiteStore.getSitesAccessedViaWPComRestCount());
+        Assert.assertEquals(0, mSiteStore.getWPComSitesCount());
+        Assert.assertEquals(0, mSiteStore.getSitesAccessedViaWPComRestCount());
 
         // Site accessed via XMLRPC should not be removed
-        assertEquals(1, mSiteStore.getSitesCount());
-        assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
+        Assert.assertEquals(1, mSiteStore.getSitesCount());
+        Assert.assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
     }
 
     @SuppressWarnings("unused")
@@ -325,14 +327,14 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
         if (event.isError()) {
             if (mNextEvent.equals(TestEvents.ERROR_DUPLICATE_SITE)) {
-                assertEquals(SiteErrorType.DUPLICATE_SITE, event.error.type);
+                Assert.assertEquals(SiteErrorType.DUPLICATE_SITE, event.error.type);
                 mCountDownLatch.countDown();
                 return;
             }
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertTrue(mSiteStore.hasSite());
-        assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
+        Assert.assertTrue(mSiteStore.hasSite());
+        Assert.assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -343,7 +345,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
+        Assert.assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -355,20 +357,20 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         // Correct user we should get an OnAuthenticationChanged message
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch account from REST API, and wait for OnAccountChanged event
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        assertTrue(mSiteStore.getSitesCount() > 0);
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mSiteStore.getSitesCount() > 0);
     }
 
     private void signOutWPCom() throws InterruptedException {
@@ -377,7 +379,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.SITE_REMOVED;
         mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchSitesXMLRPC(String username, String password, String endpointUrl)
@@ -392,7 +394,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
 
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchSite(SiteModel site) throws InterruptedException {
@@ -401,6 +403,6 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
 
         mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(site));
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }

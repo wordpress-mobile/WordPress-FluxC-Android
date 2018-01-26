@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import junit.framework.Assert;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.CommentActionBuilder;
@@ -61,7 +63,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testFetchComment() throws InterruptedException {
@@ -72,7 +74,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         RemoteCommentPayload fetchCommentPayload = new RemoteCommentPayload(sSite, firstComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentAction(fetchCommentPayload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testInstantiateAndCreateNewComment() throws InterruptedException {
@@ -87,11 +89,11 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(sSite, mPosts.get(0), mNewComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
-        assertTrue(comment.getContent().contains(mNewComment.getContent()));
+        Assert.assertTrue(comment.getContent().contains(mNewComment.getContent()));
     }
 
     public void testInstantiateAndCreateNewCommentDuplicate() throws InterruptedException {
@@ -106,13 +108,13 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(sSite, mPosts.get(0), mNewComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Same comment again
         mNextEvent = TestEvents.COMMENT_CHANGED_ERROR;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testReplyToAnUnknownComment() throws InterruptedException {
@@ -128,7 +130,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(sSite, fakeComment, newComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testInstantiateAndCreateReplyComment() throws InterruptedException {
@@ -147,12 +149,12 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(sSite, firstComment, mNewComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
-        assertEquals(comment.getContent(), mNewComment.getContent());
-        assertEquals(comment.getRemoteParentCommentId(), firstComment.getRemoteCommentId());
+        Assert.assertEquals(comment.getContent(), mNewComment.getContent());
+        Assert.assertEquals(comment.getRemoteParentCommentId(), firstComment.getRemoteCommentId());
     }
 
     public void testEditValidComment() throws InterruptedException {
@@ -170,10 +172,10 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.COMMENT_CHANGED;
         mDispatcher.dispatch(CommentActionBuilder.newPushCommentAction(pushCommentPayload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         CommentModel comment = mCommentStore.getCommentByLocalId(firstComment.getId());
-        assertEquals(comment.getContent(), firstComment.getContent());
+        Assert.assertEquals(comment.getContent(), firstComment.getContent());
     }
 
     public void testEditInvalidComment() throws InterruptedException {
@@ -191,7 +193,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.COMMENT_CHANGED_ERROR;
         mDispatcher.dispatch(CommentActionBuilder.newPushCommentAction(pushCommentPayload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testDeleteCommentOnce() throws InterruptedException {
@@ -206,22 +208,22 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         RemoteCreateCommentPayload payload1 = new RemoteCreateCommentPayload(sSite, mPosts.get(0), mNewComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload1));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
-        assertTrue(comment.getContent().contains(mNewComment.getContent()));
+        Assert.assertTrue(comment.getContent().contains(mNewComment.getContent()));
 
         // Delete
         mNextEvent = TestEvents.COMMENT_CHANGED;
         RemoteCommentPayload payload2 = new RemoteCommentPayload(sSite, comment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newDeleteCommentAction(payload2));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Make sure the comment is still here but state changed
         comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
-        assertEquals(CommentStatus.TRASH.toString(), comment.getStatus());
+        Assert.assertEquals(CommentStatus.TRASH.toString(), comment.getStatus());
     }
 
     public void testDeleteCommentTwice() throws InterruptedException {
@@ -236,27 +238,27 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         RemoteCreateCommentPayload payload1 = new RemoteCreateCommentPayload(sSite, mPosts.get(0), mNewComment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload1));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Check comment has been modified in the DB
         CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
-        assertTrue(comment.getContent().contains(mNewComment.getContent()));
+        Assert.assertTrue(comment.getContent().contains(mNewComment.getContent()));
 
         // Delete once (ie. move to trash)
         mNextEvent = TestEvents.COMMENT_CHANGED;
         RemoteCommentPayload payload2 = new RemoteCommentPayload(sSite, comment);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newDeleteCommentAction(payload2));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Delete twice (ie. real delete)
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newDeleteCommentAction(payload2));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Make sure the comment was deleted (local test only, but should mean it was deleted correctly on the server)
         comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
-        assertEquals(null, comment);
+        Assert.assertEquals(null, comment);
     }
 
     // OnChanged Events
@@ -268,9 +270,9 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         if (event.isError()) {
             AppLog.i(T.TESTS, "event error type: " + event.error.type);
             if (mNextEvent == TestEvents.COMMENT_CHANGED_UNKNOWN_COMMENT) {
-                assertEquals(event.error.type, CommentErrorType.GENERIC_ERROR);
+                Assert.assertEquals(event.error.type, CommentErrorType.GENERIC_ERROR);
             } else if (mNextEvent == TestEvents.COMMENT_CHANGED_ERROR) {
-                assertEquals(event.error.type, CommentErrorType.GENERIC_ERROR);
+                Assert.assertEquals(event.error.type, CommentErrorType.GENERIC_ERROR);
             } else {
                 throw new AssertionError("Error occurred for event: " + mNextEvent + " with type: " + event.error.type);
             }
@@ -278,7 +280,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
             return;
         }
         AppLog.i(T.TESTS, "comments count " + comments.size());
-        assertEquals(TestEvents.COMMENT_CHANGED, mNextEvent);
+        Assert.assertEquals(TestEvents.COMMENT_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -286,7 +288,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
         mPosts = mPostStore.getPostsForSite(sSite);
-        assertEquals(mNextEvent, TestEvents.POSTS_FETCHED);
+        Assert.assertEquals(mNextEvent, TestEvents.POSTS_FETCHED);
         mCountDownLatch.countDown();
     }
 
@@ -295,8 +297,8 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
     private CommentModel createNewComment() {
         CommentModel comment = mCommentStore.instantiateCommentModel(sSite);
 
-        assertNotNull(comment);
-        assertTrue(comment.getId() != 0);
+        Assert.assertNotNull(comment);
+        Assert.assertTrue(comment.getId() != 0);
 
         mNewComment = comment;
         return comment;
@@ -311,7 +313,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(CommentActionBuilder.newFetchCommentsAction(payload));
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         mComments = mCommentStore.getCommentsForSite(sSite, true, CommentStatus.ALL);
     }
 
@@ -319,6 +321,6 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, false)));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }

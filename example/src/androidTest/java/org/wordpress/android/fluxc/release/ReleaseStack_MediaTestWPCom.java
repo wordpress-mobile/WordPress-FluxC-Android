@@ -2,6 +2,8 @@ package org.wordpress.android.fluxc.release;
 
 import android.annotation.SuppressLint;
 
+import junit.framework.Assert;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
@@ -71,9 +73,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         uploadMedia(testMedia);
 
         // verify and set media ID
-        assertTrue(mLastUploadedId >= 0);
+        Assert.assertTrue(mLastUploadedId >= 0);
         testMedia.setMediaId(mLastUploadedId);
-        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+        Assert.assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
 
         // delete media and verify it's not in the store
         mNextEvent = TestEvents.DELETED_MEDIA;
@@ -88,31 +90,31 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         uploadMedia(testMedia);
 
         // verify and set media ID
-        assertTrue(mLastUploadedId >= 0);
+        Assert.assertTrue(mLastUploadedId >= 0);
         testMedia.setMediaId(mLastUploadedId);
-        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+        Assert.assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
 
         // remove all local media and verify store is empty
         mNextEvent = TestEvents.REMOVED_MEDIA;
         removeAllSiteMedia();
-        assertTrue(mMediaStore.getAllSiteMedia(sSite).isEmpty());
+        Assert.assertTrue(mMediaStore.getAllSiteMedia(sSite).isEmpty());
 
         // fetch media list and verify store is not empty
         mNextEvent = TestEvents.FETCHED_MEDIA_LIST;
         fetchMediaList();
-        assertFalse(mMediaStore.getAllSiteMedia(sSite).isEmpty());
+        Assert.assertFalse(mMediaStore.getAllSiteMedia(sSite).isEmpty());
 
         // remove all media again
         mNextEvent = TestEvents.REMOVED_MEDIA;
         removeAllSiteMedia();
-        assertTrue(mMediaStore.getAllSiteMedia(sSite).isEmpty());
+        Assert.assertTrue(mMediaStore.getAllSiteMedia(sSite).isEmpty());
 
         // fetch only images, verify store is not empty and contains only images
         mNextEvent = TestEvents.FETCHED_MEDIA_IMAGE_LIST;
         fetchMediaImageList();
         List<MediaModel> mediaList = mMediaStore.getSiteImages(sSite);
-        assertFalse(mediaList.isEmpty());
-        assertTrue(mMediaStore.getSiteMediaCount(sSite) == mediaList.size());
+        Assert.assertFalse(mediaList.isEmpty());
+        Assert.assertTrue(mMediaStore.getSiteMediaCount(sSite) == mediaList.size());
 
         // delete test image
         mNextEvent = TestEvents.DELETED_MEDIA;
@@ -126,9 +128,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         uploadMedia(testMedia);
 
         // verify and set media ID
-        assertTrue(mLastUploadedId >= 0);
+        Assert.assertTrue(mLastUploadedId >= 0);
         testMedia.setMediaId(mLastUploadedId);
-        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+        Assert.assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
 
         // remove local media and verify it's not in the store
         mNextEvent = TestEvents.REMOVED_MEDIA;
@@ -138,7 +140,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         // fetch test media from remote and verify it's in the store
         mNextEvent = TestEvents.FETCHED_KNOWN_IMAGES;
         fetchMedia(testMedia);
-        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+        Assert.assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
 
         // delete test image
         mNextEvent = TestEvents.DELETED_MEDIA;
@@ -152,9 +154,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         uploadMedia(testMedia);
 
         // verify and set media ID
-        assertTrue(mLastUploadedId >= 0);
+        Assert.assertTrue(mLastUploadedId >= 0);
         testMedia.setMediaId(mLastUploadedId);
-        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+        Assert.assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
 
         // create a random title and push changes
         testMedia.setTitle(RandomStringUtils.randomAlphabetic(8));
@@ -163,8 +165,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         // verify store media has been updated
         MediaModel storeMedia = mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId());
-        assertNotNull(storeMedia);
-        assertEquals(testMedia.getTitle(), storeMedia.getTitle());
+        Assert.assertNotNull(storeMedia);
+        Assert.assertEquals(testMedia.getTitle(), storeMedia.getTitle());
 
         // delete test image
         mNextEvent = TestEvents.DELETED_MEDIA;
@@ -189,9 +191,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         uploadMedia(testMedia);
 
         // verify and set media ID
-        assertTrue(mLastUploadedId >= 0);
+        Assert.assertTrue(mLastUploadedId >= 0);
         testMedia.setMediaId(mLastUploadedId);
-        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+        Assert.assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
 
         // delete test image
         mNextEvent = TestEvents.DELETED_MEDIA;
@@ -208,9 +210,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         testMedia.setMediaId(mLastUploadedId);
         MediaModel uploadedMedia = mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId());
-        assertNotNull(uploadedMedia);
-        assertEquals(1, uploadedMedia.getPostId());
-        assertEquals(5, uploadedMedia.getLocalPostId());
+        Assert.assertNotNull(uploadedMedia);
+        Assert.assertEquals(1, uploadedMedia.getPostId());
+        Assert.assertEquals(5, uploadedMedia.getLocalPostId());
 
         mNextEvent = TestEvents.DELETED_MEDIA;
         deleteMedia(testMedia);
@@ -223,9 +225,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         testMedia.setMediaId(mLastUploadedId);
         uploadedMedia = mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId());
-        assertNotNull(uploadedMedia);
-        assertEquals(0, uploadedMedia.getPostId());
-        assertEquals(5, uploadedMedia.getLocalPostId());
+        Assert.assertNotNull(uploadedMedia);
+        Assert.assertEquals(0, uploadedMedia.getPostId());
+        Assert.assertEquals(5, uploadedMedia.getLocalPostId());
 
         mNextEvent = TestEvents.DELETED_MEDIA;
         deleteMedia(testMedia);
@@ -245,9 +247,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         CancelMediaPayload cancelPayload = new CancelMediaPayload(sSite, testMedia);
         mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(0, mMediaStore.getSiteMediaCount(sSite));
+        Assert.assertEquals(0, mMediaStore.getSiteMediaCount(sSite));
 
         // Now, try canceling with delete=false (canceled image should be marked as failed and kept in the store)
         testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -262,11 +264,11 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         cancelPayload = new CancelMediaPayload(sSite, testMedia, false);
         mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(1, mMediaStore.getSiteMediaCount(sSite));
+        Assert.assertEquals(1, mMediaStore.getSiteMediaCount(sSite));
         MediaModel canceledMedia = mMediaStore.getMediaWithLocalId(testMedia.getId());
-        assertEquals(MediaUploadState.FAILED.toString(), canceledMedia.getUploadState());
+        Assert.assertEquals(MediaUploadState.FAILED.toString(), canceledMedia.getUploadState());
     }
 
     public void testUploadMultipleImages() throws InterruptedException {
@@ -286,15 +288,15 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()));
 
         // verify all have been uploaded
-        assertEquals(mUploadedMediaModels.size(), mUploadedIds.size());
-        assertEquals(mUploadedMediaModels.size(),
+        Assert.assertEquals(mUploadedMediaModels.size(), mUploadedIds.size());
+        Assert.assertEquals(mUploadedMediaModels.size(),
                 mMediaStore.getSiteMediaWithState(sSite, MediaUploadState.UPLOADED).size());
 
         // verify they exist in the MediaStore
         Iterator<MediaModel> iterator = mUploadedMediaModels.values().iterator();
         while (iterator.hasNext()) {
             MediaModel media = iterator.next();
-            assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
+            Assert.assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
         }
 
         // delete test images (bear in mind this is done sequentially)
@@ -327,17 +329,17 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()), amountToCancel, true);
 
         // verify how many have been uploaded
-        assertEquals(mUploadedMediaModels.size() - amountToCancel, mUploadedIds.size());
+        Assert.assertEquals(mUploadedMediaModels.size() - amountToCancel, mUploadedIds.size());
 
         // verify each one of the remaining, non-cancelled uploads exist in the MediaStore
         for (long mediaId : mUploadedIds) {
-            assertNotNull(mMediaStore.getSiteMediaWithId(sSite, mediaId));
+            Assert.assertNotNull(mMediaStore.getSiteMediaWithId(sSite, mediaId));
         }
 
         // Only completed uploads should exist in the store
-        assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaCount(sSite));
+        Assert.assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaCount(sSite));
         // The number of uploaded media in the store should match our records of how many were not cancelled
-        assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaWithState(sSite, MediaUploadState.UPLOADED).size());
+        Assert.assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaWithState(sSite, MediaUploadState.UPLOADED).size());
 
         // delete test images (bear in mind this is done sequentially)
         mNextEvent = TestEvents.DELETED_MEDIA;
@@ -370,19 +372,19 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()), amountToCancel, false);
 
         // verify how many have been uploaded
-        assertEquals(mUploadedMediaModels.size() - amountToCancel, mUploadedIds.size());
+        Assert.assertEquals(mUploadedMediaModels.size() - amountToCancel, mUploadedIds.size());
 
         // verify each one of the remaining, non-cancelled uploads exist in the MediaStore
         for (long mediaId : mUploadedIds) {
-            assertNotNull(mMediaStore.getSiteMediaWithId(sSite, mediaId));
+            Assert.assertNotNull(mMediaStore.getSiteMediaWithId(sSite, mediaId));
         }
 
         // All the original uploads should exist in the store, whether cancelled or not
-        assertEquals(mUploadedMediaModels.size(), mMediaStore.getSiteMediaCount(sSite));
+        Assert.assertEquals(mUploadedMediaModels.size(), mMediaStore.getSiteMediaCount(sSite));
         // The number of uploaded media in the store should match our records of how many were not cancelled
-        assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaWithState(sSite, MediaUploadState.UPLOADED).size());
+        Assert.assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaWithState(sSite, MediaUploadState.UPLOADED).size());
         // All cancelled media should have a FAILED state
-        assertEquals(amountToCancel, mMediaStore.getSiteMediaWithState(sSite, MediaUploadState.FAILED).size());
+        Assert.assertEquals(amountToCancel, mMediaStore.getSiteMediaWithState(sSite, MediaUploadState.FAILED).size());
 
         // delete test images (bear in mind this is done sequentially)
         mNextEvent = TestEvents.DELETED_MEDIA;
@@ -401,9 +403,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         uploadMedia(testMedia);
 
         // verify and set media ID
-        assertTrue(mLastUploadedId >= 0);
+        Assert.assertTrue(mLastUploadedId >= 0);
         testMedia.setMediaId(mLastUploadedId);
-        assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
+        Assert.assertNotNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
 
         // delete test image
         mNextEvent = TestEvents.DELETED_MEDIA;
@@ -433,7 +435,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
                 } else {
                     AppLog.e(AppLog.T.MEDIA, "mediamodel not found: " + event.media.getId());
                 }
-                assertNotNull(media);
+                Assert.assertNotNull(media);
             } else if (mNextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA) {
                 mUploadedIds.add(event.media.getMediaId());
                 // now update our own map object with the new media id
@@ -443,7 +445,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
                 } else {
                     AppLog.e(AppLog.T.MEDIA, "mediamodel not found: " + event.media.getId());
                 }
-                assertNotNull(media);
+                Assert.assertNotNull(media);
             } else if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
                 mLastUploadedId = event.media.getMediaId();
             } else {
@@ -458,7 +460,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     public void onMediaChanged(OnMediaChanged event) {
         if (event.isError()) {
             if (event.cause == MediaAction.PUSH_MEDIA) {
-                assertEquals(TestEvents.PUSH_ERROR, mNextEvent);
+                Assert.assertEquals(TestEvents.PUSH_ERROR, mNextEvent);
             } else {
                 throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
@@ -467,14 +469,14 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         }
         if (event.cause == MediaAction.FETCH_MEDIA) {
             if (eventHasKnownImages(event)) {
-                assertEquals(TestEvents.FETCHED_KNOWN_IMAGES, mNextEvent);
+                Assert.assertEquals(TestEvents.FETCHED_KNOWN_IMAGES, mNextEvent);
             }
         } else if (event.cause == MediaAction.PUSH_MEDIA) {
-            assertEquals(TestEvents.PUSHED_MEDIA, mNextEvent);
+            Assert.assertEquals(TestEvents.PUSHED_MEDIA, mNextEvent);
         } else if (event.cause == MediaAction.DELETE_MEDIA) {
-            assertEquals(TestEvents.DELETED_MEDIA, mNextEvent);
+            Assert.assertEquals(TestEvents.DELETED_MEDIA, mNextEvent);
         } else if (event.cause == MediaAction.REMOVE_MEDIA) {
-            assertEquals(TestEvents.REMOVED_MEDIA, mNextEvent);
+            Assert.assertEquals(TestEvents.REMOVED_MEDIA, mNextEvent);
         } else {
             throw new AssertionError("Unexpected event: " + event.cause);
         }
@@ -489,7 +491,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         }
         boolean isMediaListEvent = mNextEvent == TestEvents.FETCHED_MEDIA_LIST
                 || mNextEvent == TestEvents.FETCHED_MEDIA_IMAGE_LIST;
-        assertTrue(isMediaListEvent);
+        Assert.assertTrue(isMediaListEvent);
         mCountDownLatch.countDown();
     }
 
@@ -535,7 +537,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         MediaPayload payload = new MediaPayload(sSite, media);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newPushMediaAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchMediaList() throws InterruptedException {
@@ -543,7 +545,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
                 sSite, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchMediaImageList() throws InterruptedException {
@@ -551,21 +553,21 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
                 sSite, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false, MediaUtils.MIME_TYPE_IMAGE);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchMedia(MediaModel media) throws InterruptedException {
         MediaPayload fetchPayload = new MediaPayload(sSite, media, null);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaAction(fetchPayload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void uploadMedia(MediaModel media) throws InterruptedException {
         MediaPayload payload = new MediaPayload(sSite, media);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void uploadMultipleMedia(List<MediaModel> mediaList) throws InterruptedException {
@@ -592,20 +594,20 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             }
         }
 
-        assertTrue(mCountDownLatch.await(TestUtils.MULTIPLE_UPLOADS_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.MULTIPLE_UPLOADS_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void deleteMedia(MediaModel media) throws InterruptedException {
         MediaPayload deletePayload = new MediaPayload(sSite, media);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void removeMedia(MediaModel media) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newRemoveMediaAction(media));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void removeAllSiteMedia() throws InterruptedException {

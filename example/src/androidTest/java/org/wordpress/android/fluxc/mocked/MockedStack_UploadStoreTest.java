@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.mocked;
 
+import junit.framework.Assert;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
@@ -40,7 +42,7 @@ public class MockedStack_UploadStoreTest extends MockedStack_Base {
     private CountDownLatch mCountDownLatch;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         // Inject
         mMockedNetworkAppComponent.inject(this);
@@ -52,12 +54,12 @@ public class MockedStack_UploadStoreTest extends MockedStack_Base {
     public void testUploadMedia() throws InterruptedException {
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         startSuccessfulMediaUpload(testMedia, getTestSite());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Confirm that the corresponding MediaUploadModel's state has been updated automatically
         // (confirming that the UploadStore was spun up once we set up the MediaStore)
         MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
-        assertNotNull(mediaUploadModel);
+        Assert.assertNotNull(mediaUploadModel);
     }
 
     @SuppressWarnings("unused")
@@ -70,13 +72,13 @@ public class MockedStack_UploadStoreTest extends MockedStack_Base {
         }
 
         if (event.isError()) {
-            assertEquals(TestEvents.MEDIA_ERROR, mNextEvent);
+            Assert.assertEquals(TestEvents.MEDIA_ERROR, mNextEvent);
             mCountDownLatch.countDown();
             return;
         }
 
         if (event.completed) {
-            assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
+            Assert.assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
             mCountDownLatch.countDown();
         }
     }

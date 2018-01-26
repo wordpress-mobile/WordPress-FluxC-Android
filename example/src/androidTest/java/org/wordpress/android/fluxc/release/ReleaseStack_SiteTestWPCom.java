@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import junit.framework.Assert;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -16,9 +18,9 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
-import org.wordpress.android.fluxc.store.SiteStore.OnUserRolesChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
+import org.wordpress.android.fluxc.store.SiteStore.OnUserRolesChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnWPComSiteFetched;
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
 import org.wordpress.android.util.AppLog;
@@ -73,7 +75,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mExpectedRowsAffected = mSiteStore.getSitesCount();
         mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testFetchPostFormats() throws InterruptedException {
@@ -87,11 +89,11 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(firstSite));
         mNextEvent = TestEvents.POST_FORMATS_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Test fetched Post Formats
         List<PostFormatModel> postFormats = mSiteStore.getPostFormats(firstSite);
-        assertNotSame(0, postFormats.size());
+        Assert.assertNotSame(0, postFormats.size());
     }
 
     public void testFetchUserRoles() throws InterruptedException {
@@ -105,11 +107,11 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mDispatcher.dispatch(SiteActionBuilder.newFetchUserRolesAction(firstSite));
         mNextEvent = TestEvents.USER_ROLES_CHANGED;
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Test fetched user roles
         List<RoleModel> roles = mSiteStore.getUserRoles(firstSite);
-        assertNotSame(0, roles.size());
+        Assert.assertNotSame(0, roles.size());
     }
 
     public void testFetchConnectSiteInfo() throws InterruptedException {
@@ -117,13 +119,13 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mDispatcher.dispatch(SiteActionBuilder.newFetchConnectSiteInfoAction(site));
         mNextEvent = TestEvents.FETCHED_CONNECT_SITE_INFO;
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         site = "";
         mDispatcher.dispatch(SiteActionBuilder.newFetchConnectSiteInfoAction(site));
         mNextEvent = TestEvents.ERROR_INVALID_SITE;
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testFetchWPComSiteByUrl() throws InterruptedException {
@@ -131,33 +133,33 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
         mNextEvent = TestEvents.FETCHED_WPCOM_SITE_BY_URL;
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Sites in subfolders should be handled and return a response distinct from their host
         site = "http://en.blog.wordpress.com/nonexistentsubdomain";
         mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
         mNextEvent = TestEvents.ERROR_UNKNOWN_SITE;
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // A Jetpack-connected site in a subfolder should have a successful response
         site = BuildConfig.TEST_WPORG_URL_JETPACK_SUBFOLDER;
         mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
         mNextEvent = TestEvents.FETCHED_WPCOM_SITE_BY_URL;
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         site = "http://definitelynotawpcomsite.impossible";
         mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
         mNextEvent = TestEvents.ERROR_UNKNOWN_SITE;
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         site = "";
         mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
         mNextEvent = TestEvents.ERROR_INVALID_SITE;
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testWPComSiteFetchAndLogoutCollision() throws InterruptedException {
@@ -173,14 +175,14 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
 
         // Wait for OnAuthenticationChanged, OnAccountChanged and OnSiteRemoved from logout/site removal
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Wait for OnSiteChanged event from fetch
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(0, mSiteStore.getSitesCount());
+        Assert.assertEquals(0, mSiteStore.getSitesCount());
     }
 
     @SuppressWarnings("unused")
@@ -211,9 +213,9 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         if (mSiteStore.getSitesCount() > 0) {
-            assertTrue(mSiteStore.hasWPComSite());
+            Assert.assertTrue(mSiteStore.hasWPComSite());
         }
-        assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
+        Assert.assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -224,10 +226,10 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(mExpectedRowsAffected, event.mRowsAffected);
-        assertFalse(mSiteStore.hasSite());
-        assertFalse(mSiteStore.hasWPComSite());
-        assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
+        Assert.assertEquals(mExpectedRowsAffected, event.mRowsAffected);
+        Assert.assertFalse(mSiteStore.hasSite());
+        Assert.assertFalse(mSiteStore.hasWPComSite());
+        Assert.assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -237,7 +239,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TestEvents.POST_FORMATS_CHANGED, mNextEvent);
+        Assert.assertEquals(TestEvents.POST_FORMATS_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -247,7 +249,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TestEvents.USER_ROLES_CHANGED, mNextEvent);
+        Assert.assertEquals(TestEvents.USER_ROLES_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -256,13 +258,13 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     public void onFetchedConnectSiteInfo(OnConnectSiteInfoChecked event) {
         if (event.isError()) {
             if (mNextEvent.equals(TestEvents.ERROR_INVALID_SITE)) {
-                assertEquals(SiteErrorType.INVALID_SITE, event.error.type);
+                Assert.assertEquals(SiteErrorType.INVALID_SITE, event.error.type);
                 mCountDownLatch.countDown();
                 return;
             }
             throw new AssertionError("Unexpected error occured with type: " + event.error.type);
         }
-        assertEquals(TestEvents.FETCHED_CONNECT_SITE_INFO, mNextEvent);
+        Assert.assertEquals(TestEvents.FETCHED_CONNECT_SITE_INFO, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -271,17 +273,17 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     public void onWPComSiteFetched(OnWPComSiteFetched event) {
         if (event.isError()) {
             if (mNextEvent.equals(TestEvents.ERROR_INVALID_SITE)) {
-                assertEquals(SiteErrorType.INVALID_SITE, event.error.type);
+                Assert.assertEquals(SiteErrorType.INVALID_SITE, event.error.type);
                 mCountDownLatch.countDown();
                 return;
             } else if (mNextEvent.equals(TestEvents.ERROR_UNKNOWN_SITE)) {
-                assertEquals(SiteErrorType.UNKNOWN_SITE, event.error.type);
+                Assert.assertEquals(SiteErrorType.UNKNOWN_SITE, event.error.type);
                 mCountDownLatch.countDown();
                 return;
             }
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TestEvents.FETCHED_WPCOM_SITE_BY_URL, mNextEvent);
+        Assert.assertEquals(TestEvents.FETCHED_WPCOM_SITE_BY_URL, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -293,19 +295,19 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Correct user we should get an OnAuthenticationChanged message
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch account from REST API, and wait for OnAccountChanged event
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch sites from REST API, and wait for OnSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        assertTrue(mSiteStore.getSitesCount() > 0);
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mSiteStore.getSitesCount() > 0);
     }
 }

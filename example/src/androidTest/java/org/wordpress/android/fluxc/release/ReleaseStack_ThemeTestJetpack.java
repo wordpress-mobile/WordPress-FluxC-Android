@@ -2,6 +2,8 @@ package org.wordpress.android.fluxc.release;
 
 import android.support.annotation.NonNull;
 
+import junit.framework.Assert;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.TestUtils;
@@ -61,13 +63,13 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
         // verify that installed themes list is empty first
-        assertTrue(mThemeStore.getThemesForSite(jetpackSite).size() == 0);
+        Assert.assertTrue(mThemeStore.getThemesForSite(jetpackSite).size() == 0);
 
         // fetch installed themes
         fetchInstalledThemes(jetpackSite);
 
         // verify themes are available for the site
-        assertTrue(mThemeStore.getThemesForSite(jetpackSite).size() > 0);
+        Assert.assertTrue(mThemeStore.getThemesForSite(jetpackSite).size() > 0);
 
         signOutWPCom();
     }
@@ -80,7 +82,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
         // fetch active theme
         ThemeModel currentTheme = fetchCurrentTheme(jetpackSite);
-        assertNotNull(currentTheme);
+        Assert.assertNotNull(currentTheme);
 
         signOutWPCom();
     }
@@ -93,20 +95,20 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
         // make sure there are at least 2 themes, one that's active and one that will be activated
         List<ThemeModel> themes = mThemeStore.getThemesForSite(jetpackSite);
-        assertTrue(themes.size() > 1);
+        Assert.assertTrue(themes.size() > 1);
 
         // fetch active theme
         ThemeModel currentTheme = fetchCurrentTheme(jetpackSite);
-        assertNotNull(currentTheme);
+        Assert.assertNotNull(currentTheme);
 
         // select a different theme to activate
         ThemeModel themeToActivate = getOtherTheme(themes, currentTheme.getThemeId());
-        assertNotNull(themeToActivate);
+        Assert.assertNotNull(themeToActivate);
 
         // activate it
         ThemeModel activatedTheme = activateTheme(jetpackSite, themeToActivate);
-        assertNotNull(activatedTheme);
-        assertEquals(activatedTheme.getThemeId(), themeToActivate.getThemeId());
+        Assert.assertNotNull(activatedTheme);
+        Assert.assertEquals(activatedTheme.getThemeId(), themeToActivate.getThemeId());
 
         signOutWPCom();
     }
@@ -120,7 +122,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
         // make sure there are at least 2 themes, one that's active and one that may be activated
         List<ThemeModel> themes = mThemeStore.getThemesForSite(jetpackSite);
-        assertTrue(themes.size() > 1);
+        Assert.assertTrue(themes.size() > 1);
 
         // If the theme is already installed, delete it first
         ThemeModel installedTheme = mThemeStore.getInstalledThemeByThemeId(jetpackSite, themeId);
@@ -132,7 +134,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         ThemeModel themeToInstall = new ThemeModel();
         themeToInstall.setThemeId(themeId);
         installTheme(jetpackSite, themeToInstall);
-        assertTrue(isThemeInstalled(jetpackSite, themeId));
+        Assert.assertTrue(isThemeInstalled(jetpackSite, themeId));
 
         signOutWPCom();
     }
@@ -146,7 +148,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
         // make sure there are at least 2 themes, one that's active and one that may be activated
         List<ThemeModel> themes = mThemeStore.getThemesForSite(jetpackSite);
-        assertTrue(themes.size() > 1);
+        Assert.assertTrue(themes.size() > 1);
 
         // Install edin if necessary before attempting to delete
         if (!isThemeInstalled(jetpackSite, themeId)) {
@@ -155,7 +157,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             installTheme(jetpackSite, themeToInstall);
 
             // make sure theme is available for site (install was successful)
-            assertTrue(isThemeInstalled(jetpackSite, themeId));
+            Assert.assertTrue(isThemeInstalled(jetpackSite, themeId));
         }
 
         // Get the theme from store to make sure the "active" state is correct, so we can deactivate it before deletion
@@ -170,23 +172,23 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
         // verify initial state, no themes in store
-        assertTrue(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
-        assertTrue(mThemeStore.getWpComThemes().isEmpty());
+        Assert.assertTrue(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
+        Assert.assertTrue(mThemeStore.getWpComThemes().isEmpty());
 
         // fetch themes for site and WP.com themes
         fetchInstalledThemes(jetpackSite);
         fetchWpComThemes();
 
         // Verify fetches were successful
-        assertFalse(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
-        assertFalse(mThemeStore.getWpComThemes().isEmpty());
+        Assert.assertFalse(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
+        Assert.assertFalse(mThemeStore.getWpComThemes().isEmpty());
 
         // remove the site's themes
         removeSiteThemes(jetpackSite);
 
         // verify site themes are removed and that WP.com themes are still there
-        assertTrue(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
-        assertFalse(mThemeStore.getWpComThemes().isEmpty());
+        Assert.assertTrue(mThemeStore.getThemesForSite(jetpackSite).isEmpty());
+        Assert.assertFalse(mThemeStore.getWpComThemes().isEmpty());
 
         // sign out
         signOutWPCom();
@@ -199,10 +201,10 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         if (event.origin == ThemeAction.FETCH_INSTALLED_THEMES) {
-            assertEquals(mNextEvent, TestEvents.FETCHED_INSTALLED_THEMES);
+            Assert.assertEquals(mNextEvent, TestEvents.FETCHED_INSTALLED_THEMES);
             mCountDownLatch.countDown();
         } else if (event.origin == ThemeAction.REMOVE_SITE_THEMES) {
-            assertEquals(mNextEvent, TestEvents.REMOVED_SITE_THEMES);
+            Assert.assertEquals(mNextEvent, TestEvents.REMOVED_SITE_THEMES);
             mCountDownLatch.countDown();
         } else {
             throw new AssertionError("Unexpected event occurred from origin: " + event.origin);
@@ -215,7 +217,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(mNextEvent, TestEvents.FETCHED_WPCOM_THEMES);
+        Assert.assertEquals(mNextEvent, TestEvents.FETCHED_WPCOM_THEMES);
         mCountDownLatch.countDown();
     }
 
@@ -226,8 +228,8 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
 
-        assertTrue(mNextEvent == TestEvents.FETCHED_CURRENT_THEME);
-        assertNotNull(event.theme);
+        Assert.assertTrue(mNextEvent == TestEvents.FETCHED_CURRENT_THEME);
+        Assert.assertNotNull(event.theme);
         mCountDownLatch.countDown();
     }
 
@@ -237,7 +239,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME);
+        Assert.assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME);
         mCountDownLatch.countDown();
     }
 
@@ -247,7 +249,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertTrue(mNextEvent == TestEvents.INSTALLED_THEME);
+        Assert.assertTrue(mNextEvent == TestEvents.INSTALLED_THEME);
         mCountDownLatch.countDown();
     }
 
@@ -257,7 +259,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertTrue(mNextEvent == TestEvents.DELETED_THEME);
+        Assert.assertTrue(mNextEvent == TestEvents.DELETED_THEME);
         mCountDownLatch.countDown();
     }
 
@@ -267,7 +269,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TestEvents.REMOVED_THEME, mNextEvent);
+        Assert.assertEquals(TestEvents.REMOVED_THEME, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -304,7 +306,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
+        Assert.assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -315,7 +317,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
         // verify Jetpack site is available
         final SiteModel jetpackSite = getJetpackSite();
-        assertNotNull(jetpackSite);
+        Assert.assertNotNull(jetpackSite);
         return jetpackSite;
     }
 
@@ -327,20 +329,20 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         // Correct user we should get an OnAuthenticationChanged message
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch account from REST API, and wait for OnAccountChanged event
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        assertTrue(mSiteStore.getSitesCount() > 0);
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mSiteStore.getSitesCount() > 0);
     }
 
     private void signOutWPCom() throws InterruptedException {
@@ -348,28 +350,28 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_REMOVED;
         mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchWpComThemes() throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.FETCHED_WPCOM_THEMES;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchWpComThemesAction());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchInstalledThemes(@NonNull SiteModel jetpackSite) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.FETCHED_INSTALLED_THEMES;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchInstalledThemesAction(jetpackSite));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private ThemeModel fetchCurrentTheme(@NonNull SiteModel jetpackSite) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.FETCHED_CURRENT_THEME;
         mDispatcher.dispatch(ThemeActionBuilder.newFetchCurrentThemeAction(jetpackSite));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         return mThemeStore.getActiveThemeForSite(jetpackSite);
     }
@@ -380,7 +382,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.ACTIVATED_THEME;
         SiteThemePayload payload = new SiteThemePayload(jetpackSite, themeToActivate);
         mDispatcher.dispatch(ThemeActionBuilder.newActivateThemeAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         return mThemeStore.getActiveThemeForSite(jetpackSite);
     }
@@ -391,23 +393,23 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         if (theme.getActive()) {
             ThemeModel otherThemeToActivate = getOtherTheme(mThemeStore.getThemesForSite(jetpackSite),
                     EDIN_THEME_ID);
-            assertNotNull(otherThemeToActivate);
+            Assert.assertNotNull(otherThemeToActivate);
             activateTheme(jetpackSite, otherThemeToActivate);
 
             // Make sure another theme is activated
-            assertFalse(theme.getThemeId().equals(mThemeStore.getActiveThemeForSite(jetpackSite).getThemeId()));
+            Assert.assertFalse(theme.getThemeId().equals(mThemeStore.getActiveThemeForSite(jetpackSite).getThemeId()));
         }
         // delete existing theme from site
         deleteTheme(jetpackSite, theme);
         // make sure theme is no longer available for site (delete was successful)
-        assertFalse(isThemeInstalled(jetpackSite, theme.getThemeId()));
+        Assert.assertFalse(isThemeInstalled(jetpackSite, theme.getThemeId()));
     }
 
     private void removeSiteThemes(@NonNull SiteModel site) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.REMOVED_SITE_THEMES;
         mDispatcher.dispatch(ThemeActionBuilder.newRemoveSiteThemesAction(site));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void installTheme(@NonNull SiteModel site, @NonNull ThemeModel theme) throws InterruptedException {
@@ -415,7 +417,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.INSTALLED_THEME;
         mDispatcher.dispatch(ThemeActionBuilder.newInstallThemeAction(install));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void deleteTheme(@NonNull SiteModel site, @NonNull ThemeModel theme) throws InterruptedException {
@@ -423,7 +425,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.DELETED_THEME;
         mDispatcher.dispatch(ThemeActionBuilder.newDeleteThemeAction(delete));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private SiteModel getJetpackSite() {

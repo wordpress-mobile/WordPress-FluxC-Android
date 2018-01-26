@@ -4,6 +4,8 @@ import android.content.Context;
 
 import com.yarolegovich.wellsql.WellSql;
 
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,10 +34,7 @@ import org.wordpress.android.fluxc.store.UploadStore.UploadError;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
 public class UploadStoreUnitTest {
@@ -67,10 +66,10 @@ public class UploadStoreUnitTest {
 
         // Check that the stored MediaUploadModel has the right state
         mediaUploadModel = UploadTestUtils.getMediaUploadModelForMediaModel(testMedia);
-        assertNotNull(mediaUploadModel);
-        assertEquals(testMedia.getId(), mediaUploadModel.getId());
-        assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
-        assertEquals(0.65F, mUploadStore.getUploadProgressForMedia(testMedia), 0.1F);
+        Assert.assertNotNull(mediaUploadModel);
+        Assert.assertEquals(testMedia.getId(), mediaUploadModel.getId());
+        Assert.assertEquals(MediaUploadModel.UPLOADING, mediaUploadModel.getUploadState());
+        Assert.assertEquals(0.65F, mUploadStore.getUploadProgressForMedia(testMedia), 0.1F);
     }
 
     @Test
@@ -80,7 +79,7 @@ public class UploadStoreUnitTest {
         postModel.setId(55);
         PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges(postModel);
         postModel = mPostStore.getPostByLocalPostId(postModel.getId());
-        assertNotNull(postModel);
+        Assert.assertNotNull(postModel);
 
         // Register the PostModel with the UploadStore, creating a PostUploadModel with some associated media
         List<MediaModel> associatedMedia = new ArrayList<>();
@@ -94,12 +93,12 @@ public class UploadStoreUnitTest {
 
         // Confirm that the PostUploadModel has been created and has the expected status
         PostUploadModel postUploadModel = UploadTestUtils.getPostUploadModelForPostModel(postModel);
-        assertNotNull(postUploadModel);
-        assertEquals(2, postUploadModel.getAssociatedMediaIdSet().size());
-        assertTrue(postUploadModel.getAssociatedMediaIdSet().contains(5));
-        assertTrue(postUploadModel.getAssociatedMediaIdSet().contains(6));
-        assertEquals(PostUploadModel.PENDING, postUploadModel.getUploadState());
-        assertTrue(mUploadStore.isPendingPost(postModel));
+        Assert.assertNotNull(postUploadModel);
+        Assert.assertEquals(2, postUploadModel.getAssociatedMediaIdSet().size());
+        Assert.assertTrue(postUploadModel.getAssociatedMediaIdSet().contains(5));
+        Assert.assertTrue(postUploadModel.getAssociatedMediaIdSet().contains(6));
+        Assert.assertEquals(PostUploadModel.PENDING, postUploadModel.getUploadState());
+        Assert.assertTrue(mUploadStore.isPendingPost(postModel));
 
         // Register the same post again with media changes
         MediaModel media3 = UploadTestUtils.getLocalTestMedia();
@@ -112,13 +111,13 @@ public class UploadStoreUnitTest {
 
         // Expect the updated model to have both the original media and the new one
         postUploadModel = UploadTestUtils.getPostUploadModelForPostModel(postModel);
-        assertNotNull(postUploadModel);
-        assertEquals(3, postUploadModel.getAssociatedMediaIdSet().size());
-        assertTrue(postUploadModel.getAssociatedMediaIdSet().contains(5));
-        assertTrue(postUploadModel.getAssociatedMediaIdSet().contains(6));
-        assertTrue(postUploadModel.getAssociatedMediaIdSet().contains(8));
-        assertEquals(PostUploadModel.PENDING, postUploadModel.getUploadState());
-        assertTrue(mUploadStore.isPendingPost(postModel));
+        Assert.assertNotNull(postUploadModel);
+        Assert.assertEquals(3, postUploadModel.getAssociatedMediaIdSet().size());
+        Assert.assertTrue(postUploadModel.getAssociatedMediaIdSet().contains(5));
+        Assert.assertTrue(postUploadModel.getAssociatedMediaIdSet().contains(6));
+        Assert.assertTrue(postUploadModel.getAssociatedMediaIdSet().contains(8));
+        Assert.assertEquals(PostUploadModel.PENDING, postUploadModel.getUploadState());
+        Assert.assertTrue(mUploadStore.isPendingPost(postModel));
     }
 
     @Test
@@ -128,7 +127,7 @@ public class UploadStoreUnitTest {
         postModel.setId(55);
         PostSqlUtils.insertOrUpdatePostOverwritingLocalChanges(postModel);
         postModel = mPostStore.getPostByLocalPostId(postModel.getId());
-        assertNotNull(postModel);
+        Assert.assertNotNull(postModel);
 
         // Create some MediaModels and add them to both the MediaModelTable and the MediaUploadTable
         // (simulating an upload action)
@@ -149,7 +148,7 @@ public class UploadStoreUnitTest {
 
         // Confirm that the PostUploadModel has been created and has a null error state
         PostUploadModel postUploadModel = UploadTestUtils.getPostUploadModelForPostModel(postModel);
-        assertNotNull(postUploadModel);
+        Assert.assertNotNull(postUploadModel);
         assertNull(mUploadStore.getUploadErrorForPost(postModel));
 
         // Add an error to this PostUploadModel
@@ -158,10 +157,10 @@ public class UploadStoreUnitTest {
 
         // Confirm that the store represents the post error correctly
         UploadError uploadError = mUploadStore.getUploadErrorForPost(postModel);
-        assertNotNull(uploadError);
+        Assert.assertNotNull(uploadError);
         assertNull(uploadError.mediaError);
-        assertNotNull(uploadError.postError);
-        assertEquals(PostErrorType.UNKNOWN_POST, uploadError.postError.type);
+        Assert.assertNotNull(uploadError.postError);
+        Assert.assertEquals(PostErrorType.UNKNOWN_POST, uploadError.postError.type);
 
         // Null out the post error again
         postUploadModel.setPostError(null);
@@ -179,10 +178,10 @@ public class UploadStoreUnitTest {
         // Confirm that the store now returns a media error for the post, since it has an associated media item
         // with an error
         uploadError = mUploadStore.getUploadErrorForPost(postModel);
-        assertNotNull(uploadError);
+        Assert.assertNotNull(uploadError);
         assertNull(uploadError.postError);
-        assertNotNull(uploadError.mediaError);
-        assertEquals(MediaErrorType.EXCEEDS_MEMORY_LIMIT, uploadError.mediaError.type);
+        Assert.assertNotNull(uploadError.mediaError);
+        Assert.assertEquals(MediaErrorType.EXCEEDS_MEMORY_LIMIT, uploadError.mediaError.type);
 
         // Create another PostModel and add it to the PostStore - this time, without registering it with the UploadStore
         PostModel unregisteredPostModel = UploadTestUtils.getTestPost();
@@ -203,9 +202,9 @@ public class UploadStoreUnitTest {
 
         // Confirm that the store returns a media error for the post (even though there's no associated PostUploadModel)
         uploadError = mUploadStore.getUploadErrorForPost(unregisteredPostModel);
-        assertNotNull(uploadError);
+        Assert.assertNotNull(uploadError);
         assertNull(uploadError.postError);
-        assertNotNull(uploadError.mediaError);
-        assertEquals(MediaErrorType.EXCEEDS_MEMORY_LIMIT, uploadError.mediaError.type);
+        Assert.assertNotNull(uploadError.mediaError);
+        Assert.assertEquals(MediaErrorType.EXCEEDS_MEMORY_LIMIT, uploadError.mediaError.type);
     }
 }

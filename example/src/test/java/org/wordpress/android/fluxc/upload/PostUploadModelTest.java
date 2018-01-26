@@ -2,6 +2,8 @@ package org.wordpress.android.fluxc.upload;
 
 import android.text.TextUtils;
 
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,11 +15,7 @@ import org.wordpress.android.fluxc.store.PostStore.PostErrorType;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(RobolectricTestRunner.class)
 public class PostUploadModelTest {
@@ -34,19 +32,19 @@ public class PostUploadModelTest {
         idSet.add(6);
         idSet.add(5);
         postUploadModel1.setAssociatedMediaIdSet(idSet);
-        assertFalse(postUploadModel1.equals(postUploadModel2));
+        Assert.assertFalse(postUploadModel1.equals(postUploadModel2));
 
         postUploadModel2.setAssociatedMediaIdSet(idSet);
 
         PostError postError = new PostError(PostErrorType.UNKNOWN_POST, "Unknown post");
         postUploadModel1.setPostError(postError);
 
-        assertFalse(postUploadModel1.equals(postUploadModel2));
+        Assert.assertFalse(postUploadModel1.equals(postUploadModel2));
 
         postUploadModel2.setErrorType(postError.type.toString());
         postUploadModel2.setErrorMessage(postError.message);
 
-        assertTrue(postUploadModel1.equals(postUploadModel2));
+        Assert.assertTrue(postUploadModel1.equals(postUploadModel2));
     }
 
     @Test
@@ -56,9 +54,9 @@ public class PostUploadModelTest {
         idSet.add(6);
         idSet.add(5);
         postUploadModel.setAssociatedMediaIdSet(idSet);
-        assertEquals("5,6", postUploadModel.getAssociatedMediaIds());
-        assertTrue(idSet.containsAll(postUploadModel.getAssociatedMediaIdSet()));
-        assertTrue(postUploadModel.getAssociatedMediaIdSet().containsAll(idSet));
+        Assert.assertEquals("5,6", postUploadModel.getAssociatedMediaIds());
+        Assert.assertTrue(idSet.containsAll(postUploadModel.getAssociatedMediaIdSet()));
+        Assert.assertTrue(postUploadModel.getAssociatedMediaIdSet().containsAll(idSet));
     }
 
     @Test
@@ -66,12 +64,12 @@ public class PostUploadModelTest {
         PostUploadModel postUploadModel = new PostUploadModel(1);
 
         assertNull(postUploadModel.getPostError());
-        assertTrue(TextUtils.isEmpty(postUploadModel.getErrorType()));
-        assertTrue(TextUtils.isEmpty(postUploadModel.getErrorMessage()));
+        Assert.assertTrue(TextUtils.isEmpty(postUploadModel.getErrorType()));
+        Assert.assertTrue(TextUtils.isEmpty(postUploadModel.getErrorMessage()));
 
         postUploadModel.setPostError(new PostError(PostErrorType.UNKNOWN_POST, "Unknown post"));
-        assertNotNull(postUploadModel.getPostError());
-        assertEquals(PostErrorType.UNKNOWN_POST, PostErrorType.fromString(postUploadModel.getErrorType()));
-        assertEquals("Unknown post", postUploadModel.getErrorMessage());
+        Assert.assertNotNull(postUploadModel.getPostError());
+        Assert.assertEquals(PostErrorType.UNKNOWN_POST, PostErrorType.fromString(postUploadModel.getErrorType()));
+        Assert.assertEquals("Unknown post", postUploadModel.getErrorMessage());
     }
 }

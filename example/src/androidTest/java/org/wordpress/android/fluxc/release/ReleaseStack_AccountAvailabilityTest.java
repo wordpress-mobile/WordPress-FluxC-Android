@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import junit.framework.Assert;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
@@ -48,20 +50,20 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableBlogAction("wordpress"));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals("wordpress", mLastEvent.value);
-        assertFalse(mLastEvent.isAvailable);
+        Assert.assertEquals("wordpress", mLastEvent.value);
+        Assert.assertFalse(mLastEvent.isAvailable);
 
         String unavailableBlog = "docbrown" + RandomStringUtils.randomAlphanumeric(8).toLowerCase();
         mNextEvent = TestEvents.IS_AVAILABLE_BLOG;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableBlogAction(unavailableBlog));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(unavailableBlog, mLastEvent.value);
-        assertTrue(mLastEvent.isAvailable);
+        Assert.assertEquals(unavailableBlog, mLastEvent.value);
+        Assert.assertTrue(mLastEvent.isAvailable);
     }
 
     public void testIsAvailableBlogInvalid() throws InterruptedException {
@@ -69,10 +71,10 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableBlogAction("notavalidname#"));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals("notavalidname#", mLastEvent.value);
-        assertFalse(mLastEvent.isAvailable);
+        Assert.assertEquals("notavalidname#", mLastEvent.value);
+        Assert.assertFalse(mLastEvent.isAvailable);
     }
 
     public void testIsAvailableDomain() throws InterruptedException {
@@ -80,21 +82,21 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableDomainAction("docbrown.com"));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals("docbrown.com", mLastEvent.value);
-        assertFalse(mLastEvent.isAvailable);
-        assertTrue(mLastEvent.suggestions.size() > 0);
+        Assert.assertEquals("docbrown.com", mLastEvent.value);
+        Assert.assertFalse(mLastEvent.isAvailable);
+        Assert.assertTrue(mLastEvent.suggestions.size() > 0);
 
         String unavailableDomain = "docbrown" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + ".com";
         mNextEvent = TestEvents.IS_AVAILABLE_DOMAIN;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableDomainAction(unavailableDomain));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(unavailableDomain, mLastEvent.value);
-        assertTrue(mLastEvent.isAvailable);
+        Assert.assertEquals(unavailableDomain, mLastEvent.value);
+        Assert.assertTrue(mLastEvent.isAvailable);
         assertNull(mLastEvent.suggestions);
     }
 
@@ -103,10 +105,10 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableDomainAction("notavaliddomain#"));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals("notavaliddomain#", mLastEvent.value);
-        assertFalse(mLastEvent.isAvailable);
+        Assert.assertEquals("notavaliddomain#", mLastEvent.value);
+        Assert.assertFalse(mLastEvent.isAvailable);
     }
 
     public void testIsAvailableEmail() throws InterruptedException {
@@ -114,20 +116,20 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableEmailAction("mobile@automattic.com"));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals("mobile@automattic.com", mLastEvent.value);
-        assertFalse(mLastEvent.isAvailable);
+        Assert.assertEquals("mobile@automattic.com", mLastEvent.value);
+        Assert.assertFalse(mLastEvent.isAvailable);
 
         String unavailableEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
         mNextEvent = TestEvents.IS_AVAILABLE_EMAIL;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableEmailAction(unavailableEmail));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(unavailableEmail, mLastEvent.value);
-        assertTrue(mLastEvent.isAvailable);
+        Assert.assertEquals(unavailableEmail, mLastEvent.value);
+        Assert.assertTrue(mLastEvent.isAvailable);
     }
 
     public void testIsAvailableEmailInvalid() throws InterruptedException {
@@ -135,10 +137,10 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableEmailAction("notanemail"));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals("notanemail", mLastEvent.value);
-        assertFalse(mLastEvent.isAvailable);
+        Assert.assertEquals("notanemail", mLastEvent.value);
+        Assert.assertFalse(mLastEvent.isAvailable);
     }
 
     public void testIsAvailableUsername() throws InterruptedException {
@@ -146,20 +148,20 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableUsernameAction("mobile"));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals("mobile", mLastEvent.value);
-        assertFalse(mLastEvent.isAvailable);
+        Assert.assertEquals("mobile", mLastEvent.value);
+        Assert.assertFalse(mLastEvent.isAvailable);
 
         String unavailableUsername = "fluxc" + RandomStringUtils.randomAlphanumeric(8).toLowerCase();
         mNextEvent = TestEvents.IS_AVAILABLE_USERNAME;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableUsernameAction(unavailableUsername));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(unavailableUsername, mLastEvent.value);
-        assertTrue(mLastEvent.isAvailable);
+        Assert.assertEquals(unavailableUsername, mLastEvent.value);
+        Assert.assertTrue(mLastEvent.isAvailable);
     }
 
     public void testIsAvailableUsernameInvalid() throws InterruptedException {
@@ -167,10 +169,10 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newIsAvailableUsernameAction("invalidusername#"));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals("invalidusername#", mLastEvent.value);
-        assertFalse(mLastEvent.isAvailable);
+        Assert.assertEquals("invalidusername#", mLastEvent.value);
+        Assert.assertFalse(mLastEvent.isAvailable);
     }
 
     @SuppressWarnings("unused")
@@ -181,26 +183,26 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         if (event.isError()) {
             AppLog.d(T.API, "OnAvailabilityChecked has error: " + event.error.type + " - " + event.error.message);
             if (mNextEvent.equals(TestEvents.ERROR_INVALID)) {
-                assertEquals(IsAvailableErrorType.INVALID, event.error.type);
+                Assert.assertEquals(IsAvailableErrorType.INVALID, event.error.type);
                 mCountDownLatch.countDown();
             }
             return;
         }
         switch (event.type) {
             case BLOG:
-                assertEquals(mNextEvent, TestEvents.IS_AVAILABLE_BLOG);
+                Assert.assertEquals(mNextEvent, TestEvents.IS_AVAILABLE_BLOG);
                 mCountDownLatch.countDown();
                 break;
             case DOMAIN:
-                assertEquals(mNextEvent, TestEvents.IS_AVAILABLE_DOMAIN);
+                Assert.assertEquals(mNextEvent, TestEvents.IS_AVAILABLE_DOMAIN);
                 mCountDownLatch.countDown();
                 break;
             case EMAIL:
-                assertEquals(mNextEvent, TestEvents.IS_AVAILABLE_EMAIL);
+                Assert.assertEquals(mNextEvent, TestEvents.IS_AVAILABLE_EMAIL);
                 mCountDownLatch.countDown();
                 break;
             case USERNAME:
-                assertEquals(mNextEvent, TestEvents.IS_AVAILABLE_USERNAME);
+                Assert.assertEquals(mNextEvent, TestEvents.IS_AVAILABLE_USERNAME);
                 mCountDownLatch.countDown();
                 break;
         }

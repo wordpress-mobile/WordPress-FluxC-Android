@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
+import junit.framework.Assert;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -104,7 +106,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
 
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onAuthenticationChanged error event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         // Add an exception for the last certificate
         mMemorizingTrustManager.storeLastFailure();
         // Retry
@@ -112,7 +114,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         mMemorizingTrustManager.clearLocalTrustStore();
     }
@@ -130,7 +132,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
 
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onAuthenticationChanged error event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         // Set known HTTP Auth credentials
         mHTTPAuthManager.addHTTPAuthCredentials(BuildConfig.TEST_WPORG_HTTPAUTH_USERNAME_SH_HTTPAUTH,
                 BuildConfig.TEST_WPORG_HTTPAUTH_PASSWORD_SH_HTTPAUTH, BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH_ENDPOINT,
@@ -140,7 +142,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testXMLRPCHTTPAuthFetchSites2() throws InterruptedException {
@@ -158,7 +160,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         // Retry to fetch sites,we expect a site refresh
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testXMLRPCFetchAndDeleteSite() throws InterruptedException {
@@ -171,7 +173,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         SiteModel selfHostedSite = mSiteStore.getSitesAccessedViaXMLRPC().get(0);
         mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(selfHostedSite));
 
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     public void testXMLRPCFetchMultipleSites() throws InterruptedException {
@@ -184,14 +186,14 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
                 BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
 
         // The second fetch for the same site should have replaced the first site
-        assertEquals(1, mSiteStore.getSitesCount());
+        Assert.assertEquals(1, mSiteStore.getSitesCount());
 
         fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL,
                 BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_ENDPOINT);
 
         // We should have two unique sites
-        assertEquals(2, mSiteStore.getSitesCount());
+        Assert.assertEquals(2, mSiteStore.getSitesCount());
     }
 
     public void testFetchPostFormats() throws InterruptedException {
@@ -206,12 +208,12 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TestEvents.POST_FORMATS_CHANGED;
         mDispatcher.dispatch(SiteActionBuilder.newFetchPostFormatsAction(firstSite));
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
 
         // Test fetched Post Formats
         List<PostFormatModel> postFormats = mSiteStore.getPostFormats(firstSite);
-        assertEquals(10, postFormats.size());
+        Assert.assertEquals(10, postFormats.size());
     }
 
     @SuppressWarnings("unused")
@@ -222,19 +224,19 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
             AppLog.i(T.TESTS, "OnSiteChanged has error: " + event.error.type);
             if (mNextEvent.equals(TestEvents.HTTP_AUTH_ERROR)) {
                 // SiteStore reports GENERIC_ERROR when it runs into authentication errors
-                assertEquals(SiteErrorType.GENERIC_ERROR, event.error.type);
+                Assert.assertEquals(SiteErrorType.GENERIC_ERROR, event.error.type);
             } else if (mNextEvent.equals(TestEvents.INVALID_SSL_CERTIFICATE)) {
                 // SiteStore reports GENERIC_ERROR when it runs into authentication errors
-                assertEquals(SiteErrorType.GENERIC_ERROR, event.error.type);
+                Assert.assertEquals(SiteErrorType.GENERIC_ERROR, event.error.type);
             } else {
                 throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
             mCountDownLatch.countDown();
             return;
         }
-        assertTrue(mSiteStore.hasSite());
-        assertTrue(mSiteStore.hasSiteAccessedViaXMLRPC());
-        assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
+        Assert.assertTrue(mSiteStore.hasSite());
+        Assert.assertTrue(mSiteStore.hasSiteAccessedViaXMLRPC());
+        Assert.assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -246,8 +248,8 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
             AppLog.i(T.TESTS, "OnProfileFetched has error: " + event.error.type);
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE, event.site.getDisplayName());
-        assertEquals(TestEvents.FETCHED_PROFILE, mNextEvent);
+        Assert.assertEquals(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE, event.site.getDisplayName());
+        Assert.assertEquals(TestEvents.FETCHED_PROFILE, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -258,9 +260,9 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertFalse(mSiteStore.hasSite());
-        assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
-        assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
+        Assert.assertFalse(mSiteStore.hasSite());
+        Assert.assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
+        Assert.assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -270,9 +272,9 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         if (event.isError()) {
             AppLog.i(T.TESTS, "OnAuthenticationChanged has error: " + event.error.type + " - " + event.error.message);
             if (event.error.type == AuthenticationErrorType.HTTP_AUTH_ERROR) {
-                assertEquals(TestEvents.HTTP_AUTH_ERROR, mNextEvent);
+                Assert.assertEquals(TestEvents.HTTP_AUTH_ERROR, mNextEvent);
             } else if (event.error.type == AuthenticationErrorType.INVALID_SSL_CERTIFICATE) {
-                assertEquals(TestEvents.INVALID_SSL_CERTIFICATE, mNextEvent);
+                Assert.assertEquals(TestEvents.INVALID_SSL_CERTIFICATE, mNextEvent);
             } else {
                 throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
@@ -286,7 +288,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TestEvents.POST_FORMATS_CHANGED, mNextEvent);
+        Assert.assertEquals(TestEvents.POST_FORMATS_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -302,7 +304,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
 
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
         // Wait for a network response / onAuthenticationChanged error event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Fetch the site user's Profile
         SiteModel site = mSiteStore.getSitesAccessedViaXMLRPC().get(0);
@@ -310,7 +312,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(SiteActionBuilder.newFetchProfileXmlRpcAction(site));
         // Wait for a network response
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     private void fetchSites(String username, String password, String endpointUrl) throws InterruptedException {
@@ -324,6 +326,6 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesXmlRpcAction(payload));
 
         // Wait for a network response / onChanged event
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
