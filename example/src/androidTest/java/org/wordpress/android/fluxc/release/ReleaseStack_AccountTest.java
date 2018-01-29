@@ -66,6 +66,10 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     }
 
     public void testWPComAuthenticationOK() throws InterruptedException {
+        if (mAccountStore.hasAccessToken()) {
+            signOut();
+        }
+
         mNextEvent = TestEvents.AUTHENTICATE;
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
     }
