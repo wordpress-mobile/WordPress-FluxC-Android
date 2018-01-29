@@ -85,6 +85,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
             mNextEvent = TestEvents.AUTHENTICATE;
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         }
+
         mNextEvent = TestEvents.FETCHED;
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
@@ -96,7 +97,14 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         if (!mAccountStore.hasAccessToken()) {
             mNextEvent = TestEvents.AUTHENTICATE;
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        } else if (!mAccountStore.getAccount().getUserName().equals(BuildConfig.TEST_WPCOM_USERNAME_TEST1)) {
+            // If we're logged in as any user other than the test user, switch accounts
+            // This is to avoid surprise changes to the description of non-test accounts
+            signOut();
+            mNextEvent = TestEvents.AUTHENTICATE;
+            authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         }
+
         mNextEvent = TestEvents.POSTED;
         PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
         String newValue = String.valueOf(System.currentTimeMillis());
