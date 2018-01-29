@@ -204,8 +204,10 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     }
 
     public void testWPComSignOut() throws InterruptedException {
-        mNextEvent = TestEvents.AUTHENTICATE;
-        authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        if (!mAccountStore.hasAccessToken()) {
+            mNextEvent = TestEvents.AUTHENTICATE;
+            authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        }
 
         signOut();
 
@@ -214,8 +216,10 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     }
 
     public void testWPComSignOutCollision() throws InterruptedException {
-        mNextEvent = TestEvents.AUTHENTICATE;
-        authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        if (!mAccountStore.hasAccessToken()) {
+            mNextEvent = TestEvents.AUTHENTICATE;
+            authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        }
 
         mCountDownLatch = new CountDownLatch(2); // Wait for OnAuthenticationChanged and OnAccountChanged
         mNextEvent = TestEvents.AUTHENTICATE;
