@@ -207,10 +207,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.AUTHENTICATE;
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
-        mCountDownLatch = new CountDownLatch(2); // Wait for OnAuthenticationChanged and OnAccountChanged
-        mNextEvent = TestEvents.AUTHENTICATE;
-        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        signOut();
 
         assertFalse(mAccountStore.hasAccessToken());
         assertEquals(0, mAccountStore.getAccount().getUserId());
@@ -422,6 +419,13 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void signOut() throws InterruptedException {
+        mCountDownLatch = new CountDownLatch(2); // Wait for OnAuthenticationChanged and OnAccountChanged
+        mNextEvent = TestEvents.AUTHENTICATE;
+        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
