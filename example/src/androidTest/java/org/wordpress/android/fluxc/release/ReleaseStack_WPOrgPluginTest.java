@@ -51,7 +51,6 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginAction(slug));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
     }
 
     @SuppressWarnings("unused")
