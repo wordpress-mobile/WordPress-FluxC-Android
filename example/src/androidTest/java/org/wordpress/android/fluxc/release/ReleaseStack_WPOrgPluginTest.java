@@ -18,6 +18,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     enum TestEvents {
         NONE,
         WPORG_PLUGIN_FETCHED,
+        WPORG_PLUGIN_DOES_NOT_EXIST
     }
 
     private TestEvents mNextEvent;
@@ -42,11 +43,22 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    public void testFetchWPOrgPluginDoesNotExistError() throws InterruptedException {
+        String slug = "hello";
+        mNextEvent = TestEvents.WPORG_PLUGIN_DOES_NOT_EXIST;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginAction(slug));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onWPOrgPluginFetched(OnWPOrgPluginFetched event) {
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            assertEquals(mNextEvent, TestEvents.WPORG_PLUGIN_DOES_NOT_EXIST);
+            mCountDownLatch.countDown();
+            return;
         }
 
         assertEquals(TestEvents.WPORG_PLUGIN_FETCHED, mNextEvent);
