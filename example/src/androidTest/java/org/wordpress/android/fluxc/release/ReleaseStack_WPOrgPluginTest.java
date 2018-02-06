@@ -22,7 +22,6 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     }
 
     private TestEvents mNextEvent;
-    private final String mSlug = "akismet";
 
     @Override
     protected void setUp() throws Exception {
@@ -35,12 +34,15 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     }
 
     public void testFetchWPOrgPlugin() throws InterruptedException {
+        String slug = "akismet";
         mNextEvent = TestEvents.WPORG_PLUGIN_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
-
-        mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginAction(mSlug));
-
+        mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginAction(slug));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+
+        WPOrgPluginModel wpOrgPlugin = mPluginStore.getWPOrgPluginBySlug(slug);
+        assertNotNull(wpOrgPlugin);
     }
 
     public void testFetchWPOrgPluginDoesNotExistError() throws InterruptedException {
@@ -62,8 +64,6 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         }
 
         assertEquals(TestEvents.WPORG_PLUGIN_FETCHED, mNextEvent);
-        WPOrgPluginModel wpOrgPlugin = mPluginStore.getWPOrgPluginBySlug(mSlug);
-        assertNotNull(wpOrgPlugin);
         mCountDownLatch.countDown();
     }
 }
