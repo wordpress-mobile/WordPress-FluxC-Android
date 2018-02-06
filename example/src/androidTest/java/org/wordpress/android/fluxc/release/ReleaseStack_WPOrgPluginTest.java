@@ -18,10 +18,10 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     enum TestEvents {
         NONE,
         WPORG_PLUGIN_FETCHED,
+        WPORG_PLUGIN_DOES_NOT_EXIST
     }
 
     private TestEvents mNextEvent;
-    private final String mSlug = "akismet";
 
     @Override
     protected void setUp() throws Exception {
@@ -34,11 +34,22 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     }
 
     public void testFetchWPOrgPlugin() throws InterruptedException {
+        String slug = "akismet";
         mNextEvent = TestEvents.WPORG_PLUGIN_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginAction(slug));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginAction(mSlug));
 
+        WPOrgPluginModel wpOrgPlugin = mPluginStore.getWPOrgPluginBySlug(slug);
+        assertNotNull(wpOrgPlugin);
+    }
+
+    public void testFetchWPOrgPluginDoesNotExistError() throws InterruptedException {
+        String slug = "hello";
+        mNextEvent = TestEvents.WPORG_PLUGIN_DOES_NOT_EXIST;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginAction(slug));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -46,12 +57,12 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     @Subscribe
     public void onWPOrgPluginFetched(OnWPOrgPluginFetched event) {
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            assertEquals(mNextEvent, TestEvents.WPORG_PLUGIN_DOES_NOT_EXIST);
+            mCountDownLatch.countDown();
+            return;
         }
 
         assertEquals(TestEvents.WPORG_PLUGIN_FETCHED, mNextEvent);
-        WPOrgPluginModel wpOrgPlugin = mPluginStore.getWPOrgPluginBySlug(mSlug);
-        assertNotNull(wpOrgPlugin);
         mCountDownLatch.countDown();
     }
 }
