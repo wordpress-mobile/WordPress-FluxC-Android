@@ -55,7 +55,6 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     private TestEvents mNextEvent;
     private int mExpectedRowsAffected;
-    private OnSuggestedDomains mLastOnSuggestedDomainsEvent;
 
     @Override
     protected void setUp() throws Exception {
@@ -195,12 +194,6 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mNextEvent = TestEvents.FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        assertEquals(20, mLastOnSuggestedDomainsEvent.suggestions.size());
-        final String suffix = ".wordpress.com";
-        for (DomainSuggestionResponse suggestionResponse : mLastOnSuggestedDomainsEvent.suggestions) {
-            assertTrue("Was expecting the domain to end in " + suffix, suggestionResponse.domain_name.endsWith(suffix));
-        }
     }
 
     @SuppressWarnings("unused")
@@ -308,11 +301,16 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     @SuppressWarnings("unused")
     @Subscribe
     public void onSuggestedDomains(OnSuggestedDomains event) {
-        mLastOnSuggestedDomainsEvent = event;
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS, mNextEvent);
+
+        final String suffix = ".wordpress.com";
+        for (DomainSuggestionResponse suggestionResponse : event.suggestions) {
+            assertTrue("Was expecting the domain to end in " + suffix, suggestionResponse.domain_name.endsWith(suffix));
+        }
+
         mCountDownLatch.countDown();
     }
 
