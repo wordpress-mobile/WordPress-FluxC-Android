@@ -28,6 +28,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         PLUGIN_DIRECTORY_FETCHED,
         PLUGIN_DIRECTORY_SEARCHED,
         WPORG_PLUGIN_FETCHED,
+        WPORG_PLUGIN_DOES_NOT_EXIST
     }
 
     private TestEvents mNextEvent;
@@ -45,7 +46,6 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
 
     public void testFetchWPOrgPlugin() throws InterruptedException {
         String slug = "akismet";
-
         mNextEvent = TestEvents.WPORG_PLUGIN_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginAction(slug));
@@ -91,6 +91,14 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         Assert.assertTrue(firstPluginList.size() == fourthPluginList.size());
     }
 
+    public void testFetchWPOrgPluginDoesNotExistError() throws InterruptedException {
+        String slug = "hello";
+        mNextEvent = TestEvents.WPORG_PLUGIN_DOES_NOT_EXIST;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginAction(slug));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     public void testSearchPluginDirectory() throws InterruptedException {
         // This search term is picked because it has more than 100 results to test pagination
         String searchTerm = "Writing";
@@ -131,7 +139,9 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     @Subscribe
     public void onWPOrgPluginFetched(OnWPOrgPluginFetched event) {
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            assertEquals(mNextEvent, TestEvents.WPORG_PLUGIN_DOES_NOT_EXIST);
+            mCountDownLatch.countDown();
+            return;
         }
 
         assertEquals(TestEvents.WPORG_PLUGIN_FETCHED, mNextEvent);
