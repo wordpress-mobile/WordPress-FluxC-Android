@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.PostFormatModel;
 import org.wordpress.android.fluxc.model.RoleModel;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.network.rest.wpcom.site.DomainSuggestionResponse;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
@@ -19,8 +20,10 @@ import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnUserRolesChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
+import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
 import org.wordpress.android.fluxc.store.SiteStore.OnWPComSiteFetched;
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
+import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -45,12 +48,14 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         SITE_REMOVED,
         FETCHED_CONNECT_SITE_INFO,
         FETCHED_WPCOM_SITE_BY_URL,
+        FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS,
         ERROR_INVALID_SITE,
         ERROR_UNKNOWN_SITE
     }
 
     private TestEvents mNextEvent;
     private int mExpectedRowsAffected;
+    private OnSuggestedDomains mLastOnSuggestedDomainsEvent;
 
     @Override
     protected void setUp() throws Exception {
@@ -183,6 +188,21 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertEquals(0, mSiteStore.getSitesCount());
     }
 
+    public void testWpcomSubdomainSuggestions() throws InterruptedException {
+        String keywords = "awesomesubdomain";
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20);
+        mDispatcher.dispatch(SiteActionBuilder.newSuggestDomainsAction(payload));
+        mNextEvent = TestEvents.FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(20, mLastOnSuggestedDomainsEvent.suggestions.size());
+        final String suffix = ".wordpress.com";
+        for (DomainSuggestionResponse suggestionResponse : mLastOnSuggestedDomainsEvent.suggestions) {
+            assertTrue("Was expecting the domain to end in " + suffix, suggestionResponse.domain_name.endsWith(suffix));
+        }
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -282,6 +302,17 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.FETCHED_WPCOM_SITE_BY_URL, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onSuggestedDomains(OnSuggestedDomains event) {
+        mLastOnSuggestedDomainsEvent = event;
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS, mNextEvent);
         mCountDownLatch.countDown();
     }
 
