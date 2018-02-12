@@ -27,6 +27,14 @@ public class MockedStack_AccountTest extends MockedStack_Base {
         mDispatcher.register(this);
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        if (mAccountStore.hasAccessToken()) {
+            throw new AssertionError("Mock account tests should clear the AccountStore!");
+        }
+        super.tearDown();
+    }
+
     public void testAuthenticationOK() {
         AuthenticatePayload payload = new AuthenticatePayload("test", "test");
         mIsError = false;
