@@ -53,6 +53,9 @@ public class MockedStack_AccountTest extends MockedStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Log out and clear stored dummy account
+        signOut();
     }
 
     public void testAuthenticationKO() throws InterruptedException {
