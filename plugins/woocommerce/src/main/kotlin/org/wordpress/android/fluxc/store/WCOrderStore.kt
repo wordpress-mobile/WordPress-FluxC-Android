@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,13 +28,27 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             var loadMore: Boolean = false
     ) : Payload<BaseNetworkError>()
 
-    // TODO: Use custom OrderError parameter
     class FetchOrdersResponsePayload(
             var site: SiteModel,
             var orders: List<WCOrderModel> = emptyList(),
             var loadedMore: Boolean = false,
             var canLoadMore: Boolean = false
-    ) : Payload<BaseNetworkError>()
+    ) : Payload<OrderError>() {
+        constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
+    }
+
+    class OrderError(val type: OrderErrorType? = null, val message: String = "") : OnChangedError {
+        constructor(type: String, message: String): this(OrderErrorType.fromString(type), message)
+    }
+
+    enum class OrderErrorType {
+        GENERIC_ERROR;
+
+        companion object {
+            private val reverseMap = OrderErrorType.values().associateBy(OrderErrorType::name)
+            fun fromString(type: String) = reverseMap[type.toUpperCase(Locale.US)] ?: GENERIC_ERROR
+        }
+    }
 
     override fun onRegister() {
         AppLog.d(T.API, "WCOrderStore onRegister")
