@@ -60,6 +60,9 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         AppLog.d(T.API, "WCOrderStore onRegister")
     }
 
+    fun getOrdersForSite(site: SiteModel, vararg status: String): List<WCOrderModel> =
+            OrderSqlUtils.getOrdersForSiteWithStatus(site, status.asList())
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCOrderAction ?: return
