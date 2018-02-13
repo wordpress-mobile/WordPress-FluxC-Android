@@ -18,6 +18,10 @@ import javax.inject.Singleton
 @Singleton
 class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrderRestClient: OrderRestClient)
     : Store(dispatcher) {
+    companion object {
+        const val NUM_ORDERS_PER_FETCH = 50
+    }
+
     class FetchOrdersPayload(
             var site: SiteModel,
             var loadMore: Boolean = false
@@ -39,9 +43,17 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCOrderAction ?: return
         when (actionType) {
-            WCOrderAction.FETCH_ORDERS -> {} // TODO
-            WCOrderAction.FETCHED_ORDERS -> {} // TODO
+            WCOrderAction.FETCH_ORDERS -> fetchOrders(action.payload as FetchOrdersPayload)
+            WCOrderAction.FETCHED_ORDERS -> handledFetchOrdersCompleted(action.payload as FetchOrdersResponsePayload)
         }
+    }
+
+    private fun fetchOrders(payload: FetchOrdersPayload) {
+        // TODO: Handle loadMore
+        wcOrderRestClient.fetchOrders(payload.site, 0)
+    }
+
+    private fun handledFetchOrdersCompleted(payload: FetchOrdersResponsePayload) {
         // TODO
     }
 }
