@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
+import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Locale
@@ -50,6 +51,11 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         }
     }
 
+    // OnChanged events
+    class OnOrderChanged(var rowsAffected: Int, var canLoadMore: Boolean = false) : OnChanged<OrderError>() {
+        var causeOfChange: WCOrderAction? = null
+    }
+
     override fun onRegister() {
         AppLog.d(T.API, "WCOrderStore onRegister")
     }
@@ -69,6 +75,25 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun handledFetchOrdersCompleted(payload: FetchOrdersResponsePayload) {
-        // TODO
+        val onOrderChanged: OnOrderChanged
+
+        if (payload.isError) {
+            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
+        } else {
+            // Clear existing uploading orders if this is a fresh fetch (loadMore = false in the original request)
+            // This is the simplest way of keeping our local orders in sync with remote orders (in case of deletions,
+            // or if the user manual changed some order IDs)
+            if (!payload.loadedMore) {
+                OrderSqlUtils.deleteOrdersForSite(payload.site)
+            }
+
+            val rowsAffected = payload.orders.sumBy { OrderSqlUtils.insertOrUpdateOrder(it) }
+
+            onOrderChanged = OnOrderChanged(rowsAffected, payload.canLoadMore)
+        }
+
+        onOrderChanged.causeOfChange = WCOrderAction.FETCH_ORDERS
+
+        emitChange(onOrderChanged)
     }
 }
