@@ -7,7 +7,7 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
-import org.wordpress.android.fluxc.model.SitePluginModel;
+import org.wordpress.android.fluxc.model.plugin.SitePluginModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.persistence.PluginSqlUtils;
 import org.wordpress.android.fluxc.store.AccountStore;
