@@ -73,8 +73,12 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun fetchOrders(payload: FetchOrdersPayload) {
-        // TODO: Handle loadMore
-        wcOrderRestClient.fetchOrders(payload.site, 0)
+        val offset = if (payload.loadMore) {
+            OrderSqlUtils.getOrdersForSite(payload.site).size
+        } else {
+            0
+        }
+        wcOrderRestClient.fetchOrders(payload.site, offset)
     }
 
     private fun handledFetchOrdersCompleted(payload: FetchOrdersResponsePayload) {
