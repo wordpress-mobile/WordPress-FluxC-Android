@@ -43,6 +43,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     enum class OrderErrorType {
+        REST_INVALID_PARAM,
         GENERIC_ERROR;
 
         companion object {
