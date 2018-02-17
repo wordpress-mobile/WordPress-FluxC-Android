@@ -91,6 +91,25 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         Assert.assertTrue(firstPluginList.size() == fourthPluginList.size());
     }
 
+    // This simulates the pull to refresh feature a client might implement
+    public void testFetchSamePageOfPluginDirectory() throws InterruptedException {
+        PluginDirectoryType directoryType = PluginDirectoryType.NEW;
+        Assert.assertTrue(mPluginStore.getPluginDirectory(directoryType).size() == 0);
+
+        // Fetch plugin directory's first page
+        fetchPluginDirectory(directoryType, false);
+
+        List<WPOrgPluginModel> pluginsAfterFirstFetch = mPluginStore.getPluginDirectory(directoryType);
+        Assert.assertTrue(pluginsAfterFirstFetch.size() > 0);
+
+        // Re-fetch plugin directory's first page
+        fetchPluginDirectory(directoryType, false);
+
+        // Same number of items should have been fetched and the existing plugin directories should be updated
+        List<WPOrgPluginModel> pluginsAfterSecondFetch = mPluginStore.getPluginDirectory(directoryType);
+        Assert.assertEquals(pluginsAfterFirstFetch.size(), pluginsAfterSecondFetch.size());
+    }
+
     public void testFetchWPOrgPluginDoesNotExistError() throws InterruptedException {
         String slug = "hello";
         mNextEvent = TestEvents.WPORG_PLUGIN_DOES_NOT_EXIST;
