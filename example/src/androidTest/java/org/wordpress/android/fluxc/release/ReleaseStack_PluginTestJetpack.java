@@ -7,15 +7,17 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
+import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.plugin.DualPluginModel;
 import org.wordpress.android.fluxc.model.plugin.SitePluginModel;
-import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.persistence.PluginSqlUtils;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.PluginStore;
+import org.wordpress.android.fluxc.store.PluginStore.ConfigureSitePluginErrorType;
+import org.wordpress.android.fluxc.store.PluginStore.ConfigureSitePluginPayload;
 import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginErrorType;
 import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginPayload;
 import org.wordpress.android.fluxc.store.PluginStore.InstallSitePluginErrorType;
@@ -25,8 +27,6 @@ import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginDeleted;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginInstalled;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsFetched;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsRemoved;
-import org.wordpress.android.fluxc.store.PluginStore.ConfigureSitePluginErrorType;
-import org.wordpress.android.fluxc.store.PluginStore.ConfigureSitePluginPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
@@ -75,7 +75,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     public void testFetchSitePlugins() throws InterruptedException {
         SiteModel site = fetchSingleJetpackSitePlugins();
 
-        List<SitePluginModel> plugins = mPluginStore.getSitePlugins(site);
+        List<DualPluginModel> plugins = mPluginStore.getSitePlugins(site);
         assertTrue(plugins.size() > 0);
 
         signOutWPCom();
@@ -87,21 +87,22 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         // an action is actually taken. This wouldn't be the case if we always activate the plugin.
         SiteModel site = fetchSingleJetpackSitePlugins();
 
-        List<SitePluginModel> plugins = mPluginStore.getSitePlugins(site);
+        List<DualPluginModel> plugins = mPluginStore.getSitePlugins(site);
         assertTrue(plugins.size() > 0);
-        SitePluginModel plugin = plugins.get(0);
-        boolean isActive = !plugin.isActive();
-        plugin.setIsActive(isActive);
+        SitePluginModel sitePlugin = plugins.get(0).getSitePlugin();
+        assertNotNull(sitePlugin);
+        boolean isActive = !sitePlugin.isActive();
+        sitePlugin.setIsActive(isActive);
 
         mNextEvent = TestEvents.CONFIGURED_SITE_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
-        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, plugin);
+        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, sitePlugin);
         mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        DualPluginModel dualPlugin = mPluginStore.getDualPluginBySlug(site, plugin.getSlug());
+        DualPluginModel dualPlugin = mPluginStore.getDualPluginBySlug(site, sitePlugin.getSlug());
         assertNotNull(dualPlugin.getSitePlugin());
         assertEquals(dualPlugin.getSitePlugin().isActive(), isActive);
 
@@ -115,8 +116,10 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         // Fetch the list of installed plugins to make sure `React` is not installed
         SiteModel site = fetchSingleJetpackSitePlugins();
 
-        List<SitePluginModel> sitePlugins = mPluginStore.getSitePlugins(site);
-        for (SitePluginModel sitePlugin : sitePlugins) {
+        List<DualPluginModel> plugins = mPluginStore.getSitePlugins(site);
+        for (DualPluginModel dualPlugin : plugins) {
+            SitePluginModel sitePlugin = dualPlugin.getSitePlugin();
+            assertNotNull(sitePlugin);
             if (sitePlugin.getSlug().equals(pluginSlugToInstall)) {
                 // We need to deactivate the plugin to be able to uninstall it
                 if (sitePlugin.isActive()) {
@@ -142,9 +145,10 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         // Delete the newly installed React plugin
         deleteSitePlugin(site, mInstalledPlugin);
 
-        List<SitePluginModel> updatedPlugins = mPluginStore.getSitePlugins(site);
-        for (SitePluginModel sitePlugin : updatedPlugins) {
-            assertFalse(sitePlugin.getSlug().equals(pluginSlugToInstall));
+        List<DualPluginModel> updatedPlugins = mPluginStore.getSitePlugins(site);
+        for (DualPluginModel dualPlugin : updatedPlugins) {
+            assertNotNull(dualPlugin.getSitePlugin());
+            assertFalse(dualPlugin.getSitePlugin().getSlug().equals(pluginSlugToInstall));
         }
 
         signOutWPCom();
@@ -172,10 +176,11 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         SitePluginModel activePluginToTest = null;
 
-        List<SitePluginModel> sitePlugins = mPluginStore.getSitePlugins(site);
-        for (SitePluginModel sitePlugin : sitePlugins) {
-            if (sitePlugin.isActive()) {
-                activePluginToTest = sitePlugin;
+        List<DualPluginModel> sitePlugins = mPluginStore.getSitePlugins(site);
+        for (DualPluginModel dualPlugin : sitePlugins) {
+            assertNotNull(dualPlugin.getSitePlugin());
+            if (dualPlugin.getSitePlugin().isActive()) {
+                activePluginToTest = dualPlugin.getSitePlugin();
                 break;
             }
         }
@@ -225,7 +230,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     public void testRemoveSitePlugins() throws InterruptedException {
         SiteModel site = fetchSingleJetpackSitePlugins();
-        List<SitePluginModel> plugins = mPluginStore.getSitePlugins(site);
+        List<DualPluginModel> plugins = mPluginStore.getSitePlugins(site);
         assertTrue(plugins.size() > 0);
 
         mDispatcher.dispatch(PluginActionBuilder.newRemoveSitePluginsAction(site));
