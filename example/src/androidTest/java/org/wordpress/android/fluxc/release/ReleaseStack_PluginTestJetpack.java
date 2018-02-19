@@ -21,12 +21,13 @@ import org.wordpress.android.fluxc.store.PluginStore.ConfigureSitePluginErrorTyp
 import org.wordpress.android.fluxc.store.PluginStore.ConfigureSitePluginPayload;
 import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginErrorType;
 import org.wordpress.android.fluxc.store.PluginStore.DeleteSitePluginPayload;
+import org.wordpress.android.fluxc.store.PluginStore.FetchPluginDirectoryPayload;
 import org.wordpress.android.fluxc.store.PluginStore.InstallSitePluginErrorType;
 import org.wordpress.android.fluxc.store.PluginStore.InstallSitePluginPayload;
+import org.wordpress.android.fluxc.store.PluginStore.OnPluginDirectoryFetched;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginConfigured;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginDeleted;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginInstalled;
-import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsFetched;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsRemoved;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
@@ -289,13 +290,16 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onSitePluginsFetched(OnSitePluginsFetched event) {
-        AppLog.i(T.API, "Received onSitePluginsFetched");
+    public void onPluginDirectoryFetched(OnPluginDirectoryFetched event) {
+        AppLog.i(T.API, "Received onPluginDirectoryFetched");
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred in onSitePluginsFetched with type: "
+            throw new AssertionError("Unexpected error occurred in onPluginDirectoryFetched with type: "
                     + event.error.type);
         }
         assertEquals(mNextEvent, TestEvents.SITE_PLUGINS_FETCHED);
+        assertEquals(event.type, PluginDirectoryType.SITE);
+        assertEquals(event.loadMore, false); // pagination is not enabled for site plugins
+        assertEquals(event.canLoadMore, false); // pagination is not enabled for site plugins
         mCountDownLatch.countDown();
     }
 
@@ -400,7 +404,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         mNextEvent = TestEvents.SITE_PLUGINS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(PluginActionBuilder.newFetchSitePluginsAction(site));
+        FetchPluginDirectoryPayload payload = new FetchPluginDirectoryPayload(PluginDirectoryType.SITE, site, false);
+        mDispatcher.dispatch(PluginActionBuilder.newFetchPluginDirectoryAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
