@@ -188,7 +188,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         mSearchPage = page;
         mNextEvent = TestEvents.PLUGIN_DIRECTORY_SEARCHED;
         mCountDownLatch = new CountDownLatch(1);
-        SearchPluginDirectoryPayload payload = new SearchPluginDirectoryPayload(searchTerm, page);
+        SearchPluginDirectoryPayload payload = new SearchPluginDirectoryPayload(null, searchTerm, page);
         mDispatcher.dispatch(PluginActionBuilder.newSearchPluginDirectoryAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
