@@ -100,7 +100,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        SitePluginModel newPlugin = mPluginStore.getSitePluginByName(site, plugin.getName());
+        SitePluginModel newPlugin = mPluginStore.getSitePluginBySlug(site, plugin.getSlug());
         assertNotNull(newPlugin);
         assertEquals(newPlugin.isActive(), isActive);
 
@@ -189,13 +189,15 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     public void testDeleteUnknownPlugin() throws InterruptedException {
         SiteModel site = fetchSingleJetpackSitePlugins();
 
-        String pluginName = "this-plugin-does-not-exist";
+        String pluginName = "this-plugin-does-not-exist-name";
+        String pluginSlug = "this-plugin-does-not-exist-slug";
         SitePluginModel plugin = new SitePluginModel();
         plugin.setName(pluginName);
+        plugin.setSlug(pluginSlug);
         plugin.setLocalSiteId(site.getId());
         PluginSqlUtils.insertOrUpdateSitePlugin(plugin);
 
-        SitePluginModel insertedPlugin = mPluginStore.getSitePluginByName(site, pluginName);
+        SitePluginModel insertedPlugin = mPluginStore.getSitePluginBySlug(site, pluginSlug);
         assertNotNull(insertedPlugin);
 
         mNextEvent = TestEvents.DELETED_SITE_PLUGIN;
@@ -207,7 +209,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Make sure the plugin is removed from DB
-        assertNull(mPluginStore.getSitePluginByName(site, pluginName));
+        assertNull(mPluginStore.getSitePluginBySlug(site, pluginSlug));
 
         signOutWPCom();
     }
