@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.plugin.DualPluginModel;
+import org.wordpress.android.fluxc.model.plugin.PluginDirectoryType;
 import org.wordpress.android.fluxc.model.plugin.SitePluginModel;
 import org.wordpress.android.fluxc.persistence.PluginSqlUtils;
 import org.wordpress.android.fluxc.store.AccountStore;
@@ -75,7 +76,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     public void testFetchSitePlugins() throws InterruptedException {
         SiteModel site = fetchSingleJetpackSitePlugins();
 
-        List<DualPluginModel> plugins = mPluginStore.getSitePlugins(site);
+        List<DualPluginModel> plugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
         assertTrue(plugins.size() > 0);
 
         signOutWPCom();
@@ -87,7 +88,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         // an action is actually taken. This wouldn't be the case if we always activate the plugin.
         SiteModel site = fetchSingleJetpackSitePlugins();
 
-        List<DualPluginModel> plugins = mPluginStore.getSitePlugins(site);
+        List<DualPluginModel> plugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
         assertTrue(plugins.size() > 0);
         SitePluginModel sitePlugin = plugins.get(0).getSitePlugin();
         assertNotNull(sitePlugin);
@@ -116,7 +117,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         // Fetch the list of installed plugins to make sure `React` is not installed
         SiteModel site = fetchSingleJetpackSitePlugins();
 
-        List<DualPluginModel> plugins = mPluginStore.getSitePlugins(site);
+        List<DualPluginModel> plugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
         for (DualPluginModel dualPlugin : plugins) {
             SitePluginModel sitePlugin = dualPlugin.getSitePlugin();
             assertNotNull(sitePlugin);
@@ -145,7 +146,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         // Delete the newly installed React plugin
         deleteSitePlugin(site, mInstalledPlugin);
 
-        List<DualPluginModel> updatedPlugins = mPluginStore.getSitePlugins(site);
+        List<DualPluginModel> updatedPlugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
         for (DualPluginModel dualPlugin : updatedPlugins) {
             assertNotNull(dualPlugin.getSitePlugin());
             assertFalse(dualPlugin.getSitePlugin().getSlug().equals(pluginSlugToInstall));
@@ -176,7 +177,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         SitePluginModel activePluginToTest = null;
 
-        List<DualPluginModel> sitePlugins = mPluginStore.getSitePlugins(site);
+        List<DualPluginModel> sitePlugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
         for (DualPluginModel dualPlugin : sitePlugins) {
             assertNotNull(dualPlugin.getSitePlugin());
             if (dualPlugin.getSitePlugin().isActive()) {
@@ -230,7 +231,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     public void testRemoveSitePlugins() throws InterruptedException {
         SiteModel site = fetchSingleJetpackSitePlugins();
-        List<DualPluginModel> plugins = mPluginStore.getSitePlugins(site);
+        List<DualPluginModel> plugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
         assertTrue(plugins.size() > 0);
 
         mDispatcher.dispatch(PluginActionBuilder.newRemoveSitePluginsAction(site));
@@ -239,7 +240,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Assert site plugins are removed
-        assertTrue(mPluginStore.getSitePlugins(site).size() == 0);
+        assertTrue(mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE).size() == 0);
 
         signOutWPCom();
     }

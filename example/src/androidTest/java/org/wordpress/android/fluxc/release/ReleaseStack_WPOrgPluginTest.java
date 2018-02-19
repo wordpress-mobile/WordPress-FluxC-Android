@@ -5,6 +5,7 @@ import junit.framework.Assert;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
+import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.plugin.DualPluginModel;
 import org.wordpress.android.fluxc.model.plugin.PluginDirectoryType;
 import org.wordpress.android.fluxc.store.PluginStore;
@@ -31,6 +32,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         WPORG_PLUGIN_DOES_NOT_EXIST
     }
 
+    private SiteModel mSite;
     private TestEvents mNextEvent;
     private int mSearchPage;
 
@@ -42,6 +44,11 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         init();
         // Reset expected test event
         mNextEvent = TestEvents.NONE;
+
+        // We don't need an actual site for any of the tests, but since we don't want clients to request plugins
+        // without a site, we are passing a dummy site model to keep the method parameter @NonNull
+        mSite = new SiteModel();
+        mSite.setId(1);
     }
 
     public void testFetchWPOrgPlugin() throws InterruptedException {
@@ -51,62 +58,62 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginAction(slug));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        DualPluginModel dualPlugin = mPluginStore.getDualPluginBySlug(null, slug);
+        DualPluginModel dualPlugin = mPluginStore.getDualPluginBySlug(mSite, slug);
         assertNotNull(dualPlugin.getWPOrgPlugin());
     }
 
     // This is a long set of tests that makes sure the pagination works correctly
     public void testFetchPluginDirectory() throws InterruptedException {
         PluginDirectoryType primaryType = PluginDirectoryType.NEW;
-        Assert.assertTrue(mPluginStore.getPluginDirectory(null, primaryType).size() == 0);
+        Assert.assertTrue(mPluginStore.getPluginDirectory(mSite, primaryType).size() == 0);
 
         fetchPluginDirectory(primaryType, false);
 
-        List<DualPluginModel> firstPluginList = mPluginStore.getPluginDirectory(null, primaryType);
+        List<DualPluginModel> firstPluginList = mPluginStore.getPluginDirectory(mSite, primaryType);
         Assert.assertTrue(firstPluginList.size() > 0);
 
         // Do another fetch this time loading the second page
         fetchPluginDirectory(primaryType, true);
 
         // Assert that new items are fetched
-        List<DualPluginModel> secondPluginList = mPluginStore.getPluginDirectory(null, primaryType);
+        List<DualPluginModel> secondPluginList = mPluginStore.getPluginDirectory(mSite, primaryType);
         Assert.assertTrue(secondPluginList.size() > firstPluginList.size());
 
         // Do one more fetch this time a different directory type and make sure it didn't affect the primary one
         PluginDirectoryType secondaryType = PluginDirectoryType.POPULAR;
-        Assert.assertTrue(mPluginStore.getPluginDirectory(null, secondaryType).size() == 0);
+        Assert.assertTrue(mPluginStore.getPluginDirectory(mSite, secondaryType).size() == 0);
 
         fetchPluginDirectory(secondaryType, false);
 
         // Assert no new items fetched for primary type, but instead they are fetched for the secondary type
-        List<DualPluginModel> thirdPluginList = mPluginStore.getPluginDirectory(null, primaryType);
+        List<DualPluginModel> thirdPluginList = mPluginStore.getPluginDirectory(mSite, primaryType);
         Assert.assertTrue(thirdPluginList.size() == secondPluginList.size());
-        Assert.assertTrue(mPluginStore.getPluginDirectory(null, secondaryType).size() > 0);
+        Assert.assertTrue(mPluginStore.getPluginDirectory(mSite, secondaryType).size() > 0);
 
         // Do one more FRESH fetch to make sure that previous items are deleted
         fetchPluginDirectory(primaryType, false);
 
         // Assert the number of items is the same as the first fetch
-        List<DualPluginModel> fourthPluginList = mPluginStore.getPluginDirectory(null, primaryType);
+        List<DualPluginModel> fourthPluginList = mPluginStore.getPluginDirectory(mSite, primaryType);
         Assert.assertTrue(firstPluginList.size() == fourthPluginList.size());
     }
 
     // This simulates the pull to refresh feature a client might implement
     public void testFetchSamePageOfPluginDirectory() throws InterruptedException {
         PluginDirectoryType directoryType = PluginDirectoryType.NEW;
-        Assert.assertTrue(mPluginStore.getPluginDirectory(null, directoryType).size() == 0);
+        Assert.assertTrue(mPluginStore.getPluginDirectory(mSite, directoryType).size() == 0);
 
         // Fetch plugin directory's first page
         fetchPluginDirectory(directoryType, false);
 
-        List<DualPluginModel> pluginsAfterFirstFetch = mPluginStore.getPluginDirectory(null, directoryType);
+        List<DualPluginModel> pluginsAfterFirstFetch = mPluginStore.getPluginDirectory(mSite, directoryType);
         Assert.assertTrue(pluginsAfterFirstFetch.size() > 0);
 
         // Re-fetch plugin directory's first page
         fetchPluginDirectory(directoryType, false);
 
         // Same number of items should have been fetched and the existing plugin directories should be updated
-        List<DualPluginModel> pluginsAfterSecondFetch = mPluginStore.getPluginDirectory(null, directoryType);
+        List<DualPluginModel> pluginsAfterSecondFetch = mPluginStore.getPluginDirectory(mSite, directoryType);
         Assert.assertEquals(pluginsAfterFirstFetch.size(), pluginsAfterSecondFetch.size());
     }
 
