@@ -61,7 +61,6 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     private TestEvents mNextEvent;
-    private SitePluginModel mInstalledPlugin;
 
     @Override
     protected void setUp() throws Exception {
@@ -71,7 +70,6 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         init();
         // Reset expected test event
         mNextEvent = TestEvents.NONE;
-        mInstalledPlugin = null;
     }
 
     public void testFetchSitePlugins() throws InterruptedException {
@@ -137,15 +135,16 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         installSitePlugin(site, pluginSlugToInstall);
 
         // mInstalledPlugin should be set in onSitePluginInstalled
-        assertNotNull(mInstalledPlugin);
+        SitePluginModel installedPlugin = mPluginStore.getDualPluginBySlug(site, pluginSlugToInstall).getSitePlugin();
+        assertNotNull(installedPlugin);
 
         // We need to deactivate the plugin to be able to uninstall it
-        if (mInstalledPlugin.isActive()) {
-            deactivatePlugin(site, mInstalledPlugin);
+        if (installedPlugin.isActive()) {
+            deactivatePlugin(site, installedPlugin);
         }
 
         // Delete the newly installed React plugin
-        deleteSitePlugin(site, mInstalledPlugin);
+        deleteSitePlugin(site, installedPlugin);
 
         List<DualPluginModel> updatedPlugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
         for (DualPluginModel dualPlugin : updatedPlugins) {
@@ -223,9 +222,11 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     public void testInstallPluginNoPackageError() throws InterruptedException {
+        String slug = "this-plugin-does-not-exist";
         SiteModel site = fetchSingleJetpackSitePlugins();
-        installSitePlugin(site, "this-plugin-does-not-exist", TestEvents.INSTALL_SITE_PLUGIN_ERROR_NO_PACKAGE);
-        assertNull(mInstalledPlugin);
+        installSitePlugin(site, slug, TestEvents.INSTALL_SITE_PLUGIN_ERROR_NO_PACKAGE);
+        SitePluginModel installedPlugin = mPluginStore.getDualPluginBySlug(site, slug).getSitePlugin();
+        assertNull(installedPlugin);
 
         signOutWPCom();
     }
@@ -351,7 +352,6 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         } else {
             assertEquals(mNextEvent, TestEvents.INSTALLED_SITE_PLUGIN);
         }
-        mInstalledPlugin = event.plugin;
         mCountDownLatch.countDown();
     }
 
