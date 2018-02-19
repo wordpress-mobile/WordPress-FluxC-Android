@@ -5,6 +5,7 @@ import junit.framework.Assert;
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
+import org.wordpress.android.fluxc.model.plugin.DualPluginModel;
 import org.wordpress.android.fluxc.model.plugin.PluginDirectoryType;
 import org.wordpress.android.fluxc.model.plugin.WPOrgPluginModel;
 import org.wordpress.android.fluxc.store.PluginStore;
@@ -51,8 +52,8 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginAction(slug));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        WPOrgPluginModel wpOrgPlugin = mPluginStore.getWPOrgPluginBySlug(slug);
-        assertNotNull(wpOrgPlugin);
+        DualPluginModel dualPlugin = mPluginStore.getDualPluginBySlug(null, slug);
+        assertNotNull(dualPlugin.getWPOrgPlugin());
     }
 
     // This is a long set of tests that makes sure the pagination works correctly

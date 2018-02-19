@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
+import org.wordpress.android.fluxc.model.plugin.DualPluginModel;
 import org.wordpress.android.fluxc.model.plugin.SitePluginModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.persistence.PluginSqlUtils;
@@ -100,9 +101,9 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        SitePluginModel newPlugin = mPluginStore.getSitePluginBySlug(site, plugin.getSlug());
-        assertNotNull(newPlugin);
-        assertEquals(newPlugin.isActive(), isActive);
+        DualPluginModel dualPlugin = mPluginStore.getDualPluginBySlug(site, plugin.getSlug());
+        assertNotNull(dualPlugin.getSitePlugin());
+        assertEquals(dualPlugin.getSitePlugin().isActive(), isActive);
 
         signOutWPCom();
     }
@@ -197,8 +198,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         plugin.setLocalSiteId(site.getId());
         PluginSqlUtils.insertOrUpdateSitePlugin(plugin);
 
-        SitePluginModel insertedPlugin = mPluginStore.getSitePluginBySlug(site, pluginSlug);
-        assertNotNull(insertedPlugin);
+        DualPluginModel dualPlugin = mPluginStore.getDualPluginBySlug(site, pluginSlug);
+        assertNotNull(dualPlugin.getSitePlugin());
 
         mNextEvent = TestEvents.DELETED_SITE_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
@@ -209,7 +210,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Make sure the plugin is removed from DB
-        assertNull(mPluginStore.getSitePluginBySlug(site, pluginSlug));
+        assertNull(mPluginStore.getDualPluginBySlug(site, pluginSlug).getSitePlugin());
 
         signOutWPCom();
     }
