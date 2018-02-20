@@ -93,13 +93,12 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         assertNotNull(immutablePlugin);
         assertTrue(immutablePlugin.doesHaveSitePlugin());
         boolean isActive = !immutablePlugin.isActive();
-        SitePluginModel sitePlugin = immutablePlugin.getSitePlugin();
-        sitePlugin.setIsActive(isActive);
 
         mNextEvent = TestEvents.CONFIGURED_SITE_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
-        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, sitePlugin);
+        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, immutablePlugin.getName(), isActive,
+                immutablePlugin.isAutoUpdateEnabled());
         mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -160,14 +159,12 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     public void testConfigureUnknownPluginError() throws InterruptedException {
         SiteModel site = authenticateAndRetrieveSingleJetpackSite();
-
-        SitePluginModel plugin = new SitePluginModel();
-        plugin.setName("this-plugin-does-not-exist");
+        String pluginName = "this-plugin-does-not-exist";
 
         mNextEvent = TestEvents.UNKNOWN_SITE_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
-        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, plugin);
+        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, pluginName, false, false);
         mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -206,7 +203,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         plugin.setName(pluginName);
         plugin.setSlug(pluginSlug);
         plugin.setLocalSiteId(site.getId());
-        PluginSqlUtils.insertOrUpdateSitePlugin(plugin);
+        PluginSqlUtils.insertOrUpdateSitePlugin(site, plugin);
 
         ImmutablePluginModel immutablePlugin = mPluginStore.getImmutablePluginBySlug(site, pluginSlug);
         assertNotNull(immutablePlugin);
@@ -454,9 +451,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.CONFIGURED_SITE_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
-        SitePluginModel sitePlugin = plugin.getSitePlugin();
-        sitePlugin.setIsActive(false);
-        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, sitePlugin);
+        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, plugin.getName(), false,
+                plugin.isAutoUpdateEnabled());
         mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
