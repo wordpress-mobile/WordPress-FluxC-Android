@@ -59,7 +59,8 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         ImmutablePluginModel immutablePlugin = mPluginStore.getImmutablePluginBySlug(mSite, slug);
-        assertNotNull(immutablePlugin.doesHaveWPOrgPlugin());
+        assertNotNull(immutablePlugin);
+        assertTrue(immutablePlugin.doesHaveWPOrgPlugin());
     }
 
     // This is a long set of tests that makes sure the pagination works correctly

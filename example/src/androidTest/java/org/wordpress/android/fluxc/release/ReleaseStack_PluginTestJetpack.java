@@ -138,6 +138,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         ImmutablePluginModel installedPlugin = mPluginStore.getImmutablePluginBySlug(site,
                 pluginSlugToInstall);
+        assertNotNull(installedPlugin);
         assertTrue(installedPlugin.doesHaveSitePlugin());
 
         // We need to deactivate the plugin to be able to uninstall it
@@ -208,7 +209,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         PluginSqlUtils.insertOrUpdateSitePlugin(plugin);
 
         ImmutablePluginModel immutablePlugin = mPluginStore.getImmutablePluginBySlug(site, pluginSlug);
-        assertNotNull(immutablePlugin;
+        assertNotNull(immutablePlugin);
         assertTrue(immutablePlugin.doesHaveSitePlugin());
 
         mNextEvent = TestEvents.DELETED_SITE_PLUGIN;
