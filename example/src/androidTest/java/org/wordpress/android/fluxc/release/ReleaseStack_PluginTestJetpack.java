@@ -96,7 +96,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         assertTrue(plugins.size() > 0);
         ImmutablePluginModel immutablePlugin = plugins.get(0);
         assertNotNull(immutablePlugin);
-        assertTrue(immutablePlugin.doesHaveSitePlugin());
+        assertTrue(immutablePlugin.isInstalled());
         boolean isActive = !immutablePlugin.isActive();
 
         mNextEvent = TestEvents.CONFIGURED_SITE_PLUGIN;
@@ -110,7 +110,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         ImmutablePluginModel configuredPlugin = mPluginStore.getImmutablePluginBySlug(site, immutablePlugin.getSlug());
         assertNotNull(configuredPlugin);
-        assertTrue(configuredPlugin.doesHaveSitePlugin());
+        assertTrue(configuredPlugin.isInstalled());
         assertEquals(configuredPlugin.isActive(), isActive);
 
         signOutWPCom();
@@ -125,7 +125,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         List<ImmutablePluginModel> plugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
         for (ImmutablePluginModel immutablePlugin : plugins) {
-            assertTrue(immutablePlugin.doesHaveSitePlugin());
+            assertTrue(immutablePlugin.isInstalled());
             if (pluginSlugToInstall.equals(immutablePlugin.getSlug())) {
                 // We need to deactivate the plugin to be able to uninstall it
                 if (immutablePlugin.isActive()) {
@@ -143,7 +143,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         ImmutablePluginModel installedPlugin = mPluginStore.getImmutablePluginBySlug(site,
                 pluginSlugToInstall);
         assertNotNull(installedPlugin);
-        assertTrue(installedPlugin.doesHaveSitePlugin());
+        assertTrue(installedPlugin.isInstalled());
 
         // We need to deactivate the plugin to be able to uninstall it
         if (installedPlugin.isActive()) {
@@ -183,7 +183,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         List<ImmutablePluginModel> immutablePlugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
         for (ImmutablePluginModel immutablePlugin : immutablePlugins) {
-            assertTrue(immutablePlugin.doesHaveSitePlugin());
+            assertTrue(immutablePlugin.isInstalled());
             if (immutablePlugin.isActive()) {
                 activePluginToTest = immutablePlugin;
                 break;
@@ -212,7 +212,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         ImmutablePluginModel immutablePlugin = mPluginStore.getImmutablePluginBySlug(site, pluginSlug);
         assertNotNull(immutablePlugin);
-        assertTrue(immutablePlugin.doesHaveSitePlugin());
+        assertTrue(immutablePlugin.isInstalled());
 
         mNextEvent = TestEvents.DELETED_SITE_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
