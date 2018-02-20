@@ -6,7 +6,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
-import org.wordpress.android.fluxc.model.plugin.DualPluginModel;
+import org.wordpress.android.fluxc.model.plugin.ImmutablePluginModel;
 import org.wordpress.android.fluxc.model.plugin.PluginDirectoryType;
 import org.wordpress.android.fluxc.store.PluginStore;
 import org.wordpress.android.fluxc.store.PluginStore.FetchPluginDirectoryPayload;
@@ -58,8 +58,8 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         mDispatcher.dispatch(PluginActionBuilder.newFetchWporgPluginAction(slug));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        DualPluginModel dualPlugin = mPluginStore.getDualPluginBySlug(mSite, slug);
-        assertNotNull(dualPlugin.getWPOrgPlugin());
+        ImmutablePluginModel immutablePlugin = mPluginStore.getImmutablePluginBySlug(mSite, slug);
+        assertNotNull(immutablePlugin.doesHaveWPOrgPlugin());
     }
 
     // This is a long set of tests that makes sure the pagination works correctly
@@ -69,14 +69,14 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
 
         fetchPluginDirectory(primaryType, false);
 
-        List<DualPluginModel> firstPluginList = mPluginStore.getPluginDirectory(mSite, primaryType);
+        List<ImmutablePluginModel> firstPluginList = mPluginStore.getPluginDirectory(mSite, primaryType);
         Assert.assertTrue(firstPluginList.size() > 0);
 
         // Do another fetch this time loading the second page
         fetchPluginDirectory(primaryType, true);
 
         // Assert that new items are fetched
-        List<DualPluginModel> secondPluginList = mPluginStore.getPluginDirectory(mSite, primaryType);
+        List<ImmutablePluginModel> secondPluginList = mPluginStore.getPluginDirectory(mSite, primaryType);
         Assert.assertTrue(secondPluginList.size() > firstPluginList.size());
 
         // Do one more fetch this time a different directory type and make sure it didn't affect the primary one
@@ -86,7 +86,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         fetchPluginDirectory(secondaryType, false);
 
         // Assert no new items fetched for primary type, but instead they are fetched for the secondary type
-        List<DualPluginModel> thirdPluginList = mPluginStore.getPluginDirectory(mSite, primaryType);
+        List<ImmutablePluginModel> thirdPluginList = mPluginStore.getPluginDirectory(mSite, primaryType);
         Assert.assertTrue(thirdPluginList.size() == secondPluginList.size());
         Assert.assertTrue(mPluginStore.getPluginDirectory(mSite, secondaryType).size() > 0);
 
@@ -94,7 +94,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         fetchPluginDirectory(primaryType, false);
 
         // Assert the number of items is the same as the first fetch
-        List<DualPluginModel> fourthPluginList = mPluginStore.getPluginDirectory(mSite, primaryType);
+        List<ImmutablePluginModel> fourthPluginList = mPluginStore.getPluginDirectory(mSite, primaryType);
         Assert.assertTrue(firstPluginList.size() == fourthPluginList.size());
     }
 
@@ -106,14 +106,14 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         // Fetch plugin directory's first page
         fetchPluginDirectory(directoryType, false);
 
-        List<DualPluginModel> pluginsAfterFirstFetch = mPluginStore.getPluginDirectory(mSite, directoryType);
+        List<ImmutablePluginModel> pluginsAfterFirstFetch = mPluginStore.getPluginDirectory(mSite, directoryType);
         Assert.assertTrue(pluginsAfterFirstFetch.size() > 0);
 
         // Re-fetch plugin directory's first page
         fetchPluginDirectory(directoryType, false);
 
         // Same number of items should have been fetched and the existing plugin directories should be updated
-        List<DualPluginModel> pluginsAfterSecondFetch = mPluginStore.getPluginDirectory(mSite, directoryType);
+        List<ImmutablePluginModel> pluginsAfterSecondFetch = mPluginStore.getPluginDirectory(mSite, directoryType);
         Assert.assertEquals(pluginsAfterFirstFetch.size(), pluginsAfterSecondFetch.size());
     }
 
