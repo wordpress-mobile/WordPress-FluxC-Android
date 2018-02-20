@@ -155,8 +155,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         List<ImmutablePluginModel> updatedPlugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
         for (ImmutablePluginModel immutablePlugin : updatedPlugins) {
-            assertNotNull(immutablePlugin.getSitePlugin());
-            assertFalse(immutablePlugin.getSitePlugin().getSlug().equals(pluginSlugToInstall));
+            assertFalse(pluginSlugToInstall.equals(immutablePlugin.getSlug()));
         }
 
         signOutWPCom();
@@ -184,7 +183,6 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         List<ImmutablePluginModel> immutablePlugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
         for (ImmutablePluginModel immutablePlugin : immutablePlugins) {
-            assertNotNull(immutablePlugin.getSitePlugin());
             assertTrue(immutablePlugin.doesHaveSitePlugin());
             if (immutablePlugin.isActive()) {
                 activePluginToTest = immutablePlugin;
