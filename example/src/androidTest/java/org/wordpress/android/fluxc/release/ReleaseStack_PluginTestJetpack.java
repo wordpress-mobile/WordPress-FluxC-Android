@@ -1,5 +1,10 @@
 package org.wordpress.android.fluxc.release;
 
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
+
+import junit.framework.Assert;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -187,6 +192,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
             }
         }
 
+        Assert.assertNotNull(activePluginToTest);
+
         // Trying to delete an active plugin should result in DELETE_SITE_PLUGIN_ERROR
         deleteSitePlugin(site, activePluginToTest, TestEvents.DELETE_SITE_PLUGIN_ERROR);
 
@@ -212,7 +219,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.DELETED_SITE_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
-        DeleteSitePluginPayload payload = new DeleteSitePluginPayload(site, plugin);
+        DeleteSitePluginPayload payload = new DeleteSitePluginPayload(site, immutablePlugin.getSlug(),
+                immutablePlugin.getName());
         mDispatcher.dispatch(PluginActionBuilder.newDeleteSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -420,15 +428,16 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         return mSiteStore.getSites().get(0);
     }
 
-    private void deleteSitePlugin(SiteModel site, ImmutablePluginModel plugin) throws InterruptedException {
+    private void deleteSitePlugin(SiteModel site, @NonNull ImmutablePluginModel plugin) throws InterruptedException {
         deleteSitePlugin(site, plugin, TestEvents.DELETED_SITE_PLUGIN);
     }
 
-    private void deleteSitePlugin(SiteModel site, ImmutablePluginModel plugin,
+    private void deleteSitePlugin(SiteModel site, @NonNull ImmutablePluginModel plugin,
                                   TestEvents testEvent) throws InterruptedException {
-        SitePluginModel sitePlugin = plugin.getSitePlugin();
+        Assert.assertTrue(!TextUtils.isEmpty(plugin.getName()));
+        Assert.assertTrue(!TextUtils.isEmpty(plugin.getSlug()));
         mDispatcher.dispatch(PluginActionBuilder.newDeleteSitePluginAction(
-                new DeleteSitePluginPayload(site, sitePlugin)));
+                new DeleteSitePluginPayload(site, plugin.getSlug(), plugin.getName())));
         mNextEvent = testEvent;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
