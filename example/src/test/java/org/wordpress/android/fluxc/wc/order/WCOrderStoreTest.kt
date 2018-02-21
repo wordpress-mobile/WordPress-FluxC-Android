@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @Config(manifest = Config.NONE)
@@ -67,6 +68,18 @@ class WCOrderStoreTest {
 
         val fullOrderList = orderStore.getOrdersForSite(site)
         assertEquals(3, fullOrderList.size)
+    }
+
+    @Test
+    fun testGetOrderByLocalId() {
+        val sampleOrder = OrderTestUtils.generateSampleOrder(3)
+        OrderSqlUtils.insertOrUpdateOrder(sampleOrder)
+
+        val retrievedOrder = orderStore.getOrderByLocalOrderId(sampleOrder.id)
+        assertEquals(sampleOrder, retrievedOrder)
+
+        // Non-existent ID should return null
+        assertNull(orderStore.getOrderByLocalOrderId(1955))
     }
 
     @Test

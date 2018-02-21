@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.store
 
+import com.wellsql.generated.WCOrderModelTable
+import com.yarolegovich.wellsql.WellSql
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -10,6 +12,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatus
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -61,8 +64,21 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         AppLog.d(T.API, "WCOrderStore onRegister")
     }
 
+    /**
+     * Given a [SiteModel] and optional statuses, returns all orders for that site matching any of those statuses.
+     *
+     * The default WooCommerce statuses are defined in [OrderStatus]. Custom order statuses are also supported.
+     */
     fun getOrdersForSite(site: SiteModel, vararg status: String): List<WCOrderModel> =
             OrderSqlUtils.getOrdersForSiteWithStatus(site, status.asList())
+
+    /**
+     * Given a local ID for an order, returns that order as a [WCOrderModel].
+     */
+    fun getOrderByLocalOrderId(localId: Int): WCOrderModel? =
+            WellSql.select(WCOrderModel::class.java)
+                .where().equals(WCOrderModelTable.ID, localId).endWhere()
+                .asModel.firstOrNull()
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
