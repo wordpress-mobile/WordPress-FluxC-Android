@@ -172,7 +172,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     private void fetchPluginDirectory(PluginDirectoryType directoryType, boolean loadMore) throws InterruptedException {
         mNextEvent = TestEvents.PLUGIN_DIRECTORY_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
-        FetchPluginDirectoryPayload payload = new FetchPluginDirectoryPayload(directoryType, loadMore);
+        FetchPluginDirectoryPayload payload = new FetchPluginDirectoryPayload(directoryType, null, loadMore);
         mDispatcher.dispatch(PluginActionBuilder.newFetchPluginDirectoryAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -181,7 +181,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         mSearchPage = page;
         mNextEvent = TestEvents.PLUGIN_DIRECTORY_SEARCHED;
         mCountDownLatch = new CountDownLatch(1);
-        SearchPluginDirectoryPayload payload = new SearchPluginDirectoryPayload(searchTerm, page);
+        SearchPluginDirectoryPayload payload = new SearchPluginDirectoryPayload(null, searchTerm, page);
         mDispatcher.dispatch(PluginActionBuilder.newSearchPluginDirectoryAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
