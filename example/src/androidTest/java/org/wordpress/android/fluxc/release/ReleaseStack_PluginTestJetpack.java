@@ -7,7 +7,7 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
-import org.wordpress.android.fluxc.model.SitePluginModel;
+import org.wordpress.android.fluxc.model.plugin.SitePluginModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.persistence.PluginSqlUtils;
 import org.wordpress.android.fluxc.store.AccountStore;
@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginConfigured;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginDeleted;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginInstalled;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsFetched;
+import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsRemoved;
 import org.wordpress.android.fluxc.store.PluginStore.ConfigureSitePluginErrorType;
 import org.wordpress.android.fluxc.store.PluginStore.ConfigureSitePluginPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
@@ -52,7 +53,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         SITE_CHANGED,
         SITE_REMOVED,
         UNKNOWN_SITE_PLUGIN,
-        CONFIGURED_SITE_PLUGIN
+        CONFIGURED_SITE_PLUGIN,
+        REMOVED_SITE_PLUGINS
     }
 
     private TestEvents mNextEvent;
@@ -143,6 +145,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         for (SitePluginModel sitePlugin : updatedPlugins) {
             assertFalse(sitePlugin.getSlug().equals(pluginSlugToInstall));
         }
+
+        signOutWPCom();
     }
 
     public void testConfigureUnknownPluginError() throws InterruptedException {
@@ -158,6 +162,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        signOutWPCom();
     }
 
     public void testDeleteActivePluginError() throws InterruptedException {
@@ -175,6 +181,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         // Trying to delete an active plugin should result in DELETE_SITE_PLUGIN_ERROR
         deleteSitePlugin(site, activePluginToTest, TestEvents.DELETE_SITE_PLUGIN_ERROR);
+
+        signOutWPCom();
     }
 
     // Trying to remove a plugin that doesn't exist in remote should remove the plugin from DB
@@ -200,12 +208,32 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         // Make sure the plugin is removed from DB
         assertNull(mPluginStore.getSitePluginByName(site, pluginName));
+
+        signOutWPCom();
     }
 
     public void testInstallPluginNoPackageError() throws InterruptedException {
         SiteModel site = fetchSingleJetpackSitePlugins();
         installSitePlugin(site, "this-plugin-does-not-exist", TestEvents.INSTALL_SITE_PLUGIN_ERROR_NO_PACKAGE);
         assertNull(mInstalledPlugin);
+
+        signOutWPCom();
+    }
+
+    public void testRemoveSitePlugins() throws InterruptedException {
+        SiteModel site = fetchSingleJetpackSitePlugins();
+        List<SitePluginModel> plugins = mPluginStore.getSitePlugins(site);
+        assertTrue(plugins.size() > 0);
+
+        mDispatcher.dispatch(PluginActionBuilder.newRemoveSitePluginsAction(site));
+        mNextEvent = TestEvents.REMOVED_SITE_PLUGINS;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Assert site plugins are removed
+        assertTrue(mPluginStore.getSitePlugins(site).size() == 0);
+
+        signOutWPCom();
     }
 
     @SuppressWarnings("unused")
@@ -311,6 +339,17 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
             assertEquals(mNextEvent, TestEvents.INSTALLED_SITE_PLUGIN);
         }
         mInstalledPlugin = event.plugin;
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onSitePluginsRemoved(OnSitePluginsRemoved event) {
+        AppLog.i(T.API, "Received onSitePluginsRemoved");
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred in onSitePluginsRemoved");
+        }
+        assertEquals(mNextEvent, TestEvents.REMOVED_SITE_PLUGINS);
         mCountDownLatch.countDown();
     }
 

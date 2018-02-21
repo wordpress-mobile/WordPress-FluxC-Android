@@ -1,4 +1,6 @@
 buildscript {
+    ext.kotlinVersion = '1.2.21'
+
     repositories {
         jcenter()
         google()
@@ -33,6 +35,17 @@ allprojects {
 }
 
 subprojects {
+    configurations.all {
+        resolutionStrategy {
+            forcedModules = [
+                    // Needed for com.nhaarman:mockito-kotlin-kt1.1
+                    // Can possibly be dropped when v2 of mockito-kotlin is released
+                    "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion",
+                    "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+            ]
+        }
+    }
+
     configurations {
         ktlint
     }
@@ -55,8 +68,6 @@ subprojects {
 }
 
 ext {
-    kotlinVersion = '1.2.10'
-
     daggerVersion = '2.11'
     supportLibraryVersion = '25.3.1'
 }
