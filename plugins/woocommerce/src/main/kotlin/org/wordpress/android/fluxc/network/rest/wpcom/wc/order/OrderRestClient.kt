@@ -67,6 +67,25 @@ class OrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue:
             total = response.total ?: ""
             billingFirstName = response.billing?.first_name ?: ""
             billingLastName = response.billing?.last_name ?: ""
+            billingCompany = response.billing?.company ?: ""
+            billingAddress1 = response.billing?.address_1 ?: ""
+            billingAddress2 = response.billing?.address_2 ?: ""
+            billingCity = response.billing?.city ?: ""
+            billingState = response.billing?.state ?: ""
+            billingPostcode = response.billing?.postcode ?: ""
+            billingCountry = response.billing?.country ?: ""
+            billingEmail = response.billing?.email ?: ""
+            billingPhone = response.billing?.phone ?: ""
+
+            shippingFirstName = response.shipping?.first_name ?: ""
+            shippingLastName = response.shipping?.last_name ?: ""
+            shippingCompany = response.shipping?.company ?: ""
+            shippingAddress1 = response.shipping?.address_1 ?: ""
+            shippingAddress2 = response.shipping?.address_2 ?: ""
+            shippingCity = response.shipping?.city ?: ""
+            shippingState = response.shipping?.state ?: ""
+            shippingPostcode = response.shipping?.postcode ?: ""
+            shippingCountry = response.shipping?.country ?: ""
         }
     }
 }

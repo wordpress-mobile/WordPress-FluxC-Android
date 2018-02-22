@@ -16,10 +16,39 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     @Column var total = ""
     @Column var billingFirstName = ""
     @Column var billingLastName = ""
+    @Column var billingCompany = ""
+    @Column var billingAddress1 = ""
+    @Column var billingAddress2 = ""
+    @Column var billingCity = ""
+    @Column var billingState = ""
+    @Column var billingPostcode = ""
+    @Column var billingCountry = ""
+    @Column var billingEmail = ""
+    @Column var billingPhone = ""
+
+    @Column var shippingFirstName = ""
+    @Column var shippingLastName = ""
+    @Column var shippingCompany = ""
+    @Column var shippingAddress1 = ""
+    @Column var shippingAddress2 = ""
+    @Column var shippingCity = ""
+    @Column var shippingState = ""
+    @Column var shippingPostcode = ""
+    @Column var shippingCountry = ""
+
 
     override fun getId() = id
 
     override fun setId(id: Int) {
         this.id = id
     }
+
+    /**
+     * Returns true if there are shipping details defined for this order,
+     * which are different from the billing details.
+     *
+     * If no separate shipping details are defined, the billing details should be used instead,
+     * as the shippingX properties will be empty.
+     */
+    fun hasSeparateShippingDetails() = shippingCountry.isNotEmpty()
 }
