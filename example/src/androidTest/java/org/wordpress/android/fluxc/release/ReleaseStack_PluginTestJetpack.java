@@ -218,8 +218,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.DELETED_SITE_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
-        DeleteSitePluginPayload payload = new DeleteSitePluginPayload(site, immutablePlugin.getSlug(),
-                immutablePlugin.getName());
+        DeleteSitePluginPayload payload = new DeleteSitePluginPayload(site, immutablePlugin.getName(),
+                immutablePlugin.getSlug());
         mDispatcher.dispatch(PluginActionBuilder.newDeleteSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -436,7 +436,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         Assert.assertTrue(!TextUtils.isEmpty(plugin.getName()));
         Assert.assertTrue(!TextUtils.isEmpty(plugin.getSlug()));
         mDispatcher.dispatch(PluginActionBuilder.newDeleteSitePluginAction(
-                new DeleteSitePluginPayload(site, plugin.getSlug(), plugin.getName())));
+                new DeleteSitePluginPayload(site, plugin.getName(), plugin.getSlug())));
         mNextEvent = testEvent;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
