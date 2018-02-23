@@ -20,6 +20,9 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 /**
  * Tests using a Mocked Network app component. Test the Store itself and not the underlying network component(s).
  *
@@ -40,7 +43,7 @@ public class MockedStack_UploadStoreTest extends MockedStack_Base {
     private CountDownLatch mCountDownLatch;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         // Inject
         mMockedNetworkAppComponent.inject(this);
