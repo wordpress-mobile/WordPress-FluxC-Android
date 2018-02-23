@@ -89,7 +89,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         // Confirm that the corresponding MediaUploadModel's state has been updated automatically
         MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertNotNull(mediaUploadModel);
-        assertEquals(1F, mUploadStore.getUploadProgressForMedia(testMedia));
+        assertEquals(1F, mUploadStore.getUploadProgressForMedia(testMedia), 0.1);
         assertEquals(MediaUploadModel.COMPLETED, mediaUploadModel.getUploadState());
     }
 
@@ -105,7 +105,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         // Confirm that the corresponding MediaUploadModel's state has been updated automatically
         MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertNotNull(mediaUploadModel);
-        assertEquals(0F, mUploadStore.getUploadProgressForMedia(testMedia));
+        assertEquals(0F, mUploadStore.getUploadProgressForMedia(testMedia), 0.1);
         assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
     }
 
@@ -374,7 +374,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
         assertNotNull(mediaUploadModel.getMediaError());
-        assertEquals(0F, mUploadStore.getUploadProgressForMedia(testMedia));
+        assertEquals(0F, mUploadStore.getUploadProgressForMedia(testMedia), 0.1);
 
         // The PostUploadModel should have been set to CANCELLED automatically via the UPDATE_MEDIA action
         PostUploadModel postUploadModel = getPostUploadModelForPostModel(mPost);

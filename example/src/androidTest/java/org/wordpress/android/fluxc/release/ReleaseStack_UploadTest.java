@@ -107,7 +107,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
         // Confirm that the corresponding MediaUploadModel's state has been updated automatically
         mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
-        assertEquals(1F, mUploadStore.getUploadProgressForMedia(testMedia));
+        assertEquals(1F, mUploadStore.getUploadProgressForMedia(testMedia), 0.1);
         assertEquals(MediaUploadModel.COMPLETED, mediaUploadModel.getUploadState());
 
         // Delete test image
