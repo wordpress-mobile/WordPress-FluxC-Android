@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.release;
 import junit.framework.Assert;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.model.plugin.PluginDirectoryType;
@@ -20,6 +21,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     @Inject PluginStore mPluginStore;
 
@@ -35,7 +40,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     private int mSearchPage;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
@@ -44,6 +49,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.NONE;
     }
 
+    @Test
     public void testFetchWPOrgPlugin() throws InterruptedException {
         String slug = "akismet";
         mNextEvent = TestEvents.WPORG_PLUGIN_FETCHED;

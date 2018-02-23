@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.mocked;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
@@ -23,6 +24,7 @@ import javax.inject.Inject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
 /**
  * Tests using a Mocked Network app component. Test the Store itself and not the underlying network component(s).
  *
@@ -52,6 +54,7 @@ public class MockedStack_UploadStoreTest extends MockedStack_Base {
         mNextEvent = TestEvents.NONE;
     }
 
+    @Test
     public void testUploadMedia() throws InterruptedException {
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         startSuccessfulMediaUpload(testMedia, getTestSite());

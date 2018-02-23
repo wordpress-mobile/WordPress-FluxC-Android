@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.CommentActionBuilder;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
@@ -26,6 +27,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Inject CommentStore mCommentStore;
     @Inject PostStore mPostStore;
@@ -44,7 +49,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
     private CommentModel mNewComment;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
 
@@ -55,6 +60,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.NONE;
     }
 
+    @Test
     public void testFetchComments() throws InterruptedException {
         FetchCommentsPayload payload = new FetchCommentsPayload(sSite, 10, 0);
         mNextEvent = TestEvents.COMMENT_CHANGED;
@@ -64,6 +70,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testFetchComment() throws InterruptedException {
         fetchFirstComments();
         // Get first comment
@@ -75,6 +82,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testInstantiateAndCreateNewComment() throws InterruptedException {
         // New Comment
         createNewComment();
@@ -94,6 +102,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(comment.getContent().contains(mNewComment.getContent()));
     }
 
+    @Test
     public void testInstantiateAndCreateNewCommentDuplicate() throws InterruptedException {
         // New Comment
         createNewComment();
@@ -115,6 +124,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testReplyToAnUnknownComment() throws InterruptedException {
         CommentModel fakeComment = new CommentModel();
         CommentModel newComment = new CommentModel();
@@ -131,6 +141,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testInstantiateAndCreateReplyComment() throws InterruptedException {
         // New Comment
         createNewComment();
@@ -155,6 +166,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(comment.getRemoteParentCommentId(), firstComment.getRemoteCommentId());
     }
 
+    @Test
     public void testEditValidComment() throws InterruptedException {
         fetchFirstComments();
 
@@ -176,6 +188,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(comment.getContent(), firstComment.getContent());
     }
 
+    @Test
     public void testEditInvalidComment() throws InterruptedException {
         fetchFirstComments();
 
@@ -194,6 +207,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testDeleteCommentOnce() throws InterruptedException {
         // New Comment
         createNewComment();
@@ -224,6 +238,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(CommentStatus.TRASH.toString(), comment.getStatus());
     }
 
+    @Test
     public void testDeleteCommentTwice() throws InterruptedException {
         // New Comment
         createNewComment();

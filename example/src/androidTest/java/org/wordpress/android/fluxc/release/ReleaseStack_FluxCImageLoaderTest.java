@@ -4,6 +4,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
@@ -24,6 +25,13 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static android.support.test.InstrumentationRegistry.getInstrumentation;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 public class ReleaseStack_FluxCImageLoaderTest extends ReleaseStack_Base {
     @Inject SiteStore mSiteStore;
     @Inject MediaStore mMediaStore;
@@ -39,7 +47,7 @@ public class ReleaseStack_FluxCImageLoaderTest extends ReleaseStack_Base {
     private TestEvents mNextEvent;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
@@ -48,6 +56,7 @@ public class ReleaseStack_FluxCImageLoaderTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.NONE;
     }
 
+    @Test
     public void testLoadImageFromHTTPAuthSite() throws Throwable {
         signInToHTTPAuthSite();
 
@@ -84,8 +93,7 @@ public class ReleaseStack_FluxCImageLoaderTest extends ReleaseStack_Base {
                 );
             }
         };
-
-        runTestOnUiThread(loadImageTask);
+        getInstrumentation().runOnMainSync(loadImageTask);
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

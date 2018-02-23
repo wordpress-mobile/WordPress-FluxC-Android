@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.release;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
@@ -28,6 +29,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     @Inject PostStore mPostStore;
@@ -56,7 +63,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     private boolean mCanLoadMorePosts;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
 
@@ -70,6 +77,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     }
 
     // Note: This test is not specific to WPCOM (local changes only)
+    @Test
     public void testRemoveLocalDraft() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
@@ -82,6 +90,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(0, PostSqlUtils.getPostsForSite(sSite, false).size());
     }
 
+    @Test
     public void testUploadNewPost() throws InterruptedException {
         // Instantiate new post
         createNewPost();
@@ -102,6 +111,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertFalse(uploadedPost.getCategoryIdList().isEmpty());
     }
 
+    @Test
     public void testEditRemotePost() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
@@ -133,6 +143,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(dateCreated, finalPost.getDateCreated());
     }
 
+    @Test
     public void testRevertLocallyChangedPost() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
@@ -157,6 +168,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertFalse(latestPost.isLocallyChanged());
     }
 
+    @Test
     public void testChangeLocalDraft() throws InterruptedException {
         createNewPost();
 
@@ -213,6 +225,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mPost.isLocalDraft());
     }
 
+    @Test
     public void testMultipleLocalChangesToUploadedPost() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
@@ -250,6 +263,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertFalse(mPost.isLocalDraft());
     }
 
+    @Test
     public void testChangePublishedPostToScheduled() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
@@ -275,6 +289,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(PostStatus.SCHEDULED, PostStatus.fromPost(finalPost));
     }
 
+    @Test
     public void testFetchPosts() throws InterruptedException {
         mNextEvent = TestEvents.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
@@ -305,6 +320,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(currentStoredPosts <= (PostStore.NUM_POSTS_PER_FETCH * 2));
     }
 
+    @Test
     public void testFetchPages() throws InterruptedException {
         mNextEvent = TestEvents.PAGES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
@@ -320,6 +336,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(mCanLoadMorePosts, firstFetchPosts == PostStore.NUM_POSTS_PER_FETCH);
     }
 
+    @Test
     public void testFullFeaturedPostUpload() throws InterruptedException {
         createNewPost();
 
@@ -362,6 +379,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(featuredImageId, newPost.getFeaturedImageId());
     }
 
+    @Test
     public void testUploadAndEditPage() throws InterruptedException {
         createNewPost();
         mPost.setIsPage(true);
@@ -388,6 +406,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(0, mPostStore.getPostsCountForSite(sSite));
     }
 
+    @Test
     public void testFullFeaturedPageUpload() throws InterruptedException {
         createNewPost();
 
@@ -427,6 +446,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(0, newPage.getFeaturedImageId()); // The page should upload, but have the featured image stripped
     }
 
+    @Test
     public void testClearTagsFromPost() throws InterruptedException {
         createNewPost();
 
@@ -460,6 +480,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(finalPost.getTagNameList().isEmpty());
     }
 
+    @Test
     public void testClearFeaturedImageFromPost() throws InterruptedException {
         createNewPost();
 
@@ -493,6 +514,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertFalse(finalPost.hasFeaturedImage());
     }
 
+    @Test
     public void testAddLocationToRemotePost() throws InterruptedException {
         // 1. Upload a post with no location data
         createNewPost();
@@ -529,6 +551,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(EXAMPLE_LONGITUDE, mPost.getLocation().getLongitude());
     }
 
+    @Test
     public void testUploadPostWithLocation() throws InterruptedException {
         // 1. Upload a post with location data
         createNewPost();
@@ -583,6 +606,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertFalse(mPost.hasLocation());
     }
 
+    @Test
     public void testDeleteRemotePost() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
@@ -606,6 +630,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     // Error handling tests
 
+    @Test
     public void testFetchInvalidPost() throws InterruptedException {
         PostModel post = new PostModel();
         post.setRemotePostId(6420328);
@@ -619,6 +644,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testEditInvalidPost() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
@@ -659,6 +685,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(dateCreated, persistedPost.getDateCreated());
     }
 
+    @Test
     public void testDeleteInvalidRemotePost() throws InterruptedException {
         PostModel invalidPost = new PostModel();
         invalidPost.setRemotePostId(6420328);
@@ -672,6 +699,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testFetchPostFromInvalidSite() throws InterruptedException {
         PostModel post = new PostModel();
         post.setRemotePostId(6420328);

@@ -93,6 +93,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertEquals(MediaUploadModel.COMPLETED, mediaUploadModel.getUploadState());
     }
 
+    @Test
     public void testUploadMediaError() throws InterruptedException {
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         startFailingMediaUpload(testMedia, getTestSite());
@@ -108,6 +109,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
     }
 
+    @Test
     public void testRegisterPostAndUploadMediaWithError() throws InterruptedException {
         SiteModel site = getTestSite();
 
@@ -203,6 +205,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertFalse(mUploadStore.isPendingPost(mPost));
     }
 
+    @Test
     public void testRegisterPostAndUploadMediaWithPostCancellation() throws InterruptedException {
         SiteModel site = getTestSite();
 
@@ -272,6 +275,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertEquals(0, mUploadStore.getFailedMediaForPost(mPost).size());
     }
 
+    @Test
     public void testUploadMediaInCancelledPost() throws InterruptedException {
         SiteModel site = getTestSite();
 
@@ -328,6 +332,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertNull(getPostUploadModelForPostModel(mPost));
     }
 
+    @Test
     public void testUpdateMediaModelState() throws InterruptedException {
         SiteModel site = getTestSite();
 
