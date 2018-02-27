@@ -13,7 +13,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.WPComJPTunnelGsonRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -36,7 +36,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
         val countDownLatch = CountDownLatch(1)
         val url = "/"
 
-        val request = WPComJPTunnelGsonRequest.buildGetRequest(url, MockedNetworkModule.FAILURE_SITE_ID, mapOf(),
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, MockedNetworkModule.FAILURE_SITE_ID, mapOf(),
                 RootWPAPIRestResponse::class.java,
                 { _: RootWPAPIRestResponse? ->
                     throw AssertionError("Unexpected success!")
@@ -59,7 +59,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
         val url = "/"
         val params = mapOf("context" to "view")
 
-        val request = WPComJPTunnelGsonRequest.buildGetRequest(url, 567, params,
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, 567, params,
                 RootWPAPIRestResponse::class.java,
                 { response: RootWPAPIRestResponse? ->
                     run {
@@ -85,7 +85,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
 
         val requestBody = mapOf<String, Any>("title" to "New Title", "description" to "New Description")
 
-        val request = WPComJPTunnelGsonRequest.buildPostRequest(url, 567, requestBody,
+        val request = JetpackTunnelGsonRequest.buildPostRequest(url, 567, requestBody,
                 SettingsAPIResponse::class.java,
                 { response: SettingsAPIResponse? ->
                     run {
