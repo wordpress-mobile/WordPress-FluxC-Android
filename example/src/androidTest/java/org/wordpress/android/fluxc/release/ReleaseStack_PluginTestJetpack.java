@@ -102,8 +102,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.CONFIGURED_SITE_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
-        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, immutablePlugin.getName(), isActive,
-                immutablePlugin.isAutoUpdateEnabled());
+        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, immutablePlugin.getName(),
+                immutablePlugin.getSlug(), isActive, immutablePlugin.isAutoUpdateEnabled());
         mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -163,12 +163,13 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     public void testConfigureUnknownPluginError() throws InterruptedException {
         SiteModel site = authenticateAndRetrieveSingleJetpackSite();
-        String pluginName = "this-plugin-does-not-exist";
+        String pluginName = "this-plugin-does-not-exist-name";
+        String pluginSlug = "this-plugin-does-not-exist-slug";
 
         mNextEvent = TestEvents.UNKNOWN_SITE_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
-        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, pluginName, false, false);
+        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, pluginName, pluginSlug, false, false);
         mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -217,8 +218,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.DELETED_SITE_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
-        DeleteSitePluginPayload payload = new DeleteSitePluginPayload(site, immutablePlugin.getSlug(),
-                immutablePlugin.getName());
+        DeleteSitePluginPayload payload = new DeleteSitePluginPayload(site, immutablePlugin.getName(),
+                immutablePlugin.getSlug());
         mDispatcher.dispatch(PluginActionBuilder.newDeleteSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -435,7 +436,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         Assert.assertTrue(!TextUtils.isEmpty(plugin.getName()));
         Assert.assertTrue(!TextUtils.isEmpty(plugin.getSlug()));
         mDispatcher.dispatch(PluginActionBuilder.newDeleteSitePluginAction(
-                new DeleteSitePluginPayload(site, plugin.getSlug(), plugin.getName())));
+                new DeleteSitePluginPayload(site, plugin.getName(), plugin.getSlug())));
         mNextEvent = testEvent;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -458,8 +459,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.CONFIGURED_SITE_PLUGIN;
         mCountDownLatch = new CountDownLatch(1);
 
-        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, plugin.getName(), false,
-                plugin.isAutoUpdateEnabled());
+        ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, plugin.getName(), plugin.getSlug(),
+                false, plugin.isAutoUpdateEnabled());
         mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
