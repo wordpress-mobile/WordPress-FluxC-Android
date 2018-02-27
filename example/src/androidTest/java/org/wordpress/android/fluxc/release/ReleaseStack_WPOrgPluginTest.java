@@ -137,6 +137,14 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         searchPluginDirectory(searchTerm, 2);
     }
 
+    public void testFeaturedPluginDirectory() throws InterruptedException {
+        PluginDirectoryType directoryType = PluginDirectoryType.FEATURED;
+        fetchPluginDirectory(directoryType, false);
+
+        List<ImmutablePluginModel> featuredPlugins = mPluginStore.getPluginDirectory(mSite, directoryType);
+        Assert.assertTrue(featuredPlugins.size() > 0);
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onPluginDirectoryFetched(OnPluginDirectoryFetched event) {
