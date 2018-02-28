@@ -1,5 +1,8 @@
 package org.wordpress.android.fluxc.model
 
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
+import com.google.gson.reflect.TypeToken
 import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
@@ -39,6 +42,26 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     @Column var shippingPostcode = ""
     @Column var shippingCountry = ""
 
+    @Column var lineItems = ""
+
+    companion object {
+        private val gson by lazy { Gson() }
+    }
+
+    class LineItem {
+        val id: Long? = null
+        val name: String? = null
+        @SerializedName("product_id")
+        val productId: Long? = null
+        @SerializedName("variation_id")
+        val variationId: Long? = null
+        val quantity: Int? = null
+        val total: Float? = null // Price x quantity
+        @SerializedName("total_tax")
+        val totalTax: Float? = null
+        val sku: String? = null
+        val price: Float? = null // The per-item price
+    }
 
     override fun getId() = id
 
@@ -64,4 +87,12 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
      * Returns the shipping details wrapped in a [OrderAddress].
      */
     fun getShippingAddress() = OrderAddress(this, AddressType.SHIPPING)
+
+    /**
+     * Deserializes the JSON contained in [lineItems] into a list of [LineItem] objects.
+     */
+    fun getLineItemList(): List<LineItem> {
+        val responseType = object : TypeToken<List<LineItem>>() {}.type
+        return gson.fromJson(lineItems, responseType) as? List<LineItem> ?: emptyList()
+    }
 }

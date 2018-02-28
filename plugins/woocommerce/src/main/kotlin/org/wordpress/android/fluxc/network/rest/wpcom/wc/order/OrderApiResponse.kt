@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
+import com.google.gson.JsonElement
 import org.wordpress.android.fluxc.network.Response
 
 @Suppress("PropertyName")
@@ -38,4 +39,8 @@ class OrderApiResponse : Response {
 
     val billing: Billing? = null
     val shipping: Shipping? = null
+
+    // This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand.
+    // See WCOrderModel.LineItem
+    val line_items: JsonElement? = null
 }
