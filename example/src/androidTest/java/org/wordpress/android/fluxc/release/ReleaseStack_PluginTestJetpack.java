@@ -358,10 +358,15 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
                 throw new AssertionError("Unexpected error occurred in onSitePluginInstalled with type: "
                         + event.error.type);
             }
-        } else {
-            assertEquals(mNextEvent, TestEvents.INSTALLED_SITE_PLUGIN);
+            mCountDownLatch.countDown();
+            return;
         }
-        mCountDownLatch.countDown();
+        assertEquals(mNextEvent, TestEvents.INSTALLED_SITE_PLUGIN);
+
+        // After a plugin is installed, we dispatch an event to activate it, so we need to wait for that to be completed
+        // before the next actions can be taken. `mCountDownLatch.countDown()` should not be called as it'll be called
+        // from onSitePluginConfigured once the activation is completed.
+        mNextEvent = TestEvents.CONFIGURED_SITE_PLUGIN;
     }
 
     @SuppressWarnings("unused")
@@ -452,7 +457,9 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
                 new InstallSitePluginPayload(site, pluginSlug)));
         mNextEvent = testEvent;
         mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // Since after install we dispatch an event to activate the plugin, we are giving twice the normal time to
+        // ensure there is enough time to complete both events
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS * 2, TimeUnit.MILLISECONDS));
     }
 
     private void deactivatePlugin(SiteModel site, ImmutablePluginModel plugin) throws InterruptedException {
