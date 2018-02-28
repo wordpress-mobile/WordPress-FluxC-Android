@@ -58,7 +58,7 @@
     </module>
 
     <module name="RegexpMultiline">
-        <property name="format" value="@Inject\n.*[^{,(]$"/>
+        <property name="format" value="@Inject(\n|\r\n).*[^{,(]$"/>
         <property name="message" value="Inject annotation should be in-line with the annotated field or property"/>
     </module>
 
