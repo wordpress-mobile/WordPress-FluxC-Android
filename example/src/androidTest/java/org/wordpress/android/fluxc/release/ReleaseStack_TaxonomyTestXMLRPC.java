@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.release;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.TaxonomyActionBuilder;
 import org.wordpress.android.fluxc.model.TaxonomyModel;
@@ -22,6 +23,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Inject TaxonomyStore mTaxonomyStore;
@@ -47,7 +53,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
     private TaxonomyError mLastTaxonomyError;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
 
@@ -59,6 +65,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mLastTaxonomyError = null;
     }
 
+    @Test
     public void testFetchCategories() throws InterruptedException {
         mNextEvent = TestEvents.CATEGORIES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
@@ -71,6 +78,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(categories.size() > 0);
     }
 
+    @Test
     public void testFetchTags() throws InterruptedException {
         mNextEvent = TestEvents.TAGS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
@@ -83,6 +91,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(tags.size() > 0);
     }
 
+    @Test
     public void testFetchTermsForInvalidTaxonomy() throws InterruptedException {
         mNextEvent = TestEvents.ERROR_GENERIC;
         mCountDownLatch = new CountDownLatch(1);
@@ -100,6 +109,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals("Invalid taxonomy.", mLastTaxonomyError.message);
     }
 
+    @Test
     public void testFetchSingleCategory() throws InterruptedException {
         mNextEvent = TestEvents.TERM_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
@@ -119,6 +129,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNotSame(0, fetchedTerm.getRemoteTermId());
     }
 
+    @Test
     public void testUploadNewCategory() throws InterruptedException {
         // Instantiate new category
         TermModel term = createNewCategory();
@@ -135,11 +146,13 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
 
+    @Test
     public void testUpdateExistingCategory() throws InterruptedException {
         TermModel term = createNewCategory();
         testUpdateExistingTerm(term);
     }
 
+    @Test
     public void testUploadNewTag() throws InterruptedException {
         // Instantiate new tag
         TermModel term = createNewTag();
@@ -156,11 +169,13 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
 
+    @Test
     public void testUpdateExistingTag() throws InterruptedException {
         TermModel term = createNewTag();
         testUpdateExistingTerm(term);
     }
 
+    @Test
     public void testUploadNewCategoryAsTerm() throws InterruptedException {
         TaxonomyModel taxonomyModel = new TaxonomyModel();
         taxonomyModel.setName(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
@@ -180,6 +195,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
 
+    @Test
     public void testUploadTermForInvalidTaxonomy() throws InterruptedException {
         TaxonomyModel taxonomyModel = new TaxonomyModel();
         taxonomyModel.setName("roads");
@@ -204,6 +220,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals("Invalid taxonomy.", mLastTaxonomyError.message);
     }
 
+    @Test
     public void testUploadNewCategoryDuplicate() throws InterruptedException {
         // Instantiate new category
         TermModel term = createNewCategory();
@@ -227,6 +244,7 @@ public class ReleaseStack_TaxonomyTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals("A term with the name provided already exists with this parent.", mLastTaxonomyError.message);
     }
 
+    @Test
     public void testDeleteTag() throws InterruptedException {
         TermModel term = createNewTag();
         setupTermAttributes(term);

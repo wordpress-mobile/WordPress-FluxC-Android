@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -31,6 +32,12 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 @SuppressLint("UseSparseArrays")
 public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Inject MediaStore mMediaStore;
@@ -56,7 +63,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     private Map<Integer, MediaModel> mUploadedMediaModels = new HashMap<>();
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
 
@@ -64,6 +71,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         init();
     }
 
+    @Test
     public void testDeleteMedia() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -81,6 +89,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
     }
 
+    @Test
     public void testFetchMediaList() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -119,6 +128,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         deleteMedia(testMedia);
     }
 
+    @Test
     public void testFetchMedia() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -145,6 +155,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         deleteMedia(testMedia);
     }
 
+    @Test
     public void testEditMedia() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -171,6 +182,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         deleteMedia(testMedia);
     }
 
+    @Test
     public void testEditNonexistentMedia() throws InterruptedException {
         // create media with invalid ID
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -182,6 +194,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
     }
 
+    @Test
     public void testUploadImage() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -198,6 +211,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         deleteMedia(testMedia);
     }
 
+    @Test
     public void testUploadImageAttachedToPost() throws InterruptedException {
         // Upload media attached to remotely saved post
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -231,6 +245,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         deleteMedia(testMedia);
     }
 
+    @Test
     public void testCancelImageUpload() throws InterruptedException {
         // First, try canceling an image with the default behavior (canceled image is deleted from the store)
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -269,6 +284,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(MediaUploadState.FAILED.toString(), canceledMedia.getUploadState());
     }
 
+    @Test
     public void testUploadMultipleImages() throws InterruptedException {
         // upload media to guarantee media exists
         mUploadedIds = new ArrayList<>();
@@ -306,6 +322,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         }
     }
 
+    @Test
     public void testUploadMultipleImagesAndCancel() throws InterruptedException {
         // upload media to guarantee media exists
         mUploadedIds = new ArrayList<>();
@@ -349,6 +366,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         }
     }
 
+    @Test
     public void testUploadMultipleImagesAndCancelWithoutDeleting() throws InterruptedException {
         // upload media to guarantee media exists
         mUploadedIds = new ArrayList<>();
@@ -394,6 +412,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         }
     }
 
+    @Test
     public void testUploadVideo() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleVideoPath(), MediaUtils.MIME_TYPE_VIDEO);

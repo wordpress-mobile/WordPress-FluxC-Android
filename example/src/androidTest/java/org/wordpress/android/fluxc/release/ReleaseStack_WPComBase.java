@@ -21,6 +21,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     @Inject AccountStore mAccountStore;
     @Inject SiteStore mSiteStore;

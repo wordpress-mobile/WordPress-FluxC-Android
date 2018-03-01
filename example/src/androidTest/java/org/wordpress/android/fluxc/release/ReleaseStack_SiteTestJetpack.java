@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.release;
 import android.text.TextUtils;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
@@ -26,6 +27,12 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+
+
 /**
  * Tests with real credentials on real servers using the full release stack (no mock)
  */
@@ -43,7 +50,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
     private TestEvents mNextEvent;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
@@ -52,6 +59,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.NONE;
     }
 
+    @Test
     public void testWPComJetpackOnlySiteFetch() throws InterruptedException {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
@@ -72,6 +80,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertFalse(mSiteStore.hasSiteAccessedViaXMLRPC());
     }
 
+    @Test
     public void testWPComSingleJetpackSiteFetch() throws InterruptedException {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_ONE_JETPACK,
                 BuildConfig.TEST_WPCOM_PASSWORD_ONE_JETPACK);
@@ -88,6 +97,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
     }
 
+    @Test
     public void testWPComMultipleJetpackSiteFetch() throws InterruptedException {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_MULTIPLE_JETPACK,
                 BuildConfig.TEST_WPCOM_PASSWORD_MULTIPLE_JETPACK);
@@ -104,6 +114,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
     }
 
+    @Test
     public void testWPComJetpackMultisiteSiteFetch() throws InterruptedException {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_JETPACK_MULTISITE,
                 BuildConfig.TEST_WPCOM_PASSWORD_JETPACK_MULTISITE);
@@ -122,6 +133,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
     }
 
+    @Test
     public void testXMLRPCNonJetpackSiteFetch() throws InterruptedException {
         // Add a non-Jetpack self-hosted site
         fetchSitesXMLRPC(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
@@ -143,6 +155,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertEquals(0, site.getSiteId());
     }
 
+    @Test
     public void testXMLRPCJetpackConnectedSiteFetch() throws InterruptedException {
         // Add a Jetpack-connected site as self-hosted
         fetchSitesXMLRPC(BuildConfig.TEST_WPORG_USERNAME_SINGLE_JETPACK_ONLY,
@@ -163,6 +176,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertNotSame(0, site.getSiteId());
     }
 
+    @Test
     public void testXMLRPCJetpackDisconnectedSiteFetch() throws InterruptedException {
         // Add a self-hosted site with Jetpack installed and active but not connected to WP.com
         fetchSitesXMLRPC(BuildConfig.TEST_WPORG_USERNAME_JETPACK_DISCONNECTED,
@@ -184,6 +198,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertEquals(0, site.getSiteId());
     }
 
+    @Test
     public void testWPComJetpackToXMLRPCDuplicateSiteFetch() throws InterruptedException {
         // Authenticate as WP.com user with a single site, which is a Jetpack site
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
@@ -221,6 +236,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
     }
 
+    @Test
     public void testXMLRPCJetpackToWPComDuplicateSiteFetch() throws InterruptedException {
         // Add a Jetpack-connected site as self-hosted
         fetchSitesXMLRPC(BuildConfig.TEST_WPORG_USERNAME_SINGLE_JETPACK_ONLY,
@@ -256,6 +272,7 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertFalse(mSiteStore.hasSitesAccessedViaWPComRest());
     }
 
+    @Test
     public void testWPComToXMLRPCJetpackDifferentAccountsSiteFetch() throws InterruptedException {
         // Authenticate as WP.com user
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
