@@ -89,13 +89,18 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
         assertTrue(event.mediaList.size() == StockMediaStore.DEFAULT_NUM_STOCK_MEDIA_PER_FETCH);
 
         // remember the results if this is the first page, otherwise make sure the second page
-        // doesn't contain any of the first page results
+        // isn't the same as the first page (note that dups between pages are possible)
         if (isPageOne) {
             mFirstPageMedia = event.mediaList;
         } else {
+            boolean areBothPagesTheSame = true;
             for (StockMediaModel media : event.mediaList) {
-                assertFalse(isInFirstPageOfResults(media));
+                if (!isInFirstPageOfResults(media)) {
+                    areBothPagesTheSame = false;
+                    break;
+                }
             }
+            assertFalse(areBothPagesTheSame);
         }
 
         mCountDownLatch.countDown();
