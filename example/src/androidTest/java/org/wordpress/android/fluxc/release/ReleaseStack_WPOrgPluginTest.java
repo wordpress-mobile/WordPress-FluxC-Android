@@ -147,6 +147,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         searchPluginDirectory(searchTerm, 2);
     }
 
+    @Test
     public void testFeaturedPluginDirectory() throws InterruptedException {
         PluginDirectoryType directoryType = PluginDirectoryType.FEATURED;
         fetchPluginDirectory(directoryType, false);
@@ -177,7 +178,10 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         assertEquals(mSearchPage, event.page);
         assertNotNull(event.searchTerm);
         assertTrue(event.canLoadMore);
-        mCountDownLatch.countDown();
+        // Assert the WPOrgPluginModel is saved to DB
+        String firstSlug = event.plugins.get(0).getSlug();
+        ImmutablePluginModel storedPlugin = mPluginStore.getImmutablePluginBySlug(mSite, firstSlug);
+        assertNotNull(storedPlugin);
     }
 
     @SuppressWarnings("unused")
