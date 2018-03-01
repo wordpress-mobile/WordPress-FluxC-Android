@@ -62,6 +62,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     }
 
     // This is a long set of tests that makes sure the pagination works correctly
+    @Test
     public void testFetchPluginDirectory() throws InterruptedException {
         PluginDirectoryType primaryType = PluginDirectoryType.NEW;
         Assert.assertTrue(mPluginStore.getPluginDirectory(primaryType).size() == 0);
@@ -98,6 +99,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     }
 
     // This simulates the pull to refresh feature a client might implement
+    @Test
     public void testFetchSamePageOfPluginDirectory() throws InterruptedException {
         PluginDirectoryType directoryType = PluginDirectoryType.NEW;
         Assert.assertTrue(mPluginStore.getPluginDirectory(directoryType).size() == 0);
@@ -116,6 +118,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         Assert.assertEquals(pluginsAfterFirstFetch.size(), pluginsAfterSecondFetch.size());
     }
 
+    @Test
     public void testFetchWPOrgPluginDoesNotExistError() throws InterruptedException {
         String slug = "hello";
         mNextEvent = TestEvents.WPORG_PLUGIN_DOES_NOT_EXIST;
@@ -124,6 +127,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testSearchPluginDirectory() throws InterruptedException {
         // This search term is picked because it has more than 100 results to test pagination
         String searchTerm = "Writing";

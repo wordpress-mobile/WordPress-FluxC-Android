@@ -234,6 +234,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
+    @Test
     public void testRemoveSitePlugins() throws InterruptedException {
         SiteModel site = fetchSingleJetpackSitePlugins();
         List<SitePluginModel> plugins = mPluginStore.getSitePlugins(site);

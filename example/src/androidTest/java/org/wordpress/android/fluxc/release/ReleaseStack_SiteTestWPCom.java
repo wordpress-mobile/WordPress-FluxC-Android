@@ -199,6 +199,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertEquals(0, mSiteStore.getSitesCount());
     }
 
+    @Test
     public void testWpcomSubdomainSuggestions() throws InterruptedException {
         String keywords = "awesomesubdomain";
         SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20);

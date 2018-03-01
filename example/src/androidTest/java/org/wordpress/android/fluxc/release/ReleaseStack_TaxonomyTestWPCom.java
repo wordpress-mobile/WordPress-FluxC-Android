@@ -140,7 +140,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     @Test
     public void testUpdateExistingCategory() throws InterruptedException {
         TermModel term = createNewCategory();
-        testUpdateExistingTerm(term);
+        checkUpdateExistingTerm(term);
     }
 
     @Test
@@ -163,7 +163,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     @Test
     public void testUpdateExistingTag() throws InterruptedException {
         TermModel term = createNewTag();
-        testUpdateExistingTerm(term);
+        checkUpdateExistingTerm(term);
     }
 
     @Test
@@ -382,7 +382,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void testUpdateExistingTerm(TermModel term) throws InterruptedException {
+    private void checkUpdateExistingTerm(TermModel term) throws InterruptedException {
         setupTermAttributes(term);
 
         // Upload new term to site
