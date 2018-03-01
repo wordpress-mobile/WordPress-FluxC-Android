@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import junit.framework.Assert;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
@@ -46,6 +47,12 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
@@ -68,7 +75,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     private TestEvents mNextEvent;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
@@ -77,6 +84,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.NONE;
     }
 
+    @Test
     public void testFetchSitePlugins() throws InterruptedException {
         SiteModel site = fetchSingleJetpackSitePlugins();
 
@@ -86,6 +94,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
+    @Test
     public void testConfigureSitePlugin() throws InterruptedException {
         // In order to have a reliable test, let's first fetch the list of plugins, pick the first plugin
         // and change it's active status, so we can make sure when we run the test multiple times, each time
@@ -118,6 +127,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     // It's both easier and more efficient to combine install & delete tests since we need to make sure we have the
     // plugin installed for the delete test and the plugin is not installed for the install test
+    @Test
     public void testInstallAndDeleteSitePlugin() throws InterruptedException {
         String pluginSlugToInstall = "react";
         // Fetch the list of installed plugins to make sure `React` is not installed
@@ -161,6 +171,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
+    @Test
     public void testConfigureUnknownPluginError() throws InterruptedException {
         SiteModel site = authenticateAndRetrieveSingleJetpackSite();
         String pluginName = "this-plugin-does-not-exist-name";
@@ -177,6 +188,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
+    @Test
     public void testDeleteActivePluginError() throws InterruptedException {
         SiteModel site = fetchSingleJetpackSitePlugins();
 
@@ -200,6 +212,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     // Trying to remove a plugin that doesn't exist in remote should remove the plugin from DB
+    @Test
     public void testDeleteUnknownPlugin() throws InterruptedException {
         SiteModel site = fetchSingleJetpackSitePlugins();
 
@@ -230,6 +243,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
+    @Test
     public void testInstallPluginNoPackageError() throws InterruptedException {
         String slug = "this-plugin-does-not-exist";
         SiteModel site = fetchSingleJetpackSitePlugins();
@@ -240,6 +254,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
+    @Test
     public void testRemoveSitePlugins() throws InterruptedException {
         SiteModel site = fetchSingleJetpackSitePlugins();
         List<ImmutablePluginModel> plugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);

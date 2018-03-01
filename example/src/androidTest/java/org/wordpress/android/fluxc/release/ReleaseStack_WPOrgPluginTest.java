@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.release;
 import junit.framework.Assert;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.PluginActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
@@ -21,6 +22,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     @Inject PluginStore mPluginStore;
 
@@ -37,7 +42,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     private int mSearchPage;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
@@ -51,6 +56,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         mSite.setId(1);
     }
 
+    @Test
     public void testFetchWPOrgPlugin() throws InterruptedException {
         String slug = "akismet";
         mNextEvent = TestEvents.WPORG_PLUGIN_FETCHED;
@@ -64,6 +70,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     }
 
     // This is a long set of tests that makes sure the pagination works correctly
+    @Test
     public void testFetchPluginDirectory() throws InterruptedException {
         PluginDirectoryType primaryType = PluginDirectoryType.NEW;
         Assert.assertTrue(mPluginStore.getPluginDirectory(mSite, primaryType).size() == 0);
@@ -100,6 +107,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
     }
 
     // This simulates the pull to refresh feature a client might implement
+    @Test
     public void testFetchSamePageOfPluginDirectory() throws InterruptedException {
         PluginDirectoryType directoryType = PluginDirectoryType.NEW;
         Assert.assertTrue(mPluginStore.getPluginDirectory(mSite, directoryType).size() == 0);
@@ -118,6 +126,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         Assert.assertEquals(pluginsAfterFirstFetch.size(), pluginsAfterSecondFetch.size());
     }
 
+    @Test
     public void testFetchWPOrgPluginDoesNotExistError() throws InterruptedException {
         String slug = "hello";
         mNextEvent = TestEvents.WPORG_PLUGIN_DOES_NOT_EXIST;
@@ -126,6 +135,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testSearchPluginDirectory() throws InterruptedException {
         // This search term is picked because it has more than 100 results to test pagination
         String searchTerm = "Writing";

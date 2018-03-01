@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -34,6 +35,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @SuppressLint("UseSparseArrays")
 public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
@@ -69,7 +76,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     private Map<Integer, MediaModel> mUploadedMediaModels = new HashMap<>();
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
 
@@ -78,6 +85,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.NONE;
     }
 
+    @Test
     public void testDeleteMedia() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -95,6 +103,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNull(mMediaStore.getSiteMediaWithId(sSite, testMedia.getMediaId()));
     }
 
+    @Test
     public void testDeleteMediaThatDoesNotExist() throws InterruptedException {
         MediaModel testMedia = new MediaModel();
         testMedia.setMediaId(9999999L);
@@ -102,6 +111,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         deleteMedia(testMedia);
     }
 
+    @Test
     public void testFetchMediaList() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -140,6 +150,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         deleteMedia(testMedia);
     }
 
+    @Test
     public void testFetchMediaThatDoesNotExist() throws InterruptedException {
         List<Long> mediaIds = new ArrayList<>();
         mediaIds.add(9999999L);
@@ -152,6 +163,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         }
     }
 
+    @Test
     public void testFetchMediaThatExists() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -178,6 +190,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         deleteMedia(testMedia);
     }
 
+    @Test
     public void testEditMedia() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -204,6 +217,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         deleteMedia(testMedia);
     }
 
+    @Test
     public void testUploadImage() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -220,6 +234,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         deleteMedia(testMedia);
     }
 
+    @Test
     public void testUploadImageAttachedToPost() throws InterruptedException {
         // Upload media attached to remotely saved post
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -253,6 +268,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         deleteMedia(testMedia);
     }
 
+    @Test
     public void testCancelImageUpload() throws InterruptedException {
         // First, try canceling an image with the default behavior (canceled image is deleted from the store)
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -291,6 +307,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(MediaUploadState.FAILED.toString(), canceledMedia.getUploadState());
     }
 
+    @Test
     public void testUploadMultipleImages() throws InterruptedException {
         // upload media to guarantee media exists
         mUploadedIds = new ArrayList<>();
@@ -328,6 +345,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         }
     }
 
+    @Test
     public void testUploadMultipleImagesAndCancel() throws InterruptedException {
         // upload media to guarantee media exists
         mUploadedIds = new ArrayList<>();
@@ -371,6 +389,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         }
     }
 
+    @Test
     public void testUploadMultipleImagesAndCancelWithoutDeleting() throws InterruptedException {
         // upload media to guarantee media exists
         mUploadedIds = new ArrayList<>();
@@ -416,6 +435,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         }
     }
 
+    @Test
     public void testUploadVideo() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleVideoPath(), MediaUtils.MIME_TYPE_VIDEO);
@@ -432,6 +452,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         deleteMedia(testMedia);
     }
 
+    @Test
     public void testUploadImageOlderWordPress() throws InterruptedException {
         // Before WordPress 4.4, a separate call to wp.getMediaItem was necessary after wp.uploadFile completed.
         // This is a regression test making sure we're falling back to that behaviour when expected field are missing
@@ -465,6 +486,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testUploadVideoOlderWordPress() throws InterruptedException {
         // Before WordPress 4.4, a separate call to wp.getMediaItem was necessary after wp.uploadFile completed.
         // This is a regression test making sure we're falling back to that behaviour when expected field are missing

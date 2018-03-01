@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.ThemeActionBuilder;
 import org.wordpress.android.fluxc.model.ThemeModel;
@@ -16,6 +17,12 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
     enum TestEvents {
         NONE,
@@ -29,7 +36,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
     private TestEvents mNextEvent;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
@@ -38,6 +45,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.NONE;
     }
 
+    @Test
     public void testFetchCurrentTheme() throws InterruptedException {
         // Make sure no theme is active at first
         assertNull(mThemeStore.getActiveThemeForSite(sSite));
@@ -45,6 +53,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         assertNotNull(currentTheme);
     }
 
+    @Test
     public void testFetchWPComThemes() throws InterruptedException {
         // verify themes don't already exist in store
         assertTrue(mThemeStore.getWpComThemes().isEmpty());
@@ -59,6 +68,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         }
     }
 
+    @Test
     public void testActivateTheme() throws InterruptedException {
         // Make sure no theme is active at first
         assertNull(mThemeStore.getActiveThemeForSite(sSite));

@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.ThemeAction;
 import org.wordpress.android.fluxc.example.test.BuildConfig;
@@ -23,6 +24,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     enum TestEvents {
@@ -48,7 +55,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
     private static final String EDIN_THEME_ID = "edin-wpcom";
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
@@ -57,6 +64,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.NONE;
     }
 
+    @Test
     public void testFetchInstalledThemes() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
@@ -72,6 +80,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
+    @Test
     public void testFetchCurrentTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
@@ -85,6 +94,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
+    @Test
     public void testActivateTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 
@@ -111,6 +121,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
+    @Test
     public void testInstallTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
         final String themeId = EDIN_THEME_ID;
@@ -137,6 +148,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
+    @Test
     public void testDeleteTheme() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
         final String themeId = EDIN_THEME_ID;
@@ -166,6 +178,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
+    @Test
     public void testRemoveSiteThemes() throws InterruptedException {
         final SiteModel jetpackSite = signIntoWpComAccountWithJetpackSite();
 

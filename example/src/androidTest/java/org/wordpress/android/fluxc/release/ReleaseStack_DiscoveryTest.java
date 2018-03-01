@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
@@ -23,6 +24,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests with real credentials on real servers using the full release stack (no mock)
@@ -56,7 +61,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     private String mPassword;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
@@ -65,6 +70,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.NONE;
     }
 
+    @Test
     public void testNoUrlFetchSites() throws InterruptedException {
         mUrl = "";
         mUsername = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
@@ -79,6 +85,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testInvalidUrlFetchSites() throws InterruptedException {
         mUrl = "notaurl&*@";
         mUsername = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
@@ -93,6 +100,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testNonWordPressFetchSites() throws InterruptedException {
         mUrl = "example.com";
         mUsername = BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE;
@@ -107,6 +115,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testWPComUrlFetchSites() throws InterruptedException {
         mUrl = "mysite.wordpress.com";
         mUsername = BuildConfig.TEST_WPCOM_USERNAME_TEST1;
@@ -121,6 +130,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testXMLRPCSimpleFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
@@ -128,6 +138,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCSimpleHTTPSFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL,
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL,
@@ -135,6 +146,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPToHTTPRedirectFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTP_REDIRECT,
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTP_TO_HTTP_REDIRECT,
@@ -142,6 +154,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPToHTTPSRedirectFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTPS_REDIRECT,
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTP_TO_HTTPS_REDIRECT,
@@ -149,6 +162,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPSToHTTPSRedirectFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTPS_REDIRECT,
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTPS_TO_HTTPS_REDIRECT,
@@ -156,6 +170,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPSToHTTPRedirectFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTP_REDIRECT,
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_HTTPS_TO_HTTP_REDIRECT,
@@ -163,6 +178,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPToHTTPSSameDomainRedirectFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT,
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT,
@@ -170,6 +186,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCSelfSignedSSLFetchSites() throws InterruptedException {
         checkSelfHostedSelfSignedSSLFetchForSite(BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL,
                 BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL,
@@ -177,6 +194,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPAuthFetchSites() throws InterruptedException {
         checkSelfHostedHTTPAuthFetchForSite(BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH,
                 BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH,
@@ -186,6 +204,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPToHTTPSRedirectWithEndpointSameDomainFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT_ENDPOINT,
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT,
@@ -195,6 +214,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     // No protocol in URL tests
 
+    @Test
     public void testXMLRPCSimpleNoProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_SIMPLE),
                 BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
@@ -202,6 +222,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCSimpleHTTPSNoProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL),
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL,
@@ -209,6 +230,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPToHTTPNoProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(
                 UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTP_REDIRECT),
@@ -217,6 +239,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPToHTTPSNoProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(
                 UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTPS_REDIRECT),
@@ -225,6 +248,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPSToHTTPSNoProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(
                 UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTPS_REDIRECT),
@@ -233,6 +257,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPSToHTTPNoProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(
                 UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTP_REDIRECT),
@@ -241,6 +266,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPToHTTPSSameDomainNoProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT),
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT,
@@ -248,6 +274,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCSelfSignedSSLNoProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSelfSignedSSLFetchForSite(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL),
                 BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL,
@@ -255,6 +282,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPAuthNoProtocolFetchSites() throws InterruptedException {
         checkSelfHostedHTTPAuthFetchForSite(UrlUtils.removeScheme(BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH),
                 BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH,
@@ -266,6 +294,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
 
     // Bad protocol tests
 
+    @Test
     public void testXMLRPCSimpleBadProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_SIMPLE),
                 BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
@@ -273,6 +302,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCSimpleHTTPSBadProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL),
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL,
@@ -280,6 +310,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPToHTTPBadProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(
                 addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTP_REDIRECT),
@@ -288,6 +319,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPToHTTPSBadProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(
                 addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTP_TO_HTTPS_REDIRECT),
@@ -296,6 +328,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPSToHTTPSBadProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(
                 addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTPS_REDIRECT),
@@ -304,6 +337,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPSToHTTPBadProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(
                 addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_HTTPS_TO_HTTP_REDIRECT),
@@ -312,6 +346,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPToHTTPSSameDomainBadProtocolRedirectFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_REDIRECT),
                 BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL_REDIRECT,
@@ -319,6 +354,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCSelfSignedSSLBadProtocolFetchSites() throws InterruptedException {
         checkSelfHostedSelfSignedSSLFetchForSite(addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL),
                 BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL,
@@ -326,6 +362,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCHTTPAuthBadProtocolFetchSites() throws InterruptedException {
         checkSelfHostedHTTPAuthFetchForSite(addBadProtocolToUrl(BuildConfig.TEST_WPORG_URL_SH_HTTPAUTH),
                 BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH,
@@ -335,6 +372,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCRsdFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_RSD,
                 BuildConfig.TEST_WPORG_USERNAME_SH_RSD,
@@ -342,6 +380,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCNoRsdFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_NO_RSD,
                 BuildConfig.TEST_WPORG_USERNAME_SH_NO_RSD,
@@ -349,6 +388,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testIDNEmojiFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_IDN_EMOJI,
                 BuildConfig.TEST_WPORG_USERNAME_SH_IDN_EMOJI,
@@ -356,6 +396,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testIDNJapaneseFetchSites() throws InterruptedException {
         checkSelfHostedSimpleFetchForSite(BuildConfig.TEST_WPORG_URL_SH_IDN_JAPANESE,
                 BuildConfig.TEST_WPORG_USERNAME_SH_IDN_JAPANESE,
@@ -363,6 +404,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
                 TestEvents.DISCOVERY_SUCCEEDED_XMLRPC);
     }
 
+    @Test
     public void testXMLRPCBlockedDiscovery() throws InterruptedException {
         mUrl = BuildConfig.TEST_WPORG_URL_SH_BLOCKED;
         mUsername = BuildConfig.TEST_WPORG_USERNAME_SH_BLOCKED;
@@ -377,6 +419,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testXMLRPCForbiddenDiscovery() throws InterruptedException {
         mUrl = BuildConfig.TEST_WPORG_URL_SH_FORBIDDEN;
         mUsername = BuildConfig.TEST_WPORG_USERNAME_SH_FORBIDDEN;
@@ -391,6 +434,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testXMLRPCMissingMethodDiscovery() throws InterruptedException {
         mUrl = BuildConfig.TEST_WPORG_URL_SH_MISSING_METHODS;
         mUsername = BuildConfig.TEST_WPORG_USERNAME_SH_MISSING_METHODS;
@@ -405,6 +449,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testWPAPISimpleFetchSites() throws InterruptedException {
         if (org.wordpress.android.fluxc.BuildConfig.ENABLE_WPAPI) {
             mUrl = BuildConfig.TEST_WPORG_URL_SH_WPAPI_SIMPLE;
@@ -423,6 +468,7 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
         }
     }
 
+    @Test
     public void testWPAPIMissingV2SimpleFetchSites() throws InterruptedException {
         // If the wp/v2 namespace is unsupported, we don't expect a WP-API endpoint to be discovered
         // (but an XML-RPC endpoint should be found)

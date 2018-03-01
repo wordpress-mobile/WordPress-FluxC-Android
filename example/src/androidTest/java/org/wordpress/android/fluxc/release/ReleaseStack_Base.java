@@ -1,10 +1,10 @@
 package org.wordpress.android.fluxc.release;
 
 import android.content.Context;
-import android.test.InstrumentationTestCase;
 
 import com.yarolegovich.wellsql.WellSql;
 
+import org.junit.Before;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.module.AppContextModule;
@@ -13,6 +13,8 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig;
 import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
+
+import static android.support.test.InstrumentationRegistry.getInstrumentation;
 
 /**
  * NOTE:
@@ -25,16 +27,15 @@ import javax.inject.Inject;
  *  Therefore the test class must provide an injected AccountStore member, even though
  *  methods/properties from the AccountStore are never explicitly invoked.
  */
-public class ReleaseStack_Base extends InstrumentationTestCase {
+public class ReleaseStack_Base {
     @Inject Dispatcher mDispatcher;
 
     Context mAppContext;
     ReleaseStack_AppComponent mReleaseStackAppComponent;
     CountDownLatch mCountDownLatch;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         // Needed for Mockito
         System.setProperty("dexmaker.dexcache", getInstrumentation().getTargetContext().getCacheDir().getPath());
         mAppContext = getInstrumentation().getTargetContext().getApplicationContext();
