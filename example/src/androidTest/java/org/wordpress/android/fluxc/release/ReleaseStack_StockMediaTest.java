@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.StockMediaActionBuilder;
 import org.wordpress.android.fluxc.model.StockMediaModel;
 import org.wordpress.android.fluxc.store.StockMediaStore;
+import org.wordpress.android.util.AppLog;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -61,6 +62,8 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     private boolean isInFirstPageOfResults(@NonNull StockMediaModel media) {
         for (StockMediaModel modelFromFirstPage : mFirstPageMedia) {
             if (modelFromFirstPage.equals(media)) {
+                AppLog.w(AppLog.T.MEDIA, "Found dup stock media with ID " + media.getId()
+                        + " (" + modelFromFirstPage.getId() + ")");
                 return true;
             }
         }
@@ -75,8 +78,11 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
                     + event.error.type);
         }
 
-        boolean isPageOne = mNextEvent == TestEvents.FETCHED_STOCK_MEDIA_LIST_PAGE_ONE;
-        boolean isPageTwo = mNextEvent == TestEvents.FETCHED_STOCK_MEDIA_LIST_PAGE_TWO;
+        assertTrue(mNextEvent == TestEvents.FETCHED_STOCK_MEDIA_LIST_PAGE_ONE
+                || mNextEvent == TestEvents.FETCHED_STOCK_MEDIA_LIST_PAGE_TWO);
+
+        boolean isPageOne = event.nextPage == 2;
+        boolean isPageTwo = event.nextPage == 3;
 
         assertTrue(isPageOne || isPageTwo);
         assertFalse(event.mediaList == null);
