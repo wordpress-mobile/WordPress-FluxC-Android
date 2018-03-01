@@ -41,7 +41,10 @@ android {
     }
 
     testOptions {
-        execution 'ANDROID_TEST_ORCHESTRATOR'
+        // Don't use the test orchestrator yet, some of our connected testsare sharing state to reduce network
+        // pressure on the API (authentication/fetch profile/fetch sites).
+        // Uncomment the next line to enable the Orchestrator.
+        // execution 'ANDROID_TEST_ORCHESTRATOR'
     }
 }
 
