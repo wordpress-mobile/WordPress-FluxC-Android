@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.StockMediaActionBuilder;
 import org.wordpress.android.fluxc.model.StockMediaModel;
@@ -14,6 +15,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @SuppressLint("UseSparseArrays")
 public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
@@ -28,7 +32,7 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     private TestEvents mNextEvent;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         init();
@@ -37,13 +41,13 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     private static final String SEARCH_TERM = "beach";
     private List<StockMediaModel> mFirstPageMedia;
 
+    @Test
     public void testFetchStockMediaList() throws InterruptedException {
         mNextEvent = TestEvents.FETCHED_STOCK_MEDIA_LIST_PAGE_ONE;
         fetchStockMediaList(SEARCH_TERM, 1);
 
         mNextEvent = TestEvents.FETCHED_STOCK_MEDIA_LIST_PAGE_TWO;
         fetchStockMediaList(SEARCH_TERM, 2);
-
     }
 
     private void fetchStockMediaList(@NonNull String searchTerm, int page) throws InterruptedException {
@@ -55,7 +59,7 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     }
 
     private boolean isInFirstPageOfResults(@NonNull StockMediaModel media) {
-        for (StockMediaModel modelFromFirstPage: mFirstPageMedia) {
+        for (StockMediaModel modelFromFirstPage : mFirstPageMedia) {
             if (modelFromFirstPage.equals(media)) {
                 return true;
             }
@@ -67,7 +71,8 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     @Subscribe
     public void onStockMediaListFetched(StockMediaStore.OnStockMediaListFetched event) {
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            throw new AssertionError("Unexpected error occurred with type: "
+                    + event.error.type);
         }
 
         boolean isPageOne = mNextEvent == TestEvents.FETCHED_STOCK_MEDIA_LIST_PAGE_ONE;
@@ -82,7 +87,7 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
         if (isPageOne) {
             mFirstPageMedia = event.mediaList;
         } else {
-            for (StockMediaModel media: event.mediaList) {
+            for (StockMediaModel media : event.mediaList) {
                 assertFalse(isInFirstPageOfResults(media));
             }
         }
