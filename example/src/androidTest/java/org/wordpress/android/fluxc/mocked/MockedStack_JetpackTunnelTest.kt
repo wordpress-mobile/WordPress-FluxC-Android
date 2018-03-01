@@ -2,6 +2,10 @@ package org.wordpress.android.fluxc.mocked
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.module.MockedNetworkModule
@@ -32,6 +36,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
         mMockedNetworkAppComponent.inject(this)
     }
 
+    @Test
     fun testErrorResponse() {
         val countDownLatch = CountDownLatch(1)
         val url = "/"
@@ -54,6 +59,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
     }
 
+    @Test
     fun testSuccessfulGetRequest() {
         val countDownLatch = CountDownLatch(1)
         val url = "/"
@@ -79,6 +85,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
     }
 
+    @Test
     fun testSuccessfulPostRequest() {
         val countDownLatch = CountDownLatch(1)
         val url = "/wp/v2/settings/"
