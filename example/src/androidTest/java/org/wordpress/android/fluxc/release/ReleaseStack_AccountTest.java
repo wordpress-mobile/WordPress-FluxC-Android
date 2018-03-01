@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.release;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.AccountAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -28,6 +29,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests with real credentials on real servers using the full release stack (no mock)
@@ -56,7 +61,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     private boolean mExpectAccountInfosChanged;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
 
@@ -65,21 +70,25 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         mNextEvent = TestEvents.NONE;
     }
 
+    @Test
     public void testWPComAuthenticationOK() throws InterruptedException {
         mNextEvent = TestEvents.AUTHENTICATE;
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
     }
 
+    @Test
     public void testWPComAuthenticationIncorrectUsernameOrPassword() throws InterruptedException {
         mNextEvent = TestEvents.INCORRECT_USERNAME_OR_PASSWORD_ERROR;
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_BAD_PASSWORD);
     }
 
+    @Test
     public void testWPCom2faAuthentication() throws InterruptedException {
         mNextEvent = TestEvents.AUTHENTICATE_2FA_ERROR;
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_2FA, BuildConfig.TEST_WPCOM_PASSWORD_2FA);
     }
 
+    @Test
     public void testWPComFetch() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
             mNextEvent = TestEvents.AUTHENTICATE;
@@ -92,6 +101,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testWPComPost() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
             mNextEvent = TestEvents.AUTHENTICATE;
@@ -110,6 +120,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(newValue, mAccountStore.getAccount().getAboutMe());
     }
 
+    @Test
     public void testWPComPostNoChange() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
             mNextEvent = TestEvents.AUTHENTICATE;
@@ -136,6 +147,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(newValue, mAccountStore.getAccount().getAboutMe());
     }
 
+    @Test
     public void testWPComPostPrimarySiteIdNoChange() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
             mNextEvent = TestEvents.AUTHENTICATE;
@@ -162,6 +174,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(newValue, String.valueOf(mAccountStore.getAccount().getPrimarySiteId()));
     }
 
+    @Test
     public void testChangeWPComUsernameInvalidInputError() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
             mNextEvent = TestEvents.AUTHENTICATE;
@@ -183,6 +196,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(address, String.valueOf(mAccountStore.getAccount().getWebAddress()));
     }
 
+    @Test
     public void testFetchWPComUsernameSuggestionsNoNameError() throws InterruptedException {
         mNextEvent = TestEvents.FETCH_USERNAME_SUGGESTIONS_ERROR_NO_NAME;
 
@@ -193,6 +207,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testFetchWPComUsernameSuggestionsSuccess() throws InterruptedException {
         mNextEvent = TestEvents.FETCH_USERNAME_SUGGESTIONS_SUCCESS;
 
@@ -203,6 +218,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testWPComSignOut() throws InterruptedException {
         mNextEvent = TestEvents.AUTHENTICATE;
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
@@ -216,6 +232,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(0, mAccountStore.getAccount().getUserId());
     }
 
+    @Test
     public void testWPComSignOutCollision() throws InterruptedException {
         mNextEvent = TestEvents.AUTHENTICATE;
         authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
@@ -235,6 +252,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertEquals(0, mAccountStore.getAccount().getUserId());
     }
 
+    @Test
     public void testSendAuthEmail() throws InterruptedException {
         mNextEvent = TestEvents.SENT_AUTH_EMAIL;
         AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, false);
@@ -243,6 +261,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testSendAuthEmailViaUsername() throws InterruptedException {
         mNextEvent = TestEvents.SENT_AUTH_EMAIL;
         AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1, false);
@@ -251,6 +270,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testSendAuthEmailInvalid() throws InterruptedException {
         // even for an invalid email address, the v1.3 /auth/send-login-email endpoint returns "User does not exist"
         mNextEvent = TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER;
@@ -260,6 +280,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testSendAuthEmailNoSuchUser() throws InterruptedException {
         mNextEvent = TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER;
         String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
@@ -269,6 +290,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testSendAuthEmailSignup() throws InterruptedException {
         mNextEvent = TestEvents.SENT_AUTH_EMAIL;
         String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
@@ -278,6 +300,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testSendAuthEmailSignupInvalid() throws InterruptedException {
         mNextEvent = TestEvents.AUTH_EMAIL_ERROR_INVALID;
         AuthEmailPayload payload = new AuthEmailPayload("email@domain", true);
@@ -286,6 +309,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testSendAuthEmailSignupUserExists() throws InterruptedException {
         mNextEvent = TestEvents.AUTH_EMAIL_ERROR_USER_EXISTS;
         AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, true);

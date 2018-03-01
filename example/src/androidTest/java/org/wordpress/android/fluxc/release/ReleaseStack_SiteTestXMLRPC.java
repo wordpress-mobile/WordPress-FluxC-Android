@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
@@ -27,6 +28,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests with real credentials on real servers using the full release stack (no mock).
  * Skips self hosted site discovery, directly using the ENDPOINT URLs from tests.properties.
@@ -50,7 +55,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
     private TestEvents mNextEvent;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
@@ -59,36 +64,42 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         mNextEvent = TestEvents.NONE;
     }
 
+    @Test
     public void testXMLRPCSimpleFetchProfile() throws InterruptedException {
         fetchProfile(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
     }
 
+    @Test
     public void testXMLRPCSimpleFetchSites() throws InterruptedException {
         fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
     }
 
+    @Test
     public void testXMLRPCSimpleContributorFetchSites() throws InterruptedException {
         fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE_CONTRIB,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE_CONTRIB,
                 BuildConfig.TEST_WPORG_URL_SH_SIMPLE_CONTRIB_ENDPOINT);
     }
 
+    @Test
     public void testXMLRPCMultiSiteFetchSites() throws InterruptedException {
         fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_MULTISITE,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_MULTISITE,
                 BuildConfig.TEST_WPORG_URL_SH_MULTISITE_ENDPOINT);
     }
 
+    @Test
     public void testXMLRPCSimpleHTTPSFetchSites() throws InterruptedException {
         fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_VALID_SSL,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_VALID_SSL,
                 BuildConfig.TEST_WPORG_URL_SH_VALID_SSL_ENDPOINT);
     }
 
+    @Test
     public void testXMLRPCSelfSignedSSLFetchSites() throws InterruptedException {
         mMemorizingTrustManager.clearLocalTrustStore();
 
@@ -117,6 +128,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         mMemorizingTrustManager.clearLocalTrustStore();
     }
 
+    @Test
     public void testXMLRPCHTTPAuthFetchSites() throws InterruptedException {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH;
@@ -143,6 +155,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testXMLRPCHTTPAuthFetchSites2() throws InterruptedException {
         RefreshSitesXMLRPCPayload payload = new RefreshSitesXMLRPCPayload();
         payload.username = BuildConfig.TEST_WPORG_USERNAME_SH_HTTPAUTH;
@@ -161,6 +174,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testXMLRPCFetchAndDeleteSite() throws InterruptedException {
         fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
@@ -174,6 +188,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testXMLRPCFetchMultipleSites() throws InterruptedException {
         fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
@@ -194,6 +209,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         assertEquals(2, mSiteStore.getSitesCount());
     }
 
+    @Test
     public void testFetchPostFormats() throws InterruptedException {
         fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,

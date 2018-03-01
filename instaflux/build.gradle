@@ -55,7 +55,8 @@ dependencies {
     // WordPress libs
     implementation ('org.wordpress:utils:1.16.0') {
         // Using official volley package
-        exclude group: "com.mcxiaoke.volley";
+        exclude group: "com.mcxiaoke.volley"
+        exclude group: "com.android.support"
     }
 
     implementation "com.android.support:appcompat-v7:$supportLibraryVersion"

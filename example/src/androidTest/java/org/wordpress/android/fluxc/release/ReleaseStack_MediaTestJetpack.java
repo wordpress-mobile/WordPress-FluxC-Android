@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
@@ -29,6 +30,9 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
@@ -46,7 +50,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
     private TestEvents mNextEvent;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
@@ -55,6 +59,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         mNextEvent = TestEvents.NONE;
     }
 
+    @Test
     public void testUploadMediaLowFilesizeLimit() throws InterruptedException {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_JETPACK_UPLOAD_LIMIT,
                 BuildConfig.TEST_WPCOM_PASSWORD_JETPACK_UPLOAD_LIMIT);
@@ -73,6 +78,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
+    @Test
     public void testUploadMediaLowMemoryLimit() throws InterruptedException {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);

@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
@@ -17,10 +18,10 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
-import org.wordpress.android.fluxc.store.SiteStore.OnUserRolesChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
+import org.wordpress.android.fluxc.store.SiteStore.OnUserRolesChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnWPComSiteFetched;
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
@@ -32,6 +33,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests with real credentials on real servers using the full release stack (no mock)
@@ -57,7 +63,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     private int mExpectedRowsAffected;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
         // Register
@@ -67,6 +73,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mExpectedRowsAffected = 0;
     }
 
+    @Test
     public void testWPComSiteFetchAndLogout() throws InterruptedException {
         authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
                 BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
@@ -80,6 +87,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testFetchPostFormats() throws InterruptedException {
         authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
                 BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
@@ -98,6 +106,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertNotSame(0, postFormats.size());
     }
 
+    @Test
     public void testFetchUserRoles() throws InterruptedException {
         authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
                 BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
@@ -116,6 +125,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertNotSame(0, roles.size());
     }
 
+    @Test
     public void testFetchConnectSiteInfo() throws InterruptedException {
         String site = "http://www.example.com";
         mDispatcher.dispatch(SiteActionBuilder.newFetchConnectSiteInfoAction(site));
@@ -130,6 +140,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testFetchWPComSiteByUrl() throws InterruptedException {
         String site = "http://en.blog.wordpress.com";
         mDispatcher.dispatch(SiteActionBuilder.newFetchWpcomSiteByUrlAction(site));
@@ -164,6 +175,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testWPComSiteFetchAndLogoutCollision() throws InterruptedException {
         authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
                 BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
@@ -187,6 +199,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertEquals(0, mSiteStore.getSitesCount());
     }
 
+    @Test
     public void testWpcomSubdomainSuggestions() throws InterruptedException {
         String keywords = "awesomesubdomain";
         SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20);
