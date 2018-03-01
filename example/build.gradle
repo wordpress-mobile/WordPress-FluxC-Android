@@ -7,10 +7,6 @@ buildscript {
     }
 }
 
-repositories {
-    jcenter()
-}
-
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
@@ -29,6 +25,8 @@ android {
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -37,8 +35,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
     lintOptions {
         warning 'InvalidPackage'
+    }
+
+    testOptions {
+        // Don't use the test orchestrator yet, some of our connected testsare sharing state to reduce network
+        // pressure on the API (authentication/fetch profile/fetch sites).
+        // Uncomment the next line to enable the Orchestrator.
+        // execution 'ANDROID_TEST_ORCHESTRATOR'
     }
 }
 
@@ -78,7 +84,8 @@ dependencies {
     // WordPress libs
     implementation ('org.wordpress:utils:1.16.0') {
         // Using official volley package
-        exclude group: "com.mcxiaoke.volley";
+        exclude group: "com.mcxiaoke.volley"
+        exclude group: "com.android.support"
     }
 
     implementation 'com.google.code.gson:gson:2.8.0'
@@ -100,6 +107,9 @@ dependencies {
     androidTestImplementation 'org.mockito:mockito-core:1.10.19'
     kaptAndroidTest "com.google.dagger:dagger-compiler:$daggerVersion"
     androidTestCompileOnly 'org.glassfish:javax.annotation:10.0-b28'
+    // Test orchestrator
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestUtil 'com.android.support.test:orchestrator:1.0.1'
 
     // Debug dependencies
     debugImplementation 'com.facebook.stetho:stetho:1.5.0'

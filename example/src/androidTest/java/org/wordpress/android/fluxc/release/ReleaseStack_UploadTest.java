@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.action.UploadAction;
@@ -40,6 +41,13 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
     private static final String POST_DEFAULT_TITLE = "UploadTest base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
@@ -65,7 +73,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
     private long mLastUploadedId = -1L;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
 
@@ -73,6 +81,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         init();
     }
 
+    @Test
     public void testUploadImage() throws InterruptedException {
         // Start uploading media
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -98,7 +107,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
 
         // Confirm that the corresponding MediaUploadModel's state has been updated automatically
         mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
-        assertEquals(1F, mUploadStore.getUploadProgressForMedia(testMedia));
+        assertEquals(1F, mUploadStore.getUploadProgressForMedia(testMedia), 0.1);
         assertEquals(MediaUploadModel.COMPLETED, mediaUploadModel.getUploadState());
 
         // Delete test image
@@ -110,6 +119,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         assertNull(getMediaUploadModelForMediaModel(testMedia));
     }
 
+    @Test
     public void testUploadInvalidMedia() throws InterruptedException {
         // Start uploading media
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "not-even-close/to-an-actual-mime-type");
@@ -137,6 +147,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         assertNull(getMediaUploadModelForMediaModel(testMedia));
     }
 
+    @Test
     public void testCancelImageUpload() throws InterruptedException {
         // First, try canceling an image with the default behavior (canceled image is deleted from the store)
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
@@ -184,6 +195,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
     }
 
+    @Test
     public void testRegisterAndUploadPost() throws InterruptedException {
         // Instantiate new post
         createNewPost();
@@ -212,6 +224,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         assertNull(getPostUploadModelForPostModel(uploadedPost));
     }
 
+    @Test
     public void testRegisterAndUploadInvalidPost() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
@@ -247,6 +260,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         assertEquals(PostErrorType.UNKNOWN_POST, PostErrorType.fromString(postUploadModel.getErrorType()));
     }
 
+    @Test
     public void testRegisterPostAndUploadMedia() throws InterruptedException {
         // Start uploading media
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);

@@ -8,7 +8,7 @@ public class MockedStack_SiteTest extends MockedStack_Base {
     @Inject Dispatcher mDispatcher;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         // Inject
         mMockedNetworkAppComponent.inject(this);
