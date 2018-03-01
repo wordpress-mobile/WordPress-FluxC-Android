@@ -85,6 +85,7 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
         boolean isPageTwo = event.nextPage == 3;
 
         assertTrue(isPageOne || isPageTwo);
+        assertTrue(event.searchTerm.equals(SEARCH_TERM));
         assertFalse(event.mediaList == null);
         assertTrue(event.mediaList.size() == StockMediaStore.DEFAULT_NUM_STOCK_MEDIA_PER_FETCH);
 
