@@ -35,13 +35,13 @@
 
     <module name="RegexpMultiline">
       <property name="format"
-                value="\n[\t ]*\n[\t ]*\}"/>
+                value="(\n|\r\n)[\t ]*(\n|\r\n)[\t ]*\}"/>
       <property name="message" value="Empty line not allowed before brace"/>
     </module>
 
     <module name="RegexpMultiline">
       <property name="format"
-                value="\{[\t ]*\n[\t ]*\n"/>
+                value="\{[\t ]*(\n|\r\n)[\t ]*(\n|\r\n)"/>
       <property name="message" value="Empty line not allowed after brace"/>
     </module>
 
