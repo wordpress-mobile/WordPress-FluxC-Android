@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.release;
 
-import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -20,7 +19,6 @@ import javax.inject.Inject;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@SuppressLint("UseSparseArrays")
 public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     @Inject
     StockMediaStore mStockMediaStore;
