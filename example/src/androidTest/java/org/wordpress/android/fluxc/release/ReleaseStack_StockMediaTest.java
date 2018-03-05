@@ -18,6 +18,7 @@ import javax.inject.Inject;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.wordpress.android.fluxc.network.rest.wpcom.stockmedia.StockMediaRestClient.DEFAULT_NUM_STOCK_MEDIA_PER_FETCH;
 
 public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     @Inject
@@ -85,7 +86,7 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
         assertTrue(isPageOne || isPageTwo);
         assertTrue(event.searchTerm.equals(SEARCH_TERM));
         assertFalse(event.mediaList == null);
-        assertTrue(event.mediaList.size() == StockMediaStore.DEFAULT_NUM_STOCK_MEDIA_PER_FETCH);
+        assertTrue(event.mediaList.size() == DEFAULT_NUM_STOCK_MEDIA_PER_FETCH);
 
         // remember the results if this is the first page, otherwise make sure the second page
         // isn't the same as the first page (note that dups between pages are possible)
