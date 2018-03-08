@@ -4,6 +4,10 @@
     "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 
 <module name="Checker">
+    <!-- Restricts scan to specific extensions.           -->
+    <!-- See http://checkstyle.sf.net/config.html#Checker -->
+    <property name="fileExtensions" value="java, kt, xml"/>
+
     <!-- Checks whether files end with a new line.                        -->
     <!-- See http://checkstyle.sf.net/config_misc.html#NewlineAtEndOfFile -->
     <module name="NewlineAtEndOfFile"/>
