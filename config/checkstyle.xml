@@ -82,7 +82,7 @@
 
     <!-- Specific to FluxC -->
     <module name="RegexpMultiline">
-        <property name="format" value="(?&lt;!^@Singleton)\n.*extends \w.*Client[\s{]"/>
+        <property name="format" value="(?&lt;!^@Singleton)\n.*extends (BaseWPComRestClient|BaseXMLRPCClient|BaseWPAPIRestClient|BaseWPOrgAPIClient)[\s{]"/>
         <property name="message" value="Network clients must be annotated with @Singleton"/>
     </module>
 
