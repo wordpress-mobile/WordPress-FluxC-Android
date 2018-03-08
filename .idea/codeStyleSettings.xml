@@ -32,7 +32,6 @@
             <emptyLine />
           </value>
         </option>
-        <option name="ENABLE_JAVADOC_FORMATTING" value="false" />
         <option name="RIGHT_MARGIN" value="120" />
         <AndroidXmlCodeStyleSettings>
           <option name="USE_CUSTOM_SETTINGS" value="true" />
