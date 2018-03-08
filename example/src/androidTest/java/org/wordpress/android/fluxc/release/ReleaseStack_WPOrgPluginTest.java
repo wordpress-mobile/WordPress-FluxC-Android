@@ -182,6 +182,7 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         String firstSlug = event.plugins.get(0).getSlug();
         ImmutablePluginModel storedPlugin = mPluginStore.getImmutablePluginBySlug(mSite, firstSlug);
         assertNotNull(storedPlugin);
+        mCountDownLatch.countDown();
     }
 
     @SuppressWarnings("unused")
