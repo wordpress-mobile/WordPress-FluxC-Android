@@ -8,6 +8,12 @@
     <!-- See http://checkstyle.sf.net/config.html#Checker -->
     <property name="fileExtensions" value="java, kt, xml"/>
 
+    <!-- Excludes given file patterns from scan.              -->
+    <!-- See http://checkstyle.sf.net/config_filefilters.html -->
+    <module name="BeforeExecutionExclusionFileFilter">
+        <property name="fileNamePattern" value="[/\\]gen[/\\]"/>
+    </module>
+
     <!-- Checks whether files end with a new line.                        -->
     <!-- See http://checkstyle.sf.net/config_misc.html#NewlineAtEndOfFile -->
     <module name="NewlineAtEndOfFile"/>
