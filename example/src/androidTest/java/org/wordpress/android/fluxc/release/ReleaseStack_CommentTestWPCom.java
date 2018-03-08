@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.release;
 import com.yarolegovich.wellsql.SelectQuery;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.CommentActionBuilder;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
@@ -31,6 +32,12 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+
 public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     @Inject CommentStore mCommentStore;
     @Inject PostStore mPostStore;
@@ -51,7 +58,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     private PostModel mFirstPost;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
 
@@ -64,6 +71,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     }
 
     // Note: This test is not specific to WPCOM (local changes only)
+    @Test
     public void testInstantiateComment() throws InterruptedException {
         // New Comment
         createNewComment();
@@ -75,6 +83,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     }
 
     // Note: This test is not specific to WPCOM (local changes only)
+    @Test
     public void testInstantiateUpdateAndRemoveComment() throws InterruptedException {
         // New Comment
         createNewComment();
@@ -105,6 +114,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         }
     }
 
+    @Test
     public void testRemoveAllComments() throws InterruptedException {
         fetchFirstComments();
 
@@ -120,6 +130,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(0, count);
     }
 
+    @Test
     public void testInstantiateAndCreateNewComment() throws InterruptedException {
         // New Comment
         createNewComment();
@@ -139,6 +150,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(comment.getContent().contains(mNewComment.getContent()));
     }
 
+    @Test
     public void testLikeAndUnlikeComment() throws InterruptedException {
         // Fetch existing comments and get first comment
         fetchFirstComments();
@@ -167,6 +179,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertFalse(comment.getILike());
     }
 
+    @Test
     public void testDeleteCommentOnce() throws InterruptedException {
         // New Comment
         createNewComment();
@@ -197,6 +210,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(CommentStatus.TRASH.toString(), comment.getStatus());
     }
 
+    @Test
     public void testDeleteCommentTwice() throws InterruptedException {
         // New Comment
         createNewComment();
@@ -232,6 +246,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(comment, null);
     }
 
+    @Test
     public void testErrorDuplicatedComment() throws InterruptedException {
         // New Comment
         createNewComment();
@@ -253,6 +268,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testNewCommentToAnUnknownPost() throws InterruptedException {
         CommentModel newComment = new CommentModel();
 
@@ -266,6 +282,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testReplyToAnUnknownComment() throws InterruptedException {
         CommentModel fakeComment = new CommentModel();
         CommentModel newComment = new CommentModel();
@@ -277,6 +294,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testInstantiateAndCreateReplyComment() throws InterruptedException {
         // Fetch existing comments and get first comment
         fetchFirstComments();
@@ -304,6 +322,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertNotSame(mNewComment.getRemoteSiteId(), comment.getRemoteSiteId());
     }
 
+    @Test
     public void testFetchComments() throws InterruptedException {
         FetchCommentsPayload payload = new FetchCommentsPayload(sSite, 10, 0);
         mNextEvent = TestEvents.COMMENT_CHANGED;
@@ -313,6 +332,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testFetchComment() throws InterruptedException {
         fetchFirstComments();
         CommentModel firstComment = mComments.get(0);
@@ -325,6 +345,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testEditValidComment() throws InterruptedException {
         fetchFirstComments();
 
@@ -354,6 +375,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(updatedComment.getContent().contains(firstComment.getContent()));
     }
 
+    @Test
     public void testEditInvalidComment() throws InterruptedException {
         CommentModel comment = new CommentModel();
         comment.setContent("");

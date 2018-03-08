@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.release;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.TaxonomyActionBuilder;
 import org.wordpress.android.fluxc.model.TaxonomyModel;
@@ -21,6 +22,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     @Inject TaxonomyStore mTaxonomyStore;
@@ -45,7 +51,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
     private TestEvents mNextEvent;
 
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
 
@@ -55,6 +61,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.NONE;
     }
 
+    @Test
     public void testFetchCategories() throws InterruptedException {
         mNextEvent = TestEvents.CATEGORIES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
@@ -67,6 +74,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(categories.size() > 0);
     }
 
+    @Test
     public void testFetchTags() throws InterruptedException {
         mNextEvent = TestEvents.TAGS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
@@ -79,6 +87,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(tags.size() > 0);
     }
 
+    @Test
     public void testFetchTermsForInvalidTaxonomy() throws InterruptedException {
         mNextEvent = TestEvents.ERROR_INVALID_TAXONOMY;
         mCountDownLatch = new CountDownLatch(1);
@@ -92,6 +101,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
     public void testFetchSingleCategory() throws InterruptedException {
         mNextEvent = TestEvents.TERM_UPDATED;
         mCountDownLatch = new CountDownLatch(1);
@@ -110,6 +120,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         assertNotSame(0, fetchedTerm.getRemoteTermId());
     }
 
+    @Test
     public void testUploadNewCategory() throws InterruptedException {
         // Instantiate new category
         TermModel term = createNewCategory();
@@ -126,11 +137,13 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
 
+    @Test
     public void testUpdateExistingCategory() throws InterruptedException {
         TermModel term = createNewCategory();
-        testUpdateExistingTerm(term);
+        checkUpdateExistingTerm(term);
     }
 
+    @Test
     public void testUploadNewTag() throws InterruptedException {
         // Instantiate new tag
         TermModel term = createNewTag();
@@ -147,11 +160,13 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
 
+    @Test
     public void testUpdateExistingTag() throws InterruptedException {
         TermModel term = createNewTag();
-        testUpdateExistingTerm(term);
+        checkUpdateExistingTerm(term);
     }
 
+    @Test
     public void testDeleteTag() throws InterruptedException {
         TermModel term = createNewTag();
         setupTermAttributes(term);
@@ -164,6 +179,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(0, WellSqlUtils.getTotalTermsCount());
     }
 
+    @Test
     public void testUploadNewCategoryAsTerm() throws InterruptedException {
         TaxonomyModel taxonomyModel = new TaxonomyModel();
         taxonomyModel.setName(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY);
@@ -183,6 +199,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         assertNotSame(0, uploadedTerm.getRemoteTermId());
     }
 
+    @Test
     public void testUploadTermForInvalidTaxonomy() throws InterruptedException {
         TaxonomyModel taxonomyModel = new TaxonomyModel();
         taxonomyModel.setName("roads");
@@ -203,6 +220,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(0, failedTerm.getRemoteTermId());
     }
 
+    @Test
     public void testUploadNewCategoryDuplicate() throws InterruptedException {
         // Instantiate new category
         TermModel term = createNewCategory();
@@ -364,7 +382,7 @@ public class ReleaseStack_TaxonomyTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void testUpdateExistingTerm(TermModel term) throws InterruptedException {
+    private void checkUpdateExistingTerm(TermModel term) throws InterruptedException {
         setupTermAttributes(term);
 
         // Upload new term to site

@@ -1,6 +1,12 @@
 package org.wordpress.android.fluxc.mocked;
 
+import android.support.test.runner.AndroidJUnit4;
+
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
@@ -15,9 +21,13 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests using a Mocked Network app component. Test the Store itself and not the underlying network component(s).
  */
+@RunWith(AndroidJUnit4.class)
 public class MockedStack_AccountTest extends MockedStack_Base {
     @Inject Dispatcher mDispatcher;
     @Inject AccountStore mAccountStore;
@@ -26,7 +36,8 @@ public class MockedStack_AccountTest extends MockedStack_Base {
     private CountDownLatch mCountDownLatch;
 
     @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         super.setUp();
         // Inject
         mMockedNetworkAppComponent.inject(this);
@@ -34,14 +45,14 @@ public class MockedStack_AccountTest extends MockedStack_Base {
         mDispatcher.register(this);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         if (mAccountStore.hasAccessToken()) {
             throw new AssertionError("Mock account tests should clear the AccountStore!");
         }
-        super.tearDown();
     }
 
+    @Test
     public void testAuthenticationOK() throws InterruptedException {
         if (mAccountStore.hasAccessToken()) {
             signOut();
@@ -58,11 +69,11 @@ public class MockedStack_AccountTest extends MockedStack_Base {
         signOut();
     }
 
+    @Test
     public void testAuthenticationKO() throws InterruptedException {
         if (mAccountStore.hasAccessToken()) {
             signOut();
         }
-
         AuthenticatePayload payload = new AuthenticatePayload("error", "error");
         mIsError = true;
         // Correct user we should get an OnAuthenticationChanged message

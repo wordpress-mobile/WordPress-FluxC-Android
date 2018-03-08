@@ -1,13 +1,10 @@
 package org.wordpress.android.fluxc;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(RobolectricTestRunner.class)
 public class WPComEndpointTest {
     @Test
     public void testAllEndpoints() {
@@ -35,7 +32,7 @@ public class WPComEndpointTest {
         // Plugins
         assertEquals("/sites/56/plugins/", WPCOMREST.sites.site(56).plugins.getEndpoint());
         assertEquals("/sites/56/plugins/akismet/", WPCOMREST.sites.site(56).plugins.name("akismet").getEndpoint());
-        assertEquals("/sites/56/plugins/akismet/install/", WPCOMREST.sites.site(56).plugins.name("akismet")
+        assertEquals("/sites/56/plugins/akismet/install/", WPCOMREST.sites.site(56).plugins.slug("akismet")
                 .install.getEndpoint());
         assertEquals("/sites/56/plugins/akismet/delete/", WPCOMREST.sites.site(56).plugins.name("akismet")
                 .delete.getEndpoint());
