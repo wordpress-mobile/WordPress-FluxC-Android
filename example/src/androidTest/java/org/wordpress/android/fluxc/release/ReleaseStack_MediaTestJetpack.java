@@ -117,7 +117,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
 
         // Attempt to upload an image that exceeds the site's memory limit
         MediaModel testMedia = newMediaModel(site, getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
-        mNextEvent = TestEvents.ERROR_EXCEEDS_MEMORY_LIMIT;
+        mNextEvent = TestEvents.ERROR_EXCEEDS_SITE_SPACE_QUOTA_LIMIT;
         uploadMedia(site, testMedia);
 
         signOutWPCom();
