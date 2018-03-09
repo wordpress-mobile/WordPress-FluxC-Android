@@ -42,6 +42,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         MEDIA_UPLOADED,
         ERROR_EXCEEDS_FILESIZE_LIMIT,
         ERROR_EXCEEDS_MEMORY_LIMIT,
+        ERROR_EXCEEDS_SITE_SPACE_QUOTA_LIMIT,
         SITE_CHANGED,
         SITE_REMOVED,
         NONE
@@ -98,6 +99,30 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
+    @Test
+    public void testUploadMediaLowQuotaAvailableLimit() throws InterruptedException {
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
+
+        SiteModel site = mSiteStore.getSites().get(0);
+
+        // Make a call to /sites/$site/ to pull all the Jetpack options
+        fetchSite(site);
+        site = mSiteStore.getSites().get(0);
+        // Artificially set the site's with low quota limits, in bytes
+        site.setSpaceAllowed(100);
+        site.setSpaceAvailable(50);
+        site.setSpacePercentUsed(0.5);
+        site.setSpaceUsed(50);
+
+        // Attempt to upload an image that exceeds the site's memory limit
+        MediaModel testMedia = newMediaModel(site, getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        mNextEvent = TestEvents.ERROR_EXCEEDS_MEMORY_LIMIT;
+        uploadMedia(site, testMedia);
+
+        signOutWPCom();
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onMediaUploaded(OnMediaUploaded event) {
@@ -108,6 +133,10 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
                 return;
             } else if (event.error.type == MediaErrorType.EXCEEDS_MEMORY_LIMIT) {
                 assertEquals(TestEvents.ERROR_EXCEEDS_MEMORY_LIMIT, mNextEvent);
+                mCountDownLatch.countDown();
+                return;
+            } else if (event.error.type == MediaErrorType.EXCEEDS_SITE_SPACE_QUOTA_LIMIT) {
+                assertEquals(TestEvents.ERROR_EXCEEDS_SITE_SPACE_QUOTA_LIMIT, mNextEvent);
                 mCountDownLatch.countDown();
                 return;
             }
