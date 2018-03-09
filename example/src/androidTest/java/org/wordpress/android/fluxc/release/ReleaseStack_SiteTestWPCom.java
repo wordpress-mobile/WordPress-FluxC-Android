@@ -209,6 +209,15 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
+    public void testSiteQuotaAllowed() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        // Get the first site
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+        // Default quota for a wpcom site is 3Gb
+        assertEquals(firstSite.getSpaceAllowed(), 3L * 1024 * 1024 * 1024);
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {

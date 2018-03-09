@@ -60,7 +60,7 @@ public class WellSqlConfig extends DefaultWellConfig {
 
     @Override
     public int getDbVersion() {
-        return 25;
+        return 26;
     }
 
     @Override
@@ -230,6 +230,13 @@ public class WellSqlConfig extends DefaultWellConfig {
                         + "DOWNLOAD_COUNT INTEGER,NUMBER_OF_RATINGS INTEGER,NUMBER_OF_RATINGS_OF_ONE INTEGER,"
                         + "NUMBER_OF_RATINGS_OF_TWO INTEGER,NUMBER_OF_RATINGS_OF_THREE INTEGER,"
                         + "NUMBER_OF_RATINGS_OF_FOUR INTEGER,NUMBER_OF_RATINGS_OF_FIVE INTEGER,UNIQUE (SLUG))");
+                oldVersion++;
+            case 25:
+                AppLog.d(T.DB, "Migrating to version " + (oldVersion + 1));
+                db.execSQL("alter table SiteModel add SPACE_AVAILABLE INTEGER");
+                db.execSQL("alter table SiteModel add SPACE_ALLOWED INTEGER");
+                db.execSQL("alter table SiteModel add SPACE_USED INTEGER");
+                db.execSQL("alter table SiteModel add SPACE_PERCENT_USED REAL");
                 oldVersion++;
         }
         db.setTransactionSuccessful();
