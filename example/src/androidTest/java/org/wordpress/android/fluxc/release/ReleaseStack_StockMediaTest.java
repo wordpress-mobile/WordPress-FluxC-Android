@@ -5,7 +5,9 @@ import android.support.annotation.NonNull;
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
+import org.wordpress.android.fluxc.action.StockMediaAction;
 import org.wordpress.android.fluxc.generated.StockMediaActionBuilder;
+import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.StockMediaModel;
 import org.wordpress.android.fluxc.store.StockMediaStore;
 import org.wordpress.android.util.AppLog;
@@ -26,6 +28,7 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     @Inject StockMediaStore mStockMediaStore;
 
     private enum TestEvents {
+        NONE,
         FETCHED_STOCK_MEDIA_LIST_PAGE_ONE,
         FETCHED_STOCK_MEDIA_LIST_PAGE_TWO,
         UPLOADED_STOCK_MEDIA
@@ -52,6 +55,15 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
         fetchStockMediaList(SEARCH_TERM, 2);
     }
 
+    @Test
+    public void testUploadStockMedia() throws InterruptedException {
+        mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA;
+        StockMediaModel testStockMedia = newStockMedia("PEXELS-50577");
+        List<StockMediaModel> testStockMediaList = new ArrayList<>();
+        testStockMediaList.add(testStockMedia);
+        uploadStockMedia(testStockMediaList);
+    }
+
     private StockMediaModel newStockMedia(@NonNull String id) {
         StockMediaModel stockMedia = new StockMediaModel();
         stockMedia.setId(id);
@@ -59,19 +71,19 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
         return stockMedia;
     }
 
-    @Test
-    public void testUploadStockMedia() throws InterruptedException {
-        mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA;
-        StockMediaModel testStockMedia = newStockMedia("PEXELS-50577");
-        List<StockMediaModel> testStockMediaList = new ArrayList<>();
-        testStockMediaList.add(testStockMedia);
-    }
-
     private void fetchStockMediaList(@NonNull String searchTerm, int page) throws InterruptedException {
         StockMediaStore.FetchStockMediaListPayload fetchPayload =
                 new StockMediaStore.FetchStockMediaListPayload(searchTerm, page);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(StockMediaActionBuilder.newFetchStockMediaAction(fetchPayload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void uploadStockMedia(@NonNull List<StockMediaModel> stockMediaList) throws InterruptedException {
+        StockMediaStore.UploadStockMediaPayload uploadPayload =
+                new StockMediaStore.UploadStockMediaPayload(sSite, stockMediaList);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(StockMediaActionBuilder.newUploadStockMediaAction(uploadPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -120,6 +132,20 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
             }
             assertFalse(areBothPagesTheSame);
         }
+
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onStockMediaUploaded(StockMediaStore.OnStockMediaUploaded event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: "
+                                     + event.error.type);
+        }
+
+        assertEquals(mNextEvent, TestEvents.UPLOADED_STOCK_MEDIA);
+        assertEquals(event.uploadedMedia.size(), 1);
 
         mCountDownLatch.countDown();
     }
