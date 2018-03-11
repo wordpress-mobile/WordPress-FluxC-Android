@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.model.StockMediaModel;
 import org.wordpress.android.fluxc.store.StockMediaStore;
 import org.wordpress.android.util.AppLog;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +27,8 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
 
     private enum TestEvents {
         FETCHED_STOCK_MEDIA_LIST_PAGE_ONE,
-        FETCHED_STOCK_MEDIA_LIST_PAGE_TWO
+        FETCHED_STOCK_MEDIA_LIST_PAGE_TWO,
+        UPLOADED_STOCK_MEDIA
     }
 
     private TestEvents mNextEvent;
@@ -48,6 +50,21 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
 
         mNextEvent = TestEvents.FETCHED_STOCK_MEDIA_LIST_PAGE_TWO;
         fetchStockMediaList(SEARCH_TERM, 2);
+    }
+
+    private StockMediaModel newStockMedia(@NonNull String id) {
+        StockMediaModel stockMedia = new StockMediaModel();
+        stockMedia.setId(id);
+
+        return stockMedia;
+    }
+
+    @Test
+    public void testUploadStockMedia() throws InterruptedException {
+        mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA;
+        StockMediaModel testStockMedia = newStockMedia("PEXELS-50577");
+        List<StockMediaModel> testStockMediaList = new ArrayList<>();
+        testStockMediaList.add(testStockMedia);
     }
 
     private void fetchStockMediaList(@NonNull String searchTerm, int page) throws InterruptedException {
