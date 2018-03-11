@@ -5,9 +5,7 @@ import android.support.annotation.NonNull;
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
-import org.wordpress.android.fluxc.action.StockMediaAction;
 import org.wordpress.android.fluxc.generated.StockMediaActionBuilder;
-import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.StockMediaModel;
 import org.wordpress.android.fluxc.store.StockMediaStore;
 import org.wordpress.android.util.AppLog;
@@ -22,7 +20,8 @@ import javax.inject.Inject;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.wordpress.android.fluxc.network.rest.wpcom.stockmedia.StockMediaRestClient.DEFAULT_NUM_STOCK_MEDIA_PER_FETCH;
+import static org.wordpress.android.fluxc.network.rest.wpcom.stockmedia.StockMediaRestClient
+        .DEFAULT_NUM_STOCK_MEDIA_PER_FETCH;
 
 public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     @Inject StockMediaStore mStockMediaStore;
@@ -58,15 +57,17 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     @Test
     public void testUploadStockMedia() throws InterruptedException {
         mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA;
-        StockMediaModel testStockMedia = newStockMedia("PEXELS-50577");
+        StockMediaModel testStockMedia = newStockMedia();
         List<StockMediaModel> testStockMediaList = new ArrayList<>();
         testStockMediaList.add(testStockMedia);
         uploadStockMedia(testStockMediaList);
     }
 
-    private StockMediaModel newStockMedia(@NonNull String id) {
+    private StockMediaModel newStockMedia() {
         StockMediaModel stockMedia = new StockMediaModel();
-        stockMedia.setId(id);
+        stockMedia.setName("pexels-photo-902152.jpeg");
+        stockMedia.setTitle("pexels-photo-902152.jpeg");
+        stockMedia.setUrl("https://images.pexels.com/photos/902152/pexels-photo-902152.jpeg");
 
         return stockMedia;
     }
@@ -145,7 +146,7 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
         }
 
         assertEquals(mNextEvent, TestEvents.UPLOADED_STOCK_MEDIA);
-        assertEquals(event.uploadedMedia.size(), 1);
+        assertEquals(event.mediaList.size(), 1);
 
         mCountDownLatch.countDown();
     }
