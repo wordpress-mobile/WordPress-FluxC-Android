@@ -177,7 +177,7 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     private void deleteUploadedMedia(@Nullable List<MediaModel> mediaList) {
         if (mediaList == null) return;
 
-        for (MediaModel media: mediaList) {
+        for (MediaModel media : mediaList) {
             MediaStore.MediaPayload deletePayload = new MediaStore.MediaPayload(sSite, media);
             mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
         }
