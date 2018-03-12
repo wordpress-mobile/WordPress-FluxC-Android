@@ -56,7 +56,11 @@ class ThreeEditTextDialog : DialogFragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(onClickListener: Listener, text1Hint: String, text2Hint: String, text3Hint: String
+        fun newInstance(
+            onClickListener: Listener,
+            text1Hint: String,
+            text2Hint: String,
+            text3Hint: String
         ): ThreeEditTextDialog {
             val fragment = ThreeEditTextDialog()
             fragment.setListener(onClickListener)
