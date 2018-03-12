@@ -8,7 +8,7 @@ class OrderApiResponse : Response {
     val status: String? = null
     val currency: String? = null
     val date_created_gmt: String? = null
-    val total: Float? = null
+    val total: String? = null
     val billing: Billing? = null
 
     class Billing {

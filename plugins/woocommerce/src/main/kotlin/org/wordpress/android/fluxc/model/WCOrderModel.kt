@@ -13,7 +13,7 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     @Column var status: String = ""
     @Column var currency: String = ""
     @Column var dateCreated: String = "" // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
-    @Column var total: Float = 0F
+    @Column var total: String = ""
     @Column var billingFirstName: String = ""
     @Column var billingLastName: String = ""
 
