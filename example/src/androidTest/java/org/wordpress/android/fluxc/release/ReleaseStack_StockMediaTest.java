@@ -30,7 +30,8 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
         NONE,
         FETCHED_STOCK_MEDIA_LIST_PAGE_ONE,
         FETCHED_STOCK_MEDIA_LIST_PAGE_TWO,
-        UPLOADED_STOCK_MEDIA
+        UPLOADED_STOCK_MEDIA,
+        UPLOADED_STOCK_MEDIA_MULTI
     }
 
     private TestEvents mNextEvent;
@@ -57,17 +58,20 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     @Test
     public void testUploadStockMedia() throws InterruptedException {
         mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA;
-        StockMediaModel testStockMedia = newStockMedia();
+        StockMediaModel testStockMedia = newStockMedia(902152);
         List<StockMediaModel> testStockMediaList = new ArrayList<>();
         testStockMediaList.add(testStockMedia);
         uploadStockMedia(testStockMediaList);
     }
 
-    private StockMediaModel newStockMedia() {
+    private StockMediaModel newStockMedia(int id) {
+        String name = "pexels-photo-" + id;
+        String url = "https://images.pexels.com/photos/" + id + "/" + name + ".jpeg?w=320";
+
         StockMediaModel stockMedia = new StockMediaModel();
-        stockMedia.setName("pexels-photo-902152.jpeg");
-        stockMedia.setTitle("pexels-photo-902152.jpeg");
-        stockMedia.setUrl("https://images.pexels.com/photos/902152/pexels-photo-902152.jpeg");
+        stockMedia.setName(name);
+        stockMedia.setTitle(name);
+        stockMedia.setUrl(url);
 
         return stockMedia;
     }
