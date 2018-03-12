@@ -30,7 +30,7 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
         NONE,
         FETCHED_STOCK_MEDIA_LIST_PAGE_ONE,
         FETCHED_STOCK_MEDIA_LIST_PAGE_TWO,
-        UPLOADED_STOCK_MEDIA,
+        UPLOADED_STOCK_MEDIA_SINGLE,
         UPLOADED_STOCK_MEDIA_MULTI
     }
 
@@ -57,10 +57,15 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
 
     @Test
     public void testUploadStockMedia() throws InterruptedException {
-        mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA;
-        StockMediaModel testStockMedia = newStockMedia(902152);
+        mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA_SINGLE;
+        StockMediaModel testStockMedia1 = newStockMedia(902152);
         List<StockMediaModel> testStockMediaList = new ArrayList<>();
-        testStockMediaList.add(testStockMedia);
+        testStockMediaList.add(testStockMedia1);
+        uploadStockMedia(testStockMediaList);
+
+        mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA_MULTI;
+        StockMediaModel testStockMedia2 = newStockMedia(208803);
+        testStockMediaList.add(testStockMedia2);
         uploadStockMedia(testStockMediaList);
     }
 
@@ -149,8 +154,16 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
                                      + event.error.type);
         }
 
-        assertEquals(mNextEvent, TestEvents.UPLOADED_STOCK_MEDIA);
-        assertEquals(event.mediaList.size(), 1);
+        boolean isSingleUpload = mNextEvent == TestEvents.UPLOADED_STOCK_MEDIA_SINGLE;
+        boolean isMultiUpload = mNextEvent == TestEvents.UPLOADED_STOCK_MEDIA_SINGLE;
+
+        if (isSingleUpload) {
+            assertEquals(event.mediaList.size(), 1);
+        } else if (isMultiUpload) {
+            assertEquals(event.mediaList.size(), 2);
+        } else {
+            throw new AssertionError("Wrong event after upload");
+        }
 
         mCountDownLatch.countDown();
     }
