@@ -131,7 +131,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
             throw new AssertionError("event error type: " + event.error.type);
         }
         assertTrue(mSiteStore.hasSite());
-        assertTrue(mSiteStore.hasWPComSite());
+        assertTrue(mSiteStore.hasSitesAccessedViaWPComRest());
         assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
