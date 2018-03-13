@@ -40,6 +40,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     }
 
     private TestEvents mNextEvent;
+    private AuthenticatePayload mAuthenticatePayload;
 
     @BeforeClass
     public static void setup() {
@@ -62,14 +63,25 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
 
         if (sSite == null) {
             fetchSites();
-            sSite = mSiteStore.getSites().get(0);
+            sSite = getSiteFromDb();
         }
+    }
+
+    protected SiteModel getSiteFromDb() {
+        return mSiteStore.getSites().get(0);
+    }
+
+    protected AuthenticatePayload buildAuthenticatePayload() {
+        if (mAuthenticatePayload == null) {
+            mAuthenticatePayload = new AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                    BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        }
+        return mAuthenticatePayload;
     }
 
     private void authenticate() throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
-        AuthenticatePayload payload = new AuthenticatePayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
-                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        AuthenticatePayload payload = buildAuthenticatePayload();
 
         // Correct user we should get an OnAuthenticationChanged message
         mCountDownLatch = new CountDownLatch(1);
