@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.module.ReleaseBaseModule;
 import org.wordpress.android.fluxc.module.ReleaseNetworkModule;
 import org.wordpress.android.fluxc.module.ReleaseOkHttpClientModule;
 import org.wordpress.android.fluxc.module.ReleaseToolsModule;
+import org.wordpress.android.fluxc.module.ReleaseWCNetworkModule;
 
 import javax.inject.Singleton;
 
@@ -20,6 +21,7 @@ import dagger.Component;
         ReleaseOkHttpClientModule.class,
         ReleaseBaseModule.class,
         ReleaseNetworkModule.class,
+        ReleaseWCNetworkModule.class,
         ReleaseToolsModule.class,
         MockedToolsModule.class
 })

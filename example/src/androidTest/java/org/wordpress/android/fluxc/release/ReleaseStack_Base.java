@@ -43,7 +43,7 @@ public class ReleaseStack_Base {
         mReleaseStackAppComponent = DaggerReleaseStack_AppComponent.builder()
                 .appContextModule(new AppContextModule(mAppContext))
                 .build();
-        WellSqlConfig config = new WellSqlConfig(mAppContext);
+        WellSqlConfig config = new WellSqlConfig(mAppContext, WellSqlConfig.ADDON_WOOCOMMERCE);
         WellSql.init(config);
         config.reset();
     }
