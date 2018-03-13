@@ -45,4 +45,5 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_ThemeTestJetpack test);
     void inject(ReleaseStack_ThemeTestWPCom test);
     void inject(ReleaseStack_UploadTest test);
+    void inject(ReleaseStack_ActivityTestWPCom test);
 }
