@@ -23,6 +23,13 @@ import javax.inject.Singleton
 class OrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue: RequestQueue,
                       accessToken: AccessToken, userAgent: UserAgent)
     : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+    /**
+     * Makes a GET call to `/wc/v2/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a list of orders for the given WooCommerce [SiteModel].
+     *
+     * The number of orders fetched is defined in [WCOrderStore.NUM_ORDERS_PER_FETCH], and retrieving older
+     * orders is done by passing an [offset].
+     */
     fun fetchOrders(site: SiteModel, offset: Int) {
         val url = WOOCOMMERCE.orders.pathV2
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
@@ -50,6 +57,7 @@ class OrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue:
                 })
         add(request)
     }
+
     private fun orderResponseToOrderModel(response: OrderApiResponse): WCOrderModel {
         return WCOrderModel().apply {
             remoteOrderId = response.number ?: 0
