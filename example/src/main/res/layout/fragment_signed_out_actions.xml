@@ -39,7 +39,7 @@
         android:id="@+id/domain_suggestions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Domain suggestions" />
+        android:text="Domain suggestions (results differ if authenticated)" />
 
     <Button
         android:id="@+id/connect_site_info"
