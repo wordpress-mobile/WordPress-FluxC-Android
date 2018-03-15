@@ -455,18 +455,6 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         uploadStockMedia(testStockMediaList);
     }
 
-    private StockMediaModel newStockMedia(int id) {
-        String name = "pexels-photo-" + id;
-        String url = "https://images.pexels.com/photos/" + id + "/" + name + ".jpeg?w=320";
-
-        StockMediaModel stockMedia = new StockMediaModel();
-        stockMedia.setName(name);
-        stockMedia.setTitle(name);
-        stockMedia.setUrl(url);
-
-        return stockMedia;
-    }
-
     @SuppressWarnings("unused")
     @Subscribe
     public void onMediaUploaded(OnMediaUploaded event) {
@@ -709,5 +697,17 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadStockMediaAction(uploadPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private StockMediaModel newStockMedia(int id) {
+        String name = "pexels-photo-" + id;
+        String url = "https://images.pexels.com/photos/" + id + "/" + name + ".jpeg?w=320";
+
+        StockMediaModel stockMedia = new StockMediaModel();
+        stockMedia.setName(name);
+        stockMedia.setTitle(name);
+        stockMedia.setUrl(url);
+
+        return stockMedia;
     }
 }
