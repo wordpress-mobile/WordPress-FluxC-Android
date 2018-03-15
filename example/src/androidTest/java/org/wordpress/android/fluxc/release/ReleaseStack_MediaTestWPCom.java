@@ -435,15 +435,23 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testUploadStockMedia() throws InterruptedException {
-        mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA_SINGLE;
         StockMediaModel testStockMedia1 = newStockMedia(902152);
         List<StockMediaModel> testStockMediaList = new ArrayList<>();
         testStockMediaList.add(testStockMedia1);
+
+        mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA_SINGLE;
         uploadStockMedia(testStockMediaList);
+    }
+
+    @Test
+    public void testUploadStockMediaList() throws InterruptedException {
+        StockMediaModel testStockMedia1 = newStockMedia(902152);
+        StockMediaModel testStockMedia2 = newStockMedia(208803);
+        List<StockMediaModel> testStockMediaList = new ArrayList<>();
+        testStockMediaList.add(testStockMedia1);
+        testStockMediaList.add(testStockMedia2);
 
         mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA_MULTI;
-        StockMediaModel testStockMedia2 = newStockMedia(208803);
-        testStockMediaList.add(testStockMedia2);
         uploadStockMedia(testStockMediaList);
     }
 
