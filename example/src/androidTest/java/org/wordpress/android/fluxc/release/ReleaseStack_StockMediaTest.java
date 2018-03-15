@@ -1,16 +1,12 @@
 package org.wordpress.android.fluxc.release;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
-import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.StockMediaActionBuilder;
-import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.StockMediaModel;
-import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.StockMediaStore;
 import org.wordpress.android.util.AppLog;
 
@@ -112,15 +108,5 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
         }
 
         mCountDownLatch.countDown();
-    }
-
-
-    private void deleteUploadedMedia(@Nullable List<MediaModel> mediaList) {
-        if (mediaList == null) return;
-
-        for (MediaModel media : mediaList) {
-            MediaStore.MediaPayload deletePayload = new MediaStore.MediaPayload(sSite, media);
-            mDispatcher.dispatch(MediaActionBuilder.newDeleteMediaAction(deletePayload));
-        }
     }
 }
