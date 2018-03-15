@@ -6,9 +6,13 @@ import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.ThemeActionBuilder;
 import org.wordpress.android.fluxc.model.ThemeModel;
-import org.wordpress.android.fluxc.store.AccountStore;
-import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
+import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.ThemeStore;
+import org.wordpress.android.fluxc.store.ThemeStore.OnCurrentThemeFetched;
+import org.wordpress.android.fluxc.store.ThemeStore.OnThemeActivated;
+import org.wordpress.android.fluxc.store.ThemeStore.OnWpComThemesChanged;
 import org.wordpress.android.fluxc.store.ThemeStore.SiteThemePayload;
 
 import java.util.List;
@@ -92,7 +96,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onThemeActivated(ThemeStore.OnThemeActivated event) {
+    public void onThemeActivated(OnThemeActivated event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -102,7 +106,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onWpComThemesChanged(ThemeStore.OnWpComThemesChanged event) {
+    public void onWpComThemesChanged(OnWpComThemesChanged event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -112,7 +116,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onCurrentThemeFetched(ThemeStore.OnCurrentThemeFetched event) {
+    public void onCurrentThemeFetched(OnCurrentThemeFetched event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -123,7 +127,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
+    public void onAuthenticationChanged(OnAuthenticationChanged event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -132,7 +136,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onAccountChanged(AccountStore.OnAccountChanged event) {
+    public void onAccountChanged(OnAccountChanged event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -141,7 +145,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onSiteChanged(SiteStore.OnSiteChanged event) {
+    public void onSiteChanged(OnSiteChanged event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
