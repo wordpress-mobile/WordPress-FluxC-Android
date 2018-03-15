@@ -14,7 +14,6 @@ import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.StockMediaStore;
 import org.wordpress.android.util.AppLog;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -33,9 +32,7 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     private enum TestEvents {
         NONE,
         FETCHED_STOCK_MEDIA_LIST_PAGE_ONE,
-        FETCHED_STOCK_MEDIA_LIST_PAGE_TWO,
-        UPLOADED_STOCK_MEDIA_SINGLE,
-        UPLOADED_STOCK_MEDIA_MULTI
+        FETCHED_STOCK_MEDIA_LIST_PAGE_TWO
     }
 
     private TestEvents mNextEvent;
@@ -60,45 +57,11 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
         fetchStockMediaList(SEARCH_TERM, 2);
     }
 
-    @Test
-    public void testUploadStockMedia() throws InterruptedException {
-        mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA_SINGLE;
-        StockMediaModel testStockMedia1 = newStockMedia(902152);
-        List<StockMediaModel> testStockMediaList = new ArrayList<>();
-        testStockMediaList.add(testStockMedia1);
-        uploadStockMedia(testStockMediaList);
-
-        mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA_MULTI;
-        StockMediaModel testStockMedia2 = newStockMedia(208803);
-        testStockMediaList.add(testStockMedia2);
-        uploadStockMedia(testStockMediaList);
-    }
-
-    private StockMediaModel newStockMedia(int id) {
-        String name = "pexels-photo-" + id;
-        String url = "https://images.pexels.com/photos/" + id + "/" + name + ".jpeg?w=320";
-
-        StockMediaModel stockMedia = new StockMediaModel();
-        stockMedia.setName(name);
-        stockMedia.setTitle(name);
-        stockMedia.setUrl(url);
-
-        return stockMedia;
-    }
-
     private void fetchStockMediaList(@NonNull String searchTerm, int page) throws InterruptedException {
         StockMediaStore.FetchStockMediaListPayload fetchPayload =
                 new StockMediaStore.FetchStockMediaListPayload(searchTerm, page);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(StockMediaActionBuilder.newFetchStockMediaAction(fetchPayload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    private void uploadStockMedia(@NonNull List<StockMediaModel> stockMediaList) throws InterruptedException {
-        StockMediaStore.UploadStockMediaPayload uploadPayload =
-                new StockMediaStore.UploadStockMediaPayload(sSite, stockMediaList);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(StockMediaActionBuilder.newUploadStockMediaAction(uploadPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -151,29 +114,6 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
         mCountDownLatch.countDown();
     }
 
-    @SuppressWarnings("unused")
-    @Subscribe
-    public void onStockMediaUploaded(StockMediaStore.OnStockMediaUploaded event) {
-        if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: "
-                                     + event.error.type);
-        }
-
-        deleteUploadedMedia(event.mediaList);
-
-        boolean isSingleUpload = mNextEvent == TestEvents.UPLOADED_STOCK_MEDIA_SINGLE;
-        boolean isMultiUpload = mNextEvent == TestEvents.UPLOADED_STOCK_MEDIA_MULTI;
-
-        if (isSingleUpload) {
-            assertEquals(event.mediaList.size(), 1);
-        } else if (isMultiUpload) {
-            assertEquals(event.mediaList.size(), 2);
-        } else {
-            throw new AssertionError("Wrong event after upload");
-        }
-
-        mCountDownLatch.countDown();
-    }
 
     private void deleteUploadedMedia(@Nullable List<MediaModel> mediaList) {
         if (mediaList == null) return;
