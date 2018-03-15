@@ -435,9 +435,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testUploadStockMedia() throws InterruptedException {
-        StockMediaModel testStockMedia1 = newStockMedia(902152);
+        StockMediaModel testStockMedia = newStockMedia(902152);
         List<StockMediaModel> testStockMediaList = new ArrayList<>();
-        testStockMediaList.add(testStockMedia1);
+        testStockMediaList.add(testStockMedia);
 
         mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA_SINGLE;
         uploadStockMedia(testStockMediaList);
@@ -558,12 +558,6 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
                                      + event.error.type);
         }
 
-        try {
-            removeMediaList(event.mediaList);
-        } catch (InterruptedException e) {
-            AppLog.e(AppLog.T.MEDIA, "Error removing uploaded stock media list", e);
-        }
-
         boolean isSingleUpload = mNextEvent == TestEvents.UPLOADED_STOCK_MEDIA_SINGLE;
         boolean isMultiUpload = mNextEvent == TestEvents.UPLOADED_STOCK_MEDIA_MULTI;
 
@@ -576,6 +570,12 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         }
 
         mCountDownLatch.countDown();
+
+        try {
+            removeMediaList(event.mediaList);
+        } catch (InterruptedException e) {
+            AppLog.e(AppLog.T.MEDIA, "Error removing uploaded stock media list", e);
+        }
     }
 
     private boolean eventHasKnownImages(OnMediaChanged event) {
