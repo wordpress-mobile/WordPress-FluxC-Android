@@ -41,7 +41,7 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
         init();
     }
 
-    private static final String SEARCH_TERM = "beach";
+    private static final String SEARCH_TERM = "dogs";
     private List<StockMediaModel> mFirstPageMedia;
 
     @Test
