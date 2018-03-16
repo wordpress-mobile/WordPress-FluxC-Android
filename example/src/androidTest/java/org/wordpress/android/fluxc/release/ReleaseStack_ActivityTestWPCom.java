@@ -43,8 +43,8 @@ public class ReleaseStack_ActivityTestWPCom extends ReleaseStack_WPComBase {
     public void testFetchActivities() throws InterruptedException {
         this.mCountDownLatch = new CountDownLatch(1);
         int numOfActivitiesRequested = 1;
-        mActivityStore.onAction(
-                ActivityActionBuilder.newFetchActivitiesAction(new FetchActivitiesPayload(sSite, numOfActivitiesRequested, 0)));
+        FetchActivitiesPayload payload = new FetchActivitiesPayload(sSite, numOfActivitiesRequested, 0);
+        mActivityStore.onAction(ActivityActionBuilder.newFetchActivitiesAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertTrue(mIncomingActions.size() == 1);
         assertTrue(((FetchedActivitiesPayload) mIncomingActions.get(0).getPayload())
