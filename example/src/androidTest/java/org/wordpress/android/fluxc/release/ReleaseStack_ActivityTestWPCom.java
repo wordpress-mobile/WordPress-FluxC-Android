@@ -7,12 +7,12 @@ import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.action.ActivityAction;
 import org.wordpress.android.fluxc.annotations.action.Action;
 import org.wordpress.android.fluxc.generated.ActivityActionBuilder;
-import org.wordpress.android.fluxc.network.rest.wpcom.activity.RewindStatus;
+import org.wordpress.android.fluxc.model.activity.RewindStatusModel;
 import org.wordpress.android.fluxc.store.ActivityStore;
-import org.wordpress.android.fluxc.store.ActivityStore.FetchActivitiesPayload;
-import org.wordpress.android.fluxc.store.ActivityStore.FetchedActivitiesPayload;
-import org.wordpress.android.fluxc.store.ActivityStore.FetchRewindStatePayload;
-import org.wordpress.android.fluxc.store.ActivityStore.FetchRewindStateResponsePayload;
+import org.wordpress.android.fluxc.store.FetchActivitiesPayload;
+import org.wordpress.android.fluxc.store.FetchRewindStatePayload;
+import org.wordpress.android.fluxc.store.FetchRewindStateResponsePayload;
+import org.wordpress.android.fluxc.store.FetchedActivitiesPayload;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +48,7 @@ public class ReleaseStack_ActivityTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertTrue(mIncomingActions.size() == 1);
         assertTrue(((FetchedActivitiesPayload) mIncomingActions.get(0).getPayload())
-                           .getActivityResponses()
+                           .getActivityModelRespons()
                            .size() == numOfActivitiesRequested);
     }
 
@@ -59,10 +59,10 @@ public class ReleaseStack_ActivityTestWPCom extends ReleaseStack_WPComBase {
                 .newFetchRewindStateAction(new FetchRewindStatePayload(sSite, 10, 0)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertTrue(mIncomingActions.size() == 1);
-        RewindStatus rewindStatusResponse =
-                ((FetchRewindStateResponsePayload) mIncomingActions.get(0).getPayload()).getRewindStatusResponse();
-        assertNotNull(rewindStatusResponse);
-        assertNotNull(rewindStatusResponse.getState());
+        RewindStatusModel rewindStatusModelResponse =
+                ((FetchRewindStateResponsePayload) mIncomingActions.get(0).getPayload()).getRewindStatusModelResponse();
+        assertNotNull(rewindStatusModelResponse);
+        assertNotNull(rewindStatusModelResponse.getState());
     }
 
     @After
