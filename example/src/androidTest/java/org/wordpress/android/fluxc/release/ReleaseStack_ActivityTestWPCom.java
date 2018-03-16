@@ -11,7 +11,7 @@ import org.wordpress.android.fluxc.model.activity.RewindStatusModel;
 import org.wordpress.android.fluxc.store.ActivityStore;
 import org.wordpress.android.fluxc.store.FetchActivitiesPayload;
 import org.wordpress.android.fluxc.store.FetchRewindStatePayload;
-import org.wordpress.android.fluxc.store.FetchRewindStateResponsePayload;
+import org.wordpress.android.fluxc.store.FetchedRewindStatePayload;
 import org.wordpress.android.fluxc.store.FetchedActivitiesPayload;
 
 import java.util.ArrayList;
@@ -60,7 +60,7 @@ public class ReleaseStack_ActivityTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertTrue(mIncomingActions.size() == 1);
         RewindStatusModel rewindStatusModelResponse =
-                ((FetchRewindStateResponsePayload) mIncomingActions.get(0).getPayload()).getRewindStatusModelResponse();
+                ((FetchedRewindStatePayload) mIncomingActions.get(0).getPayload()).getRewindStatusModelResponse();
         assertNotNull(rewindStatusModelResponse);
         assertNotNull(rewindStatusModelResponse.getState());
     }
