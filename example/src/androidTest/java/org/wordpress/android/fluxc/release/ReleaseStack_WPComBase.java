@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.BeforeClass;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
@@ -39,6 +40,11 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     }
 
     private TestEvents mNextEvent;
+
+    @BeforeClass
+    public static void setup() {
+        sSite = null;
+    }
 
     @Override
     protected void init() throws Exception {

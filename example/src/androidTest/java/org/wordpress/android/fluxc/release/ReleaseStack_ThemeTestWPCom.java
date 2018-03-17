@@ -78,8 +78,9 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         // Fetch wp.com themes to activate a different theme
         fetchWpComThemes();
 
-        // activate a different theme
-        ThemeModel themeToActivate = getNewNonPremiumTheme(currentTheme.getThemeId(), mThemeStore.getWpComThemes());
+        // activate a different "Twenty ..." theme
+        ThemeModel themeToActivate = getTwentySomethingFreeTheme(currentTheme.getThemeId(),
+                mThemeStore.getWpComThemes());
         assertNotNull(themeToActivate);
         activateTheme(themeToActivate);
 
@@ -147,9 +148,10 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch.countDown();
     }
 
-    private ThemeModel getNewNonPremiumTheme(String oldThemeId, List<ThemeModel> themes) {
+    private ThemeModel getTwentySomethingFreeTheme(String oldThemeId, List<ThemeModel> themes) {
         for (ThemeModel theme : themes) {
-            if (!theme.getThemeId().equals(oldThemeId) && theme.getFree()) {
+            // Workaround here: limit to "Twenty ..." themes, they all support Post Formats (needed in other tests).
+            if (!theme.getThemeId().equals(oldThemeId) && theme.getFree() && theme.getName().contains("Twenty")) {
                 return theme;
             }
         }
