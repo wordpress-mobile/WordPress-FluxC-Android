@@ -560,7 +560,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch.countDown();
 
         try {
-            removeMediaList(event.mediaList);
+            deleteMediaList(event.mediaList);
         } catch (InterruptedException e) {
             AppLog.e(AppLog.T.MEDIA, "Error removing uploaded stock media list", e);
         }
@@ -675,6 +675,12 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    private void deleteMediaList(@NonNull List<MediaModel> mediaList) throws InterruptedException {
+        for (MediaModel media : mediaList) {
+            deleteMedia(media);
+        }
+    }
+
     private void removeMedia(MediaModel media) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newRemoveMediaAction(media));
@@ -682,11 +688,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private void removeAllSiteMedia() throws InterruptedException {
-        removeMediaList(mMediaStore.getAllSiteMedia(sSite));
-    }
-
-    private void removeMediaList(@NonNull List<MediaModel> mediaList) throws InterruptedException {
-        for (MediaModel media : mediaList) {
+        List<MediaModel> allMediaList = mMediaStore.getAllSiteMedia(sSite);
+        for (MediaModel media : allMediaList) {
             removeMedia(media);
         }
     }

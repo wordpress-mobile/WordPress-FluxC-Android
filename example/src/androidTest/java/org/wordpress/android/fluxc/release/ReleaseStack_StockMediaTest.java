@@ -26,7 +26,6 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     @Inject StockMediaStore mStockMediaStore;
 
     private enum TestEvents {
-        NONE,
         FETCHED_STOCK_MEDIA_LIST_PAGE_ONE,
         FETCHED_STOCK_MEDIA_LIST_PAGE_TWO
     }
@@ -37,7 +36,6 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
-        mNextEvent = TestEvents.NONE;
         init();
     }
 
