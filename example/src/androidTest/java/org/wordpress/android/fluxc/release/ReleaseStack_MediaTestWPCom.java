@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.release;
 
 import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -65,6 +66,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     private List<Long> mUploadedIds = new ArrayList<>();
     private Map<Integer, MediaModel> mUploadedMediaModels = new HashMap<>();
+    private List<MediaModel> mUploadedMediaModelsFromStockMedia;
 
     @Override
     public void setUp() throws Exception {
@@ -441,6 +443,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA_SINGLE;
         uploadStockMedia(testStockMediaList);
+
+        mNextEvent = TestEvents.DELETED_MEDIA;
+        deleteMediaList(mUploadedMediaModelsFromStockMedia);
     }
 
     @Test
@@ -453,6 +458,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA_MULTI;
         uploadStockMedia(testStockMediaList);
+
+        mNextEvent = TestEvents.DELETED_MEDIA;
+        deleteMediaList(mUploadedMediaModelsFromStockMedia);
     }
 
     @SuppressWarnings("unused")
@@ -557,13 +565,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             throw new AssertionError("Wrong event after upload");
         }
 
+        mUploadedMediaModelsFromStockMedia = event.mediaList;
         mCountDownLatch.countDown();
-
-        try {
-            deleteMediaList(event.mediaList);
-        } catch (InterruptedException e) {
-            AppLog.e(AppLog.T.MEDIA, "Error removing uploaded stock media list", e);
-        }
     }
 
     private boolean eventHasKnownImages(OnMediaChanged event) {
@@ -675,9 +678,11 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void deleteMediaList(@NonNull List<MediaModel> mediaList) throws InterruptedException {
-        for (MediaModel media : mediaList) {
-            deleteMedia(media);
+    private void deleteMediaList(@Nullable List<MediaModel> mediaList) throws InterruptedException {
+        if (mediaList != null) {
+            for (MediaModel media : mediaList) {
+                deleteMedia(media);
+            }
         }
     }
 
