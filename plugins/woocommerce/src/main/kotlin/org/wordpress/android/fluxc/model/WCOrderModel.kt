@@ -56,11 +56,11 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
         @SerializedName("variation_id")
         val variationId: Long? = null
         val quantity: Int? = null
-        val total: Float? = null // Price x quantity
+        val total: String? = null // Price x quantity
         @SerializedName("total_tax")
-        val totalTax: Float? = null
+        val totalTax: String? = null
         val sku: String? = null
-        val price: Float? = null // The per-item price
+        val price: String? = null // The per-item price
     }
 
     override fun getId() = id
