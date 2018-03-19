@@ -46,6 +46,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Inject MediaStore mMediaStore;
 
     private enum TestEvents {
+        NONE,
         CANCELED_MEDIA,
         DELETED_MEDIA,
         FETCHED_MEDIA_LIST,
@@ -75,6 +76,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         // Authenticate, fetch sites and initialize sSite
         init();
+
+        mNextEvent = TestEvents.NONE;
     }
 
     @Test
