@@ -1,6 +1,10 @@
 package org.wordpress.android.fluxc.release;
 
+import android.content.Context;
+import android.preference.PreferenceManager;
+
 import org.greenrobot.eventbus.Subscribe;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
@@ -22,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static android.support.test.InstrumentationRegistry.getInstrumentation;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -43,8 +48,17 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     private AuthenticatePayload mAuthenticatePayload;
 
     @BeforeClass
-    public static void setup() {
+    public static void beforeClass() {
         sSite = null;
+    }
+
+    @AfterClass
+    public static void afterClass() {
+        // Clear the token after the entire class finishes
+        // This ensures that the token is not re-used by other tests that don't extend this class,
+        // and are supposed to use a different WordPress.com account
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putString("ACCOUNT_TOKEN_PREF_KEY", null).apply();
     }
 
     @Override
