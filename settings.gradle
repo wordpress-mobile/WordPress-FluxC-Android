@@ -1,3 +1,3 @@
-include ':fluxc', ':fluxc-processor', ':fluxc-annotations'
+include ':fluxc', ':fluxc-processor', ':fluxc-annotations', ':plugins:woocommerce'
 include ':example'
 include ':instaflux'

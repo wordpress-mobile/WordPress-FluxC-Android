@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.example.SitesFragment
 import org.wordpress.android.fluxc.example.TaxonomiesFragment
 import org.wordpress.android.fluxc.example.ThemeFragment
 import org.wordpress.android.fluxc.example.UploadsFragment
+import org.wordpress.android.fluxc.example.WooCommerceFragment
 
 @Module
 internal abstract class FragmentsModule {
@@ -44,4 +45,7 @@ internal abstract class FragmentsModule {
 
     @ContributesAndroidInjector
     abstract fun provideUploadsFragmentInjector(): UploadsFragment
+
+    @ContributesAndroidInjector
+    abstract fun provideWooCommerceFragmentInjector(): WooCommerceFragment
 }
