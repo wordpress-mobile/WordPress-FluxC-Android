@@ -50,7 +50,7 @@ class ReleaseStack_ActivityLogTestWPCom : ReleaseStack_WPComBase() {
     @Test
     fun testFetchRewindState() {
         this.mCountDownLatch = CountDownLatch(1)
-        val payload = ActivityLogStore.FetchRewindStatePayload(ReleaseStack_WPComBase.sSite, 10, 0)
+        val payload = ActivityLogStore.FetchRewindStatePayload(ReleaseStack_WPComBase.sSite)
         activityLogStore.onAction(ActivityActionBuilder.newFetchRewindStateAction(payload))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         assertTrue(incomingActions.size == 1)
