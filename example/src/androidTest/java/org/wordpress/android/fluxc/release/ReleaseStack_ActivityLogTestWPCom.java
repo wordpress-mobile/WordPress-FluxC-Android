@@ -8,11 +8,10 @@ import org.wordpress.android.fluxc.action.ActivityAction;
 import org.wordpress.android.fluxc.annotations.action.Action;
 import org.wordpress.android.fluxc.generated.ActivityActionBuilder;
 import org.wordpress.android.fluxc.model.activity.RewindStatusModel;
-import org.wordpress.android.fluxc.store.ActivityStore;
-import org.wordpress.android.fluxc.store.FetchActivitiesPayload;
-import org.wordpress.android.fluxc.store.FetchRewindStatePayload;
-import org.wordpress.android.fluxc.store.FetchedRewindStatePayload;
-import org.wordpress.android.fluxc.store.FetchedActivitiesPayload;
+import org.wordpress.android.fluxc.store.ActivityLogStore;
+import org.wordpress.android.fluxc.store.ActivityLogStore.FetchActivitiesPayload;
+import org.wordpress.android.fluxc.store.ActivityLogStore.FetchedActivitiesPayload;
+import org.wordpress.android.fluxc.store.ActivityLogStore.FetchedRewindStatePayload;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +23,8 @@ import javax.inject.Inject;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
-public class ReleaseStack_ActivityTestWPCom extends ReleaseStack_WPComBase {
-    @Inject ActivityStore mActivityStore;
+public class ReleaseStack_ActivityLogTestWPCom extends ReleaseStack_WPComBase {
+    @Inject ActivityLogStore mActivityLogStore;
 
     private CountDownLatch mBackup;
     private List<Action> mIncomingActions;
@@ -44,19 +43,19 @@ public class ReleaseStack_ActivityTestWPCom extends ReleaseStack_WPComBase {
         this.mCountDownLatch = new CountDownLatch(1);
         int numOfActivitiesRequested = 1;
         FetchActivitiesPayload payload = new FetchActivitiesPayload(sSite, numOfActivitiesRequested, 0);
-        mActivityStore.onAction(ActivityActionBuilder.newFetchActivitiesAction(payload));
+        mActivityLogStore.onAction(ActivityActionBuilder.newFetchActivitiesAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertTrue(mIncomingActions.size() == 1);
         assertTrue(((FetchedActivitiesPayload) mIncomingActions.get(0).getPayload())
-                           .getActivityModelRespons()
+                           .getActivityLogModelRespons()
                            .size() == numOfActivitiesRequested);
     }
 
     @Test
     public void testFetchRewindState() throws InterruptedException {
         this.mCountDownLatch = new CountDownLatch(1);
-        mActivityStore.onAction(ActivityActionBuilder
-                .newFetchRewindStateAction(new FetchRewindStatePayload(sSite, 10, 0)));
+        mActivityLogStore.onAction(ActivityActionBuilder
+                .newFetchRewindStateAction(new ActivityLogStore.FetchRewindStatePayload(sSite, 10, 0)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
         assertTrue(mIncomingActions.size() == 1);
         RewindStatusModel rewindStatusModelResponse =
