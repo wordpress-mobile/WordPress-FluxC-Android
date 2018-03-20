@@ -44,6 +44,7 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     }
 
     private static final String SEARCH_TERM = "dogs";
+
     private List<StockMediaModel> mFirstPageMedia;
 
     @Test
