@@ -323,10 +323,10 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         }
 
         // delete test images (bear in mind this is done sequentially)
-        mNextEvent = TestEvents.DELETED_MEDIA;
         iterator = mUploadedMediaModels.values().iterator();
         while (iterator.hasNext()) {
             MediaModel media = iterator.next();
+            mNextEvent = TestEvents.DELETED_MEDIA;
             deleteMedia(media);
         }
     }
@@ -366,10 +366,10 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaWithState(sSite, MediaUploadState.UPLOADED).size());
 
         // delete test images (bear in mind this is done sequentially)
-        mNextEvent = TestEvents.DELETED_MEDIA;
         for (MediaModel media : mUploadedMediaModels.values()) {
             // delete only successfully uploaded test images
             if (mUploadedIds.contains(media.getMediaId())) {
+                mNextEvent = TestEvents.DELETED_MEDIA;
                 deleteMedia(media);
             }
         }
@@ -412,10 +412,10 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(amountToCancel, mMediaStore.getSiteMediaWithState(sSite, MediaUploadState.FAILED).size());
 
         // delete test images (bear in mind this is done sequentially)
-        mNextEvent = TestEvents.DELETED_MEDIA;
         for (MediaModel media : mUploadedMediaModels.values()) {
             // delete only successfully uploaded test images
             if (mUploadedIds.contains(media.getMediaId())) {
+                mNextEvent = TestEvents.DELETED_MEDIA;
                 deleteMedia(media);
             }
         }
@@ -447,7 +447,6 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA_SINGLE;
         uploadStockMedia(testStockMediaList);
 
-        mNextEvent = TestEvents.DELETED_MEDIA;
         deleteMediaList(mUploadedMediaModelsFromStockMedia);
     }
 
@@ -462,7 +461,6 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA_MULTI;
         uploadStockMedia(testStockMediaList);
 
-        mNextEvent = TestEvents.DELETED_MEDIA;
         deleteMediaList(mUploadedMediaModelsFromStockMedia);
     }
 
@@ -684,6 +682,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     private void deleteMediaList(@Nullable List<MediaModel> mediaList) throws InterruptedException {
         if (mediaList != null) {
             for (MediaModel media : mediaList) {
+                mNextEvent = TestEvents.DELETED_MEDIA;
                 deleteMedia(media);
             }
         }
