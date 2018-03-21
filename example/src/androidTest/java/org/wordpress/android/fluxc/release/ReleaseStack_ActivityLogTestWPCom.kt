@@ -43,7 +43,7 @@ class ReleaseStack_ActivityLogTestWPCom : ReleaseStack_WPComBase() {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         assertTrue(incomingActions.size == 1)
         assertEquals((incomingActions[0].payload as FetchedActivitiesPayload)
-                .activityLogModelRespons
+                .activityLogModels
                 .size, numOfActivitiesRequested)
     }
 
