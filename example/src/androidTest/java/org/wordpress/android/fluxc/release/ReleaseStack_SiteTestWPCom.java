@@ -16,7 +16,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
-import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferAvailabilityChecked;
+import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferEligibilityChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
@@ -357,7 +357,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onAutomatedTransferAvailabilityChecked(OnAutomatedTransferAvailabilityChecked event) {
+    public void onAutomatedTransferEligibilityChecked(OnAutomatedTransferEligibilityChecked event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
