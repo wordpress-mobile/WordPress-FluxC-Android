@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferAvailabilityChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
@@ -36,6 +37,7 @@ import javax.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
@@ -56,7 +58,9 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         FETCHED_WPCOM_SITE_BY_URL,
         FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS,
         ERROR_INVALID_SITE,
-        ERROR_UNKNOWN_SITE
+        ERROR_UNKNOWN_SITE,
+        ELIGIBLE_FOR_AUTOMATED_TRANSFER,
+        INELIGIBLE_FOR_AUTOMATED_TRANSFER
     }
 
     private TestEvents mNextEvent;
@@ -218,6 +222,21 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertEquals(firstSite.getSpaceAllowed(), 3L * 1024 * 1024 * 1024);
     }
 
+    @Test
+    public void testEligibleForAutomatedTransfer() throws InterruptedException {
+        // TODO
+    }
+
+    @Test
+    public void testIneligibleForAutomatedTransfer() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+        mNextEvent = TestEvents.INELIGIBLE_FOR_AUTOMATED_TRANSFER;
+        mDispatcher.dispatch(SiteActionBuilder.newCheckAutomatedTransferEligibilityAction(firstSite));
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -333,6 +352,23 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             assertTrue("Was expecting the domain to end in " + suffix, suggestionResponse.domain_name.endsWith(suffix));
         }
 
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onAutomatedTransferAvailabilityChecked(OnAutomatedTransferAvailabilityChecked event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertNotNull(event.site);
+        if (mNextEvent.equals(TestEvents.ELIGIBLE_FOR_AUTOMATED_TRANSFER)) {
+            assertTrue(event.site.isEligibleForAutomatedTransfer());
+        } else if (mNextEvent.equals(TestEvents.INELIGIBLE_FOR_AUTOMATED_TRANSFER)){
+            assertFalse(event.site.isEligibleForAutomatedTransfer());
+        } else {
+            throw new AssertionError("Unexpected next event: " + mNextEvent);
+        }
         mCountDownLatch.countDown();
     }
 
