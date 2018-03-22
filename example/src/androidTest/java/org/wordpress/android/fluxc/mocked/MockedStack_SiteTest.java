@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferEligibilityChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +35,7 @@ public class MockedStack_SiteTest extends MockedStack_Base {
         NONE,
         ACCOUNT_CHANGED,
         ELIGIBLE_FOR_AUTOMATED_TRANSFER,
+        REMOVE_SITE,
         UPDATE_SITE
     }
 
@@ -60,6 +62,12 @@ public class MockedStack_SiteTest extends MockedStack_Base {
         mDispatcher.dispatch(SiteActionBuilder.newCheckAutomatedTransferEligibilityAction(site));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        SiteModel updatedSite = mSiteStore.getSiteBySiteId(site.getSiteId());
+        assertTrue(updatedSite.isEligibleForAutomatedTransfer());
+
+        // Cleanup
+        removeSiteAndSignOut(updatedSite);
     }
 
     @SuppressWarnings("unused")
@@ -80,7 +88,6 @@ public class MockedStack_SiteTest extends MockedStack_Base {
         }
         assertEquals(mNextEvent, TestEvents.ELIGIBLE_FOR_AUTOMATED_TRANSFER);
         assertNotNull(event.site);
-        assertTrue(event.site.isEligibleForAutomatedTransfer());
         mCountDownLatch.countDown();
     }
 
@@ -92,6 +99,17 @@ public class MockedStack_SiteTest extends MockedStack_Base {
         }
         assertEquals(mNextEvent, TestEvents.UPDATE_SITE);
         assertEquals(event.rowsAffected, 1);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onSiteRemoved(OnSiteRemoved event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(mNextEvent, TestEvents.REMOVE_SITE);
+        assertEquals(event.mRowsAffected, 1);
         mCountDownLatch.countDown();
     }
 
@@ -114,5 +132,18 @@ public class MockedStack_SiteTest extends MockedStack_Base {
         SiteModel siteFromStore = mSiteStore.getSiteBySiteId(site.getSiteId());
         assertNotNull(siteFromStore);
         return siteFromStore;
+    }
+
+    private void removeSiteAndSignOut(SiteModel site) throws InterruptedException {
+        mNextEvent = TestEvents.REMOVE_SITE;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(site));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertEquals(mSiteStore.getSites().size(), 0);
+
+        mNextEvent = TestEvents.ACCOUNT_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
