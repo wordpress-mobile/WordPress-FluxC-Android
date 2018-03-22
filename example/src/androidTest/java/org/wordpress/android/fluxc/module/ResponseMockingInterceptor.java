@@ -25,6 +25,9 @@ import okhttp3.ResponseBody;
 import okio.BufferedSource;
 import okio.Okio;
 
+import static org.wordpress.android.fluxc.mocked.MockedStack_SiteTest.TEST_SITE_ID_TRANSFER_COMPLETE;
+import static org.wordpress.android.fluxc.mocked.MockedStack_SiteTest.TEST_SITE_ID_TRANSFER_INCOMPLETE;
+
 class ResponseMockingInterceptor implements Interceptor {
     @Override
     public Response intercept(@NonNull Interceptor.Chain chain) throws IOException {
@@ -52,10 +55,13 @@ class ResponseMockingInterceptor implements Interceptor {
         } else if (requestUrl.contains("automated-transfers/initiate")) {
             return buildInitiateAutomatedTransferResponse(request);
         } else if (requestUrl.contains("automated-transfers/status")) {
-            return buildCheckAutomatedTransferStatusResponse(request);
-        } else {
-            throw new IllegalStateException("Interceptor was given a request with no mocks - URL: " + requestUrl);
+            if (requestUrl.contains("sites/" + TEST_SITE_ID_TRANSFER_COMPLETE)) {
+                return buildCheckAutomatedTransferCompleteResponse(request);
+            } else if (requestUrl.contains("sites/" + TEST_SITE_ID_TRANSFER_INCOMPLETE)) {
+                return buildCheckAutomatedTransferIncompleteResponse(request);
+            }
         }
+        throw new IllegalStateException("Interceptor was given a request with no mocks - URL: " + requestUrl);
     }
 
     private Response buildMediaErrorResponse(Request request) {
@@ -83,7 +89,12 @@ class ResponseMockingInterceptor implements Interceptor {
         return buildResponse(request, responseJson, 200);
     }
 
-    private Response buildCheckAutomatedTransferStatusResponse(Request request) {
+    private Response buildCheckAutomatedTransferCompleteResponse(Request request) {
+        String responseJson = getStringFromResourceFile("automated-transfer-status-complete-response-success.json");
+        return buildResponse(request, responseJson, 200);
+    }
+
+    private Response buildCheckAutomatedTransferIncompleteResponse(Request request) {
         String responseJson = getStringFromResourceFile("automated-transfer-status-incomplete-response-success.json");
         return buildResponse(request, responseJson, 200);
     }
