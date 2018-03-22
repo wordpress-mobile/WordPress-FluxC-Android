@@ -74,12 +74,8 @@ class ReleaseStack_ActivityLogTestWPCom : ReleaseStack_WPComBase() {
         val firstActivity = activityLogModel(1)
         val secondActivity = activityLogModel(2)
         val thirdActivity = activityLogModel(3)
-        val payload = FetchedActivitiesPayload(activityModels = listOf(firstActivity,
-                secondActivity,
-                thirdActivity),
-                site = sSite,
-                number = 3,
-                offset = 0)
+        val activityModels = listOf(firstActivity, secondActivity, thirdActivity)
+        val payload = FetchedActivitiesPayload(activityModels, sSite, 3, 0)
 
         activityLogStore.onAction(ActivityActionBuilder.newFetchedActivitiesAction(payload))
 
