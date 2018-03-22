@@ -51,6 +51,8 @@ class ResponseMockingInterceptor implements Interceptor {
             return buildEligibleForAutomatedTransferResponse(request);
         } else if (requestUrl.contains("automated-transfers/initiate")) {
             return buildInitiateAutomatedTransferResponse(request);
+        } else if (requestUrl.contains("automated-transfers/status")) {
+            return buildCheckAutomatedTransferStatusResponse(request);
         } else {
             throw new IllegalStateException("Interceptor was given a request with no mocks - URL: " + requestUrl);
         }
@@ -78,6 +80,11 @@ class ResponseMockingInterceptor implements Interceptor {
 
     private Response buildInitiateAutomatedTransferResponse(Request request) {
         String responseJson = getStringFromResourceFile("initiate-automated-transfer-response-success.json");
+        return buildResponse(request, responseJson, 200);
+    }
+
+    private Response buildCheckAutomatedTransferStatusResponse(Request request) {
+        String responseJson = getStringFromResourceFile("automated-transfer-status-incomplete-response-success.json");
         return buildResponse(request, responseJson, 200);
     }
 
