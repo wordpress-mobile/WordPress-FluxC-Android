@@ -60,7 +60,7 @@ public class MockedStack_SiteTest extends MockedStack_Base {
 
     @Test
     public void testEligibleForAutomatedTransfer() throws InterruptedException {
-        SiteModel site = createAccountAndLocalTestSite();
+        SiteModel site = createAccountAndLocalTestSite(false);
 
         mNextEvent = TestEvents.ELIGIBLE_FOR_AUTOMATED_TRANSFER;
         mDispatcher.dispatch(SiteActionBuilder.newCheckAutomatedTransferEligibilityAction(site));
@@ -75,7 +75,7 @@ public class MockedStack_SiteTest extends MockedStack_Base {
 
     @Test
     public void testInitiateAutomatedTransferSuccessfully() throws InterruptedException {
-        SiteModel site = createAccountAndLocalTestSite();
+        SiteModel site = createAccountAndLocalTestSite(true);
 
         mNextEvent = TestEvents.INITIATE_AUTOMATED_TRANSFER;
         InitiateAutomatedTransferPayload payload = new InitiateAutomatedTransferPayload(site, "react");
@@ -143,7 +143,7 @@ public class MockedStack_SiteTest extends MockedStack_Base {
         mCountDownLatch.countDown();
     }
 
-    private @NonNull SiteModel createAccountAndLocalTestSite() throws InterruptedException {
+    private @NonNull SiteModel createAccountAndLocalTestSite(boolean isEligible) throws InterruptedException {
         AccountModel account = new AccountModel();
         account.setUserId(478);
         mNextEvent = TestEvents.ACCOUNT_CHANGED;
@@ -154,6 +154,7 @@ public class MockedStack_SiteTest extends MockedStack_Base {
         SiteModel site = new SiteModel();
         site.setSiteId(322);
         site.setIsWPCom(true);
+        site.setIsEligibleForAutomatedTransfer(isEligible);
         mNextEvent = TestEvents.UPDATE_SITE;
         mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(site));
         mCountDownLatch = new CountDownLatch(1);
