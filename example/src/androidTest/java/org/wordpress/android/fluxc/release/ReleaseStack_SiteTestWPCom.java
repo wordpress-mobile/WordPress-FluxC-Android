@@ -59,7 +59,6 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS,
         ERROR_INVALID_SITE,
         ERROR_UNKNOWN_SITE,
-        ELIGIBLE_FOR_AUTOMATED_TRANSFER,
         INELIGIBLE_FOR_AUTOMATED_TRANSFER
     }
 
@@ -223,11 +222,6 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     }
 
     @Test
-    public void testEligibleForAutomatedTransfer() throws InterruptedException {
-        // TODO
-    }
-
-    @Test
     public void testIneligibleForAutomatedTransfer() throws InterruptedException {
         authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         SiteModel firstSite = mSiteStore.getSites().get(0);
@@ -361,14 +355,9 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
+        assertEquals(mNextEvent, TestEvents.INELIGIBLE_FOR_AUTOMATED_TRANSFER);
         assertNotNull(event.site);
-        if (mNextEvent.equals(TestEvents.ELIGIBLE_FOR_AUTOMATED_TRANSFER)) {
-            assertTrue(event.site.isEligibleForAutomatedTransfer());
-        } else if (mNextEvent.equals(TestEvents.INELIGIBLE_FOR_AUTOMATED_TRANSFER)){
-            assertFalse(event.site.isEligibleForAutomatedTransfer());
-        } else {
-            throw new AssertionError("Unexpected next event: " + mNextEvent);
-        }
+        assertFalse(event.site.isEligibleForAutomatedTransfer());
         mCountDownLatch.countDown();
     }
 
