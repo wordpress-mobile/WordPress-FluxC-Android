@@ -13,7 +13,9 @@ import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.InitiateAutomatedTransferPayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferEligibilityChecked;
+import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferInitiated;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 
@@ -27,6 +29,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class MockedStack_SiteTest extends MockedStack_Base {
+    private static final int TEST_TRANSFER_ID = 197364; // from "initiate-automated-transfer-response-success.json"
+
     @Inject Dispatcher mDispatcher;
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
@@ -35,6 +39,7 @@ public class MockedStack_SiteTest extends MockedStack_Base {
         NONE,
         ACCOUNT_CHANGED,
         ELIGIBLE_FOR_AUTOMATED_TRANSFER,
+        INITIATE_AUTOMATED_TRANSFER,
         REMOVE_SITE,
         UPDATE_SITE
     }
@@ -55,7 +60,6 @@ public class MockedStack_SiteTest extends MockedStack_Base {
 
     @Test
     public void testEligibleForAutomatedTransfer() throws InterruptedException {
-        // Create dummy site
         SiteModel site = createAccountAndLocalTestSite();
 
         mNextEvent = TestEvents.ELIGIBLE_FOR_AUTOMATED_TRANSFER;
@@ -66,7 +70,22 @@ public class MockedStack_SiteTest extends MockedStack_Base {
         SiteModel updatedSite = mSiteStore.getSiteBySiteId(site.getSiteId());
         assertTrue(updatedSite.isEligibleForAutomatedTransfer());
 
-        // Cleanup
+        removeSiteAndSignOut(updatedSite);
+    }
+
+    @Test
+    public void testInitiateAutomatedTransferSuccessfully() throws InterruptedException {
+        SiteModel site = createAccountAndLocalTestSite();
+
+        mNextEvent = TestEvents.INITIATE_AUTOMATED_TRANSFER;
+        InitiateAutomatedTransferPayload payload = new InitiateAutomatedTransferPayload(site, "react");
+        mDispatcher.dispatch(SiteActionBuilder.newInitiateAutomatedTransferAction(payload));
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        SiteModel updatedSite = mSiteStore.getSiteBySiteId(site.getSiteId());
+        assertEquals(updatedSite.getAutomatedTransferId(), TEST_TRANSFER_ID);
+
         removeSiteAndSignOut(updatedSite);
     }
 
@@ -87,6 +106,17 @@ public class MockedStack_SiteTest extends MockedStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(mNextEvent, TestEvents.ELIGIBLE_FOR_AUTOMATED_TRANSFER);
+        assertNotNull(event.site);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onAutomatedTransferInitiated(OnAutomatedTransferInitiated event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(mNextEvent, TestEvents.INITIATE_AUTOMATED_TRANSFER);
         assertNotNull(event.site);
         mCountDownLatch.countDown();
     }
