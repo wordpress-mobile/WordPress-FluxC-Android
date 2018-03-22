@@ -47,6 +47,8 @@ class ResponseMockingInterceptor implements Interceptor {
         } else if (requestUrl.contains("posts/new")) {
             // WP.com post upload request
             return buildPostSuccessResponse(request);
+        } else if (requestUrl.contains("automated-transfers/eligibility")) {
+            return buildEligibleForAutomatedTransferResponse(request);
         } else {
             throw new IllegalStateException("Interceptor was given a request with no mocks - URL: " + requestUrl);
         }
@@ -64,6 +66,11 @@ class ResponseMockingInterceptor implements Interceptor {
 
     private Response buildPostSuccessResponse(Request request) {
         String responseJson = getStringFromResourceFile("post-upload-response-success.json");
+        return buildResponse(request, responseJson, 200);
+    }
+
+    private Response buildEligibleForAutomatedTransferResponse(Request request) {
+        String responseJson = getStringFromResourceFile("eligible-for-automated-transfer-response-success.json");
         return buildResponse(request, responseJson, 200);
     }
 
