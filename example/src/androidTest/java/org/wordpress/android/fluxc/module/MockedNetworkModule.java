@@ -49,15 +49,14 @@ public class MockedNetworkModule {
     @Singleton
     @Provides
     public OkHttpClient.Builder provideOkHttpClientBuilder() {
-        return new OkHttpClient.Builder();
+        return new OkHttpClient.Builder()
+                .addInterceptor(new ResponseMockingInterceptor());
     }
 
     @Singleton
     @Provides
     public OkHttpClient provideOkHttpClientInstance(OkHttpClient.Builder builder) {
-        return builder
-                .addInterceptor(new ResponseMockingInterceptor())
-                .build();
+        return builder.build();
     }
 
     @Singleton
