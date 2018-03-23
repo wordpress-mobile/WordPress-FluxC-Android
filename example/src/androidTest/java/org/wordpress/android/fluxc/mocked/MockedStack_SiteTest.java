@@ -33,8 +33,10 @@ import static org.junit.Assert.assertTrue;
 public class MockedStack_SiteTest extends MockedStack_Base {
     // from "initiate-automated-transfer-response-success.json"
     private static final int TEST_INITIATE_AUTOMATED_TRANSFER_ID = 197364;
-    public static final int TEST_SITE_ID_TRANSFER_COMPLETE = 84;
-    public static final int TEST_SITE_ID_TRANSFER_INCOMPLETE = 87;
+
+    // Used in ResponseMockingInterceptor
+    public static final int TEST_SITE_ID_TRANSFER_COMPLETE = 123;
+    public static final int TEST_SITE_ID_TRANSFER_INCOMPLETE = 124;
 
     @Inject Dispatcher mDispatcher;
     @Inject SiteStore mSiteStore;
