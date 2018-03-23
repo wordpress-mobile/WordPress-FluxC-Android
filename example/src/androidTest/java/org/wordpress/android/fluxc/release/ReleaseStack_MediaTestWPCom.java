@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.release;
 
 import android.annotation.SuppressLint;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -12,6 +14,7 @@ import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.MediaModel.MediaUploadState;
+import org.wordpress.android.fluxc.model.StockMediaModel;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListPayload;
@@ -43,6 +46,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Inject MediaStore mMediaStore;
 
     private enum TestEvents {
+        NONE,
         CANCELED_MEDIA,
         DELETED_MEDIA,
         FETCHED_MEDIA_LIST,
@@ -53,7 +57,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         UPLOADED_MEDIA,
         UPLOADED_MULTIPLE_MEDIA, // these don't exist in FluxC, but are an artifact to wait for all uploads to finish
         UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL, // same as above
-        PUSH_ERROR
+        PUSH_ERROR,
+        UPLOADED_STOCK_MEDIA_SINGLE,
+        UPLOADED_STOCK_MEDIA_MULTI
     }
 
     private TestEvents mNextEvent;
@@ -61,6 +67,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     private List<Long> mUploadedIds = new ArrayList<>();
     private Map<Integer, MediaModel> mUploadedMediaModels = new HashMap<>();
+    private List<MediaModel> mUploadedMediaModelsFromStockMedia;
 
     @Override
     public void setUp() throws Exception {
@@ -69,6 +76,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         // Authenticate, fetch sites and initialize sSite
         init();
+
+        mNextEvent = TestEvents.NONE;
     }
 
     @Test
@@ -314,10 +323,10 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         }
 
         // delete test images (bear in mind this is done sequentially)
-        mNextEvent = TestEvents.DELETED_MEDIA;
         iterator = mUploadedMediaModels.values().iterator();
         while (iterator.hasNext()) {
             MediaModel media = iterator.next();
+            mNextEvent = TestEvents.DELETED_MEDIA;
             deleteMedia(media);
         }
     }
@@ -357,10 +366,10 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(mUploadedIds.size(), mMediaStore.getSiteMediaWithState(sSite, MediaUploadState.UPLOADED).size());
 
         // delete test images (bear in mind this is done sequentially)
-        mNextEvent = TestEvents.DELETED_MEDIA;
         for (MediaModel media : mUploadedMediaModels.values()) {
             // delete only successfully uploaded test images
             if (mUploadedIds.contains(media.getMediaId())) {
+                mNextEvent = TestEvents.DELETED_MEDIA;
                 deleteMedia(media);
             }
         }
@@ -403,10 +412,10 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(amountToCancel, mMediaStore.getSiteMediaWithState(sSite, MediaUploadState.FAILED).size());
 
         // delete test images (bear in mind this is done sequentially)
-        mNextEvent = TestEvents.DELETED_MEDIA;
         for (MediaModel media : mUploadedMediaModels.values()) {
             // delete only successfully uploaded test images
             if (mUploadedIds.contains(media.getMediaId())) {
+                mNextEvent = TestEvents.DELETED_MEDIA;
                 deleteMedia(media);
             }
         }
@@ -427,6 +436,32 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         // delete test image
         mNextEvent = TestEvents.DELETED_MEDIA;
         deleteMedia(testMedia);
+    }
+
+    @Test
+    public void testUploadStockMedia() throws InterruptedException {
+        StockMediaModel testStockMedia = newStockMedia(902152);
+        List<StockMediaModel> testStockMediaList = new ArrayList<>();
+        testStockMediaList.add(testStockMedia);
+
+        mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA_SINGLE;
+        uploadStockMedia(testStockMediaList);
+
+        deleteMediaList(mUploadedMediaModelsFromStockMedia);
+    }
+
+    @Test
+    public void testUploadStockMediaList() throws InterruptedException {
+        StockMediaModel testStockMedia1 = newStockMedia(902152);
+        StockMediaModel testStockMedia2 = newStockMedia(208803);
+        List<StockMediaModel> testStockMediaList = new ArrayList<>();
+        testStockMediaList.add(testStockMedia1);
+        testStockMediaList.add(testStockMedia2);
+
+        mNextEvent = TestEvents.UPLOADED_STOCK_MEDIA_MULTI;
+        uploadStockMedia(testStockMediaList);
+
+        deleteMediaList(mUploadedMediaModelsFromStockMedia);
     }
 
     @SuppressWarnings("unused")
@@ -509,6 +544,29 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         boolean isMediaListEvent = mNextEvent == TestEvents.FETCHED_MEDIA_LIST
                 || mNextEvent == TestEvents.FETCHED_MEDIA_IMAGE_LIST;
         assertTrue(isMediaListEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onStockMediaUploaded(MediaStore.OnStockMediaUploaded event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: "
+                                     + event.error.type);
+        }
+
+        boolean isSingleUpload = mNextEvent == TestEvents.UPLOADED_STOCK_MEDIA_SINGLE;
+        boolean isMultiUpload = mNextEvent == TestEvents.UPLOADED_STOCK_MEDIA_MULTI;
+
+        if (isSingleUpload) {
+            assertEquals(event.mediaList.size(), 1);
+        } else if (isMultiUpload) {
+            assertEquals(event.mediaList.size(), 2);
+        } else {
+            throw new AssertionError("Wrong event after upload");
+        }
+
+        mUploadedMediaModelsFromStockMedia = event.mediaList;
         mCountDownLatch.countDown();
     }
 
@@ -621,6 +679,15 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    private void deleteMediaList(@Nullable List<MediaModel> mediaList) throws InterruptedException {
+        if (mediaList != null) {
+            for (MediaModel media : mediaList) {
+                mNextEvent = TestEvents.DELETED_MEDIA;
+                deleteMedia(media);
+            }
+        }
+    }
+
     private void removeMedia(MediaModel media) throws InterruptedException {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newRemoveMediaAction(media));
@@ -628,11 +695,29 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private void removeAllSiteMedia() throws InterruptedException {
-        List<MediaModel> allMedia = mMediaStore.getAllSiteMedia(sSite);
-        if (!allMedia.isEmpty()) {
-            for (MediaModel media : allMedia) {
-                removeMedia(media);
-            }
+        List<MediaModel> allMediaList = mMediaStore.getAllSiteMedia(sSite);
+        for (MediaModel media : allMediaList) {
+            removeMedia(media);
         }
+    }
+
+    private void uploadStockMedia(@NonNull List<StockMediaModel> stockMediaList) throws InterruptedException {
+        MediaStore.UploadStockMediaPayload uploadPayload =
+                new MediaStore.UploadStockMediaPayload(sSite, stockMediaList);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadStockMediaAction(uploadPayload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private StockMediaModel newStockMedia(int id) {
+        String name = "pexels-photo-" + id;
+        String url = "https://images.pexels.com/photos/" + id + "/" + name + ".jpeg?w=320";
+
+        StockMediaModel stockMedia = new StockMediaModel();
+        stockMedia.setName(name);
+        stockMedia.setTitle(name);
+        stockMedia.setUrl(url);
+
+        return stockMedia;
     }
 }

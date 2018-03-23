@@ -73,7 +73,8 @@ android.buildTypes.all { buildType ->
 }
 
 dependencies {
-    implementation project(':fluxc');
+    implementation project(':fluxc')
+    implementation project(':plugins:woocommerce')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlinVersion"
 
@@ -87,6 +88,8 @@ dependencies {
         exclude group: "com.android.support"
     }
 
+    implementation 'com.google.code.gson:gson:2.8.0'
+
     // Dagger
     implementation "com.google.dagger:dagger:$daggerVersion"
     kapt "com.google.dagger:dagger-compiler:$daggerVersion"
@@ -95,6 +98,7 @@ dependencies {
     kapt "com.google.dagger:dagger-android-processor:$daggerVersion"
 
     testImplementation 'junit:junit:4.12'
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion"
     testImplementation 'org.mockito:mockito-core:2.8.9'
     testImplementation 'org.robolectric:robolectric:3.6.1'
     testImplementation "com.nhaarman:mockito-kotlin-kt1.1:1.5.0"

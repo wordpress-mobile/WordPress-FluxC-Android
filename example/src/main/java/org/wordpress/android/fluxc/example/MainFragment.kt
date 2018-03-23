@@ -88,6 +88,7 @@ class MainFragment : Fragment() {
         taxonomies.setOnClickListener(getOnClickListener(TaxonomiesFragment()))
         uploads.setOnClickListener(getOnClickListener(UploadsFragment()))
         themes.setOnClickListener(getOnClickListener(ThemeFragment()))
+        woo.setOnClickListener(getOnClickListener(WooCommerceFragment()))
     }
 
     // Private methods
