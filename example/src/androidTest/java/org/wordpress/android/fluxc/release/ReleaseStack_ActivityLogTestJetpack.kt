@@ -67,10 +67,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
     @Test
     fun testFetchActivities() {
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY)
-
-        val site = siteStore.sites[0]
+        val site = authenticate()
 
         this.mCountDownLatch = CountDownLatch(1)
         val numOfActivitiesRequested = 1
@@ -84,10 +81,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
     @Test
     fun testFetchRewindState() {
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY)
-
-        val site = siteStore.sites[0]
+        val site = authenticate()
 
         this.mCountDownLatch = CountDownLatch(1)
         val payload = ActivityLogStore.FetchRewindStatePayload(site)
@@ -103,10 +97,8 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
     @Test
     fun storeAndRetrieveActivityLogInOrderByDateFromDb() {
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY)
-
-        val site = siteStore.sites[0]
+        val site = authenticate()
+        this.incomingChangeEvents.clear()
 
         this.mCountDownLatch = CountDownLatch(1)
 
@@ -128,10 +120,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
     @Test
     fun updatesActivityWithTheSameActivityId() {
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY)
-
-        val site = siteStore.sites[0]
+        val site = authenticate()
 
         this.mCountDownLatch = CountDownLatch(1)
 
@@ -157,6 +146,13 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         assertEquals(updatedActivityLogForSite[0].name, updatedName)
     }
 
+    private fun authenticate(): SiteModel {
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY)
+
+        return siteStore.sites[0]
+    }
+
     private fun activityLogModel(index: Long): ActivityLogModel {
         return ActivityLogModel(activityID = "$index",
                 summary = "summary$index",
@@ -174,7 +170,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     private fun awaitActivities(site: SiteModel, count: Int, ascending: Boolean = true): List<ActivityLogModel> {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         assertEquals(incomingChangeEvents.size, 1)
-        val onFetchedEvent = incomingChangeEvents[0] as ActivityLogStore.OnActivitiesFetched
+        val onFetchedEvent = incomingChangeEvents[0] as ActivityLogStore.OnActivityLogFetched
         with(onFetchedEvent) {
             assertEquals(onFetchedEvent.rowsAffected, count)
             assertNull(onFetchedEvent.error)
@@ -235,9 +231,11 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     }
 
     @Subscribe
-    fun onChange(onChangedEvent: Store.OnChanged<ActivityLogStore.ActivityError>) {
-        incomingChangeEvents.add(onChangedEvent)
-        mCountDownLatch?.countDown()
+    fun onActivityLogFetched(onChangedEvent: Store.OnChanged<ActivityLogStore.ActivityError>) {
+        if (onChangedEvent is ActivityLogStore.OnActivityLogFetched) {
+            incomingChangeEvents.add(onChangedEvent)
+            mCountDownLatch?.countDown()
+        }
     }
 
     @Throws(InterruptedException::class)
