@@ -20,7 +20,6 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.ActivityLogStore
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
-import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
