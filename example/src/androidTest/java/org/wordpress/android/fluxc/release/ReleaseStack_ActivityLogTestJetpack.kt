@@ -24,7 +24,6 @@ import org.wordpress.android.fluxc.store.ActivityLogStore
 import org.wordpress.android.fluxc.store.ActivityLogStore.FetchedActivityLogPayload
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
-import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
 import org.wordpress.android.fluxc.store.Store
 import org.wordpress.android.util.AppLog
@@ -44,7 +43,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var accountStore: AccountStore
 
-    private var mNextEvent: TestEvents? = null
+    private var nextEvent: TestEvents? = null
 
     internal enum class TestEvents {
         NONE,
@@ -60,7 +59,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         // Register
         init()
         // Reset expected test event
-        mNextEvent = TestEvents.NONE
+        nextEvent = TestEvents.NONE
         this.incomingActions.clear()
         this.incomingChangeEvents.clear()
     }
@@ -200,7 +199,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     fun onSiteChanged(event: OnSiteChanged) {
         AppLog.i(T.TESTS, "site count " + siteStore.sitesCount)
         if (event.isError) {
-            if (mNextEvent == TestEvents.ERROR_DUPLICATE_SITE) {
+            if (nextEvent == TestEvents.ERROR_DUPLICATE_SITE) {
                 assertEquals(SiteErrorType.DUPLICATE_SITE, event.error.type)
                 mCountDownLatch.countDown()
                 return
@@ -208,17 +207,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
             throw AssertionError("Unexpected error occurred with type: " + event.error.type)
         }
         assertTrue(siteStore.hasSite())
-        assertEquals(TestEvents.SITE_CHANGED, mNextEvent)
-        mCountDownLatch.countDown()
-    }
-
-    @Subscribe
-    fun onSiteRemoved(event: OnSiteRemoved) {
-        AppLog.e(T.TESTS, "site count " + siteStore.sitesCount)
-        if (event.isError) {
-            throw AssertionError("Unexpected error occurred with type: " + event.error.type)
-        }
-        assertEquals(TestEvents.SITE_REMOVED, mNextEvent)
+        assertEquals(TestEvents.SITE_CHANGED, nextEvent)
         mCountDownLatch.countDown()
     }
 
@@ -256,7 +245,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
         // Fetch sites from REST API, and wait for onSiteChanged event
         mCountDownLatch = CountDownLatch(1)
-        mNextEvent = TestEvents.SITE_CHANGED
+        nextEvent = TestEvents.SITE_CHANGED
         mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction())
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
