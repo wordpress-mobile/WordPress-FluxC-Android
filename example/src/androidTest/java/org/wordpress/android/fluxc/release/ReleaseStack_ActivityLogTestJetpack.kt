@@ -80,7 +80,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         val site = siteStore.sites[0]
 
         this.mCountDownLatch = CountDownLatch(1)
-        val payload = ActivityLogStore.FetchRewindStatePayload(site, 10, 0)
+        val payload = ActivityLogStore.FetchRewindStatePayload(site)
         activityLogStore.onAction(ActivityLogActionBuilder.newFetchRewindStateAction(payload))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         assertTrue(incomingActions.size == 1)
