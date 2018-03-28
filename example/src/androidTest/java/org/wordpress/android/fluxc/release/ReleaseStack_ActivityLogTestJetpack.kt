@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.release
 
-import junit.framework.Assert
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
