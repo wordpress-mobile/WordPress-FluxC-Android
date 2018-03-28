@@ -16,7 +16,6 @@ import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.activity.ActivityLogModel
-import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
@@ -41,7 +40,6 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     private val incomingChangeEvents: MutableList<Store.OnChanged<ActivityLogStore.ActivityError>> = mutableListOf()
     @Inject lateinit var activityLogStore: ActivityLogStore
     @Inject internal lateinit var siteStore: SiteStore
-    @Inject internal lateinit var accountStore: AccountStore
 
     private var nextEvent: TestEvents? = null
 
@@ -143,6 +141,15 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         assertEquals(updatedActivityLogForSite.size, 1)
         assertEquals(updatedActivityLogForSite[0].activityID, activity.activityID)
         assertEquals(updatedActivityLogForSite[0].name, updatedName)
+    }
+
+    @Test
+    fun rewindOperation() {
+//        val site = authenticate()
+//
+//        val payload = ActivityLogStore.RewindPayload(site, "123")
+//
+//        activityLogStore.onAction(ActivityLogActionBuilder.newRewindAction(payload))
     }
 
     private fun authenticate(): SiteModel {
