@@ -156,8 +156,8 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         assertTrue(incomingActions.size == 1)
-        assertTrue(incomingActions[0].payload is ActivityLogStore.RewindResponsePayload)
-        assertTrue((incomingActions[0].payload as ActivityLogStore.RewindResponsePayload).isError)
+        assertTrue(incomingActions[0].payload is ActivityLogStore.RewindResultPayload)
+        assertTrue((incomingActions[0].payload as ActivityLogStore.RewindResultPayload).isError)
     }
 
     private fun authenticate(): SiteModel {
