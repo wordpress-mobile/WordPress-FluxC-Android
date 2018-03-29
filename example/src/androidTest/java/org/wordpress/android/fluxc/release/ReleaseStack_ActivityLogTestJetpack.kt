@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.activity.ActivityLogModel
+import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
@@ -40,6 +41,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     private val incomingChangeEvents: MutableList<Store.OnChanged<ActivityLogStore.ActivityError>> = mutableListOf()
     @Inject lateinit var activityLogStore: ActivityLogStore
     @Inject internal lateinit var siteStore: SiteStore
+    @Inject internal lateinit var accountStore: AccountStore
 
     private var nextEvent: TestEvents? = null
 
@@ -144,12 +146,18 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     }
 
     @Test
-    fun rewindOperation() {
-//        val site = authenticate()
-//
-//        val payload = ActivityLogStore.RewindPayload(site, "123")
-//
-//        activityLogStore.onAction(ActivityLogActionBuilder.newRewindAction(payload))
+    fun rewindOperationFailsOnNonexistentId() {
+        val site = authenticate()
+
+        val payload = ActivityLogStore.RewindPayload(site, "123")
+        this.mCountDownLatch = CountDownLatch(1)
+
+        activityLogStore.onAction(ActivityLogActionBuilder.newRewindAction(payload))
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        assertTrue(incomingActions.size == 1)
+        assertTrue(incomingActions[0].payload is ActivityLogStore.RewindResponsePayload)
+        assertTrue((incomingActions[0].payload as ActivityLogStore.RewindResponsePayload).isError)
     }
 
     private fun authenticate(): SiteModel {
@@ -176,7 +184,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     private fun awaitActivities(site: SiteModel, count: Int, ascending: Boolean = true): List<ActivityLogModel> {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         assertEquals(incomingChangeEvents.size, 1)
-        val onFetchedEvent = incomingChangeEvents[0] as ActivityLogStore.OnActivityLogFetched
+        val onFetchedEvent = incomingChangeEvents[0] as ActivityLogStore.OnActivityLogChanged
         with(onFetchedEvent) {
             assertEquals(onFetchedEvent.rowsAffected, count)
             assertNull(onFetchedEvent.error)
@@ -228,7 +236,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
     @Subscribe
     fun onActivityLogFetched(onChangedEvent: Store.OnChanged<ActivityLogStore.ActivityError>) {
-        if (onChangedEvent is ActivityLogStore.OnActivityLogFetched) {
+        if (onChangedEvent is ActivityLogStore.OnActivityLogChanged) {
             incomingChangeEvents.add(onChangedEvent)
             mCountDownLatch?.countDown()
         }
