@@ -184,7 +184,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     private fun awaitActivities(site: SiteModel, count: Int, ascending: Boolean = true): List<ActivityLogModel> {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         assertEquals(incomingChangeEvents.size, 1)
-        val onFetchedEvent = incomingChangeEvents[0] as ActivityLogStore.OnActivityLogChanged
+        val onFetchedEvent = incomingChangeEvents[0] as ActivityLogStore.OnActivityLogFetched
         with(onFetchedEvent) {
             assertEquals(onFetchedEvent.rowsAffected, count)
             assertNull(onFetchedEvent.error)
@@ -236,7 +236,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
 
     @Subscribe
     fun onActivityLogFetched(onChangedEvent: Store.OnChanged<ActivityLogStore.ActivityError>) {
-        if (onChangedEvent is ActivityLogStore.OnActivityLogChanged) {
+        if (onChangedEvent is ActivityLogStore.OnActivityLogFetched) {
             incomingChangeEvents.add(onChangedEvent)
             mCountDownLatch?.countDown()
         }
