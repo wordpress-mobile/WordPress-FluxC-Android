@@ -17,6 +17,6 @@ class ReleaseWCNetworkModule {
     @Provides
     fun provideOrderRestClient(appContext: Context, dispatcher: Dispatcher,
                                @Named("regular") requestQueue: RequestQueue,
-                               token: AccessToken, userAgent: UserAgent): OrderRestClient =
+                               token: AccessToken, userAgent: UserAgent) =
             OrderRestClient(appContext, dispatcher, requestQueue, token, userAgent)
 }
