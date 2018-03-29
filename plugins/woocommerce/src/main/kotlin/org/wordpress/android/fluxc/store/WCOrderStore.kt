@@ -70,7 +70,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
      * The default WooCommerce statuses are defined in [OrderStatus]. Custom order statuses are also supported.
      */
     fun getOrdersForSite(site: SiteModel, vararg status: String): List<WCOrderModel> =
-            OrderSqlUtils.getOrdersForSiteWithStatus(site, status.asList())
+            OrderSqlUtils.getOrdersForSite(site, status = status.asList())
 
     /**
      * Given a local ID for an order, returns that order as a [WCOrderModel].

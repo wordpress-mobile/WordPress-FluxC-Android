@@ -31,27 +31,19 @@ object OrderSqlUtils {
         }
     }
 
-    fun getOrdersForSite(site: SiteModel): List<WCOrderModel> {
-        return WellSql.select(WCOrderModel::class.java)
+    fun getOrdersForSite(site: SiteModel, status: List<String> = emptyList()): List<WCOrderModel> {
+        val conditionClauseBuilder = WellSql.select(WCOrderModel::class.java)
                 .where()
+                .beginGroup()
                 .equals(WCOrderModelTable.LOCAL_SITE_ID, site.id)
-                .endWhere()
+
+        if (status.isNotEmpty()) {
+            conditionClauseBuilder.isIn(WCOrderModelTable.STATUS, status)
+        }
+
+        return conditionClauseBuilder.endGroup().endWhere()
                 .orderBy(WCOrderModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
                 .asModel
-    }
-
-    fun getOrdersForSiteWithStatus(site: SiteModel, status: List<String>): List<WCOrderModel> {
-        return if (status.isEmpty()) {
-            getOrdersForSite(site)
-        } else {
-            WellSql.select(WCOrderModel::class.java)
-                    .where().beginGroup()
-                    .equals(WCOrderModelTable.LOCAL_SITE_ID, site.id)
-                    .isIn(WCOrderModelTable.STATUS, status)
-                    .endGroup().endWhere()
-                    .orderBy(WCOrderModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
-                    .asModel
-        }
     }
 
     fun deleteOrdersForSite(site: SiteModel): Int {
