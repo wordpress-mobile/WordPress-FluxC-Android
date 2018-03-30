@@ -62,6 +62,7 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
         @SerializedName("variation_id")
         val variationId: Long? = null
         val quantity: Int? = null
+        val subtotal: String? = null
         val total: String? = null // Price x quantity
         @SerializedName("total_tax")
         val totalTax: String? = null
@@ -100,5 +101,12 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     fun getLineItemList(): List<LineItem> {
         val responseType = object : TypeToken<List<LineItem>>() {}.type
         return gson.fromJson(lineItems, responseType) as? List<LineItem> ?: emptyList()
+    }
+
+    /**
+     * Returns the order subtotal (the sum of the subtotals of each line item in the order).
+     */
+    fun getOrderSubtotal(): Double {
+        return getLineItemList().sumByDouble { it.subtotal?.toDoubleOrNull() ?: 0.0 }
     }
 }
