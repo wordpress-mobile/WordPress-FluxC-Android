@@ -65,6 +65,11 @@ class OrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue:
             currency = response.currency ?: ""
             dateCreated = "${response.date_created_gmt}Z" // Store the date in UTC format
             total = response.total ?: ""
+            totalTax = response.total_tax ?: ""
+            shippingTotal = response.shipping_total ?: ""
+            paymentMethod = response.payment_method ?: ""
+            paymentMethodTitle = response.payment_method_title ?: ""
+            pricesIncludeTax = response.prices_include_tax
 
             billingFirstName = response.billing?.first_name ?: ""
             billingLastName = response.billing?.last_name ?: ""

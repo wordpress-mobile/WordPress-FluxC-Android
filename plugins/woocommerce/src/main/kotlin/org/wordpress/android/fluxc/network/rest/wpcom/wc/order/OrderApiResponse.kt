@@ -36,6 +36,11 @@ class OrderApiResponse : Response {
     val currency: String? = null
     val date_created_gmt: String? = null
     val total: String? = null
+    val total_tax: String? = null
+    val shipping_total: String? = null
+    val payment_method: String? = null
+    val payment_method_title: String? = null
+    val prices_include_tax: Boolean = false
 
     val billing: Billing? = null
     val shipping: Shipping? = null

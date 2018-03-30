@@ -18,7 +18,13 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     @Column var status = ""
     @Column var currency = ""
     @Column var dateCreated = "" // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
-    @Column var total = ""
+    @Column var total = "" // Complete total, including taxes
+
+    @Column var totalTax = ""// The total amount of tax (from products, shipping, discounts, etc.)
+    @Column var shippingTotal = "" // The total shipping cost (excluding tax)
+    @Column var paymentMethod = "" // Payment method code, e.g. 'cod', 'stripe'
+    @Column var paymentMethodTitle = "" // Displayable payment method, e.g. 'Cash on delivery', 'Credit Card (Stripe)'
+    @Column var pricesIncludeTax = false
 
     @Column var billingFirstName = ""
     @Column var billingLastName = ""
