@@ -1,0 +1,123 @@
+package org.wordpress.android.fluxc.store
+
+import com.wellsql.generated.WCOrderModelTable
+import com.yarolegovich.wellsql.WellSql
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
+import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.Payload
+import org.wordpress.android.fluxc.action.WCOrderAction
+import org.wordpress.android.fluxc.annotations.action.Action
+import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatus
+import org.wordpress.android.fluxc.persistence.OrderSqlUtils
+import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T
+import java.util.Locale
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrderRestClient: OrderRestClient)
+    : Store(dispatcher) {
+    companion object {
+        const val NUM_ORDERS_PER_FETCH = 50
+    }
+
+    class FetchOrdersPayload(
+            var site: SiteModel,
+            var loadMore: Boolean = false
+    ) : Payload<BaseNetworkError>()
+
+    class FetchOrdersResponsePayload(
+            var site: SiteModel,
+            var orders: List<WCOrderModel> = emptyList(),
+            var loadedMore: Boolean = false,
+            var canLoadMore: Boolean = false
+    ) : Payload<OrderError>() {
+        constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
+    }
+
+    class OrderError(val type: OrderErrorType? = null, val message: String = "") : OnChangedError {
+        constructor(type: String, message: String): this(OrderErrorType.fromString(type), message)
+    }
+
+    enum class OrderErrorType {
+        REST_INVALID_PARAM,
+        GENERIC_ERROR;
+
+        companion object {
+            private val reverseMap = OrderErrorType.values().associateBy(OrderErrorType::name)
+            fun fromString(type: String) = reverseMap[type.toUpperCase(Locale.US)] ?: GENERIC_ERROR
+        }
+    }
+
+    // OnChanged events
+    class OnOrderChanged(var rowsAffected: Int, var canLoadMore: Boolean = false) : OnChanged<OrderError>() {
+        var causeOfChange: WCOrderAction? = null
+    }
+
+    override fun onRegister() {
+        AppLog.d(T.API, "WCOrderStore onRegister")
+    }
+
+    /**
+     * Given a [SiteModel] and optional statuses, returns all orders for that site matching any of those statuses.
+     *
+     * The default WooCommerce statuses are defined in [OrderStatus]. Custom order statuses are also supported.
+     */
+    fun getOrdersForSite(site: SiteModel, vararg status: String): List<WCOrderModel> =
+            OrderSqlUtils.getOrdersForSite(site, status = status.asList())
+
+    /**
+     * Given a local ID for an order, returns that order as a [WCOrderModel].
+     */
+    fun getOrderByLocalOrderId(localId: Int): WCOrderModel? =
+            WellSql.select(WCOrderModel::class.java)
+                .where().equals(WCOrderModelTable.ID, localId).endWhere()
+                .asModel.firstOrNull()
+
+    @Subscribe(threadMode = ThreadMode.ASYNC)
+    override fun onAction(action: Action<*>) {
+        val actionType = action.type as? WCOrderAction ?: return
+        when (actionType) {
+            WCOrderAction.FETCH_ORDERS -> fetchOrders(action.payload as FetchOrdersPayload)
+            WCOrderAction.FETCHED_ORDERS -> handledFetchOrdersCompleted(action.payload as FetchOrdersResponsePayload)
+        }
+    }
+
+    private fun fetchOrders(payload: FetchOrdersPayload) {
+        val offset = if (payload.loadMore) {
+            OrderSqlUtils.getOrdersForSite(payload.site).size
+        } else {
+            0
+        }
+        wcOrderRestClient.fetchOrders(payload.site, offset)
+    }
+
+    private fun handledFetchOrdersCompleted(payload: FetchOrdersResponsePayload) {
+        val onOrderChanged: OnOrderChanged
+
+        if (payload.isError) {
+            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
+        } else {
+            // Clear existing uploading orders if this is a fresh fetch (loadMore = false in the original request)
+            // This is the simplest way of keeping our local orders in sync with remote orders (in case of deletions,
+            // or if the user manual changed some order IDs)
+            if (!payload.loadedMore) {
+                OrderSqlUtils.deleteOrdersForSite(payload.site)
+            }
+
+            val rowsAffected = payload.orders.sumBy { OrderSqlUtils.insertOrUpdateOrder(it) }
+
+            onOrderChanged = OnOrderChanged(rowsAffected, payload.canLoadMore)
+        }
+
+        onOrderChanged.causeOfChange = WCOrderAction.FETCH_ORDERS
+
+        emitChange(onOrderChanged)
+    }
+}

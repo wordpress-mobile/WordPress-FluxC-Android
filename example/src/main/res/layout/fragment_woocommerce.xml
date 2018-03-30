@@ -12,4 +12,10 @@
         android:layout_height="wrap_content"
         android:text="Log Sites" />
 
+    <Button
+        android:id="@+id/fetch_orders"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch Orders" />
+
 </LinearLayout>

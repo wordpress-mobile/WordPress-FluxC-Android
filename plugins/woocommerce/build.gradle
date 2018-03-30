@@ -57,6 +57,8 @@ dependencies {
     api project(':fluxc-annotations')
     kapt project(':fluxc-processor')
 
+    implementation 'com.google.code.gson:gson:2.8.0'
+
     // Dagger
     implementation "com.google.dagger:dagger:$daggerVersion"
     kapt "com.google.dagger:dagger-compiler:$daggerVersion"
