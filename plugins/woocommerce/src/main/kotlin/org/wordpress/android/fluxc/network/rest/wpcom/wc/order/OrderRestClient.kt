@@ -71,6 +71,14 @@ class OrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue:
             paymentMethodTitle = response.payment_method_title ?: ""
             pricesIncludeTax = response.prices_include_tax
 
+            discountTotal = response.discount_total ?: ""
+            response.coupon_lines?.let { couponLines ->
+                // Extract the discount codes from the coupon_lines list and store them as a comma-delimited String
+                discountCodes = couponLines
+                        .filter { !it.code.isNullOrEmpty() }
+                        .joinToString { it.code!! }
+            }
+
             billingFirstName = response.billing?.first_name ?: ""
             billingLastName = response.billing?.last_name ?: ""
             billingCompany = response.billing?.company ?: ""

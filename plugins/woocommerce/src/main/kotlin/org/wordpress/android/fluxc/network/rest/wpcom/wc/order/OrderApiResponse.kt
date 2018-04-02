@@ -31,6 +31,10 @@ class OrderApiResponse : Response {
         val country: String? = null
     }
 
+    class CouponLine {
+        val code: String? = null
+    }
+
     val number: Long? = null
     val status: String? = null
     val currency: String? = null
@@ -41,6 +45,9 @@ class OrderApiResponse : Response {
     val payment_method: String? = null
     val payment_method_title: String? = null
     val prices_include_tax: Boolean = false
+
+    val discount_total: String? = null
+    val coupon_lines: List<CouponLine>? = null
 
     val billing: Billing? = null
     val shipping: Shipping? = null
