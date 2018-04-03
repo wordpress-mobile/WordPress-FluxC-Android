@@ -7,15 +7,15 @@ android:
     - extra-android-support
     - platform-tools
     - tools
-    - build-tools-26.0.2
-    - android-25
+    - build-tools-27.0.3
+    - android-27
 
 env:
   global:
     - MALLOC_ARENA_MAX=2
     - GRADLE_OPTS="-Xmx768m -Xms256m -Xss1m"
-    - ANDROID_SDKS=android-14
-    - ANDROID_TARGET=android-14
+    - ANDROID_SDKS=android-15
+    - ANDROID_TARGET=android-15
 
 before_install:
   # TODO: Remove the following line when Travis' platform-tools are updated to v24+
