@@ -1,24 +1,19 @@
 package org.wordpress.android.fluxc.mocked;
 
-import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.Test;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
-import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
-import org.wordpress.android.fluxc.model.AccountModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
-import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.InitiateAutomatedTransferPayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferEligibilityChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferInitiated;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferStatusChecked;
-import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
-import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -31,9 +26,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class MockedStack_SiteTest extends MockedStack_Base {
-    // from "initiate-automated-transfer-response-success.json"
-    private static final int TEST_INITIATE_AUTOMATED_TRANSFER_ID = 197364;
-
     // Used in ResponseMockingInterceptor
     public static final int TEST_SITE_ID_TRANSFER_COMPLETE = 123;
     public static final int TEST_SITE_ID_TRANSFER_INCOMPLETE = 124;
@@ -44,13 +36,10 @@ public class MockedStack_SiteTest extends MockedStack_Base {
 
     enum TestEvents {
         NONE,
-        ACCOUNT_CHANGED,
         AUTOMATED_TRANSFER_STATUS_COMPLETE,
         AUTOMATED_TRANSFER_STATUS_INCOMPLETE,
         ELIGIBLE_FOR_AUTOMATED_TRANSFER,
-        INITIATE_AUTOMATED_TRANSFER,
-        REMOVE_SITE,
-        UPDATE_SITE
+        INITIATE_AUTOMATED_TRANSFER
     }
 
     private TestEvents mNextEvent;
@@ -69,33 +58,23 @@ public class MockedStack_SiteTest extends MockedStack_Base {
 
     @Test
     public void testEligibleForAutomatedTransfer() throws InterruptedException {
-        SiteModel site = createAccountAndLocalTestSite(false);
-
+        SiteModel site = new SiteModel();
+        site.setSiteId(123); // does not matter
         mNextEvent = TestEvents.ELIGIBLE_FOR_AUTOMATED_TRANSFER;
         mDispatcher.dispatch(SiteActionBuilder.newCheckAutomatedTransferEligibilityAction(site));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        SiteModel updatedSite = mSiteStore.getSiteBySiteId(site.getSiteId());
-        assertTrue(updatedSite.isEligibleForAutomatedTransfer());
-
-        removeSiteAndSignOut(updatedSite);
     }
 
     @Test
     public void testInitiateAutomatedTransferSuccessfully() throws InterruptedException {
-        SiteModel site = createAccountAndLocalTestSite(true);
-
+        SiteModel site = new SiteModel();
+        site.setSiteId(123); // does not matter
         mNextEvent = TestEvents.INITIATE_AUTOMATED_TRANSFER;
         InitiateAutomatedTransferPayload payload = new InitiateAutomatedTransferPayload(site, "react");
         mDispatcher.dispatch(SiteActionBuilder.newInitiateAutomatedTransferAction(payload));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        SiteModel updatedSite = mSiteStore.getSiteBySiteId(site.getSiteId());
-        assertEquals(updatedSite.getAutomatedTransferId(), TEST_INITIATE_AUTOMATED_TRANSFER_ID);
-
-        removeSiteAndSignOut(updatedSite);
     }
 
     @Test
@@ -120,22 +99,13 @@ public class MockedStack_SiteTest extends MockedStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onAccountChanged(OnAccountChanged event) {
-        if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
-        }
-        assertEquals(mNextEvent, TestEvents.ACCOUNT_CHANGED);
-        mCountDownLatch.countDown();
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe
     public void onAutomatedTransferEligibilityChecked(OnAutomatedTransferEligibilityChecked event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(mNextEvent, TestEvents.ELIGIBLE_FOR_AUTOMATED_TRANSFER);
         assertNotNull(event.site);
+        assertTrue(event.isEligible);
         mCountDownLatch.countDown();
     }
 
@@ -147,6 +117,7 @@ public class MockedStack_SiteTest extends MockedStack_Base {
         }
         assertEquals(mNextEvent, TestEvents.INITIATE_AUTOMATED_TRANSFER);
         assertNotNull(event.site);
+        assertFalse(TextUtils.isEmpty(event.pluginSlugToInstall));
         mCountDownLatch.countDown();
     }
 
@@ -159,68 +130,13 @@ public class MockedStack_SiteTest extends MockedStack_Base {
         assertNotNull(event.site);
         if (mNextEvent.equals(TestEvents.AUTOMATED_TRANSFER_STATUS_COMPLETE)) {
             assertTrue(event.isCompleted);
+            assertEquals(event.currentStep, event.totalSteps);
         } else if (mNextEvent.equals(TestEvents.AUTOMATED_TRANSFER_STATUS_INCOMPLETE)) {
             assertFalse(event.isCompleted);
+            assertTrue(event.currentStep < event.totalSteps);
         } else {
             throw new AssertionError("Unexpected event occurred: " + mNextEvent);
         }
         mCountDownLatch.countDown();
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe
-    public void onSiteChanged(OnSiteChanged event) {
-        if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
-        }
-        assertEquals(mNextEvent, TestEvents.UPDATE_SITE);
-        assertEquals(event.rowsAffected, 1);
-        mCountDownLatch.countDown();
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe
-    public void onSiteRemoved(OnSiteRemoved event) {
-        if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
-        }
-        assertEquals(mNextEvent, TestEvents.REMOVE_SITE);
-        assertEquals(event.mRowsAffected, 1);
-        mCountDownLatch.countDown();
-    }
-
-    private @NonNull SiteModel createAccountAndLocalTestSite(boolean isEligible) throws InterruptedException {
-        AccountModel account = new AccountModel();
-        account.setUserId(478);
-        mNextEvent = TestEvents.ACCOUNT_CHANGED;
-        mDispatcher.dispatch(AccountActionBuilder.newUpdateAccountAction(account));
-        mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        SiteModel site = new SiteModel();
-        site.setSiteId(322);
-        site.setIsWPCom(true);
-        site.setIsEligibleForAutomatedTransfer(isEligible);
-        mNextEvent = TestEvents.UPDATE_SITE;
-        mDispatcher.dispatch(SiteActionBuilder.newUpdateSiteAction(site));
-        mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        SiteModel siteFromStore = mSiteStore.getSiteBySiteId(site.getSiteId());
-        assertNotNull(siteFromStore);
-        return siteFromStore;
-    }
-
-    private void removeSiteAndSignOut(SiteModel site) throws InterruptedException {
-        mNextEvent = TestEvents.REMOVE_SITE;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(SiteActionBuilder.newRemoveSiteAction(site));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        assertEquals(mSiteStore.getSites().size(), 0);
-
-        mNextEvent = TestEvents.ACCOUNT_CHANGED;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
