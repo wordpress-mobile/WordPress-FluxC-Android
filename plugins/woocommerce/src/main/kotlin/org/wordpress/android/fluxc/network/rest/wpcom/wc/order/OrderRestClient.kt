@@ -79,6 +79,11 @@ class OrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue:
                         .joinToString { it.code!! }
             }
 
+            response.refunds?.let { refunds ->
+                // Extract the individual refund totals from the refunds list and store their sum as a Double
+                refundTotal = refunds.sumByDouble { it.total?.toDoubleOrNull() ?: 0.0 }
+            }
+
             billingFirstName = response.billing?.first_name ?: ""
             billingLastName = response.billing?.last_name ?: ""
             billingCompany = response.billing?.company ?: ""

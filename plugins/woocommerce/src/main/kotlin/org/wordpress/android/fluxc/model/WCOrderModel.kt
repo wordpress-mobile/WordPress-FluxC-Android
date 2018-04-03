@@ -29,6 +29,8 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     @Column var discountTotal = ""
     @Column var discountCodes = ""
 
+    @Column var refundTotal = 0.0 // The total refund value for this order (usually a negative number)
+
     @Column var billingFirstName = ""
     @Column var billingLastName = ""
     @Column var billingCompany = ""

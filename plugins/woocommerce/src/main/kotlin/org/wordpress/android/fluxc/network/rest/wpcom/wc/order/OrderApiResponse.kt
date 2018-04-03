@@ -35,6 +35,10 @@ class OrderApiResponse : Response {
         val code: String? = null
     }
 
+    class Refund {
+        val total: String? = null
+    }
+
     val number: Long? = null
     val status: String? = null
     val currency: String? = null
@@ -55,4 +59,6 @@ class OrderApiResponse : Response {
     // This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand.
     // See WCOrderModel.LineItem
     val line_items: JsonElement? = null
+
+    val refunds: List<Refund>? = null
 }
