@@ -358,6 +358,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertEquals(mNextEvent, TestEvents.INELIGIBLE_FOR_AUTOMATED_TRANSFER);
         assertNotNull(event.site);
         assertFalse(event.isEligible);
+        assertFalse(event.eligibilityErrors.isEmpty());
         mCountDownLatch.countDown();
     }
 
