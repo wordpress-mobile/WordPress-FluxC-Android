@@ -19,6 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+import javax.inject.Singleton;
 
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
@@ -31,7 +32,8 @@ import okio.Buffer;
 import okio.BufferedSource;
 import okio.Okio;
 
-class ResponseMockingInterceptor implements Interceptor {
+@Singleton
+public class ResponseMockingInterceptor implements Interceptor {
     @Override
     public Response intercept(@NonNull Interceptor.Chain chain) throws IOException {
         Request request = chain.request();
