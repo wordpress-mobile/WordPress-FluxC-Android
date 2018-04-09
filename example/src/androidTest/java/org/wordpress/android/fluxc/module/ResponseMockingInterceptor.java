@@ -75,6 +75,12 @@ class ResponseMockingInterceptor implements Interceptor {
                     }
                 case "/wp/v2/settings/":
                     return buildJetpackTunnelWPV2SettingsSuccessResponse(request);
+                case "/wc/v2/orders/":
+                    if (requestUrl.contains(String.valueOf(MockedNetworkModule.FAILURE_SITE_ID))) {
+                        return buildJetpackTunnelRootFailureResponse(request);
+                    } else {
+                        return buildWCOrdersSuccessResponse(request);
+                    }
             }
         }
         throw new IllegalStateException("Interceptor was given a request with no mocks - URL: " + requestUrl);
@@ -102,6 +108,10 @@ class ResponseMockingInterceptor implements Interceptor {
 
     private Response buildJetpackTunnelWPV2SettingsSuccessResponse(Request request) {
         return buildSuccessResponse(request, "jetpack-tunnel-wp-v2-settings-response-success.json");
+    }
+
+    private Response buildWCOrdersSuccessResponse(Request request) {
+        return buildSuccessResponse(request, "wc-orders-response-success.json");
     }
 
     private Response buildSuccessResponse(Request request, String resourceFileName) {
