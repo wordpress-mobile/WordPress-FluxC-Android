@@ -13,7 +13,7 @@ import org.wordpress.android.fluxc.model.MediaUploadModel;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.PostUploadModel;
 import org.wordpress.android.fluxc.model.SiteModel;
-import org.wordpress.android.fluxc.module.MockedNetworkModule;
+import org.wordpress.android.fluxc.module.ResponseMockingInterceptor;
 import org.wordpress.android.fluxc.persistence.UploadSqlUtils;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
@@ -38,11 +38,11 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests using a Mocked Network app component. Test the Store itself and not the underlying network component(s).
@@ -55,6 +55,8 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     @Inject MediaStore mMediaStore;
     @Inject PostStore mPostStore;
     @Inject UploadStore mUploadStore;
+
+    @Inject ResponseMockingInterceptor mInterceptor;
 
     private enum TestEvents {
         NONE,
@@ -186,6 +188,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertEquals(0, mUploadStore.getFailedMediaForPost(mPost).size());
 
         // Upload post to site (pretend we've removed the failed media from the post content)
+        mInterceptor.respondWith("post-upload-response-success.json");
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.UPLOADED_POST;
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(new RemotePostPayload(mPost, site)));
@@ -490,6 +493,8 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     }
 
     private void startSuccessfulMediaUpload(MediaModel media, SiteModel site) {
+        mInterceptor.respondWith("media-upload-response-success.json");
+
         MediaPayload payload = new MediaPayload(site, media);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
@@ -497,7 +502,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     }
 
     private void startFailingMediaUpload(MediaModel media, SiteModel site) {
-        media.setAuthorId(MockedNetworkModule.MEDIA_FAILURE_AUTHOR_CODE);
+        mInterceptor.respondWithError("media-upload-response-failure.json");
 
         MediaPayload payload = new MediaPayload(site, media);
         mCountDownLatch = new CountDownLatch(1);

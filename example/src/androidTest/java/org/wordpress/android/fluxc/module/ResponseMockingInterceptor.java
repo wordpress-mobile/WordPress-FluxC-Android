@@ -1,12 +1,8 @@
 package org.wordpress.android.fluxc.module;
 
-import android.net.Uri;
 import android.support.annotation.NonNull;
 
-import com.google.gson.Gson;
-
 import org.wordpress.android.fluxc.TestUtils;
-import org.wordpress.android.fluxc.network.rest.wpcom.media.RestUploadRequestBody;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -16,7 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.inject.Singleton;
@@ -25,15 +20,30 @@ import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import okio.Buffer;
 import okio.BufferedSource;
 import okio.Okio;
 
 @Singleton
 public class ResponseMockingInterceptor implements Interceptor {
+    private String mNextResponseFile;
+    private int mNextResponseErrorCode;
+
+    public void respondWith(String jsonResponseFile) {
+        mNextResponseFile = jsonResponseFile;
+        mNextResponseErrorCode = 0;
+    }
+
+    public void respondWithError(String jsonResponseFile) {
+        respondWithError(jsonResponseFile, 404);
+    }
+
+    public void respondWithError(String jsonResponseFile, int errorCode) {
+        mNextResponseFile = jsonResponseFile;
+        mNextResponseErrorCode = errorCode;
+    }
+
     @Override
     public Response intercept(@NonNull Interceptor.Chain chain) throws IOException {
         Request request = chain.request();
@@ -43,67 +53,23 @@ public class ResponseMockingInterceptor implements Interceptor {
 
         String requestUrl = request.url().toString();
 
-        if (requestUrl.contains("media/new")) {
-            // WP.com media upload request
-            RestUploadRequestBody requestBody = (RestUploadRequestBody) request.body();
-            if (requestBody != null
-                    && requestBody.getMedia().getAuthorId() == MockedNetworkModule.MEDIA_FAILURE_AUTHOR_CODE) {
-                return buildMediaErrorResponse(request);
+        Response response;
+        if (mNextResponseFile != null) {
+            if (mNextResponseErrorCode == 0) {
+                response = buildSuccessResponse(request, mNextResponseFile);
             } else {
-                return buildMediaSuccessResponse(request);
+                response = buildErrorResponse(request, mNextResponseFile, mNextResponseErrorCode);
             }
-        } else if (requestUrl.contains("posts/new")) {
-            // WP.com post upload request
-            return buildPostSuccessResponse(request);
-        } else if (requestUrl.contains("jetpack-blogs")) {
-            String path;
-            String pathRequestParam = Uri.parse(requestUrl).getQueryParameter("path");
-            if (pathRequestParam != null) {
-                // GET request
-                String[] params = pathRequestParam.split("&");
-                path = params[0];
-            } else {
-                // POST request
-                Map bodyMap = new Gson().fromJson(getRequestBody(request.body()), Map.class);
-                String[] params = ((String) bodyMap.get("path")).split("&");
-                path = params[0];
-            }
-            switch (path) {
-                case "/":
-                    if (requestUrl.contains(String.valueOf(MockedNetworkModule.FAILURE_SITE_ID))) {
-                        return buildJetpackTunnelRootFailureResponse(request);
-                    } else {
-                        return buildJetpackTunnelRootSuccessResponse(request);
-                    }
-                case "/wp/v2/settings/":
-                    return buildJetpackTunnelWPV2SettingsSuccessResponse(request);
-            }
+        } else {
+            throw new IllegalStateException("Interceptor was not given a response for this request! URL: "
+                                            + requestUrl);
         }
-        throw new IllegalStateException("Interceptor was given a request with no mocks - URL: " + requestUrl);
-    }
 
-    private Response buildMediaErrorResponse(Request request) {
-        return buildErrorResponse(request, "media-upload-response-failure.json", 404);
-    }
+        // Clean up for the next call
+        mNextResponseFile = null;
+        mNextResponseErrorCode = 0;
 
-    private Response buildMediaSuccessResponse(Request request) {
-        return buildSuccessResponse(request, "media-upload-response-success.json");
-    }
-
-    private Response buildPostSuccessResponse(Request request) {
-        return buildSuccessResponse(request, "post-upload-response-success.json");
-    }
-
-    private Response buildJetpackTunnelRootSuccessResponse(Request request) {
-        return buildSuccessResponse(request, "jetpack-tunnel-root-response-success.json");
-    }
-
-    private Response buildJetpackTunnelRootFailureResponse(Request request) {
-        return buildErrorResponse(request, "jetpack-tunnel-root-response-failure.json", 404);
-    }
-
-    private Response buildJetpackTunnelWPV2SettingsSuccessResponse(Request request) {
-        return buildSuccessResponse(request, "jetpack-tunnel-wp-v2-settings-response-success.json");
+        return response;
     }
 
     private Response buildSuccessResponse(Request request, String resourceFileName) {
@@ -165,16 +131,6 @@ public class ResponseMockingInterceptor implements Interceptor {
         } catch (IOException e) {
             AppLog.e(T.TESTS, "Could not load response JSON file.");
             return null;
-        }
-    }
-
-    private String getRequestBody(RequestBody body) throws IOException {
-        final Buffer buffer = new Buffer();
-        if (body != null) {
-            body.writeTo(buffer);
-            return buffer.readUtf8();
-        } else {
-            return "";
         }
     }
 }
