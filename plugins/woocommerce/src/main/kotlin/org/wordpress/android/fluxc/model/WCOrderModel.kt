@@ -14,7 +14,8 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
     @Column var localSiteId = 0
-    @Column var remoteOrderId = 0L
+    @Column var remoteOrderId = 0L // The unique identifier for this order on the server
+    @Column var number = "" // The order number to display to the user
     @Column var status = ""
     @Column var currency = ""
     @Column var dateCreated = "" // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z

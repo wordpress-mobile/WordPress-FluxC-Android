@@ -58,6 +58,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         with(payload.orders[0]) {
             assertEquals(5, localSiteId)
             assertEquals(949, remoteOrderId)
+            assertEquals("949", number)
             assertEquals(OrderStatus.PROCESSING, status)
             assertEquals("USD", currency)
             assertEquals("2018-04-02T14:57:39Z", dateCreated)

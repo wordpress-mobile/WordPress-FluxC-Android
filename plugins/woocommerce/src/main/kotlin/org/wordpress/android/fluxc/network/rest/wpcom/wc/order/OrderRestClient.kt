@@ -60,7 +60,8 @@ class OrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue:
 
     private fun orderResponseToOrderModel(response: OrderApiResponse): WCOrderModel {
         return WCOrderModel().apply {
-            remoteOrderId = response.number ?: 0
+            remoteOrderId = response.id ?: 0
+            number = response.number ?: remoteOrderId.toString()
             status = response.status ?: ""
             currency = response.currency ?: ""
             dateCreated = "${response.date_created_gmt}Z" // Store the date in UTC format

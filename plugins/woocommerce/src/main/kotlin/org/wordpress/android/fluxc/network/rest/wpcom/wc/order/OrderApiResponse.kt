@@ -39,7 +39,8 @@ class OrderApiResponse : Response {
         val total: String? = null
     }
 
-    val number: Long? = null
+    val id: Long? = null
+    val number: String? = null
     val status: String? = null
     val currency: String? = null
     val date_created_gmt: String? = null
