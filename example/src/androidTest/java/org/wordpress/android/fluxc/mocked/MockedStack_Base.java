@@ -24,7 +24,7 @@ public class MockedStack_Base {
         mMockedNetworkAppComponent = DaggerMockedNetworkAppComponent.builder()
                 .appContextModule(new AppContextModule(mAppContext))
                 .build();
-        WellSqlConfig config = new WellSqlConfig(mAppContext);
+        WellSqlConfig config = new WellSqlConfig(mAppContext, WellSqlConfig.ADDON_WOOCOMMERCE);
         WellSql.init(config);
         config.reset();
     }
