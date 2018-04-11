@@ -72,6 +72,8 @@ class OrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue:
             paymentMethodTitle = response.payment_method_title ?: ""
             pricesIncludeTax = response.prices_include_tax
 
+            customerNote = response.customer_note ?: ""
+
             discountTotal = response.discount_total ?: ""
             response.coupon_lines?.let { couponLines ->
                 // Extract the discount codes from the coupon_lines list and store them as a comma-delimited String
