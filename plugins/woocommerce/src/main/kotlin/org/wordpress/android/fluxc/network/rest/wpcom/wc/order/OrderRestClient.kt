@@ -60,13 +60,54 @@ class OrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue:
 
     private fun orderResponseToOrderModel(response: OrderApiResponse): WCOrderModel {
         return WCOrderModel().apply {
-            remoteOrderId = response.number ?: 0
+            remoteOrderId = response.id ?: 0
+            number = response.number ?: remoteOrderId.toString()
             status = response.status ?: ""
             currency = response.currency ?: ""
             dateCreated = "${response.date_created_gmt}Z" // Store the date in UTC format
             total = response.total ?: ""
+            totalTax = response.total_tax ?: ""
+            shippingTotal = response.shipping_total ?: ""
+            paymentMethod = response.payment_method ?: ""
+            paymentMethodTitle = response.payment_method_title ?: ""
+            pricesIncludeTax = response.prices_include_tax
+
+            discountTotal = response.discount_total ?: ""
+            response.coupon_lines?.let { couponLines ->
+                // Extract the discount codes from the coupon_lines list and store them as a comma-delimited String
+                discountCodes = couponLines
+                        .filter { !it.code.isNullOrEmpty() }
+                        .joinToString { it.code!! }
+            }
+
+            response.refunds?.let { refunds ->
+                // Extract the individual refund totals from the refunds list and store their sum as a Double
+                refundTotal = refunds.sumByDouble { it.total?.toDoubleOrNull() ?: 0.0 }
+            }
+
             billingFirstName = response.billing?.first_name ?: ""
             billingLastName = response.billing?.last_name ?: ""
+            billingCompany = response.billing?.company ?: ""
+            billingAddress1 = response.billing?.address_1 ?: ""
+            billingAddress2 = response.billing?.address_2 ?: ""
+            billingCity = response.billing?.city ?: ""
+            billingState = response.billing?.state ?: ""
+            billingPostcode = response.billing?.postcode ?: ""
+            billingCountry = response.billing?.country ?: ""
+            billingEmail = response.billing?.email ?: ""
+            billingPhone = response.billing?.phone ?: ""
+
+            shippingFirstName = response.shipping?.first_name ?: ""
+            shippingLastName = response.shipping?.last_name ?: ""
+            shippingCompany = response.shipping?.company ?: ""
+            shippingAddress1 = response.shipping?.address_1 ?: ""
+            shippingAddress2 = response.shipping?.address_2 ?: ""
+            shippingCity = response.shipping?.city ?: ""
+            shippingState = response.shipping?.state ?: ""
+            shippingPostcode = response.shipping?.postcode ?: ""
+            shippingCountry = response.shipping?.country ?: ""
+
+            lineItems = response.line_items.toString()
         }
     }
 }
