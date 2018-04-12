@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.module
 
+import com.google.gson.JsonElement
 import okhttp3.Interceptor
 import okhttp3.MediaType
 import okhttp3.Protocol
@@ -18,17 +19,28 @@ import javax.inject.Singleton
 
 @Singleton
 class ResponseMockingInterceptor : Interceptor {
-    private var nextResponseFilePath: String? = null
+    private var nextResponseJson: String? = null
     private var nextResponseErrorCode: Int = 0
 
-    fun respondWith(jsonResponseFilePath: String) {
-        nextResponseFilePath = jsonResponseFilePath
+    fun respondWith(jsonResponseFileName: String) {
+        nextResponseJson = getStringFromResourceFile(jsonResponseFileName)
         nextResponseErrorCode = 0
     }
 
     @JvmOverloads
-    fun respondWithError(jsonResponseFile: String, errorCode: Int = 404) {
-        nextResponseFilePath = jsonResponseFile
+    fun respondWithError(jsonResponseFileName: String, errorCode: Int = 404) {
+        nextResponseJson = getStringFromResourceFile(jsonResponseFileName)
+        nextResponseErrorCode = errorCode
+    }
+
+    fun respondWith(jsonResponse: JsonElement) {
+        nextResponseJson = jsonResponse.toString()
+        nextResponseErrorCode = 0
+    }
+
+    @JvmOverloads
+    fun respondWithError(jsonResponse: JsonElement, errorCode: Int = 404) {
+        nextResponseJson = jsonResponse.toString()
         nextResponseErrorCode = errorCode
     }
 
@@ -41,7 +53,7 @@ class ResponseMockingInterceptor : Interceptor {
 
         val requestUrl = request.url().toString()
 
-        nextResponseFilePath?.let {
+        nextResponseJson?.let {
             val response = if (nextResponseErrorCode == 0) {
                 buildSuccessResponse(request, it)
             } else {
@@ -49,7 +61,7 @@ class ResponseMockingInterceptor : Interceptor {
             }
 
             // Clean up for the next call
-            nextResponseFilePath = null
+            nextResponseJson = null
             nextResponseErrorCode = 0
             return response
         }
@@ -57,11 +69,11 @@ class ResponseMockingInterceptor : Interceptor {
         throw IllegalStateException("Interceptor was not given a response for this request! URL: $requestUrl")
     }
 
-    private fun buildSuccessResponse(request: Request, resourceFileName: String) =
-            buildResponse(request, getStringFromResourceFile(resourceFileName), 200)
+    private fun buildSuccessResponse(request: Request, responseJson: String) =
+            buildResponse(request, responseJson, 200)
 
-    private fun buildErrorResponse(request: Request, resourceFileName: String, errorCode: Int) =
-            buildResponse(request, getStringFromResourceFile(resourceFileName), errorCode)
+    private fun buildErrorResponse(request: Request, responseJson: String, errorCode: Int) =
+            buildResponse(request, responseJson, errorCode)
 
     private fun buildResponse(request: Request, responseJson: String, responseCode: Int): Response {
         return Response.Builder()

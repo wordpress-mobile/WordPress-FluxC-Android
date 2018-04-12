@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.mocked;
 
+import com.google.gson.JsonObject;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.Test;
 import org.wordpress.android.fluxc.Dispatcher;
@@ -502,7 +504,10 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     }
 
     private void startFailingMediaUpload(MediaModel media, SiteModel site) {
-        mInterceptor.respondWithError("media-upload-response-failure.json");
+        JsonObject jsonResponse = new JsonObject();
+        jsonResponse.addProperty("error", "invalid_token");
+        jsonResponse.addProperty("message", "The OAuth2 token is invalid.");
+        mInterceptor.respondWithError(jsonResponse);
 
         MediaPayload payload = new MediaPayload(site, media);
         mCountDownLatch = new CountDownLatch(1);
