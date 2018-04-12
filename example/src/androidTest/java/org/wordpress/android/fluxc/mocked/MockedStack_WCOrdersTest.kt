@@ -72,6 +72,11 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals(40.0, getOrderSubtotal(), 0.01)
         }
 
+        // Customer note
+        with(payload.orders[1]) {
+            assertEquals("test checkout field editor note", customerNote)
+        }
+
         // Refunded order
         with(payload.orders[2]) {
             assertEquals(85.0, getOrderSubtotal(), 0.01)

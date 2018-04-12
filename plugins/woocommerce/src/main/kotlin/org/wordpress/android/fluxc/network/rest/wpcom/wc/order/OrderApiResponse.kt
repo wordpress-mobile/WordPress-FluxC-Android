@@ -51,6 +51,8 @@ class OrderApiResponse : Response {
     val payment_method_title: String? = null
     val prices_include_tax: Boolean = false
 
+    val customer_note: String? = null
+
     val discount_total: String? = null
     val coupon_lines: List<CouponLine>? = null
 

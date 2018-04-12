@@ -27,6 +27,8 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     @Column var paymentMethodTitle = "" // Displayable payment method, e.g. 'Cash on delivery', 'Credit Card (Stripe)'
     @Column var pricesIncludeTax = false
 
+    @Column var customerNote = "" // Note left by the customer during order submission
+
     @Column var discountTotal = ""
     @Column var discountCodes = ""
 
