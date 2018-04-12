@@ -4,6 +4,7 @@ import android.content.Context
 import com.android.volley.RequestQueue
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
@@ -17,6 +18,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
+import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import javax.inject.Singleton
 
 @Singleton
@@ -29,6 +31,8 @@ class OrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue:
      *
      * The number of orders fetched is defined in [WCOrderStore.NUM_ORDERS_PER_FETCH], and retrieving older
      * orders is done by passing an [offset].
+     *
+     * Dispatches a [WCOrderAction.FETCHED_ORDERS] action with the resulting list of orders.
      */
     fun fetchOrders(site: SiteModel, offset: Int) {
         val url = WOOCOMMERCE.orders.pathV2
@@ -38,22 +42,46 @@ class OrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue:
                 "offset" to offset.toString())
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
-                    run {
-                        val orderModels = response?.map {
-                            orderResponseToOrderModel(it).apply { localSiteId = site.id }
-                        }.orEmpty()
+                    val orderModels = response?.map {
+                        orderResponseToOrderModel(it).apply { localSiteId = site.id }
+                    }.orEmpty()
 
-                        val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
-                        val payload = FetchOrdersResponsePayload(site, orderModels, offset > 0, canLoadMore)
-                        mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
+                    val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
+                    val payload = FetchOrdersResponsePayload(site, orderModels, offset > 0, canLoadMore)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
+                },
+                BaseErrorListener { networkError ->
+                    val orderError = OrderError((networkError as WPComGsonNetworkError).apiError, networkError.message)
+                    val payload = FetchOrdersResponsePayload(orderError, site)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
+                })
+        add(request)
+    }
+
+    /**
+     * Makes a PUT call to `/wc/v2/orders/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * updating the status for the given [order] to [status].
+     *
+     * Dispatches a [WCOrderAction.UPDATED_ORDER_STATUS] with the updated [WCOrderModel].
+     */
+    fun updateOrderStatus(order: WCOrderModel, site: SiteModel, status: String) {
+        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).pathV2
+        val params = mapOf("status" to status)
+        val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, params, OrderApiResponse::class.java,
+                { response: OrderApiResponse? ->
+                    response?.let {
+                        val newModel = orderResponseToOrderModel(it).apply {
+                            id = order.id
+                            localSiteId = site.id
+                        }
+                        val payload = RemoteOrderPayload(newModel, site)
+                        mDispatcher.dispatch(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
                     }
                 },
-                BaseErrorListener { error ->
-                    run {
-                        val orderError = OrderError((error as WPComGsonNetworkError).apiError, error.message)
-                        val payload = FetchOrdersResponsePayload(orderError, site)
-                        mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
-                    }
+                BaseErrorListener { networkError ->
+                    val orderError = OrderError((networkError as WPComGsonNetworkError).apiError, networkError.message)
+                    val payload = RemoteOrderPayload(orderError, order, site)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
                 })
         add(request)
     }
