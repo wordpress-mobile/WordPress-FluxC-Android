@@ -1,10 +1,7 @@
 package org.wordpress.android.fluxc.release
 
 import org.greenrobot.eventbus.Subscribe
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
+import org.junit.Assert.*
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.ActivityLogAction
@@ -17,9 +14,7 @@ import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.activity.ActivityLogModel
 import org.wordpress.android.fluxc.store.AccountStore
-import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
-import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
-import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
+import org.wordpress.android.fluxc.store.AccountStore.*
 import org.wordpress.android.fluxc.store.ActivityLogStore
 import org.wordpress.android.fluxc.store.ActivityLogStore.FetchedActivityLogPayload
 import org.wordpress.android.fluxc.store.SiteStore
@@ -28,7 +23,7 @@ import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
 import org.wordpress.android.fluxc.store.Store
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
-import java.util.Date
+import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -69,8 +64,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         val site = authenticate()
 
         this.mCountDownLatch = CountDownLatch(1)
-        val numOfActivitiesRequested = 1
-        val payload = ActivityLogStore.FetchActivityLogPayload(site, numOfActivitiesRequested, 0)
+        val payload = ActivityLogStore.FetchActivityLogPayload(site)
         activityLogStore.onAction(ActivityLogActionBuilder.newFetchActivitiesAction(payload))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         assertTrue(incomingActions.size == 1)
