@@ -124,8 +124,8 @@ class WCOrderStoreTest {
 
     @Test
     fun testOrderErrorType() {
-        assertEquals(OrderErrorType.REST_INVALID_PARAM, OrderErrorType.fromString("rest_invalid_param"))
-        assertEquals(OrderErrorType.REST_INVALID_PARAM, OrderErrorType.fromString("REST_INVALID_PARAM"))
+        assertEquals(OrderErrorType.INVALID_PARAM, OrderErrorType.fromString("invalid_param"))
+        assertEquals(OrderErrorType.INVALID_PARAM, OrderErrorType.fromString("INVALID_PARAM"))
         assertEquals(OrderErrorType.GENERIC_ERROR, OrderErrorType.fromString(""))
     }
 }

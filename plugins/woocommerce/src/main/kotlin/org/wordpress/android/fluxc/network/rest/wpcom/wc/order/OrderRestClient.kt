@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import javax.inject.Singleton
 
@@ -51,7 +52,7 @@ class OrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue:
                     mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                 },
                 BaseErrorListener { networkError ->
-                    val orderError = OrderError((networkError as WPComGsonNetworkError).apiError, networkError.message)
+                    val orderError = networkErrorToOrderError(networkError as WPComGsonNetworkError)
                     val payload = FetchOrdersResponsePayload(orderError, site)
                     mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                 })
@@ -63,6 +64,10 @@ class OrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue:
      * updating the status for the given [order] to [status].
      *
      * Dispatches a [WCOrderAction.UPDATED_ORDER_STATUS] with the updated [WCOrderModel].
+     *
+     * Possible non-generic errors:
+     * [OrderErrorType.INVALID_PARAM] if the [status] is not a valid order status on the server
+     * [OrderErrorType.INVALID_ID] if an order by this id was not found on the server
      */
     fun updateOrderStatus(order: WCOrderModel, site: SiteModel, status: String) {
         val url = WOOCOMMERCE.orders.id(order.remoteOrderId).pathV2
@@ -79,7 +84,7 @@ class OrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue:
                     }
                 },
                 BaseErrorListener { networkError ->
-                    val orderError = OrderError((networkError as WPComGsonNetworkError).apiError, networkError.message)
+                    val orderError = networkErrorToOrderError(networkError as WPComGsonNetworkError)
                     val payload = RemoteOrderPayload(orderError, order, site)
                     mDispatcher.dispatch(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
                 })
@@ -139,5 +144,14 @@ class OrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue:
 
             lineItems = response.line_items.toString()
         }
+    }
+
+    private fun networkErrorToOrderError(wpComError: WPComGsonNetworkError): OrderError {
+        val orderErrorType = when (wpComError.apiError) {
+            "rest_invalid_param" -> OrderErrorType.INVALID_PARAM
+            "woocommerce_rest_shop_order_invalid_id" -> OrderErrorType.INVALID_ID
+            else -> OrderErrorType.fromString(wpComError.apiError)
+        }
+        return OrderError(orderErrorType, wpComError.message)
     }
 }

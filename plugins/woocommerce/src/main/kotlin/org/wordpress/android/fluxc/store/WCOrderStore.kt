@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatus
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Locale
@@ -54,12 +55,11 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         constructor(error: OrderError, order: WCOrderModel, site: SiteModel) : this(order, site) { this.error = error }
     }
 
-    class OrderError(val type: OrderErrorType? = null, val message: String = "") : OnChangedError {
-        constructor(type: String, message: String): this(OrderErrorType.fromString(type), message)
-    }
+    class OrderError(val type: OrderErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
 
     enum class OrderErrorType {
-        REST_INVALID_PARAM,
+        INVALID_PARAM,
+        INVALID_ID,
         GENERIC_ERROR;
 
         companion object {
