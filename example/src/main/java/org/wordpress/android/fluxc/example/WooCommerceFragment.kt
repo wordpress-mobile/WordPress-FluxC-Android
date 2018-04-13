@@ -11,11 +11,15 @@ import kotlinx.android.synthetic.main.fragment_woocommerce.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.action.WCOrderAction
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
+import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
+import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -51,6 +55,18 @@ class WooCommerceFragment : Fragment() {
                 dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
             } ?: showNoWCSitesToast()
         }
+
+        update_latest_order_status.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                wcOrderStore.getOrdersForSite(site).firstOrNull()?.let { order ->
+                    showSingleLineDialog(activity, "Enter new order status", { editText ->
+                        val status = editText.text.toString()
+                        val payload = UpdateOrderStatusPayload(order, site, status)
+                        dispatcher.dispatch(WCOrderActionBuilder.newUpdateOrderStatusAction(payload))
+                    })
+                } ?: run { showNoOrdersToast(site) }
+            } ?: showNoWCSitesToast()
+        }
     }
 
     override fun onStart() {
@@ -71,10 +87,18 @@ class WooCommerceFragment : Fragment() {
             return
         }
 
-        getFirstWCSite()?.let {
-            if (wcOrderStore.getOrdersForSite(it).isNotEmpty()) {
-                if (event.causeOfChange == WCOrderAction.FETCH_ORDERS) {
-                    prependToLog("Fetched " + event.rowsAffected + " orders from: " + it.name)
+        getFirstWCSite()?.let { site ->
+            wcOrderStore.getOrdersForSite(site).let { orderList ->
+                if (orderList.isEmpty()) {
+                    prependToLog("No orders were stored for site " + site.name + " =(")
+                    return
+                }
+
+                when (event.causeOfChange) {
+                    FETCH_ORDERS -> prependToLog("Fetched " + event.rowsAffected + " orders from: " + site.name)
+                    UPDATE_ORDER_STATUS ->
+                        with (orderList[0]) { prependToLog("Updated order status for $number to $status") }
+                    else -> prependToLog("Order store was updated from a " + event.causeOfChange)
                 }
             }
         }
@@ -86,5 +110,9 @@ class WooCommerceFragment : Fragment() {
 
     private fun showNoWCSitesToast() {
         ToastUtils.showToast(activity, "No WooCommerce sites found for this account!")
+    }
+
+    private fun showNoOrdersToast(site: SiteModel) {
+        ToastUtils.showToast(activity, "No orders found for site: " + site.name)
     }
 }
