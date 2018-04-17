@@ -104,7 +104,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         val secondActivity = activityLogModel(2)
         val thirdActivity = activityLogModel(3)
         val activityModels = listOf(firstActivity, secondActivity, thirdActivity)
-        val payload = FetchedActivityLogPayload(activityModels, site, 3, 0)
+        val payload = FetchedActivityLogPayload(activityModels, site, 3, 3, 0)
 
         activityLogStore.onAction(ActivityLogActionBuilder.newFetchedActivitiesAction(payload))
 
@@ -123,7 +123,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         this.mCountDownLatch = CountDownLatch(1)
 
         val activity = activityLogModel(1)
-        val payload = FetchedActivityLogPayload(listOf(activity), site, 1, 0)
+        val payload = FetchedActivityLogPayload(listOf(activity), site, 1, 1, 0)
 
         activityLogStore.onAction(ActivityLogActionBuilder.newFetchedActivitiesAction(payload))
 
@@ -133,7 +133,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         assertEquals(activityLogForSite[0], activity)
 
         val updatedName = "updatedName"
-        val updatedPayload = FetchedActivityLogPayload(listOf(activity.copy(name = updatedName)), site, 1, 0)
+        val updatedPayload = FetchedActivityLogPayload(listOf(activity.copy(name = updatedName)), site, 1, 1, 0)
 
         activityLogStore.onAction(ActivityLogActionBuilder.newFetchedActivitiesAction(updatedPayload))
 
