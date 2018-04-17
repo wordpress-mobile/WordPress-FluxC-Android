@@ -10,6 +10,7 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatus
@@ -17,6 +18,7 @@ import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
+import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -103,9 +105,27 @@ class WCOrderStoreTest {
     }
 
     @Test
+    fun testUpdateOrderStatus() {
+        val orderModel = OrderTestUtils.generateSampleOrder(42)
+        val site = SiteModel().apply { id = orderModel.localSiteId }
+        OrderSqlUtils.insertOrUpdateOrder(orderModel)
+
+        // Simulate incoming action with updated order model
+        val payload = RemoteOrderPayload(orderModel.apply { status = OrderStatus.REFUNDED }, site)
+        orderStore.onAction(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
+
+        with (orderStore.getOrderByLocalOrderId(orderModel.id)!!) {
+            // The version of the order model in the database should have the updated status
+            assertEquals(OrderStatus.REFUNDED, status)
+            // Other fields should not be altered by the update
+            assertEquals(orderModel.currency, currency)
+        }
+    }
+
+    @Test
     fun testOrderErrorType() {
-        assertEquals(OrderErrorType.REST_INVALID_PARAM, OrderErrorType.fromString("rest_invalid_param"))
-        assertEquals(OrderErrorType.REST_INVALID_PARAM, OrderErrorType.fromString("REST_INVALID_PARAM"))
+        assertEquals(OrderErrorType.INVALID_PARAM, OrderErrorType.fromString("invalid_param"))
+        assertEquals(OrderErrorType.INVALID_PARAM, OrderErrorType.fromString("INVALID_PARAM"))
         assertEquals(OrderErrorType.GENERIC_ERROR, OrderErrorType.fromString(""))
     }
 }

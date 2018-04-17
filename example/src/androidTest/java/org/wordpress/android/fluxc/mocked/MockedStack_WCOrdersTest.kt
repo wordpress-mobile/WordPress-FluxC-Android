@@ -12,10 +12,13 @@ import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.module.MockedNetworkModule
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
+import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -26,6 +29,10 @@ import kotlin.properties.Delegates.notNull
  * network component(s).
  */
 class MockedStack_WCOrdersTest : MockedStack_Base() {
+    companion object {
+        const val TEST_UPDATE_ORDER_ID = 88L
+    }
+
     @Inject internal lateinit var orderRestClient: OrderRestClient
     @Inject internal lateinit var dispatcher: Dispatcher
 
@@ -41,7 +48,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testSuccessfulOrderFetch() {
+    fun testOrderListFetchSuccess() {
         orderRestClient.fetchOrders(SiteModel().apply {
             id = 5
             siteId = 567
@@ -96,7 +103,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
-    fun testOrderFetchErrorResponse() {
+    fun testOrderListFetchError() {
         orderRestClient.fetchOrders(SiteModel().apply { siteId = MockedNetworkModule.FAILURE_SITE_ID }, 0)
 
         countDownLatch = CountDownLatch(1)
@@ -105,6 +112,66 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         assertEquals(WCOrderAction.FETCHED_ORDERS, lastAction!!.type)
         val payload = lastAction!!.payload as FetchOrdersResponsePayload
         assertNotNull(payload.error)
+    }
+
+    @Test
+    fun testOrderStatusUpdateSuccess() {
+        val siteModel = SiteModel().apply {
+            id = 5
+            siteId = 567
+        }
+
+        val originalOrder = WCOrderModel().apply {
+            id = 8
+            localSiteId = siteModel.id
+            status = OrderStatus.PROCESSING
+            remoteOrderId = TEST_UPDATE_ORDER_ID
+            total = "15.00"
+        }
+
+        orderRestClient.updateOrderStatus(originalOrder, siteModel, OrderStatus.REFUNDED)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCOrderAction.UPDATED_ORDER_STATUS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteOrderPayload
+        with (payload) {
+            assertNull(error)
+            assertEquals(originalOrder.id, order.id)
+            assertEquals(siteModel.id, order.localSiteId)
+            assertEquals(originalOrder.remoteOrderId, order.remoteOrderId)
+            assertEquals(OrderStatus.REFUNDED, order.status)
+        }
+    }
+
+    @Test
+    fun testOrderStatusUpdateError() {
+        val siteModel = SiteModel().apply {
+            id = 5
+            siteId = MockedNetworkModule.FAILURE_SITE_ID
+        }
+
+        val originalOrder = WCOrderModel().apply {
+            id = 8
+            localSiteId = siteModel.id
+            status = OrderStatus.PROCESSING
+            remoteOrderId = TEST_UPDATE_ORDER_ID
+            total = "15.00"
+        }
+
+        orderRestClient.updateOrderStatus(originalOrder, siteModel, OrderStatus.REFUNDED)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCOrderAction.UPDATED_ORDER_STATUS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteOrderPayload
+        with (payload) {
+            // Expecting a 'invalid id' error from the server
+            assertNotNull(error)
+            assertEquals(OrderErrorType.INVALID_ID, error.type)
+        }
     }
 
     @Suppress("unused")

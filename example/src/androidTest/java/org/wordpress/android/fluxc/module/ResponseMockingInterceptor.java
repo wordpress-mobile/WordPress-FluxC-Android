@@ -31,6 +31,8 @@ import okio.Buffer;
 import okio.BufferedSource;
 import okio.Okio;
 
+import static org.wordpress.android.fluxc.mocked.MockedStack_WCOrdersTest.TEST_UPDATE_ORDER_ID;
+
 class ResponseMockingInterceptor implements Interceptor {
     @Override
     public Response intercept(@NonNull Interceptor.Chain chain) throws IOException {
@@ -81,6 +83,12 @@ class ResponseMockingInterceptor implements Interceptor {
                     } else {
                         return buildWCOrdersSuccessResponse(request);
                     }
+                case "/wc/v2/orders/" + TEST_UPDATE_ORDER_ID + "/":
+                    if (requestUrl.contains(String.valueOf(MockedNetworkModule.FAILURE_SITE_ID))) {
+                        return buildWCOrderUpdateFailureResponse(request);
+                    } else {
+                        return buildWCOrderUpdateSuccessResponse(request);
+                    }
             }
         }
         throw new IllegalStateException("Interceptor was given a request with no mocks - URL: " + requestUrl);
@@ -112,6 +120,14 @@ class ResponseMockingInterceptor implements Interceptor {
 
     private Response buildWCOrdersSuccessResponse(Request request) {
         return buildSuccessResponse(request, "wc-orders-response-success.json");
+    }
+
+    private Response buildWCOrderUpdateSuccessResponse(Request request) {
+        return buildSuccessResponse(request, "wc-order-update-response-success.json");
+    }
+
+    private Response buildWCOrderUpdateFailureResponse(Request request) {
+        return buildErrorResponse(request, "wc-order-update-response-failure-invalid-id.json", 400);
     }
 
     private Response buildSuccessResponse(Request request, String resourceFileName) {
