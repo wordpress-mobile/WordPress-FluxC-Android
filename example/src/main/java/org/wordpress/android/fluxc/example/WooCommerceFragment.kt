@@ -64,7 +64,7 @@ class WooCommerceFragment : Fragment() {
                         val payload = UpdateOrderStatusPayload(order, site, status)
                         dispatcher.dispatch(WCOrderActionBuilder.newUpdateOrderStatusAction(payload))
                     })
-                } ?: run { showNoOrdersToast(site) }
+                } ?: showNoOrdersToast(site)
             } ?: showNoWCSitesToast()
         }
     }

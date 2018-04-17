@@ -71,8 +71,8 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
                     countDownLatch.countDown()
                 },
                 BaseErrorListener { error ->
-                    throw AssertionError("Unexpected BaseNetworkError: "
-                            + (error as WPComGsonNetworkError).apiError + " - " + error.message)
+                    throw AssertionError("Unexpected BaseNetworkError: " +
+                            (error as WPComGsonNetworkError).apiError + " - " + error.message)
                 })
 
         jetpackTunnelClient.exposedAdd(request)
@@ -96,8 +96,8 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
                     countDownLatch.countDown()
                 },
                 BaseErrorListener { error ->
-                    throw AssertionError("Unexpected BaseNetworkError: "
-                            + (error as WPComGsonNetworkError).apiError + " - " + error.message)
+                    throw AssertionError("Unexpected BaseNetworkError: " +
+                            (error as WPComGsonNetworkError).apiError + " - " + error.message)
                 })
 
         jetpackTunnelClient.exposedAdd(request)
@@ -105,9 +105,12 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
     }
 
     @Singleton
-    class JetpackTunnelClientForTests @Inject constructor(appContext: Context, dispatcher: Dispatcher,
-                                                          requestQueue: RequestQueue, accessToken: AccessToken,
-                                                          userAgent: UserAgent
+    class JetpackTunnelClientForTests @Inject constructor(
+        appContext: Context,
+        dispatcher: Dispatcher,
+        requestQueue: RequestQueue,
+        accessToken: AccessToken,
+        userAgent: UserAgent
     ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
         /**
          * Wraps and exposes the protected [add] method so that tests can add requests directly.
