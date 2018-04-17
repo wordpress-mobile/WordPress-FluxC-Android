@@ -187,6 +187,66 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     }
 
     @Test
+    public void testWPComPostTracksOptOutNoChange() throws InterruptedException {
+        if (!mAccountStore.hasAccessToken()) {
+            mNextEvent = TestEvents.AUTHENTICATE;
+            authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        }
+
+        // First, fetch account settings
+        mNextEvent = TestEvents.FETCHED;
+        mCountDownLatch = new CountDownLatch(2);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
+        mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        mNextEvent = TestEvents.POSTED;
+        PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
+        Boolean newValue = mAccountStore.getAccount().getTracksOptOut();
+        mExpectAccountInfosChanged = false;
+        payload.params = new HashMap<>();
+        payload.params.put("tracks_opt_out", newValue);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(newValue, mAccountStore.getAccount().getTracksOptOut());
+    }
+
+    @Test
+    public void testWPComPostTracksOptOut() throws InterruptedException {
+        if (!mAccountStore.hasAccessToken()) {
+            mNextEvent = TestEvents.AUTHENTICATE;
+            authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        } else if (!mAccountStore.getAccount().getUserName().equals(BuildConfig.TEST_WPCOM_USERNAME_TEST1)) {
+            // If we're logged in as any user other than the test user, switch accounts
+            // This is to avoid surprise changes to the description of non-test accounts
+            signOut();
+            mNextEvent = TestEvents.AUTHENTICATE;
+            authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        }
+
+        // First, fetch account settings
+        mNextEvent = TestEvents.FETCHED;
+        mCountDownLatch = new CountDownLatch(2);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
+        mDispatcher.dispatch(AccountActionBuilder.newFetchSettingsAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        mNextEvent = TestEvents.POSTED;
+        PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
+        Boolean newValue = !mAccountStore.getAccount().getTracksOptOut();
+        mExpectAccountInfosChanged = true;
+        payload.params = new HashMap<>();
+        payload.params.put("tracks_opt_out", newValue);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(AccountActionBuilder.newPushSettingsAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(newValue, mAccountStore.getAccount().getTracksOptOut());
+    }
+
+    @Test
     public void testChangeWPComUsernameInvalidInputError() throws InterruptedException {
         if (!mAccountStore.hasAccessToken()) {
             mNextEvent = TestEvents.AUTHENTICATE;
