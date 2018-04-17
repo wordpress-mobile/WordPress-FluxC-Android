@@ -20,8 +20,13 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import javax.inject.Singleton
 
 @Singleton
-class OrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue: RequestQueue,
-                      accessToken: AccessToken, userAgent: UserAgent)
+class OrderRestClient(
+    appContext: Context,
+    dispatcher: Dispatcher,
+    requestQueue: RequestQueue,
+    accessToken: AccessToken,
+    userAgent: UserAgent
+)
     : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET call to `/wc/v2/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),

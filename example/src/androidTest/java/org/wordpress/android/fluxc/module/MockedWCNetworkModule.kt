@@ -14,7 +14,12 @@ import javax.inject.Singleton
 class MockedWCNetworkModule {
     @Singleton
     @Provides
-    fun provideOrderRestClient(appContext: Context, dispatcher: Dispatcher, requestQueue: RequestQueue,
-                               token: AccessToken, userAgent: UserAgent) =
+    fun provideOrderRestClient(
+        appContext: Context,
+        dispatcher: Dispatcher,
+        requestQueue: RequestQueue,
+        token: AccessToken,
+        userAgent: UserAgent
+    ) =
             OrderRestClient(appContext, dispatcher, requestQueue, token, userAgent)
 }

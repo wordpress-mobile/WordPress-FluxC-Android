@@ -15,8 +15,12 @@ import javax.inject.Singleton
 class ReleaseWCNetworkModule {
     @Singleton
     @Provides
-    fun provideOrderRestClient(appContext: Context, dispatcher: Dispatcher,
-                               @Named("regular") requestQueue: RequestQueue,
-                               token: AccessToken, userAgent: UserAgent) =
+    fun provideOrderRestClient(
+        appContext: Context,
+        dispatcher: Dispatcher,
+        @Named("regular") requestQueue: RequestQueue,
+        token: AccessToken,
+        userAgent: UserAgent
+    ) =
             OrderRestClient(appContext, dispatcher, requestQueue, token, userAgent)
 }

@@ -28,15 +28,15 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     class FetchOrdersPayload(
-            var site: SiteModel,
-            var loadMore: Boolean = false
+        var site: SiteModel,
+        var loadMore: Boolean = false
     ) : Payload<BaseNetworkError>()
 
     class FetchOrdersResponsePayload(
-            var site: SiteModel,
-            var orders: List<WCOrderModel> = emptyList(),
-            var loadedMore: Boolean = false,
-            var canLoadMore: Boolean = false
+        var site: SiteModel,
+        var orders: List<WCOrderModel> = emptyList(),
+        var loadedMore: Boolean = false,
+        var canLoadMore: Boolean = false
     ) : Payload<OrderError>() {
         constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
     }
