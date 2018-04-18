@@ -223,7 +223,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     @Test
     public void testIneligibleForAutomatedTransfer() throws InterruptedException {
-        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_ONE_JETPACK,
+                BuildConfig.TEST_WPCOM_PASSWORD_ONE_JETPACK);
         SiteModel firstSite = mSiteStore.getSites().get(0);
         mNextEvent = TestEvents.INELIGIBLE_FOR_AUTOMATED_TRANSFER;
         mDispatcher.dispatch(SiteActionBuilder.newCheckAutomatedTransferEligibilityAction(firstSite));
