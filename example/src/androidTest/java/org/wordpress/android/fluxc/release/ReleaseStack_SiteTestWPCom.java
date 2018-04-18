@@ -16,7 +16,11 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.AutomatedTransferErrorType;
+import org.wordpress.android.fluxc.store.SiteStore.InitiateAutomatedTransferPayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferEligibilityChecked;
+import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferInitiated;
+import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferStatusChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
@@ -59,7 +63,9 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS,
         ERROR_INVALID_SITE,
         ERROR_UNKNOWN_SITE,
-        INELIGIBLE_FOR_AUTOMATED_TRANSFER
+        INELIGIBLE_FOR_AUTOMATED_TRANSFER,
+        INITIATE_INELIGIBLE_AUTOMATED_TRANSFER,
+        AUTOMATED_TRANSFER_NOT_FOUND
     }
 
     private TestEvents mNextEvent;
@@ -232,6 +238,30 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
+    public void testInitiateIneligibleAutomatedTransfer() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_ONE_JETPACK,
+                BuildConfig.TEST_WPCOM_PASSWORD_ONE_JETPACK);
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+        mNextEvent = TestEvents.INITIATE_INELIGIBLE_AUTOMATED_TRANSFER;
+        mDispatcher.dispatch(SiteActionBuilder
+                .newInitiateAutomatedTransferAction(new InitiateAutomatedTransferPayload(firstSite, "react")));
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testCheckAutomatedTransferStatusNotFound() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_ONE_JETPACK,
+                BuildConfig.TEST_WPCOM_PASSWORD_ONE_JETPACK);
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+        mNextEvent = TestEvents.AUTOMATED_TRANSFER_NOT_FOUND;
+        mDispatcher.dispatch(SiteActionBuilder.newCheckAutomatedTransferStatusAction(firstSite));
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -360,6 +390,24 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertNotNull(event.site);
         assertFalse(event.isEligible);
         assertFalse(event.eligibilityErrorCodes.isEmpty());
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onAutomatedTransferInitiated(OnAutomatedTransferInitiated event) {
+        assertEquals(mNextEvent, TestEvents.INITIATE_INELIGIBLE_AUTOMATED_TRANSFER);
+        assertTrue(event.isError());
+        assertEquals(event.error.type, AutomatedTransferErrorType.AT_NOT_ELIGIBLE);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onAutomatedTransferStatusChecked(OnAutomatedTransferStatusChecked event) {
+        assertEquals(mNextEvent, TestEvents.AUTOMATED_TRANSFER_NOT_FOUND);
+        assertTrue(event.isError());
+        assertEquals(event.error.type, AutomatedTransferErrorType.NOT_FOUND);
         mCountDownLatch.countDown();
     }
 
