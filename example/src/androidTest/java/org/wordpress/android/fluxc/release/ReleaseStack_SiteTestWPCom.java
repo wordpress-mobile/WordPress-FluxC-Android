@@ -259,7 +259,6 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mDispatcher.dispatch(SiteActionBuilder.newCheckAutomatedTransferStatusAction(firstSite));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
     }
 
     @SuppressWarnings("unused")
