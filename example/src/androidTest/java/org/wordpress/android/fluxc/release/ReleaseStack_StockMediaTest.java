@@ -8,6 +8,8 @@ import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.StockMediaActionBuilder;
 import org.wordpress.android.fluxc.model.StockMediaModel;
 import org.wordpress.android.fluxc.store.StockMediaStore;
+import org.wordpress.android.fluxc.store.StockMediaStore.FetchStockMediaListPayload;
+import org.wordpress.android.fluxc.store.StockMediaStore.OnStockMediaListFetched;
 import org.wordpress.android.util.AppLog;
 
 import java.util.List;
@@ -57,8 +59,7 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     }
 
     private void fetchStockMediaList(@NonNull String searchTerm, int page) throws InterruptedException {
-        StockMediaStore.FetchStockMediaListPayload fetchPayload =
-                new StockMediaStore.FetchStockMediaListPayload(searchTerm, page);
+        FetchStockMediaListPayload fetchPayload = new FetchStockMediaListPayload(searchTerm, page);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(StockMediaActionBuilder.newFetchStockMediaAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -77,7 +78,7 @@ public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onStockMediaListFetched(StockMediaStore.OnStockMediaListFetched event) {
+    public void onStockMediaListFetched(OnStockMediaListFetched event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: "
                     + event.error.type);

@@ -37,8 +37,10 @@ import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.store.PostStore;
+import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
+import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.utils.MediaUtils;
@@ -199,7 +201,7 @@ public class PostActivity extends AppCompatActivity {
                              + "\" height=\"" + mMedia.getHeight() + "\" />";
         post.setContent(postContent);
 
-        PostStore.RemotePostPayload payload = new PostStore.RemotePostPayload(post, mSite);
+        RemotePostPayload payload = new RemotePostPayload(post, mSite);
         mDispatcher.dispatch(PostActionBuilder.newPushPostAction(payload));
         AppLog.i(AppLog.T.API, "Create a new media post for " + mMedia.getUrl());
     }
@@ -289,7 +291,7 @@ public class PostActivity extends AppCompatActivity {
     }
 
     private void fetchPosts() {
-        PostStore.FetchPostsPayload payload = new PostStore.FetchPostsPayload(mSite);
+        FetchPostsPayload payload = new FetchPostsPayload(mSite);
         mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
     }
 
