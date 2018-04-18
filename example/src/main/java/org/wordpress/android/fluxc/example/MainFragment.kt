@@ -312,8 +312,8 @@ class MainFragment : Fragment() {
         }
         if (siteStore.hasSite()) {
             val firstSite = siteStore.sites[0]
-            prependToLog("First site name: " + firstSite.name + " - Total sites: " + siteStore.sitesCount
-                    + " - rowsAffected: " + event.rowsAffected)
+            prependToLog("First site name: " + firstSite.name + " - Total sites: " + siteStore.sitesCount +
+                    " - rowsAffected: " + event.rowsAffected)
         }
     }
 

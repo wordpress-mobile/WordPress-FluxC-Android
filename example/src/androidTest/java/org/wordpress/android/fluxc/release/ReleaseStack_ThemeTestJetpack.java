@@ -15,8 +15,20 @@ import org.wordpress.android.fluxc.generated.ThemeActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.ThemeModel;
 import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
+import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
+import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.ThemeStore;
+import org.wordpress.android.fluxc.store.ThemeStore.OnCurrentThemeFetched;
+import org.wordpress.android.fluxc.store.ThemeStore.OnSiteThemesChanged;
+import org.wordpress.android.fluxc.store.ThemeStore.OnThemeActivated;
+import org.wordpress.android.fluxc.store.ThemeStore.OnThemeDeleted;
+import org.wordpress.android.fluxc.store.ThemeStore.OnThemeInstalled;
+import org.wordpress.android.fluxc.store.ThemeStore.OnThemeRemoved;
+import org.wordpress.android.fluxc.store.ThemeStore.OnWpComThemesChanged;
 import org.wordpress.android.fluxc.store.ThemeStore.SiteThemePayload;
 
 import java.util.List;
@@ -207,7 +219,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onSiteThemesChanged(ThemeStore.OnSiteThemesChanged event) {
+    public void onSiteThemesChanged(OnSiteThemesChanged event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -224,7 +236,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onWpComThemesChanged(ThemeStore.OnWpComThemesChanged event) {
+    public void onWpComThemesChanged(OnWpComThemesChanged event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -234,7 +246,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onCurrentThemeFetched(ThemeStore.OnCurrentThemeFetched event) {
+    public void onCurrentThemeFetched(OnCurrentThemeFetched event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -246,7 +258,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onThemeActivated(ThemeStore.OnThemeActivated event) {
+    public void onThemeActivated(OnThemeActivated event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -256,7 +268,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onThemeInstalled(ThemeStore.OnThemeInstalled event) {
+    public void onThemeInstalled(OnThemeInstalled event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -266,7 +278,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onThemeDeleted(ThemeStore.OnThemeDeleted event) {
+    public void onThemeDeleted(OnThemeDeleted event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -276,7 +288,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onThemeRemoved(ThemeStore.OnThemeRemoved event) {
+    public void onThemeRemoved(OnThemeRemoved event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -286,7 +298,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onAuthenticationChanged(AccountStore.OnAuthenticationChanged event) {
+    public void onAuthenticationChanged(OnAuthenticationChanged event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -295,7 +307,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onAccountChanged(AccountStore.OnAccountChanged event) {
+    public void onAccountChanged(OnAccountChanged event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -304,7 +316,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onSiteChanged(SiteStore.OnSiteChanged event) {
+    public void onSiteChanged(OnSiteChanged event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -313,7 +325,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onSiteRemoved(SiteStore.OnSiteRemoved event) {
+    public void onSiteRemoved(OnSiteRemoved event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
@@ -334,7 +346,7 @@ public class ReleaseStack_ThemeTestJetpack extends ReleaseStack_Base {
 
     private void authenticateWPComAndFetchSites(String username, String password) throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
-        AccountStore.AuthenticatePayload payload = new AccountStore.AuthenticatePayload(username, password);
+        AuthenticatePayload payload = new AuthenticatePayload(username, password);
         mCountDownLatch = new CountDownLatch(1);
 
         // Correct user we should get an OnAuthenticationChanged message
