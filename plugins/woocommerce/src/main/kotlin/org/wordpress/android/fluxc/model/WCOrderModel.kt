@@ -9,6 +9,7 @@ import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.order.OrderAddress
 import org.wordpress.android.fluxc.model.order.OrderAddress.AddressType
+import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
@@ -83,6 +84,11 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     override fun setId(id: Int) {
         this.id = id
     }
+
+    /**
+     * Returns an [OrderIdentifier], representing a unique identifier for this [WCOrderModel].
+     */
+    fun getIdentifier() = OrderIdentifier(this)
 
     /**
      * Returns true if there are shipping details defined for this order,

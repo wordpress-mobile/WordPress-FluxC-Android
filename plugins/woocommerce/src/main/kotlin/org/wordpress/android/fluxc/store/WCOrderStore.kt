@@ -1,7 +1,5 @@
 package org.wordpress.android.fluxc.store
 
-import com.wellsql.generated.WCOrderModelTable
-import com.yarolegovich.wellsql.WellSql
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -12,6 +10,8 @@ import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.order.OrderIdentifier
+import org.wordpress.android.fluxc.model.order.toIdSet
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatus
@@ -101,12 +101,11 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             OrderSqlUtils.getOrdersForSite(site, status = status.asList())
 
     /**
-     * Given a local ID for an order, returns that order as a [WCOrderModel].
+     * Given an [OrderIdentifier], returns the corresponding order from the database as a [WCOrderModel].
      */
-    fun getOrderByLocalOrderId(localId: Int): WCOrderModel? =
-            WellSql.select(WCOrderModel::class.java)
-                .where().equals(WCOrderModelTable.ID, localId).endWhere()
-                .asModel.firstOrNull()
+    fun getOrderByIdentifier(orderIdentifier: OrderIdentifier): WCOrderModel? {
+        return OrderSqlUtils.getOrderForIdSet((orderIdentifier.toIdSet()))
+    }
 
     /**
      * Returns the notes belonging to supplied [WCOrderModel] as a list of [WCOrderNoteModel].
