@@ -18,6 +18,12 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.ThemeModel
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.ThemeStore
+import org.wordpress.android.fluxc.store.ThemeStore.OnCurrentThemeFetched
+import org.wordpress.android.fluxc.store.ThemeStore.OnSiteThemesChanged
+import org.wordpress.android.fluxc.store.ThemeStore.OnThemeActivated
+import org.wordpress.android.fluxc.store.ThemeStore.OnThemeDeleted
+import org.wordpress.android.fluxc.store.ThemeStore.OnThemeInstalled
+import org.wordpress.android.fluxc.store.ThemeStore.OnWpComThemesChanged
 import javax.inject.Inject
 
 class ThemeFragment : Fragment() {
@@ -149,7 +155,7 @@ class ThemeFragment : Fragment() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onThemeInstalled(event: ThemeStore.OnThemeInstalled) {
+    fun onThemeInstalled(event: OnThemeInstalled) {
         prependToLog("onThemeInstalled: ")
         if (event.isError) {
             prependToLog("error: " + event.error.message)
@@ -160,7 +166,7 @@ class ThemeFragment : Fragment() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onThemeDeleted(event: ThemeStore.OnThemeDeleted) {
+    fun onThemeDeleted(event: OnThemeDeleted) {
         prependToLog("onThemeDeleted: ")
         if (event.isError) {
             prependToLog("error: " + event.error.message)
@@ -171,7 +177,7 @@ class ThemeFragment : Fragment() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onThemeActivated(event: ThemeStore.OnThemeActivated) {
+    fun onThemeActivated(event: OnThemeActivated) {
         prependToLog("onThemeActivated: ")
         if (event.isError) {
             prependToLog("error: " + event.error.message)
@@ -182,7 +188,7 @@ class ThemeFragment : Fragment() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onCurrentThemeFetched(event: ThemeStore.OnCurrentThemeFetched) {
+    fun onCurrentThemeFetched(event: OnCurrentThemeFetched) {
         prependToLog("onCurrentThemeFetched: ")
         if (event.isError) {
             prependToLog("error: " + event.error.message)
@@ -193,7 +199,7 @@ class ThemeFragment : Fragment() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onSiteThemesChanged(event: ThemeStore.OnSiteThemesChanged) {
+    fun onSiteThemesChanged(event: OnSiteThemesChanged) {
         prependToLog("onSiteThemesChanged: ")
         if (event.isError) {
             prependToLog("error: " + event.error.message)
@@ -208,7 +214,7 @@ class ThemeFragment : Fragment() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onWpComThemesChanged(event: ThemeStore.OnWpComThemesChanged) {
+    fun onWpComThemesChanged(event: OnWpComThemesChanged) {
         prependToLog("onWpComThemesChanged: ")
         if (event.isError) {
             prependToLog("error: " + event.error.message)
