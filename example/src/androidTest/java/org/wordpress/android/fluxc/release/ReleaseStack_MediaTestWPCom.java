@@ -22,6 +22,8 @@ import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
+import org.wordpress.android.fluxc.store.MediaStore.OnStockMediaUploaded;
+import org.wordpress.android.fluxc.store.MediaStore.UploadStockMediaPayload;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
 
@@ -549,7 +551,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onStockMediaUploaded(MediaStore.OnStockMediaUploaded event) {
+    public void onStockMediaUploaded(OnStockMediaUploaded event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: "
                                      + event.error.type);
@@ -702,8 +704,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private void uploadStockMedia(@NonNull List<StockMediaModel> stockMediaList) throws InterruptedException {
-        MediaStore.UploadStockMediaPayload uploadPayload =
-                new MediaStore.UploadStockMediaPayload(sSite, stockMediaList);
+        UploadStockMediaPayload uploadPayload = new UploadStockMediaPayload(sSite, stockMediaList);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadStockMediaAction(uploadPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
