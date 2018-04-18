@@ -326,38 +326,23 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     @Test
     public void testSendAuthEmail() throws InterruptedException {
-        mNextEvent = TestEvents.SENT_AUTH_EMAIL;
-        AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, false, null, null);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // Payload with neither flow nor source
+        testSendAuthEmailWithPayload(new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, false,
+                null, null));
+        // Payload with both flow and source
+        testSendAuthEmailWithPayload(new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, false,
+                AuthEmailPayloadFlow.JETPACK, AuthEmailPayloadSource.NOTIFICATIONS));
+        // Payload with flow only
+        testSendAuthEmailWithPayload(new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, false,
+                AuthEmailPayloadFlow.JETPACK, null));
+        // Payload with source only
+        testSendAuthEmailWithPayload(new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, false,
+                null, AuthEmailPayloadSource.STATS));
     }
 
     @Test
-    public void testSendAuthEmailWithFlow() throws InterruptedException {
+    public void testSendAuthEmailWithPayload(AuthEmailPayload payload) throws InterruptedException {
         mNextEvent = TestEvents.SENT_AUTH_EMAIL;
-        AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, false,
-                AuthEmailPayloadFlow.JETPACK, null);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    @Test
-    public void testSendAuthEmailWithFlowAndSource() throws InterruptedException {
-        mNextEvent = TestEvents.SENT_AUTH_EMAIL;
-        AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, false,
-                AuthEmailPayloadFlow.JETPACK, AuthEmailPayloadSource.NOTIFICATIONS);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    @Test
-    public void testSendAuthEmailWithSource() throws InterruptedException {
-        mNextEvent = TestEvents.SENT_AUTH_EMAIL;
-        AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, false, null,
-                AuthEmailPayloadSource.STATS);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -365,38 +350,23 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     @Test
     public void testSendAuthEmailViaUsername() throws InterruptedException {
-        mNextEvent = TestEvents.SENT_AUTH_EMAIL;
-        AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1, false, null, null);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // Payload with neither flow nor source
+        testSendAuthEmailViaUsernameWithPayload(new AuthEmailPayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1, false,
+                null, null));
+        // Payload with both flow and source
+        testSendAuthEmailViaUsernameWithPayload(new AuthEmailPayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1, false,
+                AuthEmailPayloadFlow.JETPACK, AuthEmailPayloadSource.NOTIFICATIONS));
+        // Payload with flow only
+        testSendAuthEmailViaUsernameWithPayload(new AuthEmailPayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1, false,
+                AuthEmailPayloadFlow.JETPACK, null));
+        // Payload with source only
+        testSendAuthEmailViaUsernameWithPayload(new AuthEmailPayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1, false,
+                null, AuthEmailPayloadSource.STATS));
     }
 
     @Test
-    public void testSendAuthEmailViaUsernameWithFlow() throws InterruptedException {
+    public void testSendAuthEmailViaUsernameWithPayload(AuthEmailPayload payload) throws InterruptedException {
         mNextEvent = TestEvents.SENT_AUTH_EMAIL;
-        AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1, false,
-                AuthEmailPayloadFlow.JETPACK, null);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    @Test
-    public void testSendAuthEmailViaUsernameWithFlowAndSource() throws InterruptedException {
-        mNextEvent = TestEvents.SENT_AUTH_EMAIL;
-        AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1, false,
-                AuthEmailPayloadFlow.JETPACK, AuthEmailPayloadSource.NOTIFICATIONS);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    @Test
-    public void testSendAuthEmailViaUsernameWithSource() throws InterruptedException {
-        mNextEvent = TestEvents.SENT_AUTH_EMAIL;
-        AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_USERNAME_TEST1, false, null,
-                AuthEmailPayloadSource.STATS);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -404,40 +374,24 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     @Test
     public void testSendAuthEmailInvalid() throws InterruptedException {
-        // even for an invalid email address, the v1.3 /auth/send-login-email endpoint returns "User does not exist"
-        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER;
-        AuthEmailPayload payload = new AuthEmailPayload("email@domain", false, null, null);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // Payload with neither flow nor source
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload("email@domain", false,
+                null, null));
+        // Payload with both flow and source
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload("email@domain", false,
+                AuthEmailPayloadFlow.JETPACK, AuthEmailPayloadSource.NOTIFICATIONS));
+        // Payload with flow only
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload("email@domain", false,
+                AuthEmailPayloadFlow.JETPACK, null));
+        // Payload with source only
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload("email@domain", false,
+                null, AuthEmailPayloadSource.STATS));
     }
 
     @Test
-    public void testSendAuthEmailInvalidWithFlowAndSource() throws InterruptedException {
+    public void testSendAuthEmailInvalidWithPayload(AuthEmailPayload payload) throws InterruptedException {
         // even for an invalid email address, the v1.3 /auth/send-login-email endpoint returns "User does not exist"
         mNextEvent = TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER;
-        AuthEmailPayload payload = new AuthEmailPayload("email@domain", false,
-                AuthEmailPayloadFlow.JETPACK, AuthEmailPayloadSource.NOTIFICATIONS);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    @Test
-    public void testSendAuthEmailInvalidWithFlow() throws InterruptedException {
-        // even for an invalid email address, the v1.3 /auth/send-login-email endpoint returns "User does not exist"
-        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER;
-        AuthEmailPayload payload = new AuthEmailPayload("email@domain", false, AuthEmailPayloadFlow.JETPACK, null);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    @Test
-    public void testSendAuthEmailInvalidWithSource() throws InterruptedException {
-        // even for an invalid email address, the v1.3 /auth/send-login-email endpoint returns "User does not exist"
-        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER;
-        AuthEmailPayload payload = new AuthEmailPayload("email@domain", false, null, AuthEmailPayloadSource.STATS);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -445,40 +399,25 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     @Test
     public void testSendAuthEmailNoSuchUser() throws InterruptedException {
-        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER;
         String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
-        AuthEmailPayload payload = new AuthEmailPayload(unknownEmail, false, null, null);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Payload with neither flow nor source
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload(unknownEmail, false,
+                null, null));
+        // Payload with both flow and source
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload(unknownEmail, false,
+                AuthEmailPayloadFlow.JETPACK, AuthEmailPayloadSource.NOTIFICATIONS));
+        // Payload with flow only
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload(unknownEmail, false,
+                AuthEmailPayloadFlow.JETPACK, null));
+        // Payload with source only
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload(unknownEmail, false,
+                null, AuthEmailPayloadSource.STATS));
     }
 
     @Test
-    public void testSendAuthEmailNoSuchUserWithFlow() throws InterruptedException {
+    public void testSendAuthEmailNoSuchUserWithPayload(AuthEmailPayload payload) throws InterruptedException {
         mNextEvent = TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER;
-        String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
-        AuthEmailPayload payload = new AuthEmailPayload(unknownEmail, false, AuthEmailPayloadFlow.JETPACK, null);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    @Test
-    public void testSendAuthEmailNoSuchUserWithFlowAndSource() throws InterruptedException {
-        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER;
-        String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
-        AuthEmailPayload payload = new AuthEmailPayload(unknownEmail, false,
-                AuthEmailPayloadFlow.JETPACK, AuthEmailPayloadSource.NOTIFICATIONS);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    @Test
-    public void testSendAuthEmailNoSuchUserWithSource() throws InterruptedException {
-        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_NO_SUCH_USER;
-        String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
-        AuthEmailPayload payload = new AuthEmailPayload(unknownEmail, false, null, AuthEmailPayloadSource.STATS);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -486,40 +425,25 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     @Test
     public void testSendAuthEmailSignup() throws InterruptedException {
-        mNextEvent = TestEvents.SENT_AUTH_EMAIL;
         String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
-        AuthEmailPayload payload = new AuthEmailPayload(unknownEmail, true, null, null);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Payload with neither flow nor source
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload(unknownEmail, true,
+                null, null));
+        // Payload with both flow and source
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload(unknownEmail, true,
+                AuthEmailPayloadFlow.JETPACK, AuthEmailPayloadSource.NOTIFICATIONS));
+        // Payload with flow only
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload(unknownEmail, true,
+                AuthEmailPayloadFlow.JETPACK, null));
+        // Payload with source only
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload(unknownEmail, true,
+                null, AuthEmailPayloadSource.STATS));
     }
 
     @Test
-    public void testSendAuthEmailSignupWithFlow() throws InterruptedException {
+    public void testSendAuthEmailSignupWithPayload(AuthEmailPayload payload) throws InterruptedException {
         mNextEvent = TestEvents.SENT_AUTH_EMAIL;
-        String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
-        AuthEmailPayload payload = new AuthEmailPayload(unknownEmail, true, AuthEmailPayloadFlow.JETPACK, null);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    @Test
-    public void testSendAuthEmailSignupWithFlowAndSource() throws InterruptedException {
-        mNextEvent = TestEvents.SENT_AUTH_EMAIL;
-        String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
-        AuthEmailPayload payload = new AuthEmailPayload(unknownEmail, true,
-                AuthEmailPayloadFlow.JETPACK, AuthEmailPayloadSource.NOTIFICATIONS);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    @Test
-    public void testSendAuthEmailSignupWithSource() throws InterruptedException {
-        mNextEvent = TestEvents.SENT_AUTH_EMAIL;
-        String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
-        AuthEmailPayload payload = new AuthEmailPayload(unknownEmail, true, null, AuthEmailPayloadSource.STATS);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -527,36 +451,23 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     @Test
     public void testSendAuthEmailSignupInvalid() throws InterruptedException {
-        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_INVALID;
-        AuthEmailPayload payload = new AuthEmailPayload("email@domain", true, null, null);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // Payload with neither flow nor source
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload("email@domain", true,
+                null, null));
+        // Payload with both flow and source
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload("email@domain", true,
+                AuthEmailPayloadFlow.JETPACK, AuthEmailPayloadSource.NOTIFICATIONS));
+        // Payload with flow only
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload("email@domain", true,
+                AuthEmailPayloadFlow.JETPACK, null));
+        // Payload with source only
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload("email@domain", true,
+                null, AuthEmailPayloadSource.STATS));
     }
 
     @Test
-    public void testSendAuthEmailSignupInvalidWithFlow() throws InterruptedException {
+    public void testSendAuthEmailSignupInvalidWithPayload(AuthEmailPayload payload) throws InterruptedException {
         mNextEvent = TestEvents.AUTH_EMAIL_ERROR_INVALID;
-        AuthEmailPayload payload = new AuthEmailPayload("email@domain", true, AuthEmailPayloadFlow.JETPACK, null);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    @Test
-    public void testSendAuthEmailSignupInvalidWithFlowAndSource() throws InterruptedException {
-        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_INVALID;
-        AuthEmailPayload payload = new AuthEmailPayload("email@domain", true,
-                AuthEmailPayloadFlow.JETPACK, AuthEmailPayloadSource.NOTIFICATIONS);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    @Test
-    public void testSendAuthEmailSignupInvalidWithSource() throws InterruptedException {
-        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_INVALID;
-        AuthEmailPayload payload = new AuthEmailPayload("email@domain", true, null, AuthEmailPayloadSource.STATS);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -564,38 +475,23 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     @Test
     public void testSendAuthEmailSignupUserExists() throws InterruptedException {
-        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_USER_EXISTS;
-        AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, true, null, null);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // Payload with neither flow nor source
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, true,
+                null, null));
+        // Payload with both flow and source
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, true,
+                AuthEmailPayloadFlow.JETPACK, AuthEmailPayloadSource.NOTIFICATIONS));
+        // Payload with flow only
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, true,
+                AuthEmailPayloadFlow.JETPACK, null));
+        // Payload with source only
+        testSendAuthEmailInvalidWithPayload(new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, true,
+                null, AuthEmailPayloadSource.STATS));
     }
 
     @Test
-    public void testSendAuthEmailSignupUserExistsWithFlow() throws InterruptedException {
+    public void testSendAuthEmailSignupUserExistsWithPayload(AuthEmailPayload payload) throws InterruptedException {
         mNextEvent = TestEvents.AUTH_EMAIL_ERROR_USER_EXISTS;
-        AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, true,
-                AuthEmailPayloadFlow.JETPACK, null);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    @Test
-    public void testSendAuthEmailSignupUserExistsWithFlowAndSource() throws InterruptedException {
-        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_USER_EXISTS;
-        AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, true,
-                AuthEmailPayloadFlow.JETPACK, AuthEmailPayloadSource.NOTIFICATIONS);
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    @Test
-    public void testSendAuthEmailSignupUserExistsWithSource() throws InterruptedException {
-        mNextEvent = TestEvents.AUTH_EMAIL_ERROR_USER_EXISTS;
-        AuthEmailPayload payload = new AuthEmailPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1, true, null,
-                AuthEmailPayloadSource.STATS);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
