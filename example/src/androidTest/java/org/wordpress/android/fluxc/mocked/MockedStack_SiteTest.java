@@ -130,7 +130,8 @@ public class MockedStack_SiteTest extends MockedStack_Base {
         assertNotNull(event.site);
         if (mNextEvent.equals(TestEvents.AUTOMATED_TRANSFER_STATUS_COMPLETE)) {
             assertTrue(event.isCompleted);
-            assertEquals(event.currentStep, event.totalSteps);
+            // It's not guaranteed that currentStep will be equal to totalSteps
+            assertTrue(event.currentStep <= event.totalSteps);
         } else if (mNextEvent.equals(TestEvents.AUTOMATED_TRANSFER_STATUS_INCOMPLETE)) {
             assertFalse(event.isCompleted);
             assertTrue(event.currentStep < event.totalSteps);
