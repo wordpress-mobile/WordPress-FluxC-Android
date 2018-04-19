@@ -7,7 +7,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.0'
+        classpath 'com.android.tools.build:gradle:3.1.1'
         classpath 'com.automattic.android:fetchstyle:1.0'
     }
 }
@@ -69,5 +69,5 @@ subprojects {
 
 ext {
     daggerVersion = '2.11'
-    supportLibraryVersion = '27.1.0'
+    supportLibraryVersion = '27.1.1'
 }
