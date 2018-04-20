@@ -9,13 +9,12 @@ import org.junit.Test
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
-import org.wordpress.android.fluxc.network.BaseRequest.BaseErrorListener
 import org.wordpress.android.fluxc.network.Response
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.discovery.RootWPAPIRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
-import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import java.util.concurrent.CountDownLatch
@@ -48,10 +47,10 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
                 { _: RootWPAPIRestResponse? ->
                     throw AssertionError("Unexpected success!")
                 },
-                BaseErrorListener {
+                WPComErrorListener {
                     error -> run {
                         // Verify that the error response is correctly parsed
-                        assertEquals("rest_no_route", (error as WPComGsonNetworkError).apiError)
+                        assertEquals("rest_no_route", error.apiError)
                         assertEquals("No route was found matching the URL and request method", error.message)
                         countDownLatch.countDown()
                     }
@@ -77,10 +76,10 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
                         countDownLatch.countDown()
                     }
                 },
-                BaseErrorListener {
+                WPComErrorListener {
                     error -> run {
                         throw AssertionError("Unexpected BaseNetworkError: " +
-                                (error as WPComGsonNetworkError).apiError + " - " + error.message)
+                                error.apiError + " - " + error.message)
                     }
                 })
 
@@ -107,10 +106,10 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
                         countDownLatch.countDown()
                     }
                 },
-                BaseErrorListener {
+                WPComErrorListener {
                     error -> run {
                         throw AssertionError("Unexpected BaseNetworkError: " +
-                                (error as WPComGsonNetworkError).apiError + " - " + error.message)
+                                error.apiError + " - " + error.message)
                     }
                 })
 
