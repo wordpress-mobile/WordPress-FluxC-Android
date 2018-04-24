@@ -174,7 +174,6 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
                 text = "text$index",
                 name = "name$index",
                 type = "type",
-                discarded = false,
                 published = Date(index * 100),
                 rewindID = null,
                 gridicon = null,
