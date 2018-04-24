@@ -31,6 +31,8 @@ import okio.Buffer;
 import okio.BufferedSource;
 import okio.Okio;
 
+import static org.wordpress.android.fluxc.mocked.MockedStack_SiteTest.TEST_SITE_ID_TRANSFER_COMPLETE;
+import static org.wordpress.android.fluxc.mocked.MockedStack_SiteTest.TEST_SITE_ID_TRANSFER_INCOMPLETE;
 import static org.wordpress.android.fluxc.mocked.MockedStack_WCOrdersTest.TEST_UPDATE_ORDER_ID;
 
 class ResponseMockingInterceptor implements Interceptor {
@@ -90,6 +92,16 @@ class ResponseMockingInterceptor implements Interceptor {
                         return buildWCOrderUpdateSuccessResponse(request);
                     }
             }
+        } else if (requestUrl.contains("automated-transfers/eligibility")) {
+            return buildEligibleForAutomatedTransferResponse(request);
+        } else if (requestUrl.contains("automated-transfers/initiate")) {
+            return buildInitiateAutomatedTransferResponse(request);
+        } else if (requestUrl.contains("automated-transfers/status")) {
+            if (requestUrl.contains("sites/" + TEST_SITE_ID_TRANSFER_COMPLETE)) {
+                return buildCheckAutomatedTransferCompleteResponse(request);
+            } else if (requestUrl.contains("sites/" + TEST_SITE_ID_TRANSFER_INCOMPLETE)) {
+                return buildCheckAutomatedTransferIncompleteResponse(request);
+            }
         }
         throw new IllegalStateException("Interceptor was given a request with no mocks - URL: " + requestUrl);
     }
@@ -132,6 +144,26 @@ class ResponseMockingInterceptor implements Interceptor {
 
     private Response buildSuccessResponse(Request request, String resourceFileName) {
         String responseJson = getStringFromResourceFile(resourceFileName);
+        return buildResponse(request, responseJson, 200);
+    }
+
+    private Response buildEligibleForAutomatedTransferResponse(Request request) {
+        String responseJson = getStringFromResourceFile("eligible-for-automated-transfer-response-success.json");
+        return buildResponse(request, responseJson, 200);
+    }
+
+    private Response buildInitiateAutomatedTransferResponse(Request request) {
+        String responseJson = getStringFromResourceFile("initiate-automated-transfer-response-success.json");
+        return buildResponse(request, responseJson, 200);
+    }
+
+    private Response buildCheckAutomatedTransferCompleteResponse(Request request) {
+        String responseJson = getStringFromResourceFile("automated-transfer-status-complete-response-success.json");
+        return buildResponse(request, responseJson, 200);
+    }
+
+    private Response buildCheckAutomatedTransferIncompleteResponse(Request request) {
+        String responseJson = getStringFromResourceFile("automated-transfer-status-incomplete-response-success.json");
         return buildResponse(request, responseJson, 200);
     }
 

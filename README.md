@@ -35,7 +35,9 @@ our example:
 Note: this is the default `example/gradle.properties` file. You'll have to get
 a WordPress.com OAuth2 ID and secret.
 
-We have some tests connecting to real HTTP servers, URL and credentials are defined in `example/tests.properties`, you must edit it or obtain the real file to run the tests. This is temporary.
+We have some tests connecting to real HTTP servers, URL and credentials are defined in `example/tests.properties`, you must edit it or obtain the real file to run the tests.
+
+Please note that, unless using special credentials which cannot be shared publicly, some of the WordPress.com connected tests will not pass unless the OAuth2 ID and secret are registered to the account that the test is attempting to log into.
 
 ## Setting up Checkstyle
 
