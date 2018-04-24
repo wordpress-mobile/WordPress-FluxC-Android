@@ -7,9 +7,11 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatus
@@ -55,6 +57,19 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         constructor(error: OrderError, order: WCOrderModel, site: SiteModel) : this(order, site) { this.error = error }
     }
 
+    class FetchOrderNotesPayload(
+        var order: WCOrderModel,
+        var site: SiteModel
+    ) : Payload<BaseNetworkError>()
+
+    class FetchOrderNotesResponsePayload(
+        var order: WCOrderModel,
+        var site: SiteModel,
+        var notes: List<WCOrderNoteModel> = emptyList()
+    ) : Payload<OrderError>() {
+        constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(order, site) { this.error = error }
+    }
+
     class OrderError(val type: OrderErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
 
     enum class OrderErrorType {
@@ -93,14 +108,23 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 .where().equals(WCOrderModelTable.ID, localId).endWhere()
                 .asModel.firstOrNull()
 
+    /**
+     * Given a local ID for an order, returns the notes belonging to that order as a list of [WCOrderNoteModel].
+     */
+    fun getOrderNotesByLocalOrderId(localId: Int): List<WCOrderNoteModel>? =
+            OrderSqlUtils.getOrderNotesForOrder(localId)
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCOrderAction ?: return
         when (actionType) {
             WCOrderAction.FETCH_ORDERS -> fetchOrders(action.payload as FetchOrdersPayload)
             WCOrderAction.UPDATE_ORDER_STATUS -> updateOrderStatus(action.payload as UpdateOrderStatusPayload)
+            WCOrderAction.FETCH_ORDER_NOTES -> fetchOrderNotes(action.payload as FetchOrderNotesPayload)
             WCOrderAction.FETCHED_ORDERS -> handleFetchOrdersCompleted(action.payload as FetchOrdersResponsePayload)
             WCOrderAction.UPDATED_ORDER_STATUS -> handleUpdateOrderStatusCompleted(action.payload as RemoteOrderPayload)
+            WCOrderAction.FETCHED_ORDER_NOTES ->
+                handleFetchOrderNotesCompleted(action.payload as FetchOrderNotesResponsePayload)
         }
     }
 
@@ -117,6 +141,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         with(payload) { wcOrderRestClient.updateOrderStatus(order, site, status) }
     }
 
+    private fun fetchOrderNotes(payload: FetchOrderNotesPayload) {
+        wcOrderRestClient.fetchOrderNotes(payload.order, payload.site)
+    }
+
     private fun handleFetchOrdersCompleted(payload: FetchOrdersResponsePayload) {
         val onOrderChanged: OnOrderChanged
 
@@ -128,6 +156,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             // or if the user manual changed some order IDs)
             if (!payload.loadedMore) {
                 OrderSqlUtils.deleteOrdersForSite(payload.site)
+                OrderSqlUtils.deleteOrderNotesForSite(payload.site)
             }
 
             val rowsAffected = payload.orders.sumBy { OrderSqlUtils.insertOrUpdateOrder(it) }
@@ -152,6 +181,20 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
         onOrderChanged.causeOfChange = WCOrderAction.UPDATE_ORDER_STATUS
 
+        emitChange(onOrderChanged)
+    }
+
+    private fun handleFetchOrderNotesCompleted(payload: FetchOrderNotesResponsePayload) {
+        val onOrderChanged: OnOrderChanged
+
+        if (payload.isError) {
+            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
+        } else {
+            val rowsAffected = OrderSqlUtils.insertOrIgnoreOrderNotes(payload.notes)
+            onOrderChanged = OnOrderChanged(rowsAffected)
+        }
+
+        onOrderChanged.causeOfChange = FETCH_ORDER_NOTES
         emitChange(onOrderChanged)
     }
 }

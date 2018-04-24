@@ -1,2 +1,3 @@
 /orders/
 /orders/<id>/
+/orders/<id>/notes

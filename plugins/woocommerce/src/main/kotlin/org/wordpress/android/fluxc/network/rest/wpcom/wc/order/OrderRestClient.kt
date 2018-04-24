@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseErrorListener
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -16,6 +17,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
@@ -96,6 +98,35 @@ class OrderRestClient(
         add(request)
     }
 
+    /**
+     * Makes a GET call to `/wc/v2/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a list of notes for the given WooCommerce [SiteModel] and [WCOrderModel].
+     *
+     * Dispatches a [WCOrderAction.FETCHED_ORDER_NOTES] action with the resulting list of order notes.
+     */
+    fun fetchOrderNotes(order: WCOrderModel, site: SiteModel) {
+        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).notes.pathV2
+        val responseType = object : TypeToken<List<OrderNotesApiResponse>>() {}.type
+        val params = emptyMap<String, String>()
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<OrderNotesApiResponse>? ->
+                    val noteModels = response?.map {
+                        orderNotesResponseToOrderNotesModel(it).apply {
+                            localSiteId = site.id
+                            localOrderId = order.id
+                        }
+                    }.orEmpty()
+                    val payload = FetchOrderNotesResponsePayload(order, site, noteModels)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderNotesAction(payload))
+                },
+                BaseErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError as WPComGsonNetworkError)
+                    val payload = FetchOrderNotesResponsePayload(orderError, site, order)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderNotesAction(payload))
+                })
+        add(request)
+    }
+
     private fun orderResponseToOrderModel(response: OrderApiResponse): WCOrderModel {
         return WCOrderModel().apply {
             remoteOrderId = response.id ?: 0
@@ -148,6 +179,15 @@ class OrderRestClient(
             shippingCountry = response.shipping?.country ?: ""
 
             lineItems = response.line_items.toString()
+        }
+    }
+
+    private fun orderNotesResponseToOrderNotesModel(response: OrderNotesApiResponse): WCOrderNoteModel {
+        return WCOrderNoteModel().apply {
+            remoteNoteId = response.id ?: 0
+            dateCreated = "${response.date_created_gmt}Z"
+            note = response.note ?: ""
+            customerNote = response.customer_note
         }
     }
 
