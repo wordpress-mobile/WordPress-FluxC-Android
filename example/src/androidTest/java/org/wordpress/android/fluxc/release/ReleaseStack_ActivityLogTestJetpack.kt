@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.ActivityLogStore
 import org.wordpress.android.fluxc.store.ActivityLogStore.FetchedActivityLogPayload
 import org.wordpress.android.fluxc.store.ActivityLogStore.OnActivityLogFetched
+import org.wordpress.android.fluxc.store.ActivityLogStore.RewindResultPayload
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
@@ -144,6 +145,21 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         assertEquals(updatedActivityLogForSite.size, 1)
         assertEquals(updatedActivityLogForSite[0].activityID, activity.activityID)
         assertEquals(updatedActivityLogForSite[0].name, updatedName)
+    }
+
+    @Test
+    fun rewindOperationFailsOnNonexistentId() {
+        val site = authenticate()
+
+        val payload = ActivityLogStore.RewindPayload(site, "123")
+        this.mCountDownLatch = CountDownLatch(1)
+
+        activityLogStore.onAction(ActivityLogActionBuilder.newRewindAction(payload))
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        assertTrue(incomingActions.size == 1)
+        assertTrue(incomingActions[0].payload is RewindResultPayload)
+        assertTrue((incomingActions[0].payload as RewindResultPayload).isError)
     }
 
     private fun authenticate(): SiteModel {
