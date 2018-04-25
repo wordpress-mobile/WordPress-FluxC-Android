@@ -20,28 +20,28 @@ import javax.inject.Singleton
 @Singleton
 class ResponseMockingInterceptor : Interceptor {
     private var nextResponseJson: String? = null
-    private var nextResponseErrorCode: Int = 0
+    private var nextResponseCode: Int = 200
 
     fun respondWith(jsonResponseFileName: String) {
         nextResponseJson = getStringFromResourceFile(jsonResponseFileName)
-        nextResponseErrorCode = 0
+        nextResponseCode = 200
     }
 
     @JvmOverloads
     fun respondWithError(jsonResponseFileName: String, errorCode: Int = 404) {
         nextResponseJson = getStringFromResourceFile(jsonResponseFileName)
-        nextResponseErrorCode = errorCode
+        nextResponseCode = errorCode
     }
 
     fun respondWith(jsonResponse: JsonElement) {
         nextResponseJson = jsonResponse.toString()
-        nextResponseErrorCode = 0
+        nextResponseCode = 200
     }
 
     @JvmOverloads
     fun respondWithError(jsonResponse: JsonElement, errorCode: Int = 404) {
         nextResponseJson = jsonResponse.toString()
-        nextResponseErrorCode = errorCode
+        nextResponseCode = errorCode
     }
 
     @Throws(IOException::class)
@@ -54,26 +54,17 @@ class ResponseMockingInterceptor : Interceptor {
         val requestUrl = request.url().toString()
 
         nextResponseJson?.let {
-            val response = if (nextResponseErrorCode == 0) {
-                buildSuccessResponse(request, it)
-            } else {
-                buildErrorResponse(request, it, nextResponseErrorCode)
-            }
+            // Will be a successful response if nextResponseCode is 200, otherwise an error response
+            val response = buildResponse(request, it, nextResponseCode)
 
             // Clean up for the next call
             nextResponseJson = null
-            nextResponseErrorCode = 0
+            nextResponseCode = 200
             return response
         }
 
         throw IllegalStateException("Interceptor was not given a response for this request! URL: $requestUrl")
     }
-
-    private fun buildSuccessResponse(request: Request, responseJson: String) =
-            buildResponse(request, responseJson, 200)
-
-    private fun buildErrorResponse(request: Request, responseJson: String, errorCode: Int) =
-            buildResponse(request, responseJson, errorCode)
 
     private fun buildResponse(request: Request, responseJson: String, responseCode: Int): Response {
         return Response.Builder()
