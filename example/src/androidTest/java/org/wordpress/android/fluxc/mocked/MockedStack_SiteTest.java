@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.module.ResponseMockingInterceptor;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.InitiateAutomatedTransferPayload;
@@ -26,13 +27,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class MockedStack_SiteTest extends MockedStack_Base {
-    // Used in ResponseMockingInterceptor
-    public static final int TEST_SITE_ID_TRANSFER_COMPLETE = 123;
-    public static final int TEST_SITE_ID_TRANSFER_INCOMPLETE = 124;
-
     @Inject Dispatcher mDispatcher;
     @Inject SiteStore mSiteStore;
     @Inject AccountStore mAccountStore;
+
+    @Inject ResponseMockingInterceptor mInterceptor;
 
     enum TestEvents {
         NONE,
@@ -60,6 +59,7 @@ public class MockedStack_SiteTest extends MockedStack_Base {
     public void testEligibleForAutomatedTransfer() throws InterruptedException {
         SiteModel site = new SiteModel();
         site.setSiteId(123); // does not matter
+        mInterceptor.respondWith("eligible-for-automated-transfer-response-success.json");
         mNextEvent = TestEvents.ELIGIBLE_FOR_AUTOMATED_TRANSFER;
         mDispatcher.dispatch(SiteActionBuilder.newCheckAutomatedTransferEligibilityAction(site));
         mCountDownLatch = new CountDownLatch(1);
@@ -70,6 +70,7 @@ public class MockedStack_SiteTest extends MockedStack_Base {
     public void testInitiateAutomatedTransferSuccessfully() throws InterruptedException {
         SiteModel site = new SiteModel();
         site.setSiteId(123); // does not matter
+        mInterceptor.respondWith("initiate-automated-transfer-response-success.json");
         mNextEvent = TestEvents.INITIATE_AUTOMATED_TRANSFER;
         InitiateAutomatedTransferPayload payload = new InitiateAutomatedTransferPayload(site, "react");
         mDispatcher.dispatch(SiteActionBuilder.newInitiateAutomatedTransferAction(payload));
@@ -80,7 +81,8 @@ public class MockedStack_SiteTest extends MockedStack_Base {
     @Test
     public void testAutomatedTransferStatusComplete() throws InterruptedException {
         SiteModel site = new SiteModel();
-        site.setSiteId(TEST_SITE_ID_TRANSFER_COMPLETE);
+        site.setSiteId(123); // does not matter
+        mInterceptor.respondWith("automated-transfer-status-complete-response-success.json");
         mNextEvent = TestEvents.AUTOMATED_TRANSFER_STATUS_COMPLETE;
         mDispatcher.dispatch(SiteActionBuilder.newCheckAutomatedTransferStatusAction(site));
         mCountDownLatch = new CountDownLatch(1);
@@ -90,7 +92,8 @@ public class MockedStack_SiteTest extends MockedStack_Base {
     @Test
     public void testAutomatedTransferStatusIncomplete() throws InterruptedException {
         SiteModel site = new SiteModel();
-        site.setSiteId(TEST_SITE_ID_TRANSFER_INCOMPLETE);
+        site.setSiteId(123); // does not matter
+        mInterceptor.respondWith("automated-transfer-status-incomplete-response-success.json");
         mNextEvent = TestEvents.AUTOMATED_TRANSFER_STATUS_INCOMPLETE;
         mDispatcher.dispatch(SiteActionBuilder.newCheckAutomatedTransferStatusAction(site));
         mCountDownLatch = new CountDownLatch(1);

@@ -8,7 +8,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.TestUtils
-import org.wordpress.android.fluxc.module.MockedNetworkModule
+import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.BaseRequest.BaseErrorListener
 import org.wordpress.android.fluxc.network.Response
 import org.wordpress.android.fluxc.network.UserAgent
@@ -30,6 +30,8 @@ import javax.inject.Singleton
 class MockedStack_JetpackTunnelTest : MockedStack_Base() {
     @Inject internal lateinit var jetpackTunnelClient: JetpackTunnelClientForTests
 
+    @Inject internal lateinit var interceptor: ResponseMockingInterceptor
+
     @Throws(Exception::class)
     override fun setUp() {
         super.setUp()
@@ -41,7 +43,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
         val countDownLatch = CountDownLatch(1)
         val url = "/"
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, MockedNetworkModule.FAILURE_SITE_ID, mapOf(),
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, 567, mapOf(),
                 RootWPAPIRestResponse::class.java,
                 { _: RootWPAPIRestResponse? ->
                     throw AssertionError("Unexpected success!")
@@ -53,6 +55,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
                     countDownLatch.countDown()
                 })
 
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
         jetpackTunnelClient.exposedAdd(request)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
     }
@@ -75,6 +78,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
                             (error as WPComGsonNetworkError).apiError + " - " + error.message)
                 })
 
+        interceptor.respondWith("jetpack-tunnel-root-response-success.json")
         jetpackTunnelClient.exposedAdd(request)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
     }
@@ -100,6 +104,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
                             (error as WPComGsonNetworkError).apiError + " - " + error.message)
                 })
 
+        interceptor.respondWith("jetpack-tunnel-wp-v2-settings-response-success.json")
         jetpackTunnelClient.exposedAdd(request)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
     }
