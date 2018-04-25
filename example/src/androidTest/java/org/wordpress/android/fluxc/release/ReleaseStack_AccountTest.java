@@ -96,10 +96,9 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     @Test
     public void testWPComFetch() throws InterruptedException {
-        if (!mAccountStore.hasAccessToken()) {
-            mNextEvent = TestEvents.AUTHENTICATE;
-            authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-        }
+        // Ensure we're logged in as the primary test user
+        // This is because we're validating the response based on what we know about this test account
+        logInToPrimaryTestAccount();
 
         mNextEvent = TestEvents.FETCHED;
         mCountDownLatch = new CountDownLatch(2);
@@ -110,16 +109,9 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
 
     @Test
     public void testWPComPost() throws InterruptedException {
-        if (!mAccountStore.hasAccessToken()) {
-            mNextEvent = TestEvents.AUTHENTICATE;
-            authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-        } else if (!mAccountStore.getAccount().getUserName().equals(BuildConfig.TEST_WPCOM_USERNAME_TEST1)) {
-            // If we're logged in as any user other than the test user, switch accounts
-            // This is to avoid surprise changes to the description of non-test accounts
-            signOut();
-            mNextEvent = TestEvents.AUTHENTICATE;
-            authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-        }
+        // Ensure we're logged in as the primary test user
+        // This is to avoid surprise changes to the description of non-test accounts
+        logInToPrimaryTestAccount();
 
         mNextEvent = TestEvents.POSTED;
         PushAccountSettingsPayload payload = new PushAccountSettingsPayload();
@@ -519,6 +511,18 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         }
     }
 
+    private void logInToPrimaryTestAccount() throws InterruptedException {
+        if (!mAccountStore.hasAccessToken()) {
+            mNextEvent = TestEvents.AUTHENTICATE;
+            authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        } else if (!mAccountStore.getAccount().getUserName().equals(BuildConfig.TEST_WPCOM_USERNAME_TEST1)) {
+            // If we're logged in as any user other than the test user, switch accounts
+            // This is to avoid surprise changes to the description of non-test accounts
+            signOut();
+            mNextEvent = TestEvents.AUTHENTICATE;
+            authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        }
+    }
     private void authenticate(String username, String password) throws InterruptedException {
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
         mCountDownLatch = new CountDownLatch(1);
