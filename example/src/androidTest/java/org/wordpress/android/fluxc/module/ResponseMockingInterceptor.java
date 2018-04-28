@@ -33,6 +33,7 @@ import okio.Okio;
 
 import static org.wordpress.android.fluxc.mocked.MockedStack_SiteTest.TEST_SITE_ID_TRANSFER_COMPLETE;
 import static org.wordpress.android.fluxc.mocked.MockedStack_SiteTest.TEST_SITE_ID_TRANSFER_INCOMPLETE;
+import static org.wordpress.android.fluxc.mocked.MockedStack_WCOrdersTest.TEST_ORDER_NOTES_ORDER_ID;
 import static org.wordpress.android.fluxc.mocked.MockedStack_WCOrdersTest.TEST_UPDATE_ORDER_ID;
 
 class ResponseMockingInterceptor implements Interceptor {
@@ -91,6 +92,12 @@ class ResponseMockingInterceptor implements Interceptor {
                     } else {
                         return buildWCOrderUpdateSuccessResponse(request);
                     }
+                case "/wc/v2/orders/" + TEST_ORDER_NOTES_ORDER_ID + "/notes/":
+                    if (requestUrl.contains(String.valueOf(MockedNetworkModule.FAILURE_SITE_ID))) {
+                        return buildWCOrderNotesFailureResponse(request);
+                    } else {
+                        return buildWCOrderNotesSuccessResponse(request);
+                    }
             }
         } else if (requestUrl.contains("automated-transfers/eligibility")) {
             return buildEligibleForAutomatedTransferResponse(request);
@@ -140,6 +147,14 @@ class ResponseMockingInterceptor implements Interceptor {
 
     private Response buildWCOrderUpdateFailureResponse(Request request) {
         return buildErrorResponse(request, "wc-order-update-response-failure-invalid-id.json", 400);
+    }
+
+    private Response buildWCOrderNotesSuccessResponse(Request request) {
+        return buildSuccessResponse(request, "wc-order-notes-response-success.json");
+    }
+
+    private Response buildWCOrderNotesFailureResponse(Request request) {
+        return buildErrorResponse(request, "wc-order-notes-response-failure-invalid-id.json", 404);
     }
 
     private Response buildSuccessResponse(Request request, String resourceFileName) {
