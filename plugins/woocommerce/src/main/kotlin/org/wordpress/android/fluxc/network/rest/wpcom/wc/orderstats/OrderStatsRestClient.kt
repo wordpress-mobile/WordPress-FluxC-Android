@@ -5,6 +5,7 @@ import com.android.volley.RequestQueue
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMV2
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -44,7 +45,13 @@ class OrderStatsRestClient(
 
         val request = WPComGsonRequest.buildGetRequest(url, params, OrderStatsApiResponse::class.java,
                 { apiResponse ->
-                    // TODO: Process response and dispatch event
+                    val model = WCOrderStatsModel().apply {
+                        this.localSiteId = site.id
+                        this.unit = unit.toString()
+                        this.fields = apiResponse.fields.toString()
+                        this.data = apiResponse.data.toString()
+                    }
+                    // TODO: Dispatch event
                 },
                 { networkError ->
                     // TODO: Dispatch error event
