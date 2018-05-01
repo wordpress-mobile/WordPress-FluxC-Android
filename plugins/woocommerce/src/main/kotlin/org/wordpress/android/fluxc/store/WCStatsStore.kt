@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
+import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.GENERIC_ERROR
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -31,7 +32,20 @@ class WCStatsStore @Inject constructor(
         private val DATE_FORMAT_YEAR = SimpleDateFormat("yyyy", Locale.US)
     }
 
-    enum class StatsGranularity { DAYS, MONTHS, YEARS }
+    enum class StatsGranularity {
+        DAYS, MONTHS, YEARS;
+
+        companion object {
+            fun fromOrderStatsApiUnit(apiUnit: OrderStatsApiUnit): StatsGranularity {
+                return when (apiUnit) {
+                    OrderStatsApiUnit.DAY -> StatsGranularity.DAYS
+                    OrderStatsApiUnit.MONTH -> StatsGranularity.MONTHS
+                    OrderStatsApiUnit.YEAR -> StatsGranularity.YEARS
+                    OrderStatsApiUnit.WEEK -> throw AssertionError("Not implemented!")
+                }
+            }
+        }
+    }
 
     /**
      * Describes the parameters for fetching order stats for [site], up to the current day, month, or year
@@ -103,7 +117,18 @@ class WCStatsStore @Inject constructor(
     }
 
     private fun handleFetchOrderStatsCompleted(payload: FetchOrderStatsResponsePayload) {
-        // TODO
+        val onStatsChanged = with (payload) {
+            val granularity = StatsGranularity.fromOrderStatsApiUnit(apiUnit)
+            if (isError || stats == null) {
+                return@with OnWCStatsChanged(0, granularity).also { it.error = payload.error }
+            } else {
+                val rowsAffected = WCStatsSqlUtils.insertOrUpdateStats(stats)
+                return@with OnWCStatsChanged(rowsAffected, granularity)
+            }
+        }
+
+        onStatsChanged.causeOfChange = WCStatsAction.FETCH_ORDER_STATS
+        emitChange(onStatsChanged)
     }
 
     private fun getFormattedDate(site: SiteModel, granularity: StatsGranularity): String {
