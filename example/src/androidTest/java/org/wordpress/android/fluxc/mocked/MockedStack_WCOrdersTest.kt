@@ -183,7 +183,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
                 WCOrderModel().apply {
                     localSiteId = 5
                     id = 8
-                    remoteOrderId = TEST_ORDER_NOTES_ORDER_ID
+                    remoteOrderId = 88
                 },
                 SiteModel().apply {
                     id = 5
@@ -204,7 +204,8 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals("2018-04-27T20:48:10Z", dateCreated)
             assertEquals(5, localSiteId)
             assertEquals(8, localOrderId)
-            assertEquals("Email queued: Poster Purchase Follow-Up scheduled on Poster Purchase Follow-Up<br/>Trigger: Poster Purchase Follow-Up", note)
+            assertEquals("Email queued: Poster Purchase Follow-Up scheduled " +
+                    "on Poster Purchase Follow-Up<br/>Trigger: Poster Purchase Follow-Up", note)
             assertEquals(false, customerNote)
         }
 

@@ -111,7 +111,7 @@ class WooCommerceFragment : Fragment() {
                 when (event.causeOfChange) {
                     FETCH_ORDERS -> prependToLog("Fetched " + event.rowsAffected + " orders from: " + site.name)
                     FETCH_ORDER_NOTES -> prependToLog(
-                            "Fetched ${event.rowsAffected} order notes for order ${pendingNotesOrderId}")
+                            "Fetched ${event.rowsAffected} order notes for order $pendingNotesOrderId")
                     UPDATE_ORDER_STATUS ->
                         with (orderList[0]) { prependToLog("Updated order status for $number to $status") }
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
