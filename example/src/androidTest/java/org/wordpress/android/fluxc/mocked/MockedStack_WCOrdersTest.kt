@@ -13,7 +13,7 @@ import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
-import org.wordpress.android.fluxc.module.MockedNetworkModule
+import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
@@ -38,6 +38,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
     @Inject internal lateinit var orderRestClient: OrderRestClient
     @Inject internal lateinit var dispatcher: Dispatcher
+    @Inject internal lateinit var interceptor: ResponseMockingInterceptor
 
     private var lastAction: Action<*>? = null
     private var countDownLatch: CountDownLatch by notNull()
@@ -52,6 +53,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
     @Test
     fun testOrderListFetchSuccess() {
+        interceptor.respondWith("wc-orders-response-success.json")
         orderRestClient.fetchOrders(SiteModel().apply {
             id = 5
             siteId = 567
@@ -107,7 +109,8 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
     @Test
     fun testOrderListFetchError() {
-        orderRestClient.fetchOrders(SiteModel().apply { siteId = MockedNetworkModule.FAILURE_SITE_ID }, 0)
+        interceptor.respondWithError("wc-order-notes-response-failure-invalid-id.json", 404)
+        orderRestClient.fetchOrders(SiteModel().apply { siteId = 123 }, 0)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -123,6 +126,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             id = 5
             siteId = 567
         }
+        interceptor.respondWith("wc-order-update-response-success.json")
 
         val originalOrder = WCOrderModel().apply {
             id = 8
@@ -152,8 +156,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     fun testOrderStatusUpdateError() {
         val siteModel = SiteModel().apply {
             id = 5
-            siteId = MockedNetworkModule.FAILURE_SITE_ID
+            siteId = 123
         }
+        interceptor.respondWithError("wc-order-update-response-failure-invalid-id.json", 400)
 
         val originalOrder = WCOrderModel().apply {
             id = 8
@@ -179,6 +184,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
     @Test
     fun testOrderNotesFetchSuccess() {
+        interceptor.respondWith("wc-order-notes-response-success.json")
         orderRestClient.fetchOrderNotes(
                 WCOrderModel().apply {
                     localSiteId = 5
@@ -217,6 +223,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
     @Test
     fun testOrderNotesFetchError() {
+        interceptor.respondWithError("wc-order-notes-response-failure-invalid-id.json", 404)
         orderRestClient.fetchOrderNotes(
                 WCOrderModel().apply {
                     localSiteId = 5
@@ -225,7 +232,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
                 },
                 SiteModel().apply {
                     id = 5
-                    siteId = MockedNetworkModule.FAILURE_SITE_ID
+                    siteId = 123
                 })
 
         countDownLatch = CountDownLatch(1)
