@@ -109,10 +109,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 .asModel.firstOrNull()
 
     /**
-     * Given a local ID for an order, returns the notes belonging to that order as a list of [WCOrderNoteModel].
+     * Returns the notes belonging to supplied [WCOrderModel] as a list of [WCOrderNoteModel].
      */
-    fun getOrderNotesByLocalOrderId(localId: Int): List<WCOrderNoteModel>? =
-            OrderSqlUtils.getOrderNotesForOrder(localId)
+    fun getOrderNotesForOrder(order: WCOrderModel): List<WCOrderNoteModel> =
+            OrderSqlUtils.getOrderNotesForOrder(order.id)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {

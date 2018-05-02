@@ -187,7 +187,7 @@ class OrderRestClient(
             remoteNoteId = response.id ?: 0
             dateCreated = "${response.date_created_gmt}Z"
             note = response.note ?: ""
-            customerNote = response.customer_note
+            isCustomerNote = response.customer_note
         }
     }
 

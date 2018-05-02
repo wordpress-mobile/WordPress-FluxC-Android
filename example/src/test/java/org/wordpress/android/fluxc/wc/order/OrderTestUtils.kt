@@ -24,18 +24,16 @@ object OrderTestUtils {
     fun getOrderNotesFromJsonString(json: String, siteId: Int, orderId: Int): List<WCOrderNoteModel> {
         val responseType = object : TypeToken<List<OrderNotesApiResponse>>() {}.type
         val converted = Gson().fromJson(json, responseType) as? List<OrderNotesApiResponse> ?: emptyList()
-        val result = mutableListOf<WCOrderNoteModel>()
-        converted.forEach { t ->
-            result.add(WCOrderNoteModel().apply {
-                remoteNoteId = t.id ?: 0
-                dateCreated = "${t.date_created_gmt}Z"
-                note = t.note ?: ""
-                customerNote = t.customer_note
+        return converted.map {
+            WCOrderNoteModel().apply {
+                remoteNoteId = it.id ?: 0
+                dateCreated = "${it.date_created_gmt}Z"
+                note = it.note ?: ""
+                isCustomerNote = it.customer_note
                 localSiteId = siteId
                 localOrderId = orderId
-            })
+            }
         }
-        return result
     }
 
     fun generateSampleNote(remoteId: Long, siteId: Int, orderId: Int): WCOrderNoteModel {
@@ -45,7 +43,7 @@ object OrderTestUtils {
             remoteNoteId = remoteId
             dateCreated = "1955-11-05T14:15:00Z"
             note = "This is a test note"
-            customerNote = true
+            isCustomerNote = true
         }
     }
 }

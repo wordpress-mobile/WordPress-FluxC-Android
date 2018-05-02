@@ -76,31 +76,28 @@ object OrderSqlUtils {
                 .endGroup().endWhere()
                 .asModel
 
-        if (noteResult.isEmpty()) {
+        return if (noteResult.isEmpty()) {
             // Insert
             WellSql.insert(note).asSingleTransaction(true).execute()
-            return 1
+            1
         } else {
             // Ignore
-            return 1
+            0
         }
     }
 
-    fun getOrderNotesForOrder(localId: Int) =
+    fun getOrderNotesForOrder(localId: Int): List<WCOrderNoteModel> =
             WellSql.select(WCOrderNoteModel::class.java)
                     .where()
-                    .beginGroup()
                     .equals(WCOrderNoteModelTable.LOCAL_ORDER_ID, localId)
-                    .endGroup()
                     .endWhere()
                     .orderBy(WCOrderNoteModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
                     .asModel
 
     fun deleteOrderNotesForSite(site: SiteModel): Int {
         return WellSql.delete(WCOrderNoteModel::class.java)
-                .where().beginGroup()
+                .where()
                 .equals(WCOrderNoteModelTable.LOCAL_SITE_ID, site.id)
-                .endGroup()
                 .endWhere()
                 .execute()
     }

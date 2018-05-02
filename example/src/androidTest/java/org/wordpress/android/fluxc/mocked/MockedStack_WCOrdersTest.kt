@@ -184,11 +184,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
                     localSiteId = 5
                     id = 8
                     remoteOrderId = 88
-                },
-                SiteModel().apply {
-                    id = 5
-                    siteId = 567
-                })
+                }, siteModel)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -206,13 +202,13 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals(8, localOrderId)
             assertEquals("Email queued: Poster Purchase Follow-Up scheduled " +
                     "on Poster Purchase Follow-Up<br/>Trigger: Poster Purchase Follow-Up", note)
-            assertEquals(false, customerNote)
+            assertEquals(false, isCustomerNote)
         }
 
         // Verify customer note
         with(payload.notes[6]) {
             assertEquals("Please gift wrap", note)
-            assertTrue(customerNote)
+            assertTrue(isCustomerNote)
         }
     }
 
@@ -224,11 +220,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
                     localSiteId = 5
                     id = 8
                     remoteOrderId = 88
-                },
-                SiteModel().apply {
-                    id = 5
-                    siteId = 123
-                })
+                }, siteModel)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))

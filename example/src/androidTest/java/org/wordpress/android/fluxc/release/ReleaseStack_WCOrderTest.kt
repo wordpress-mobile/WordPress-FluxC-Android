@@ -70,10 +70,8 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
         // Verify results
-        val fetchedNotes = orderStore.getOrderNotesByLocalOrderId(firstOrder.id)
-        fetchedNotes?.let {
-            assertTrue(it.isNotEmpty())
-        } ?: fail("No notes retrieved!")
+        val fetchedNotes = orderStore.getOrderNotesForOrder(firstOrder)
+        assertTrue(fetchedNotes.isNotEmpty())
     }
 
     @Suppress("unused")

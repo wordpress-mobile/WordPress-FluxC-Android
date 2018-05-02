@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
@@ -33,7 +34,7 @@ class WooCommerceFragment : Fragment() {
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var wcOrderStore: WCOrderStore
 
-    private var pendingNotesOrderId = 0L
+    private var pendingNotesOrderModel: WCOrderModel? = null
 
     override fun onAttach(context: Context?) {
         AndroidInjection.inject(this)
@@ -63,7 +64,7 @@ class WooCommerceFragment : Fragment() {
         fetch_order_notes.setOnClickListener {
             getFirstWCSite()?.let { site ->
                 getFirstWCOrder()?.let { order ->
-                    pendingNotesOrderId = order.remoteOrderId
+                    pendingNotesOrderModel = order
                     val payload = FetchOrderNotesPayload(order, site)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderNotesAction(payload))
                 }
@@ -110,8 +111,11 @@ class WooCommerceFragment : Fragment() {
 
                 when (event.causeOfChange) {
                     FETCH_ORDERS -> prependToLog("Fetched " + event.rowsAffected + " orders from: " + site.name)
-                    FETCH_ORDER_NOTES -> prependToLog(
-                            "Fetched ${event.rowsAffected} order notes for order $pendingNotesOrderId")
+                    FETCH_ORDER_NOTES -> {
+                        val notes = wcOrderStore.getOrderNotesForOrder(pendingNotesOrderModel!!)
+                        prependToLog(
+                            "Fetched ${notes.size} order notes for order ${pendingNotesOrderModel!!.remoteOrderId}. ${event.rowsAffected} notes inserted into database.")
+                    }
                     UPDATE_ORDER_STATUS ->
                         with (orderList[0]) { prependToLog("Updated order status for $number to $status") }
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
