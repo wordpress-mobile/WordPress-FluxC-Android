@@ -4,7 +4,6 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import org.junit.Assert.fail
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCOrderAction

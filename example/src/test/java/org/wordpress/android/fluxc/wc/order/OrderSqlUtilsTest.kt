@@ -110,7 +110,7 @@ class OrderSqlUtilsTest {
 
         // Test ignoring notes already saved to db
         val inserted = OrderSqlUtils.insertOrIgnoreOrderNotes(listOf(note1))
-        assertEquals(1  , inserted)
+        assertEquals(1, inserted)
         val storedNotes2 = OrderSqlUtils.getOrderNotesForOrder(order.id)
         assertEquals(2, storedNotes2.size)
     }

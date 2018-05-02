@@ -24,7 +24,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlin.test.fail
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)

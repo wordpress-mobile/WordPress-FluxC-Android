@@ -114,7 +114,9 @@ class WooCommerceFragment : Fragment() {
                     FETCH_ORDER_NOTES -> {
                         val notes = wcOrderStore.getOrderNotesForOrder(pendingNotesOrderModel!!)
                         prependToLog(
-                            "Fetched ${notes.size} order notes for order ${pendingNotesOrderModel!!.remoteOrderId}. ${event.rowsAffected} notes inserted into database.")
+                            "Fetched ${notes.size} order notes for order " +
+                                    "${pendingNotesOrderModel!!.remoteOrderId}. ${event.rowsAffected} " +
+                                    "notes inserted into database.")
                     }
                     UPDATE_ORDER_STATUS ->
                         with (orderList[0]) { prependToLog("Updated order status for $number to $status") }
