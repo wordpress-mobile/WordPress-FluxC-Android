@@ -59,7 +59,7 @@ object OrderSqlUtils {
 
     fun insertOrIgnoreOrderNotes(notes: List<WCOrderNoteModel>): Int {
         var totalChanged = 0
-        notes.iterator().forEach { totalChanged += insertOrIgnoreOrderNote(it) }
+        notes.forEach { totalChanged += insertOrIgnoreOrderNote(it) }
         return totalChanged
     }
 
