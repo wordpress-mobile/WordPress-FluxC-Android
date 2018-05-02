@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.action.WCStatsAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
+import org.wordpress.android.fluxc.model.WCOrderStatsModel.OrderStatsField
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
@@ -30,6 +31,7 @@ class WCStatsStore @Inject constructor(
         private val DATE_FORMAT_DAY = SimpleDateFormat("yyyy-MM-dd", Locale.US)
         private val DATE_FORMAT_MONTH = SimpleDateFormat("yyyy-MM", Locale.US)
         private val DATE_FORMAT_YEAR = SimpleDateFormat("yyyy", Locale.US)
+        private val DATE_FORMAT_DAY_OF_MONTH = SimpleDateFormat("dd", Locale.US)
     }
 
     enum class StatsGranularity {
@@ -101,6 +103,19 @@ class WCStatsStore @Inject constructor(
             WCStatsAction.FETCHED_ORDER_STATS ->
                 handleFetchOrderStatsCompleted(action.payload as FetchOrderStatsResponsePayload)
         }
+    }
+
+    fun getRevenueStatsForCurrentMonth(site: SiteModel): Map<String, Double> {
+        val rawStats = WCStatsSqlUtils.getRawStatsForSiteAndUnit(site, OrderStatsApiUnit.DAY)
+        rawStats?.let {
+            val periodIndex = it.getIndexForField(OrderStatsField.PERIOD)
+            val revenueIndex = it.getIndexForField(OrderStatsField.TOTAL_SALES)
+            // TODO: Temp - use the site's timezone
+            val dayOfMonth = DATE_FORMAT_DAY_OF_MONTH.format(Date()).toInt()
+            return it.dataList
+                    .takeLast(dayOfMonth)
+                    .map { it[periodIndex].toString() to it[revenueIndex] as Double }.toMap()
+        } ?: return mapOf()
     }
 
     private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
