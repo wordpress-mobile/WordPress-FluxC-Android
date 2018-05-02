@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.mocked
 
+import com.google.gson.JsonObject
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -31,17 +32,18 @@ import kotlin.properties.Delegates.notNull
  * network component(s).
  */
 class MockedStack_WCOrdersTest : MockedStack_Base() {
-    companion object {
-        const val TEST_UPDATE_ORDER_ID = 88L
-        const val TEST_ORDER_NOTES_ORDER_ID = 88L
-    }
-
     @Inject internal lateinit var orderRestClient: OrderRestClient
     @Inject internal lateinit var dispatcher: Dispatcher
+
     @Inject internal lateinit var interceptor: ResponseMockingInterceptor
 
     private var lastAction: Action<*>? = null
     private var countDownLatch: CountDownLatch by notNull()
+
+    private val siteModel = SiteModel().apply {
+        id = 5
+        siteId = 567
+    }
 
     @Throws(Exception::class)
     override fun setUp() {
@@ -54,10 +56,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     @Test
     fun testOrderListFetchSuccess() {
         interceptor.respondWith("wc-orders-response-success.json")
-        orderRestClient.fetchOrders(SiteModel().apply {
-            id = 5
-            siteId = 567
-        }, 0)
+        orderRestClient.fetchOrders(siteModel, 0)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -68,7 +67,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         assertEquals(4, payload.orders.size)
 
         with(payload.orders[0]) {
-            assertEquals(5, localSiteId)
+            assertEquals(siteModel.id, localSiteId)
             assertEquals(949, remoteOrderId)
             assertEquals("949", number)
             assertEquals(OrderStatus.PROCESSING, status)
@@ -109,8 +108,8 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
     @Test
     fun testOrderListFetchError() {
-        interceptor.respondWithError("wc-order-notes-response-failure-invalid-id.json", 404)
-        orderRestClient.fetchOrders(SiteModel().apply { siteId = 123 }, 0)
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        orderRestClient.fetchOrders(SiteModel(), 0)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -122,20 +121,15 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
     @Test
     fun testOrderStatusUpdateSuccess() {
-        val siteModel = SiteModel().apply {
-            id = 5
-            siteId = 567
-        }
-        interceptor.respondWith("wc-order-update-response-success.json")
-
         val originalOrder = WCOrderModel().apply {
             id = 8
             localSiteId = siteModel.id
             status = OrderStatus.PROCESSING
-            remoteOrderId = TEST_UPDATE_ORDER_ID
+            remoteOrderId = 88
             total = "15.00"
         }
 
+        interceptor.respondWith("wc-order-update-response-success.json")
         orderRestClient.updateOrderStatus(originalOrder, siteModel, OrderStatus.REFUNDED)
 
         countDownLatch = CountDownLatch(1)
@@ -154,20 +148,20 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
     @Test
     fun testOrderStatusUpdateError() {
-        val siteModel = SiteModel().apply {
-            id = 5
-            siteId = 123
-        }
-        interceptor.respondWithError("wc-order-update-response-failure-invalid-id.json", 400)
-
         val originalOrder = WCOrderModel().apply {
             id = 8
             localSiteId = siteModel.id
             status = OrderStatus.PROCESSING
-            remoteOrderId = TEST_UPDATE_ORDER_ID
+            remoteOrderId = 88
             total = "15.00"
         }
 
+        val errorJson = JsonObject().apply {
+            addProperty("error", "woocommerce_rest_shop_order_invalid_id")
+            addProperty("message", "Invalid ID.")
+        }
+
+        interceptor.respondWithError(errorJson, 400)
         orderRestClient.updateOrderStatus(originalOrder, siteModel, OrderStatus.REFUNDED)
 
         countDownLatch = CountDownLatch(1)
@@ -228,7 +222,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
                 WCOrderModel().apply {
                     localSiteId = 5
                     id = 8
-                    remoteOrderId = TEST_ORDER_NOTES_ORDER_ID
+                    remoteOrderId = 88
                 },
                 SiteModel().apply {
                     id = 5

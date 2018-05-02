@@ -28,6 +28,7 @@ import dagger.Component;
 public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_AccountTest test);
     void inject(ReleaseStack_AccountAvailabilityTest test);
+    void inject(ReleaseStack_ActivityLogTestJetpack test);
     void inject(ReleaseStack_CommentTestWPCom test);
     void inject(ReleaseStack_CommentTestXMLRPC test);
     void inject(ReleaseStack_DiscoveryTest test);
@@ -50,5 +51,4 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_UploadTest test);
     void inject(ReleaseStack_WCBaseStoreTest test);
     void inject(ReleaseStack_WCOrderTest test);
-    void inject(ReleaseStack_ActivityLogTestJetpack test);
 }
