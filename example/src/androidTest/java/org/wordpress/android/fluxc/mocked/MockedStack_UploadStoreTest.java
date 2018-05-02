@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.MediaUploadModel;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.module.ResponseMockingInterceptor;
 import org.wordpress.android.fluxc.persistence.UploadSqlUtils;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
@@ -34,6 +35,8 @@ import static org.junit.Assert.assertTrue;
 public class MockedStack_UploadStoreTest extends MockedStack_Base {
     @Inject Dispatcher mDispatcher;
     @Inject MediaStore mMediaStore;
+
+    @Inject ResponseMockingInterceptor mInterceptor;
 
     private enum TestEvents {
         NONE,
@@ -117,6 +120,8 @@ public class MockedStack_UploadStoreTest extends MockedStack_Base {
     }
 
     private void startSuccessfulMediaUpload(MediaModel media, SiteModel site) {
+        mInterceptor.respondWith("media-upload-response-success.json");
+
         MediaPayload payload = new MediaPayload(site, media);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
