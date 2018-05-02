@@ -8,8 +8,8 @@ class WCOrderStatsModelTest {
     fun testGetFields() {
         val model = WCStatsTestUtils.generateSampleStatsModel()
 
-        assertEquals(model.getFieldsList().size, model.getDataList()[0].size)
+        assertEquals(model.fieldsList.size, model.dataList[0].size)
 
-        assertEquals(7, model.getDataList().size)
+        assertEquals(7, model.dataList.size)
     }
 }
