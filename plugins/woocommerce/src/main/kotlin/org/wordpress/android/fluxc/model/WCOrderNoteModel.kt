@@ -13,8 +13,9 @@ data class WCOrderNoteModel(@PrimaryKey @Column private var id: Int = 0) : Ident
     @Column var remoteNoteId = 0L // The unique identifier for this note on the server
     @Column var dateCreated = "" // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
     @Column var note = ""
-    @set:JvmName("setIsCustomerNote")
     @Column var isCustomerNote = false // False if private, else customer-facing. Default is false
+        @JvmName("setIsCustomerNote")
+        set
 
     override fun getId() = id
 
