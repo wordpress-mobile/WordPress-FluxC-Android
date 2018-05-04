@@ -12,11 +12,14 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
@@ -30,6 +33,8 @@ class WooCommerceFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var wcOrderStore: WCOrderStore
+
+    private var pendingNotesOrderModel: WCOrderModel? = null
 
     override fun onAttach(context: Context?) {
         AndroidInjection.inject(this)
@@ -54,6 +59,16 @@ class WooCommerceFragment : Fragment() {
                 val payload = FetchOrdersPayload(it, loadMore = false)
                 dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
             } ?: showNoWCSitesToast()
+        }
+
+        fetch_order_notes.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                getFirstWCOrder()?.let { order ->
+                    pendingNotesOrderModel = order
+                    val payload = FetchOrderNotesPayload(order, site)
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderNotesAction(payload))
+                }
+            }
         }
 
         update_latest_order_status.setOnClickListener {
@@ -96,6 +111,13 @@ class WooCommerceFragment : Fragment() {
 
                 when (event.causeOfChange) {
                     FETCH_ORDERS -> prependToLog("Fetched " + event.rowsAffected + " orders from: " + site.name)
+                    FETCH_ORDER_NOTES -> {
+                        val notes = wcOrderStore.getOrderNotesForOrder(pendingNotesOrderModel!!)
+                        prependToLog(
+                            "Fetched ${notes.size} order notes for order " +
+                                    "${pendingNotesOrderModel!!.remoteOrderId}. ${event.rowsAffected} " +
+                                    "notes inserted into database.")
+                    }
                     UPDATE_ORDER_STATUS ->
                         with (orderList[0]) { prependToLog("Updated order status for $number to $status") }
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
@@ -105,6 +127,10 @@ class WooCommerceFragment : Fragment() {
     }
 
     private fun getFirstWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(0)
+
+    private fun getFirstWCOrder() = getFirstWCSite()?.let {
+        wcOrderStore.getOrdersForSite(it).getOrNull(0)
+    }
 
     private fun prependToLog(s: String) = (activity as MainExampleActivity).prependToLog(s)
 

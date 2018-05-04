@@ -10,9 +10,11 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatus
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
@@ -31,8 +33,9 @@ class WCOrderStoreTest {
     @Before
     fun setUp() {
         val appContext = RuntimeEnvironment.application.applicationContext
-
-        val config = SingleStoreWellSqlConfigForTests(appContext, WCOrderModel::class.java,
+        val config = SingleStoreWellSqlConfigForTests(
+                appContext,
+                listOf(WCOrderModel::class.java, WCOrderNoteModel::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE)
         WellSql.init(config)
         config.reset()
@@ -127,5 +130,18 @@ class WCOrderStoreTest {
         assertEquals(OrderErrorType.INVALID_PARAM, OrderErrorType.fromString("invalid_param"))
         assertEquals(OrderErrorType.INVALID_PARAM, OrderErrorType.fromString("INVALID_PARAM"))
         assertEquals(OrderErrorType.GENERIC_ERROR, OrderErrorType.fromString(""))
+    }
+
+    @Test
+    fun testGetOrderNotesForOrder() {
+        val notesJson = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order_notes.json")
+        val noteModels = OrderTestUtils.getOrderNotesFromJsonString(notesJson, 6, 949)
+        val orderModel = OrderTestUtils.generateSampleOrder(1).apply { id = 949 }
+        assertEquals(6, noteModels.size)
+        OrderSqlUtils.insertOrIgnoreOrderNote(noteModels[0])
+
+        val retrievedNotes = orderStore.getOrderNotesForOrder(orderModel)
+        assertEquals(1, retrievedNotes.size)
+        assertEquals(noteModels[0], retrievedNotes[0])
     }
 }

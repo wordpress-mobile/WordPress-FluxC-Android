@@ -17,11 +17,13 @@ import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatus
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
 import kotlin.properties.Delegates.notNull
 
@@ -167,6 +169,64 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
         assertEquals(WCOrderAction.UPDATED_ORDER_STATUS, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteOrderPayload
+        with (payload) {
+            // Expecting a 'invalid id' error from the server
+            assertNotNull(error)
+            assertEquals(OrderErrorType.INVALID_ID, error.type)
+        }
+    }
+
+    @Test
+    fun testOrderNotesFetchSuccess() {
+        interceptor.respondWith("wc-order-notes-response-success.json")
+        orderRestClient.fetchOrderNotes(
+                WCOrderModel().apply {
+                    localSiteId = 5
+                    id = 8
+                    remoteOrderId = 88
+                }, siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCOrderAction.FETCHED_ORDER_NOTES, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchOrderNotesResponsePayload
+        assertNull(payload.error)
+        assertEquals(7, payload.notes.size)
+
+        // Verify basic order fields and private note
+        with(payload.notes[0]) {
+            assertEquals(1942, remoteNoteId)
+            assertEquals("2018-04-27T20:48:10Z", dateCreated)
+            assertEquals(5, localSiteId)
+            assertEquals(8, localOrderId)
+            assertEquals("Email queued: Poster Purchase Follow-Up scheduled " +
+                    "on Poster Purchase Follow-Up<br/>Trigger: Poster Purchase Follow-Up", note)
+            assertEquals(false, isCustomerNote)
+        }
+
+        // Verify customer note
+        with(payload.notes[6]) {
+            assertEquals("Please gift wrap", note)
+            assertTrue(isCustomerNote)
+        }
+    }
+
+    @Test
+    fun testOrderNotesFetchError() {
+        interceptor.respondWithError("wc-order-notes-response-failure-invalid-id.json", 404)
+        orderRestClient.fetchOrderNotes(
+                WCOrderModel().apply {
+                    localSiteId = 5
+                    id = 8
+                    remoteOrderId = 88
+                }, siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCOrderAction.FETCHED_ORDER_NOTES, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchOrderNotesResponsePayload
         with (payload) {
             // Expecting a 'invalid id' error from the server
             assertNotNull(error)

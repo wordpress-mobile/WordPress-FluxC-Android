@@ -1,10 +1,12 @@
 package org.wordpress.android.fluxc.persistence
 
 import com.wellsql.generated.WCOrderModelTable
+import com.wellsql.generated.WCOrderNoteModelTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.WCOrderNoteModel
 
 object OrderSqlUtils {
     fun insertOrUpdateOrder(order: WCOrderModel): Int {
@@ -51,6 +53,51 @@ object OrderSqlUtils {
                 .where().beginGroup()
                 .equals(WCOrderModelTable.LOCAL_SITE_ID, site.id)
                 .endGroup()
+                .endWhere()
+                .execute()
+    }
+
+    fun insertOrIgnoreOrderNotes(notes: List<WCOrderNoteModel>): Int {
+        var totalChanged = 0
+        notes.forEach { totalChanged += insertOrIgnoreOrderNote(it) }
+        return totalChanged
+    }
+
+    fun insertOrIgnoreOrderNote(note: WCOrderNoteModel): Int {
+        val noteResult = WellSql.select(WCOrderNoteModel::class.java)
+                .where().beginGroup()
+                .equals(WCOrderNoteModelTable.ID, note.id)
+                .or()
+                .beginGroup()
+                .equals(WCOrderNoteModelTable.REMOTE_NOTE_ID, note.remoteNoteId)
+                .equals(WCOrderNoteModelTable.LOCAL_SITE_ID, note.localSiteId)
+                .equals(WCOrderNoteModelTable.LOCAL_ORDER_ID, note.localOrderId)
+                .endGroup()
+                .endGroup().endWhere()
+                .asModel
+
+        return if (noteResult.isEmpty()) {
+            // Insert
+            WellSql.insert(note).asSingleTransaction(true).execute()
+            1
+        } else {
+            // Ignore
+            0
+        }
+    }
+
+    fun getOrderNotesForOrder(localId: Int): List<WCOrderNoteModel> =
+            WellSql.select(WCOrderNoteModel::class.java)
+                    .where()
+                    .equals(WCOrderNoteModelTable.LOCAL_ORDER_ID, localId)
+                    .endWhere()
+                    .orderBy(WCOrderNoteModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
+                    .asModel
+
+    fun deleteOrderNotesForSite(site: SiteModel): Int {
+        return WellSql.delete(WCOrderNoteModel::class.java)
+                .where()
+                .equals(WCOrderNoteModelTable.LOCAL_SITE_ID, site.id)
                 .endWhere()
                 .execute()
     }
