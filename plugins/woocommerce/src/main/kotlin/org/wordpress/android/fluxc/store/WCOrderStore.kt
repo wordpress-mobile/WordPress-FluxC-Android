@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
+import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
@@ -70,6 +71,21 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(order, site) { this.error = error }
     }
 
+    class PostOrderNotePayload(
+        val order: WCOrderModel,
+        val site: SiteModel,
+        val note: WCOrderNoteModel
+    ) : Payload<BaseNetworkError>()
+
+    class RemoteOrderNotePayload(
+        val order: WCOrderModel,
+        val site: SiteModel,
+        val note: WCOrderNoteModel
+    ) : Payload<OrderError>() {
+        constructor(error: OrderError, order: WCOrderModel, site: SiteModel, note: WCOrderNoteModel)
+                : this(order, site, note) { this.error = error }
+    }
+
     class OrderError(val type: OrderErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
 
     enum class OrderErrorType {
@@ -121,10 +137,12 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             WCOrderAction.FETCH_ORDERS -> fetchOrders(action.payload as FetchOrdersPayload)
             WCOrderAction.UPDATE_ORDER_STATUS -> updateOrderStatus(action.payload as UpdateOrderStatusPayload)
             WCOrderAction.FETCH_ORDER_NOTES -> fetchOrderNotes(action.payload as FetchOrderNotesPayload)
+            WCOrderAction.POST_ORDER_NOTE -> postOrderNote(action.payload as PostOrderNotePayload)
             WCOrderAction.FETCHED_ORDERS -> handleFetchOrdersCompleted(action.payload as FetchOrdersResponsePayload)
             WCOrderAction.UPDATED_ORDER_STATUS -> handleUpdateOrderStatusCompleted(action.payload as RemoteOrderPayload)
             WCOrderAction.FETCHED_ORDER_NOTES ->
                 handleFetchOrderNotesCompleted(action.payload as FetchOrderNotesResponsePayload)
+            WCOrderAction.POSTED_ORDER_NOTE -> handlePostOrderNoteCompleted(action.payload as RemoteOrderNotePayload)
         }
     }
 
@@ -143,6 +161,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     private fun fetchOrderNotes(payload: FetchOrderNotesPayload) {
         wcOrderRestClient.fetchOrderNotes(payload.order, payload.site)
+    }
+
+    private fun postOrderNote(payload: PostOrderNotePayload) {
+        wcOrderRestClient.postOrderNote(payload.order, payload.site, payload.note)
     }
 
     private fun handleFetchOrdersCompleted(payload: FetchOrdersResponsePayload) {
@@ -195,6 +217,20 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         }
 
         onOrderChanged.causeOfChange = FETCH_ORDER_NOTES
+        emitChange(onOrderChanged)
+    }
+
+    private fun handlePostOrderNoteCompleted(payload: RemoteOrderNotePayload) {
+        val onOrderChanged: OnOrderChanged
+
+        if (payload.isError) {
+            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
+        } else {
+            val rowsAffected = OrderSqlUtils.insertOrIgnoreOrderNote(payload.note)
+            onOrderChanged = OnOrderChanged(rowsAffected)
+        }
+
+        onOrderChanged.causeOfChange = POST_ORDER_NOTE
         emitChange(onOrderChanged)
     }
 }

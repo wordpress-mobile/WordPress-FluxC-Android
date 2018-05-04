@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePay
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
+import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import javax.inject.Singleton
 
@@ -106,12 +107,12 @@ class OrderRestClient(
      */
     fun fetchOrderNotes(order: WCOrderModel, site: SiteModel) {
         val url = WOOCOMMERCE.orders.id(order.remoteOrderId).notes.pathV2
-        val responseType = object : TypeToken<List<OrderNotesApiResponse>>() {}.type
+        val responseType = object : TypeToken<List<OrderNoteApiResponse>>() {}.type
         val params = emptyMap<String, String>()
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<OrderNotesApiResponse>? ->
+                { response: List<OrderNoteApiResponse>? ->
                     val noteModels = response?.map {
-                        orderNotesResponseToOrderNotesModel(it).apply {
+                        orderNoteResponseToOrderNoteModel(it).apply {
                             localSiteId = site.id
                             localOrderId = order.id
                         }
@@ -123,6 +124,37 @@ class OrderRestClient(
                     val orderError = networkErrorToOrderError(networkError as WPComGsonNetworkError)
                     val payload = FetchOrderNotesResponsePayload(orderError, site, order)
                     mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderNotesAction(payload))
+                })
+        add(request)
+    }
+
+    /**
+     * Makes a POST call to `/wc/v2/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * saving the provide4d note for the given WooCommerce [SiteModel] and [WCOrderModel].
+     *
+     * Dispatches a [WCOrderAction.POSTED_ORDER_NOTE] action with the resulting saved version of the order note.
+     */
+    fun postOrderNote(order: WCOrderModel, site: SiteModel, note: WCOrderNoteModel) {
+        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).notes.pathV2
+
+        println("AMANDA-TEST >  PATH = $url")
+        val params = mutableMapOf("note" to note.note, "customer_note" to note.isCustomerNote)
+        val request = JetpackTunnelGsonRequest.buildPostRequest(
+                url, site.siteId, params, OrderNoteApiResponse::class.java,
+                { response: OrderNoteApiResponse? ->
+                    response?.let {
+                        val newNote = orderNoteResponseToOrderNoteModel(it).apply {
+                            localSiteId = site.id
+                            localOrderId = order.id
+                        }
+                        val payload = RemoteOrderNotePayload(order, site, newNote)
+                        mDispatcher.dispatch(WCOrderActionBuilder.newPostedOrderNoteAction(payload))
+                    }
+                },
+                BaseErrorListener { networkError ->
+                    val noteError = networkErrorToOrderError(networkError as WPComGsonNetworkError)
+                    val payload = RemoteOrderNotePayload(noteError, order, site, note)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newPostedOrderNoteAction(payload))
                 })
         add(request)
     }
@@ -182,7 +214,7 @@ class OrderRestClient(
         }
     }
 
-    private fun orderNotesResponseToOrderNotesModel(response: OrderNotesApiResponse): WCOrderNoteModel {
+    private fun orderNoteResponseToOrderNoteModel(response: OrderNoteApiResponse): WCOrderNoteModel {
         return WCOrderNoteModel().apply {
             remoteNoteId = response.id ?: 0
             dateCreated = "${response.date_created_gmt}Z"

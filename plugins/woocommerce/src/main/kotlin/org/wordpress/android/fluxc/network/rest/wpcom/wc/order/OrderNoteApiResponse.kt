@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import org.wordpress.android.fluxc.network.Response
 
-class OrderNotesApiResponse : Response {
+class OrderNoteApiResponse : Response {
     val id: Long? = null
     val date_created_gmt: String? = null
     val note: String? = null

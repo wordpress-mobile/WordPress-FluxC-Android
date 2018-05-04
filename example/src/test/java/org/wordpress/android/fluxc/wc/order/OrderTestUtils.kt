@@ -4,7 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderNotesApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderNoteApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatus
 
 object OrderTestUtils {
@@ -22,8 +22,8 @@ object OrderTestUtils {
     }
 
     fun getOrderNotesFromJsonString(json: String, siteId: Int, orderId: Int): List<WCOrderNoteModel> {
-        val responseType = object : TypeToken<List<OrderNotesApiResponse>>() {}.type
-        val converted = Gson().fromJson(json, responseType) as? List<OrderNotesApiResponse> ?: emptyList()
+        val responseType = object : TypeToken<List<OrderNoteApiResponse>>() {}.type
+        val converted = Gson().fromJson(json, responseType) as? List<OrderNoteApiResponse> ?: emptyList()
         return converted.map {
             WCOrderNoteModel().apply {
                 remoteNoteId = it.id ?: 0
