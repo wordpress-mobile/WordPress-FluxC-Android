@@ -137,7 +137,6 @@ class OrderRestClient(
     fun postOrderNote(order: WCOrderModel, site: SiteModel, note: WCOrderNoteModel) {
         val url = WOOCOMMERCE.orders.id(order.remoteOrderId).notes.pathV2
 
-        println("AMANDA-TEST >  PATH = $url")
         val params = mutableMapOf("note" to note.note, "customer_note" to note.isCustomerNote)
         val request = JetpackTunnelGsonRequest.buildPostRequest(
                 url, site.siteId, params, OrderNoteApiResponse::class.java,
