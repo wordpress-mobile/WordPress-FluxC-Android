@@ -13,15 +13,18 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
+import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.AppLog
@@ -67,6 +70,21 @@ class WooCommerceFragment : Fragment() {
                     pendingNotesOrderModel = order
                     val payload = FetchOrderNotesPayload(order, site)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderNotesAction(payload))
+                }
+            }
+        }
+
+        post_order_note.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                getFirstWCOrder()?.let { order ->
+                    pendingNotesOrderModel = order
+                    showSingleLineDialog(activity, "Enter note", { editText ->
+                        val newNote = WCOrderNoteModel().apply {
+                            note = editText.text.toString()
+                        }
+                        val payload = PostOrderNotePayload(order, site, newNote)
+                        dispatcher.dispatch(WCOrderActionBuilder.newPostOrderNoteAction(payload))
+                    })
                 }
             }
         }
@@ -118,6 +136,8 @@ class WooCommerceFragment : Fragment() {
                                     "${pendingNotesOrderModel!!.remoteOrderId}. ${event.rowsAffected} " +
                                     "notes inserted into database.")
                     }
+                    POST_ORDER_NOTE -> prependToLog("Posted ${event.rowsAffected} " +
+                            "note to the api for order ${pendingNotesOrderModel!!.remoteOrderId}")
                     UPDATE_ORDER_STATUS ->
                         with (orderList[0]) { prependToLog("Updated order status for $number to $status") }
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)

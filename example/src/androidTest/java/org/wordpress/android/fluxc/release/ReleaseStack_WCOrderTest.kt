@@ -8,10 +8,13 @@ import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
+import org.wordpress.android.fluxc.model.WCOrderModel
+import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -20,12 +23,19 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     internal enum class TestEvent {
         NONE,
         FETCHED_ORDERS,
-        FETCHED_ORDER_NOTES
+        FETCHED_ORDER_NOTES,
+        POST_ORDER_NOTE,
+        POSTED_ORDER_NOTE
     }
 
     @Inject internal lateinit var orderStore: WCOrderStore
 
     private var nextEvent: TestEvent = TestEvent.NONE
+    private val orderModel = WCOrderModel(8).apply {
+        remoteOrderId = 1125
+        number = "1125"
+        dateCreated = "2018-04-20T15:45:14Z"
+    }
 
     @Throws(Exception::class)
     override fun setUp() {
@@ -73,6 +83,26 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         assertTrue(fetchedNotes.isNotEmpty())
     }
 
+    @Throws(InterruptedException::class)
+    @Test
+    fun testPostOrderNote() {
+        val originalNote = WCOrderNoteModel().apply {
+            localOrderId = orderModel.id
+            localSiteId = sSite.id
+            note = "Test rest note"
+            isCustomerNote = true
+        }
+        nextEvent = TestEvent.POST_ORDER_NOTE
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(WCOrderActionBuilder.newPostOrderNoteAction(
+                PostOrderNotePayload(orderModel, sSite, originalNote)))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        // Verify results
+        val fetchedNotes = orderStore.getOrderNotesForOrder(orderModel)
+        assertTrue(fetchedNotes.isNotEmpty())
+    }
+
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onOrderChanged(event: OnOrderChanged) {
@@ -87,6 +117,10 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
             }
             WCOrderAction.FETCH_ORDER_NOTES -> {
                 assertEquals(TestEvent.FETCHED_ORDER_NOTES, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            WCOrderAction.POST_ORDER_NOTE -> {
+                assertEquals(TestEvent.POST_ORDER_NOTE, nextEvent)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)

@@ -7,6 +7,8 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload;
+import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload;
+import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload;
 
@@ -19,6 +21,8 @@ public enum WCOrderAction implements IAction {
     UPDATE_ORDER_STATUS,
     @Action(payloadType = FetchOrderNotesPayload.class)
     FETCH_ORDER_NOTES,
+    @Action(payloadType = PostOrderNotePayload.class)
+    POST_ORDER_NOTE,
 
     // Remote responses
     @Action(payloadType = FetchOrdersResponsePayload.class)
@@ -26,5 +30,7 @@ public enum WCOrderAction implements IAction {
     @Action(payloadType = RemoteOrderPayload.class)
     UPDATED_ORDER_STATUS,
     @Action(payloadType = FetchOrderNotesResponsePayload.class)
-    FETCHED_ORDER_NOTES
+    FETCHED_ORDER_NOTES,
+    @Action(payloadType = RemoteOrderNotePayload.class)
+    POSTED_ORDER_NOTE
 }
