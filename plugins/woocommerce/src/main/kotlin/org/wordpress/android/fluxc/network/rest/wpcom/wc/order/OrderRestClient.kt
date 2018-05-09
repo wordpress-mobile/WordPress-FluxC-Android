@@ -10,9 +10,9 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
-import org.wordpress.android.fluxc.network.BaseRequest.BaseErrorListener
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
@@ -32,8 +32,7 @@ class OrderRestClient(
     requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent
-)
-    : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET call to `/wc/v2/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of orders for the given WooCommerce [SiteModel].
@@ -59,8 +58,8 @@ class OrderRestClient(
                     val payload = FetchOrdersResponsePayload(site, orderModels, offset > 0, canLoadMore)
                     mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                 },
-                BaseErrorListener { networkError ->
-                    val orderError = networkErrorToOrderError(networkError as WPComGsonNetworkError)
+                WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
                     val payload = FetchOrdersResponsePayload(orderError, site)
                     mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                 })
@@ -91,8 +90,8 @@ class OrderRestClient(
                         mDispatcher.dispatch(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
                     }
                 },
-                BaseErrorListener { networkError ->
-                    val orderError = networkErrorToOrderError(networkError as WPComGsonNetworkError)
+                WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
                     val payload = RemoteOrderPayload(orderError, order, site)
                     mDispatcher.dispatch(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
                 })
@@ -120,8 +119,8 @@ class OrderRestClient(
                     val payload = FetchOrderNotesResponsePayload(order, site, noteModels)
                     mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderNotesAction(payload))
                 },
-                BaseErrorListener { networkError ->
-                    val orderError = networkErrorToOrderError(networkError as WPComGsonNetworkError)
+                WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
                     val payload = FetchOrderNotesResponsePayload(orderError, site, order)
                     mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderNotesAction(payload))
                 })
@@ -150,8 +149,8 @@ class OrderRestClient(
                         mDispatcher.dispatch(WCOrderActionBuilder.newPostedOrderNoteAction(payload))
                     }
                 },
-                BaseErrorListener { networkError ->
-                    val noteError = networkErrorToOrderError(networkError as WPComGsonNetworkError)
+                WPComErrorListener { networkError ->
+                    val noteError = networkErrorToOrderError(networkError)
                     val payload = RemoteOrderNotePayload(noteError, order, site, note)
                     mDispatcher.dispatch(WCOrderActionBuilder.newPostedOrderNoteAction(payload))
                 })
