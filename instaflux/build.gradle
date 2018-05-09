@@ -50,7 +50,7 @@ android.buildTypes.all { buildType ->
 dependencies {
     implementation project(':fluxc');
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
 
     // WordPress libs
     implementation ('org.wordpress:utils:1.20.0') {
