@@ -14,10 +14,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRe
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -28,10 +27,10 @@ class WCStatsStore @Inject constructor(
     private val wcOrderStatsClient: OrderStatsRestClient
 ) : Store(dispatcher) {
     companion object {
-        private val DATE_FORMAT_DAY = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-        private val DATE_FORMAT_MONTH = SimpleDateFormat("yyyy-MM", Locale.US)
-        private val DATE_FORMAT_YEAR = SimpleDateFormat("yyyy", Locale.US)
-        private val DATE_FORMAT_DAY_OF_MONTH = SimpleDateFormat("dd", Locale.US)
+        private const val DATE_FORMAT_DAY = "yyyy-MM-dd"
+        private const val DATE_FORMAT_MONTH = "yyyy-MM"
+        private const val DATE_FORMAT_YEAR = "yyyy"
+        private const val DATE_FORMAT_DAY_OF_MONTH = "dd"
     }
 
     enum class StatsGranularity {
@@ -110,8 +109,7 @@ class WCStatsStore @Inject constructor(
         rawStats?.let {
             val periodIndex = it.getIndexForField(OrderStatsField.PERIOD)
             val revenueIndex = it.getIndexForField(OrderStatsField.TOTAL_SALES)
-            // TODO: Temp - use the site's timezone
-            val dayOfMonth = DATE_FORMAT_DAY_OF_MONTH.format(Date()).toInt()
+            val dayOfMonth = SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_DAY_OF_MONTH).toInt()
             return it.dataList
                     .takeLast(dayOfMonth)
                     .map { it[periodIndex].toString() to it[revenueIndex] as Double }.toMap()
@@ -147,11 +145,10 @@ class WCStatsStore @Inject constructor(
     }
 
     private fun getFormattedDate(site: SiteModel, granularity: StatsGranularity): String {
-        // TODO Use site.timezone to get the correct current day for the site
         return when (granularity) {
-            StatsGranularity.DAYS -> DATE_FORMAT_DAY.format(Date())
-            StatsGranularity.MONTHS -> DATE_FORMAT_MONTH.format(Date())
-            StatsGranularity.YEARS -> DATE_FORMAT_YEAR.format(Date())
+            StatsGranularity.DAYS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_DAY)
+            StatsGranularity.MONTHS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_MONTH)
+            StatsGranularity.YEARS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR)
         }
     }
 }
