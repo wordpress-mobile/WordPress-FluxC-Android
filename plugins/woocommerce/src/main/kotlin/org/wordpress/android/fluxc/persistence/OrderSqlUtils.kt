@@ -7,6 +7,7 @@ import com.yarolegovich.wellsql.WellSql
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.order.OrderIdSet
 
 object OrderSqlUtils {
     fun insertOrUpdateOrder(order: WCOrderModel): Int {
@@ -31,6 +32,20 @@ object OrderSqlUtils {
             return WellSql.update(WCOrderModel::class.java).whereId(oldId)
                     .put(order, UpdateAllExceptId(WCOrderModel::class.java)).execute()
         }
+    }
+
+    fun getOrderForIdSet(orderIdSet: OrderIdSet): WCOrderModel? {
+        val (id, remoteOrderId, localSiteId) = orderIdSet
+        return WellSql.select(WCOrderModel::class.java)
+                .where().beginGroup()
+                .equals(WCOrderModelTable.ID, id)
+                .or()
+                .beginGroup()
+                .equals(WCOrderModelTable.REMOTE_ORDER_ID, remoteOrderId)
+                .equals(WCOrderModelTable.LOCAL_SITE_ID, localSiteId)
+                .endGroup()
+                .endGroup().endWhere()
+                .asModel.firstOrNull()
     }
 
     fun getOrdersForSite(site: SiteModel, status: List<String> = emptyList()): List<WCOrderModel> {
