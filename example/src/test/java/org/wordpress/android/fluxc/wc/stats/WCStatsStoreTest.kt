@@ -1,7 +1,14 @@
 package org.wordpress.android.fluxc.wc.stats
 
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.argumentCaptor
 import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.reset
+import com.nhaarman.mockito_kotlin.verify
 import com.yarolegovich.wellsql.WellSql
+import org.hamcrest.CoreMatchers.anyOf
+import org.hamcrest.CoreMatchers.not
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -10,21 +17,30 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCStatsStore
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
+import org.wordpress.android.fluxc.utils.SiteUtils.getCurrentDateTimeForSite
+import java.text.SimpleDateFormat
+import java.util.Date
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.hamcrest.CoreMatchers.`is` as isEqual
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class WCStatsStoreTest {
-    private val wcStatsStore = WCStatsStore(Dispatcher(), mock())
+    private val mockOrderStatsRestClient = mock<OrderStatsRestClient>()
+    private val wcStatsStore = WCStatsStore(Dispatcher(), mockOrderStatsRestClient)
 
     @Before
     fun setUp() {
@@ -78,6 +94,45 @@ class WCStatsStoreTest {
             assertEquals("month", get(1).unit)
             assertEquals("day", get(2).unit)
         }
+    }
+
+    @Test
+    fun testFetchDayOrderStatsDate() {
+        val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
+            val payload = FetchOrderStatsPayload(it, StatsGranularity.DAYS)
+            wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+
+            val timeOnSite = getCurrentDateTimeForSite(it, "yyyy-MM-dd")
+
+            // The date value passed to the network client should match the current date on the site
+            val dateArgument = argumentCaptor<String>()
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any())
+            val siteDate = dateArgument.firstValue
+            assertEquals(timeOnSite, siteDate)
+            return@let siteDate
+        }
+
+        reset(mockOrderStatsRestClient)
+
+        val minus12SiteDate = SiteModel().apply { timezone = "-12" }.let {
+            val payload = FetchOrderStatsPayload(it, StatsGranularity.DAYS)
+            wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+
+            val timeOnSite = getCurrentDateTimeForSite(it, "yyyy-MM-dd")
+
+            // The date value passed to the network client should match the current date on the site
+            val dateArgument = argumentCaptor<String>()
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any())
+            val siteDate = dateArgument.firstValue
+            assertEquals(timeOnSite, siteDate)
+            return@let siteDate
+        }
+
+        // The two test sites are 24 hours apart, so we are guaranteed to have one site date match the local date,
+        // and the other not match it
+        val localDate = SimpleDateFormat("yyyy-MM-dd").format(Date())
+        assertThat(localDate, anyOf(isEqual(plus12SiteDate), isEqual(minus12SiteDate)))
+        assertThat(localDate, anyOf(not(plus12SiteDate), not(minus12SiteDate)))
     }
 
     @Test
