@@ -163,7 +163,7 @@ class OrderRestClient(
             number = response.number ?: remoteOrderId.toString()
             status = response.status ?: ""
             currency = response.currency ?: ""
-            dateCreated = "${response.date_created_gmt}Z" // Store the date in UTC format
+            dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: "" // Store the date in UTC format
             total = response.total ?: ""
             totalTax = response.total_tax ?: ""
             shippingTotal = response.shipping_total ?: ""
@@ -215,7 +215,7 @@ class OrderRestClient(
     private fun orderNoteResponseToOrderNoteModel(response: OrderNoteApiResponse): WCOrderNoteModel {
         return WCOrderNoteModel().apply {
             remoteNoteId = response.id ?: 0
-            dateCreated = "${response.date_created_gmt}Z"
+            dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: ""
             note = response.note ?: ""
             isCustomerNote = response.customer_note
         }
