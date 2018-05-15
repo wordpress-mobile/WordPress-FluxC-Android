@@ -121,6 +121,23 @@ class WCStatsStore @Inject constructor(
         return getCurrentMonthStatsForField(site, OrderStatsField.TOTAL_SALES)
     }
 
+    /**
+     * Returns the order volume data for the month so far for the given [site], in increments of days.
+     *
+     * The month so far is relative to the site's own timezone, not the current device's.
+     *
+     * The returned map has the format:
+     * {
+     * "2018-05-01" -> 15,
+     * "2018-05-02" -> 7,
+     * ...
+     * "2018-05-16" -> 24
+     * }
+     */
+    fun getOrderStatsForCurrentMonth(site: SiteModel): Map<String, Int> {
+        return getCurrentMonthStatsForField(site, OrderStatsField.ORDERS)
+    }
+
     private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
         // TODO: Caching, and skip cache if forced == true
         when (payload.granularity) {
