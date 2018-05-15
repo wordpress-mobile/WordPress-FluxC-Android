@@ -104,16 +104,21 @@ class WCStatsStore @Inject constructor(
         }
     }
 
+    /**
+     * Returns the revenue data for the month so far for the given [site], in increments of days.
+     *
+     * The month so far is relative to the site's own timezone, not the current device's.
+     *
+     * The returned map has the format:
+     * {
+     * "2018-05-01" -> 57.43,
+     * "2018-05-02" -> 78.98,
+     * ...
+     * "2018-05-16" -> 68.24
+     * }
+     */
     fun getRevenueStatsForCurrentMonth(site: SiteModel): Map<String, Double> {
-        val rawStats = WCStatsSqlUtils.getRawStatsForSiteAndUnit(site, OrderStatsApiUnit.DAY)
-        rawStats?.let {
-            val periodIndex = it.getIndexForField(OrderStatsField.PERIOD)
-            val revenueIndex = it.getIndexForField(OrderStatsField.TOTAL_SALES)
-            val dayOfMonth = SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_DAY_OF_MONTH).toInt()
-            return it.dataList
-                    .takeLast(dayOfMonth)
-                    .map { it[periodIndex].toString() to it[revenueIndex] as Double }.toMap()
-        } ?: return mapOf()
+        return getCurrentMonthStatsForField(site, OrderStatsField.TOTAL_SALES)
     }
 
     private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
@@ -150,5 +155,20 @@ class WCStatsStore @Inject constructor(
             StatsGranularity.MONTHS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_MONTH)
             StatsGranularity.YEARS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR)
         }
+    }
+
+    // The type of the stats field relies on knowledge of the real value of the stored JSON for that field
+    // It's up to the function caller to be aware of the compatible types for any given field
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> getCurrentMonthStatsForField(site: SiteModel, field: OrderStatsField): Map<String, T> {
+        val rawStats = WCStatsSqlUtils.getRawStatsForSiteAndUnit(site, OrderStatsApiUnit.DAY)
+        rawStats?.let {
+            val periodIndex = it.getIndexForField(OrderStatsField.PERIOD)
+            val fieldIndex = it.getIndexForField(field)
+            val dayOfMonth = SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_DAY_OF_MONTH).toInt()
+            return it.dataList
+                    .takeLast(dayOfMonth)
+                    .map { it[periodIndex].toString() to it[fieldIndex] as T }.toMap()
+        } ?: return mapOf()
     }
 }
