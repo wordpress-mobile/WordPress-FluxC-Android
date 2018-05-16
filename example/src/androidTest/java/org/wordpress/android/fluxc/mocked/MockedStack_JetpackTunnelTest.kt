@@ -47,13 +47,11 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
                 { _: RootWPAPIRestResponse? ->
                     throw AssertionError("Unexpected success!")
                 },
-                WPComErrorListener {
-                    error -> run {
-                        // Verify that the error response is correctly parsed
-                        assertEquals("rest_no_route", error.apiError)
-                        assertEquals("No route was found matching the URL and request method", error.message)
-                        countDownLatch.countDown()
-                    }
+                WPComErrorListener { error ->
+                    // Verify that the error response is correctly parsed
+                    assertEquals("rest_no_route", error.apiError)
+                    assertEquals("No route was found matching the URL and request method", error.message)
+                    countDownLatch.countDown()
                 })
 
         interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
@@ -70,17 +68,13 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, 567, params,
                 RootWPAPIRestResponse::class.java,
                 { response: RootWPAPIRestResponse? ->
-                    run {
-                        // Verify that the successful response is correctly parsed
-                        assertTrue(response?.namespaces?.contains("wp/v2")!!)
-                        countDownLatch.countDown()
-                    }
+                    // Verify that the successful response is correctly parsed
+                    assertTrue(response?.namespaces?.contains("wp/v2")!!)
+                    countDownLatch.countDown()
                 },
-                WPComErrorListener {
-                    error -> run {
-                        throw AssertionError("Unexpected BaseNetworkError: " +
-                                error.apiError + " - " + error.message)
-                    }
+                WPComErrorListener { error ->
+                    throw AssertionError("Unexpected BaseNetworkError: " +
+                            error.apiError + " - " + error.message)
                 })
 
         interceptor.respondWith("jetpack-tunnel-root-response-success.json")
@@ -98,19 +92,15 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
         val request = JetpackTunnelGsonRequest.buildPostRequest(url, 567, requestBody,
                 SettingsAPIResponse::class.java,
                 { response: SettingsAPIResponse? ->
-                    run {
-                        // Verify that the successful response is correctly parsed
-                        assertEquals("New Title", response?.title)
-                        assertEquals("New Description", response?.description)
-                        assertNull(response?.language)
-                        countDownLatch.countDown()
-                    }
+                    // Verify that the successful response is correctly parsed
+                    assertEquals("New Title", response?.title)
+                    assertEquals("New Description", response?.description)
+                    assertNull(response?.language)
+                    countDownLatch.countDown()
                 },
-                WPComErrorListener {
-                    error -> run {
-                        throw AssertionError("Unexpected BaseNetworkError: " +
-                                error.apiError + " - " + error.message)
-                    }
+                WPComErrorListener { error ->
+                    throw AssertionError("Unexpected BaseNetworkError: " +
+                            error.apiError + " - " + error.message)
                 })
 
         interceptor.respondWith("jetpack-tunnel-wp-v2-settings-response-success.json")

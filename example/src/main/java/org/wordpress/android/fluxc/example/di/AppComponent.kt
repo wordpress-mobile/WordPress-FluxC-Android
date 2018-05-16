@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.example.ExampleApp
 import org.wordpress.android.fluxc.module.ReleaseBaseModule
 import org.wordpress.android.fluxc.module.ReleaseNetworkModule
 import org.wordpress.android.fluxc.module.ReleaseOkHttpClientModule
+import org.wordpress.android.fluxc.module.ReleaseWCNetworkModule
 import javax.inject.Singleton
 
 @Singleton
@@ -19,6 +20,7 @@ import javax.inject.Singleton
         ReleaseOkHttpClientModule::class,
         ReleaseBaseModule::class,
         ReleaseNetworkModule::class,
+        ReleaseWCNetworkModule::class,
         MainActivityModule::class))
 interface AppComponent : AndroidInjector<ExampleApp> {
     override fun inject(app: ExampleApp)
