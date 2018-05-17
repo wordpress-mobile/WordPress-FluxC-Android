@@ -1,0 +1,26 @@
+{
+  "data": {
+    "id": 86,
+    "date_created": "2018-05-04T02:07:50",
+    "date_created_gmt": "2018-05-04T02:07:50",
+    "note": "Test rest note",
+    "customer_note": true,
+    "_links": {
+      "self": [
+        {
+          "href": "https:\/\/amandatestsatomic1.blog\/wp-json\/wc\/v2\/orders\/104\/notes\/86"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https:\/\/amandatestsatomic1.blog\/wp-json\/wc\/v2\/orders\/104\/notes"
+        }
+      ],
+      "up": [
+        {
+          "href": "https:\/\/amandatestsatomic1.blog\/wp-json\/wc\/v2\/orders\/104"
+        }
+      ]
+    }
+  }
+}
