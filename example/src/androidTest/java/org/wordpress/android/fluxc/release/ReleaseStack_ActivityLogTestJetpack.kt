@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.activity.ActivityLogModel
+import org.wordpress.android.fluxc.model.activity.RewindStatusModel
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
@@ -23,6 +24,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.ActivityLogStore
 import org.wordpress.android.fluxc.store.ActivityLogStore.FetchedActivityLogPayload
 import org.wordpress.android.fluxc.store.ActivityLogStore.OnActivityLogFetched
+import org.wordpress.android.fluxc.store.ActivityLogStore.OnRewindStatusFetched
 import org.wordpress.android.fluxc.store.ActivityLogStore.RewindResultPayload
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
@@ -40,7 +42,8 @@ import javax.inject.Inject
  */
 class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     private val incomingActions: MutableList<Action<*>> = mutableListOf()
-    private val incomingChangeEvents: MutableList<Store.OnChanged<ActivityLogStore.ActivityError>> = mutableListOf()
+    private val incomingChangeEvents: MutableList<OnActivityLogFetched> = mutableListOf()
+    private val incomingRewindChangeEvents: MutableList<OnRewindStatusFetched> = mutableListOf()
     @Inject lateinit var activityLogStore: ActivityLogStore
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var accountStore: AccountStore
@@ -64,6 +67,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         nextEvent = TestEvents.NONE
         this.incomingActions.clear()
         this.incomingChangeEvents.clear()
+        this.incomingRewindChangeEvents.clear()
     }
 
     @Test
@@ -89,9 +93,14 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         assertTrue(incomingActions.size == 1)
         val fetchedRewindStatePayload = incomingActions[0].payload as ActivityLogStore.FetchedRewindStatePayload
-        with(fetchedRewindStatePayload) {
-            assertNotNull(this.rewindStatusModelResponse)
-            assertNotNull(this.rewindStatusModelResponse?.state)
+        assertNotNull(fetchedRewindStatePayload.rewindStatusModelResponse)
+        fetchedRewindStatePayload.rewindStatusModelResponse?.apply {
+            assertNotNull(this.state)
+            val rewindStatusFromDb = awaitRewindState(site)
+            assertNotNull(rewindStatusFromDb)
+            assertEquals(this.state, rewindStatusFromDb?.state)
+            assertEquals(this.reason, rewindStatusFromDb?.reason)
+            assertEquals(this.lastUpdated, rewindStatusFromDb?.lastUpdated)
         }
     }
 
@@ -184,13 +193,25 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     private fun awaitActivities(site: SiteModel, count: Int, ascending: Boolean = true): List<ActivityLogModel> {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         assertEquals(incomingChangeEvents.size, 1)
-        val onFetchedEvent = incomingChangeEvents[0] as OnActivityLogFetched
+        val onFetchedEvent = incomingChangeEvents[0]
         with(onFetchedEvent) {
             assertEquals(onFetchedEvent.rowsAffected, count)
             assertNull(onFetchedEvent.error)
         }
         incomingChangeEvents.clear()
         return activityLogStore.getActivityLogForSite(site, ascending = ascending)
+    }
+
+    private fun awaitRewindState(site: SiteModel): RewindStatusModel? {
+        this.mCountDownLatch = CountDownLatch(1)
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        assertEquals(incomingRewindChangeEvents.size, 1)
+        val onFetchedEvent = incomingRewindChangeEvents[0]
+        with(onFetchedEvent) {
+            assertNull(onFetchedEvent.error)
+        }
+        incomingRewindChangeEvents.clear()
+        return activityLogStore.getRewindStatusForSite(site)
     }
 
     @Subscribe
@@ -238,6 +259,14 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     fun onActivityLogFetched(onChangedEvent: Store.OnChanged<ActivityLogStore.ActivityError>) {
         if (onChangedEvent is OnActivityLogFetched) {
             incomingChangeEvents.add(onChangedEvent)
+            mCountDownLatch?.countDown()
+        }
+    }
+
+    @Subscribe
+    fun onRewindStatusFetched(onChangedEvent: Store.OnChanged<ActivityLogStore.RewindStatusError>) {
+        if (onChangedEvent is OnRewindStatusFetched) {
+            incomingRewindChangeEvents.add(onChangedEvent)
             mCountDownLatch?.countDown()
         }
     }
