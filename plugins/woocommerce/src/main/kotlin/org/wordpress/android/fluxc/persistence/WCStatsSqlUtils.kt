@@ -36,4 +36,12 @@ object WCStatsSqlUtils {
                 .endGroup().endWhere()
                 .asModel.firstOrNull()
     }
+
+    fun getFirstRawStatsForSite(site: SiteModel): WCOrderStatsModel? {
+        return WellSql.select(WCOrderStatsModel::class.java)
+                .where()
+                .equals(WCOrderStatsModelTable.LOCAL_SITE_ID, site.id)
+                .endWhere()
+                .asModel.firstOrNull()
+    }
 }

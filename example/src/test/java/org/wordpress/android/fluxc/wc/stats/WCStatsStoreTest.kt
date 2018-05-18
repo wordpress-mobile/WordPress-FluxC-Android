@@ -186,4 +186,16 @@ class WCStatsStoreTest {
         assertEquals(revenueStats.size, orderStats.size)
         assertEquals(revenueStats.keys, orderStats.keys)
     }
+
+    @Test
+    fun testGetStatsCurrencyForSite() {
+        val orderStatsModel = WCStatsTestUtils.generateSampleStatsModel()
+        val site = SiteModel().apply { id = orderStatsModel.localSiteId }
+
+        assertNull(wcStatsStore.getStatsCurrencyForSite(site))
+
+        WCStatsSqlUtils.insertOrUpdateStats(orderStatsModel)
+
+        assertEquals("USD", wcStatsStore.getStatsCurrencyForSite(site))
+    }
 }

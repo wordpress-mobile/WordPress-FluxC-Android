@@ -138,6 +138,20 @@ class WCStatsStore @Inject constructor(
         return getCurrentMonthStatsForField(site, OrderStatsField.ORDERS)
     }
 
+    /**
+     * Returns the currency code associated with stored stats for the [site], as an ISO 4217 currency code (eg. USD).
+     */
+    fun getStatsCurrencyForSite(site: SiteModel): String? {
+        val rawStats = WCStatsSqlUtils.getFirstRawStatsForSite(site)
+        rawStats?.let { statsModel ->
+            statsModel.dataList.firstOrNull()?.let {
+                val currencyIndex = statsModel.getIndexForField(OrderStatsField.CURRENCY)
+                return it[currencyIndex] as String
+            }
+        }
+        return null
+    }
+
     private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
         // TODO: Caching, and skip cache if forced == true
         when (payload.granularity) {
