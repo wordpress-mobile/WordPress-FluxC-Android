@@ -38,6 +38,6 @@ public class AppConfigModule {
 
     @Provides
     public UserAgent provideUserAgent(Context appContext) {
-        return new UserAgent(appContext);
+        return new UserAgent(appContext, "instaflux-android");
     }
 }
