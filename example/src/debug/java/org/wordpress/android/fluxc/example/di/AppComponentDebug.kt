@@ -14,7 +14,7 @@ import javax.inject.Singleton
 @Component(modules = arrayOf(
         AndroidInjectionModule::class,
         ApplicationModule::class,
-        AppSecretsModule::class,
+        AppConfigModule::class,
         DebugOkHttpClientModule::class,
         InterceptorModule::class,
         ReleaseBaseModule::class,

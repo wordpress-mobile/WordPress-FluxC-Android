@@ -1,8 +1,7 @@
-package org.wordpress.android.fluxc.example.di;
+package org.wordpress.android.fluxc.instaflux;
 
 import android.text.TextUtils;
 
-import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AppSecrets;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -13,10 +12,11 @@ import dagger.Module;
 import dagger.Provides;
 
 @Module
-public class AppSecretsModule {
+public class AppConfigModule {
     public String getStringBuildConfigValue(String fieldName) {
         try {
-            Class<?> clazz = Class.forName(BuildConfig.APPLICATION_ID + ".BuildConfig");
+            String packageName = getClass().getPackage().getName();
+            Class<?> clazz = Class.forName(packageName + ".BuildConfig");
             Field field = clazz.getField(fieldName);
             return (String) field.get(null);
         } catch (Exception e) {

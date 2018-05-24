@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
-import org.wordpress.android.fluxc.example.di.AppSecretsModule;
+import org.wordpress.android.fluxc.example.di.AppConfigModule;
 import org.wordpress.android.fluxc.module.AppContextModule;
 import org.wordpress.android.fluxc.module.MockedToolsModule;
 import org.wordpress.android.fluxc.module.ReleaseBaseModule;
@@ -17,7 +17,7 @@ import dagger.Component;
 @Singleton
 @Component(modules = {
         AppContextModule.class,
-        AppSecretsModule.class,
+        AppConfigModule.class,
         ReleaseOkHttpClientModule.class,
         ReleaseBaseModule.class,
         ReleaseNetworkModule.class,
