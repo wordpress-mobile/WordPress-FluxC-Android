@@ -8,9 +8,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderNoteApiRespo
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatus
 
 object OrderTestUtils {
-    fun generateSampleOrder(remoteId: Long): WCOrderModel = generateSampleOrder(remoteId, OrderStatus.PROCESSING)
-
-    fun generateSampleOrder(remoteId: Long, orderStatus: String): WCOrderModel {
+    fun generateSampleOrder(remoteId: Long, orderStatus: String = OrderStatus.PROCESSING): WCOrderModel {
         return WCOrderModel().apply {
             remoteOrderId = remoteId
             localSiteId = 6
