@@ -249,7 +249,7 @@ public class UploadStore extends Store {
 
     private void handleUploadMedia(MediaPayload payload) {
         MediaUploadModel mediaUploadModel = new MediaUploadModel(payload.media.getId());
-        String errorMessage = MediaUtils.getMediaValidationError(payload.media);
+        String errorMessage = MediaUtils.getMediaValidationError(payload.media, payload.site.isUsingWpComRestApi());
         if (errorMessage != null) {
             mediaUploadModel.setUploadState(MediaUploadModel.FAILED);
             mediaUploadModel.setMediaError(new MediaError(MediaErrorType.MALFORMED_MEDIA_ARG, errorMessage));
