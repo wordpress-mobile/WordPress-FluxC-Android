@@ -1,7 +1,10 @@
-package org.wordpress.android.fluxc.instaflux;
+package org.wordpress.android.fluxc.example.di;
 
+import android.content.Context;
 import android.text.TextUtils;
 
+import org.wordpress.android.fluxc.example.BuildConfig;
+import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AppSecrets;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -12,11 +15,10 @@ import dagger.Module;
 import dagger.Provides;
 
 @Module
-public class AppSecretsModule {
+public class AppConfigModule {
     public String getStringBuildConfigValue(String fieldName) {
         try {
-            String packageName = getClass().getPackage().getName();
-            Class<?> clazz = Class.forName(packageName + ".BuildConfig");
+            Class<?> clazz = Class.forName(BuildConfig.APPLICATION_ID + ".BuildConfig");
             Field field = clazz.getField(fieldName);
             return (String) field.get(null);
         } catch (Exception e) {
@@ -32,5 +34,10 @@ public class AppSecretsModule {
             AppLog.e(T.API, "OAUTH_APP_ID or OAUTH_APP_SECRET is empty, check your gradle.properties");
         }
         return new AppSecrets(appId, appSecret);
+    }
+
+    @Provides
+    public UserAgent provideUserAgent(Context appContext) {
+        return new UserAgent(appContext, "fluxc-example-android");
     }
 }

@@ -12,7 +12,7 @@ import dagger.Component;
 @Singleton
 @Component(modules = {
         AppContextModule.class,
-        AppSecretsModule.class,
+        AppConfigModule.class,
         DebugOkHttpClientModule.class,
         InterceptorModule.class,
         ReleaseBaseModule.class,
