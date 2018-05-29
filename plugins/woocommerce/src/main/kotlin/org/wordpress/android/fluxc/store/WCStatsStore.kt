@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRe
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.utils.ErrorUtils.OnUnexpectedError
 import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -144,10 +145,14 @@ class WCStatsStore @Inject constructor(
         rawStats?.let { statsModel ->
             statsModel.dataList.firstOrNull()?.let {
                 val currencyIndex = statsModel.getIndexForField(OrderStatsField.CURRENCY)
+                if (currencyIndex == -1) {
+                    // The server didn't return the currency field
+                    reportMissingFieldError(statsModel)
+                    return null
+                }
                 return it[currencyIndex] as String
             }
-        }
-        return null
+        } ?: return null
     }
 
     private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
@@ -195,10 +200,23 @@ class WCStatsStore @Inject constructor(
         rawStats?.let {
             val periodIndex = it.getIndexForField(OrderStatsField.PERIOD)
             val fieldIndex = it.getIndexForField(field)
+            if (periodIndex == -1 || fieldIndex == -1) {
+                // One of the fields we need wasn't returned by the server
+                reportMissingFieldError(it)
+                return mapOf()
+            }
             val dayOfMonth = SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_DAY_OF_MONTH).toInt()
             return it.dataList
                     .takeLast(dayOfMonth)
                     .map { it[periodIndex].toString() to it[fieldIndex] as T }.toMap()
         } ?: return mapOf()
+    }
+
+    private fun reportMissingFieldError(orderStatsModel: WCOrderStatsModel) {
+        AppLog.e(T.API, "Missing field from stats endpoint - returned fields: " + orderStatsModel.fields)
+        val unexpectedError = OnUnexpectedError(
+                IllegalStateException("Missing field from stats endpoint"),
+                orderStatsModel.fields)
+        mDispatcher.emitChange(unexpectedError)
     }
 }
