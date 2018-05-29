@@ -90,9 +90,7 @@ class WCStatsStore @Inject constructor(
         var causeOfChange: WCStatsAction? = null
     }
 
-    override fun onRegister() {
-        AppLog.d(T.API, "WCStatsStore onRegister")
-    }
+    override fun onRegister() = AppLog.d(T.API, "WCStatsStore onRegister")
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
