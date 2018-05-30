@@ -27,6 +27,29 @@ data class WCOrderStatsModel(@PrimaryKey @Column private var id: Int = 0) : Iden
         gson.fromJson(data, responseType) as? List<List<Any>> ?: emptyList()
     }
 
+    enum class OrderStatsField {
+        PERIOD,
+        ORDERS,
+        PRODUCTS,
+        COUPONS,
+        COUPON_DISCOUNT,
+        TOTAL_SALES,
+        TOTAL_TAX,
+        TOTAL_SHIPPING,
+        TOTAL_SHIPPING_TAX,
+        TOTAL_REFUND,
+        TOTAL_TAX_REFUND,
+        TOTAL_SHIPPING_REFUND,
+        TOTAL_SHIPPING_TAX_REFUND,
+        CURRENCY,
+        GROSS_SALES,
+        NET_SALES,
+        AVG_ORDER_VALUE,
+        AVG_PRODUCTS_PER_ORDER;
+
+        override fun toString() = name.toLowerCase()
+    }
+
     companion object {
         private val gson by lazy { Gson() }
     }
@@ -36,4 +59,6 @@ data class WCOrderStatsModel(@PrimaryKey @Column private var id: Int = 0) : Iden
     override fun setId(id: Int) {
         this.id = id
     }
+
+    fun getIndexForField(field: OrderStatsField) = fieldsList.indexOf(field.toString())
 }

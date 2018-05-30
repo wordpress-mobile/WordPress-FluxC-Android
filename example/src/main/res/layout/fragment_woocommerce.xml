@@ -36,4 +36,10 @@
         android:layout_height="wrap_content"
         android:text="Update Latest Order Status" />
 
+    <Button
+        android:id="@+id/fetch_order_stats"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch Month-to-date Revenue Stats" />
+
 </LinearLayout>

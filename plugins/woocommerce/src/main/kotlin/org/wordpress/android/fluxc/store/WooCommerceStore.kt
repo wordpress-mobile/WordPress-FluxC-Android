@@ -14,9 +14,7 @@ import javax.inject.Singleton
 
 @Singleton
 class WooCommerceStore @Inject constructor(dispatcher: Dispatcher) : Store(dispatcher) {
-    override fun onRegister() {
-        AppLog.d(T.API, "WooCommerceStore onRegister")
-    }
+    override fun onRegister() = AppLog.d(T.API, "WooCommerceStore onRegister")
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {}
