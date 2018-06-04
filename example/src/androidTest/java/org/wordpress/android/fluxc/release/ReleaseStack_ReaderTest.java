@@ -41,7 +41,7 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
     }
 
     @Test
-    public void testFetchStockMediaList() throws InterruptedException {
+    public void testReaderSearchSites() throws InterruptedException {
         mNextEvent = TestEvents.READER_SEARCH_SITES;
         searchReaderSites(SEARCH_TERM, 0);
         // TODO: search with offset
@@ -64,6 +64,7 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
 
         assertEquals(mNextEvent, TestEvents.READER_SEARCH_SITES);
         assertEquals(event.feeds.size(), ReaderRestClient.NUM_SEARCH_RESULTS);
+        assertTrue(event.canLoadMore);
 
         mCountDownLatch.countDown();
     }
