@@ -20,7 +20,7 @@ import javax.inject.Inject
 private const val UPDATE_PLUGIN_NAME = "UPDATE_PLUGIN_NAME"
 private const val UPDATE_PLUGIN_SLUG = "UPDATE_PLUGIN_SLUG"
 
-class MockedStack_PluginTest: MockedStack_Base() {
+class MockedStack_PluginTest : MockedStack_Base() {
     @Inject lateinit var dispatcher: Dispatcher
     @Inject lateinit var pluginStore: PluginStore
     @Inject lateinit var interceptor: ResponseMockingInterceptor
