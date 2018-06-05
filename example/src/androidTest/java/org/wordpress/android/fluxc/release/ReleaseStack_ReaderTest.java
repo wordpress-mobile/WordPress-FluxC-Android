@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.ReaderActionBuilder;
 import org.wordpress.android.fluxc.model.ReaderFeedModel;
-import org.wordpress.android.fluxc.network.rest.wpcom.reader.ReaderRestClient;
 import org.wordpress.android.fluxc.store.ReaderStore;
 import org.wordpress.android.fluxc.store.ReaderStore.OnReaderSitesSearched;
 import org.wordpress.android.fluxc.store.ReaderStore.ReaderSearchSitesPayload;
@@ -34,6 +33,7 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
     private List<ReaderFeedModel> mFirstSearchResults;
 
     private static final String SEARCH_TERM = "dogs";
+    private static final int NUM_RESULTS = 10;
     private TestEvents mNextEvent;
 
     @Override
@@ -49,14 +49,14 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
     @Test
     public void testReaderSearchSites() throws InterruptedException {
         mNextEvent = TestEvents.READER_SEARCH_SITES;
-        searchReaderSites(SEARCH_TERM, 0);
+        searchReaderSites(SEARCH_TERM, NUM_RESULTS, 0);
 
         mNextEvent = TestEvents.READER_SEARCH_SITES_WITH_OFFSET;
-        searchReaderSites(SEARCH_TERM, ReaderRestClient.NUM_SEARCH_RESULTS);
+        searchReaderSites(SEARCH_TERM, NUM_RESULTS, NUM_RESULTS);
     }
 
-    private void searchReaderSites(@NonNull String searchTerm, int offset) throws InterruptedException {
-        ReaderSearchSitesPayload payload = new ReaderSearchSitesPayload(searchTerm, offset);
+    private void searchReaderSites(@NonNull String searchTerm, int count, int offset) throws InterruptedException {
+        ReaderSearchSitesPayload payload = new ReaderSearchSitesPayload(searchTerm, count, offset);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(ReaderActionBuilder.newReaderSearchSitesAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -81,7 +81,7 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
 
         if (mNextEvent == TestEvents.READER_SEARCH_SITES) {
             mFirstSearchResults = event.feeds;
-            assertEquals(event.feeds.size(), ReaderRestClient.NUM_SEARCH_RESULTS);
+            assertEquals(event.feeds.size(), NUM_RESULTS);
             assertTrue(event.canLoadMore);
         } else if (mNextEvent == TestEvents.READER_SEARCH_SITES_WITH_OFFSET) {
             List<ReaderFeedModel> feeds = event.feeds;
