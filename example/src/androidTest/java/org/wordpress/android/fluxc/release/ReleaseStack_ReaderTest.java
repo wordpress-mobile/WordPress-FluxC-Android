@@ -52,7 +52,8 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
         searchReaderSites(SEARCH_TERM, NUM_RESULTS, 0);
 
         mNextEvent = TestEvents.READER_SEARCH_SITES_WITH_OFFSET;
-        searchReaderSites(SEARCH_TERM, NUM_RESULTS, NUM_RESULTS);
+        int offset = NUM_RESULTS + 1;
+        searchReaderSites(SEARCH_TERM, NUM_RESULTS, offset);
     }
 
     private void searchReaderSites(@NonNull String searchTerm, int count, int offset) throws InterruptedException {
@@ -62,9 +63,9 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private boolean isInFirstSetOfResults(@NonNull ReaderSiteModel feed) {
-        for (ReaderSiteModel otherFeed : mFirstSearchResults) {
-            if (otherFeed.getFeedId() == feed.getFeedId()) {
+    private boolean isInFirstSetOfResults(@NonNull ReaderSiteModel site) {
+        for (ReaderSiteModel otherSite : mFirstSearchResults) {
+            if (otherSite.getFeedId() == site.getFeedId()) {
                 return true;
             }
         }
@@ -84,10 +85,10 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
             assertEquals(event.sites.size(), NUM_RESULTS);
             assertTrue(event.canLoadMore);
         } else if (mNextEvent == TestEvents.READER_SEARCH_SITES_WITH_OFFSET) {
-            List<ReaderSiteModel> feeds = event.sites;
+            List<ReaderSiteModel> sites = event.sites;
             boolean areThereDups = false;
-            for (ReaderSiteModel feed : event.sites) {
-                if (isInFirstSetOfResults(feed)) {
+            for (ReaderSiteModel site : event.sites) {
+                if (isInFirstSetOfResults(site)) {
                     areThereDups = true;
                     break;
                 }
