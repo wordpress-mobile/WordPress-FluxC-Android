@@ -27,12 +27,14 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
     private enum TestEvents {
         NONE,
         READER_SEARCH_SITES,
-        READER_SEARCH_SITES_WITH_OFFSET
+        READER_SEARCH_SITES_WITH_OFFSET,
+        READER_SEARCH_SITES_WITH_EMPTY_RESULTS
     }
 
     private List<ReaderSiteModel> mFirstSearchResults;
 
     private static final String SEARCH_TERM = "dogs";
+    private static final String SEARCH_TERM_EMPTY_RESULTS = "asdjkgadahjsdgjadgajhdgajhjkasdkjgasdjgasjdgadjhgagdj";
     private static final int NUM_RESULTS = 10;
     private TestEvents mNextEvent;
 
@@ -54,6 +56,11 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
         searchReaderSites(TestEvents.READER_SEARCH_SITES_WITH_OFFSET, SEARCH_TERM, NUM_RESULTS, offset);
     }
 
+    @Test
+    public void testReaderSearchSitesWithEmptyResults() throws InterruptedException {
+        searchReaderSites(TestEvents.READER_SEARCH_SITES_WITH_EMPTY_RESULTS, SEARCH_TERM_EMPTY_RESULTS, NUM_RESULTS, 0);
+    }
+
     private void searchReaderSites(@NonNull TestEvents event,
                                    @NonNull String searchTerm,
                                    int count,
@@ -65,8 +72,8 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private boolean isInFirstSetOfResults(@NonNull ReaderSiteModel site) {
-        for (ReaderSiteModel otherSite : mFirstSearchResults) {
+    private boolean isSiteInSiteList(@NonNull List<ReaderSiteModel> siteList, @NonNull ReaderSiteModel site) {
+        for (ReaderSiteModel otherSite : siteList) {
             if (otherSite.getFeedId() == site.getFeedId()) {
                 return true;
             }
@@ -87,15 +94,17 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
             assertEquals(event.sites.size(), NUM_RESULTS);
             assertTrue(event.canLoadMore);
         } else if (mNextEvent == TestEvents.READER_SEARCH_SITES_WITH_OFFSET) {
-            List<ReaderSiteModel> sites = event.sites;
             boolean areThereDups = false;
             for (ReaderSiteModel site : event.sites) {
-                if (isInFirstSetOfResults(site)) {
+                if (isSiteInSiteList(mFirstSearchResults, site)) {
                     areThereDups = true;
                     break;
                 }
             }
             assertFalse(areThereDups);
+        } else if (mNextEvent == TestEvents.READER_SEARCH_SITES_WITH_EMPTY_RESULTS) {
+            assertTrue(event.sites.isEmpty());
+            assertFalse(event.canLoadMore);
         } else {
             throw new AssertionError("Wrong event received");
         }
