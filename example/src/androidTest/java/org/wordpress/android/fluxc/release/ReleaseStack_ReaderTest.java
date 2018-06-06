@@ -6,7 +6,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.ReaderActionBuilder;
-import org.wordpress.android.fluxc.model.ReaderFeedModel;
+import org.wordpress.android.fluxc.model.ReaderSiteModel;
 import org.wordpress.android.fluxc.store.ReaderStore;
 import org.wordpress.android.fluxc.store.ReaderStore.OnReaderSitesSearched;
 import org.wordpress.android.fluxc.store.ReaderStore.ReaderSearchSitesPayload;
@@ -30,7 +30,7 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
         READER_SEARCH_SITES_WITH_OFFSET
     }
 
-    private List<ReaderFeedModel> mFirstSearchResults;
+    private List<ReaderSiteModel> mFirstSearchResults;
 
     private static final String SEARCH_TERM = "dogs";
     private static final int NUM_RESULTS = 10;
@@ -62,8 +62,8 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private boolean isInFirstSetOfResults(@NonNull ReaderFeedModel feed) {
-        for (ReaderFeedModel otherFeed : mFirstSearchResults) {
+    private boolean isInFirstSetOfResults(@NonNull ReaderSiteModel feed) {
+        for (ReaderSiteModel otherFeed : mFirstSearchResults) {
             if (otherFeed.getFeedId() == feed.getFeedId()) {
                 return true;
             }
@@ -80,13 +80,13 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
         }
 
         if (mNextEvent == TestEvents.READER_SEARCH_SITES) {
-            mFirstSearchResults = event.feeds;
-            assertEquals(event.feeds.size(), NUM_RESULTS);
+            mFirstSearchResults = event.sites;
+            assertEquals(event.sites.size(), NUM_RESULTS);
             assertTrue(event.canLoadMore);
         } else if (mNextEvent == TestEvents.READER_SEARCH_SITES_WITH_OFFSET) {
-            List<ReaderFeedModel> feeds = event.feeds;
+            List<ReaderSiteModel> feeds = event.sites;
             boolean areThereDups = false;
-            for (ReaderFeedModel feed : event.feeds) {
+            for (ReaderSiteModel feed : event.sites) {
                 if (isInFirstSetOfResults(feed)) {
                     areThereDups = true;
                     break;
