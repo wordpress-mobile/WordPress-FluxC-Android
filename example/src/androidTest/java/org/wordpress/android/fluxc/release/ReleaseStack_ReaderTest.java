@@ -57,7 +57,7 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
     }
 
     private void searchReaderSites(@NonNull String searchTerm, int count, int offset) throws InterruptedException {
-        ReaderSearchSitesPayload payload = new ReaderSearchSitesPayload(searchTerm, count, offset);
+        ReaderSearchSitesPayload payload = new ReaderSearchSitesPayload(searchTerm, count, offset, false);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(ReaderActionBuilder.newReaderSearchSitesAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
