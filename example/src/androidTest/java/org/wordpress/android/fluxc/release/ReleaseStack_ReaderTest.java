@@ -48,17 +48,19 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
 
     @Test
     public void testReaderSearchSites() throws InterruptedException {
-        mNextEvent = TestEvents.READER_SEARCH_SITES;
-        searchReaderSites(SEARCH_TERM, NUM_RESULTS, 0);
+        searchReaderSites(TestEvents.READER_SEARCH_SITES, SEARCH_TERM, NUM_RESULTS, 0);
 
-        mNextEvent = TestEvents.READER_SEARCH_SITES_WITH_OFFSET;
         int offset = NUM_RESULTS + 1;
-        searchReaderSites(SEARCH_TERM, NUM_RESULTS, offset);
+        searchReaderSites(TestEvents.READER_SEARCH_SITES_WITH_OFFSET, SEARCH_TERM, NUM_RESULTS, offset);
     }
 
-    private void searchReaderSites(@NonNull String searchTerm, int count, int offset) throws InterruptedException {
+    private void searchReaderSites(@NonNull TestEvents event,
+                                   @NonNull String searchTerm,
+                                   int count,
+                                   int offset) throws InterruptedException {
         ReaderSearchSitesPayload payload = new ReaderSearchSitesPayload(searchTerm, count, offset, false);
         mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = event;
         mDispatcher.dispatch(ReaderActionBuilder.newReaderSearchSitesAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
