@@ -341,6 +341,7 @@ public class PluginStore extends Store {
     }
 
     static class RemoveSitePluginsError implements OnChangedError {}
+    static class PruneWPOrgPluginsError implements OnChangedError {}
 
     // Error types
 
@@ -543,6 +544,8 @@ public class PluginStore extends Store {
         }
     }
 
+    public static class OnWPOrgPluginsPruned extends OnChanged<PruneWPOrgPluginsError> { }
+
     private final PluginRestClient mPluginRestClient;
     private final PluginWPOrgClient mPluginWPOrgClient;
 
@@ -591,6 +594,9 @@ public class PluginStore extends Store {
             // Local actions
             case REMOVE_SITE_PLUGINS:
                 removeSitePlugins((SiteModel) action.getPayload());
+                break;
+            case PRUNE_WPORG_PLUGINS:
+                pruneWPOrgPlugins();
                 break;
             // Network callbacks
             case CONFIGURED_SITE_PLUGIN:
@@ -741,6 +747,11 @@ public class PluginStore extends Store {
         }
         int rowsAffected = PluginSqlUtils.deleteSitePlugins(site);
         emitChange(new OnSitePluginsRemoved(site, rowsAffected));
+    }
+
+    private void pruneWPOrgPlugins() {
+        PluginSqlUtils.pruneWPOrgPlugins();
+        emitChange(new OnWPOrgPluginsPruned());
     }
 
     // Network callbacks

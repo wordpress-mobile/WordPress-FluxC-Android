@@ -158,6 +158,10 @@ public class PluginSqlUtils {
         return result;
     }
 
+    public static void pruneWPOrgPlugins() {
+        // TODO
+    }
+
     // Plugin Directory
 
     public static void deletePluginDirectoryForType(PluginDirectoryType directoryType) {
