@@ -42,9 +42,8 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
     public void setUp() throws Exception {
         super.setUp();
         mReleaseStackAppComponent.inject(this);
-
         init();
-
+        mFirstSearchResults = null;
         mNextEvent = TestEvents.NONE;
     }
 
