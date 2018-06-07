@@ -195,6 +195,12 @@ public class PluginDirectorySqlUtilsTest {
         }
     }
 
+    @Test
+    public void testPruneWPOrgPluginsWhileEmpty() {
+        // Ensure the pruning works even if there is nothing to prune
+        PluginSqlUtils.pruneWPOrgPlugins();
+    }
+
     @SuppressWarnings("unchecked")
     private List<PluginDirectoryModel> getPluginDirectoriesForType(PluginDirectoryType directoryType)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {

@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import com.wellsql.generated.PluginDirectoryModelTable;
 import com.wellsql.generated.SitePluginModelTable;
 import com.wellsql.generated.WPOrgPluginModelTable;
+import com.yarolegovich.wellsql.DeleteQuery;
 import com.yarolegovich.wellsql.WellSql;
 
 import org.wordpress.android.fluxc.model.SiteModel;
@@ -177,11 +178,11 @@ public class PluginSqlUtils {
         for (PluginDirectoryModel pluginDirectoryModel : allPluginDirectories) {
             slugSet.add(pluginDirectoryModel.getSlug());
         }
-        WellSql.delete(WPOrgPluginModel.class)
-               .where()
-               .isNotIn(WPOrgPluginModelTable.SLUG, slugSet)
-               .endWhere()
-               .execute();
+        DeleteQuery<WPOrgPluginModel> deleteQuery = WellSql.delete(WPOrgPluginModel.class);
+        if (slugSet.size() > 0) {
+            deleteQuery.where().isNotIn(WPOrgPluginModelTable.SLUG, slugSet).endWhere();
+        }
+        deleteQuery.execute();
     }
 
     // Plugin Directory
