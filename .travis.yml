@@ -16,6 +16,9 @@ env:
     - GRADLE_OPTS="-Xmx4g"
     - ANDROID_SDKS=android-15
     - ANDROID_TARGET=android-15
+  matrix:
+    - TASK=build-and-lint
+    - TASK=unit-tests
 
 before_install:
   # Not always needed if Travis' platform-tools are up to date, but keeping for safety
@@ -31,9 +34,12 @@ cache:
     - $HOME/.android/build-cache
 
 script:
-  - ./gradlew assembleDebug assembleRelease
-  - ./gradlew testRelease
-  - ./gradlew lint || (grep -A20 -B2 'severity="Error"' */build/**/*.xml; exit 1)
-  - ./gradlew checkstyle
-  - ./gradlew ktlint
-  - find . -iname "*XMLRPCClient*java" | xargs grep getSiteId && (echo "You should not use _getSiteId_ in a XMLRPClient, did you mean _selfHostedId_?" && exit 1) || return 0
+  - set -e # Exit and fail right away if any individual step fails
+  - if [ "$TASK" == "build-and-lint" ]; then
+      ./gradlew assembleDebug assembleRelease;
+      ./gradlew checkstyle ktlint;
+      ./gradlew lint || (grep -A20 -B2 'severity="Error"' */build/**/*.xml; exit 1);
+      find . -iname "*XMLRPCClient*java" | xargs grep getSiteId && (echo "You should not use _getSiteId_ in a XMLRPClient, did you mean _selfHostedId_?" && exit 1) || return 0;
+    elif [ "$TASK" == "unit-tests" ]; then
+      ./gradlew example:assembleRelease example:testRelease;
+    fi
