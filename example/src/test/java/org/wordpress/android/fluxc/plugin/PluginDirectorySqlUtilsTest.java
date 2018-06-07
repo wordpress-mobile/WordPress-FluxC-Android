@@ -160,6 +160,41 @@ public class PluginDirectorySqlUtilsTest {
         }
     }
 
+    @Test
+    public void testPruneWPOrgPlugins() {
+        List<String> slugList = randomSlugList();
+        // Insert random 50 wporg plugins
+        for (String slug : slugList) {
+            WPOrgPluginModel wpOrgPluginModel = new WPOrgPluginModel();
+            wpOrgPluginModel.setSlug(slug);
+            Assert.assertEquals(1, PluginSqlUtils.insertOrUpdateWPOrgPlugin(wpOrgPluginModel));
+            Assert.assertNotNull(PluginSqlUtils.getWPOrgPluginBySlug(slug));
+        }
+
+        // Insert random 20 wporg plugins' plugin directory record
+        List<String> slugsToInsertAsPluginDirectory = randomSlugsFromList(slugList, 20);
+        List<PluginDirectoryModel> directoryList = new ArrayList<>();
+        for (String slug : slugsToInsertAsPluginDirectory) {
+            PluginDirectoryModel directoryModel = new PluginDirectoryModel();
+            directoryModel.setSlug(slug);
+            directoryModel.setDirectoryType(PluginDirectoryType.NEW.toString()); // doesn't matter
+            directoryList.add(directoryModel);
+        }
+        PluginSqlUtils.insertPluginDirectoryList(directoryList);
+        Assert.assertEquals(slugsToInsertAsPluginDirectory.size(),
+                PluginSqlUtils.getWPOrgPluginsForDirectory(PluginDirectoryType.NEW).size());
+
+        // Prune the WPOrgPluginModelTable
+        PluginSqlUtils.pruneWPOrgPlugins();
+
+        for (String slug : slugList) {
+            // If a PluginDirectoryModel for the slug exists, the WPOrgPluginModel shouldn't be removed
+            boolean shouldBeKept = slugsToInsertAsPluginDirectory.contains(slug);
+            WPOrgPluginModel wpOrgPluginModel = PluginSqlUtils.getWPOrgPluginBySlug(slug);
+            Assert.assertEquals(shouldBeKept, wpOrgPluginModel != null);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private List<PluginDirectoryModel> getPluginDirectoriesForType(PluginDirectoryType directoryType)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
