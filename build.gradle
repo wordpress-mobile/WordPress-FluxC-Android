@@ -2,8 +2,8 @@ buildscript {
     ext.kotlinVersion = '1.2.41'
 
     repositories {
-        jcenter()
         google()
+        jcenter()
     }
 
     dependencies {
@@ -18,8 +18,8 @@ allprojects {
     apply plugin: 'checkstyle'
 
     repositories {
-        jcenter()
         google()
+        jcenter()
     }
 
     task checkstyle(type: Checkstyle) {
