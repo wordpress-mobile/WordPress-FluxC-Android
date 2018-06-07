@@ -18,7 +18,7 @@ env:
     - ANDROID_TARGET=android-15
 
 before_install:
-  # TODO: Remove the following line when Travis' platform-tools are updated to v24+
+  # Not always needed if Travis' platform-tools are up to date, but keeping for safety
   - echo yes | android update sdk -a --filter platform-tools --no-ui --force
 
 script:
