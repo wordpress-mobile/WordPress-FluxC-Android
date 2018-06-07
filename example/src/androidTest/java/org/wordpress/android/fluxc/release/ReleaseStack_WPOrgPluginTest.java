@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.store.PluginStore.FetchPluginDirectoryPayload
 import org.wordpress.android.fluxc.store.PluginStore.OnPluginDirectoryFetched;
 import org.wordpress.android.fluxc.store.PluginStore.OnPluginDirectorySearched;
 import org.wordpress.android.fluxc.store.PluginStore.OnWPOrgPluginFetched;
+import org.wordpress.android.fluxc.store.PluginStore.OnWPOrgPluginsPruned;
 import org.wordpress.android.fluxc.store.PluginStore.SearchPluginDirectoryPayload;
 
 import java.util.List;
@@ -34,7 +35,8 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         PLUGIN_DIRECTORY_FETCHED,
         PLUGIN_DIRECTORY_SEARCHED,
         WPORG_PLUGIN_FETCHED,
-        WPORG_PLUGIN_DOES_NOT_EXIST
+        WPORG_PLUGIN_DOES_NOT_EXIST,
+        WPORG_PLUGINS_PRUNED
     }
 
     private SiteModel mSite;
@@ -156,6 +158,14 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         Assert.assertTrue(featuredPlugins.size() > 0);
     }
 
+    @Test
+    public void testPruneWPOrgPlugins() throws InterruptedException {
+        mNextEvent = TestEvents.WPORG_PLUGINS_PRUNED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PluginActionBuilder.newPruneWporgPluginsAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onPluginDirectoryFetched(OnPluginDirectoryFetched event) {
@@ -195,6 +205,16 @@ public class ReleaseStack_WPOrgPluginTest extends ReleaseStack_Base {
         }
 
         assertEquals(TestEvents.WPORG_PLUGIN_FETCHED, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onWPOrgPluginsPruned(OnWPOrgPluginsPruned event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred while pruning the WPOrgPlugins");
+        }
+        assertEquals(TestEvents.WPORG_PLUGINS_PRUNED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
