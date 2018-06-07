@@ -21,6 +21,15 @@ before_install:
   # Not always needed if Travis' platform-tools are up to date, but keeping for safety
   - echo yes | android update sdk -a --filter platform-tools --no-ui --force
 
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - $HOME/.android/build-cache
+
 script:
   - ./gradlew assembleDebug assembleRelease
   - ./gradlew testRelease
