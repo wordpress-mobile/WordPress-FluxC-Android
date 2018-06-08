@@ -17,12 +17,16 @@ import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.activity.ActivityLogModel
 import org.wordpress.android.fluxc.model.activity.RewindStatusModel
+import org.wordpress.android.fluxc.model.activity.RewindStatusModel.Rewind
+import org.wordpress.android.fluxc.model.activity.RewindStatusModel.Rewind.Status.RUNNING
+import org.wordpress.android.fluxc.model.activity.RewindStatusModel.State.ACTIVE
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.ActivityLogStore
 import org.wordpress.android.fluxc.store.ActivityLogStore.FetchedActivityLogPayload
+import org.wordpress.android.fluxc.store.ActivityLogStore.FetchedRewindStatePayload
 import org.wordpress.android.fluxc.store.ActivityLogStore.OnActivityLogFetched
 import org.wordpress.android.fluxc.store.ActivityLogStore.OnRewindStatusFetched
 import org.wordpress.android.fluxc.store.ActivityLogStore.RewindResultPayload
@@ -168,6 +172,33 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         assertTrue(incomingActions.size == 1)
         assertTrue(incomingActions[0].payload is RewindResultPayload)
         assertTrue((incomingActions[0].payload as RewindResultPayload).isError)
+    }
+
+    @Test
+    fun insertAndRetrieveRewindStatus() {
+        val site = authenticate()
+        this.mCountDownLatch = CountDownLatch(1)
+
+        val rewindId = "rewindId"
+        val restoreId: Long = 123
+        val status = RUNNING
+        val progress = 30
+        val rewind = Rewind(rewindId, restoreId, status, progress, null)
+        val model = RewindStatusModel(ACTIVE, null, Date(), null, null, rewind)
+        val payload = FetchedRewindStatePayload(model, site)
+
+        activityLogStore.onAction(ActivityLogActionBuilder.newFetchedRewindStateAction(payload))
+
+        val rewindState = activityLogStore.getRewindStatusForSite(site)
+
+        assertNotNull(rewindState)
+        assertNotNull(rewindState?.rewind)
+        rewindState?.rewind?.apply {
+            assertEquals(rewindId, this.rewindId)
+            assertEquals(restoreId, this.restoreId)
+            assertEquals(status, this.status)
+            assertEquals(progress, this.progress)
+        }
     }
 
     private fun authenticate(): SiteModel {
