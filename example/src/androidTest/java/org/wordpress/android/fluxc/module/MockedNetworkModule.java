@@ -22,8 +22,10 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.ErrorLi
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Listener;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Token;
 import org.wordpress.android.fluxc.network.rest.wpcom.media.MediaRestClient;
+import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.SiteRestClient;
+import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient;
 import org.wordpress.android.fluxc.network.xmlrpc.media.MediaXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.post.PostXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.site.SiteXMLRPCClient;
@@ -177,6 +179,22 @@ public class MockedNetworkModule {
                                                                     DiscoveryXMLRPCClient discoveryXMLRPCClient,
                                                                     DiscoveryWPAPIRestClient discoveryWPAPIRestClient) {
         return new SelfHostedEndpointFinder(dispatcher, discoveryXMLRPCClient, discoveryWPAPIRestClient);
+    }
+
+    @Singleton
+    @Provides
+    public PluginRestClient providePluginRestClient(Context appContext, Dispatcher dispatcher,
+                                                    RequestQueue requestQueue,
+                                                    AccessToken token, UserAgent userAgent) {
+        return new PluginRestClient(appContext, dispatcher, requestQueue, token, userAgent);
+    }
+
+    @Singleton
+    @Provides
+    public PluginWPOrgClient providePluginWPOrgClient(Dispatcher dispatcher,
+                                                      RequestQueue requestQueue,
+                                                      UserAgent userAgent) {
+        return new PluginWPOrgClient(dispatcher, requestQueue, userAgent);
     }
 
     @Singleton

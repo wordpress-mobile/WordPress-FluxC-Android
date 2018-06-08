@@ -11,10 +11,14 @@ import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
+import org.wordpress.android.fluxc.module.ResponseMockingInterceptor;
 import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.AccountStore.AccountUsernameActionType;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
+import org.wordpress.android.fluxc.store.AccountStore.OnUsernameChanged;
+import org.wordpress.android.fluxc.store.AccountStore.PushUsernamePayload;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -29,9 +33,19 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(AndroidJUnit4.class)
 public class MockedStack_AccountTest extends MockedStack_Base {
+    private static final String TEST_USERNAME = "TEST_USERNAME";
+
     @Inject Dispatcher mDispatcher;
     @Inject AccountStore mAccountStore;
 
+    @Inject ResponseMockingInterceptor mInterceptor;
+
+    enum TestEvents {
+        NONE,
+        CHANGE_USERNAME_SUCCESSFUL
+    }
+
+    private TestEvents mNextEvent;
     private boolean mIsError;
     private CountDownLatch mCountDownLatch;
 
@@ -43,10 +57,12 @@ public class MockedStack_AccountTest extends MockedStack_Base {
         mMockedNetworkAppComponent.inject(this);
         // Register
         mDispatcher.register(this);
+        // Reset expected test event
+        mNextEvent = TestEvents.NONE;
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         if (mAccountStore.hasAccessToken()) {
             throw new AssertionError("Mock account tests should clear the AccountStore!");
         }
@@ -82,6 +98,20 @@ public class MockedStack_AccountTest extends MockedStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
+    public void testChangeWPComUsername() throws InterruptedException {
+        if (mAccountStore.hasAccessToken()) {
+            signOut();
+        }
+        mNextEvent = TestEvents.CHANGE_USERNAME_SUCCESSFUL;
+        PushUsernamePayload payload = new PushUsernamePayload(TEST_USERNAME,
+                AccountUsernameActionType.KEEP_OLD_SITE_AND_ADDRESS);
+        mCountDownLatch = new CountDownLatch(1);
+        mInterceptor.respondWith("change-username-success.json");
+        mDispatcher.dispatch(AccountActionBuilder.newPushUsernameAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -95,6 +125,17 @@ public class MockedStack_AccountTest extends MockedStack_Base {
         if (event.isError()) {
             throw new AssertionError("Got unexpected error in OnAccountChanged: " + event.error.type);
         }
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onUsernameChanged(OnUsernameChanged event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(mNextEvent, TestEvents.CHANGE_USERNAME_SUCCESSFUL);
+        assertEquals(TEST_USERNAME, event.username);
         mCountDownLatch.countDown();
     }
 
