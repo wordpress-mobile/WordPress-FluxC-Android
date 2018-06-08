@@ -22,8 +22,10 @@ private const val UPDATE_PLUGIN_SLUG = "UPDATE_PLUGIN_SLUG"
 
 class MockedStack_PluginTest : MockedStack_Base() {
     @Inject lateinit var dispatcher: Dispatcher
-    @Inject lateinit var pluginStore: PluginStore
     @Inject lateinit var interceptor: ResponseMockingInterceptor
+
+    @Suppress("unused") // Required for UPDATE_SITE_PLUGIN action
+    @Inject lateinit var pluginStore: PluginStore
 
     internal enum class TestEvents {
         NONE,
