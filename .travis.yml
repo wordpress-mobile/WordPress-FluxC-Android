@@ -8,6 +8,7 @@ android:
     - platform-tools
     - tools
     - build-tools-27.0.3
+    - android-16
     - android-27
 
 env:
@@ -19,6 +20,7 @@ env:
   matrix:
     - TASK=build-and-lint
     - TASK=unit-tests
+    - TASK=mocked-connected-tests
 
 before_install:
   # Not always needed if Travis' platform-tools are up to date, but keeping for safety
@@ -33,6 +35,14 @@ cache:
     - $HOME/.gradle/wrapper/
     - $HOME/.android/build-cache
 
+before_script:
+  - if [ "$TASK" == "mocked-connected-tests" ]; then
+      echo "Starting AVD for mocked connected tests";
+      android-update-sdk --components=sys-img-armeabi-v7a-android-16 --accept-licenses='android-sdk-license-[0-9a-f]{8}';
+      echo no | android create avd --force -n test -t android-16 --abi armeabi-v7a --skin QVGA;
+      emulator -avd test -no-audio -no-window &
+    fi
+
 script:
   - set -e # Exit and fail right away if any individual step fails
   - if [ "$TASK" == "build-and-lint" ]; then
@@ -42,4 +52,8 @@ script:
       find . -iname "*XMLRPCClient*java" | xargs grep getSiteId && (echo "You should not use _getSiteId_ in a XMLRPClient, did you mean _selfHostedId_?" && exit 1) || return 0;
     elif [ "$TASK" == "unit-tests" ]; then
       ./gradlew example:assembleRelease example:testRelease;
+    elif [ "$TASK" == "mocked-connected-tests" ]; then
+      ./gradlew example:assembleDebug example:assembleDebugAndroidTest;
+      android-wait-for-emulator;
+      ./gradlew cAT -Pandroid.testInstrumentationRunnerArguments.package=org.wordpress.android.fluxc.mocked;
     fi
