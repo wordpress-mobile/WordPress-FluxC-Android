@@ -110,14 +110,9 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         assertTrue(immutablePlugin.isInstalled());
         boolean isActive = !immutablePlugin.isActive();
 
-        mNextEvent = TestEvents.CONFIGURED_SITE_PLUGIN;
-        mCountDownLatch = new CountDownLatch(1);
-
         ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, immutablePlugin.getName(),
                 immutablePlugin.getSlug(), isActive, immutablePlugin.isAutoUpdateEnabled());
-        mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        configureSitePlugin(payload, TestEvents.CONFIGURED_SITE_PLUGIN);
 
         ImmutablePluginModel configuredPlugin = mPluginStore.getImmutablePluginBySlug(site, immutablePlugin.getSlug());
         assertNotNull(configuredPlugin);
@@ -179,13 +174,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         String pluginName = "this-plugin-does-not-exist-name";
         String pluginSlug = "this-plugin-does-not-exist-slug";
 
-        mNextEvent = TestEvents.UNKNOWN_SITE_PLUGIN;
-        mCountDownLatch = new CountDownLatch(1);
-
         ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, pluginName, pluginSlug, false, false);
-        mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        configureSitePlugin(payload, TestEvents.UNKNOWN_SITE_PLUGIN);
 
         signOutWPCom();
     }
@@ -465,6 +455,14 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         return mSiteStore.getSites().get(0);
     }
 
+    private void configureSitePlugin(ConfigureSitePluginPayload payload,
+                                     TestEvents testEvent) throws InterruptedException {
+        mNextEvent = testEvent;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     private void deleteSitePlugin(SiteModel site, @NonNull ImmutablePluginModel plugin) throws InterruptedException {
         deleteSitePlugin(site, plugin, TestEvents.DELETED_SITE_PLUGIN);
     }
@@ -496,13 +494,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     }
 
     private void deactivatePlugin(SiteModel site, ImmutablePluginModel plugin) throws InterruptedException {
-        mNextEvent = TestEvents.CONFIGURED_SITE_PLUGIN;
-        mCountDownLatch = new CountDownLatch(1);
-
         ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, plugin.getName(), plugin.getSlug(),
                 false, plugin.isAutoUpdateEnabled());
-        mDispatcher.dispatch(PluginActionBuilder.newConfigureSitePluginAction(payload));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        configureSitePlugin(payload, TestEvents.CONFIGURED_SITE_PLUGIN);
     }
 }
