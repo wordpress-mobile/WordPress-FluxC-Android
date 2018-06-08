@@ -8,7 +8,6 @@ android:
     - platform-tools
     - tools
     - build-tools-27.0.3
-    - android-16
     - android-27
 
 env:
@@ -38,6 +37,7 @@ cache:
 before_script:
   - if [ "$TASK" == "mocked-connected-tests" ]; then
       echo "Starting AVD for mocked connected tests";
+      android-update-sdk --components=android-16;
       android-update-sdk --components=sys-img-armeabi-v7a-android-16 --accept-licenses='android-sdk-license-[0-9a-f]{8}';
       echo no | android create avd --force -n test -t android-16 --abi armeabi-v7a --skin QVGA;
       emulator -avd test -no-audio -no-window &
