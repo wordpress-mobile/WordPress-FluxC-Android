@@ -34,8 +34,11 @@ import org.wordpress.android.fluxc.store.PluginStore.OnPluginDirectoryFetched;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginConfigured;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginDeleted;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginInstalled;
+import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginUpdated;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsRemoved;
 import org.wordpress.android.fluxc.store.PluginStore.PluginDirectoryErrorType;
+import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginErrorType;
+import org.wordpress.android.fluxc.store.PluginStore.UpdateSitePluginPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
@@ -299,9 +302,13 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         fetchSitePlugins(selfHostedSite, expectedEvent);
         fetchSitePlugins(wpComSite, expectedEvent);
 
-        // Test install plugin
+        // Test install plugins
         installSitePlugin(selfHostedSite, pluginSlug, expectedEvent);
         installSitePlugin(wpComSite, pluginSlug, expectedEvent);
+
+        // Test update plugins
+        updateSitePlugin(selfHostedSite, pluginName, pluginSlug, expectedEvent);
+        updateSitePlugin(wpComSite, pluginName, pluginSlug, expectedEvent);
     }
 
     @SuppressWarnings("unused")
@@ -439,6 +446,20 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onSitePluginUpdated(OnSitePluginUpdated event) {
+        AppLog.i(T.API, "Received onSitePluginUpdated");
+        if (event.isError()) {
+            if (event.error.type.equals(UpdateSitePluginErrorType.NOT_AVAILABLE)) {
+                assertEquals(mNextEvent, TestEvents.PLUGIN_ACTION_NOT_AVAILABLE);
+            } else {
+                throw new AssertionError("Unexpected error occurred in onSitePluginsRemoved");
+            }
+        }
+        mCountDownLatch.countDown();
+    }
+
     private void authenticateWPComAndFetchSites(String username, String password) throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
@@ -534,5 +555,14 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         ConfigureSitePluginPayload payload = new ConfigureSitePluginPayload(site, plugin.getName(), plugin.getSlug(),
                 false, plugin.isAutoUpdateEnabled());
         configureSitePlugin(payload, TestEvents.CONFIGURED_SITE_PLUGIN);
+    }
+
+    private void updateSitePlugin(SiteModel site, String pluginName, String pluginSlug, TestEvents testEvent)
+            throws InterruptedException {
+        mNextEvent = testEvent;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PluginActionBuilder
+                .newUpdateSitePluginAction(new UpdateSitePluginPayload(site, pluginName, pluginSlug)));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
