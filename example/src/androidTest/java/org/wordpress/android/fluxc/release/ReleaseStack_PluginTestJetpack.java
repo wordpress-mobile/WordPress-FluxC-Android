@@ -35,6 +35,7 @@ import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginConfigured;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginDeleted;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginInstalled;
 import org.wordpress.android.fluxc.store.PluginStore.OnSitePluginsRemoved;
+import org.wordpress.android.fluxc.store.PluginStore.PluginDirectoryErrorType;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
@@ -265,16 +266,33 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     @Test
     public void testPluginActionNotAvailable() throws InterruptedException {
+        // Setup some test objects to use in tests
         String pluginSlug = "doesn't matter";
+        SitePluginModel sitePluginModel = new SitePluginModel();
+        sitePluginModel.setName("name");
+        sitePluginModel.setSlug(pluginSlug);
+        ImmutablePluginModel pluginModel = ImmutablePluginModel.newInstance(sitePluginModel, null);
+        assertNotNull(pluginModel);
 
         SiteModel selfHostedSite = new SiteModel();
         selfHostedSite.setOrigin(ORIGIN_XMLRPC);
 
-        SiteModel nonJetpackWPComSite = new SiteModel();
-        nonJetpackWPComSite.setIsWPCom(true);
+        SiteModel wpComSite = new SiteModel();
+        wpComSite.setIsWPCom(true);
 
-        installSitePlugin(selfHostedSite, pluginSlug, TestEvents.PLUGIN_ACTION_NOT_AVAILABLE);
-        installSitePlugin(nonJetpackWPComSite, pluginSlug, TestEvents.PLUGIN_ACTION_NOT_AVAILABLE);
+        TestEvents expectedEvent = TestEvents.PLUGIN_ACTION_NOT_AVAILABLE;
+
+        // Test delete plugin
+        deleteSitePlugin(selfHostedSite, pluginModel, expectedEvent);
+        deleteSitePlugin(wpComSite, pluginModel, expectedEvent);
+
+        // Test fetch site plugins
+        fetchSitePlugins(selfHostedSite, expectedEvent);
+        fetchSitePlugins(wpComSite, expectedEvent);
+
+        // Test install plugin
+        installSitePlugin(selfHostedSite, pluginSlug, expectedEvent);
+        installSitePlugin(wpComSite, pluginSlug, expectedEvent);
     }
 
     @SuppressWarnings("unused")
@@ -324,13 +342,18 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     public void onPluginDirectoryFetched(OnPluginDirectoryFetched event) {
         AppLog.i(T.API, "Received onPluginDirectoryFetched");
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred in onPluginDirectoryFetched with type: "
-                    + event.error.type);
+            if (event.error.type.equals(PluginDirectoryErrorType.NOT_AVAILABLE)) {
+                assertEquals(mNextEvent, TestEvents.PLUGIN_ACTION_NOT_AVAILABLE);
+            } else {
+                throw new AssertionError("Unexpected error occurred in onPluginDirectoryFetched with type: "
+                                         + event.error.type);
+            }
+        } else {
+            assertEquals(mNextEvent, TestEvents.SITE_PLUGINS_FETCHED);
+            assertEquals(event.type, PluginDirectoryType.SITE);
+            assertEquals(event.loadMore, false); // pagination is not enabled for site plugins
+            assertEquals(event.canLoadMore, false); // pagination is not enabled for site plugins
         }
-        assertEquals(mNextEvent, TestEvents.SITE_PLUGINS_FETCHED);
-        assertEquals(event.type, PluginDirectoryType.SITE);
-        assertEquals(event.loadMore, false); // pagination is not enabled for site plugins
-        assertEquals(event.canLoadMore, false); // pagination is not enabled for site plugins
         mCountDownLatch.countDown();
     }
 
@@ -358,6 +381,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             if (event.error.type.equals(DeleteSitePluginErrorType.DELETE_PLUGIN_ERROR)) {
                 assertEquals(mNextEvent, TestEvents.DELETE_SITE_PLUGIN_ERROR);
+            } else if (event.error.type.equals(DeleteSitePluginErrorType.NOT_AVAILABLE)) {
+                assertEquals(mNextEvent, TestEvents.PLUGIN_ACTION_NOT_AVAILABLE);
             } else {
                 throw new AssertionError("Unexpected error occurred in onSitePluginDeleted with type: "
                         + event.error.type);
@@ -438,15 +463,16 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     private SiteModel fetchSingleJetpackSitePlugins() throws InterruptedException {
         SiteModel site = authenticateAndRetrieveSingleJetpackSite();
+        fetchSitePlugins(site, TestEvents.SITE_PLUGINS_FETCHED);
+        return site;
+    }
 
-        mNextEvent = TestEvents.SITE_PLUGINS_FETCHED;
+    private void fetchSitePlugins(SiteModel site, TestEvents testEvent) throws InterruptedException {
+        mNextEvent = testEvent;
         mCountDownLatch = new CountDownLatch(1);
         FetchPluginDirectoryPayload payload = new FetchPluginDirectoryPayload(PluginDirectoryType.SITE, site, false);
         mDispatcher.dispatch(PluginActionBuilder.newFetchPluginDirectoryAction(payload));
-
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        return site;
     }
 
     private SiteModel authenticateAndRetrieveSingleJetpackSite() throws InterruptedException {
