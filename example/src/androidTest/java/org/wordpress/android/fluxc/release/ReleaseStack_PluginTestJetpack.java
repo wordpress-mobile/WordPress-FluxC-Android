@@ -268,8 +268,9 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     public void testPluginActionNotAvailable() throws InterruptedException {
         // Setup some test objects to use in tests
         String pluginSlug = "doesn't matter";
+        String pluginName = "doesn't matter";
         SitePluginModel sitePluginModel = new SitePluginModel();
-        sitePluginModel.setName("name");
+        sitePluginModel.setName(pluginName);
         sitePluginModel.setSlug(pluginSlug);
         ImmutablePluginModel pluginModel = ImmutablePluginModel.newInstance(sitePluginModel, null);
         assertNotNull(pluginModel);
@@ -281,6 +282,14 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         wpComSite.setIsWPCom(true);
 
         TestEvents expectedEvent = TestEvents.PLUGIN_ACTION_NOT_AVAILABLE;
+
+        // Test configure plugin
+        ConfigureSitePluginPayload configureSelfHostedSitePlugin =
+                new ConfigureSitePluginPayload(selfHostedSite, pluginName, pluginSlug, true, true);
+        configureSitePlugin(configureSelfHostedSitePlugin, expectedEvent);
+        ConfigureSitePluginPayload configureWPComSitePlugin =
+                new ConfigureSitePluginPayload(wpComSite, pluginName, pluginSlug, true, true);
+        configureSitePlugin(configureWPComSitePlugin, expectedEvent);
 
         // Test delete plugin
         deleteSitePlugin(selfHostedSite, pluginModel, expectedEvent);
@@ -364,6 +373,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             if (event.error.type.equals(ConfigureSitePluginErrorType.UNKNOWN_PLUGIN)) {
                 assertEquals(mNextEvent, TestEvents.UNKNOWN_SITE_PLUGIN);
+            } else if (event.error.type.equals(ConfigureSitePluginErrorType.NOT_AVAILABLE)) {
+                assertEquals(mNextEvent, TestEvents.PLUGIN_ACTION_NOT_AVAILABLE);
             } else {
                 throw new AssertionError("Unexpected error occurred in onSitePluginConfigured with type: "
                         + event.error.type);
