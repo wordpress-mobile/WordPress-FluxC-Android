@@ -52,6 +52,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.wordpress.android.fluxc.model.SiteModel.ORIGIN_XMLRPC;
 
 public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     @Inject SiteStore mSiteStore;
@@ -69,7 +70,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         SITE_REMOVED,
         UNKNOWN_SITE_PLUGIN,
         CONFIGURED_SITE_PLUGIN,
-        REMOVED_SITE_PLUGINS
+        REMOVED_SITE_PLUGINS,
+        PLUGIN_ACTION_NOT_AVAILABLE
     }
 
     private TestEvents mNextEvent;
@@ -271,6 +273,20 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         signOutWPCom();
     }
 
+    @Test
+    public void testPluginActionNotAvailable() throws InterruptedException {
+        String pluginSlug = "doesn't matter";
+
+        SiteModel selfHostedSite = new SiteModel();
+        selfHostedSite.setOrigin(ORIGIN_XMLRPC);
+
+        SiteModel nonJetpackWPComSite = new SiteModel();
+        nonJetpackWPComSite.setIsWPCom(true);
+
+        installSitePlugin(selfHostedSite, pluginSlug, TestEvents.PLUGIN_ACTION_NOT_AVAILABLE);
+        installSitePlugin(nonJetpackWPComSite, pluginSlug, TestEvents.PLUGIN_ACTION_NOT_AVAILABLE);
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -369,6 +385,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         if (event.isError()) {
             if (event.error.type.equals(InstallSitePluginErrorType.NO_PACKAGE)) {
                 assertEquals(mNextEvent, TestEvents.INSTALL_SITE_PLUGIN_ERROR_NO_PACKAGE);
+            } else if (event.error.type.equals(InstallSitePluginErrorType.NOT_AVAILABLE)) {
+                assertEquals(mNextEvent, TestEvents.PLUGIN_ACTION_NOT_AVAILABLE);
             } else {
                 throw new AssertionError("Unexpected error occurred in onSitePluginInstalled with type: "
                         + event.error.type);
