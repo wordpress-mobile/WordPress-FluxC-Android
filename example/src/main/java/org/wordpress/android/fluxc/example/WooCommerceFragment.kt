@@ -184,7 +184,8 @@ class WooCommerceFragment : Fragment() {
 
                 when (event.causeOfChange) {
                     WCStatsAction.FETCH_ORDER_STATS ->
-                        prependToLog("Fetched stats for " + statsMap.size + " days from " + site.name)
+                        prependToLog("Fetched stats for " + statsMap.size + " " +
+                                event.granularity.toString().toLowerCase() + " from " + site.name)
                     else -> prependToLog("WooCommerce stats were updated from a " + event.causeOfChange)
                 }
             }
