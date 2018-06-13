@@ -156,13 +156,12 @@ class WCStatsStore @Inject constructor(
     }
 
     private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
-        // TODO: Caching, and skip cache if forced == true
         when (payload.granularity) {
             StatsGranularity.DAYS -> {
                 // TODO: Calculate quantity from max(day-of-the-month, day-of-the-week) for week-to-date support
                 val dayOfMonth = SiteUtils.getCurrentDateTimeForSite(payload.site, DATE_FORMAT_DAY_OF_MONTH).toInt()
                 wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.DAY,
-                        getFormattedDate(payload.site, StatsGranularity.DAYS), dayOfMonth)
+                        getFormattedDate(payload.site, StatsGranularity.DAYS), dayOfMonth, payload.forced)
             }
             StatsGranularity.MONTHS -> TODO()
             StatsGranularity.YEARS -> TODO()
