@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMV2
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
+import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -67,6 +68,9 @@ class OrderStatsRestClient(
                     val payload = FetchOrderStatsResponsePayload(orderError, site, unit)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
                 })
+
+        request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
+
         add(request)
     }
 
