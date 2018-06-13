@@ -114,6 +114,13 @@ class WooCommerceFragment : Fragment() {
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
             } ?: showNoWCSitesToast()
         }
+
+        fetch_order_stats_forced.setOnClickListener {
+            getFirstWCSite()?.let {
+                val payload = FetchOrderStatsPayload(it, StatsGranularity.DAYS, true)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+            } ?: showNoWCSitesToast()
+        }
     }
 
     override fun onStart() {
