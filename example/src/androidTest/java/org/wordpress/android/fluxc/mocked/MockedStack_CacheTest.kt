@@ -101,6 +101,8 @@ class MockedStack_CacheTest : MockedStack_Base() {
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
+        TestUtils.waitFor(2) // Make sure the cache expires
+
         val firstRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
 
         assertNotNull(firstRequestCacheEntry)
