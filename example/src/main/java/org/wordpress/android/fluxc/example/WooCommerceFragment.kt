@@ -114,6 +114,13 @@ class WooCommerceFragment : Fragment() {
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
             } ?: showNoWCSitesToast()
         }
+
+        fetch_order_stats_forced.setOnClickListener {
+            getFirstWCSite()?.let {
+                val payload = FetchOrderStatsPayload(it, StatsGranularity.DAYS, true)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+            } ?: showNoWCSitesToast()
+        }
     }
 
     override fun onStart() {
@@ -177,7 +184,8 @@ class WooCommerceFragment : Fragment() {
 
                 when (event.causeOfChange) {
                     WCStatsAction.FETCH_ORDER_STATS ->
-                        prependToLog("Fetched stats for " + statsMap.size + " days from " + site.name)
+                        prependToLog("Fetched stats for " + statsMap.size + " " +
+                                event.granularity.toString().toLowerCase() + " from " + site.name)
                     else -> prependToLog("WooCommerce stats were updated from a " + event.causeOfChange)
                 }
             }

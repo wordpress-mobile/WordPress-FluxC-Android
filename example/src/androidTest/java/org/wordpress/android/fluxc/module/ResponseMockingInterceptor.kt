@@ -22,6 +22,9 @@ class ResponseMockingInterceptor : Interceptor {
     private var nextResponseJson: String? = null
     private var nextResponseCode: Int = 200
 
+    var lastRequestUrl: String = ""
+        private set
+
     fun respondWith(jsonResponseFileName: String) {
         nextResponseJson = getStringFromResourceFile(jsonResponseFileName)
         nextResponseCode = 200
@@ -51,7 +54,7 @@ class ResponseMockingInterceptor : Interceptor {
         // Give some time to create a realistic network event
         TestUtils.waitFor(1000)
 
-        val requestUrl = request.url().toString()
+        lastRequestUrl = request.url().toString()
 
         nextResponseJson?.let {
             // Will be a successful response if nextResponseCode is 200, otherwise an error response
@@ -63,7 +66,7 @@ class ResponseMockingInterceptor : Interceptor {
             return response
         }
 
-        throw IllegalStateException("Interceptor was not given a response for this request! URL: $requestUrl")
+        throw IllegalStateException("Interceptor was not given a response for this request! URL: $lastRequestUrl")
     }
 
     private fun buildResponse(request: Request, responseJson: String, responseCode: Int): Response {

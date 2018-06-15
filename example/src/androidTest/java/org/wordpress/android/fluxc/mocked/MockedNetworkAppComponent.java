@@ -20,6 +20,7 @@ import dagger.Component;
 })
 public interface MockedNetworkAppComponent {
     void inject(MockedStack_AccountTest object);
+    void inject(MockedStack_CacheTest object);
     void inject(MockedStack_JetpackTunnelTest object);
     void inject(MockedStack_PluginTest object);
     void inject(MockedStack_SiteTest object);

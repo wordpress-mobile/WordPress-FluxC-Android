@@ -1,8 +1,10 @@
 package org.wordpress.android.fluxc.mocked
 
+import com.android.volley.RequestQueue
 import com.google.gson.JsonObject
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -29,6 +31,7 @@ import kotlin.properties.Delegates.notNull
 class MockedStack_WCStatsTest : MockedStack_Base() {
     @Inject internal lateinit var orderStatsRestClient: OrderStatsRestClient
     @Inject internal lateinit var dispatcher: Dispatcher
+    @Inject internal lateinit var requestQueue: RequestQueue
 
     @Inject internal lateinit var interceptor: ResponseMockingInterceptor
 
@@ -77,6 +80,62 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
             assertEquals("2018-04-14", dataList.first()[periodIndex])
             assertEquals("2018-04-20", dataList.last()[periodIndex])
         }
+    }
+
+    @Test
+    fun testStatsFetchCaching() {
+        requestQueue.cache.clear()
+
+        // Make initial stats request
+        interceptor.respondWith("wc-order-stats-response-success.json")
+        orderStatsRestClient.fetchStats(siteModel, OrderStatsApiUnit.DAY, "2018-04-20", 7)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        val firstRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
+
+        assertNotNull(firstRequestCacheEntry)
+
+        // Make the same stats request - this should hit the cache
+        interceptor.respondWith("wc-order-stats-response-success.json")
+        orderStatsRestClient.fetchStats(siteModel, OrderStatsApiUnit.DAY, "2018-04-20", 7)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        val secondRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
+
+        assertNotNull(secondRequestCacheEntry)
+        // Verify that the cache has not been renewed,
+        // which should mean that we read from it instead of making a network call
+        assertEquals(firstRequestCacheEntry.ttl, secondRequestCacheEntry.ttl)
+
+        // Make the same stats request, but this time pass force=true to force a network request
+        interceptor.respondWith("wc-order-stats-response-success.json")
+        orderStatsRestClient.fetchStats(siteModel, OrderStatsApiUnit.DAY, "2018-04-20", 7, true)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        val thirdRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
+
+        assertNotNull(thirdRequestCacheEntry)
+        // The cache should have been renewed, since we ignored it and updated it with the results of a forced request
+        assertNotEquals(secondRequestCacheEntry.ttl, thirdRequestCacheEntry.ttl)
+
+        // New day, cache should be ignored
+        interceptor.respondWith("wc-order-stats-response-success.json")
+        orderStatsRestClient.fetchStats(siteModel, OrderStatsApiUnit.DAY, "2018-04-21", 7)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        val newDayCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
+
+        assertNotNull(newDayCacheEntry)
+        // This should be a separate cache entry from the previous day's
+        assertNotEquals(thirdRequestCacheEntry.ttl, newDayCacheEntry.ttl)
     }
 
     @Test

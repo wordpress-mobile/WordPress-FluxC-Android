@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMV2
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
+import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -44,7 +45,7 @@ class OrderStatsRestClient(
      * Possible non-generic errors:
      * [OrderStatsErrorType.INVALID_PARAM] if [unit], [date], or [quantity] are invalid or incompatible
      */
-    fun fetchStats(site: SiteModel, unit: OrderStatsApiUnit, date: String, quantity: Int) {
+    fun fetchStats(site: SiteModel, unit: OrderStatsApiUnit, date: String, quantity: Int, force: Boolean = false) {
         val url = WPCOMV2.sites.site(site.siteId).stats.orders.url
         val params = mapOf(
                 "unit" to unit.toString(),
@@ -67,6 +68,10 @@ class OrderStatsRestClient(
                     val payload = FetchOrderStatsResponsePayload(orderError, site, unit)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
                 })
+
+        request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
+        if (force) request.setShouldForceUpdate()
+
         add(request)
     }
 

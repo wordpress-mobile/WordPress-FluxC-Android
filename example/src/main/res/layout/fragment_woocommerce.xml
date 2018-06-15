@@ -42,4 +42,9 @@
         android:layout_height="wrap_content"
         android:text="Fetch Month-to-date Revenue Stats" />
 
+    <Button
+        android:id="@+id/fetch_order_stats_forced"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch Month-to-date Revenue Stats (forced)" />
 </LinearLayout>

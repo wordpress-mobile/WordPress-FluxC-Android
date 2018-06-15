@@ -106,7 +106,7 @@ class WCStatsStoreTest {
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any())
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -122,7 +122,7 @@ class WCStatsStoreTest {
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any())
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
