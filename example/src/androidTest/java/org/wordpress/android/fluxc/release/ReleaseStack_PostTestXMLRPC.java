@@ -278,6 +278,14 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // The post should now have a future created date and should have 'future' status
         assertEquals(futureDate, finalPost.getDateCreated());
         assertEquals(PostStatus.SCHEDULED, PostStatus.fromPost(finalPost));
+
+        // Delete the post
+        mNextEvent = TestEvents.POST_DELETED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(finalPost, sSite)));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @Test
