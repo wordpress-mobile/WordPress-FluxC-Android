@@ -28,6 +28,8 @@ class WCStatsStore @Inject constructor(
     private val wcOrderStatsClient: OrderStatsRestClient
 ) : Store(dispatcher) {
     companion object {
+        private const val STATS_QUANTITY_DAYS = 30
+
         private const val DATE_FORMAT_DAY = "yyyy-MM-dd"
         private const val DATE_FORMAT_WEEK = "YYYY-'W'ww"
         private const val DATE_FORMAT_MONTH = "yyyy-MM"
@@ -105,9 +107,9 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
-     * Returns the revenue data for the month so far for the given [site], in increments of days.
+     * Returns the revenue data for the last 30 days for the given [site], in increments of days.
      *
-     * The month so far is relative to the site's own timezone, not the current device's.
+     * The start date is the current day, relative to the site's own timezone (not the current device's).
      *
      * The returned map has the format:
      * {
@@ -122,9 +124,9 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
-     * Returns the order volume data for the month so far for the given [site], in increments of days.
+     * Returns the order volume data for the last 30 days for the given [site], in increments of days.
      *
-     * The month so far is relative to the site's own timezone, not the current device's.
+     * The start date is the current day, relative to the site's own timezone (not the current device's).
      *
      * The returned map has the format:
      * {
@@ -158,12 +160,8 @@ class WCStatsStore @Inject constructor(
 
     private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
         when (payload.granularity) {
-            StatsGranularity.DAYS -> {
-                // TODO: Calculate quantity from max(day-of-the-month, day-of-the-week) for week-to-date support
-                val dayOfMonth = SiteUtils.getCurrentDateTimeForSite(payload.site, DATE_FORMAT_DAY_OF_MONTH).toInt()
-                wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.DAY,
-                        getFormattedDate(payload.site, StatsGranularity.DAYS), dayOfMonth, payload.forced)
-            }
+            StatsGranularity.DAYS -> wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.DAY,
+                        getFormattedDate(payload.site, StatsGranularity.DAYS), STATS_QUANTITY_DAYS, payload.forced)
             StatsGranularity.WEEKS -> TODO()
             StatsGranularity.MONTHS -> TODO()
             StatsGranularity.YEARS -> TODO()
