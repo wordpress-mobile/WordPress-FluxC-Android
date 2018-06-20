@@ -29,21 +29,22 @@ class WCStatsStore @Inject constructor(
 ) : Store(dispatcher) {
     companion object {
         private const val DATE_FORMAT_DAY = "yyyy-MM-dd"
+        private const val DATE_FORMAT_WEEK = "YYYY-'W'ww"
         private const val DATE_FORMAT_MONTH = "yyyy-MM"
         private const val DATE_FORMAT_YEAR = "yyyy"
         private const val DATE_FORMAT_DAY_OF_MONTH = "dd"
     }
 
     enum class StatsGranularity {
-        DAYS, MONTHS, YEARS;
+        DAYS, WEEKS, MONTHS, YEARS;
 
         companion object {
             fun fromOrderStatsApiUnit(apiUnit: OrderStatsApiUnit): StatsGranularity {
                 return when (apiUnit) {
                     OrderStatsApiUnit.DAY -> StatsGranularity.DAYS
+                    OrderStatsApiUnit.WEEK -> StatsGranularity.WEEKS
                     OrderStatsApiUnit.MONTH -> StatsGranularity.MONTHS
                     OrderStatsApiUnit.YEAR -> StatsGranularity.YEARS
-                    OrderStatsApiUnit.WEEK -> throw AssertionError("Not implemented!")
                 }
             }
         }
@@ -163,6 +164,7 @@ class WCStatsStore @Inject constructor(
                 wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.DAY,
                         getFormattedDate(payload.site, StatsGranularity.DAYS), dayOfMonth, payload.forced)
             }
+            StatsGranularity.WEEKS -> TODO()
             StatsGranularity.MONTHS -> TODO()
             StatsGranularity.YEARS -> TODO()
         }
@@ -186,6 +188,7 @@ class WCStatsStore @Inject constructor(
     private fun getFormattedDate(site: SiteModel, granularity: StatsGranularity): String {
         return when (granularity) {
             StatsGranularity.DAYS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_DAY)
+            StatsGranularity.WEEKS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_WEEK)
             StatsGranularity.MONTHS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_MONTH)
             StatsGranularity.YEARS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR)
         }
