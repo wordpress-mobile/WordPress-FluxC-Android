@@ -193,8 +193,10 @@ class WCStatsStore @Inject constructor(
         when (payload.granularity) {
             StatsGranularity.DAYS -> wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.DAY,
                         getFormattedDate(payload.site, StatsGranularity.DAYS), STATS_QUANTITY_DAYS, payload.forced)
-            StatsGranularity.WEEKS -> TODO()
-            StatsGranularity.MONTHS -> TODO()
+            StatsGranularity.WEEKS -> wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.WEEK,
+                        getFormattedDate(payload.site, StatsGranularity.WEEKS), STATS_QUANTITY_WEEKS, payload.forced)
+            StatsGranularity.MONTHS -> wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.MONTH,
+                        getFormattedDate(payload.site, StatsGranularity.MONTHS), STATS_QUANTITY_MONTHS, payload.forced)
             StatsGranularity.YEARS -> TODO()
         }
     }
