@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsError
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import javax.inject.Singleton
 
 @Singleton
@@ -28,6 +29,17 @@ class OrderStatsRestClient(
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     enum class OrderStatsApiUnit {
         DAY, WEEK, MONTH, YEAR;
+
+        companion object {
+            fun fromStatsGranularity(granularity: StatsGranularity): OrderStatsApiUnit {
+                return when (granularity) {
+                    StatsGranularity.DAYS -> DAY
+                    StatsGranularity.WEEKS -> WEEK
+                    StatsGranularity.MONTHS -> MONTH
+                    StatsGranularity.YEARS -> YEAR
+                }
+            }
+        }
 
         override fun toString() = name.toLowerCase()
     }

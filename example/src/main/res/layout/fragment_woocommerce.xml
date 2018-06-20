@@ -40,11 +40,11 @@
         android:id="@+id/fetch_order_stats"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Fetch Month-to-date Revenue Stats" />
+        android:text="Fetch 30-day Revenue Stats" />
 
     <Button
         android:id="@+id/fetch_order_stats_forced"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Fetch Month-to-date Revenue Stats (forced)" />
+        android:text="Fetch 30-day Revenue Stats (forced)" />
 </LinearLayout>

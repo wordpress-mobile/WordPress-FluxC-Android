@@ -176,7 +176,7 @@ class WooCommerceFragment : Fragment() {
         }
 
         getFirstWCSite()?.let { site ->
-            wcStatsStore.getRevenueStatsForCurrentMonth(site).let { statsMap ->
+            wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS).let { statsMap ->
                 if (statsMap.isEmpty()) {
                     prependToLog("No stats were stored for site " + site.name + " =(")
                     return

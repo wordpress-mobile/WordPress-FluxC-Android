@@ -29,12 +29,13 @@ class WCStatsStore @Inject constructor(
 ) : Store(dispatcher) {
     companion object {
         private const val STATS_QUANTITY_DAYS = 30
+        private const val STATS_QUANTITY_WEEKS = 17
+        private const val STATS_QUANTITY_MONTHS = 12
 
         private const val DATE_FORMAT_DAY = "yyyy-MM-dd"
         private const val DATE_FORMAT_WEEK = "YYYY-'W'ww"
         private const val DATE_FORMAT_MONTH = "yyyy-MM"
         private const val DATE_FORMAT_YEAR = "yyyy"
-        private const val DATE_FORMAT_DAY_OF_MONTH = "dd"
     }
 
     enum class StatsGranularity {
@@ -56,7 +57,11 @@ class WCStatsStore @Inject constructor(
      * Describes the parameters for fetching order stats for [site], up to the current day, month, or year
      * (depending on the given [granularity]).
      *
-     * Using [StatsGranularity.DAYS] will fetch data to cover both 'week so far' and 'month so far'.
+     * The amount of data fetched depends on the granularity:
+     * [StatsGranularity.DAYS]: the last 30 days, in increments of a day
+     * [StatsGranularity.WEEKS]: the last 17 weeks (about a quarter), in increments of a week
+     * [StatsGranularity.MONTHS]: the last 12 months, in increments of a month
+     * [StatsGranularity.YEARS]: all data since 2011, in increments on a year
      *
      * @param[granularity] the time units for the requested data
      * @param[forced] if true, ignores any cached result and forces a refresh from the server (defaults to false)
@@ -107,9 +112,16 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
-     * Returns the revenue data for the last 30 days for the given [site], in increments of days.
+     * Returns the revenue data for the given [site], in units of [granularity].
      *
-     * The start date is the current day, relative to the site's own timezone (not the current device's).
+     * The amount of data returned depends on the granularity:
+     *
+     * [StatsGranularity.DAYS]: 30 days
+     * [StatsGranularity.WEEKS]: 17 weeks (about a quarter)
+     * [StatsGranularity.MONTHS]: 12 months
+     * [StatsGranularity.YEARS]: all years
+     *
+     * The start date is the current day/week/month/year, relative to the site's own timezone (not the current device's).
      *
      * The returned map has the format:
      * {
@@ -118,15 +130,28 @@ class WCStatsStore @Inject constructor(
      * ...
      * "2018-05-16" -> 68.24
      * }
+     *
+     * The format of the date key in the returned map depends on the [granularity]:
+     * [StatsGranularity.DAYS]: "2018-05-01"
+     * [StatsGranularity.WEEKS]: "2018-W16"
+     * [StatsGranularity.MONTHS]: "2018-05"
+     * [StatsGranularity.YEARS]: "2018"
      */
-    fun getRevenueStatsForCurrentMonth(site: SiteModel): Map<String, Double> {
-        return getCurrentMonthStatsForField(site, OrderStatsField.TOTAL_SALES)
+    fun getRevenueStats(site: SiteModel, granularity: StatsGranularity): Map<String, Double> {
+        return getStatsForField(site, OrderStatsField.TOTAL_SALES, granularity)
     }
 
     /**
-     * Returns the order volume data for the last 30 days for the given [site], in increments of days.
+     * Returns the order volume data for the given [site], in units of [granularity].
      *
-     * The start date is the current day, relative to the site's own timezone (not the current device's).
+     * The amount of data returned depends on the granularity:
+     *
+     * [StatsGranularity.DAYS]: 30 days
+     * [StatsGranularity.WEEKS]: 17 weeks (about a quarter)
+     * [StatsGranularity.MONTHS]: 12 months
+     * [StatsGranularity.YEARS]: all years
+     *
+     * The start date is the current day/week/month/year, relative to the site's own timezone (not the current device's).
      *
      * The returned map has the format:
      * {
@@ -135,9 +160,15 @@ class WCStatsStore @Inject constructor(
      * ...
      * "2018-05-16" -> 24
      * }
+     *
+     * The format of the date key in the returned map depends on the [granularity]:
+     * [StatsGranularity.DAYS]: "2018-05-01"
+     * [StatsGranularity.WEEKS]: "2018-W16"
+     * [StatsGranularity.MONTHS]: "2018-05"
+     * [StatsGranularity.YEARS]: "2018"
      */
-    fun getOrderStatsForCurrentMonth(site: SiteModel): Map<String, Int> {
-        return getCurrentMonthStatsForField(site, OrderStatsField.ORDERS)
+    fun getOrderStats(site: SiteModel, granularity: StatsGranularity): Map<String, Int> {
+        return getStatsForField(site, OrderStatsField.ORDERS, granularity)
     }
 
     /**
@@ -195,8 +226,13 @@ class WCStatsStore @Inject constructor(
     // The type of the stats field relies on knowledge of the real value of the stored JSON for that field
     // It's up to the function caller to be aware of the compatible types for any given field
     @Suppress("UNCHECKED_CAST")
-    private fun <T> getCurrentMonthStatsForField(site: SiteModel, field: OrderStatsField): Map<String, T> {
-        val rawStats = WCStatsSqlUtils.getRawStatsForSiteAndUnit(site, OrderStatsApiUnit.DAY)
+    private fun <T> getStatsForField(
+        site: SiteModel,
+        field: OrderStatsField,
+        granularity: StatsGranularity
+    ): Map<String, T> {
+        val apiUnit = OrderStatsApiUnit.fromStatsGranularity(granularity)
+        val rawStats = WCStatsSqlUtils.getRawStatsForSiteAndUnit(site, apiUnit)
         rawStats?.let {
             val periodIndex = it.getIndexForField(OrderStatsField.PERIOD)
             val fieldIndex = it.getIndexForField(field)
@@ -205,10 +241,8 @@ class WCStatsStore @Inject constructor(
                 reportMissingFieldError(it)
                 return mapOf()
             }
-            val dayOfMonth = SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_DAY_OF_MONTH).toInt()
-            return it.dataList
-                    .takeLast(dayOfMonth)
-                    .map { it[periodIndex].toString() to it[fieldIndex] as T }.toMap()
+
+            return it.dataList.map { it[periodIndex].toString() to it[fieldIndex] as T }.toMap()
         } ?: return mapOf()
     }
 
