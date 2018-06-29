@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
 import android.content.Context;
-import android.preference.PreferenceManager;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.AfterClass;
@@ -58,7 +57,8 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         // This ensures that the token is not re-used by other tests that don't extend this class,
         // and are supposed to use a different WordPress.com account
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putString("ACCOUNT_TOKEN_PREF_KEY", null).apply();
+        context.getSharedPreferences(context.getPackageName() + "_fluxc-preferences", Context.MODE_PRIVATE)
+                .edit().putString("ACCOUNT_TOKEN_PREF_KEY", null).apply();
     }
 
     @Override

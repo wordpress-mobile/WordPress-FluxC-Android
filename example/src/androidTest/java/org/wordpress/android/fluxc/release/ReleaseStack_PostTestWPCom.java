@@ -287,6 +287,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         // The post should now have a future created date and should have 'future' status
         assertEquals(futureDate, finalPost.getDateCreated());
         assertEquals(PostStatus.SCHEDULED, PostStatus.fromPost(finalPost));
+
+        deletePost(finalPost);
     }
 
     @Test
@@ -615,12 +617,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
-        mNextEvent = TestEvents.POST_DELETED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(uploadedPost, sSite)));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        deletePost(uploadedPost);
 
         // The post should be removed from the db (regardless of whether it was deleted or just trashed on the server)
         assertEquals(null, mPostStore.getPostByLocalPostId(uploadedPost.getId()));
@@ -845,6 +842,15 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newUpdatePostAction(post));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void deletePost(PostModel post) throws InterruptedException {
+        mNextEvent = TestEvents.POST_DELETED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(post, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
