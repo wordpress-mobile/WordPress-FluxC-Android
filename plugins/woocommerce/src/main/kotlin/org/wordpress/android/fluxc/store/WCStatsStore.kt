@@ -192,12 +192,14 @@ class WCStatsStore @Inject constructor(
     private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
         when (payload.granularity) {
             StatsGranularity.DAYS -> wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.DAY,
-                        getFormattedDate(payload.site, StatsGranularity.DAYS), STATS_QUANTITY_DAYS, payload.forced)
+                    getFormattedDate(payload.site, StatsGranularity.DAYS), STATS_QUANTITY_DAYS, payload.forced)
             StatsGranularity.WEEKS -> wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.WEEK,
-                        getFormattedDate(payload.site, StatsGranularity.WEEKS), STATS_QUANTITY_WEEKS, payload.forced)
+                    getFormattedDate(payload.site, StatsGranularity.WEEKS), STATS_QUANTITY_WEEKS, payload.forced)
             StatsGranularity.MONTHS -> wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.MONTH,
-                        getFormattedDate(payload.site, StatsGranularity.MONTHS), STATS_QUANTITY_MONTHS, payload.forced)
-            StatsGranularity.YEARS -> TODO()
+                    getFormattedDate(payload.site, StatsGranularity.MONTHS), STATS_QUANTITY_MONTHS, payload.forced)
+            StatsGranularity.YEARS -> wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.YEAR,
+                    getFormattedDate(payload.site, StatsGranularity.YEARS),
+                    SiteUtils.getCurrentDateTimeForSite(payload.site, DATE_FORMAT_YEAR).toInt() - 2011 + 1)
         }
     }
 
