@@ -85,13 +85,13 @@ class WooCommerceFragment : Fragment() {
             getFirstWCSite()?.let { site ->
                 getFirstWCOrder()?.let { order ->
                     pendingNotesOrderModel = order
-                    showSingleLineDialog(activity, "Enter note", { editText ->
+                    showSingleLineDialog(activity, "Enter note") { editText ->
                         val newNote = WCOrderNoteModel().apply {
                             note = editText.text.toString()
                         }
                         val payload = PostOrderNotePayload(order, site, newNote)
                         dispatcher.dispatch(WCOrderActionBuilder.newPostOrderNoteAction(payload))
-                    })
+                    }
                 }
             }
         }
@@ -99,11 +99,11 @@ class WooCommerceFragment : Fragment() {
         update_latest_order_status.setOnClickListener {
             getFirstWCSite()?.let { site ->
                 wcOrderStore.getOrdersForSite(site).firstOrNull()?.let { order ->
-                    showSingleLineDialog(activity, "Enter new order status", { editText ->
+                    showSingleLineDialog(activity, "Enter new order status") { editText ->
                         val status = editText.text.toString()
                         val payload = UpdateOrderStatusPayload(order, site, status)
                         dispatcher.dispatch(WCOrderActionBuilder.newUpdateOrderStatusAction(payload))
-                    })
+                    }
                 } ?: showNoOrdersToast(site)
             } ?: showNoWCSitesToast()
         }
