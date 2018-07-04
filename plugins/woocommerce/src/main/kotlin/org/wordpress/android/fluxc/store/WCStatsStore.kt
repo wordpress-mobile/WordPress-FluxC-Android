@@ -112,24 +112,18 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
-     * Returns the revenue data for the given [site], in units of [granularity].
+     * Returns the revenue data by date for the given [site], in units of [granularity].
+     *
+     * The returned map has the format: "2018-05-01" -> 57.43
      *
      * The amount of data returned depends on the granularity:
      *
-     * [StatsGranularity.DAYS]: 30 days
-     * [StatsGranularity.WEEKS]: 17 weeks (about a quarter)
-     * [StatsGranularity.MONTHS]: 12 months
-     * [StatsGranularity.YEARS]: all years
+     * [StatsGranularity.DAYS]: the last 30 days, in increments of a day
+     * [StatsGranularity.WEEKS]: the last 17 weeks (about a quarter), in increments of a week
+     * [StatsGranularity.MONTHS]: the last 12 months, in increments of a month
+     * [StatsGranularity.YEARS]: all data since 2011, in increments on a year
      *
      * The start date is the current day/week/month/year, relative to the site's own timezone (not the current device's).
-     *
-     * The returned map has the format:
-     * {
-     * "2018-05-01" -> 57.43,
-     * "2018-05-02" -> 78.98,
-     * ...
-     * "2018-05-16" -> 68.24
-     * }
      *
      * The format of the date key in the returned map depends on the [granularity]:
      * [StatsGranularity.DAYS]: "2018-05-01"
@@ -142,30 +136,11 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
-     * Returns the order volume data for the given [site], in units of [granularity].
+     * Returns the order volume data by date for the given [site], in units of [granularity].
      *
-     * The amount of data returned depends on the granularity:
+     * The returned map has the format: "2018-05-01" -> 15
      *
-     * [StatsGranularity.DAYS]: 30 days
-     * [StatsGranularity.WEEKS]: 17 weeks (about a quarter)
-     * [StatsGranularity.MONTHS]: 12 months
-     * [StatsGranularity.YEARS]: all years
-     *
-     * The start date is the current day/week/month/year, relative to the site's own timezone (not the current device's).
-     *
-     * The returned map has the format:
-     * {
-     * "2018-05-01" -> 15,
-     * "2018-05-02" -> 7,
-     * ...
-     * "2018-05-16" -> 24
-     * }
-     *
-     * The format of the date key in the returned map depends on the [granularity]:
-     * [StatsGranularity.DAYS]: "2018-05-01"
-     * [StatsGranularity.WEEKS]: "2018-W16"
-     * [StatsGranularity.MONTHS]: "2018-05"
-     * [StatsGranularity.YEARS]: "2018"
+     * See [getRevenueStats] for detail on the date formatting of the map keys.
      */
     fun getOrderStats(site: SiteModel, granularity: StatsGranularity): Map<String, Int> {
         return getStatsForField(site, OrderStatsField.ORDERS, granularity)
