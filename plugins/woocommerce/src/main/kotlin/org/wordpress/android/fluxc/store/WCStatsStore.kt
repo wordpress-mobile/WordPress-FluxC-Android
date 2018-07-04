@@ -28,22 +28,26 @@ class WCStatsStore @Inject constructor(
     private val wcOrderStatsClient: OrderStatsRestClient
 ) : Store(dispatcher) {
     companion object {
+        private const val STATS_QUANTITY_DAYS = 30
+        private const val STATS_QUANTITY_WEEKS = 17
+        private const val STATS_QUANTITY_MONTHS = 12
+
         private const val DATE_FORMAT_DAY = "yyyy-MM-dd"
+        private const val DATE_FORMAT_WEEK = "YYYY-'W'ww"
         private const val DATE_FORMAT_MONTH = "yyyy-MM"
         private const val DATE_FORMAT_YEAR = "yyyy"
-        private const val DATE_FORMAT_DAY_OF_MONTH = "dd"
     }
 
     enum class StatsGranularity {
-        DAYS, MONTHS, YEARS;
+        DAYS, WEEKS, MONTHS, YEARS;
 
         companion object {
             fun fromOrderStatsApiUnit(apiUnit: OrderStatsApiUnit): StatsGranularity {
                 return when (apiUnit) {
                     OrderStatsApiUnit.DAY -> StatsGranularity.DAYS
+                    OrderStatsApiUnit.WEEK -> StatsGranularity.WEEKS
                     OrderStatsApiUnit.MONTH -> StatsGranularity.MONTHS
                     OrderStatsApiUnit.YEAR -> StatsGranularity.YEARS
-                    OrderStatsApiUnit.WEEK -> throw AssertionError("Not implemented!")
                 }
             }
         }
@@ -53,7 +57,11 @@ class WCStatsStore @Inject constructor(
      * Describes the parameters for fetching order stats for [site], up to the current day, month, or year
      * (depending on the given [granularity]).
      *
-     * Using [StatsGranularity.DAYS] will fetch data to cover both 'week so far' and 'month so far'.
+     * The amount of data fetched depends on the granularity:
+     * [StatsGranularity.DAYS]: the last 30 days, in increments of a day
+     * [StatsGranularity.WEEKS]: the last 17 weeks (about a quarter), in increments of a week
+     * [StatsGranularity.MONTHS]: the last 12 months, in increments of a month
+     * [StatsGranularity.YEARS]: all data since 2011, in increments on a year
      *
      * @param[granularity] the time units for the requested data
      * @param[forced] if true, ignores any cached result and forces a refresh from the server (defaults to false)
@@ -104,37 +112,38 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
-     * Returns the revenue data for the month so far for the given [site], in increments of days.
+     * Returns the revenue data by date for the given [site], in units of [granularity].
      *
-     * The month so far is relative to the site's own timezone, not the current device's.
+     * The returned map has the format: "2018-05-01" -> 57.43
      *
-     * The returned map has the format:
-     * {
-     * "2018-05-01" -> 57.43,
-     * "2018-05-02" -> 78.98,
-     * ...
-     * "2018-05-16" -> 68.24
-     * }
+     * The amount of data returned depends on the granularity:
+     *
+     * [StatsGranularity.DAYS]: the last 30 days, in increments of a day
+     * [StatsGranularity.WEEKS]: the last 17 weeks (about a quarter), in increments of a week
+     * [StatsGranularity.MONTHS]: the last 12 months, in increments of a month
+     * [StatsGranularity.YEARS]: all data since 2011, in increments on a year
+     *
+     * The start date is the current day/week/month/year, relative to the site's own timezone (not the current device's).
+     *
+     * The format of the date key in the returned map depends on the [granularity]:
+     * [StatsGranularity.DAYS]: "2018-05-01"
+     * [StatsGranularity.WEEKS]: "2018-W16"
+     * [StatsGranularity.MONTHS]: "2018-05"
+     * [StatsGranularity.YEARS]: "2018"
      */
-    fun getRevenueStatsForCurrentMonth(site: SiteModel): Map<String, Double> {
-        return getCurrentMonthStatsForField(site, OrderStatsField.TOTAL_SALES)
+    fun getRevenueStats(site: SiteModel, granularity: StatsGranularity): Map<String, Double> {
+        return getStatsForField(site, OrderStatsField.TOTAL_SALES, granularity)
     }
 
     /**
-     * Returns the order volume data for the month so far for the given [site], in increments of days.
+     * Returns the order volume data by date for the given [site], in units of [granularity].
      *
-     * The month so far is relative to the site's own timezone, not the current device's.
+     * The returned map has the format: "2018-05-01" -> 15
      *
-     * The returned map has the format:
-     * {
-     * "2018-05-01" -> 15,
-     * "2018-05-02" -> 7,
-     * ...
-     * "2018-05-16" -> 24
-     * }
+     * See [getRevenueStats] for detail on the date formatting of the map keys.
      */
-    fun getOrderStatsForCurrentMonth(site: SiteModel): Map<String, Int> {
-        return getCurrentMonthStatsForField(site, OrderStatsField.ORDERS)
+    fun getOrderStats(site: SiteModel, granularity: StatsGranularity): Map<String, Int> {
+        return getStatsForField(site, OrderStatsField.ORDERS, granularity)
     }
 
     /**
@@ -156,16 +165,18 @@ class WCStatsStore @Inject constructor(
     }
 
     private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
-        when (payload.granularity) {
-            StatsGranularity.DAYS -> {
-                // TODO: Calculate quantity from max(day-of-the-month, day-of-the-week) for week-to-date support
-                val dayOfMonth = SiteUtils.getCurrentDateTimeForSite(payload.site, DATE_FORMAT_DAY_OF_MONTH).toInt()
-                wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.DAY,
-                        getFormattedDate(payload.site, StatsGranularity.DAYS), dayOfMonth, payload.forced)
+        val quantity = when (payload.granularity) {
+            StatsGranularity.DAYS -> STATS_QUANTITY_DAYS
+            StatsGranularity.WEEKS -> STATS_QUANTITY_WEEKS
+            StatsGranularity.MONTHS -> STATS_QUANTITY_MONTHS
+            StatsGranularity.YEARS -> {
+                // Years since 2011 (WooCommerce initial release), inclusive
+                SiteUtils.getCurrentDateTimeForSite(payload.site, DATE_FORMAT_YEAR).toInt() - 2011 + 1
             }
-            StatsGranularity.MONTHS -> TODO()
-            StatsGranularity.YEARS -> TODO()
         }
+
+        wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
+                getFormattedDate(payload.site, payload.granularity), quantity, payload.forced)
     }
 
     private fun handleFetchOrderStatsCompleted(payload: FetchOrderStatsResponsePayload) {
@@ -186,6 +197,7 @@ class WCStatsStore @Inject constructor(
     private fun getFormattedDate(site: SiteModel, granularity: StatsGranularity): String {
         return when (granularity) {
             StatsGranularity.DAYS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_DAY)
+            StatsGranularity.WEEKS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_WEEK)
             StatsGranularity.MONTHS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_MONTH)
             StatsGranularity.YEARS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR)
         }
@@ -194,8 +206,13 @@ class WCStatsStore @Inject constructor(
     // The type of the stats field relies on knowledge of the real value of the stored JSON for that field
     // It's up to the function caller to be aware of the compatible types for any given field
     @Suppress("UNCHECKED_CAST")
-    private fun <T> getCurrentMonthStatsForField(site: SiteModel, field: OrderStatsField): Map<String, T> {
-        val rawStats = WCStatsSqlUtils.getRawStatsForSiteAndUnit(site, OrderStatsApiUnit.DAY)
+    private fun <T> getStatsForField(
+        site: SiteModel,
+        field: OrderStatsField,
+        granularity: StatsGranularity
+    ): Map<String, T> {
+        val apiUnit = OrderStatsApiUnit.fromStatsGranularity(granularity)
+        val rawStats = WCStatsSqlUtils.getRawStatsForSiteAndUnit(site, apiUnit)
         rawStats?.let {
             val periodIndex = it.getIndexForField(OrderStatsField.PERIOD)
             val fieldIndex = it.getIndexForField(field)
@@ -204,10 +221,9 @@ class WCStatsStore @Inject constructor(
                 reportMissingFieldError(it)
                 return mapOf()
             }
-            val dayOfMonth = SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_DAY_OF_MONTH).toInt()
-            return it.dataList
-                    .takeLast(dayOfMonth)
-                    .map { it[periodIndex].toString() to it[fieldIndex] as T }.toMap()
+
+            // Years are returned as numbers by the API, and Gson interprets them as floats - clean up the decimal
+            return it.dataList.map { it[periodIndex].toString().removeSuffix(".0") to it[fieldIndex] as T }.toMap()
         } ?: return mapOf()
     }
 

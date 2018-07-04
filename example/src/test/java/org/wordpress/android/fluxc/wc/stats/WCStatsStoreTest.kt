@@ -172,14 +172,14 @@ class WCStatsStoreTest {
     }
 
     @Test
-    fun testGetStatsForCurrentMonth() {
+    fun testGetStatsForDaysGranularity() {
         val orderStatsModel = WCStatsTestUtils.generateSampleStatsModel()
         val site = SiteModel().apply { id = orderStatsModel.localSiteId }
 
         WCStatsSqlUtils.insertOrUpdateStats(orderStatsModel)
 
-        val revenueStats = wcStatsStore.getRevenueStatsForCurrentMonth(site)
-        val orderStats = wcStatsStore.getOrderStatsForCurrentMonth(site)
+        val revenueStats = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS)
+        val orderStats = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS)
 
         assertTrue(revenueStats.isNotEmpty())
         assertTrue(orderStats.isNotEmpty())
