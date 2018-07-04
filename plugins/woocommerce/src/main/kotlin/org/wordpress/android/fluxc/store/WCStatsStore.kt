@@ -247,7 +247,8 @@ class WCStatsStore @Inject constructor(
                 return mapOf()
             }
 
-            return it.dataList.map { it[periodIndex].toString() to it[fieldIndex] as T }.toMap()
+            // Years are returned as numbers by the API, and Gson interprets them as floats - clean up the decimal
+            return it.dataList.map { it[periodIndex].toString().removeSuffix(".0") to it[fieldIndex] as T }.toMap()
         } ?: return mapOf()
     }
 
