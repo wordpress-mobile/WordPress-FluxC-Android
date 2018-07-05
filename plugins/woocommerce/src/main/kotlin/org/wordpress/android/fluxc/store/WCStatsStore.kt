@@ -33,7 +33,7 @@ class WCStatsStore @Inject constructor(
         private const val STATS_QUANTITY_MONTHS = 12
 
         private const val DATE_FORMAT_DAY = "yyyy-MM-dd"
-        private const val DATE_FORMAT_WEEK = "YYYY-'W'ww"
+        private const val DATE_FORMAT_WEEK = "yyyy-'W'ww"
         private const val DATE_FORMAT_MONTH = "yyyy-MM"
         private const val DATE_FORMAT_YEAR = "yyyy"
     }
