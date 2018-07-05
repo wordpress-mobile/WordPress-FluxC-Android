@@ -28,9 +28,9 @@ class WCStatsStore @Inject constructor(
     private val wcOrderStatsClient: OrderStatsRestClient
 ) : Store(dispatcher) {
     companion object {
-        private const val STATS_QUANTITY_DAYS = 30
-        private const val STATS_QUANTITY_WEEKS = 17
-        private const val STATS_QUANTITY_MONTHS = 12
+        const val STATS_QUANTITY_DAYS = 30
+        const val STATS_QUANTITY_WEEKS = 17
+        const val STATS_QUANTITY_MONTHS = 12
 
         private const val DATE_FORMAT_DAY = "yyyy-MM-dd"
         private const val DATE_FORMAT_WEEK = "yyyy-'W'ww"
