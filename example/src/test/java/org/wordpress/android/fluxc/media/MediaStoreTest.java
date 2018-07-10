@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.media;
 
 import android.content.Context;
+import android.webkit.MimeTypeMap;
 
 import com.yarolegovich.wellsql.WellSql;
 
@@ -10,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.shadows.ShadowMimeTypeMap;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests;
 import org.wordpress.android.fluxc.model.MediaModel;
@@ -22,6 +24,7 @@ import org.wordpress.android.fluxc.persistence.MediaSqlUtils;
 import org.wordpress.android.fluxc.persistence.WellSqlConfig;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.utils.MediaUtils;
+import static org.robolectric.Shadows.shadowOf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +36,7 @@ import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static org.wordpress.android.fluxc.media.MediaTestUtils.generateMedia;
 import static org.wordpress.android.fluxc.media.MediaTestUtils.generateMediaFromPath;
+import static org.wordpress.android.fluxc.media.MediaTestUtils.generateMediaAudioFromPath;
 import static org.wordpress.android.fluxc.media.MediaTestUtils.generateRandomizedMedia;
 import static org.wordpress.android.fluxc.media.MediaTestUtils.generateRandomizedMediaList;
 import static org.wordpress.android.fluxc.media.MediaTestUtils.insertMediaIntoDatabase;
@@ -397,9 +401,12 @@ public class MediaStoreTest {
         videoMedia.setCaption("Test Caption");
         assertTrue(MediaUtils.isVideoMimeType(videoMedia.getMimeType()));
 
-        MediaModel audioMedia = generateMediaFromPath(testSiteId, testAudioId, testAudioPath);
+        initShadowMimeTypeMap();
+
+        MediaModel audioMedia = generateMediaAudioFromPath(testSiteId, testAudioId, testAudioPath);
         audioMedia.setDescription("This is an audio test");
-        assertTrue(MediaUtils.isAudioMimeType(audioMedia.getMimeType()));
+        assertTrue(MediaUtils.isAudioMimeType(audioMedia.getMimeType())
+                  && MediaUtils.isSupportedAudioMimeType(audioMedia.getMimeType()));
 
         // insert media of different types
         insertMediaIntoDatabase(videoMedia);
@@ -460,29 +467,49 @@ public class MediaStoreTest {
     public void testSearchSiteAudio() {
         final String testImagePath = "/test/test_image.jpg";
         final String testAudioPath1 = "/test/my_audio.mp3";
-        final String testAudioPath2 = "/test/awesome_2018.mp3";
+        final String testAudioPath2 = "/test/awesome_2018.m4a";
+        final String testAudioPath3 = "/test/my_wav.wav";
+        final String testAudioPath4 = "/test/my_ogg_2018.ogg";
         final String testDocumentPath = "/test/test_document.pdf";
 
         final int testSiteId = 8765;
         final long testImageId = 34;
         final long testAudioId1 = 100;
         final long testAudioId2 = 99;
+        final long testAudioId3 = 98;
+        final long testAudioId4 = 97;
         final long testDocumentId = 43;
+
+        initShadowMimeTypeMap();
 
         // generate media of different types
         MediaModel imageMedia = generateMediaFromPath(testSiteId, testImageId, testImagePath);
         imageMedia.setTitle("Title test");
         assertTrue(MediaUtils.isImageMimeType(imageMedia.getMimeType()));
 
-        MediaModel audioMedia1 = generateMediaFromPath(testSiteId, testAudioId1, testAudioPath1);
-        audioMedia1.setTitle("The big one");
+        MediaModel audioMedia1 = generateMediaAudioFromPath(testSiteId, testAudioId1, testAudioPath1);
+        audioMedia1.setTitle("Test mp3");
         audioMedia1.setDescription("Test for the World");
-        assertTrue(MediaUtils.isAudioMimeType(audioMedia1.getMimeType()));
+        assertTrue(MediaUtils.isAudioMimeType(audioMedia1.getMimeType())
+                   && MediaUtils.isSupportedAudioMimeType(audioMedia1.getMimeType()));
 
-        MediaModel audioMedia2 = generateMediaFromPath(testSiteId, testAudioId2, testAudioPath2);
-        audioMedia2.setTitle("The test!");
+        MediaModel audioMedia2 = generateMediaAudioFromPath(testSiteId, testAudioId2, testAudioPath2);
+        audioMedia2.setTitle("Test m4a");
         audioMedia2.setDescription("Without description");
-        assertTrue(MediaUtils.isAudioMimeType(audioMedia2.getMimeType()));
+        assertTrue(MediaUtils.isAudioMimeType(audioMedia2.getMimeType())
+                   && MediaUtils.isSupportedAudioMimeType(audioMedia1.getMimeType()));
+
+        MediaModel audioMedia3 = generateMediaAudioFromPath(testSiteId, testAudioId3, testAudioPath3);
+        audioMedia3.setTitle("Test wav");
+        audioMedia3.setDescription("Without description");
+        assertTrue(MediaUtils.isAudioMimeType(audioMedia3.getMimeType())
+                   && MediaUtils.isSupportedAudioMimeType(audioMedia1.getMimeType()));
+
+        MediaModel audioMedia4 = generateMediaAudioFromPath(testSiteId, testAudioId4, testAudioPath4);
+        audioMedia4.setTitle("Test ogg");
+        audioMedia4.setDescription("Without description");
+        assertTrue(MediaUtils.isAudioMimeType(audioMedia4.getMimeType())
+                   && MediaUtils.isSupportedAudioMimeType(audioMedia1.getMimeType()));
 
         MediaModel documentMedia = generateMediaFromPath(testSiteId, testDocumentId, testDocumentPath);
         documentMedia.setTitle("Document with every test of the app");
@@ -492,21 +519,38 @@ public class MediaStoreTest {
         insertMediaIntoDatabase(imageMedia);
         insertMediaIntoDatabase(audioMedia1);
         insertMediaIntoDatabase(audioMedia2);
+        insertMediaIntoDatabase(audioMedia3);
+        insertMediaIntoDatabase(audioMedia4);
         insertMediaIntoDatabase(documentMedia);
 
         // verify the correct media is returned (just audio)
         final List<MediaModel> storeAudio = mMediaStore
                 .searchSiteAudio(getTestSiteWithLocalId(testSiteId), "test");
         assertNotNull(storeAudio);
-        assertTrue(storeAudio.size() == 2);
+        assertTrue(storeAudio.size() == 4);
         assertEquals(testAudioId1, storeAudio.get(0).getMediaId());
         assertEquals(testAudioId2, storeAudio.get(1).getMediaId());
+        assertEquals(testAudioId3, storeAudio.get(2).getMediaId());
+        assertEquals(testAudioId4, storeAudio.get(3).getMediaId());
 
         assertTrue(MediaUtils.isAudioMimeType(storeAudio.get(0).getMimeType()));
         assertTrue(MediaUtils.isAudioMimeType(storeAudio.get(1).getMimeType()));
+        assertTrue(MediaUtils.isAudioMimeType(storeAudio.get(2).getMimeType()));
+        assertTrue(MediaUtils.isAudioMimeType(storeAudio.get(3).getMimeType()));
 
         assertEquals(testSiteId, storeAudio.get(0).getLocalSiteId());
         assertEquals(testSiteId, storeAudio.get(1).getLocalSiteId());
+        assertEquals(testSiteId, storeAudio.get(2).getLocalSiteId());
+        assertEquals(testSiteId, storeAudio.get(3).getLocalSiteId());
+    }
+
+    private void initShadowMimeTypeMap() {
+        // Mock MimeTypeMap.getSingleton() as it doesn't work in test environment
+        ShadowMimeTypeMap shadowMimeTypeMap = shadowOf(MimeTypeMap.getSingleton());
+        shadowMimeTypeMap.addExtensionMimeTypMapping("mp3", "audio/mpeg");
+        shadowMimeTypeMap.addExtensionMimeTypMapping("m4a", "audio/mp4");
+        shadowMimeTypeMap.addExtensionMimeTypMapping("wav", "audio/x-wav");
+        shadowMimeTypeMap.addExtensionMimeTypMapping("ogg", "audio/ogg");
     }
 
     @Test
@@ -524,12 +568,15 @@ public class MediaStoreTest {
         final long testDocumentId3 = 98;
         final long testDocumentId4 = 543;
 
+        initShadowMimeTypeMap();
+
         // generate media of different types
-        MediaModel audioMedia = generateMediaFromPath(testSiteId, testAudioId, testAudioPath);
+        MediaModel audioMedia = generateMediaAudioFromPath(testSiteId, testAudioId, testAudioPath);
         audioMedia.setTitle("My first test");
         audioMedia.setDescription("This is a description test");
         audioMedia.setCaption("Caption test");
-        assertTrue(MediaUtils.isAudioMimeType(audioMedia.getMimeType()));
+        assertTrue(MediaUtils.isAudioMimeType(audioMedia.getMimeType())
+                   && MediaUtils.isSupportedAudioMimeType(audioMedia.getMimeType()));
 
         MediaModel documentMedia1 = generateMediaFromPath(testSiteId, testDocumentId1, testDocumentPath1);
         documentMedia1.setTitle("The Document");

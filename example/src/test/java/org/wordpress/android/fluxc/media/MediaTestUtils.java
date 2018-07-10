@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.media;
 
+import android.webkit.MimeTypeMap;
+
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.persistence.MediaSqlUtils;
 import org.wordpress.android.fluxc.utils.MediaUtils;
@@ -43,6 +45,20 @@ public class MediaTestUtils {
         media.setTitle(media.getFileName());
         return media;
     }
+
+    public static MediaModel generateMediaAudioFromPath(int localSiteId, long mediaId, String filePath) {
+        MediaModel media = new MediaModel();
+        media.setLocalSiteId(localSiteId);
+        media.setMediaId(mediaId);
+        media.setFilePath(filePath);
+        media.setFileName(MediaUtils.getFileName(filePath));
+        media.setFileExtension(MediaUtils.getExtension(filePath));
+        media.setMimeType(MimeTypeMap.getSingleton().getMimeTypeFromExtension(media.getFileExtension()));
+        media.setTitle(media.getFileName());
+
+        return media;
+    }
+
 
     public static MediaModel generateRandomizedMedia(int localSiteId) {
         MediaModel media = generateMedia(randomStr(5), randomStr(5), randomStr(5), randomStr(5));

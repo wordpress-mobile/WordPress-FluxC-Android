@@ -1,5 +1,4 @@
 package org.wordpress.android.fluxc.utils;
-
 import junit.framework.Assert;
 
 import org.junit.Test;
@@ -97,7 +96,7 @@ public class MediaUtilsTest {
             String supportedVideoMimeType = MediaUtils.MIME_TYPE_VIDEO + supportedVideoType;
             Assert.assertTrue(MediaUtils.isSupportedVideoMimeType(supportedVideoMimeType));
         }
-        for (String unsupportedVideoType : MediaUtils.SUPPORTED_AUDIO_SUBTYPES) {
+        for (String unsupportedVideoType : MediaUtils.SUPPORTED_IMAGE_SUBTYPES) {
             String unsupportedVideoMimeType = MediaUtils.MIME_TYPE_VIDEO + unsupportedVideoType;
             Assert.assertFalse(MediaUtils.isSupportedVideoMimeType(unsupportedVideoMimeType));
         }
@@ -153,11 +152,7 @@ public class MediaUtilsTest {
             Assert.assertNotNull(mimeType);
             Assert.assertTrue(mimeType.equals(MediaUtils.MIME_TYPE_VIDEO + supportedVideoExtension));
         }
-        for (String supportedAudioExtension : MediaUtils.SUPPORTED_AUDIO_SUBTYPES) {
-            String mimeType = MediaUtils.getMimeTypeForExtension(supportedAudioExtension);
-            Assert.assertNotNull(mimeType);
-            Assert.assertTrue(mimeType.equals(MediaUtils.MIME_TYPE_AUDIO + supportedAudioExtension));
-        }
+
         for (String supportedApplicationExtension : MediaUtils.SUPPORTED_APPLICATION_SUBTYPES) {
             String mimeType = MediaUtils.getMimeTypeForExtension(supportedApplicationExtension);
             Assert.assertNotNull(mimeType);
