@@ -27,8 +27,9 @@ public class MediaUtils {
     public static final String[] SUPPORTED_VIDEO_SUBTYPES = {
             "mp4", "m4v", "mov", "wmv", "avi", "mpg", "ogv", "3gp", "3gpp", "3gpp2", "3g2", "mpeg", "quicktime", "webm"
     };
+    //supported audio file extensions {"mp3" : "mpeg", "m4a" : "mp4", "ogg" : "ogg", "wav" : "x-wav"}
     public static final String[] SUPPORTED_AUDIO_SUBTYPES = {
-            "mp3", "m4a", "ogg", "wav"
+            "mpeg", "mp4", "ogg", "x-wav"
     };
     public static final String[] SUPPORTED_APPLICATION_SUBTYPES = {
             "pdf", "doc", "ppt", "odt", "pptx", "docx", "pps", "ppsx", "xls", "xlsx", "key", ".zip"
