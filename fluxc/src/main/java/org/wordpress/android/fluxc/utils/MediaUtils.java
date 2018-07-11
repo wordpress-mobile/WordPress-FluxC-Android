@@ -27,7 +27,15 @@ public class MediaUtils {
     public static final String[] SUPPORTED_VIDEO_SUBTYPES = {
             "mp4", "m4v", "mov", "wmv", "avi", "mpg", "ogv", "3gp", "3gpp", "3gpp2", "3g2", "mpeg", "quicktime", "webm"
     };
-    // supported audio file extensions {"mp3" : "mpeg", "m4a" : "mp4", "ogg" : "ogg", "wav" : "x-wav"}
+
+    // Following https://en.support.wordpress.com/accepted-filetypes
+    // accepted audio file types (extensions) are : mp3, m4a, ogg, wav
+    // In the Android API for each file type there is corresponding mime type
+    // which can be checked with usage of MimeTypeMap.getSingleton().getMimeTypeFromExtension()
+    // Here https://android.googlesource.com/platform/frameworks/base/+/56a2301/media/java/android/media/MediaFile.java
+    // we can get mapping of file type extension and mime type {extension : mime_type}
+    // which gives supported audio file extensions and mime types ->
+    // {"mp3" : "audio/mpeg", "m4a" : "audio/mp4", "ogg" : "audio/ogg", "wav" : "audio/x-wav"}
     public static final String[] SUPPORTED_AUDIO_SUBTYPES = {
             "mpeg", "mp4", "ogg", "x-wav"
     };
