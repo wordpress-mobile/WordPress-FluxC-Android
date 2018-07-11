@@ -104,9 +104,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var causeOfChange: WCOrderAction? = null
     }
 
-    override fun onRegister() {
-        AppLog.d(T.API, "WCOrderStore onRegister")
-    }
+    override fun onRegister() = AppLog.d(T.API, "WCOrderStore onRegister")
 
     /**
      * Given a [SiteModel] and optional statuses, returns all orders for that site matching any of those statuses.
