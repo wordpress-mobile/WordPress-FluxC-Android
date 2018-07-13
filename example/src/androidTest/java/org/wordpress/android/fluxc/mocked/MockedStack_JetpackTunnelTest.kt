@@ -52,7 +52,8 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
                     assertEquals("rest_no_route", error.apiError)
                     assertEquals("No route was found matching the URL and request method", error.message)
                     countDownLatch.countDown()
-                })
+                },
+                {})
 
         interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
         jetpackTunnelClient.exposedAdd(request)
@@ -75,7 +76,8 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
                 WPComErrorListener { error ->
                     throw AssertionError("Unexpected BaseNetworkError: " +
                             error.apiError + " - " + error.message)
-                })
+                },
+                {})
 
         interceptor.respondWith("jetpack-tunnel-root-response-success.json")
         jetpackTunnelClient.exposedAdd(request)
