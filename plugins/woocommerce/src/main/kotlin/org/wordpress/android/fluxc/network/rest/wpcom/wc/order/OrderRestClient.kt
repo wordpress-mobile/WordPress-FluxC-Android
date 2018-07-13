@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -62,7 +63,8 @@ class OrderRestClient(
                     val orderError = networkErrorToOrderError(networkError)
                     val payload = FetchOrdersResponsePayload(orderError, site)
                     mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
-                })
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
         add(request)
     }
 
@@ -123,7 +125,8 @@ class OrderRestClient(
                     val orderError = networkErrorToOrderError(networkError)
                     val payload = FetchOrderNotesResponsePayload(orderError, site, order)
                     mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderNotesAction(payload))
-                })
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
         add(request)
     }
 
