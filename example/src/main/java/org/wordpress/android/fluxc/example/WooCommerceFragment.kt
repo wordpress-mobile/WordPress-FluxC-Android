@@ -15,8 +15,10 @@ import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
+import org.wordpress.android.fluxc.action.WCStatsAction
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
+import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
@@ -26,6 +28,10 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
+import org.wordpress.android.fluxc.store.WCStatsStore
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
+import org.wordpress.android.fluxc.store.WCStatsStore.OnWCStatsChanged
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -36,6 +42,7 @@ class WooCommerceFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var wcOrderStore: WCOrderStore
+    @Inject internal lateinit var wcStatsStore: WCStatsStore
 
     private var pendingNotesOrderModel: WCOrderModel? = null
 
@@ -78,13 +85,13 @@ class WooCommerceFragment : Fragment() {
             getFirstWCSite()?.let { site ->
                 getFirstWCOrder()?.let { order ->
                     pendingNotesOrderModel = order
-                    showSingleLineDialog(activity, "Enter note", { editText ->
+                    showSingleLineDialog(activity, "Enter note") { editText ->
                         val newNote = WCOrderNoteModel().apply {
                             note = editText.text.toString()
                         }
                         val payload = PostOrderNotePayload(order, site, newNote)
                         dispatcher.dispatch(WCOrderActionBuilder.newPostOrderNoteAction(payload))
-                    })
+                    }
                 }
             }
         }
@@ -92,12 +99,26 @@ class WooCommerceFragment : Fragment() {
         update_latest_order_status.setOnClickListener {
             getFirstWCSite()?.let { site ->
                 wcOrderStore.getOrdersForSite(site).firstOrNull()?.let { order ->
-                    showSingleLineDialog(activity, "Enter new order status", { editText ->
+                    showSingleLineDialog(activity, "Enter new order status") { editText ->
                         val status = editText.text.toString()
                         val payload = UpdateOrderStatusPayload(order, site, status)
                         dispatcher.dispatch(WCOrderActionBuilder.newUpdateOrderStatusAction(payload))
-                    })
+                    }
                 } ?: showNoOrdersToast(site)
+            } ?: showNoWCSitesToast()
+        }
+
+        fetch_order_stats.setOnClickListener {
+            getFirstWCSite()?.let {
+                val payload = FetchOrderStatsPayload(it, StatsGranularity.DAYS)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+            } ?: showNoWCSitesToast()
+        }
+
+        fetch_order_stats_forced.setOnClickListener {
+            getFirstWCSite()?.let {
+                val payload = FetchOrderStatsPayload(it, StatsGranularity.DAYS, true)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
             } ?: showNoWCSitesToast()
         }
     }
@@ -141,6 +162,31 @@ class WooCommerceFragment : Fragment() {
                     UPDATE_ORDER_STATUS ->
                         with (orderList[0]) { prependToLog("Updated order status for $number to $status") }
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
+                }
+            }
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onWCStatsChanged(event: OnWCStatsChanged) {
+        if (event.isError) {
+            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
+            return
+        }
+
+        getFirstWCSite()?.let { site ->
+            wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS).let { statsMap ->
+                if (statsMap.isEmpty()) {
+                    prependToLog("No stats were stored for site " + site.name + " =(")
+                    return
+                }
+
+                when (event.causeOfChange) {
+                    WCStatsAction.FETCH_ORDER_STATS ->
+                        prependToLog("Fetched stats for " + statsMap.size + " " +
+                                event.granularity.toString().toLowerCase() + " from " + site.name)
+                    else -> prependToLog("WooCommerce stats were updated from a " + event.causeOfChange)
                 }
             }
         }
