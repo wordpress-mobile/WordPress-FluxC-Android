@@ -36,7 +36,7 @@ public class MediaUtils {
     // we can get mapping of file type extension and mime type {extension : mime_type}
     // which gives supported audio file extensions and mime types ->
     // {"mp3" : "audio/mpeg", "m4a" : "audio/mp4", "ogg" : "audio/ogg", "wav" : "audio/x-wav"}
-    // Special case -> On Samsung device for extension "wav" Android API returns "audio/vnd.wave"
+    // Special case -> On Samsung device for "wav" audio file extension Android API returns "audio/vnd.wave"
     public static final String[] SUPPORTED_AUDIO_SUBTYPES = {
             "mpeg", "mp4", "ogg", "x-wav", "vnd.wave"
     };
