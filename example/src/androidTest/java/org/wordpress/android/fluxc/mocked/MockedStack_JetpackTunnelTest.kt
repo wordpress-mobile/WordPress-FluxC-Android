@@ -28,6 +28,10 @@ import javax.inject.Singleton
  * network component(s).
  */
 class MockedStack_JetpackTunnelTest : MockedStack_Base() {
+    companion object {
+        private const val DUMMY_SITE_ID = 567L
+    }
+
     @Inject internal lateinit var jetpackTunnelClient: JetpackTunnelClientForTests
 
     @Inject internal lateinit var interceptor: ResponseMockingInterceptor
@@ -43,7 +47,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
         val countDownLatch = CountDownLatch(1)
         val url = "/"
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, 567, mapOf(),
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, DUMMY_SITE_ID, mapOf(),
                 RootWPAPIRestResponse::class.java,
                 { _: RootWPAPIRestResponse? ->
                     throw AssertionError("Unexpected success!")
@@ -67,7 +71,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
         val url = "/"
         val params = mapOf("context" to "view")
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, 567, params,
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, DUMMY_SITE_ID, params,
                 RootWPAPIRestResponse::class.java,
                 { response: RootWPAPIRestResponse? ->
                     // Verify that the successful response is correctly parsed
@@ -92,7 +96,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
 
         val requestBody = mapOf<String, Any>("title" to "New Title", "description" to "New Description")
 
-        val request = JetpackTunnelGsonRequest.buildPostRequest(url, 567, requestBody,
+        val request = JetpackTunnelGsonRequest.buildPostRequest(url, DUMMY_SITE_ID, requestBody,
                 SettingsAPIResponse::class.java,
                 { response: SettingsAPIResponse? ->
                     // Verify that the successful response is correctly parsed
@@ -119,7 +123,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
         val url = "/"
         var retriesAttempted = 0
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, 567, mapOf(),
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, DUMMY_SITE_ID, mapOf(),
                 RootWPAPIRestResponse::class.java,
                 { _: RootWPAPIRestResponse? ->
                     throw AssertionError("Unexpected success!")
@@ -156,7 +160,7 @@ class MockedStack_JetpackTunnelTest : MockedStack_Base() {
         val url = "/"
         var retriesAttempted = 0
 
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, 567, mapOf(),
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, DUMMY_SITE_ID, mapOf(),
                 RootWPAPIRestResponse::class.java,
                 { response: RootWPAPIRestResponse? ->
                     // Verify that the successful response is correctly parsed
