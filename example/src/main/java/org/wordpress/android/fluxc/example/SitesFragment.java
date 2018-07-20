@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.NewSitePayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnNewSiteCreated;
+import org.wordpress.android.fluxc.store.SiteStore.OnPlanFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnProfileFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteDeleted;
@@ -111,6 +112,15 @@ public class SitesFragment extends Fragment {
             }
         });
 
+        view.findViewById(R.id.fetch_plans).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SiteModel site = mSiteStore.getSites().get(0);
+                // Export site
+                mDispatcher.dispatch(SiteActionBuilder.newFetchPlansAction(site));
+            }
+        });
+
         return view;
     }
 
@@ -193,6 +203,16 @@ public class SitesFragment extends Fragment {
             prependToLog("Export Site: error: " + event.error.type);
         } else {
             prependToLog("Export Site: success!");
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPlanFetched(OnPlanFetched event) {
+        if (event.isError()) {
+            prependToLog("Fetch Plans: error: " + event.error.type);
+        } else {
+            prependToLog("Fetch Plans: success, " + event.plans.size() + " Plans fetched");
         }
     }
 

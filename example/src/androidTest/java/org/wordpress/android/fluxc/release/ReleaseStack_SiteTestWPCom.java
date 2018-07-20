@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferEligibilit
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferInitiated;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferStatusChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
+import org.wordpress.android.fluxc.store.SiteStore.OnPlanFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
@@ -57,6 +58,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         SITE_CHANGED,
         POST_FORMATS_CHANGED,
         USER_ROLES_CHANGED,
+        PLANS_FETCHED,
         SITE_REMOVED,
         FETCHED_CONNECT_SITE_INFO,
         FETCHED_WPCOM_SITE_BY_URL,
@@ -133,6 +135,22 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         List<RoleModel> roles = mSiteStore.getUserRoles(firstSite);
         assertNotSame(0, roles.size());
     }
+
+    @Test
+    public void testFetchPlans() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        // Get the first site
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+
+        // Fetch user roles
+        mDispatcher.dispatch(SiteActionBuilder.newFetchPlansAction(firstSite));
+        mNextEvent = TestEvents.PLANS_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
 
     @Test
     public void testFetchConnectSiteInfo() throws InterruptedException {
@@ -326,6 +344,18 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.USER_ROLES_CHANGED, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onPlanFetched(OnPlanFetched event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.PLANS_FETCHED, mNextEvent);
+        assertNotNull(event.plans);
+        assertNotSame(0, event.plans.size());
         mCountDownLatch.countDown();
     }
 
