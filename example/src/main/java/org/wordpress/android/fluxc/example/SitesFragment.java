@@ -116,7 +116,7 @@ public class SitesFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 SiteModel site = mSiteStore.getSites().get(0);
-                // Export site
+                // Fetch site plans
                 mDispatcher.dispatch(SiteActionBuilder.newFetchPlansAction(site));
             }
         });
