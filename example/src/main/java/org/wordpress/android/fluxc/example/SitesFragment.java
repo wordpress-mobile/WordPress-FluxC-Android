@@ -19,7 +19,7 @@ import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.NewSitePayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnNewSiteCreated;
-import org.wordpress.android.fluxc.store.SiteStore.OnPlanFetched;
+import org.wordpress.android.fluxc.store.SiteStore.OnPlansFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnProfileFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteDeleted;
@@ -208,7 +208,7 @@ public class SitesFragment extends Fragment {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onPlanFetched(OnPlanFetched event) {
+    public void onPlanFetched(OnPlansFetched event) {
         if (event.isError()) {
             prependToLog("Fetch Plans: error: " + event.error.type);
         } else {
