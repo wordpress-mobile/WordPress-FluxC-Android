@@ -151,7 +151,6 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-
     @Test
     public void testFetchConnectSiteInfo() throws InterruptedException {
         String site = "http://www.example.com";
@@ -355,7 +354,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         }
         assertEquals(TestEvents.PLANS_FETCHED, mNextEvent);
         assertNotNull(event.plans);
-        assertNotSame(0, event.plans.size());
+        assertTrue(!event.plans.isEmpty());
         mCountDownLatch.countDown();
     }
 
