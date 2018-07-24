@@ -33,7 +33,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     class FetchOrdersPayload(
         var site: SiteModel,
-        var loadMore: Boolean = false
+        var loadMore: Boolean = false,
+        var status: String = "any"
     ) : Payload<BaseNetworkError>()
 
     class FetchOrdersResponsePayload(
@@ -149,7 +150,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         } else {
             0
         }
-        wcOrderRestClient.fetchOrders(payload.site, offset)
+        wcOrderRestClient.fetchOrders(payload.site, offset, payload.status)
     }
 
     private fun updateOrderStatus(payload: UpdateOrderStatusPayload) {

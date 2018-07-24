@@ -43,12 +43,13 @@ class OrderRestClient(
      *
      * Dispatches a [WCOrderAction.FETCHED_ORDERS] action with the resulting list of orders.
      */
-    fun fetchOrders(site: SiteModel, offset: Int) {
+    fun fetchOrders(site: SiteModel, offset: Int, status: String = "any") {
         val url = WOOCOMMERCE.orders.pathV2
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
         val params = mapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
-                "offset" to offset.toString())
+                "offset" to offset.toString(),
+                "status" to status)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
                     val orderModels = response?.map {
