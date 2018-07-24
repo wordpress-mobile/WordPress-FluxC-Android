@@ -45,6 +45,7 @@ class WooCommerceFragment : Fragment() {
     @Inject internal lateinit var wcStatsStore: WCStatsStore
 
     private var pendingNotesOrderModel: WCOrderModel? = null
+    private var pendingFetchOrdersFilter: List<String>? = null
 
     override fun onAttach(context: Context?) {
         AndroidInjection.inject(this)
@@ -69,6 +70,27 @@ class WooCommerceFragment : Fragment() {
                 val payload = FetchOrdersPayload(it, loadMore = false)
                 dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
             } ?: showNoWCSitesToast()
+        }
+
+        fetch_orders_by_status.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                showSingleLineDialog(activity, "Enter comma-separated list of statuses to filter by:") { editText ->
+                    pendingFetchOrdersFilter = editText.text.toString()
+                            .takeIf { it.trim().isNotEmpty() }
+                            ?.split(",")
+                            ?.mapNotNull { if (it.trim().isNotEmpty()) it.trim() else null }
+                    // only use the status for filtering if it's not empty
+                    if (pendingFetchOrdersFilter?.count() == 0) {
+                        pendingFetchOrdersFilter = null
+                        prependToLog("No valid filters defined, fetching all orders...")
+                    } else {
+                        prependToLog("Submitting request to fetch " +
+                                "orders matching the following statuses $pendingFetchOrdersFilter")
+                    }
+                    val payload = FetchOrdersPayload(site, loadMore = false)
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
+                }
+            }
         }
 
         fetch_order_notes.setOnClickListener {
@@ -149,7 +171,20 @@ class WooCommerceFragment : Fragment() {
                 }
 
                 when (event.causeOfChange) {
-                    FETCH_ORDERS -> prependToLog("Fetched " + event.rowsAffected + " orders from: " + site.name)
+                    FETCH_ORDERS -> {
+                        pendingFetchOrdersFilter?.let { filter ->
+                            getFirstWCSite()?.let { site ->
+                                // get orders and group by order.status
+                                val orders = wcOrderStore.getOrdersForSite(site, *filter.toTypedArray())
+                                        .groupBy { order -> order.status }
+                                // print count of orders fetched by filtered status
+                                filter.forEach { status ->
+                                    prependToLog("Fetched ${orders[status]?.count() ?: 0} orders for status [$status]")
+                                }
+                                pendingFetchOrdersFilter = null
+                            }
+                        } ?: prependToLog("Fetched ${event.rowsAffected} orders from: ${site.name}")
+                    }
                     FETCH_ORDER_NOTES -> {
                         val notes = wcOrderStore.getOrderNotesForOrder(pendingNotesOrderModel!!)
                         prependToLog(
