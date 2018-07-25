@@ -208,7 +208,7 @@ public class SitesFragment extends Fragment {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onPlanFetched(OnPlansFetched event) {
+    public void onPlansFetched(OnPlansFetched event) {
         if (event.isError()) {
             prependToLog("Fetch Plans: error: " + event.error.type);
         } else {

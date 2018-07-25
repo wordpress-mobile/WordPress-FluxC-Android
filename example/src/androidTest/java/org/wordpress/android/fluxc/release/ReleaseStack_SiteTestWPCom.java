@@ -354,7 +354,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         }
         assertEquals(TestEvents.PLANS_FETCHED, mNextEvent);
         assertNotNull(event.plans);
-        assertTrue(!event.plans.isEmpty());
+        assertFalse(event.plans.isEmpty());
         mCountDownLatch.countDown();
     }
 
