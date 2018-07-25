@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.OnPlansFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.RefreshSitesXMLRPCPayload;
@@ -29,6 +30,7 @@ import javax.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
@@ -44,7 +46,8 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         NONE,
         SITE_CHANGED,
         SITE_REMOVED,
-        ERROR_DUPLICATE_SITE
+        ERROR_DUPLICATE_SITE,
+        PLANS_FETCHED
     }
 
     private TestEvents mNextEvent;
@@ -317,6 +320,21 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         assertEquals(1, mSiteStore.getSitesAccessedViaXMLRPCCount());
     }
 
+    @Test
+    public void testFetchPlansJetpack() throws InterruptedException {
+        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY);
+
+        // Get the only Jetpack site
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+
+        // Fetch site plans
+        mDispatcher.dispatch(SiteActionBuilder.newFetchPlansAction(firstSite));
+        mNextEvent = TestEvents.PLANS_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -419,5 +437,17 @@ public class ReleaseStack_SiteTestJetpack extends ReleaseStack_Base {
         mDispatcher.dispatch(SiteActionBuilder.newFetchSiteAction(site));
         // Wait for a network response / onChanged event
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onPlansFetched(OnPlansFetched event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.PLANS_FETCHED, mNextEvent);
+        assertNotNull(event.plans);
+        assertFalse(event.plans.isEmpty());
+        mCountDownLatch.countDown();
     }
 }

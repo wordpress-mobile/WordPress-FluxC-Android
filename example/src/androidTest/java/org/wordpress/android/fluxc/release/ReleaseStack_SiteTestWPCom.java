@@ -22,12 +22,14 @@ import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferEligibilit
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferInitiated;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferStatusChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
+import org.wordpress.android.fluxc.store.SiteStore.OnPlansFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
 import org.wordpress.android.fluxc.store.SiteStore.OnUserRolesChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnWPComSiteFetched;
+import org.wordpress.android.fluxc.store.SiteStore.PlansErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
 import org.wordpress.android.util.AppLog;
@@ -57,6 +59,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         SITE_CHANGED,
         POST_FORMATS_CHANGED,
         USER_ROLES_CHANGED,
+        PLANS_FETCHED,
+        PLANS_UNKNOWN_BLOG_ERROR,
         SITE_REMOVED,
         FETCHED_CONNECT_SITE_INFO,
         FETCHED_WPCOM_SITE_BY_URL,
@@ -132,6 +136,39 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Test fetched user roles
         List<RoleModel> roles = mSiteStore.getUserRoles(firstSite);
         assertNotSame(0, roles.size());
+    }
+
+    @Test
+    public void testFetchPlans() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        // Get the first site
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+
+        // Fetch site plans
+        mDispatcher.dispatch(SiteActionBuilder.newFetchPlansAction(firstSite));
+        mNextEvent = TestEvents.PLANS_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testUnknownBlogErrorOnFetchPlans() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        // Initialize a WP.com site with an invalid siteId.
+        // siteModel.isWPCom is set to true, to avoid PlansErrorType.NOT_AVAILABLE error.
+        SiteModel siteModel = new SiteModel();
+        siteModel.setIsWPCom(true);
+        siteModel.setSiteId(0);
+
+        // Try to fetch plans for that invalid site.
+        mDispatcher.dispatch(SiteActionBuilder.newFetchPlansAction(siteModel));
+        mNextEvent = TestEvents.PLANS_UNKNOWN_BLOG_ERROR;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @Test
@@ -326,6 +363,24 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.USER_ROLES_CHANGED, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onPlansFetched(OnPlansFetched event) {
+        if (event.isError()) {
+            AppLog.i(T.API, "onPlansFetched has error: " + event.error.type + " - " + event.error.message);
+            if (mNextEvent.equals(TestEvents.PLANS_UNKNOWN_BLOG_ERROR)) {
+                assertEquals(PlansErrorType.UNKNOWN_BLOG, event.error.type);
+                mCountDownLatch.countDown();
+                return;
+            }
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.PLANS_FETCHED, mNextEvent);
+        assertNotNull(event.plans);
+        assertFalse(event.plans.isEmpty());
         mCountDownLatch.countDown();
     }
 
