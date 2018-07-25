@@ -29,6 +29,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
 import org.wordpress.android.fluxc.store.SiteStore.OnUserRolesChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnWPComSiteFetched;
+import org.wordpress.android.fluxc.store.SiteStore.PlansErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
 import org.wordpress.android.util.AppLog;
@@ -59,6 +60,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         POST_FORMATS_CHANGED,
         USER_ROLES_CHANGED,
         PLANS_FETCHED,
+        PLANS_UNKNOWN_BLOG_ERROR,
         SITE_REMOVED,
         FETCHED_CONNECT_SITE_INFO,
         FETCHED_WPCOM_SITE_BY_URL,
@@ -147,6 +149,24 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Fetch site plans
         mDispatcher.dispatch(SiteActionBuilder.newFetchPlansAction(firstSite));
         mNextEvent = TestEvents.PLANS_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testUnknownBlogErrorOnFetchPlans() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        // Initialize a WP.com site with an invalid siteId.
+        // siteModel.isWPCom is set to true, to avoid PlansErrorType.NOT_AVAILABLE error.
+        SiteModel siteModel = new SiteModel();
+        siteModel.setIsWPCom(true);
+        siteModel.setSiteId(0);
+
+        // Try to fetch plans for that invalid site.
+        mDispatcher.dispatch(SiteActionBuilder.newFetchPlansAction(siteModel));
+        mNextEvent = TestEvents.PLANS_UNKNOWN_BLOG_ERROR;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -350,6 +370,12 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     @Subscribe
     public void onPlansFetched(OnPlansFetched event) {
         if (event.isError()) {
+            AppLog.i(T.API, "onPlansFetched has error: " + event.error.type + " - " + event.error.message);
+            if (mNextEvent.equals(TestEvents.PLANS_UNKNOWN_BLOG_ERROR)) {
+                assertEquals(PlansErrorType.UNKNOWN_BLOG, event.error.type);
+                mCountDownLatch.countDown();
+                return;
+            }
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.PLANS_FETCHED, mNextEvent);
