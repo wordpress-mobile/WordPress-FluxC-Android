@@ -88,6 +88,8 @@ class WooCommerceFragment : Fragment() {
                         prependToLog("Submitting request to fetch " +
                                 "orders matching the following statuses $pendingFetchOrdersFilter")
                     }
+                    // First fetch orders from the API to seed the database with data before attempting to pull
+                    // orders by order status.
                     val payload = FetchOrdersPayload(site, loadMore = false)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
                 }
@@ -98,7 +100,7 @@ class WooCommerceFragment : Fragment() {
             getFirstWCSite()?.let { site ->
                 prependToLog("Submitting request to fetch only completed orders from the api")
                 pendingFetchCompletedOrders = true
-                val payload = FetchOrdersPayload(site, loadMore = false, status = "completed")
+                val payload = FetchOrdersPayload(site, loadMore = false, statusFilter = "completed")
                 dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
             }
         }
