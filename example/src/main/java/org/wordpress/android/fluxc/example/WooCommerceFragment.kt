@@ -46,6 +46,7 @@ class WooCommerceFragment : Fragment() {
 
     private var pendingNotesOrderModel: WCOrderModel? = null
     private var pendingFetchOrdersFilter: List<String>? = null
+    private var pendingFetchCompletedOrders: Boolean = false
 
     override fun onAttach(context: Context?) {
         AndroidInjection.inject(this)
@@ -90,6 +91,15 @@ class WooCommerceFragment : Fragment() {
                     val payload = FetchOrdersPayload(site, loadMore = false)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
                 }
+            }
+        }
+
+        fetch_orders_by_status_api.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                prependToLog("Submitting request to fetch only completed orders from the api")
+                pendingFetchCompletedOrders = true
+                val payload = FetchOrdersPayload(site, loadMore = false, status = "completed")
+                dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
             }
         }
 
@@ -183,7 +193,13 @@ class WooCommerceFragment : Fragment() {
                                 }
                                 pendingFetchOrdersFilter = null
                             }
-                        } ?: prependToLog("Fetched ${event.rowsAffected} orders from: ${site.name}")
+                        } ?: if (pendingFetchCompletedOrders) {
+                            pendingFetchCompletedOrders = false
+                            val completedOrders = wcOrderStore.getOrdersForSite(site, "completed")
+                            prependToLog("Fetched ${completedOrders.size} completed orders from ${site.name}")
+                        } else {
+                            prependToLog("Fetched ${event.rowsAffected} orders from: ${site.name}")
+                        }
                     }
                     FETCH_ORDER_NOTES -> {
                         val notes = wcOrderStore.getOrderNotesForOrder(pendingNotesOrderModel!!)

@@ -42,6 +42,8 @@ class OrderRestClient(
      * orders is done by passing an [offset].
      *
      * Dispatches a [WCOrderAction.FETCHED_ORDERS] action with the resulting list of orders.
+     *
+     * @param [status] Filter by a single order status. Default to the API default of "any".
      */
     fun fetchOrders(site: SiteModel, offset: Int, status: String = "any") {
         val url = WOOCOMMERCE.orders.pathV2

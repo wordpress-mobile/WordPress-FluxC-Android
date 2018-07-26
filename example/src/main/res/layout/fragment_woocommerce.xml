@@ -25,6 +25,12 @@
         android:text="@string/wc_fetch_orders_by_status"/>
 
     <Button
+        android:id="@+id/fetch_orders_by_status_api"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch Completed Orders (API)"/>
+
+    <Button
         android:id="@+id/fetch_order_notes"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
