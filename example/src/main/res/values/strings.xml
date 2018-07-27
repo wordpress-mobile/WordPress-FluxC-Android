@@ -3,5 +3,4 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="wc_fetch_orders_by_status">Load Orders Filtered By Status (DB)</string>
 </resources>
