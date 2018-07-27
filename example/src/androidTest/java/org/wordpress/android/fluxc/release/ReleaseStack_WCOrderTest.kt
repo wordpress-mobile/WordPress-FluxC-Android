@@ -73,7 +73,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
         val firstFetchOrders = orderStore.getOrdersForSite(sSite)
-        val isValid = firstFetchOrders.stream().allMatch { it -> it.status == statusFilter }
+        val isValid = firstFetchOrders.stream().allMatch { it.status == statusFilter }
         assertTrue(firstFetchOrders.isNotEmpty() &&
                 firstFetchOrders.size <= WCOrderStore.NUM_ORDERS_PER_FETCH && isValid)
     }
