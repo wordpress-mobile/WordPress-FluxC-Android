@@ -53,7 +53,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.FETCHED_ORDERS
         mCountDownLatch = CountDownLatch(1)
 
-        mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(FetchOrdersPayload(sSite, false)))
+        mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(FetchOrdersPayload(sSite, loadMore = false)))
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
@@ -64,11 +64,27 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
+    fun testFetchOrdersByStatus() {
+        nextEvent = TestEvent.FETCHED_ORDERS
+        mCountDownLatch = CountDownLatch(1)
+        val statusFilter = "completed"
+
+        mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(FetchOrdersPayload(sSite, statusFilter, false)))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        val firstFetchOrders = orderStore.getOrdersForSite(sSite)
+        val isValid = firstFetchOrders.stream().allMatch { it.status == statusFilter }
+        assertTrue(firstFetchOrders.isNotEmpty() &&
+                firstFetchOrders.size <= WCOrderStore.NUM_ORDERS_PER_FETCH && isValid)
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
     fun testFetchOrderNotes() {
         // Grab a list of orders
         nextEvent = TestEvent.FETCHED_ORDERS
         mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(FetchOrdersPayload(sSite, false)))
+        mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(FetchOrdersPayload(sSite, loadMore = false)))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
         // Fetch notes for the first order returned
