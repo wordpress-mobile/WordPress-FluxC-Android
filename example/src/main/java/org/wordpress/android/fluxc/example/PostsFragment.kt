@@ -13,6 +13,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.PostAction
 import org.wordpress.android.fluxc.generated.PostActionBuilder
+import org.wordpress.android.fluxc.model.ListModel.ListType
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload
@@ -44,7 +45,7 @@ class PostsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         fetch_first_site_posts.setOnClickListener {
-            val payload = FetchPostsPayload(getFirstSite())
+            val payload = FetchPostsPayload(getFirstSite(), ListType.POSTS_ALL)
             dispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload))
         }
 

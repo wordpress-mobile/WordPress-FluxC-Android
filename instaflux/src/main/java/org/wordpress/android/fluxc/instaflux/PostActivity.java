@@ -28,6 +28,7 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
+import org.wordpress.android.fluxc.model.ListModel.ListType;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
@@ -291,7 +292,7 @@ public class PostActivity extends AppCompatActivity {
     }
 
     private void fetchPosts() {
-        FetchPostsPayload payload = new FetchPostsPayload(mSite);
+        FetchPostsPayload payload = new FetchPostsPayload(mSite, ListType.POSTS_ALL);
         mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload));
     }
 
