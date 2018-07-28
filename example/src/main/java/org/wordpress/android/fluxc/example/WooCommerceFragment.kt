@@ -102,7 +102,7 @@ class WooCommerceFragment : Fragment() {
                 prependToLog("Submitting request to fetch only completed orders from the api")
                 pendingFetchCompletedOrders = true
                 val payload = FetchOrdersPayload(
-                        site, loadMore = false, statusFilter = OrderStatus.COMPLETED.toString())
+                        site, loadMore = false, statusFilter = OrderStatus.COMPLETED.value)
                 dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
             }
         }

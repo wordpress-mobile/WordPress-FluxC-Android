@@ -58,8 +58,8 @@ class WCOrderStoreTest {
     @Test
     fun testGetOrders() {
         val processingOrder = OrderTestUtils.generateSampleOrder(3)
-        val onHoldOrder = OrderTestUtils.generateSampleOrder(4, OrderStatus.ON_HOLD.toString())
-        val cancelledOrder = OrderTestUtils.generateSampleOrder(5, OrderStatus.CANCELLED.toString())
+        val onHoldOrder = OrderTestUtils.generateSampleOrder(4, OrderStatus.ON_HOLD.value)
+        val cancelledOrder = OrderTestUtils.generateSampleOrder(5, OrderStatus.CANCELLED.value)
         OrderSqlUtils.insertOrUpdateOrder(processingOrder)
         OrderSqlUtils.insertOrUpdateOrder(onHoldOrder)
         OrderSqlUtils.insertOrUpdateOrder(cancelledOrder)
@@ -67,7 +67,7 @@ class WCOrderStoreTest {
         val site = SiteModel().apply { id = processingOrder.localSiteId }
 
         val orderList = orderStore.getOrdersForSite(
-                site, OrderStatus.PROCESSING.toString(), OrderStatus.CANCELLED.toString())
+                site, OrderStatus.PROCESSING.value, OrderStatus.CANCELLED.value)
 
         assertEquals(2, orderList.size)
         assertTrue(orderList.contains(processingOrder))
@@ -101,7 +101,7 @@ class WCOrderStoreTest {
         assertEquals(1, orderList.size)
         assertTrue(orderList.contains(customStatusOrder))
 
-        val orderList2 = orderStore.getOrdersForSite(site, customStatus, OrderStatus.CANCELLED.toString())
+        val orderList2 = orderStore.getOrdersForSite(site, customStatus, OrderStatus.CANCELLED.value)
         assertEquals(1, orderList2.size)
         assertTrue(orderList2.contains(customStatusOrder))
 
@@ -116,12 +116,12 @@ class WCOrderStoreTest {
         OrderSqlUtils.insertOrUpdateOrder(orderModel)
 
         // Simulate incoming action with updated order model
-        val payload = RemoteOrderPayload(orderModel.apply { status = OrderStatus.REFUNDED.toString() }, site)
+        val payload = RemoteOrderPayload(orderModel.apply { status = OrderStatus.REFUNDED.value }, site)
         orderStore.onAction(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
 
         with (orderStore.getOrderByIdentifier(orderModel.getIdentifier())!!) {
             // The version of the order model in the database should have the updated status
-            assertEquals(OrderStatus.REFUNDED.toString(), status)
+            assertEquals(OrderStatus.REFUNDED.value, status)
             // Other fields should not be altered by the update
             assertEquals(orderModel.currency, currency)
         }
