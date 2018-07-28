@@ -14,7 +14,7 @@ enum class OrderStatus(val index: Int, val label: String, val value: String) {
     FAILED(7, "Failed", "failed");
 
     companion object {
-        private val labelMap = OrderStatus.values().associateBy(OrderStatus::label);
+        private val labelMap = OrderStatus.values().associateBy(OrderStatus::label)
         private val indexMap = OrderStatus.values().associateBy(OrderStatus::index)
 
         /**
