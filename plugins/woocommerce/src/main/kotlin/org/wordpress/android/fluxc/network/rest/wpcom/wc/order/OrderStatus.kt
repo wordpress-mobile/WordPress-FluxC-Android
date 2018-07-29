@@ -3,8 +3,8 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 /**
  * Standard Core WooCommerce order statuses
  */
-enum class OrderStatus(val index: Int, val label: String, val value: String) {
-    ALL(0, "All", "any"),
+enum class OrderStatus(val index: Int, val label: String, val value: String?) {
+    ALL(0, "All", null),
     PENDING(1, "Pending Payment", "pending"),
     PROCESSING(2, "Processing", "processing"),
     ON_HOLD(3, "On-Hold", "on-hold"),
