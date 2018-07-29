@@ -59,8 +59,8 @@ class OrderSqlUtilsTest {
     @Test
     fun testGetOrdersForSite() {
         val processingOrder = OrderTestUtils.generateSampleOrder(3)
-        val onHoldOrder = OrderTestUtils.generateSampleOrder(4, OrderStatus.ON_HOLD)
-        val cancelledOrder = OrderTestUtils.generateSampleOrder(5, OrderStatus.CANCELLED)
+        val onHoldOrder = OrderTestUtils.generateSampleOrder(4, OrderStatus.ON_HOLD.value)
+        val cancelledOrder = OrderTestUtils.generateSampleOrder(5, OrderStatus.CANCELLED.value)
         OrderSqlUtils.insertOrUpdateOrder(processingOrder)
         OrderSqlUtils.insertOrUpdateOrder(onHoldOrder)
         OrderSqlUtils.insertOrUpdateOrder(cancelledOrder)
@@ -71,11 +71,12 @@ class OrderSqlUtilsTest {
         assertEquals(3, storedOrders.size)
 
         // Test pulling orders with a single status specified
-        val processingOrders = OrderSqlUtils.getOrdersForSite(site, listOf(OrderStatus.PROCESSING))
+        val processingOrders = OrderSqlUtils.getOrdersForSite(site, listOf(OrderStatus.PROCESSING.value))
         assertEquals(1, processingOrders.size)
 
         // Test pulling orders with multiple statuses specified
-        val mixStatusOrders = OrderSqlUtils.getOrdersForSite(site, listOf(OrderStatus.ON_HOLD, OrderStatus.CANCELLED))
+        val mixStatusOrders = OrderSqlUtils
+                .getOrdersForSite(site, listOf(OrderStatus.ON_HOLD.value, OrderStatus.CANCELLED.value))
         assertEquals(2, mixStatusOrders.size)
     }
 
