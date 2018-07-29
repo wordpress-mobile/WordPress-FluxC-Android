@@ -16,6 +16,7 @@ enum class OrderStatus(val index: Int, val label: String, val value: String) {
     companion object {
         private val labelMap = OrderStatus.values().associateBy(OrderStatus::label)
         private val indexMap = OrderStatus.values().associateBy(OrderStatus::index)
+        private val valueMap = OrderStatus.values().associateBy(OrderStatus::value)
 
         /**
          * Convert the label value back into the associated OrderStatus object
@@ -26,5 +27,10 @@ enum class OrderStatus(val index: Int, val label: String, val value: String) {
          * Convert the index back into the associated OrderStatus object
          */
         fun fromIndex(index: Int) = indexMap[index]
+
+        /**
+         * Convert the base value into the associated OrderStatus object
+         */
+        fun fromValue(value: String) = valueMap[value]
     }
 }
