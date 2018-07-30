@@ -66,7 +66,8 @@ class WCOrderStoreTest {
 
         val site = SiteModel().apply { id = processingOrder.localSiteId }
 
-        val orderList = orderStore.getOrdersForSite(site, CoreOrderStatus.PROCESSING.value, CoreOrderStatus.CANCELLED.value)
+        val orderList = orderStore
+                .getOrdersForSite(site, CoreOrderStatus.PROCESSING.value, CoreOrderStatus.CANCELLED.value)
 
         assertEquals(2, orderList.size)
         assertTrue(orderList.contains(processingOrder))
