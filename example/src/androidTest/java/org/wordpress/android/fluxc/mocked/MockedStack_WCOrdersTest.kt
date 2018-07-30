@@ -17,7 +17,7 @@ import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatus
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
@@ -72,7 +72,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals(siteModel.id, localSiteId)
             assertEquals(949, remoteOrderId)
             assertEquals("949", number)
-            assertEquals(OrderStatus.PROCESSING.value, status)
+            assertEquals(CoreOrderStatus.PROCESSING.value, status)
             assertEquals("USD", currency)
             assertEquals("2018-04-02T14:57:39Z", dateCreated)
             assertEquals("44.00", total)
@@ -126,13 +126,13 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         val originalOrder = WCOrderModel().apply {
             id = 8
             localSiteId = siteModel.id
-            status = OrderStatus.PROCESSING.value
+            status = CoreOrderStatus.PROCESSING.value
             remoteOrderId = 88
             total = "15.00"
         }
 
         interceptor.respondWith("wc-order-update-response-success.json")
-        orderRestClient.updateOrderStatus(originalOrder, siteModel, OrderStatus.REFUNDED.value)
+        orderRestClient.updateOrderStatus(originalOrder, siteModel, CoreOrderStatus.REFUNDED.value)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -144,7 +144,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals(originalOrder.id, order.id)
             assertEquals(siteModel.id, order.localSiteId)
             assertEquals(originalOrder.remoteOrderId, order.remoteOrderId)
-            assertEquals(OrderStatus.REFUNDED.value, order.status)
+            assertEquals(CoreOrderStatus.REFUNDED.value, order.status)
         }
     }
 
@@ -153,7 +153,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         val originalOrder = WCOrderModel().apply {
             id = 8
             localSiteId = siteModel.id
-            status = OrderStatus.PROCESSING.value
+            status = CoreOrderStatus.PROCESSING.value
             remoteOrderId = 88
             total = "15.00"
         }
@@ -164,7 +164,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
 
         interceptor.respondWithError(errorJson, 400)
-        orderRestClient.updateOrderStatus(originalOrder, siteModel, OrderStatus.REFUNDED.value)
+        orderRestClient.updateOrderStatus(originalOrder, siteModel, CoreOrderStatus.REFUNDED.value)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
