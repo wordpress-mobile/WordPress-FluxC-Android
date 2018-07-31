@@ -19,7 +19,6 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.ListModel.ListType
-import org.wordpress.android.fluxc.model.PostListModel
 import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.PostStore
@@ -29,6 +28,11 @@ import org.wordpress.android.fluxc.store.PostStore.OnSinglePostFetched
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
 import org.wordpress.android.fluxc.store.SiteStore
 import javax.inject.Inject
+
+interface PostListInterface {
+    fun getItemCount(): Int
+    fun getItem(position: Int): PostModel?
+}
 
 private const val LOCAL_SITE_ID = "LOCAL_SITE_ID"
 
@@ -40,6 +44,8 @@ class PostListActivity: AppCompatActivity() {
     private val listType = ListType.POSTS_ALL
     private lateinit var site: SiteModel
     private var postListAdapter: PostListAdapter? = null
+    private val postIds = ArrayList<Long>()
+    private val postMap = HashMap<Long, PostModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -51,7 +57,7 @@ class PostListActivity: AppCompatActivity() {
 
         setupViews()
 
-        postListAdapter?.updateItems(postStore.getPostList(site, listType))
+        updatePostIds()
         dispatcher.dispatch(PostActionBuilder.newFetchPostsAction(FetchPostsPayload(site, listType)))
     }
 
@@ -59,7 +65,30 @@ class PostListActivity: AppCompatActivity() {
         recycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         recycler.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
 
-        postListAdapter = PostListAdapter(this, postStore, site, dispatcher)
+        postListAdapter = PostListAdapter(this, object : PostListInterface {
+            override fun getItemCount(): Int {
+                return postIds.size
+            }
+
+            override fun getItem(position: Int): PostModel? {
+                val remotePostId = postIds[position]
+                val postFromMap = postMap[remotePostId]
+                if (postFromMap != null) {
+                    return postFromMap;
+                }
+                val postFromStore = postStore.getPostByRemotePostId(remotePostId, site)
+                if (postFromStore != null) {
+                    postMap[postFromStore.remotePostId] = postFromStore
+                    return postFromStore
+                }
+                val postToFetch = PostModel()
+                postToFetch.remotePostId = remotePostId
+                val payload = RemotePostPayload(postToFetch, site)
+                dispatcher.dispatch(PostActionBuilder.newFetchPostAction(payload))
+                return null
+            }
+
+        })
         recycler.adapter = postListAdapter
 
         swipeToRefresh.setOnRefreshListener {
@@ -68,14 +97,20 @@ class PostListActivity: AppCompatActivity() {
         }
     }
 
+    private fun updatePostIds() {
+        postIds.clear()
+        postIds.addAll(postStore.getPostList(site, listType).map { it.remotePostId })
+    }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun onPostListChanged(event: OnPostListChanged) {
         if (event.site.id != site.id || event.listType != listType || event.isError) {
             return
         }
-        postListAdapter?.updateItems(postStore.getPostList(site, listType))
         swipeToRefresh.isRefreshing = false
+        updatePostIds()
+        postListAdapter?.refresh()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -84,7 +119,13 @@ class PostListActivity: AppCompatActivity() {
         if (event.isError || event.localSiteId != site.id) {
             return
         }
-        postListAdapter?.updateItems(postStore.getPostList(site, listType))
+        postStore.getPostByRemotePostId(event.remotePostId, site)?.let { postModel ->
+            postMap[postModel.remotePostId] = postModel
+            val index = postIds.indexOfFirst { it == postModel.remotePostId}
+            if (index != -1) {
+                postListAdapter?.refreshPosition(index)
+            }
+        }
     }
 
     companion object {
@@ -97,16 +138,16 @@ class PostListActivity: AppCompatActivity() {
 
     private class PostListAdapter(
         context: Context,
-        private val postStore: PostStore,
-        private val site: SiteModel,
-        private val dispatcher: Dispatcher
+        private val postListInterface: PostListInterface
     ): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         private val layoutInflater = LayoutInflater.from(context)
-        private var postList: List<PostListModel>? = null
 
-        fun updateItems(newList: List<PostListModel>) {
-            postList = newList
+        fun refresh() {
             notifyDataSetChanged()
+        }
+
+        fun refreshPosition(position: Int) {
+            notifyItemChanged(position)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -115,21 +156,13 @@ class PostListActivity: AppCompatActivity() {
         }
 
         override fun getItemCount(): Int {
-            return postList?.size ?: 0
+            return postListInterface.getItemCount()
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val postHolder = holder as PostViewHolder
-            postList?.get(position)?.remotePostId?.let { remotePostId ->
-                val postModel = postStore.getPostByRemotePostId(remotePostId, site)
-                if (postModel != null) {
-                    postHolder.postTitle.text = postModel.title
-                } else {
-                    val postToFetch = PostModel()
-                    postToFetch.remotePostId = remotePostId
-                    val payload = RemotePostPayload(postToFetch, site)
-                    dispatcher.dispatch(PostActionBuilder.newFetchPostAction(payload))
-                }
+            postListInterface.getItem(position)?.let { postModel ->
+                postHolder.postTitle.text = postModel.title
             }
         }
 
