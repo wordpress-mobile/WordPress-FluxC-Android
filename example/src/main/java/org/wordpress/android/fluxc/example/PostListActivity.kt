@@ -71,10 +71,13 @@ class PostListActivity: AppCompatActivity() {
             }
 
             override fun getItem(position: Int): PostModel? {
+                if (position == postIds.size - 1) {
+                    dispatcher.dispatch(PostActionBuilder.newFetchPostsAction(FetchPostsPayload(site, listType, true)))
+                }
                 val remotePostId = postIds[position]
                 val postFromMap = postMap[remotePostId]
                 if (postFromMap != null) {
-                    return postFromMap;
+                    return postFromMap
                 }
                 val postFromStore = postStore.getPostByRemotePostId(remotePostId, site)
                 if (postFromStore != null) {
@@ -161,9 +164,8 @@ class PostListActivity: AppCompatActivity() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val postHolder = holder as PostViewHolder
-            postListInterface.getItem(position)?.let { postModel ->
-                postHolder.postTitle.text = postModel.title
-            }
+            val postModel = postListInterface.getItem(position)
+            postHolder.postTitle.text = postModel?.title ?: ""
         }
 
         private class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
