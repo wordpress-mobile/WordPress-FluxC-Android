@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.store.AccountStore.FetchUsernameSuggestionsPa
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
+import org.wordpress.android.fluxc.store.AccountStore.OnDomainContactFetched;
 import org.wordpress.android.fluxc.store.AccountStore.OnUsernameChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnUsernameSuggestionsFetched;
 import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload;
@@ -35,6 +36,7 @@ import javax.inject.Inject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Tests with real credentials on real servers using the full release stack (no mock)
@@ -56,7 +58,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         AUTH_EMAIL_ERROR_USER_EXISTS,
         CHANGE_USERNAME_ERROR_INVALID_INPUT,
         FETCH_USERNAME_SUGGESTIONS_ERROR_NO_NAME,
-        FETCH_USERNAME_SUGGESTIONS_SUCCESS
+        FETCH_USERNAME_SUGGESTIONS_SUCCESS,
+        FETCH_DOMAIN_CONTACT
     }
 
     private TestEvents mNextEvent;
@@ -385,6 +388,27 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
                 null, AuthEmailPayloadSource.NOTIFICATIONS);
         mDispatcher.dispatch(AuthenticationActionBuilder.newSendAuthEmailAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testFetchDomainContact() throws InterruptedException {
+        logInToPrimaryTestAccount();
+        mNextEvent = TestEvents.FETCH_DOMAIN_CONTACT;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchDomainContactAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onDomainContactFetched(OnDomainContactFetched event) {
+        AppLog.i(AppLog.T.API, "Received onDomainContactFetched");
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.FETCH_DOMAIN_CONTACT, mNextEvent);
+        assertNotNull(event.contactModel);
+        mCountDownLatch.countDown();
     }
 
     @SuppressWarnings("unused")
