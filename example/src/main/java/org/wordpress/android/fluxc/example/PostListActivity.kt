@@ -90,7 +90,6 @@ class PostListActivity: AppCompatActivity() {
                 dispatcher.dispatch(PostActionBuilder.newFetchPostAction(payload))
                 return null
             }
-
         })
         recycler.adapter = postListAdapter
 
