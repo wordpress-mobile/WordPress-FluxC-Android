@@ -36,7 +36,7 @@ interface PostListInterface {
 
 private const val LOCAL_SITE_ID = "LOCAL_SITE_ID"
 
-class PostListActivity: AppCompatActivity() {
+class PostListActivity : AppCompatActivity() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var postStore: PostStore
     @Inject internal lateinit var siteStore: SiteStore
@@ -123,7 +123,7 @@ class PostListActivity: AppCompatActivity() {
         }
         postStore.getPostByRemotePostId(event.remotePostId, site)?.let { postModel ->
             postMap[postModel.remotePostId] = postModel
-            val index = postIds.indexOfFirst { it == postModel.remotePostId}
+            val index = postIds.indexOfFirst { it == postModel.remotePostId }
             if (index != -1) {
                 postListAdapter?.refreshPosition(index)
             }
@@ -141,7 +141,7 @@ class PostListActivity: AppCompatActivity() {
     private class PostListAdapter(
         context: Context,
         private val postListInterface: PostListInterface
-    ): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         private val layoutInflater = LayoutInflater.from(context)
 
         fun refresh() {
