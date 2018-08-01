@@ -113,7 +113,7 @@ class PostsFragment : Fragment() {
             return
         }
 
-        val results = if (event.searchResults != null) event.searchResults.posts else null
+        val results = if (event.searchResults != null) event.searchResults else null
         val resultCount = results?.size ?: 0
         prependToLog("Found $resultCount posts from the search.")
 
