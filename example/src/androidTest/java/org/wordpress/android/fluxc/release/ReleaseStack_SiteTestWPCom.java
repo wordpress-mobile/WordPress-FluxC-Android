@@ -303,7 +303,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     @Test
     public void testCheckDomainAvailability() throws InterruptedException {
-        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        authenticateUser(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         // Check availability for 'Wordpress.com'.
         mDispatcher.dispatch(SiteActionBuilder.newCheckDomainAvailabilityAction("Wordpress.com"));
         mNextEvent = TestEvents.CHECK_BLACKLISTED_DOMAIN_AVAILABILITY;
@@ -492,6 +492,19 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     }
 
     private void authenticateAndFetchSites(String username, String password) throws InterruptedException {
+        authenticateUser(username, password);
+
+
+        // Fetch sites from REST API, and wait for OnSiteChanged event
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.SITE_CHANGED;
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mSiteStore.getSitesCount() > 0);
+    }
+
+    private void authenticateUser(String username, String password) throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
         mCountDownLatch = new CountDownLatch(1);
@@ -505,13 +518,5 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        // Fetch sites from REST API, and wait for OnSiteChanged event
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.SITE_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        assertTrue(mSiteStore.getSitesCount() > 0);
     }
 }
