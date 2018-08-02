@@ -5,10 +5,10 @@ import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderNoteApiResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatus
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 
 object OrderTestUtils {
-    fun generateSampleOrder(remoteId: Long, orderStatus: String = OrderStatus.PROCESSING): WCOrderModel {
+    fun generateSampleOrder(remoteId: Long, orderStatus: String = CoreOrderStatus.PROCESSING.value): WCOrderModel {
         return WCOrderModel().apply {
             remoteOrderId = remoteId
             localSiteId = 6

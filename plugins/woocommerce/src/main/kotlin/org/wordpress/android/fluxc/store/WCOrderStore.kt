@@ -15,7 +15,7 @@ import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.model.order.toIdSet
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatus
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
 import org.wordpress.android.util.AppLog
@@ -112,7 +112,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     /**
      * Given a [SiteModel] and optional statuses, returns all orders for that site matching any of those statuses.
      *
-     * The default WooCommerce statuses are defined in [OrderStatus]. Custom order statuses are also supported.
+     * The default WooCommerce statuses are defined in [CoreOrderStatus]. Custom order statuses are also supported.
      */
     fun getOrdersForSite(site: SiteModel, vararg status: String): List<WCOrderModel> =
             OrderSqlUtils.getOrdersForSite(site, status = status.asList())
