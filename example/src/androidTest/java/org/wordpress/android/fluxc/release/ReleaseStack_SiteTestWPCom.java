@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
+import org.wordpress.android.fluxc.model.DomainAvailabilityModelKt;
 import org.wordpress.android.fluxc.model.PostFormatModel;
 import org.wordpress.android.fluxc.model.RoleModel;
 import org.wordpress.android.fluxc.model.SiteModel;
@@ -22,6 +23,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferEligibilit
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferInitiated;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferStatusChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
+import org.wordpress.android.fluxc.store.SiteStore.OnDomainAvailabilityChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnPlansFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
@@ -69,7 +71,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         ERROR_UNKNOWN_SITE,
         INELIGIBLE_FOR_AUTOMATED_TRANSFER,
         INITIATE_INELIGIBLE_AUTOMATED_TRANSFER,
-        AUTOMATED_TRANSFER_NOT_FOUND
+        AUTOMATED_TRANSFER_NOT_FOUND,
+        CHECK_BLACKLISTED_DOMAIN_AVAILABILITY
     }
 
     private TestEvents mNextEvent;
@@ -298,6 +301,16 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
+    public void testCheckDomainAvailability() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        // Check availability for 'Wordpress.com'.
+        mDispatcher.dispatch(SiteActionBuilder.newCheckDomainAvailabilityAction("Wordpress.com"));
+        mNextEvent = TestEvents.CHECK_BLACKLISTED_DOMAIN_AVAILABILITY;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -462,6 +475,19 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertEquals(mNextEvent, TestEvents.AUTOMATED_TRANSFER_NOT_FOUND);
         assertTrue(event.isError());
         assertEquals(event.error.type, AutomatedTransferErrorType.NOT_FOUND);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onDomainAvailabilityChecked(OnDomainAvailabilityChecked event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.CHECK_BLACKLISTED_DOMAIN_AVAILABILITY, mNextEvent);
+        assertNotNull(event.model);
+        assertEquals(event.model.getStatus(), DomainAvailabilityModelKt.BLACKLISTED_DOMAIN);
+        assertEquals(event.model.getMappable(), DomainAvailabilityModelKt.BLACKLISTED_DOMAIN);
         mCountDownLatch.countDown();
     }
 
