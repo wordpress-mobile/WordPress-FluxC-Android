@@ -494,7 +494,6 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     private void authenticateAndFetchSites(String username, String password) throws InterruptedException {
         authenticateUser(username, password);
 
-
         // Fetch sites from REST API, and wait for OnSiteChanged event
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.SITE_CHANGED;
