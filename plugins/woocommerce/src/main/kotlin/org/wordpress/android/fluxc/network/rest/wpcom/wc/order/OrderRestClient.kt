@@ -42,13 +42,19 @@ class OrderRestClient(
      * orders is done by passing an [offset].
      *
      * Dispatches a [WCOrderAction.FETCHED_ORDERS] action with the resulting list of orders.
+     *
+     * @param [filterByStatus] Nullable. If not null, fetch only orders with a matching order status.
      */
-    fun fetchOrders(site: SiteModel, offset: Int) {
+    fun fetchOrders(site: SiteModel, offset: Int, filterByStatus: String? = null) {
+        // If null, set the filter to the api default value of "any", which will not apply any order status filters.
+        val statusFilter = filterByStatus ?: "any"
+
         val url = WOOCOMMERCE.orders.pathV2
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
         val params = mapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
-                "offset" to offset.toString())
+                "offset" to offset.toString(),
+                "status" to statusFilter)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
                     val orderModels = response?.map {
@@ -56,7 +62,7 @@ class OrderRestClient(
                     }.orEmpty()
 
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
-                    val payload = FetchOrdersResponsePayload(site, orderModels, offset > 0, canLoadMore)
+                    val payload = FetchOrdersResponsePayload(site, orderModels, filterByStatus, offset > 0, canLoadMore)
                     mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                 },
                 WPComErrorListener { networkError ->
