@@ -7,7 +7,8 @@ import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
-import org.wordpress.android.fluxc.model.DomainAvailabilityModelKt;
+import org.wordpress.android.fluxc.model.DomainAvailabilityModel.AvailabilityStatus;
+import org.wordpress.android.fluxc.model.DomainAvailabilityModel.Mappability;
 import org.wordpress.android.fluxc.model.PostFormatModel;
 import org.wordpress.android.fluxc.model.RoleModel;
 import org.wordpress.android.fluxc.model.SiteModel;
@@ -486,8 +487,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         }
         assertEquals(TestEvents.CHECK_BLACKLISTED_DOMAIN_AVAILABILITY, mNextEvent);
         assertNotNull(event.model);
-        assertEquals(event.model.getStatus(), DomainAvailabilityModelKt.BLACKLISTED_DOMAIN);
-        assertEquals(event.model.getMappable(), DomainAvailabilityModelKt.BLACKLISTED_DOMAIN);
+        assertEquals(event.model.getStatus(), AvailabilityStatus.BLACKLISTED_DOMAIN);
+        assertEquals(event.model.getMappable(), Mappability.BLACKLISTED_DOMAIN);
         mCountDownLatch.countDown();
     }
 
