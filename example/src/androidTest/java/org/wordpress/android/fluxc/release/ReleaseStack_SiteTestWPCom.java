@@ -486,9 +486,9 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.CHECK_BLACKLISTED_DOMAIN_AVAILABILITY, mNextEvent);
-        assertNotNull(event.model);
-        assertEquals(event.model.getStatus(), AvailabilityStatus.BLACKLISTED_DOMAIN);
-        assertEquals(event.model.getMappable(), Mappability.BLACKLISTED_DOMAIN);
+        assertNotNull(event.domainAvailability);
+        assertEquals(event.domainAvailability.getStatus(), AvailabilityStatus.BLACKLISTED_DOMAIN);
+        assertEquals(event.domainAvailability.getMappable(), Mappability.BLACKLISTED_DOMAIN);
         mCountDownLatch.countDown();
     }
 
