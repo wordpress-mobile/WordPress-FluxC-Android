@@ -23,8 +23,8 @@ import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferInitiated;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferStatusChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnDomainAvailabilityChecked;
-import org.wordpress.android.fluxc.store.SiteStore.AvailabilityStatus;
-import org.wordpress.android.fluxc.store.SiteStore.Mappability;
+import org.wordpress.android.fluxc.store.SiteStore.DomainAvailabilityStatus;
+import org.wordpress.android.fluxc.store.SiteStore.DomainMappabilityStatus;
 import org.wordpress.android.fluxc.store.SiteStore.OnPlansFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
@@ -486,8 +486,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.CHECK_BLACKLISTED_DOMAIN_AVAILABILITY, mNextEvent);
-        assertEquals(event.status, AvailabilityStatus.BLACKLISTED_DOMAIN);
-        assertEquals(event.mappable, Mappability.BLACKLISTED_DOMAIN);
+        assertEquals(event.status, DomainAvailabilityStatus.BLACKLISTED_DOMAIN);
+        assertEquals(event.mappable, DomainMappabilityStatus.BLACKLISTED_DOMAIN);
         mCountDownLatch.countDown();
     }
 
