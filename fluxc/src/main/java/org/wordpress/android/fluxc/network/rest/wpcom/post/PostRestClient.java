@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.post;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response.Listener;
@@ -110,6 +111,8 @@ public class PostRestClient extends BaseWPComRestClient {
                     @Override
                     public void onResponse(PostsResponse response) {
                         List<PostModel> postArray = new ArrayList<>();
+
+                        Log.d("post_rest_client", "Found: " + response.found);
                         PostModel post;
                         for (PostWPComRestResponse postResponse : response.posts) {
                             post = postResponseToPostModel(postResponse);

@@ -8,6 +8,7 @@ import java.util.Map;
 
 public class PostWPComRestResponse implements Response {
     public class PostsResponse {
+        public int found;
         public List<PostWPComRestResponse> posts;
     }
 
