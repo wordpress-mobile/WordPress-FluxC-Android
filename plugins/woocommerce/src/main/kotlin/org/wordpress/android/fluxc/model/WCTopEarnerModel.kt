@@ -1,11 +1,11 @@
 package org.wordpress.android.fluxc.model
 
 public class WCTopEarnerModel {
-    var localSiteId = 0
-    var currency = ""
-    var image = ""
-    var name = ""
-    var price = ""
-    var quantity = ""
-    var total = ""
+    var id: Int = 0
+    var currency: String? = ""
+    var image: String? = ""
+    var name: String? = ""
+    var price: Int = 0
+    var quantity: Int = 0
+    var total: Int = 0
 }

@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsError
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
@@ -74,6 +75,30 @@ class OrderStatsRestClient(
                     }
                     val payload = FetchOrderStatsResponsePayload(site, unit, model)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
+                },
+                { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
+                    val payload = FetchOrderStatsResponsePayload(orderError, site, unit)
+                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
+                })
+
+        request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
+        if (force) request.setShouldForceUpdate()
+
+        add(request)
+    }
+
+    fun fetchTopEarners(site: SiteModel, unit: OrderStatsApiUnit, date: String, quantity: Int, force: Boolean = false) {
+        val url = WPCOMV2.sites.site(site.siteId).stats.top_earners.url
+        val params = mapOf(
+                "unit" to unit.toString(),
+                "date" to date,
+                "quantity" to quantity.toString())
+
+        val request = WPComGsonRequest.buildGetRequest(url, params, TopEarnersStatsApiResponse::class.java,
+                { response: TopEarnersStatsApiResponse ->
+                    val payload = FetchTopEarnersStatsResponsePayload(site, unit, response.topEarners)
+                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedTopEarnersStatsAction(payload))
                 },
                 { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
