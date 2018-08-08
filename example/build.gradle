@@ -48,6 +48,8 @@ android {
     }
 }
 
+kotlin { experimental { coroutines 'enable' } }
+
 android.buildTypes.all { buildType ->
     // Add properties named "wp.xxx" to our BuildConfig
     project.properties.any { property ->
@@ -99,9 +101,10 @@ dependencies {
 
     testImplementation 'junit:junit:4.12'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion"
-    testImplementation 'org.mockito:mockito-core:2.8.9'
     testImplementation 'org.robolectric:robolectric:3.6.1'
-    testImplementation "com.nhaarman:mockito-kotlin-kt1.1:1.5.0"
+    testImplementation 'org.mockito:mockito-core:2.20.1'
+    testImplementation 'com.nhaarman:mockito-kotlin:1.6.0'
+    testImplementation 'org.assertj:assertj-core:2.9.1'
 
     androidTestImplementation 'com.google.dexmaker:dexmaker:1.2'
     androidTestImplementation 'com.google.dexmaker:dexmaker-mockito:1.2'
@@ -116,4 +119,8 @@ dependencies {
     // Debug dependencies
     debugImplementation 'com.facebook.stetho:stetho:1.5.0'
     debugImplementation 'com.facebook.stetho:stetho-okhttp3:1.5.0'
+
+    // Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.23.4'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:0.23.4'
 }
