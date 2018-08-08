@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
@@ -106,6 +107,23 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals("60.00", discountTotal)
             assertEquals("20\$off, 40\$off", discountCodes)
         }
+    }
+
+    @Test
+    fun testOrdersCountFetchSuccess() {
+        val statusFilter = CoreOrderStatus.COMPLETED.value
+
+        interceptor.respondWith("wc-completed-orders-response-success.json")
+        orderRestClient.fetchOrders(siteModel, 0, statusFilter, countOnly = true)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCOrderAction.FETCHED_ORDERS_COUNT, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchOrdersCountResponsePayload
+        assertNull(payload.error)
+        assertEquals(4, payload.count)
+        assertEquals(statusFilter, payload.statusFilter)
     }
 
     @Test
