@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel.OrderStatsField
+import org.wordpress.android.fluxc.model.WCTopEarnerModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
@@ -76,6 +77,22 @@ class WCStatsStore @Inject constructor(
         val site: SiteModel,
         val apiUnit: OrderStatsApiUnit,
         val stats: WCOrderStatsModel? = null
+    ) : Payload<OrderStatsError>() {
+        constructor(error: OrderStatsError, site: SiteModel, apiUnit: OrderStatsApiUnit) : this(site, apiUnit) {
+            this.error = error
+        }
+    }
+
+    class FetchTopEarnersStatsPayload(
+        val site: SiteModel,
+        val granularity: StatsGranularity,
+        val forced: Boolean = false
+    ) : Payload<BaseNetworkError>()
+
+    class FetchTopEarnersStatsResponsePayload(
+        val site: SiteModel,
+        val apiUnit: OrderStatsApiUnit,
+        val stats: List<WCTopEarnerModel>? = emptyList()
     ) : Payload<OrderStatsError>() {
         constructor(error: OrderStatsError, site: SiteModel, apiUnit: OrderStatsApiUnit) : this(site, apiUnit) {
             this.error = error
