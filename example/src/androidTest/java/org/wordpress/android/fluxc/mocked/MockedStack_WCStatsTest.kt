@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.mocked
 import com.android.volley.RequestQueue
 import com.google.gson.JsonObject
 import org.greenrobot.eventbus.Subscribe
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
@@ -18,7 +17,6 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit.WEEK
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
@@ -167,15 +165,43 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     @Test
     fun testFetchTopEarnersStatsSuccess() {
         interceptor.respondWith("wc-top-earners-response-success.json")
-        orderStatsRestClient.fetchTopEarnersStats(siteModel, WEEK, 10, true)
+        orderStatsRestClient.fetchTopEarnersStats(siteModel, OrderStatsApiUnit.DAY, 10, true)
 
         countDownLatch = CountDownLatch(1)
-        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        Assert.assertEquals(WCStatsAction.FETCHED_TOP_EARNERS_STATS, lastAction!!.type)
+        assertEquals(WCStatsAction.FETCHED_TOP_EARNERS_STATS, lastAction!!.type)
         val payload = lastAction!!.payload as FetchTopEarnersStatsResponsePayload
         with (payload) {
             assertNull(error)
+            assertEquals(siteModel, site)
+            assertEquals(OrderStatsApiUnit.DAY, apiUnit)
+            assertNotNull(topEarners)
+            assertEquals(topEarners?.size, 10)
+        }
+    }
+
+    @Test
+    fun testFetchTopEarnersStatsError() {
+        val errorJson = JsonObject().apply {
+            addProperty("error", "rest_invalid_param")
+            addProperty("message", "Invalid parameter(s): quantity")
+        }
+
+        interceptor.respondWithError(errorJson)
+        orderStatsRestClient.fetchTopEarnersStats(siteModel, OrderStatsApiUnit.DAY, 0, true)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCStatsAction.FETCHED_TOP_EARNERS_STATS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchTopEarnersStatsResponsePayload
+        with(payload) {
+            assertNotNull(error)
+            assertEquals(siteModel, site)
+            assertEquals(OrderStatsApiUnit.DAY, apiUnit)
+            assertEquals(topEarners?.size, 0)
+            assertEquals(OrderStatsErrorType.INVALID_PARAM, error.type)
         }
     }
 

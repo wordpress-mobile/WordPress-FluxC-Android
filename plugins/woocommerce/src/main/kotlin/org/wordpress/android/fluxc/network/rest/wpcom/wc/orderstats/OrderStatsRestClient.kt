@@ -105,8 +105,8 @@ class OrderStatsRestClient(
                 },
                 { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
-                    val payload = FetchOrderStatsResponsePayload(orderError, site, unit)
-                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
+                    val payload = FetchTopEarnersStatsResponsePayload(orderError, site, unit)
+                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedTopEarnersStatsAction(payload))
                 })
 
         request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
