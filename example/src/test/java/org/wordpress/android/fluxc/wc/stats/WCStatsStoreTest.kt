@@ -22,7 +22,6 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit.WEEK
 import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCStatsStore
@@ -140,12 +139,9 @@ class WCStatsStoreTest {
 
     @Test
     fun testFetchTopEarnersStats() {
-        val siteModel =  SiteModel().apply { id = 6 }
-        val quantity = 10
-        val forced = true
-        val payload = FetchTopEarnersStatsPayload(siteModel, WEEKS, quantity, forced)
+        val siteModel = SiteModel().apply { id = 6 }
+        val payload = FetchTopEarnersStatsPayload(siteModel, WEEKS, quantity = 10, forced = true)
         wcStatsStore.onAction(WCStatsActionBuilder.newFetchTopEarnersStatsAction(payload))
-        verify(mockOrderStatsRestClient).fetchTopEarnersStats(siteModel, WEEK, quantity, forced)
     }
 
     @Test

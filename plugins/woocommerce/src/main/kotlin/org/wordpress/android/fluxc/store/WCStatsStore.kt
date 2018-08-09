@@ -201,8 +201,11 @@ class WCStatsStore @Inject constructor(
     }
 
     private fun fetchTopEarnersStats(payload: FetchTopEarnersStatsPayload) {
-        wcOrderStatsClient.fetchTopEarnersStats(payload.site, OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
-                payload.quantity, payload.forced)
+        wcOrderStatsClient.fetchTopEarnersStats(
+                payload.site,
+                OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
+                payload.quantity,
+                payload.forced)
     }
 
     private fun handleFetchOrderStatsCompleted(payload: FetchOrderStatsResponsePayload) {
