@@ -93,7 +93,7 @@ class WCStatsStore @Inject constructor(
     class FetchTopEarnersStatsResponsePayload(
         val site: SiteModel,
         val apiUnit: OrderStatsApiUnit,
-        val topEarners: List<WCTopEarnerModel>? = emptyList()
+        val topEarners: List<WCTopEarnerModel> = emptyList()
     ) : Payload<OrderStatsError>() {
         constructor(error: OrderStatsError, site: SiteModel, apiUnit: OrderStatsApiUnit) : this(site, apiUnit) {
             this.error = error
@@ -114,6 +114,11 @@ class WCStatsStore @Inject constructor(
 
     // OnChanged events
     class OnWCStatsChanged(val rowsAffected: Int, val granularity: StatsGranularity) : OnChanged<OrderStatsError>() {
+        var causeOfChange: WCStatsAction? = null
+    }
+
+    class OnWCTopEarnersChanged(val topEarners: List<WCTopEarnerModel>, val granularity: StatsGranularity) :
+            OnChanged<OrderStatsError>() {
         var causeOfChange: WCStatsAction? = null
     }
 
@@ -224,18 +229,13 @@ class WCStatsStore @Inject constructor(
     }
 
     private fun handleFetchTopEarrnersStatsCompleted(payload: FetchTopEarnersStatsResponsePayload) {
-        val onStatsChanged = with (payload) {
-            val granularity = StatsGranularity.fromOrderStatsApiUnit(apiUnit)
-            if (isError || topEarners == null) {
-                return@with OnWCStatsChanged(0, granularity).also { it.error = payload.error }
-            } else {
-                val rowsAffected = topEarners.size
-                return@with OnWCStatsChanged(rowsAffected, granularity)
-            }
+        val granularity = StatsGranularity.fromOrderStatsApiUnit(payload.apiUnit)
+        val onTopEarnersChanged = OnWCTopEarnersChanged(payload.topEarners, granularity)
+        if (payload.isError) {
+            onTopEarnersChanged.error = payload.error
         }
-
-        onStatsChanged.causeOfChange = WCStatsAction.FETCH_TOP_EARNERS_STATS
-        emitChange(onStatsChanged)
+        onTopEarnersChanged.causeOfChange = WCStatsAction.FETCH_TOP_EARNERS_STATS
+        emitChange(onTopEarnersChanged)
     }
 
     private fun getFormattedDate(site: SiteModel, granularity: StatsGranularity): String {
