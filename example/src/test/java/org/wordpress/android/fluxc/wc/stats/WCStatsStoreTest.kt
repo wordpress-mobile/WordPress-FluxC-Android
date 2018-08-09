@@ -26,9 +26,7 @@ import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
-import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.WEEKS
 import org.wordpress.android.fluxc.utils.SiteUtils.getCurrentDateTimeForSite
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -135,13 +133,6 @@ class WCStatsStoreTest {
         val localDate = SimpleDateFormat("yyyy-MM-dd").format(Date())
         assertThat(localDate, anyOf(isEqual(plus12SiteDate), isEqual(minus12SiteDate)))
         assertThat(localDate, anyOf(not(plus12SiteDate), not(minus12SiteDate)))
-    }
-
-    @Test
-    fun testFetchTopEarnersStats() {
-        val siteModel = SiteModel().apply { id = 6 }
-        val payload = FetchTopEarnersStatsPayload(siteModel, WEEKS, quantity = 10, forced = true)
-        wcStatsStore.onAction(WCStatsActionBuilder.newFetchTopEarnersStatsAction(payload))
     }
 
     @Test

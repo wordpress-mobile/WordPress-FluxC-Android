@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.mocked
 import com.android.volley.RequestQueue
 import com.google.gson.JsonObject
 import org.greenrobot.eventbus.Subscribe
+import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
@@ -17,10 +18,13 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit.WEEK
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
 import kotlin.properties.Delegates.notNull
 
@@ -158,6 +162,21 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         assertEquals(OrderStatsApiUnit.DAY, payload.apiUnit)
         assertNull(payload.stats)
         assertEquals(OrderStatsErrorType.INVALID_PARAM, payload.error.type)
+    }
+
+    @Test
+    fun testFetchTopEarnersStatsSuccess() {
+        interceptor.respondWith("wc-top-earners-response-success.json")
+        orderStatsRestClient.fetchTopEarnersStats(siteModel, WEEK, 10, true)
+
+        countDownLatch = CountDownLatch(1)
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        Assert.assertEquals(WCStatsAction.FETCHED_TOP_EARNERS_STATS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchTopEarnersStatsResponsePayload
+        with (payload) {
+            assertNull(error)
+        }
     }
 
     @Suppress("unused")
