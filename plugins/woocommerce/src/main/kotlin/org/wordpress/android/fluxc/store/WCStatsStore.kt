@@ -86,13 +86,14 @@ class WCStatsStore @Inject constructor(
     class FetchTopEarnersStatsPayload(
         val site: SiteModel,
         val granularity: StatsGranularity,
+        val quantity: Int,
         val forced: Boolean = false
     ) : Payload<BaseNetworkError>()
 
     class FetchTopEarnersStatsResponsePayload(
         val site: SiteModel,
         val apiUnit: OrderStatsApiUnit,
-        val stats: List<WCTopEarnerModel>? = emptyList()
+        val topEarners: List<WCTopEarnerModel>? = emptyList()
     ) : Payload<OrderStatsError>() {
         constructor(error: OrderStatsError, site: SiteModel, apiUnit: OrderStatsApiUnit) : this(site, apiUnit) {
             this.error = error
@@ -123,8 +124,11 @@ class WCStatsStore @Inject constructor(
         val actionType = action.type as? WCStatsAction ?: return
         when (actionType) {
             WCStatsAction.FETCH_ORDER_STATS -> fetchOrderStats(action.payload as FetchOrderStatsPayload)
+            WCStatsAction.FETCH_TOP_EARNERS_STATS -> fetchTopEarnersStats(action.payload as FetchTopEarnersStatsPayload)
             WCStatsAction.FETCHED_ORDER_STATS ->
                 handleFetchOrderStatsCompleted(action.payload as FetchOrderStatsResponsePayload)
+            WCStatsAction.FETCHED_TOP_EARNERS_STATS ->
+                handleFetchTopEarrnersStatsCompleted(action.payload as FetchTopEarnersStatsResponsePayload)
         }
     }
 
@@ -196,6 +200,11 @@ class WCStatsStore @Inject constructor(
                 getFormattedDate(payload.site, payload.granularity), quantity, payload.forced)
     }
 
+    private fun fetchTopEarnersStats(payload: FetchTopEarnersStatsPayload) {
+        wcOrderStatsClient.fetchTopEarnersStats(payload.site, OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
+                payload.quantity, payload.forced)
+    }
+
     private fun handleFetchOrderStatsCompleted(payload: FetchOrderStatsResponsePayload) {
         val onStatsChanged = with (payload) {
             val granularity = StatsGranularity.fromOrderStatsApiUnit(apiUnit)
@@ -208,6 +217,21 @@ class WCStatsStore @Inject constructor(
         }
 
         onStatsChanged.causeOfChange = WCStatsAction.FETCH_ORDER_STATS
+        emitChange(onStatsChanged)
+    }
+
+    private fun handleFetchTopEarrnersStatsCompleted(payload: FetchTopEarnersStatsResponsePayload) {
+        val onStatsChanged = with (payload) {
+            val granularity = StatsGranularity.fromOrderStatsApiUnit(apiUnit)
+            if (isError || topEarners == null) {
+                return@with OnWCStatsChanged(0, granularity).also { it.error = payload.error }
+            } else {
+                val rowsAffected = topEarners.size
+                return@with OnWCStatsChanged(rowsAffected, granularity)
+            }
+        }
+
+        onStatsChanged.causeOfChange = WCStatsAction.FETCH_TOP_EARNERS_STATS
         emitChange(onStatsChanged)
     }
 

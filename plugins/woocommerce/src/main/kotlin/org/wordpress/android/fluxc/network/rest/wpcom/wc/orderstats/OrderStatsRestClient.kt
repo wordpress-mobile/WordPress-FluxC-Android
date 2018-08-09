@@ -18,6 +18,8 @@ import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsRespon
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsError
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
+import java.text.SimpleDateFormat
+import java.util.Date
 import javax.inject.Singleton
 
 @Singleton
@@ -88,7 +90,8 @@ class OrderStatsRestClient(
         add(request)
     }
 
-    fun fetchTopEarners(site: SiteModel, unit: OrderStatsApiUnit, date: String, quantity: Int, force: Boolean = false) {
+    fun fetchTopEarnersStats(site: SiteModel, unit: OrderStatsApiUnit, quantity: Int, force: Boolean = false) {
+        val date = SimpleDateFormat("yyyy-MM-dd").format(Date())
         val url = WPCOMV2.sites.site(site.siteId).stats.top_earners.url
         val params = mapOf(
                 "unit" to unit.toString(),
