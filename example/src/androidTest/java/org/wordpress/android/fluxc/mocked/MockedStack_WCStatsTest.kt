@@ -176,7 +176,6 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
             assertNull(error)
             assertEquals(siteModel, site)
             assertEquals(OrderStatsApiUnit.DAY, apiUnit)
-            assertNotNull(topEarners)
             assertEquals(topEarners?.size, 10)
         }
     }
