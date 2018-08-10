@@ -89,7 +89,13 @@ class OrderStatsRestClient(
         add(request)
     }
 
-    fun fetchTopEarnersStats(site: SiteModel, unit: OrderStatsApiUnit, date: String, limit: Int, force: Boolean = false) {
+    fun fetchTopEarnersStats(
+        site: SiteModel,
+        unit: OrderStatsApiUnit,
+        date: String,
+        limit: Int,
+        force: Boolean = false
+    ) {
         val url = WPCOMV2.sites.site(site.siteId).stats.top_earners.url
         val params = mapOf(
                 "unit" to unit.toString(),
@@ -99,7 +105,7 @@ class OrderStatsRestClient(
         val request = WPComGsonRequest.buildGetRequest(url, params, TopEarnersStatsApiResponse::class.java,
                 { response: TopEarnersStatsApiResponse ->
                     val wcTopEarners = response.data?.map {
-                        WCTopEarnerModel().apply{
+                        WCTopEarnerModel().apply {
                             id = it.id ?: 0
                             currency = it.currency ?: ""
                             image = it.image ?: ""
