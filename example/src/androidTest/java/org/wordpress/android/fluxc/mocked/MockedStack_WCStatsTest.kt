@@ -165,7 +165,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     @Test
     fun testFetchTopEarnersStatsSuccess() {
         interceptor.respondWith("wc-top-earners-response-success.json")
-        orderStatsRestClient.fetchTopEarnersStats(siteModel, OrderStatsApiUnit.DAY, "2018-04-20",10, true)
+        orderStatsRestClient.fetchTopEarnersStats(siteModel, OrderStatsApiUnit.DAY, "2018-04-20", 10, true)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))

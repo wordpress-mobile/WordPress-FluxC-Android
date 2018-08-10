@@ -86,7 +86,7 @@ class WCStatsStore @Inject constructor(
     class FetchTopEarnersStatsPayload(
         val site: SiteModel,
         val granularity: StatsGranularity,
-        val limit: Int,
+        val limit: Int = 10,
         val forced: Boolean = false
     ) : Payload<BaseNetworkError>()
 
