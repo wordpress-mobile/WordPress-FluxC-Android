@@ -14,7 +14,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.TopEarnersStatsApiResponse.TopEarner
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsError
@@ -99,8 +98,7 @@ class OrderStatsRestClient(
 
         val request = WPComGsonRequest.buildGetRequest(url, params, TopEarnersStatsApiResponse::class.java,
                 { response: TopEarnersStatsApiResponse ->
-                    val wcTopEarners = ArrayList<WCTopEarnerModel>()
-                    response.data?.map {
+                    val wcTopEarners = response.data?.map {
                         WCTopEarnerModel().apply{
                             id = it.id ?: 0
                             currency = it.currency ?: ""
@@ -109,9 +107,8 @@ class OrderStatsRestClient(
                             price = it.price ?: 0.0f
                             quantity = it.quantity ?: 0
                             total = it.total ?: 0.0f
-                            wcTopEarners.add(this)
                         }
-                    }
+                    } ?: emptyList()
 
                     val payload = FetchTopEarnersStatsResponsePayload(site, unit, wcTopEarners)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedTopEarnersStatsAction(payload))
