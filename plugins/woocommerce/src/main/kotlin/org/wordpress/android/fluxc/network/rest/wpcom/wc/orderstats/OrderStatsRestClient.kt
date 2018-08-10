@@ -110,9 +110,9 @@ class OrderStatsRestClient(
                             currency = it.currency ?: ""
                             image = it.image ?: ""
                             name = it.name ?: ""
-                            price = it.price ?: 0.0f
+                            price = it.price ?: 0.0
                             quantity = it.quantity ?: 0
-                            total = it.total ?: 0.0f
+                            total = it.total ?: 0.0
                         }
                     } ?: emptyList()
 

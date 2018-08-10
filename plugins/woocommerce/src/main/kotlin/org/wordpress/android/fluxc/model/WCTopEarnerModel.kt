@@ -5,7 +5,7 @@ class WCTopEarnerModel {
     var currency: String = ""
     var image: String = ""
     var name: String = ""
-    var price: Float = 0.0f
+    var price: Double = 0.0
     var quantity: Int = 0
-    var total: Float = 0.0f
+    var total: Double = 0.0
 }

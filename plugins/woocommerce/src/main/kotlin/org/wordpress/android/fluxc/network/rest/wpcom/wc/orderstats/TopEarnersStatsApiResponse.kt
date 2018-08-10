@@ -14,8 +14,8 @@ class TopEarnersStatsApiResponse : Response {
         val currency: String? = ""
         val image: String? = ""
         val name: String? = ""
-        val price: Float? = 0.0f
+        val price: Double? = 0.0
         val quantity: Int? = 0
-        val total: Float? = 0.0f
+        val total: Double? = 0.0
     }
 }
