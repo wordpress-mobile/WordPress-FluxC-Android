@@ -10,12 +10,12 @@ class TopEarnersStatsApiResponse : Response {
 
     class TopEarner {
         @SerializedName("ID")
-        val id: Int = 0
-        val currency: String = ""
-        val image: String = ""
-        val name: String = ""
-        val price: Float = 0.0f
-        val quantity: Int = 0
-        val total: Float = 0.0f
+        val id: Int? = 0
+        val currency: String? = ""
+        val image: String? = ""
+        val name: String? = ""
+        val price: Float? = 0.0f
+        val quantity: Int? = 0
+        val total: Float? = 0.0f
     }
 }

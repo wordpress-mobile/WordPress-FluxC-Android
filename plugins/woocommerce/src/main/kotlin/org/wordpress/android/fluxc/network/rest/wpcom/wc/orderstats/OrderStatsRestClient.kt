@@ -102,13 +102,13 @@ class OrderStatsRestClient(
                     val wcTopEarners = ArrayList<WCTopEarnerModel>()
                     for (topEarner: TopEarner in response.data!!) {
                         WCTopEarnerModel().apply {
-                            this.id = topEarner.id
-                            this.currency = topEarner.currency
-                            this.image = topEarner.image
-                            this.name = topEarner.name
-                            this.price = topEarner.price
-                            this.quantity = topEarner.quantity
-                            this.total = topEarner.total
+                            this.id = topEarner.id ?: 0
+                            this.currency = topEarner.currency ?: ""
+                            this.image = topEarner.image ?: ""
+                            this.name = topEarner.name ?: ""
+                            this.price = topEarner.price ?: 0.0f
+                            this.quantity = topEarner.quantity ?: 0
+                            this.total = topEarner.total ?: 0.0f
                             wcTopEarners.add(this)
                         }
                     }
