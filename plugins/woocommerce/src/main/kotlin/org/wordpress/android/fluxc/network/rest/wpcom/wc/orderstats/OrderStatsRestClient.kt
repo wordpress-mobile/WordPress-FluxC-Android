@@ -100,15 +100,15 @@ class OrderStatsRestClient(
         val request = WPComGsonRequest.buildGetRequest(url, params, TopEarnersStatsApiResponse::class.java,
                 { response: TopEarnersStatsApiResponse ->
                     val wcTopEarners = ArrayList<WCTopEarnerModel>()
-                    for (topEarner: TopEarner in response.data!!) {
-                        WCTopEarnerModel().apply {
-                            this.id = topEarner.id ?: 0
-                            this.currency = topEarner.currency ?: ""
-                            this.image = topEarner.image ?: ""
-                            this.name = topEarner.name ?: ""
-                            this.price = topEarner.price ?: 0.0f
-                            this.quantity = topEarner.quantity ?: 0
-                            this.total = topEarner.total ?: 0.0f
+                    response.data?.map {
+                        WCTopEarnerModel().apply{
+                            id = it.id ?: 0
+                            currency = it.currency ?: ""
+                            image = it.image ?: ""
+                            name = it.name ?: ""
+                            price = it.price ?: 0.0f
+                            quantity = it.quantity ?: 0
+                            total = it.total ?: 0.0f
                             wcTopEarners.add(this)
                         }
                     }
