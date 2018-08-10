@@ -86,7 +86,7 @@ class WCStatsStore @Inject constructor(
     class FetchTopEarnersStatsPayload(
         val site: SiteModel,
         val granularity: StatsGranularity,
-        val quantity: Int,
+        val limit: Int,
         val forced: Boolean = false
     ) : Payload<BaseNetworkError>()
 
@@ -133,7 +133,7 @@ class WCStatsStore @Inject constructor(
             WCStatsAction.FETCHED_ORDER_STATS ->
                 handleFetchOrderStatsCompleted(action.payload as FetchOrderStatsResponsePayload)
             WCStatsAction.FETCHED_TOP_EARNERS_STATS ->
-                handleFetchTopEarrnersStatsCompleted(action.payload as FetchTopEarnersStatsResponsePayload)
+                handleFetchTopEarnersStatsCompleted(action.payload as FetchTopEarnersStatsResponsePayload)
         }
     }
 
@@ -209,7 +209,8 @@ class WCStatsStore @Inject constructor(
         wcOrderStatsClient.fetchTopEarnersStats(
                 payload.site,
                 OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
-                payload.quantity,
+                getFormattedDate(payload.site, payload.granularity),
+                payload.limit,
                 payload.forced)
     }
 
@@ -228,7 +229,7 @@ class WCStatsStore @Inject constructor(
         emitChange(onStatsChanged)
     }
 
-    private fun handleFetchTopEarrnersStatsCompleted(payload: FetchTopEarnersStatsResponsePayload) {
+    private fun handleFetchTopEarnersStatsCompleted(payload: FetchTopEarnersStatsResponsePayload) {
         val granularity = StatsGranularity.fromOrderStatsApiUnit(payload.apiUnit)
         val onTopEarnersChanged = OnWCTopEarnersChanged(payload.topEarners, granularity)
         if (payload.isError) {

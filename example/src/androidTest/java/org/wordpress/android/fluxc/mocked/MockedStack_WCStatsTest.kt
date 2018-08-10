@@ -165,7 +165,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     @Test
     fun testFetchTopEarnersStatsSuccess() {
         interceptor.respondWith("wc-top-earners-response-success.json")
-        orderStatsRestClient.fetchTopEarnersStats(siteModel, OrderStatsApiUnit.DAY, 10, true)
+        orderStatsRestClient.fetchTopEarnersStats(siteModel, OrderStatsApiUnit.DAY, "2018-04-20",10, true)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -176,7 +176,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
             assertNull(error)
             assertEquals(siteModel, site)
             assertEquals(OrderStatsApiUnit.DAY, apiUnit)
-            assertEquals(topEarners?.size, 10)
+            assertEquals(topEarners.size, 10)
         }
     }
 
@@ -184,11 +184,11 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     fun testFetchTopEarnersStatsError() {
         val errorJson = JsonObject().apply {
             addProperty("error", "rest_invalid_param")
-            addProperty("message", "Invalid parameter(s): quantity")
+            addProperty("message", "Invalid parameter(s): date")
         }
 
         interceptor.respondWithError(errorJson)
-        orderStatsRestClient.fetchTopEarnersStats(siteModel, OrderStatsApiUnit.DAY, 0, true)
+        orderStatsRestClient.fetchTopEarnersStats(siteModel, OrderStatsApiUnit.DAY, "invalid", 10, true)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -199,7 +199,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
             assertNotNull(error)
             assertEquals(siteModel, site)
             assertEquals(OrderStatsApiUnit.DAY, apiUnit)
-            assertEquals(topEarners?.size, 0)
+            assertEquals(topEarners.size, 0)
             assertEquals(OrderStatsErrorType.INVALID_PARAM, error.type)
         }
     }
