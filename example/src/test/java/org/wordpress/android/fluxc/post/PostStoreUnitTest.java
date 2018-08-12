@@ -13,6 +13,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests;
 import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostRestClient;
 import org.wordpress.android.fluxc.network.xmlrpc.post.PostXMLRPCClient;
@@ -222,7 +223,7 @@ public class PostStoreUnitTest {
 
         assertEquals(4, mPostStore.getPostsCountForSite(site));
 
-        PostSqlUtils.deleteUploadedPostsForSite(site, false);
+        PostSqlUtils.deleteUploadedPostsForSite(site, PostType.TypePost);
 
         assertEquals(2, mPostStore.getPostsCountForSite(site));
     }
@@ -276,7 +277,7 @@ public class PostStoreUnitTest {
         PostSqlUtils.insertPostForResult(post);
 
         PostModel page = new PostModel();
-        page.setIsPage(true);
+        page.setType(PostType.TypePage.modelValue());
         page.setLocalSiteId(6);
         page.setRemotePostId(43);
         PostSqlUtils.insertPostForResult(page);
@@ -286,8 +287,8 @@ public class PostStoreUnitTest {
         assertEquals(1, mPostStore.getPostsCountForSite(site));
         assertEquals(1, mPostStore.getPagesCountForSite(site));
 
-        assertFalse(PostTestUtils.getPosts().get(0).isPage());
-        assertTrue(PostTestUtils.getPosts().get(1).isPage());
+        assertFalse(PostTestUtils.getPosts().get(0).getType() == PostType.TypePage.modelValue());
+        assertTrue(PostTestUtils.getPosts().get(1).getType() == PostType.TypePage.modelValue());
 
         assertEquals(1, mPostStore.getUploadedPostsCountForSite(site));
         assertEquals(1, mPostStore.getUploadedPagesCountForSite(site));
@@ -316,7 +317,7 @@ public class PostStoreUnitTest {
         scheduledPost.setDateCreated("2056-01-01T07:00:00+00:00");
         PostSqlUtils.insertPostForResult(scheduledPost);
 
-        List<PostModel> posts = PostSqlUtils.getPostsForSite(site, false);
+        List<PostModel> posts = PostSqlUtils.getPostsForSite(site, PostType.TypePost);
 
         // Expect order draft > scheduled > published
         assertTrue(posts.get(0).isLocalDraft());
