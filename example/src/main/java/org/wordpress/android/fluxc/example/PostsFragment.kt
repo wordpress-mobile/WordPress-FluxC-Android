@@ -13,6 +13,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.PostAction
 import org.wordpress.android.fluxc.generated.PostActionBuilder
+import org.wordpress.android.fluxc.model.post.PostType
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload
@@ -49,7 +50,7 @@ class PostsFragment : Fragment() {
         }
 
         create_new_post_first_site.setOnClickListener {
-            val examplePost = postStore.instantiatePostModel(getFirstSite(), false)
+            val examplePost = postStore.instantiatePostModel(getFirstSite(), PostType.TypePost)
             examplePost.title = "From example activity"
             examplePost.content = "Hi there, I'm a post from FluxC!"
             examplePost.featuredImageId = 0
@@ -93,7 +94,7 @@ class PostsFragment : Fragment() {
             if (event.causeOfChange == PostAction.FETCH_POSTS || event.causeOfChange == PostAction.FETCH_PAGES) {
                 prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.name)
             } else if (event.causeOfChange == PostAction.DELETE_POST) {
-                prependToLog("Post deleted!")
+                prependToLog("TypePost deleted!")
             }
         }
     }
@@ -101,7 +102,7 @@ class PostsFragment : Fragment() {
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onPostUploaded(event: OnPostUploaded) {
-        prependToLog("Post uploaded! Remote post id: " + event.post.remotePostId)
+        prependToLog("TypePost uploaded! Remote post id: " + event.post.remotePostId)
     }
 
     @Suppress("unused")

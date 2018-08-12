@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.generated.UploadActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.XMLRPC;
 import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.model.PostsModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostLocation;
@@ -109,15 +110,13 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         add(request);
     }
 
-    public void fetchPosts(final SiteModel site, final boolean getPages, final int offset) {
+    public void fetchPosts(final SiteModel site, final PostType type, final int offset) {
         Map<String, Object> contentStruct = new HashMap<>();
 
         contentStruct.put("number", PostStore.NUM_POSTS_PER_FETCH);
         contentStruct.put("offset", offset);
 
-        if (getPages) {
-            contentStruct.put("post_type", "page");
-        }
+        contentStruct.put("post_type", type.apiValue());
 
         List<Object> params = new ArrayList<>(4);
         params.add(site.getSelfHostedSiteId());
@@ -136,7 +135,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
 
                         PostsModel posts = postsResponseToPostsModel(response, site);
 
-                        FetchPostsResponsePayload payload = new FetchPostsResponsePayload(posts, site, getPages,
+                        FetchPostsResponsePayload payload = new FetchPostsResponsePayload(posts, site, type,
                                 offset > 0, canLoadMore);
 
                         if (posts != null) {
@@ -162,7 +161,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
                             default:
                                 postError = new PostError(PostErrorType.GENERIC_ERROR, error.message);
                         }
-                        FetchPostsResponsePayload payload = new FetchPostsResponsePayload(postError, getPages);
+                        FetchPostsResponsePayload payload = new FetchPostsResponsePayload(postError, type);
                         mDispatcher.dispatch(PostActionBuilder.newFetchedPostsAction(payload));
                     }
                 }
@@ -376,11 +375,10 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         post.setPassword(MapUtils.getMapStr(postMap, "post_password"));
         post.setStatus(MapUtils.getMapStr(postMap, "post_status"));
 
-        if ("page".equals(MapUtils.getMapStr(postMap, "post_type"))) {
-            post.setIsPage(true);
-        }
+        final PostType postType = PostType.fromApiValue(MapUtils.getMapStr(postMap, "post_type"));
+        post.setType(postType.modelValue());
 
-        if (post.isPage()) {
+        if (postType == PostType.TypePage) {
             post.setParentId(MapUtils.getMapLong(postMap, "wp_page_parent_id"));
             post.setParentTitle(MapUtils.getMapStr(postMap, "wp_page_parent"));
             post.setSlug(MapUtils.getMapStr(postMap, "wp_slug"));
@@ -401,14 +399,15 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
     private static Map<String, Object> postModelToContentStruct(PostModel post) {
         Map<String, Object> contentStruct = new HashMap<>();
 
+        final PostType postType = PostType.fromModelValue(post.getType());
         // Post format
-        if (!post.isPage()) {
+        if (postType != PostType.TypePage) {
             if (!TextUtils.isEmpty(post.getPostFormat())) {
                 contentStruct.put("post_format", post.getPostFormat());
             }
         }
 
-        contentStruct.put("post_type", post.isPage() ? "page" : "post");
+        contentStruct.put("post_type", postType.apiValue());
         contentStruct.put("post_title", post.getTitle());
 
         String dateCreated = post.getDateCreated();
@@ -432,7 +431,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
 
         contentStruct.put("post_content", content);
 
-        if (!post.isPage()) {
+        if (postType != PostType.TypePage) {
             // Handle taxonomies
 
             if (post.isLocalDraft()) {
@@ -482,7 +481,8 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         contentStruct.put("post_status", post.getStatus());
 
         // Geolocation
-        if (post.supportsLocation()) {
+        if (postType != PostType.TypePage) {
+            // Right now, we only disable for pages.
             JSONObject remoteGeoLatitude = post.getCustomField("geo_latitude");
             JSONObject remoteGeoLongitude = post.getCustomField("geo_longitude");
             JSONObject remoteGeoPublic = post.getCustomField("geo_public");

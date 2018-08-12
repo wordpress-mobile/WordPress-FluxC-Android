@@ -43,7 +43,7 @@ public class WellSqlConfig extends DefaultWellConfig {
 
     @Override
     public int getDbVersion() {
-        return 39;
+        return 40;
     }
 
     @Override
@@ -63,6 +63,7 @@ public class WellSqlConfig extends DefaultWellConfig {
     public void onUpgrade(SQLiteDatabase db, WellTableManager helper, int oldVersion, int newVersion) {
         AppLog.d(T.DB, "Upgrading database from version " + oldVersion + " to " + newVersion);
 
+        setForeignKeyConstraintsDisabled(db);
         db.beginTransaction();
         switch (oldVersion) {
             case 1:
@@ -324,18 +325,71 @@ public class WellSqlConfig extends DefaultWellConfig {
                     defaultSharedPrefs.edit().remove("ACCOUNT_TOKEN_PREF_KEY").apply();
                 }
                 oldVersion++;
+            case 39:
+                AppLog.d(T.DB, "Migrating to version " + (oldVersion + 1));
+                // To introduce the portfolio post type, we need to evolve the `IS_PAGE ` to a `TYPE` field.
+                // - Unfortunately (1), SQLite does not have a feature to rename a column.
+                // - Unfortunately (2), the table can't be dropped and recreated without losing users' drafts.
+                //
+                // Read section "Rename column in table" for more details
+                // https://www.techonthenet.com/sqlite/tables/alter_table.php
+
+                // `IS_PAGE` is renamed to `TYPE` but keeps the same values, i.e.:
+                //  - true (page) is 1
+                //  - false (post) os 0
+                // cf `org.wordpress.android.fluxc.model.post.PostType`
+
+                db.execSQL("ALTER TABLE PostModel RENAME TO PostModel_migration_copy");
+                db.execSQL(
+                        "CREATE TABLE PostModel (_id INTEGER PRIMARY KEY AUTOINCREMENT,TYPE INTEGER,LOCAL_SITE_ID "
+                        + "INTEGER,REMOTE_SITE_ID INTEGER,REMOTE_POST_ID INTEGER,TITLE TEXT,CONTENT TEXT,DATE_CREATED"
+                        + " TEXT,CATEGORY_IDS TEXT,CUSTOM_FIELDS TEXT,LINK TEXT,EXCERPT TEXT,TAG_NAMES TEXT,STATUS "
+                        + "TEXT,PASSWORD TEXT,FEATURED_IMAGE_ID INTEGER,POST_FORMAT TEXT,SLUG TEXT,LATITUDE REAL,"
+                        + "LONGITUDE REAL,PARENT_ID INTEGER,PARENT_TITLE TEXT,IS_LOCAL_DRAFT INTEGER,"
+                        + "IS_LOCALLY_CHANGED INTEGER,DATE_LOCALLY_CHANGED TEXT,LAST_KNOWN_REMOTE_FEATURED_IMAGE_ID "
+                        + "INTEGER,HAS_CAPABILITY_PUBLISH_POST INTEGER,HAS_CAPABILITY_EDIT_POST INTEGER,"
+                        + "HAS_CAPABILITY_DELETE_POST INTEGER);");
+                db.execSQL(
+                        "INSERT INTO PostModel (_id,TYPE,LOCAL_SITE_ID,REMOTE_SITE_ID,REMOTE_POST_ID,TITLE,CONTENT,"
+                        + "DATE_CREATED,CATEGORY_IDS,CUSTOM_FIELDS,LINK,EXCERPT,TAG_NAMES,STATUS,PASSWORD,"
+                        + "FEATURED_IMAGE_ID,POST_FORMAT,SLUG,LATITUDE,LONGITUDE,PARENT_ID,PARENT_TITLE,"
+                        + "IS_LOCAL_DRAFT,IS_LOCALLY_CHANGED,DATE_LOCALLY_CHANGED,"
+                        + "LAST_KNOWN_REMOTE_FEATURED_IMAGE_ID,HAS_CAPABILITY_PUBLISH_POST,HAS_CAPABILITY_EDIT_POST,"
+                        + "HAS_CAPABILITY_DELETE_POST)"
+                        +
+                        "  SELECT _id,IS_PAGE,LOCAL_SITE_ID,REMOTE_SITE_ID,REMOTE_POST_ID,TITLE,CONTENT,DATE_CREATED,"
+                        + "CATEGORY_IDS,CUSTOM_FIELDS,LINK,EXCERPT,TAG_NAMES,STATUS,PASSWORD,FEATURED_IMAGE_ID,"
+                        + "POST_FORMAT,SLUG,LATITUDE,LONGITUDE,PARENT_ID,PARENT_TITLE,IS_LOCAL_DRAFT,"
+                        + "IS_LOCALLY_CHANGED,DATE_LOCALLY_CHANGED,LAST_KNOWN_REMOTE_FEATURED_IMAGE_ID,"
+                        + "HAS_CAPABILITY_PUBLISH_POST,HAS_CAPABILITY_EDIT_POST,HAS_CAPABILITY_DELETE_POST"
+                        +
+                        "  FROM PostModel_migration_copy;");
+                db.execSQL("DROP TABLE PostModel_migration_copy");
         }
         db.setTransactionSuccessful();
         db.endTransaction();
+        setForeignKeyConstraintsEnabled(db);
     }
 
-    @Override
-    public void onConfigure(SQLiteDatabase db, WellTableManager helper) {
+    private void setForeignKeyConstraintsDisabled(SQLiteDatabase db) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            db.setForeignKeyConstraintsEnabled(false);
+        } else {
+            db.execSQL("PRAGMA foreign_keys=OFF;");
+        }
+    }
+
+    private void setForeignKeyConstraintsEnabled(SQLiteDatabase db) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             db.setForeignKeyConstraintsEnabled(true);
         } else {
             db.execSQL("PRAGMA foreign_keys=ON;");
         }
+    }
+
+    @Override
+    public void onConfigure(SQLiteDatabase db, WellTableManager helper) {
+        setForeignKeyConstraintsEnabled(db);
     }
 
     @Override

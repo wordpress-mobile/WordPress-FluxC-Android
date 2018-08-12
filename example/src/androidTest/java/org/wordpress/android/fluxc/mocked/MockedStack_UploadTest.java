@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.generated.UploadActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.MediaUploadModel;
 import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.model.PostUploadModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor;
@@ -477,8 +478,8 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         return testMedia;
     }
 
-    private PostModel createNewPost(SiteModel site) throws InterruptedException {
-        mPost = mPostStore.instantiatePostModel(site, false);
+    private PostModel createNewPost(SiteModel site) {
+        mPost = mPostStore.instantiatePostModel(site, PostType.TypePost);
         return mPost;
     }
 
