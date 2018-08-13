@@ -5,6 +5,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.annotations.action.Action
@@ -42,6 +43,26 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var orders: List<WCOrderModel> = emptyList(),
         var statusFilter: String? = null,
         var loadedMore: Boolean = false,
+        var canLoadMore: Boolean = false
+    ) : Payload<OrderError>() {
+        constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
+    }
+
+    class FetchOrdersCountPayload(
+        var site: SiteModel,
+        var statusFilter: String? = null
+    ) : Payload<BaseNetworkError>()
+
+    /**
+     * [count] would be the count of orders matching the provided filter up to the default
+     * page count of [NUM_ORDERS_PER_FETCH]. If [canLoadMore] is true, then the actual total
+     * is much more. Since the API does not yet support fetching order count only, this is the
+     * safest way to display the totals: <count>+, example: 50+
+     */
+    class FetchOrdersCountResponsePayload(
+        var site: SiteModel,
+        var count: Int = 0,
+        var statusFilter: String? = null,
         var canLoadMore: Boolean = false
     ) : Payload<OrderError>() {
         constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
@@ -134,11 +155,17 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCOrderAction ?: return
         when (actionType) {
+            // remote actions
             WCOrderAction.FETCH_ORDERS -> fetchOrders(action.payload as FetchOrdersPayload)
+            WCOrderAction.FETCH_ORDERS_COUNT -> fetchOrdersCount(action.payload as FetchOrdersCountPayload)
             WCOrderAction.UPDATE_ORDER_STATUS -> updateOrderStatus(action.payload as UpdateOrderStatusPayload)
             WCOrderAction.FETCH_ORDER_NOTES -> fetchOrderNotes(action.payload as FetchOrderNotesPayload)
             WCOrderAction.POST_ORDER_NOTE -> postOrderNote(action.payload as PostOrderNotePayload)
+
+            // remote responses
             WCOrderAction.FETCHED_ORDERS -> handleFetchOrdersCompleted(action.payload as FetchOrdersResponsePayload)
+            WCOrderAction.FETCHED_ORDERS_COUNT ->
+                handleFetchOrdersCountCompleted(action.payload as FetchOrdersCountResponsePayload)
             WCOrderAction.UPDATED_ORDER_STATUS -> handleUpdateOrderStatusCompleted(action.payload as RemoteOrderPayload)
             WCOrderAction.FETCHED_ORDER_NOTES ->
                 handleFetchOrderNotesCompleted(action.payload as FetchOrderNotesResponsePayload)
@@ -153,6 +180,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             0
         }
         wcOrderRestClient.fetchOrders(payload.site, offset, payload.statusFilter)
+    }
+
+    private fun fetchOrdersCount(payload: FetchOrdersCountPayload) {
+        with(payload) { wcOrderRestClient.fetchOrders(site, 0, statusFilter, countOnly = true) }
     }
 
     private fun updateOrderStatus(payload: UpdateOrderStatusPayload) {
@@ -188,6 +219,19 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
         onOrderChanged.causeOfChange = WCOrderAction.FETCH_ORDERS
 
+        emitChange(onOrderChanged)
+    }
+
+    /**
+     * This is a response to a request to retrieve only the count of orders matching a filter. These
+     * results are not stored in the database.
+     */
+    private fun handleFetchOrdersCountCompleted(payload: FetchOrdersCountResponsePayload) {
+        val onOrderChanged = if (payload.isError) {
+            OnOrderChanged(0).also { it.error = payload.error }
+        } else {
+            with(payload) { OnOrderChanged(count, statusFilter, canLoadMore) }
+        }.also { it.causeOfChange = FETCH_ORDERS_COUNT }
         emitChange(onOrderChanged)
     }
 
