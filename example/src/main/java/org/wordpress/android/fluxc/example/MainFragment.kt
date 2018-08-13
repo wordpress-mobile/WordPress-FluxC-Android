@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener
 import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
+import org.wordpress.android.fluxc.network.ConnectionChangeReceiver.OnNetworkStatusChanged
 import org.wordpress.android.fluxc.network.HTTPAuthManager
 import org.wordpress.android.fluxc.network.MemorizingTrustManager
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryError
@@ -314,6 +315,15 @@ class MainFragment : Fragment() {
             val firstSite = siteStore.sites[0]
             prependToLog("First site name: " + firstSite.name + " - Total sites: " + siteStore.sitesCount +
                     " - rowsAffected: " + event.rowsAffected)
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onNetworkStatusChanged(event: OnNetworkStatusChanged) {
+        when (event.isConnected) {
+            true -> prependToLog("Connected to the Internet :)")
+            else -> prependToLog("Not connected to the Internet!")
         }
     }
 
