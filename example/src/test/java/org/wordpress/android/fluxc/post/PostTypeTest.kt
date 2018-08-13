@@ -32,6 +32,6 @@ class PostTypeTest {
 
     @Test(expected = IllegalArgumentException::class)
     fun fromModelValueRaiseExceptionWhenUnknown() {
-        PostType.fromModelValue(2)
+        PostType.fromModelValue(-1)
     }
 }
