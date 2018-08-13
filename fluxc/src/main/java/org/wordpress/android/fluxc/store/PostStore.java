@@ -285,6 +285,13 @@ public class PostStore extends Store {
     }
 
     /**
+     * Returns all portfolios in the store for the given site as a {@link PostModel} list.
+     */
+    public List<PostModel> getPortfoliosForSite(SiteModel site) {
+        return PostSqlUtils.getPostsForSite(site, PostType.TypePortfolio);
+    }
+
+    /**
      * Returns the number of posts in the store for the given site.
      */
     public int getPostsCountForSite(SiteModel site) {
@@ -378,6 +385,9 @@ public class PostStore extends Store {
                 break;
             case FETCH_PAGES:
                 fetchPosts((FetchPostsPayload) action.getPayload(), PostType.TypePage);
+                break;
+            case FETCH_PORTFOLIOS:
+                fetchPosts((FetchPostsPayload) action.getPayload(), PostType.TypePortfolio);
                 break;
             case FETCHED_POSTS:
                 handleFetchPostsCompleted((FetchPostsResponsePayload) action.getPayload());
@@ -507,6 +517,9 @@ public class PostStore extends Store {
                 break;
             case TypePost:
                 onPostChanged.causeOfChange = PostAction.FETCH_POSTS;
+                break;
+            case TypePortfolio:
+                onPostChanged.causeOfChange = PostAction.FETCH_PORTFOLIOS;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown type:" + payload.postType);
