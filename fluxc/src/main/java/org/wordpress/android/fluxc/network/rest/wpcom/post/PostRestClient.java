@@ -329,11 +329,12 @@ public class PostRestClient extends BaseWPComRestClient {
             params.put("date", post.getDateCreated());
         }
 
-        if (post.getType() != PostType.TypePage.modelValue()) {
+        final PostType postType = PostType.fromModelValue(post.getType());
+        if (postType.isOneOf(PostType.TypePost, PostType.TypePortfolio)) {
             if (!TextUtils.isEmpty(post.getPostFormat())) {
                 params.put("format", post.getPostFormat());
             }
-        } else {
+        } else if (postType == PostType.TypePage) {
             params.put("type", "page");
             params.put("parent", post.getParentId());
         }

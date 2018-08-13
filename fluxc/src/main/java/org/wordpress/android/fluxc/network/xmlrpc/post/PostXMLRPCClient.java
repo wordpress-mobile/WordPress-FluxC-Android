@@ -15,11 +15,11 @@ import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.generated.UploadActionBuilder;
 import org.wordpress.android.fluxc.generated.endpoint.XMLRPC;
 import org.wordpress.android.fluxc.model.PostModel;
-import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.model.PostsModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostLocation;
 import org.wordpress.android.fluxc.model.post.PostStatus;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseErrorListener;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
@@ -400,8 +400,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         Map<String, Object> contentStruct = new HashMap<>();
 
         final PostType postType = PostType.fromModelValue(post.getType());
-        // Post format
-        if (postType != PostType.TypePage) {
+        if (postType.isOneOf(PostType.TypePost, PostType.TypePortfolio)) {
             if (!TextUtils.isEmpty(post.getPostFormat())) {
                 contentStruct.put("post_format", post.getPostFormat());
             }
@@ -433,7 +432,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
 
         contentStruct.put("post_content", content);
 
-        if (postType != PostType.TypePage) {
+        if (postType.isOneOf(PostType.TypePost, PostType.TypePortfolio)) {
             // Handle taxonomies
 
             if (post.isLocalDraft()) {
@@ -483,8 +482,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         contentStruct.put("post_status", post.getStatus());
 
         // Geolocation
-        if (postType != PostType.TypePage) {
-            // Right now, we only disable for pages.
+        if (postType == PostType.TypePost) {
             JSONObject remoteGeoLatitude = post.getCustomField("geo_latitude");
             JSONObject remoteGeoLongitude = post.getCustomField("geo_longitude");
             JSONObject remoteGeoPublic = post.getCustomField("geo_public");

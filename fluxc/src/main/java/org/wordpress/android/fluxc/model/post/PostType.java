@@ -1,8 +1,11 @@
 package org.wordpress.android.fluxc.model.post;
 
+import java.util.Arrays;
+
 public enum PostType {
     TypePost("post", 0),
-    TypePage("page", 1);
+    TypePage("page", 1),
+    TypePortfolio("jetpack-portfolio", 2);
 
     private final String mApiValue;
     private final int mStorageValue;
@@ -36,5 +39,9 @@ public enum PostType {
             }
         }
         throw new IllegalArgumentException("Unknown type: " + storageTypeValue);
+    }
+
+    public boolean isOneOf(PostType... types) {
+        return Arrays.asList(types).contains(this);
     }
 }
