@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
@@ -84,7 +85,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Test
     public void testUploadNewPost() throws InterruptedException {
         // Instantiate new post
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         // Upload new post to site
@@ -104,7 +105,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testEditRemotePost() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         uploadPost(mPost);
@@ -136,7 +137,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testRevertLocallyChangedPost() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         uploadPost(mPost);
@@ -161,7 +162,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testChangeLocalDraft() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
 
         // Wait one sec
         Thread.sleep(1000);
@@ -218,7 +219,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testMultipleLocalChangesToUploadedPost() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         uploadPost(mPost);
@@ -256,7 +257,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testChangePublishedPostToScheduled() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         uploadPost(mPost);
@@ -331,7 +332,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testFullFeaturedPostUpload() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
 
         mPost.setTitle("A fully featured post");
         mPost.setContent("Some content here! <strong>Bold text</strong>.");
@@ -374,8 +375,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testUploadAndEditPage() throws InterruptedException {
-        createNewPost();
-        mPost.setIsPage(true);
+        createNewPost(PostType.TypePage);
         mPost.setTitle("A fully featured page");
         mPost.setContent("Some content here! <strong>Bold text</strong>.");
         mPost.setDateCreated(DateTimeUtils.iso8601UTCFromDate(new Date()));
@@ -401,9 +401,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testFullFeaturedPageUpload() throws InterruptedException {
-        createNewPost();
-
-        mPost.setIsPage(true);
+        createNewPost(PostType.TypePage);
 
         mPost.setTitle("A fully featured page");
         mPost.setContent("Some content here! <strong>Bold text</strong>.");
@@ -436,7 +434,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testClearTagsFromPost() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
 
         mPost.setTitle("A post with tags");
         mPost.setContent("Some content here! <strong>Bold text</strong>.");
@@ -470,7 +468,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testClearFeaturedImageFromPost() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
 
         mPost.setTitle("A post with featured image");
 
@@ -505,7 +503,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Test
     public void testAddLocationToRemotePost() throws InterruptedException {
         // 1. Upload a post with no location data
-        createNewPost();
+        createNewPost(PostType.TypePost);
 
         mPost.setTitle("A post with location");
         mPost.setContent("Some content");
@@ -542,7 +540,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Test
     public void testUploadPostWithLocation() throws InterruptedException {
         // 1. Upload a post with location data
-        createNewPost();
+        createNewPost(PostType.TypePost);
 
         mPost.setTitle("A post with location");
         mPost.setContent("Some content");
@@ -596,7 +594,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testDeleteRemotePost() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         uploadPost(mPost);
@@ -632,7 +630,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testEditInvalidPost() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         uploadPost(mPost);
@@ -694,7 +692,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testCreateNewPostWithInvalidCategory() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         List<Long> categories = new ArrayList<>();
@@ -718,7 +716,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testEditPostWithInvalidTerm() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         uploadPost(mPost);
@@ -766,7 +764,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testCreateNewPostWithInvalidFeaturedImage() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         mPost.setFeaturedImageId(999999);
@@ -787,7 +785,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testEditPostWithInvalidFeaturedImage() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         uploadPost(mPost);
@@ -905,7 +903,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.POST_INSTANTIATED;
         mCountDownLatch = new CountDownLatch(1);
 
-        createNewPost(subscriberSite);
+        createNewPost(subscriberSite, PostType.TypePost);
         setupPostAttributes();
 
         // Attempt to upload new post to site
@@ -1024,15 +1022,15 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mPost.setContent(POST_DEFAULT_DESCRIPTION);
     }
 
-    private PostModel createNewPost() throws InterruptedException {
-        return createNewPost(null);
+    private PostModel createNewPost(PostType typePost) throws InterruptedException {
+        return createNewPost(null, typePost);
     }
 
-    private PostModel createNewPost(SiteModel site) throws InterruptedException {
+    private PostModel createNewPost(SiteModel site, PostType typePost) {
         if (site == null) {
             site = sSite;
         }
-        PostModel post = mPostStore.instantiatePostModel(site, false);
+        PostModel post = mPostStore.instantiatePostModel(site, typePost);
 
         assertTrue(post.isLocalDraft());
         assertEquals(0, post.getRemotePostId());

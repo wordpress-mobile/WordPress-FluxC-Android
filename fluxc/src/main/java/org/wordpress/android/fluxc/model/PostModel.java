@@ -30,6 +30,7 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
 
     @PrimaryKey
     @Column private int mId;
+    @Column private int mType;
     @Column private int mLocalSiteId;
     @Column private long mRemoteSiteId; // .COM REST API
     @Column private long mRemotePostId;
@@ -50,7 +51,6 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
     @Column private double mLongitude = PostLocation.INVALID_LONGITUDE;
 
     // Page specific
-    @Column private boolean mIsPage;
     @Column private long mParentId;
     @Column private String mParentTitle;
 
@@ -259,12 +259,12 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
         mLongitude = longitude;
     }
 
-    public boolean isPage() {
-        return mIsPage;
+    public int getType() {
+        return mType;
     }
 
-    public void setIsPage(boolean isPage) {
-        mIsPage = isPage;
+    public void setType(int aType) {
+        mType = aType;
     }
 
     public long getParentId() {
@@ -353,7 +353,7 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
                 && getFeaturedImageId() == otherPost.getFeaturedImageId()
                 && Double.compare(otherPost.getLatitude(), getLatitude()) == 0
                 && Double.compare(otherPost.getLongitude(), getLongitude()) == 0
-                && isPage() == otherPost.isPage()
+                && getType() == otherPost.getType()
                 && isLocalDraft() == otherPost.isLocalDraft() && isLocallyChanged() == otherPost.isLocallyChanged()
                 && getHasCapabilityPublishPost() == otherPost.getHasCapabilityPublishPost()
                 && getHasCapabilityEditPost() == otherPost.getHasCapabilityEditPost()
@@ -406,11 +406,6 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
             }
         }
         return null;
-    }
-
-    public boolean supportsLocation() {
-        // Right now, we only disable for pages.
-        return !isPage();
     }
 
     public boolean hasLocation() {

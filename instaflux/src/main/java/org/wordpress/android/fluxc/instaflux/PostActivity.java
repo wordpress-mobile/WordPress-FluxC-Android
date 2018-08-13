@@ -30,6 +30,7 @@ import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
@@ -195,7 +196,7 @@ public class PostActivity extends AppCompatActivity {
 
     private void createMediaPost(MediaModel media) {
         mMedia = media;
-        PostModel post = mPostStore.instantiatePostModel(mSite, false, null, "image");
+        PostModel post = mPostStore.instantiatePostModel(mSite, PostType.TypePost, null, "image");
         String postContent = "<img src=\"" + mMedia.getUrl()
                              + "\" width=\"" + mMedia.getWidth()
                              + "\" height=\"" + mMedia.getHeight() + "\" />";

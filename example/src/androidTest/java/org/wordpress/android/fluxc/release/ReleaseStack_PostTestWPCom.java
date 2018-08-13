@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.persistence.PostSqlUtils;
@@ -79,7 +80,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     // Note: This test is not specific to WPCOM (local changes only)
     @Test
     public void testRemoveLocalDraft() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         mNextEvent = TestEvents.POST_REMOVED;
@@ -87,13 +88,13 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mDispatcher.dispatch(PostActionBuilder.newRemovePostAction(mPost));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(0, PostSqlUtils.getPostsForSite(sSite, false).size());
+        assertEquals(0, PostSqlUtils.getPostsForSite(sSite, PostType.TypePost).size());
     }
 
     @Test
     public void testUploadNewPost() throws InterruptedException {
         // Instantiate new post
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         // Upload new post to site
@@ -113,7 +114,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testEditRemotePost() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         uploadPost(mPost);
@@ -145,7 +146,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testRevertLocallyChangedPost() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         uploadPost(mPost);
@@ -170,7 +171,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testChangeLocalDraft() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
 
         // Wait one sec
         Thread.sleep(1000);
@@ -227,7 +228,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testMultipleLocalChangesToUploadedPost() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         uploadPost(mPost);
@@ -265,7 +266,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testChangePublishedPostToScheduled() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         uploadPost(mPost);
@@ -340,7 +341,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testFullFeaturedPostUpload() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
 
         mPost.setTitle("A fully featured post");
         mPost.setContent("Some content here! <strong>Bold text</strong>.\r\n\r\nA new paragraph.");
@@ -384,8 +385,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testUploadAndEditPage() throws InterruptedException {
-        createNewPost();
-        mPost.setIsPage(true);
+        createNewPost(PostType.TypePage);
         mPost.setTitle("A fully featured page");
         mPost.setContent("Some content here! <strong>Bold text</strong>.");
         mPost.setDateCreated(DateTimeUtils.iso8601UTCFromDate(new Date()));
@@ -411,9 +411,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testFullFeaturedPageUpload() throws InterruptedException {
-        createNewPost();
-
-        mPost.setIsPage(true);
+        createNewPost(PostType.TypePage);
 
         mPost.setTitle("A fully featured page");
         mPost.setContent("Some content here! <strong>Bold text</strong>.\r\n\r\nA new paragraph.");
@@ -451,7 +449,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testClearTagsFromPost() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
 
         mPost.setTitle("A post with tags");
         mPost.setContent("Some content here! <strong>Bold text</strong>.");
@@ -485,7 +483,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testClearFeaturedImageFromPost() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
 
         mPost.setTitle("A post with featured image");
 
@@ -520,7 +518,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     @Test
     public void testAddLocationToRemotePost() throws InterruptedException {
         // 1. Upload a post with no location data
-        createNewPost();
+        createNewPost(PostType.TypePost);
 
         mPost.setTitle("A post with location");
         mPost.setContent("Some content");
@@ -557,7 +555,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     @Test
     public void testUploadPostWithLocation() throws InterruptedException {
         // 1. Upload a post with location data
-        createNewPost();
+        createNewPost(PostType.TypePost);
 
         mPost.setTitle("A post with location");
         mPost.setContent("Some content");
@@ -611,7 +609,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testDeleteRemotePost() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         uploadPost(mPost);
@@ -644,7 +642,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testEditInvalidPost() throws InterruptedException {
-        createNewPost();
+        createNewPost(PostType.TypePost);
         setupPostAttributes();
 
         uploadPost(mPost);
@@ -807,8 +805,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mPost.setContent(POST_DEFAULT_DESCRIPTION);
     }
 
-    private PostModel createNewPost() throws InterruptedException {
-        PostModel post = mPostStore.instantiatePostModel(sSite, false);
+    private PostModel createNewPost(PostType typePost) {
+        PostModel post = mPostStore.instantiatePostModel(sSite, typePost);
 
         assertTrue(post.isLocalDraft());
         assertEquals(0, post.getRemotePostId());

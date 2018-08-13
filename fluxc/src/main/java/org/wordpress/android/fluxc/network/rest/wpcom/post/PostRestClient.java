@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.model.PostsModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostLocation;
 import org.wordpress.android.fluxc.model.post.PostStatus;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest;
@@ -83,7 +84,7 @@ public class PostRestClient extends BaseWPComRestClient {
         add(request);
     }
 
-    public void fetchPosts(final SiteModel site, final boolean getPages, final List<PostStatus> statusList,
+    public void fetchPosts(final SiteModel site, final PostType postType, final List<PostStatus> statusList,
                            final int offset) {
         String url = WPCOMREST.sites.site(site.getSiteId()).posts.getUrlV1_1();
 
@@ -91,10 +92,7 @@ public class PostRestClient extends BaseWPComRestClient {
 
         params.put("context", "edit");
         params.put("number", String.valueOf(PostStore.NUM_POSTS_PER_FETCH));
-
-        if (getPages) {
-            params.put("type", "page");
-        }
+        params.put("type", postType.apiValue());
 
         if (statusList.size() > 0) {
             params.put("status", PostStatus.postStatusListToString(statusList));
@@ -120,7 +118,7 @@ public class PostRestClient extends BaseWPComRestClient {
                         boolean canLoadMore = postArray.size() == PostStore.NUM_POSTS_PER_FETCH;
 
                         FetchPostsResponsePayload payload = new FetchPostsResponsePayload(new PostsModel(postArray),
-                                site, getPages, offset > 0, canLoadMore);
+                                site, postType, offset > 0, canLoadMore);
                         mDispatcher.dispatch(PostActionBuilder.newFetchedPostsAction(payload));
                     }
                 },
@@ -129,7 +127,7 @@ public class PostRestClient extends BaseWPComRestClient {
                     public void onErrorResponse(@NonNull WPComGsonNetworkError error) {
                         // Possible non-generic errors: 404 unknown_post_type (invalid post type, shouldn't happen)
                         PostError postError = new PostError(error.apiError, error.message);
-                        FetchPostsResponsePayload payload = new FetchPostsResponsePayload(postError, getPages);
+                        FetchPostsResponsePayload payload = new FetchPostsResponsePayload(postError, postType);
                         mDispatcher.dispatch(PostActionBuilder.newFetchedPostsAction(payload));
                     }
                 }
@@ -277,7 +275,7 @@ public class PostRestClient extends BaseWPComRestClient {
         post.setSlug(from.slug);
         post.setStatus(from.status);
         post.setPassword(from.password);
-        post.setIsPage(from.type.equals("page"));
+        post.setType(PostType.fromApiValue(from.type).modelValue());
 
         if (from.post_thumbnail != null) {
             post.setFeaturedImageId(from.post_thumbnail.ID);
@@ -331,11 +329,12 @@ public class PostRestClient extends BaseWPComRestClient {
             params.put("date", post.getDateCreated());
         }
 
-        if (!post.isPage()) {
+        final PostType postType = PostType.fromModelValue(post.getType());
+        if (postType.isOneOf(PostType.TypePost, PostType.TypePortfolio)) {
             if (!TextUtils.isEmpty(post.getPostFormat())) {
                 params.put("format", post.getPostFormat());
             }
-        } else {
+        } else if (postType == PostType.TypePage) {
             params.put("type", "page");
         }
 
