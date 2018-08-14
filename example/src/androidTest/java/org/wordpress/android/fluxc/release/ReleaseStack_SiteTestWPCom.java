@@ -30,6 +30,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
+import org.wordpress.android.fluxc.store.SiteStore.OnSupportedStatesFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnUserRolesChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnWPComSiteFetched;
 import org.wordpress.android.fluxc.store.SiteStore.PlansErrorType;
@@ -73,7 +74,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         INELIGIBLE_FOR_AUTOMATED_TRANSFER,
         INITIATE_INELIGIBLE_AUTOMATED_TRANSFER,
         AUTOMATED_TRANSFER_NOT_FOUND,
-        CHECK_BLACKLISTED_DOMAIN_AVAILABILITY
+        CHECK_BLACKLISTED_DOMAIN_AVAILABILITY,
+        FETCHED_SUPPORTED_STATES
     }
 
     private TestEvents mNextEvent;
@@ -312,6 +314,16 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
+    public void testFetchSupportedStates() throws InterruptedException {
+        authenticateUser(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        // Fetch Supported states
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSupportedStatesAction("US"));
+        mNextEvent = TestEvents.FETCHED_SUPPORTED_STATES;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -488,6 +500,18 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertEquals(TestEvents.CHECK_BLACKLISTED_DOMAIN_AVAILABILITY, mNextEvent);
         assertEquals(event.status, DomainAvailabilityStatus.BLACKLISTED_DOMAIN);
         assertEquals(event.mappable, DomainMappabilityStatus.BLACKLISTED_DOMAIN);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onSupportedStatesFetched(OnSupportedStatesFetched event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.FETCHED_SUPPORTED_STATES, mNextEvent);
+        assertNotNull(event.supportedStates);
+        assertFalse(event.supportedStates.isEmpty());
         mCountDownLatch.countDown();
     }
 
