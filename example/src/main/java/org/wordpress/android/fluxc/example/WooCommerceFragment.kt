@@ -33,7 +33,9 @@ import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OnWCStatsChanged
+import org.wordpress.android.fluxc.store.WCStatsStore.OnWCTopEarnersChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.AppLog
@@ -176,6 +178,20 @@ class WooCommerceFragment : Fragment() {
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
             } ?: showNoWCSitesToast()
         }
+
+        fetch_top_earners_stats.setOnClickListener {
+            getFirstWCSite()?.let {
+                val payload = FetchTopEarnersStatsPayload(it, StatsGranularity.DAYS, 10, false)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchTopEarnersStatsAction(payload))
+            } ?: showNoWCSitesToast()
+        }
+
+        fetch_top_earners_stats_forced.setOnClickListener {
+            getFirstWCSite()?.let {
+                val payload = FetchTopEarnersStatsPayload(it, StatsGranularity.DAYS, 10, true)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchTopEarnersStatsAction(payload))
+            } ?: showNoWCSitesToast()
+        }
     }
 
     override fun onStart() {
@@ -273,6 +289,18 @@ class WooCommerceFragment : Fragment() {
                 }
             }
         }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onWCTopEarnersChanged(event: OnWCTopEarnersChanged) {
+        if (event.isError) {
+            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
+            return
+        }
+
+        prependToLog("Fetched ${event.topEarners.size} top earner stats for ${event.granularity.toString()
+                .toLowerCase()} from ${getFirstWCSite()?.name}")
     }
 
     private fun getFirstWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(0)
