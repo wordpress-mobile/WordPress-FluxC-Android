@@ -30,7 +30,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
-import org.wordpress.android.fluxc.store.SiteStore.OnSupportedStatesFetched;
+import org.wordpress.android.fluxc.store.SiteStore.OnDomainSupportedStatesFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnUserRolesChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnWPComSiteFetched;
 import org.wordpress.android.fluxc.store.SiteStore.PlansErrorType;
@@ -75,7 +75,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         INITIATE_INELIGIBLE_AUTOMATED_TRANSFER,
         AUTOMATED_TRANSFER_NOT_FOUND,
         CHECK_BLACKLISTED_DOMAIN_AVAILABILITY,
-        FETCHED_SUPPORTED_STATES
+        FETCHED_DOMAIN_SUPPORTED_STATES
     }
 
     private TestEvents mNextEvent;
@@ -318,8 +318,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     public void testFetchSupportedStates() throws InterruptedException {
         authenticateUser(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         // Fetch Supported states
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSupportedStatesAction("US"));
-        mNextEvent = TestEvents.FETCHED_SUPPORTED_STATES;
+        mDispatcher.dispatch(SiteActionBuilder.newFetchDomainSupportedStatesAction("US"));
+        mNextEvent = TestEvents.FETCHED_DOMAIN_SUPPORTED_STATES;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -505,11 +505,11 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void onSupportedStatesFetched(OnSupportedStatesFetched event) {
+    public void onDomainSupportedStatesFetched(OnDomainSupportedStatesFetched event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TestEvents.FETCHED_SUPPORTED_STATES, mNextEvent);
+        assertEquals(TestEvents.FETCHED_DOMAIN_SUPPORTED_STATES, mNextEvent);
         assertNotNull(event.supportedStates);
         assertFalse(event.supportedStates.isEmpty());
         mCountDownLatch.countDown();
