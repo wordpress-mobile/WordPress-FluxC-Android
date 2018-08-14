@@ -75,7 +75,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         INITIATE_INELIGIBLE_AUTOMATED_TRANSFER,
         AUTOMATED_TRANSFER_NOT_FOUND,
         CHECK_BLACKLISTED_DOMAIN_AVAILABILITY,
-        FETCH_SUPPORT_COUNTRIES
+        FETCHED_SUPPORTED_COUNTRIES
     }
 
     private TestEvents mNextEvent;
@@ -319,7 +319,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         authenticateUser(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         // Fetch supported countries
         mDispatcher.dispatch(SiteActionBuilder.newFetchSupportedCountriesAction());
-        mNextEvent = TestEvents.FETCH_SUPPORT_COUNTRIES;
+        mNextEvent = TestEvents.FETCHED_SUPPORTED_COUNTRIES;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -509,7 +509,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TestEvents.FETCH_SUPPORT_COUNTRIES, mNextEvent);
+        assertEquals(TestEvents.FETCHED_SUPPORTED_COUNTRIES, mNextEvent);
         assertNotNull(event.supportedCountries);
         assertFalse(event.supportedCountries.isEmpty());
         mCountDownLatch.countDown();
