@@ -12,6 +12,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
@@ -25,13 +26,16 @@ import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OnWCStatsChanged
+import org.wordpress.android.fluxc.store.WCStatsStore.OnWCTopEarnersChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.AppLog
@@ -72,6 +76,24 @@ class WooCommerceFragment : Fragment() {
                 val payload = FetchOrdersPayload(it, loadMore = false)
                 dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
             } ?: showNoWCSitesToast()
+        }
+
+        fetch_orders_count.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter a single order status to filter by or leave blank for no filter:") { editText ->
+
+                    // only use the status for filtering if it's not empty
+                    val statusFilter = editText.text.toString().trim().takeIf { it.isNotEmpty() }
+                    statusFilter?.let {
+                        prependToLog("Submitting request to fetch a count of $it orders")
+                    } ?: prependToLog("No valid filters defined, fetching count of all orders")
+
+                    val payload = FetchOrdersCountPayload(site, statusFilter)
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersCountAction(payload))
+                }
+            }
         }
 
         fetch_orders_by_status.setOnClickListener {
@@ -156,6 +178,20 @@ class WooCommerceFragment : Fragment() {
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
             } ?: showNoWCSitesToast()
         }
+
+        fetch_top_earners_stats.setOnClickListener {
+            getFirstWCSite()?.let {
+                val payload = FetchTopEarnersStatsPayload(it, StatsGranularity.DAYS, 10, false)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchTopEarnersStatsAction(payload))
+            } ?: showNoWCSitesToast()
+        }
+
+        fetch_top_earners_stats_forced.setOnClickListener {
+            getFirstWCSite()?.let {
+                val payload = FetchTopEarnersStatsPayload(it, StatsGranularity.DAYS, 10, true)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchTopEarnersStatsAction(payload))
+            } ?: showNoWCSitesToast()
+        }
     }
 
     override fun onStart() {
@@ -178,7 +214,10 @@ class WooCommerceFragment : Fragment() {
 
         getFirstWCSite()?.let { site ->
             wcOrderStore.getOrdersForSite(site).let { orderList ->
-                if (orderList.isEmpty()) {
+                // We check if the rowsAffected value is zero because not all events will causes data to be
+                // saved to the orders table (such as the FETCH-ORDERS-COUNT...so the orderList would always
+                // be empty even if there were orders available.
+                if (orderList.isEmpty() && event.rowsAffected == 0) {
                     prependToLog("No orders were stored for site " + site.name + " =(")
                     return
                 }
@@ -203,6 +242,12 @@ class WooCommerceFragment : Fragment() {
                         } else {
                             prependToLog("Fetched ${event.rowsAffected} orders from: ${site.name}")
                         }
+                    }
+                    FETCH_ORDERS_COUNT -> {
+                        val append = if (event.canLoadMore) "+" else ""
+                        event.statusFilter?.let {
+                            prependToLog("Count of $it orders: ${event.rowsAffected}$append")
+                        } ?: prependToLog("Count of all orders: ${event.rowsAffected}$append")
                     }
                     FETCH_ORDER_NOTES -> {
                         val notes = wcOrderStore.getOrderNotesForOrder(pendingNotesOrderModel!!)
@@ -244,6 +289,18 @@ class WooCommerceFragment : Fragment() {
                 }
             }
         }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onWCTopEarnersChanged(event: OnWCTopEarnersChanged) {
+        if (event.isError) {
+            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
+            return
+        }
+
+        prependToLog("Fetched ${event.topEarners.size} top earner stats for ${event.granularity.toString()
+                .toLowerCase()} from ${getFirstWCSite()?.name}")
     }
 
     private fun getFirstWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(0)
