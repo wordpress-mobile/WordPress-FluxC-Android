@@ -325,7 +325,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
- 
+
+    @Test
     public void testFetchSupportedCountries() throws InterruptedException {
         authenticateUser(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         // Fetch supported countries
@@ -526,6 +527,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
+    @Subscribe
     public void onDomainSupportedCountriesFetched(OnDomainSupportedCountriesFetched event) {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
