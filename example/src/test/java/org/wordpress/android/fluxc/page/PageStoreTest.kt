@@ -33,10 +33,11 @@ import org.wordpress.android.fluxc.model.page.PageStatus.PUBLISHED
 import org.wordpress.android.fluxc.model.page.PageStatus.SCHEDULED
 import org.wordpress.android.fluxc.model.page.PageStatus.TRASHED
 import org.wordpress.android.fluxc.model.post.PostStatus
+import org.wordpress.android.fluxc.model.post.PostType
+import org.wordpress.android.fluxc.model.post.PostType.TypePage
 import org.wordpress.android.fluxc.store.PostStore.PostError
 import org.wordpress.android.fluxc.store.PostStore.PostErrorType.UNKNOWN_POST
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
-import org.wordpress.android.fluxc.model.post.PostType
 
 @RunWith(MockitoJUnitRunner::class)
 class PageStoreTest {
@@ -293,7 +294,7 @@ class PageStoreTest {
 
     @Test
     fun getPages() = runBlocking<Unit> {
-        whenever(postStore.getPagesForSite(site)).thenReturn(pageHierarchy)
+        whenever(postStore.getPostsForSite(site, TypePage)).thenReturn(pageHierarchy)
 
         val pages = store.getPagesFromDb(site)
 
