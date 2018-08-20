@@ -289,7 +289,7 @@ public class PostStoreUnitTest {
     }
 
     @Test
-    public void testPostSeparationPerType() {
+    public void testPostTypeSeparation() {
         SiteModel site = new SiteModel();
         site.setId(6);
 
