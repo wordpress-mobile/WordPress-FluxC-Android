@@ -264,10 +264,10 @@ public class PostStore extends Store {
     }
 
     /**
-     * Returns all posts in the store for the given site as a {@link PostModel} list.
+     * Returns all posts in the store for the given site and post type as a {@link PostModel} list.
      */
-    public List<PostModel> getPostsForSite(SiteModel site) {
-        return PostSqlUtils.getPostsForSite(site, PostType.TypePost);
+    public List<PostModel> getPostsForSite(SiteModel site, PostType postType) {
+        return PostSqlUtils.getPostsForSite(site, postType);
     }
 
     /**
@@ -278,59 +278,31 @@ public class PostStore extends Store {
     }
 
     /**
-     * Returns all pages in the store for the given site as a {@link PostModel} list.
+     * Returns portfolios with given format in the store for the given site as a {@link PostModel} list.
      */
-    public List<PostModel> getPagesForSite(SiteModel site) {
-        return PostSqlUtils.getPostsForSite(site, PostType.TypePage);
+    public List<PostModel> getPortfoliosForSiteWithFormat(SiteModel site, List<String> postFormat) {
+        return PostSqlUtils.getPostsForSiteWithFormat(site, postFormat, PostType.TypePortfolio);
     }
 
     /**
-     * Returns all portfolios in the store for the given site as a {@link PostModel} list.
+     * Returns the number of posts in the store for the given site and post type .
      */
-    public List<PostModel> getPortfoliosForSite(SiteModel site) {
-        return PostSqlUtils.getPostsForSite(site, PostType.TypePortfolio);
+    public int getPostsCountForSite(SiteModel site, PostType postType) {
+        return getPostsForSite(site, postType).size();
     }
 
     /**
-     * Returns the number of posts in the store for the given site.
+     * Returns all uploaded posts in the store for the given site and post type.
      */
-    public int getPostsCountForSite(SiteModel site) {
-        return getPostsForSite(site).size();
+    public List<PostModel> getUploadedPostsForSite(SiteModel site, PostType postType) {
+        return PostSqlUtils.getUploadedPostsForSite(site, postType);
     }
 
     /**
-     * Returns the number of pages in the store for the given site.
+     * Returns the number of uploaded posts in the store for the given site and post type .
      */
-    public int getPagesCountForSite(SiteModel site) {
-        return getPagesForSite(site).size();
-    }
-
-    /**
-     * Returns all uploaded posts in the store for the given site.
-     */
-    public List<PostModel> getUploadedPostsForSite(SiteModel site) {
-        return PostSqlUtils.getUploadedPostsForSite(site, PostType.TypePost);
-    }
-
-    /**
-     * Returns all uploaded pages in the store for the given site.
-     */
-    public List<PostModel> getUploadedPagesForSite(SiteModel site) {
-        return PostSqlUtils.getUploadedPostsForSite(site, PostType.TypePage);
-    }
-
-    /**
-     * Returns the number of uploaded posts in the store for the given site.
-     */
-    public int getUploadedPostsCountForSite(SiteModel site) {
-        return getUploadedPostsForSite(site).size();
-    }
-
-    /**
-     * Returns the number of uploaded pages in the store for the given site.
-     */
-    public int getUploadedPagesCountForSite(SiteModel site) {
-        return getUploadedPagesForSite(site).size();
+    public int getUploadedPostsCountForSite(SiteModel site, PostType postType) {
+        return getUploadedPostsForSite(site, postType).size();
     }
 
     /**
@@ -452,7 +424,7 @@ public class PostStore extends Store {
     private void fetchPosts(FetchPostsPayload payload, PostType type) {
         int offset = 0;
         if (payload.loadMore) {
-            offset = PostSqlUtils.getUploadedPostsForSite(payload.site, type).size();
+            offset = getUploadedPostsCountForSite(payload.site, type);
         }
 
         if (payload.site.isUsingWpComRestApi()) {

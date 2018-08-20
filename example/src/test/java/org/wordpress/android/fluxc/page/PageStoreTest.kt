@@ -36,6 +36,7 @@ import org.wordpress.android.fluxc.model.post.PostStatus
 import org.wordpress.android.fluxc.store.PostStore.PostError
 import org.wordpress.android.fluxc.store.PostStore.PostErrorType.UNKNOWN_POST
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
+import org.wordpress.android.fluxc.model.post.PostType
 
 @RunWith(MockitoJUnitRunner::class)
 class PageStoreTest {
@@ -74,7 +75,7 @@ class PageStoreTest {
     fun setUp() {
         actionCaptor = argumentCaptor()
         val pages = listOf(pageWithoutQuery, pageWithQuery, pageWithoutTitle)
-        whenever(postStore.getPagesForSite(site)).thenReturn(pages)
+        whenever(postStore.getPostsForSite(site, PostType.TypePage)).thenReturn(pages)
         store = PageStore(postStore, dispatcher)
     }
 
@@ -111,7 +112,7 @@ class PageStoreTest {
                 draftSite2,
                 trashedSite2
         )
-        whenever(postStore.getPagesForSite(site)).thenReturn(pages)
+        whenever(postStore.getPostsForSite(site, PostType.TypePage)).thenReturn(pages)
 
         val result = runBlocking { store.groupedSearch(site, title) }
 
@@ -246,7 +247,7 @@ class PageStoreTest {
         assertThat(pageTypes.filter { it == PostStatus.TRASHED }.size).isEqualTo(1)
         assertThat(pageTypes.filter { it == PostStatus.SCHEDULED }.size).isEqualTo(1)
 
-        whenever(postStore.getPagesForSite(site))
+        whenever(postStore.getPostsForSite(site, PostType.TypePage))
                 .thenReturn(differentPageTypes.filter { payload.statusTypes.contains(PostStatus.fromPost(it)) })
 
         val pages = store.getPagesFromDb(site)

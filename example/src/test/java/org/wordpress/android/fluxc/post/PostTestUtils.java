@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.post;
 import com.yarolegovich.wellsql.WellSql;
 
 import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.post.PostType;
 
 import java.util.List;
 
@@ -10,12 +11,13 @@ public class PostTestUtils {
     public static final double EXAMPLE_LATITUDE = 44.8378;
     public static final double EXAMPLE_LONGITUDE = -0.5792;
 
-    public static PostModel generateSampleUploadedPost() {
-        return generateSampleUploadedPost("text");
+    public static PostModel generateSampleUploadedPost(PostType postType) {
+        return generateSampleUploadedPost(postType, "text");
     }
 
-    public static PostModel generateSampleUploadedPost(String postFormat) {
+    public static PostModel generateSampleUploadedPost(PostType postType, String postFormat) {
         PostModel example = new PostModel();
+        example.setType(postType.modelValue());
         example.setLocalSiteId(6);
         example.setRemotePostId(5);
         example.setTitle("A test post");

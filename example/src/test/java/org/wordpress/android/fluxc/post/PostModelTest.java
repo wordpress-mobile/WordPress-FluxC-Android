@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.post.PostLocation;
 import org.wordpress.android.fluxc.model.post.PostStatus;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.network.BaseRequest;
 
 import java.util.ArrayList;
@@ -18,8 +19,8 @@ import static org.wordpress.android.fluxc.post.PostTestUtils.EXAMPLE_LONGITUDE;
 public class PostModelTest {
     @Test
     public void testEquals() {
-        PostModel testPost = PostTestUtils.generateSampleUploadedPost();
-        PostModel testPost2 = PostTestUtils.generateSampleUploadedPost();
+        PostModel testPost = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
+        PostModel testPost2 = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
 
         testPost2.setRemotePostId(testPost.getRemotePostId() + 1);
         assertFalse(testPost.equals(testPost2));

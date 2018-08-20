@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.model.CommentModel;
 import org.wordpress.android.fluxc.model.CommentStatus;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.persistence.CommentSqlUtils;
 import org.wordpress.android.fluxc.store.CommentStore;
 import org.wordpress.android.fluxc.store.CommentStore.CommentErrorType;
@@ -417,7 +418,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     @SuppressWarnings("unused")
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
-        List<PostModel> posts = mPostStore.getPostsForSite(sSite);
+        List<PostModel> posts = mPostStore.getPostsForSite(sSite, PostType.TypePost);
         mFirstPost = getFirstPublishedPost(posts);
         assertEquals(mNextEvent, TestEvents.POSTS_FETCHED);
         mCountDownLatch.countDown();

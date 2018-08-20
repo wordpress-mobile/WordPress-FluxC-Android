@@ -200,7 +200,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         assertEquals(1, WellSqlUtils.getTotalPostsCount());
-        assertEquals(1, mPostStore.getPostsCountForSite(site));
+        assertEquals(1, mPostStore.getPostsCountForSite(site, PostType.TypePost));
 
         // Since the post upload completed successfully, the PostUploadModel should have been deleted
         assertEquals(0, mUploadStore.getPendingPosts().size());

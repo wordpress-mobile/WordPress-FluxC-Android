@@ -65,7 +65,7 @@ public class PostStoreUnitTest {
 
     @Test
     public void testInsertWithLocalChanges() {
-        PostModel postModel = PostTestUtils.generateSampleUploadedPost();
+        PostModel postModel = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
         postModel.setIsLocallyChanged(true);
         PostSqlUtils.insertPostForResult(postModel);
 
@@ -107,7 +107,7 @@ public class PostStoreUnitTest {
 
     @Test
     public void testInsertWithoutLocalChanges() {
-        PostModel postModel = PostTestUtils.generateSampleUploadedPost();
+        PostModel postModel = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
         PostSqlUtils.insertPostForResult(postModel);
 
         String newTitle = "A different title";
@@ -125,10 +125,10 @@ public class PostStoreUnitTest {
 
     @Test
     public void testGetPostsForSite() {
-        PostModel uploadedPost1 = PostTestUtils.generateSampleUploadedPost();
+        PostModel uploadedPost1 = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
         PostSqlUtils.insertPostForResult(uploadedPost1);
 
-        PostModel uploadedPost2 = PostTestUtils.generateSampleUploadedPost();
+        PostModel uploadedPost2 = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
         uploadedPost2.setLocalSiteId(8);
         PostSqlUtils.insertPostForResult(uploadedPost2);
 
@@ -140,15 +140,15 @@ public class PostStoreUnitTest {
 
         assertEquals(2, PostTestUtils.getPostsCount());
 
-        assertEquals(1, mPostStore.getPostsCountForSite(site1));
-        assertEquals(1, mPostStore.getPostsCountForSite(site2));
+        assertEquals(1, mPostStore.getPostsCountForSite(site1, PostType.TypePost));
+        assertEquals(1, mPostStore.getPostsCountForSite(site2, PostType.TypePost));
     }
 
     @Test
     public void testGetPostsWithFormatForSite() {
-        PostModel textPost = PostTestUtils.generateSampleUploadedPost();
-        PostModel imagePost = PostTestUtils.generateSampleUploadedPost("image");
-        PostModel videoPost = PostTestUtils.generateSampleUploadedPost("video");
+        PostModel textPost = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
+        PostModel imagePost = PostTestUtils.generateSampleUploadedPost(PostType.TypePost, "image");
+        PostModel videoPost = PostTestUtils.generateSampleUploadedPost(PostType.TypePost, "video");
         PostSqlUtils.insertPostForResult(textPost);
         PostSqlUtils.insertPostForResult(imagePost);
         PostSqlUtils.insertPostForResult(videoPost);
@@ -168,20 +168,42 @@ public class PostStoreUnitTest {
     }
 
     @Test
+    public void testGetPortfoliosWithFormatForSite() {
+        PostModel textPortfolio = PostTestUtils.generateSampleUploadedPost(PostType.TypePortfolio);
+        PostModel imagePortfolio = PostTestUtils.generateSampleUploadedPost(PostType.TypePortfolio, "image");
+        PostModel videoPortfolio = PostTestUtils.generateSampleUploadedPost(PostType.TypePortfolio, "video");
+        PostSqlUtils.insertPostForResult(textPortfolio);
+        PostSqlUtils.insertPostForResult(imagePortfolio);
+        PostSqlUtils.insertPostForResult(videoPortfolio);
+
+        SiteModel site = new SiteModel();
+        site.setId(textPortfolio.getLocalSiteId());
+
+        ArrayList<String> postFormat = new ArrayList<>();
+        postFormat.add("image");
+        postFormat.add("video");
+        List<PostModel> portfoliosList = mPostStore.getPortfoliosForSiteWithFormat(site, postFormat);
+
+        assertEquals(2, portfoliosList.size());
+        assertTrue(portfoliosList.contains(imagePortfolio));
+        assertTrue(portfoliosList.contains(videoPortfolio));
+        assertFalse(portfoliosList.contains(textPortfolio));
+    }
+
+    @Test
     public void testGetPublishedPosts() {
         SiteModel site = new SiteModel();
         site.setId(6);
 
-        PostModel uploadedPost = PostTestUtils.generateSampleUploadedPost();
+        PostModel uploadedPost = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
         PostSqlUtils.insertPostForResult(uploadedPost);
 
         PostModel localDraft = PostTestUtils.generateSampleLocalDraftPost();
         PostSqlUtils.insertPostForResult(localDraft);
 
         assertEquals(2, PostTestUtils.getPostsCount());
-        assertEquals(2, mPostStore.getPostsCountForSite(site));
-
-        assertEquals(1, mPostStore.getUploadedPostsCountForSite(site));
+        assertEquals(2, mPostStore.getPostsCountForSite(site, PostType.TypePost));
+        assertEquals(1, mPostStore.getUploadedPostsCountForSite(site, PostType.TypePost));
     }
 
     @Test
@@ -194,7 +216,7 @@ public class PostStoreUnitTest {
 
     @Test
     public void testGetPostByRemoteId() {
-        PostModel post = PostTestUtils.generateSampleUploadedPost();
+        PostModel post = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
         PostSqlUtils.insertPostForResult(post);
 
         SiteModel site = new SiteModel();
@@ -208,10 +230,10 @@ public class PostStoreUnitTest {
         SiteModel site = new SiteModel();
         site.setId(6);
 
-        PostModel uploadedPost1 = PostTestUtils.generateSampleUploadedPost();
+        PostModel uploadedPost1 = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
         PostSqlUtils.insertPostForResult(uploadedPost1);
 
-        PostModel uploadedPost2 = PostTestUtils.generateSampleUploadedPost();
+        PostModel uploadedPost2 = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
         uploadedPost2.setRemotePostId(9);
         PostSqlUtils.insertPostForResult(uploadedPost2);
 
@@ -221,11 +243,11 @@ public class PostStoreUnitTest {
         PostModel locallyChangedPost = PostTestUtils.generateSampleLocallyChangedPost();
         PostSqlUtils.insertPostForResult(locallyChangedPost);
 
-        assertEquals(4, mPostStore.getPostsCountForSite(site));
+        assertEquals(4, mPostStore.getPostsCountForSite(site, PostType.TypePost));
 
         PostSqlUtils.deleteUploadedPostsForSite(site, PostType.TypePost);
 
-        assertEquals(2, mPostStore.getPostsCountForSite(site));
+        assertEquals(2, mPostStore.getPostsCountForSite(site, PostType.TypePost));
     }
 
     @Test
@@ -233,10 +255,10 @@ public class PostStoreUnitTest {
         SiteModel site = new SiteModel();
         site.setId(6);
 
-        PostModel uploadedPost1 = PostTestUtils.generateSampleUploadedPost();
+        PostModel uploadedPost1 = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
         PostSqlUtils.insertPostForResult(uploadedPost1);
 
-        PostModel uploadedPost2 = PostTestUtils.generateSampleUploadedPost();
+        PostModel uploadedPost2 = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
         uploadedPost2.setRemotePostId(9);
         PostSqlUtils.insertPostForResult(uploadedPost2);
 
@@ -246,32 +268,33 @@ public class PostStoreUnitTest {
         PostModel locallyChangedPost = PostTestUtils.generateSampleLocallyChangedPost();
         PostSqlUtils.insertPostForResult(locallyChangedPost);
 
-        assertEquals(4, mPostStore.getPostsCountForSite(site));
+        assertEquals(4, mPostStore.getPostsCountForSite(site, PostType.TypePost));
 
         PostSqlUtils.deletePost(uploadedPost1);
 
         assertEquals(null, mPostStore.getPostByLocalPostId(uploadedPost1.getId()));
-        assertEquals(3, mPostStore.getPostsCountForSite(site));
+        assertEquals(3, mPostStore.getPostsCountForSite(site, PostType.TypePost));
 
         PostSqlUtils.deletePost(uploadedPost2);
         PostSqlUtils.deletePost(localDraft);
 
         assertNotEquals(null, mPostStore.getPostByLocalPostId(locallyChangedPost.getId()));
-        assertEquals(1, mPostStore.getPostsCountForSite(site));
+        assertEquals(1, mPostStore.getPostsCountForSite(site, PostType.TypePost));
 
         PostSqlUtils.deletePost(locallyChangedPost);
 
         assertEquals(null, mPostStore.getPostByLocalPostId(locallyChangedPost.getId()));
-        assertEquals(0, mPostStore.getPostsCountForSite(site));
+        assertEquals(0, mPostStore.getPostsCountForSite(site, PostType.TypePost));
         assertEquals(0, PostTestUtils.getPostsCount());
     }
 
     @Test
-    public void testPostAndPageSeparation() {
+    public void testPostSeparationPerType() {
         SiteModel site = new SiteModel();
         site.setId(6);
 
         PostModel post = new PostModel();
+        post.setType(PostType.TypePost.modelValue());
         post.setLocalSiteId(6);
         post.setRemotePostId(42);
         PostSqlUtils.insertPostForResult(post);
@@ -282,16 +305,25 @@ public class PostStoreUnitTest {
         page.setRemotePostId(43);
         PostSqlUtils.insertPostForResult(page);
 
-        assertEquals(2, PostTestUtils.getPostsCount());
+        PostModel portfolio = new PostModel();
+        portfolio.setType(PostType.TypePortfolio.modelValue());
+        portfolio.setLocalSiteId(6);
+        portfolio.setRemotePostId(44);
+        PostSqlUtils.insertPostForResult(portfolio);
 
-        assertEquals(1, mPostStore.getPostsCountForSite(site));
-        assertEquals(1, mPostStore.getPagesCountForSite(site));
+        assertEquals(3, PostTestUtils.getPostsCount());
 
-        assertFalse(PostTestUtils.getPosts().get(0).getType() == PostType.TypePage.modelValue());
-        assertTrue(PostTestUtils.getPosts().get(1).getType() == PostType.TypePage.modelValue());
+        assertEquals(1, mPostStore.getPostsCountForSite(site, PostType.TypePost));
+        assertEquals(1, mPostStore.getPostsCountForSite(site, PostType.TypePage));
+        assertEquals(1, mPostStore.getPostsCountForSite(site, PostType.TypePortfolio));
 
-        assertEquals(1, mPostStore.getUploadedPostsCountForSite(site));
-        assertEquals(1, mPostStore.getUploadedPagesCountForSite(site));
+        assertEquals(PostTestUtils.getPosts().get(0).getType(), PostType.TypePost.modelValue());
+        assertEquals(PostTestUtils.getPosts().get(1).getType(), PostType.TypePage.modelValue());
+        assertEquals(PostTestUtils.getPosts().get(2).getType(), PostType.TypePortfolio.modelValue());
+
+        assertEquals(1, mPostStore.getUploadedPostsCountForSite(site, PostType.TypePost));
+        assertEquals(1, mPostStore.getUploadedPostsCountForSite(site, PostType.TypePage));
+        assertEquals(1, mPostStore.getUploadedPostsCountForSite(site, PostType.TypePortfolio));
     }
 
     @Test
@@ -327,10 +359,10 @@ public class PostStoreUnitTest {
 
     @Test
     public void testRemoveAllPosts() {
-        PostModel uploadedPost1 = PostTestUtils.generateSampleUploadedPost();
+        PostModel uploadedPost1 = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
         PostSqlUtils.insertPostForResult(uploadedPost1);
 
-        PostModel uploadedPost2 = PostTestUtils.generateSampleUploadedPost();
+        PostModel uploadedPost2 = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
         uploadedPost2.setLocalSiteId(8);
         PostSqlUtils.insertPostForResult(uploadedPost2);
 
