@@ -482,7 +482,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         contentStruct.put("post_status", post.getStatus());
 
         // Geolocation
-        if (postType == PostType.TypePost) {
+        if (post.supportsLocation()) {
             JSONObject remoteGeoLatitude = post.getCustomField("geo_latitude");
             JSONObject remoteGeoLongitude = post.getCustomField("geo_longitude");
             JSONObject remoteGeoPublic = post.getCustomField("geo_public");

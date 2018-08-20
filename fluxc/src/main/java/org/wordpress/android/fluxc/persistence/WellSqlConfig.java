@@ -347,7 +347,7 @@ public class WellSqlConfig extends DefaultWellConfig {
 
                 // `IS_PAGE` is renamed to `TYPE` but keeps the same values, i.e.:
                 //  - true (page) is 1
-                //  - false (post) os 0
+                //  - false (post) is 0
                 // cf `org.wordpress.android.fluxc.model.post.PostType`
 
                 db.execSQL("ALTER TABLE PostModel RENAME TO PostModel_migration_copy");

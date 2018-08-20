@@ -14,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.wordpress.android.fluxc.Payload;
 import org.wordpress.android.fluxc.model.post.PostLocation;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.StringUtils;
@@ -406,6 +407,10 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
             }
         }
         return null;
+    }
+
+    public boolean supportsLocation() {
+        return mType == PostType.TypePost.modelValue();
     }
 
     public boolean hasLocation() {
