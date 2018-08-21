@@ -18,6 +18,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.PostActionBuilder
+import org.wordpress.android.fluxc.model.ListItemModel
 import org.wordpress.android.fluxc.model.ListModel.ListType
 import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.SiteModel
@@ -44,7 +45,7 @@ class PostListActivity : AppCompatActivity() {
     private val listType = ListType.POSTS_ALL
     private lateinit var site: SiteModel
     private var postListAdapter: PostListAdapter? = null
-    private val postIds = ArrayList<Long>()
+    private val listItems = ArrayList<ListItemModel>()
     private val postMap = HashMap<Long, PostModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,14 +68,14 @@ class PostListActivity : AppCompatActivity() {
 
         postListAdapter = PostListAdapter(this, object : PostListInterface {
             override fun getItemCount(): Int {
-                return postIds.size
+                return listItems.size
             }
 
             override fun getItem(position: Int): PostModel? {
-                if (position == postIds.size - 1) {
+                if (position == listItems.size - 1) {
                     dispatcher.dispatch(PostActionBuilder.newFetchPostsAction(FetchPostsPayload(site, listType, true)))
                 }
-                val remotePostId = postIds[position]
+                val remotePostId = listItems[position].remoteItemId
                 val postFromMap = postMap[remotePostId]
                 if (postFromMap != null) {
                     return postFromMap
@@ -100,8 +101,8 @@ class PostListActivity : AppCompatActivity() {
     }
 
     private fun updatePostIds() {
-        postIds.clear()
-        postIds.addAll(postStore.getPostList(site, listType).map { it.remoteItemId })
+        listItems.clear()
+        listItems.addAll(postStore.getPostList(site, listType))
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -123,7 +124,7 @@ class PostListActivity : AppCompatActivity() {
         }
         postStore.getPostByRemotePostId(event.remotePostId, site)?.let { postModel ->
             postMap[postModel.remotePostId] = postModel
-            val index = postIds.indexOfFirst { it == postModel.remotePostId }
+            val index = listItems.indexOfFirst { it.remoteItemId == postModel.remotePostId }
             if (index != -1) {
                 postListAdapter?.refreshPosition(index)
             }
