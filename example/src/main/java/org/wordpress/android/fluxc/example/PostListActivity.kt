@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.model.ListItemModel
 import org.wordpress.android.fluxc.model.ListModel.ListType
 import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload
 import org.wordpress.android.fluxc.store.PostStore.OnPostListChanged
@@ -39,6 +40,7 @@ private const val LOCAL_SITE_ID = "LOCAL_SITE_ID"
 
 class PostListActivity : AppCompatActivity() {
     @Inject internal lateinit var dispatcher: Dispatcher
+    @Inject internal lateinit var listStore: ListStore
     @Inject internal lateinit var postStore: PostStore
     @Inject internal lateinit var siteStore: SiteStore
 
@@ -102,7 +104,7 @@ class PostListActivity : AppCompatActivity() {
 
     private fun updatePostIds() {
         listItems.clear()
-        listItems.addAll(postStore.getPostList(site, listType))
+        listItems.addAll(listStore.getListItems(site, listType))
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
