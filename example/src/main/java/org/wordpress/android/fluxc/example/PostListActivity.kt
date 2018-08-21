@@ -101,7 +101,7 @@ class PostListActivity : AppCompatActivity() {
 
     private fun updatePostIds() {
         postIds.clear()
-        postIds.addAll(postStore.getPostList(site, listType).map { it.remotePostId })
+        postIds.addAll(postStore.getPostList(site, listType).map { it.remoteItemId })
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
