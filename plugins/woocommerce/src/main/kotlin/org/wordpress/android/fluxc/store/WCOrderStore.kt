@@ -263,7 +263,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         val onOrderChanged = if (payload.isError) {
             OnOrderChanged(0).also { it.error = payload.error }
         } else {
-            with(payload) { OnOrderChanged(1, statusFilter, false) }
+            with(payload) { OnOrderChanged(1, statusFilter) }
         }.also { it.causeOfChange = FETCH_HAS_ORDERS }
         emitChange(onOrderChanged)
     }
