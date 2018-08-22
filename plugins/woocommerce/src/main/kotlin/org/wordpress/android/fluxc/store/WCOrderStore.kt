@@ -264,7 +264,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             OnOrderChanged(0).also { it.error = payload.error }
         } else {
             with(payload) {
-                // set 'rowsAffected' to non-zerp if there are orders, otherwise set to zero
+                // set 'rowsAffected' to non-zero if there are orders, otherwise set to zero
                 val rowsAffected = if (payload.hasOrders) 1 else 0
                 OnOrderChanged(rowsAffected, statusFilter)
             }
