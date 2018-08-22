@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
@@ -84,6 +85,42 @@ class OrderRestClient(
                         val payload = FetchOrdersResponsePayload(orderError, site)
                         mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                     }
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Makes a GET request to `/wc/v2/orders` for a single order of a specific type (or any type) in order to
+     * determine if there are any orders in the store.
+     *
+     * Dispatches a [WCOrderAction.FETCHED_HAS_ORDERS] action with the result
+     *
+     * @param [filterByStatus] Nullable. If not null, consider only orders with a matching order status.
+     */
+    fun fetchHasOrders(site: SiteModel, filterByStatus: String? = null) {
+        val statusFilter = if (filterByStatus.isNullOrBlank()) { "any" } else { filterByStatus!! }
+
+        val url = WOOCOMMERCE.orders.pathV2
+        val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
+        val params = mapOf(
+                "per_page" to "1",
+                "offset" to "0",
+                "status" to statusFilter)
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<OrderApiResponse>? ->
+                    val orderModels = response?.map {
+                        orderResponseToOrderModel(it).apply { localSiteId = site.id }
+                    }.orEmpty()
+                    val hasOrders = orderModels.size > 0
+                    val payload = FetchHasOrdersResponsePayload(
+                            site, filterByStatus, hasOrders)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedHasOrdersAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
+                    val payload = FetchHasOrdersResponsePayload(orderError, site)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedHasOrdersAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)

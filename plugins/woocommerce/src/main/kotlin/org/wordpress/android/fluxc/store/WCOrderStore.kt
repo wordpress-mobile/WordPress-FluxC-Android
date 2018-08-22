@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
@@ -64,6 +65,19 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var count: Int = 0,
         var statusFilter: String? = null,
         var canLoadMore: Boolean = false
+    ) : Payload<OrderError>() {
+        constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
+    }
+
+    class FetchHasOrdersPayload(
+        var site: SiteModel,
+        var statusFilter: String? = null
+    ) : Payload<BaseNetworkError>()
+
+    class FetchHasOrdersResponsePayload(
+        var site: SiteModel,
+        var statusFilter: String? = null,
+        var hasOrders: Boolean = false
     ) : Payload<OrderError>() {
         constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
     }
@@ -161,6 +175,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             WCOrderAction.UPDATE_ORDER_STATUS -> updateOrderStatus(action.payload as UpdateOrderStatusPayload)
             WCOrderAction.FETCH_ORDER_NOTES -> fetchOrderNotes(action.payload as FetchOrderNotesPayload)
             WCOrderAction.POST_ORDER_NOTE -> postOrderNote(action.payload as PostOrderNotePayload)
+            WCOrderAction.FETCH_HAS_ORDERS -> fetchHasOrders(action.payload as FetchHasOrdersPayload)
 
             // remote responses
             WCOrderAction.FETCHED_ORDERS -> handleFetchOrdersCompleted(action.payload as FetchOrdersResponsePayload)
@@ -170,6 +185,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             WCOrderAction.FETCHED_ORDER_NOTES ->
                 handleFetchOrderNotesCompleted(action.payload as FetchOrderNotesResponsePayload)
             WCOrderAction.POSTED_ORDER_NOTE -> handlePostOrderNoteCompleted(action.payload as RemoteOrderNotePayload)
+            WCOrderAction.FETCHED_HAS_ORDERS -> handleFetchHasOrdersCompleted(action.payload as FetchHasOrdersResponsePayload)
         }
     }
 
@@ -184,6 +200,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     private fun fetchOrdersCount(payload: FetchOrdersCountPayload) {
         with(payload) { wcOrderRestClient.fetchOrders(site, 0, statusFilter, countOnly = true) }
+    }
+
+    private fun fetchHasOrders(payload: FetchHasOrdersPayload) {
+        with(payload) { wcOrderRestClient.fetchHasOrders(site, statusFilter) }
     }
 
     private fun updateOrderStatus(payload: UpdateOrderStatusPayload) {
@@ -232,6 +252,18 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         } else {
             with(payload) { OnOrderChanged(count, statusFilter, canLoadMore) }
         }.also { it.causeOfChange = FETCH_ORDERS_COUNT }
+        emitChange(onOrderChanged)
+    }
+
+    /**
+     * This is a response to a request to determine whether any orders matching a filter exist
+     */
+    private fun handleFetchHasOrdersCompleted(payload: FetchHasOrdersResponsePayload) {
+        val onOrderChanged = if (payload.isError) {
+            OnOrderChanged(0).also { it.error = payload.error }
+        } else {
+            with(payload) { OnOrderChanged(1, statusFilter, false) }
+        }.also { it.causeOfChange = FETCH_HAS_ORDERS }
         emitChange(onOrderChanged)
     }
 
