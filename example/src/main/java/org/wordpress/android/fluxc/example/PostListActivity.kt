@@ -23,9 +23,9 @@ import org.wordpress.android.fluxc.model.ListModel.ListType
 import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.ListStore
+import org.wordpress.android.fluxc.store.ListStore.OnListChanged
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload
-import org.wordpress.android.fluxc.store.PostStore.OnPostListChanged
 import org.wordpress.android.fluxc.store.PostStore.OnSinglePostFetched
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
 import org.wordpress.android.fluxc.store.SiteStore
@@ -110,8 +110,8 @@ class PostListActivity : AppCompatActivity() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
-    fun onPostListChanged(event: OnPostListChanged) {
-        if (event.site.id != site.id || event.listType != listType || event.isError) {
+    fun onListChanged(event: OnListChanged) {
+        if (event.localSiteId != site.id || event.listType != listType || event.isError) {
             return
         }
         swipeToRefresh.isRefreshing = false
