@@ -289,7 +289,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(
-                PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, ListType.POSTS_ALL, false)));
+                PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, ListType.POSTS_ALL)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -305,8 +305,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(
-                PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, ListType.POSTS_ALL, true)));
+        mDispatcher.dispatch(PostActionBuilder
+                .newFetchPostsAction(new FetchPostsPayload(sSite, ListType.POSTS_ALL, PostStore.NUM_POSTS_PER_FETCH)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -322,7 +322,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(
-                PostActionBuilder.newFetchPagesAction(new FetchPostsPayload(sSite, ListType.POSTS_ALL, false)));
+                PostActionBuilder.newFetchPagesAction(new FetchPostsPayload(sSite, ListType.POSTS_ALL)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 

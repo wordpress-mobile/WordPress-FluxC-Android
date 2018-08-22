@@ -461,7 +461,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(
-                PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, ListType.POSTS_ALL, false)));
+                PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, ListType.POSTS_ALL)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }

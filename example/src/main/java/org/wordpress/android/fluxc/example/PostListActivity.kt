@@ -75,7 +75,8 @@ class PostListActivity : AppCompatActivity() {
 
             override fun getItem(position: Int): PostModel? {
                 if (position == listItems.size - 1) {
-                    dispatcher.dispatch(PostActionBuilder.newFetchPostsAction(FetchPostsPayload(site, listType, true)))
+                    dispatcher.dispatch(PostActionBuilder.newFetchPostsAction(
+                            FetchPostsPayload(site, listType, listItems.size)))
                 }
                 val remotePostId = listItems[position].remoteItemId
                 val postFromMap = postMap[remotePostId]
