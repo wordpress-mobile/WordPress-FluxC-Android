@@ -185,7 +185,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             WCOrderAction.FETCHED_ORDER_NOTES ->
                 handleFetchOrderNotesCompleted(action.payload as FetchOrderNotesResponsePayload)
             WCOrderAction.POSTED_ORDER_NOTE -> handlePostOrderNoteCompleted(action.payload as RemoteOrderNotePayload)
-            WCOrderAction.FETCHED_HAS_ORDERS -> handleFetchHasOrdersCompleted(action.payload as FetchHasOrdersResponsePayload)
+            WCOrderAction.FETCHED_HAS_ORDERS -> handleFetchHasOrdersCompleted(
+                    action.payload as FetchHasOrdersResponsePayload)
         }
     }
 
