@@ -17,12 +17,14 @@ import kotlinx.android.synthetic.main.post_list_activity.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.ListItemModel
 import org.wordpress.android.fluxc.model.ListModel.ListType
 import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.ListStore
+import org.wordpress.android.fluxc.store.ListStore.FetchListPayload
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload
@@ -58,7 +60,7 @@ class PostListActivity : AppCompatActivity() {
 
         setupViews()
 
-        dispatcher.dispatch(PostActionBuilder.newFetchPostsAction(FetchPostsPayload(site, listType)))
+        dispatcher.dispatch(ListActionBuilder.newFetchListAction(FetchListPayload(site, listType)))
     }
 
     private fun setupViews() {
@@ -67,13 +69,13 @@ class PostListActivity : AppCompatActivity() {
 
         postListAdapter = PostListAdapter(this, getItems(), object : ListItemDataSource<PostModel> {
             override fun loadMore() {
-                dispatcher.dispatch(PostActionBuilder.newFetchPostsAction(
-                        FetchPostsPayload(site, listType, getItems().size)))
+                dispatcher.dispatch(ListActionBuilder.newFetchListAction(FetchListPayload(site, listType, true)))
             }
 
             override fun getItem(listItemModel: ListItemModel): PostModel? {
                 val postFromStore = postStore.getPostByRemotePostId(listItemModel.remoteItemId, site)
                 if (postFromStore != null) {
+                    // TODO: check if the lastModified is different and fetch the post if necessary
                     return postFromStore
                 }
                 val postToFetch = PostModel()
