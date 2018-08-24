@@ -47,7 +47,6 @@ class PostListActivity : AppCompatActivity() {
     private val listType = ListType.POSTS_ALL
     private lateinit var site: SiteModel
     private var postListAdapter: PostListAdapter? = null
-    private val listItems = ArrayList<ListItemModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -69,7 +68,7 @@ class PostListActivity : AppCompatActivity() {
         postListAdapter = PostListAdapter(this, getItems(), object : ListItemDataSource<PostModel> {
             override fun loadMore() {
                 dispatcher.dispatch(PostActionBuilder.newFetchPostsAction(
-                        FetchPostsPayload(site, listType, listItems.size)))
+                        FetchPostsPayload(site, listType, getItems().size)))
             }
 
             override fun getItem(listItemModel: ListItemModel): PostModel? {
