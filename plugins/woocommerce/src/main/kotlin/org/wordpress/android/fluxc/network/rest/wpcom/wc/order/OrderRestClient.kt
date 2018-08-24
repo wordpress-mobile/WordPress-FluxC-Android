@@ -112,7 +112,7 @@ class OrderRestClient(
                     val orderModels = response?.map {
                         orderResponseToOrderModel(it).apply { localSiteId = site.id }
                     }.orEmpty()
-                    val hasOrders = orderModels.size > 0
+                    val hasOrders = orderModels.isNotEmpty()
                     val payload = FetchHasOrdersResponsePayload(
                             site, filterByStatus, hasOrders)
                     mDispatcher.dispatch(WCOrderActionBuilder.newFetchedHasOrdersAction(payload))
