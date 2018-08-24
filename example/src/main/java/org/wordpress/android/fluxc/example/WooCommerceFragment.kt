@@ -260,7 +260,7 @@ class WooCommerceFragment : Fragment() {
                     }
                     FETCH_HAS_ORDERS -> {
                         val hasOrders = event.rowsAffected > 0
-                        prependToLog("Store has orders: ${hasOrders}")
+                        prependToLog("Store has orders: $hasOrders")
                     }
                     FETCH_ORDER_NOTES -> {
                         val notes = wcOrderStore.getOrderNotesForOrder(pendingNotesOrderModel!!)
