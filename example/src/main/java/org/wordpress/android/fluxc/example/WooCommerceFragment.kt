@@ -11,6 +11,7 @@ import kotlinx.android.synthetic.main.fragment_woocommerce.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
@@ -25,6 +26,7 @@ import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
@@ -94,6 +96,13 @@ class WooCommerceFragment : Fragment() {
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersCountAction(payload))
                 }
             }
+        }
+
+        fetch_has_orders.setOnClickListener {
+            getFirstWCSite()?.let {
+                val payload = FetchHasOrdersPayload(it)
+                dispatcher.dispatch(WCOrderActionBuilder.newFetchHasOrdersAction(payload))
+            } ?: showNoWCSitesToast()
         }
 
         fetch_orders_by_status.setOnClickListener {
@@ -248,6 +257,10 @@ class WooCommerceFragment : Fragment() {
                         event.statusFilter?.let {
                             prependToLog("Count of $it orders: ${event.rowsAffected}$append")
                         } ?: prependToLog("Count of all orders: ${event.rowsAffected}$append")
+                    }
+                    FETCH_HAS_ORDERS -> {
+                        val hasOrders = event.rowsAffected > 0
+                        prependToLog("Store has orders: ${hasOrders}")
                     }
                     FETCH_ORDER_NOTES -> {
                         val notes = wcOrderStore.getOrderNotesForOrder(pendingNotesOrderModel!!)
