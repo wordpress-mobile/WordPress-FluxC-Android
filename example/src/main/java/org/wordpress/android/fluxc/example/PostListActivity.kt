@@ -92,8 +92,10 @@ class PostListActivity : AppCompatActivity() {
         }
     }
 
-    private fun refreshListData(dataChanged: Boolean = true) {
-        listData = listStore.getList(site, listType)
+    private fun refreshListData() {
+        val newListData = listStore.getList(site, listType)
+        val dataChanged = newListData.hasDataChanged(listData)
+        listData = newListData
         swipeToRefresh.isRefreshing = listData.isFetchingFirstPage
         loadingMoreProgressBar.visibility = if (listData.isLoadingMore) View.VISIBLE else View.GONE
         if (dataChanged) {
@@ -107,7 +109,7 @@ class PostListActivity : AppCompatActivity() {
         if (event.localSiteId != site.id || event.listType != listType || event.isError) {
             return
         }
-        refreshListData(event.dataChanged)
+        refreshListData()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
