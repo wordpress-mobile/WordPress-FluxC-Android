@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
@@ -29,6 +30,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         FETCHED_ORDERS,
         FETCHED_ORDERS_COUNT,
         FETCHED_ORDER_NOTES,
+        FETCHED_HAS_ORDERS,
         POST_ORDER_NOTE,
         POSTED_ORDER_NOTE
     }
@@ -159,6 +161,15 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         assertTrue(fetchedNotes.isNotEmpty())
     }
 
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchHasOrders() {
+        nextEvent = TestEvent.FETCHED_HAS_ORDERS
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(WCOrderActionBuilder.newFetchHasOrdersAction(FetchHasOrdersPayload(sSite)))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+    }
+
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onOrderChanged(event: OnOrderChanged) {
@@ -179,6 +190,10 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
             }
             WCOrderAction.FETCH_ORDER_NOTES -> {
                 assertEquals(TestEvent.FETCHED_ORDER_NOTES, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            WCOrderAction.FETCH_HAS_ORDERS -> {
+                assertEquals(TestEvent.FETCHED_HAS_ORDERS, nextEvent)
                 mCountDownLatch.countDown()
             }
             WCOrderAction.POST_ORDER_NOTE -> {

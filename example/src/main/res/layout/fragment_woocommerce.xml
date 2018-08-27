@@ -29,6 +29,12 @@
             android:text="Fetch Orders Count"/>
 
         <Button
+            android:id="@+id/fetch_has_orders"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Has Orders"/>
+
+        <Button
             android:id="@+id/fetch_orders_by_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
