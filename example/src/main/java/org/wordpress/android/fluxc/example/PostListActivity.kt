@@ -18,7 +18,6 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.PostActionBuilder
-import org.wordpress.android.fluxc.model.ListItemModel
 import org.wordpress.android.fluxc.model.ListModel.ListType
 import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.SiteModel
@@ -32,7 +31,7 @@ import org.wordpress.android.fluxc.store.SiteStore
 import javax.inject.Inject
 
 interface ListItemDataSource<T> {
-    fun getItem(listItemModel: ListItemModel): T?
+    fun getItem(remoteItemId: Long): T?
 }
 
 private const val LOCAL_SITE_ID = "LOCAL_SITE_ID"
@@ -67,14 +66,14 @@ class PostListActivity : AppCompatActivity() {
         recycler.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
 
         postListAdapter = PostListAdapter(this, listData, object : ListItemDataSource<PostModel> {
-            override fun getItem(listItemModel: ListItemModel): PostModel? {
-                val postFromStore = postStore.getPostByRemotePostId(listItemModel.remoteItemId, site)
+            override fun getItem(remoteItemId: Long): PostModel? {
+                val postFromStore = postStore.getPostByRemotePostId(remoteItemId, site)
                 if (postFromStore != null) {
                     // TODO: check if the lastModified is different and fetch the post if necessary
                     return postFromStore
                 }
                 val postToFetch = PostModel()
-                postToFetch.remotePostId = listItemModel.remoteItemId
+                postToFetch.remotePostId = remoteItemId
                 val payload = RemotePostPayload(postToFetch, site)
                 dispatcher.dispatch(PostActionBuilder.newFetchPostAction(payload))
                 return null
@@ -136,8 +135,8 @@ class PostListActivity : AppCompatActivity() {
         }
 
         fun onItemChanged(remoteItemId: Long) {
-            val index = data.items.indexOfFirst { it.remoteItemId == remoteItemId }
-            if (index != -1) {
+            val index = data.indexOfItem(remoteItemId)
+            if (index != null) {
                 notifyItemChanged(index)
             }
         }
@@ -148,15 +147,12 @@ class PostListActivity : AppCompatActivity() {
         }
 
         override fun getItemCount(): Int {
-            return data.items.size
+            return data.size
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            if (position == data.items.size - 1) {
-                data.loadMore()
-            }
             val postHolder = holder as PostViewHolder
-            val postModel = dataSource.getItem(data.items[position])
+            val postModel = dataSource.getItem(data.getRemoteItemId(position))
             postHolder.postTitle.text = postModel?.title ?: ""
         }
 
