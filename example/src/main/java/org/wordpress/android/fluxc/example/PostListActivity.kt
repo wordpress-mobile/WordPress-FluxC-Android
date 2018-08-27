@@ -47,7 +47,7 @@ class PostListActivity : AppCompatActivity() {
     private val listType = ListType.POSTS_ALL
     private lateinit var site: SiteModel
     private var postListAdapter: PostListAdapter? = null
-    private var listData: ListData = listStore.getList(site, listType)
+    private lateinit var listData: ListData
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -56,6 +56,7 @@ class PostListActivity : AppCompatActivity() {
 
         dispatcher.register(this)
         site = siteStore.getSiteByLocalId(intent.getIntExtra(LOCAL_SITE_ID, 0))
+        listData = listStore.getList(site, listType)
 
         setupViews()
 
@@ -91,11 +92,13 @@ class PostListActivity : AppCompatActivity() {
         }
     }
 
-    private fun refreshListData() {
+    private fun refreshListData(dataChanged: Boolean = true) {
         listData = listStore.getList(site, listType)
         swipeToRefresh.isRefreshing = listData.isFetchingFirstPage
         loadingMoreProgressBar.visibility = if (listData.isLoadingMore) View.VISIBLE else View.GONE
-        postListAdapter?.setItems(listData.items)
+        if (dataChanged) {
+            postListAdapter?.setItems(listData.items)
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -104,7 +107,7 @@ class PostListActivity : AppCompatActivity() {
         if (event.localSiteId != site.id || event.listType != listType || event.isError) {
             return
         }
-        refreshListData()
+        refreshListData(event.dataChanged)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
