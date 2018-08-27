@@ -17,17 +17,15 @@ import kotlinx.android.synthetic.main.post_list_activity.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.ListItemModel
 import org.wordpress.android.fluxc.model.ListModel.ListType
 import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.store.ListData
 import org.wordpress.android.fluxc.store.ListStore
-import org.wordpress.android.fluxc.store.ListStore.FetchListPayload
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged
 import org.wordpress.android.fluxc.store.PostStore
-import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload
 import org.wordpress.android.fluxc.store.PostStore.OnSinglePostFetched
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
 import org.wordpress.android.fluxc.store.SiteStore
@@ -49,6 +47,7 @@ class PostListActivity : AppCompatActivity() {
     private val listType = ListType.POSTS_ALL
     private lateinit var site: SiteModel
     private var postListAdapter: PostListAdapter? = null
+    private var listData: ListData = listStore.getList(site, listType)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -60,16 +59,16 @@ class PostListActivity : AppCompatActivity() {
 
         setupViews()
 
-        dispatcher.dispatch(ListActionBuilder.newFetchListAction(FetchListPayload(site, listType)))
+        listData.refresh()
     }
 
     private fun setupViews() {
         recycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         recycler.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
 
-        postListAdapter = PostListAdapter(this, getItems(), object : ListItemDataSource<PostModel> {
+        postListAdapter = PostListAdapter(this, listData.items, object : ListItemDataSource<PostModel> {
             override fun loadMore() {
-                dispatcher.dispatch(ListActionBuilder.newFetchListAction(FetchListPayload(site, listType, true)))
+                listData.loadMore()
             }
 
             override fun getItem(listItemModel: ListItemModel): PostModel? {
@@ -88,12 +87,16 @@ class PostListActivity : AppCompatActivity() {
         recycler.adapter = postListAdapter
 
         swipeToRefresh.setOnRefreshListener {
-            val payload = FetchPostsPayload(site, listType)
-            dispatcher.dispatch(PostActionBuilder.newFetchPostsAction(payload))
+            listData.refresh()
         }
     }
 
-    private fun getItems(): List<ListItemModel> = listStore.getListItems(site, listType)
+    private fun refreshListData() {
+        listData = listStore.getList(site, listType)
+        swipeToRefresh.isRefreshing = listData.isFetchingFirstPage
+        loadingMoreProgressBar.visibility = if (listData.isLoadingMore) View.VISIBLE else View.GONE
+        postListAdapter?.setItems(listData.items)
+    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
@@ -101,8 +104,7 @@ class PostListActivity : AppCompatActivity() {
         if (event.localSiteId != site.id || event.listType != listType || event.isError) {
             return
         }
-        swipeToRefresh.isRefreshing = false
-        postListAdapter?.setItems(getItems())
+        refreshListData()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
