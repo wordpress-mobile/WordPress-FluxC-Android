@@ -33,7 +33,6 @@ import javax.inject.Inject
 
 interface ListItemDataSource<T> {
     fun getItem(listItemModel: ListItemModel): T?
-    fun loadMore()
 }
 
 private const val LOCAL_SITE_ID = "LOCAL_SITE_ID"
@@ -67,11 +66,7 @@ class PostListActivity : AppCompatActivity() {
         recycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         recycler.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
 
-        postListAdapter = PostListAdapter(this, listData.items, object : ListItemDataSource<PostModel> {
-            override fun loadMore() {
-                listData.loadMore()
-            }
-
+        postListAdapter = PostListAdapter(this, listData, object : ListItemDataSource<PostModel> {
             override fun getItem(listItemModel: ListItemModel): PostModel? {
                 val postFromStore = postStore.getPostByRemotePostId(listItemModel.remoteItemId, site)
                 if (postFromStore != null) {
@@ -93,14 +88,10 @@ class PostListActivity : AppCompatActivity() {
     }
 
     private fun refreshListData() {
-        val newListData = listStore.getList(site, listType)
-        val dataChanged = newListData.hasDataChanged(listData)
-        listData = newListData
+        listData = listStore.getList(site, listType)
         swipeToRefresh.isRefreshing = listData.isFetchingFirstPage
         loadingMoreProgressBar.visibility = if (listData.isLoadingMore) View.VISIBLE else View.GONE
-        if (dataChanged) {
-            postListAdapter?.setItems(listData.items)
-        }
+        postListAdapter?.setListData(listData)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -131,24 +122,21 @@ class PostListActivity : AppCompatActivity() {
 
     private class PostListAdapter(
         context: Context,
-        items: List<ListItemModel>,
+        private var data: ListData,
         private val dataSource: ListItemDataSource<PostModel>
     ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         private val layoutInflater = LayoutInflater.from(context)
-        private val items = ArrayList<ListItemModel>()
 
-        init {
-            this.items.addAll(items)
-        }
-
-        fun setItems(items: List<ListItemModel>) {
-            this.items.clear()
-            this.items.addAll(items)
-            notifyDataSetChanged()
+        fun setListData(newData: ListData) {
+            val shouldUpdate = this.data.hasDataChanged(newData)
+            data = newData
+            if (shouldUpdate) {
+                notifyDataSetChanged()
+            }
         }
 
         fun onItemChanged(remoteItemId: Long) {
-            val index = items.indexOfFirst { it.remoteItemId == remoteItemId }
+            val index = data.items.indexOfFirst { it.remoteItemId == remoteItemId }
             if (index != -1) {
                 notifyItemChanged(index)
             }
@@ -160,15 +148,15 @@ class PostListActivity : AppCompatActivity() {
         }
 
         override fun getItemCount(): Int {
-            return items.size
+            return data.items.size
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            if (position == items.size - 1) {
-                dataSource.loadMore()
+            if (position == data.items.size - 1) {
+                data.loadMore()
             }
             val postHolder = holder as PostViewHolder
-            val postModel = dataSource.getItem(items[position])
+            val postModel = dataSource.getItem(data.items[position])
             postHolder.postTitle.text = postModel?.title ?: ""
         }
 
