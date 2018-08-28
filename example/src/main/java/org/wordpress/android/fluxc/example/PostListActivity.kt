@@ -62,7 +62,7 @@ class PostListActivity : AppCompatActivity() {
         recycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         recycler.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
 
-        postListAdapter = PostListAdapter(this, listData, )
+        postListAdapter = PostListAdapter(this, listData)
         recycler.adapter = postListAdapter
 
         swipeToRefresh.setOnRefreshListener {
@@ -77,22 +77,19 @@ class PostListActivity : AppCompatActivity() {
         postListAdapter?.setListData(listData)
     }
 
-    private fun getListDataFromStore(): ListData<PostModel> {
+    private fun getListDataFromStore(): ListData<PostModel> =
         listStore.getList(site, listType, object : ListItemInterface<PostModel> {
-            override fun getItem(remoteItemId: Long): PostModel? {
-                val postFromStore = postStore.getPostByRemotePostId(remoteItemId, site)
-                if (postFromStore != null) {
-                    // TODO: check if the lastModified is different and fetch the post if necessary
-                    return postFromStore
-                }
+            override fun fetchItem(remoteItemId: Long) {
                 val postToFetch = PostModel()
                 postToFetch.remotePostId = remoteItemId
                 val payload = RemotePostPayload(postToFetch, site)
                 dispatcher.dispatch(PostActionBuilder.newFetchPostAction(payload))
-                return null
+            }
+
+            override fun getItem(remoteItemId: Long): PostModel? {
+                return postStore.getPostByRemotePostId(remoteItemId, site)
             }
         })
-    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
