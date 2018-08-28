@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.model.ListModel.ListType
 import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.ListData
+import org.wordpress.android.fluxc.store.ListItemInterface
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged
 import org.wordpress.android.fluxc.store.PostStore
@@ -29,10 +30,6 @@ import org.wordpress.android.fluxc.store.PostStore.OnSinglePostFetched
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
 import org.wordpress.android.fluxc.store.SiteStore
 import javax.inject.Inject
-
-interface ListItemDataSource<T> {
-    fun getItem(remoteItemId: Long): T?
-}
 
 private const val LOCAL_SITE_ID = "LOCAL_SITE_ID"
 
@@ -45,7 +42,7 @@ class PostListActivity : AppCompatActivity() {
     private val listType = ListType.POSTS_ALL
     private lateinit var site: SiteModel
     private var postListAdapter: PostListAdapter? = null
-    private lateinit var listData: ListData
+    private lateinit var listData: ListData<PostModel>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -54,7 +51,7 @@ class PostListActivity : AppCompatActivity() {
 
         dispatcher.register(this)
         site = siteStore.getSiteByLocalId(intent.getIntExtra(LOCAL_SITE_ID, 0))
-        listData = listStore.getList(site, listType)
+        listData = getListDataFromStore()
 
         setupViews()
 
@@ -65,7 +62,23 @@ class PostListActivity : AppCompatActivity() {
         recycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         recycler.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
 
-        postListAdapter = PostListAdapter(this, listData, object : ListItemDataSource<PostModel> {
+        postListAdapter = PostListAdapter(this, listData, )
+        recycler.adapter = postListAdapter
+
+        swipeToRefresh.setOnRefreshListener {
+            listData.refresh()
+        }
+    }
+
+    private fun refreshListData() {
+        listData = getListDataFromStore()
+        swipeToRefresh.isRefreshing = listData.isFetchingFirstPage
+        loadingMoreProgressBar.visibility = if (listData.isLoadingMore) View.VISIBLE else View.GONE
+        postListAdapter?.setListData(listData)
+    }
+
+    private fun getListDataFromStore(): ListData<PostModel> {
+        listStore.getList(site, listType, object : ListItemInterface<PostModel> {
             override fun getItem(remoteItemId: Long): PostModel? {
                 val postFromStore = postStore.getPostByRemotePostId(remoteItemId, site)
                 if (postFromStore != null) {
@@ -79,18 +92,6 @@ class PostListActivity : AppCompatActivity() {
                 return null
             }
         })
-        recycler.adapter = postListAdapter
-
-        swipeToRefresh.setOnRefreshListener {
-            listData.refresh()
-        }
-    }
-
-    private fun refreshListData() {
-        listData = listStore.getList(site, listType)
-        swipeToRefresh.isRefreshing = listData.isFetchingFirstPage
-        loadingMoreProgressBar.visibility = if (listData.isLoadingMore) View.VISIBLE else View.GONE
-        postListAdapter?.setListData(listData)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -121,12 +122,11 @@ class PostListActivity : AppCompatActivity() {
 
     private class PostListAdapter(
         context: Context,
-        private var data: ListData,
-        private val dataSource: ListItemDataSource<PostModel>
+        private var data: ListData<PostModel>
     ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         private val layoutInflater = LayoutInflater.from(context)
 
-        fun setListData(newData: ListData) {
+        fun setListData(newData: ListData<PostModel>) {
             val shouldUpdate = this.data.hasDataChanged(newData)
             data = newData
             if (shouldUpdate) {
@@ -152,7 +152,7 @@ class PostListActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val postHolder = holder as PostViewHolder
-            val postModel = dataSource.getItem(data.getRemoteItemId(position))
+            val postModel = data.getRemoteItem(position)
             postHolder.postTitle.text = postModel?.title ?: ""
         }
 
