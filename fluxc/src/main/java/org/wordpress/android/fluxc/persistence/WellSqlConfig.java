@@ -63,7 +63,6 @@ public class WellSqlConfig extends DefaultWellConfig {
     public void onUpgrade(SQLiteDatabase db, WellTableManager helper, int oldVersion, int newVersion) {
         AppLog.d(T.DB, "Upgrading database from version " + oldVersion + " to " + newVersion);
 
-        setForeignKeyConstraintsDisabled(db);
         db.beginTransaction();
         switch (oldVersion) {
             case 1:
@@ -379,15 +378,6 @@ public class WellSqlConfig extends DefaultWellConfig {
         }
         db.setTransactionSuccessful();
         db.endTransaction();
-        setForeignKeyConstraintsEnabled(db);
-    }
-
-    private void setForeignKeyConstraintsDisabled(SQLiteDatabase db) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            db.setForeignKeyConstraintsEnabled(false);
-        } else {
-            db.execSQL("PRAGMA foreign_keys=OFF;");
-        }
     }
 
     private void setForeignKeyConstraintsEnabled(SQLiteDatabase db) {
