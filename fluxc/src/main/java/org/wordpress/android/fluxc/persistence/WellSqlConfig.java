@@ -375,6 +375,7 @@ public class WellSqlConfig extends DefaultWellConfig {
                         +
                         "  FROM PostModel_migration_copy;");
                 db.execSQL("DROP TABLE PostModel_migration_copy");
+                oldVersion++;
         }
         db.setTransactionSuccessful();
         db.endTransaction();
