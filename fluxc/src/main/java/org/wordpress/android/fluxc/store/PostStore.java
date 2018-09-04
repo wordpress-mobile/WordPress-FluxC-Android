@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.action.PostAction;
 import org.wordpress.android.fluxc.annotations.action.Action;
 import org.wordpress.android.fluxc.annotations.action.IAction;
 import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.model.PostsModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
@@ -106,22 +107,22 @@ public class PostStore extends Store {
     public static class FetchPostsResponsePayload extends Payload<PostError> {
         public PostsModel posts;
         public SiteModel site;
-        public boolean isPages;
+        public PostType postType;
         public boolean loadedMore;
         public boolean canLoadMore;
 
-        public FetchPostsResponsePayload(PostsModel posts, SiteModel site, boolean isPages, boolean loadedMore,
+        public FetchPostsResponsePayload(PostsModel posts, SiteModel site, PostType postType, boolean loadedMore,
                                          boolean canLoadMore) {
             this.posts = posts;
             this.site = site;
-            this.isPages = isPages;
+            this.postType = postType;
             this.loadedMore = loadedMore;
             this.canLoadMore = canLoadMore;
         }
 
-        public FetchPostsResponsePayload(PostError error, boolean isPages) {
+        public FetchPostsResponsePayload(PostError error, PostType postType) {
             this.error = error;
-            this.isPages = isPages;
+            this.postType = postType;
         }
     }
 
@@ -237,15 +238,15 @@ public class PostStore extends Store {
         AppLog.d(AppLog.T.API, "PostStore onRegister");
     }
 
-    public PostModel instantiatePostModel(SiteModel site, boolean isPage) {
-        return instantiatePostModel(site, isPage, null, null);
+    public PostModel instantiatePostModel(SiteModel site, PostType type) {
+        return instantiatePostModel(site, type, null, null);
     }
 
-    public PostModel instantiatePostModel(SiteModel site, boolean isPage, List<Long> categoryIds, String postFormat) {
+    public PostModel instantiatePostModel(SiteModel site, PostType type, List<Long> categoryIds, String postFormat) {
         PostModel post = new PostModel();
         post.setLocalSiteId(site.getId());
         post.setIsLocalDraft(true);
-        post.setIsPage(isPage);
+        post.setType(type.modelValue());
         post.setDateLocallyChanged((DateTimeUtils.iso8601FromDate(DateTimeUtils.nowUTC())));
         if (categoryIds != null && !categoryIds.isEmpty()) {
             post.setCategoryIdList(categoryIds);
@@ -263,66 +264,45 @@ public class PostStore extends Store {
     }
 
     /**
-     * Returns all posts in the store for the given site as a {@link PostModel} list.
+     * Returns all posts in the store for the given site and post type as a {@link PostModel} list.
      */
-    public List<PostModel> getPostsForSite(SiteModel site) {
-        return PostSqlUtils.getPostsForSite(site, false);
+    public List<PostModel> getPostsForSite(SiteModel site, PostType postType) {
+        return PostSqlUtils.getPostsForSite(site, postType);
     }
 
     /**
      * Returns posts with given format in the store for the given site as a {@link PostModel} list.
      */
     public List<PostModel> getPostsForSiteWithFormat(SiteModel site, List<String> postFormat) {
-        return PostSqlUtils.getPostsForSiteWithFormat(site, postFormat, false);
+        return PostSqlUtils.getPostsForSiteWithFormat(site, postFormat, PostType.POST);
     }
 
     /**
-     * Returns all pages in the store for the given site as a {@link PostModel} list.
+     * Returns portfolios with given format in the store for the given site as a {@link PostModel} list.
      */
-    public List<PostModel> getPagesForSite(SiteModel site) {
-        return PostSqlUtils.getPostsForSite(site, true);
+    public List<PostModel> getPortfoliosForSiteWithFormat(SiteModel site, List<String> postFormat) {
+        return PostSqlUtils.getPostsForSiteWithFormat(site, postFormat, PostType.PORTFOLIO);
     }
 
     /**
-     * Returns the number of posts in the store for the given site.
+     * Returns the number of posts in the store for the given site and post type .
      */
-    public int getPostsCountForSite(SiteModel site) {
-        return getPostsForSite(site).size();
+    public int getPostsCountForSite(SiteModel site, PostType postType) {
+        return getPostsForSite(site, postType).size();
     }
 
     /**
-     * Returns the number of pages in the store for the given site.
+     * Returns all uploaded posts in the store for the given site and post type.
      */
-    public int getPagesCountForSite(SiteModel site) {
-        return getPagesForSite(site).size();
+    public List<PostModel> getUploadedPostsForSite(SiteModel site, PostType postType) {
+        return PostSqlUtils.getUploadedPostsForSite(site, postType);
     }
 
     /**
-     * Returns all uploaded posts in the store for the given site.
+     * Returns the number of uploaded posts in the store for the given site and post type .
      */
-    public List<PostModel> getUploadedPostsForSite(SiteModel site) {
-        return PostSqlUtils.getUploadedPostsForSite(site, false);
-    }
-
-    /**
-     * Returns all uploaded pages in the store for the given site.
-     */
-    public List<PostModel> getUploadedPagesForSite(SiteModel site) {
-        return PostSqlUtils.getUploadedPostsForSite(site, true);
-    }
-
-    /**
-     * Returns the number of uploaded posts in the store for the given site.
-     */
-    public int getUploadedPostsCountForSite(SiteModel site) {
-        return getUploadedPostsForSite(site).size();
-    }
-
-    /**
-     * Returns the number of uploaded pages in the store for the given site.
-     */
-    public int getUploadedPagesCountForSite(SiteModel site) {
-        return getUploadedPagesForSite(site).size();
+    public int getUploadedPostsCountForSite(SiteModel site, PostType postType) {
+        return getUploadedPostsForSite(site, postType).size();
     }
 
     /**
@@ -373,10 +353,13 @@ public class PostStore extends Store {
 
         switch ((PostAction) actionType) {
             case FETCH_POSTS:
-                fetchPosts((FetchPostsPayload) action.getPayload(), false);
+                fetchPosts((FetchPostsPayload) action.getPayload(), PostType.POST);
                 break;
             case FETCH_PAGES:
-                fetchPosts((FetchPostsPayload) action.getPayload(), true);
+                fetchPosts((FetchPostsPayload) action.getPayload(), PostType.PAGE);
+                break;
+            case FETCH_PORTFOLIOS:
+                fetchPosts((FetchPostsPayload) action.getPayload(), PostType.PORTFOLIO);
                 break;
             case FETCHED_POSTS:
                 handleFetchPostsCompleted((FetchPostsResponsePayload) action.getPayload());
@@ -438,17 +421,17 @@ public class PostStore extends Store {
         }
     }
 
-    private void fetchPosts(FetchPostsPayload payload, boolean pages) {
+    private void fetchPosts(FetchPostsPayload payload, PostType type) {
         int offset = 0;
         if (payload.loadMore) {
-            offset = PostSqlUtils.getUploadedPostsForSite(payload.site, pages).size();
+            offset = getUploadedPostsCountForSite(payload.site, type);
         }
 
         if (payload.site.isUsingWpComRestApi()) {
-            mPostRestClient.fetchPosts(payload.site, pages, payload.statusTypes, offset);
+            mPostRestClient.fetchPosts(payload.site, type, payload.statusTypes, offset);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
-            mPostXMLRPCClient.fetchPosts(payload.site, pages, offset);
+            mPostXMLRPCClient.fetchPosts(payload.site, type, offset);
         }
     }
 
@@ -489,7 +472,7 @@ public class PostStore extends Store {
             // This is the simplest way of keeping our local posts in sync with remote posts (in case of deletions,
             // or if the user manual changed some post IDs)
             if (!payload.loadedMore) {
-                PostSqlUtils.deleteUploadedPostsForSite(payload.site, payload.isPages);
+                PostSqlUtils.deleteUploadedPostsForSite(payload.site, payload.postType);
             }
 
             int rowsAffected = 0;
@@ -500,10 +483,18 @@ public class PostStore extends Store {
             onPostChanged = new OnPostChanged(rowsAffected, payload.canLoadMore);
         }
 
-        if (payload.isPages) {
-            onPostChanged.causeOfChange = PostAction.FETCH_PAGES;
-        } else {
-            onPostChanged.causeOfChange = PostAction.FETCH_POSTS;
+        switch (payload.postType) {
+            case PAGE:
+                onPostChanged.causeOfChange = PostAction.FETCH_PAGES;
+                break;
+            case POST:
+                onPostChanged.causeOfChange = PostAction.FETCH_POSTS;
+                break;
+            case PORTFOLIO:
+                onPostChanged.causeOfChange = PostAction.FETCH_PORTFOLIOS;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown type:" + payload.postType);
         }
 
         emitChange(onPostChanged);

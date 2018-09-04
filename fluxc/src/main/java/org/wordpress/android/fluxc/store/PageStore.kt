@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.model.post.PostStatus
 import org.wordpress.android.fluxc.store.PostStore.PostError
 import org.wordpress.android.fluxc.store.PostStore.PostErrorType
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
+import org.wordpress.android.fluxc.model.post.PostType
 import java.util.SortedMap
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -78,7 +79,7 @@ class PageStore @Inject constructor(private val postStore: PostStore, private va
     }
 
     suspend fun getPagesFromDb(site: SiteModel): List<PageModel> = withContext(CommonPool) {
-        val posts = postStore.getPagesForSite(site).filterNotNull().associateBy { it.remotePostId }
+        val posts = postStore.getPostsForSite(site, PostType.PAGE).filterNotNull().associateBy { it.remotePostId }
         posts.map { getPageFromPost(it.key, site, posts) }.filterNotNull().sortedBy { it.remoteId }
     }
 

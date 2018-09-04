@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.generated.UploadActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.MediaUploadModel;
 import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.model.PostUploadModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor;
@@ -199,7 +200,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         assertEquals(1, WellSqlUtils.getTotalPostsCount());
-        assertEquals(1, mPostStore.getPostsCountForSite(site));
+        assertEquals(1, mPostStore.getPostsCountForSite(site, PostType.POST));
 
         // Since the post upload completed successfully, the PostUploadModel should have been deleted
         assertEquals(0, mUploadStore.getPendingPosts().size());
@@ -477,8 +478,8 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         return testMedia;
     }
 
-    private PostModel createNewPost(SiteModel site) throws InterruptedException {
-        mPost = mPostStore.instantiatePostModel(site, false);
+    private PostModel createNewPost(SiteModel site) {
+        mPost = mPostStore.instantiatePostModel(site, PostType.POST);
         return mPost;
     }
 

@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.MediaModel.MediaUploadState;
 import org.wordpress.android.fluxc.model.MediaUploadModel;
 import org.wordpress.android.fluxc.model.PostModel;
+import org.wordpress.android.fluxc.model.post.PostType;
 import org.wordpress.android.fluxc.model.PostUploadModel;
 import org.wordpress.android.fluxc.persistence.UploadSqlUtils;
 import org.wordpress.android.fluxc.store.MediaStore;
@@ -216,7 +217,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         assertEquals(1, WellSqlUtils.getTotalPostsCount());
-        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite, PostType.POST));
 
         // Since the post upload completed successfully, the PostUploadModel should have been deleted
         assertEquals(0, mUploadStore.getPendingPosts().size());
@@ -347,7 +348,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         assertEquals(1, WellSqlUtils.getTotalPostsCount());
-        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite, PostType.POST));
 
         // Since the post upload completed successfully, the PostUploadModel should have been deleted
         assertEquals(0, mUploadStore.getPendingPosts().size());
@@ -455,8 +456,8 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         }
     }
 
-    private PostModel createNewPost() throws InterruptedException {
-        mPost = mPostStore.instantiatePostModel(sSite, false);
+    private PostModel createNewPost() {
+        mPost = mPostStore.instantiatePostModel(sSite, PostType.POST);
         return mPost;
     }
 
