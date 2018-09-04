@@ -19,8 +19,8 @@ import static org.wordpress.android.fluxc.post.PostTestUtils.EXAMPLE_LONGITUDE;
 public class PostModelTest {
     @Test
     public void testEquals() {
-        PostModel testPost = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
-        PostModel testPost2 = PostTestUtils.generateSampleUploadedPost(PostType.TypePost);
+        PostModel testPost = PostTestUtils.generateSampleUploadedPost(PostType.POST);
+        PostModel testPost2 = PostTestUtils.generateSampleUploadedPost(PostType.POST);
 
         testPost2.setRemotePostId(testPost.getRemotePostId() + 1);
         assertFalse(testPost.equals(testPost2));

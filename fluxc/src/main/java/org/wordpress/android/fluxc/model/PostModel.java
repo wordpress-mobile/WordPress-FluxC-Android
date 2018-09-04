@@ -410,7 +410,7 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
     }
 
     public boolean supportsLocation() {
-        return mType == PostType.TypePost.modelValue();
+        return mType == PostType.POST.modelValue();
     }
 
     public boolean hasLocation() {

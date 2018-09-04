@@ -202,7 +202,7 @@ public class UploadsFragment extends Fragment {
     private void uploadMediaInPost(@NonNull SiteModel site, @NonNull String mediaUri) {
         prependToLog("Uploading media to " + site.getName());
 
-        PostModel examplePost = mPostStore.instantiatePostModel(mSite, PostType.TypePost);
+        PostModel examplePost = mPostStore.instantiatePostModel(mSite, PostType.POST);
         examplePost.setTitle("From example activity");
         examplePost.setContent("Hi there, I'm a post from FluxC! [image]");
         mDispatcher.dispatch(PostActionBuilder.newUpdatePostAction(examplePost));

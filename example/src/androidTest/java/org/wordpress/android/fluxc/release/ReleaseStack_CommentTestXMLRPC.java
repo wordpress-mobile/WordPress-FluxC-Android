@@ -301,7 +301,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @SuppressWarnings("unused")
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
-        mPosts = mPostStore.getPostsForSite(sSite, PostType.TypePost);
+        mPosts = mPostStore.getPostsForSite(sSite, PostType.POST);
         assertEquals(mNextEvent, TestEvents.POSTS_FETCHED);
         mCountDownLatch.countDown();
     }

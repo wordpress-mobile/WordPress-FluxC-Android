@@ -378,7 +378,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         final PostType postType = PostType.fromApiValue(MapUtils.getMapStr(postMap, "post_type"));
         post.setType(postType.modelValue());
 
-        if (postType == PostType.TypePage) {
+        if (postType == PostType.PAGE) {
             post.setParentId(MapUtils.getMapLong(postMap, "wp_page_parent_id"));
             post.setParentTitle(MapUtils.getMapStr(postMap, "wp_page_parent"));
             post.setSlug(MapUtils.getMapStr(postMap, "wp_slug"));
@@ -400,7 +400,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
         Map<String, Object> contentStruct = new HashMap<>();
 
         final PostType postType = PostType.fromModelValue(post.getType());
-        if (postType.isOneOf(PostType.TypePost, PostType.TypePortfolio)) {
+        if (postType.isOneOf(PostType.POST, PostType.PORTFOLIO)) {
             if (!TextUtils.isEmpty(post.getPostFormat())) {
                 contentStruct.put("post_format", post.getPostFormat());
             }
@@ -432,7 +432,7 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
 
         contentStruct.put("post_content", content);
 
-        if (postType.isOneOf(PostType.TypePost, PostType.TypePortfolio)) {
+        if (postType.isOneOf(PostType.POST, PostType.PORTFOLIO)) {
             // Handle taxonomies
 
             if (post.isLocalDraft()) {

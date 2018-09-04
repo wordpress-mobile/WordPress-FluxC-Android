@@ -34,7 +34,7 @@ import org.wordpress.android.fluxc.model.page.PageStatus.SCHEDULED
 import org.wordpress.android.fluxc.model.page.PageStatus.TRASHED
 import org.wordpress.android.fluxc.model.post.PostStatus
 import org.wordpress.android.fluxc.model.post.PostType
-import org.wordpress.android.fluxc.model.post.PostType.TypePage
+import org.wordpress.android.fluxc.model.post.PostType.PAGE
 import org.wordpress.android.fluxc.store.PostStore.PostError
 import org.wordpress.android.fluxc.store.PostStore.PostErrorType.UNKNOWN_POST
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
@@ -76,7 +76,7 @@ class PageStoreTest {
     fun setUp() {
         actionCaptor = argumentCaptor()
         val pages = listOf(pageWithoutQuery, pageWithQuery, pageWithoutTitle)
-        whenever(postStore.getPostsForSite(site, PostType.TypePage)).thenReturn(pages)
+        whenever(postStore.getPostsForSite(site, PostType.PAGE)).thenReturn(pages)
         store = PageStore(postStore, dispatcher)
     }
 
@@ -113,7 +113,7 @@ class PageStoreTest {
                 draftSite2,
                 trashedSite2
         )
-        whenever(postStore.getPostsForSite(site, PostType.TypePage)).thenReturn(pages)
+        whenever(postStore.getPostsForSite(site, PostType.PAGE)).thenReturn(pages)
 
         val result = runBlocking { store.groupedSearch(site, title) }
 
@@ -248,7 +248,7 @@ class PageStoreTest {
         assertThat(pageTypes.filter { it == PostStatus.TRASHED }.size).isEqualTo(1)
         assertThat(pageTypes.filter { it == PostStatus.SCHEDULED }.size).isEqualTo(1)
 
-        whenever(postStore.getPostsForSite(site, PostType.TypePage))
+        whenever(postStore.getPostsForSite(site, PostType.PAGE))
                 .thenReturn(differentPageTypes.filter { payload.statusTypes.contains(PostStatus.fromPost(it)) })
 
         val pages = store.getPagesFromDb(site)
@@ -294,7 +294,7 @@ class PageStoreTest {
 
     @Test
     fun getPages() = runBlocking<Unit> {
-        whenever(postStore.getPostsForSite(site, TypePage)).thenReturn(pageHierarchy)
+        whenever(postStore.getPostsForSite(site, PAGE)).thenReturn(pageHierarchy)
 
         val pages = store.getPagesFromDb(site)
 

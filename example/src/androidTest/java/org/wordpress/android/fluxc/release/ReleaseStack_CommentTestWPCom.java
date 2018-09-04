@@ -418,7 +418,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
     @SuppressWarnings("unused")
     @Subscribe
     public void onPostChanged(OnPostChanged event) {
-        List<PostModel> posts = mPostStore.getPostsForSite(sSite, PostType.TypePost);
+        List<PostModel> posts = mPostStore.getPostsForSite(sSite, PostType.POST);
         mFirstPost = getFirstPublishedPost(posts);
         assertEquals(mNextEvent, TestEvents.POSTS_FETCHED);
         mCountDownLatch.countDown();

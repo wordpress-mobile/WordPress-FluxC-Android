@@ -274,14 +274,14 @@ public class PostStore extends Store {
      * Returns posts with given format in the store for the given site as a {@link PostModel} list.
      */
     public List<PostModel> getPostsForSiteWithFormat(SiteModel site, List<String> postFormat) {
-        return PostSqlUtils.getPostsForSiteWithFormat(site, postFormat, PostType.TypePost);
+        return PostSqlUtils.getPostsForSiteWithFormat(site, postFormat, PostType.POST);
     }
 
     /**
      * Returns portfolios with given format in the store for the given site as a {@link PostModel} list.
      */
     public List<PostModel> getPortfoliosForSiteWithFormat(SiteModel site, List<String> postFormat) {
-        return PostSqlUtils.getPostsForSiteWithFormat(site, postFormat, PostType.TypePortfolio);
+        return PostSqlUtils.getPostsForSiteWithFormat(site, postFormat, PostType.PORTFOLIO);
     }
 
     /**
@@ -353,13 +353,13 @@ public class PostStore extends Store {
 
         switch ((PostAction) actionType) {
             case FETCH_POSTS:
-                fetchPosts((FetchPostsPayload) action.getPayload(), PostType.TypePost);
+                fetchPosts((FetchPostsPayload) action.getPayload(), PostType.POST);
                 break;
             case FETCH_PAGES:
-                fetchPosts((FetchPostsPayload) action.getPayload(), PostType.TypePage);
+                fetchPosts((FetchPostsPayload) action.getPayload(), PostType.PAGE);
                 break;
             case FETCH_PORTFOLIOS:
-                fetchPosts((FetchPostsPayload) action.getPayload(), PostType.TypePortfolio);
+                fetchPosts((FetchPostsPayload) action.getPayload(), PostType.PORTFOLIO);
                 break;
             case FETCHED_POSTS:
                 handleFetchPostsCompleted((FetchPostsResponsePayload) action.getPayload());
@@ -484,13 +484,13 @@ public class PostStore extends Store {
         }
 
         switch (payload.postType) {
-            case TypePage:
+            case PAGE:
                 onPostChanged.causeOfChange = PostAction.FETCH_PAGES;
                 break;
-            case TypePost:
+            case POST:
                 onPostChanged.causeOfChange = PostAction.FETCH_POSTS;
                 break;
-            case TypePortfolio:
+            case PORTFOLIO:
                 onPostChanged.causeOfChange = PostAction.FETCH_PORTFOLIOS;
                 break;
             default:

@@ -196,7 +196,7 @@ public class PostActivity extends AppCompatActivity {
 
     private void createMediaPost(MediaModel media) {
         mMedia = media;
-        PostModel post = mPostStore.instantiatePostModel(mSite, PostType.TypePost, null, "image");
+        PostModel post = mPostStore.instantiatePostModel(mSite, PostType.POST, null, "image");
         String postContent = "<img src=\"" + mMedia.getUrl()
                              + "\" width=\"" + mMedia.getWidth()
                              + "\" height=\"" + mMedia.getHeight() + "\" />";

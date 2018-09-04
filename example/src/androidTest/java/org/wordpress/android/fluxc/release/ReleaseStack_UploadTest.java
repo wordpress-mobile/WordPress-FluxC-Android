@@ -217,7 +217,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         assertEquals(1, WellSqlUtils.getTotalPostsCount());
-        assertEquals(1, mPostStore.getPostsCountForSite(sSite, PostType.TypePost));
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite, PostType.POST));
 
         // Since the post upload completed successfully, the PostUploadModel should have been deleted
         assertEquals(0, mUploadStore.getPendingPosts().size());
@@ -348,7 +348,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         assertEquals(1, WellSqlUtils.getTotalPostsCount());
-        assertEquals(1, mPostStore.getPostsCountForSite(sSite, PostType.TypePost));
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite, PostType.POST));
 
         // Since the post upload completed successfully, the PostUploadModel should have been deleted
         assertEquals(0, mUploadStore.getPendingPosts().size());
@@ -457,7 +457,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
     }
 
     private PostModel createNewPost() {
-        mPost = mPostStore.instantiatePostModel(sSite, PostType.TypePost);
+        mPost = mPostStore.instantiatePostModel(sSite, PostType.POST);
         return mPost;
     }
 

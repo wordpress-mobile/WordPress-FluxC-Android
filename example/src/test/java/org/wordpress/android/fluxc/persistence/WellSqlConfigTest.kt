@@ -34,13 +34,13 @@ class WellSqlConfigTest {
         val cursor1 = queryFromPostModel(database, postModelNewColumns, "1")
         cursor1.moveToFirst()
         assertThat(cursor1.count).isEqualTo(1)
-        assertThat(cursor1.getInt(cursor1.getColumnIndex("TYPE"))).isEqualTo(PostType.TypePage.modelValue())
+        assertThat(cursor1.getInt(cursor1.getColumnIndex("TYPE"))).isEqualTo(PostType.PAGE.modelValue())
         cursor1.close()
 
         val cursor2 = queryFromPostModel(database, postModelNewColumns, "2")
         cursor2.moveToFirst()
         assertThat(cursor2.count).isEqualTo(1)
-        assertThat(cursor2.getInt(cursor1.getColumnIndex("TYPE"))).isEqualTo(PostType.TypePost.modelValue())
+        assertThat(cursor2.getInt(cursor1.getColumnIndex("TYPE"))).isEqualTo(PostType.POST.modelValue())
         cursor2.close()
     }
 

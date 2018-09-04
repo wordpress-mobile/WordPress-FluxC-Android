@@ -3,9 +3,9 @@ package org.wordpress.android.fluxc.model.post;
 import java.util.Arrays;
 
 public enum PostType {
-    TypePost("post", 0),
-    TypePage("page", 1),
-    TypePortfolio("jetpack-portfolio", 2);
+    POST("post", 0),
+    PAGE("page", 1),
+    PORTFOLIO("jetpack-portfolio", 2);
 
     private final String mApiValue;
     private final int mStorageValue;

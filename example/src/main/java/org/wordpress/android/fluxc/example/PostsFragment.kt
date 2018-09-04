@@ -15,7 +15,7 @@ import org.wordpress.android.fluxc.action.PostAction
 import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.post.PostType
-import org.wordpress.android.fluxc.model.post.PostType.TypePost
+import org.wordpress.android.fluxc.model.post.PostType.POST
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged
@@ -51,7 +51,7 @@ class PostsFragment : Fragment() {
         }
 
         create_new_post_first_site.setOnClickListener {
-            val examplePost = postStore.instantiatePostModel(getFirstSite(), PostType.TypePost)
+            val examplePost = postStore.instantiatePostModel(getFirstSite(), PostType.POST)
             examplePost.title = "From example activity"
             examplePost.content = "Hi there, I'm a post from FluxC!"
             examplePost.featuredImageId = 0
@@ -61,7 +61,7 @@ class PostsFragment : Fragment() {
 
         delete_a_post_from_first_site.setOnClickListener {
             val firstSite = getFirstSite()
-            val posts = postStore.getPostsForSite(firstSite, TypePost)
+            val posts = postStore.getPostsForSite(firstSite, POST)
             Collections.sort(posts) { lhs, rhs -> (rhs.remotePostId - lhs.remotePostId).toInt() }
             if (!posts.isEmpty()) {
                 val payload = RemotePostPayload(posts[0], firstSite)
@@ -91,7 +91,7 @@ class PostsFragment : Fragment() {
         }
 
         val firstSite = getFirstSite()
-        if (!postStore.getPostsForSite(firstSite, TypePost).isEmpty()) {
+        if (!postStore.getPostsForSite(firstSite, POST).isEmpty()) {
             if (event.causeOfChange == PostAction.FETCH_POSTS || event.causeOfChange == PostAction.FETCH_PAGES) {
                 prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.name)
             } else if (event.causeOfChange == PostAction.DELETE_POST) {
