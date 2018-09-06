@@ -16,9 +16,11 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatus
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
@@ -72,7 +74,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals(siteModel.id, localSiteId)
             assertEquals(949, remoteOrderId)
             assertEquals("949", number)
-            assertEquals(OrderStatus.PROCESSING, status)
+            assertEquals(CoreOrderStatus.PROCESSING.value, status)
             assertEquals("USD", currency)
             assertEquals("2018-04-02T14:57:39Z", dateCreated)
             assertEquals("44.00", total)
@@ -109,6 +111,23 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
+    fun testOrdersCountFetchSuccess() {
+        val statusFilter = CoreOrderStatus.COMPLETED.value
+
+        interceptor.respondWith("wc-completed-orders-response-success.json")
+        orderRestClient.fetchOrders(siteModel, 0, statusFilter, countOnly = true)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCOrderAction.FETCHED_ORDERS_COUNT, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchOrdersCountResponsePayload
+        assertNull(payload.error)
+        assertEquals(4, payload.count)
+        assertEquals(statusFilter, payload.statusFilter)
+    }
+
+    @Test
     fun testOrderListFetchError() {
         interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
         orderRestClient.fetchOrders(SiteModel(), 0)
@@ -126,13 +145,13 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         val originalOrder = WCOrderModel().apply {
             id = 8
             localSiteId = siteModel.id
-            status = OrderStatus.PROCESSING
+            status = CoreOrderStatus.PROCESSING.value
             remoteOrderId = 88
             total = "15.00"
         }
 
         interceptor.respondWith("wc-order-update-response-success.json")
-        orderRestClient.updateOrderStatus(originalOrder, siteModel, OrderStatus.REFUNDED)
+        orderRestClient.updateOrderStatus(originalOrder, siteModel, CoreOrderStatus.REFUNDED.value)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -144,7 +163,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals(originalOrder.id, order.id)
             assertEquals(siteModel.id, order.localSiteId)
             assertEquals(originalOrder.remoteOrderId, order.remoteOrderId)
-            assertEquals(OrderStatus.REFUNDED, order.status)
+            assertEquals(CoreOrderStatus.REFUNDED.value, order.status)
         }
     }
 
@@ -153,7 +172,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         val originalOrder = WCOrderModel().apply {
             id = 8
             localSiteId = siteModel.id
-            status = OrderStatus.PROCESSING
+            status = CoreOrderStatus.PROCESSING.value
             remoteOrderId = 88
             total = "15.00"
         }
@@ -164,7 +183,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
 
         interceptor.respondWithError(errorJson, 400)
-        orderRestClient.updateOrderStatus(originalOrder, siteModel, OrderStatus.REFUNDED)
+        orderRestClient.updateOrderStatus(originalOrder, siteModel, CoreOrderStatus.REFUNDED.value)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -291,6 +310,21 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertNotNull(error)
             assertEquals(OrderErrorType.INVALID_ID, error.type)
         }
+    }
+
+    @Test
+    fun testHasAnyOrders() {
+        interceptor.respondWith("wc-has-orders-response-success.json")
+        orderRestClient.fetchHasOrders(siteModel, filterByStatus = null)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCOrderAction.FETCHED_HAS_ORDERS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchHasOrdersResponsePayload
+        assertNull(payload.error)
+        assertTrue(payload.hasOrders)
+        assertNull(payload.statusFilter)
     }
 
     @Suppress("unused")

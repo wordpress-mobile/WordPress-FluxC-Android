@@ -354,6 +354,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         List<String> tags = new ArrayList<>(2);
         tags.add("fluxc");
         tags.add("generated-" + RandomStringUtils.randomAlphanumeric(8));
+        tags.add(RandomStringUtils.randomNumeric(8));
         mPost.setTagNameList(tags);
 
         String knownImageIds = BuildConfig.TEST_WPCOM_IMAGE_IDS_TEST1;
