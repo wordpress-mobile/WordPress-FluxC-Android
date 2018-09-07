@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import com.wellsql.generated.PluginDirectoryModelTable;
 import com.wellsql.generated.SitePluginModelTable;
 import com.wellsql.generated.WPOrgPluginModelTable;
+import com.yarolegovich.wellsql.DeleteQuery;
 import com.yarolegovich.wellsql.WellSql;
 
 import org.wordpress.android.fluxc.model.SiteModel;
@@ -19,7 +20,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.yarolegovich.wellsql.SelectQuery.ORDER_ASCENDING;
 
@@ -156,6 +159,30 @@ public class PluginSqlUtils {
             result += insertOrUpdateWPOrgPlugin(pluginModel);
         }
         return result;
+    }
+
+    /**
+     * This method will prune the `WPOrgPluginModel`s that are not stored as `PluginDirectoryModel`.
+     *
+     * `PluginDirectoryModelTable` holds the metadata of plugin lists and will be removed regularly by network requests.
+     * However, `WPOrgPluginModel`s are never removed even if they are not fetched by a network request for a long time
+     * because it might be used by other plugin directories. We need to periodically prune this table as it can get
+     * very large especially if the user keeps searching for plugins and never see them again.
+     *
+     * We'll first query the `PluginDirectoryModelTable` to find all the slugs that are in use and then remove all the
+     * rows from `WPOrgPluginModelTable` that are not in that slug set.
+     */
+    public static void pruneWPOrgPlugins() {
+        List<PluginDirectoryModel> allPluginDirectories = WellSql.select(PluginDirectoryModel.class).getAsModel();
+        Set<String> slugSet = new HashSet<>(allPluginDirectories.size());
+        for (PluginDirectoryModel pluginDirectoryModel : allPluginDirectories) {
+            slugSet.add(pluginDirectoryModel.getSlug());
+        }
+        DeleteQuery<WPOrgPluginModel> deleteQuery = WellSql.delete(WPOrgPluginModel.class);
+        if (slugSet.size() > 0) {
+            deleteQuery.where().isNotIn(WPOrgPluginModelTable.SLUG, slugSet).endWhere();
+        }
+        deleteQuery.execute();
     }
 
     // Plugin Directory

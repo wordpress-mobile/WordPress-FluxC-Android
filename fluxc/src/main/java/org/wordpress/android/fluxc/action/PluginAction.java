@@ -54,5 +54,7 @@ public enum PluginAction implements IAction {
 
     // Local actions
     @Action(payloadType = SiteModel.class)
-    REMOVE_SITE_PLUGINS
+    REMOVE_SITE_PLUGINS,
+    @Action
+    PRUNE_WPORG_PLUGINS
 }
