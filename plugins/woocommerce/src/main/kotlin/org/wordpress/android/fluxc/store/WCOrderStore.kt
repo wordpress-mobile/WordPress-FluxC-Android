@@ -30,7 +30,7 @@ import javax.inject.Singleton
 class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrderRestClient: OrderRestClient)
     : Store(dispatcher) {
     companion object {
-        const val NUM_ORDERS_PER_FETCH = 50
+        const val NUM_ORDERS_PER_FETCH = 25
     }
 
     class FetchOrdersPayload(
