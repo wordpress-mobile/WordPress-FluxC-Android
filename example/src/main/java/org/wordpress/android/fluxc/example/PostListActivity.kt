@@ -151,7 +151,7 @@ class PostListActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val postHolder = holder as PostViewHolder
             val postModel = listManager.getRemoteItem(position)
-            postHolder.postTitle.text = postModel?.title ?: ""
+            postHolder.postTitle.text = postModel?.title ?: "Loading.."
         }
 
         private class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
