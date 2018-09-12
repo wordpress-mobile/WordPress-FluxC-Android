@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
-import org.wordpress.android.fluxc.model.ListModel.ListType;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
@@ -297,8 +296,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(
-                PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, ListType.POSTS_ALL)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, false)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -314,8 +312,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder
-                .newFetchPostsAction(new FetchPostsPayload(sSite, ListType.POSTS_ALL, PostStore.NUM_POSTS_PER_FETCH)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, true)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -330,8 +327,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.PAGES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(
-                PostActionBuilder.newFetchPagesAction(new FetchPostsPayload(sSite, ListType.POSTS_ALL)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPagesAction(new FetchPostsPayload(sSite, false)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -358,6 +354,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         List<String> tags = new ArrayList<>(2);
         tags.add("fluxc");
         tags.add("generated-" + RandomStringUtils.randomAlphanumeric(8));
+        tags.add(RandomStringUtils.randomNumeric(8));
         mPost.setTagNameList(tags);
 
         String knownImageIds = BuildConfig.TEST_WPCOM_IMAGE_IDS_TEST1;

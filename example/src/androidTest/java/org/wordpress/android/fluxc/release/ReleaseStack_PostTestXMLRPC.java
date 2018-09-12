@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
-import org.wordpress.android.fluxc.model.ListModel.ListType;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
@@ -288,8 +287,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(
-                PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, ListType.POSTS_ALL)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, false)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -305,8 +303,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.POSTS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder
-                .newFetchPostsAction(new FetchPostsPayload(sSite, ListType.POSTS_ALL, PostStore.NUM_POSTS_PER_FETCH)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, true)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -321,8 +318,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.PAGES_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(
-                PostActionBuilder.newFetchPagesAction(new FetchPostsPayload(sSite, ListType.POSTS_ALL)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPagesAction(new FetchPostsPayload(sSite, false)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -891,7 +887,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mNextEvent = TestEvents.ERROR_UNAUTHORIZED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(site, ListType.POSTS_ALL)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(site)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }

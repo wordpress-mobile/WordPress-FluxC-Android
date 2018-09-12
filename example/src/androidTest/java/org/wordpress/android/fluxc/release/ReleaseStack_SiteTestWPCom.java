@@ -22,12 +22,19 @@ import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferEligibilit
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferInitiated;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferStatusChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
+import org.wordpress.android.fluxc.store.SiteStore.OnDomainAvailabilityChecked;
+import org.wordpress.android.fluxc.store.SiteStore.DomainAvailabilityStatus;
+import org.wordpress.android.fluxc.store.SiteStore.DomainMappabilityStatus;
+import org.wordpress.android.fluxc.store.SiteStore.OnPlansFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
+import org.wordpress.android.fluxc.store.SiteStore.OnDomainSupportedStatesFetched;
+import org.wordpress.android.fluxc.store.SiteStore.OnDomainSupportedCountriesFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnUserRolesChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnWPComSiteFetched;
+import org.wordpress.android.fluxc.store.SiteStore.PlansErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
 import org.wordpress.android.util.AppLog;
@@ -57,6 +64,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         SITE_CHANGED,
         POST_FORMATS_CHANGED,
         USER_ROLES_CHANGED,
+        PLANS_FETCHED,
+        PLANS_UNKNOWN_BLOG_ERROR,
         SITE_REMOVED,
         FETCHED_CONNECT_SITE_INFO,
         FETCHED_WPCOM_SITE_BY_URL,
@@ -65,7 +74,10 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         ERROR_UNKNOWN_SITE,
         INELIGIBLE_FOR_AUTOMATED_TRANSFER,
         INITIATE_INELIGIBLE_AUTOMATED_TRANSFER,
-        AUTOMATED_TRANSFER_NOT_FOUND
+        AUTOMATED_TRANSFER_NOT_FOUND,
+        CHECK_BLACKLISTED_DOMAIN_AVAILABILITY,
+        FETCHED_DOMAIN_SUPPORTED_STATES,
+        FETCHED_DOMAIN_SUPPORTED_COUNTRIES
     }
 
     private TestEvents mNextEvent;
@@ -132,6 +144,39 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Test fetched user roles
         List<RoleModel> roles = mSiteStore.getUserRoles(firstSite);
         assertNotSame(0, roles.size());
+    }
+
+    @Test
+    public void testFetchPlans() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        // Get the first site
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+
+        // Fetch site plans
+        mDispatcher.dispatch(SiteActionBuilder.newFetchPlansAction(firstSite));
+        mNextEvent = TestEvents.PLANS_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testUnknownBlogErrorOnFetchPlans() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        // Initialize a WP.com site with an invalid siteId.
+        // siteModel.isWPCom is set to true, to avoid PlansErrorType.NOT_AVAILABLE error.
+        SiteModel siteModel = new SiteModel();
+        siteModel.setIsWPCom(true);
+        siteModel.setSiteId(0);
+
+        // Try to fetch plans for that invalid site.
+        mDispatcher.dispatch(SiteActionBuilder.newFetchPlansAction(siteModel));
+        mNextEvent = TestEvents.PLANS_UNKNOWN_BLOG_ERROR;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     @Test
@@ -261,6 +306,36 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
+    public void testCheckDomainAvailability() throws InterruptedException {
+        authenticateUser(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        // Check availability for 'Wordpress.com'.
+        mDispatcher.dispatch(SiteActionBuilder.newCheckDomainAvailabilityAction("Wordpress.com"));
+        mNextEvent = TestEvents.CHECK_BLACKLISTED_DOMAIN_AVAILABILITY;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testFetchSupportedStates() throws InterruptedException {
+        authenticateUser(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        // Fetch Supported states
+        mDispatcher.dispatch(SiteActionBuilder.newFetchDomainSupportedStatesAction("US"));
+        mNextEvent = TestEvents.FETCHED_DOMAIN_SUPPORTED_STATES;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testFetchSupportedCountries() throws InterruptedException {
+        authenticateUser(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        // Fetch supported countries
+        mDispatcher.dispatch(SiteActionBuilder.newFetchDomainSupportedCountriesAction());
+        mNextEvent = TestEvents.FETCHED_DOMAIN_SUPPORTED_COUNTRIES;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -326,6 +401,24 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.USER_ROLES_CHANGED, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onPlansFetched(OnPlansFetched event) {
+        if (event.isError()) {
+            AppLog.i(T.API, "onPlansFetched has error: " + event.error.type + " - " + event.error.message);
+            if (mNextEvent.equals(TestEvents.PLANS_UNKNOWN_BLOG_ERROR)) {
+                assertEquals(PlansErrorType.UNKNOWN_BLOG, event.error.type);
+                mCountDownLatch.countDown();
+                return;
+            }
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.PLANS_FETCHED, mNextEvent);
+        assertNotNull(event.plans);
+        assertFalse(event.plans.isEmpty());
         mCountDownLatch.countDown();
     }
 
@@ -410,7 +503,55 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onDomainAvailabilityChecked(OnDomainAvailabilityChecked event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.CHECK_BLACKLISTED_DOMAIN_AVAILABILITY, mNextEvent);
+        assertEquals(event.status, DomainAvailabilityStatus.BLACKLISTED_DOMAIN);
+        assertEquals(event.mappable, DomainMappabilityStatus.BLACKLISTED_DOMAIN);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onDomainSupportedStatesFetched(OnDomainSupportedStatesFetched event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.FETCHED_DOMAIN_SUPPORTED_STATES, mNextEvent);
+        assertNotNull(event.supportedStates);
+        assertFalse(event.supportedStates.isEmpty());
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onDomainSupportedCountriesFetched(OnDomainSupportedCountriesFetched event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.FETCHED_DOMAIN_SUPPORTED_COUNTRIES, mNextEvent);
+        assertNotNull(event.supportedCountries);
+        assertFalse(event.supportedCountries.isEmpty());
+        mCountDownLatch.countDown();
+    }
+
     private void authenticateAndFetchSites(String username, String password) throws InterruptedException {
+        authenticateUser(username, password);
+
+        // Fetch sites from REST API, and wait for OnSiteChanged event
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.SITE_CHANGED;
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        assertTrue(mSiteStore.getSitesCount() > 0);
+    }
+
+    private void authenticateUser(String username, String password) throws InterruptedException {
         // Authenticate a test user (actual credentials declared in gradle.properties)
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
         mCountDownLatch = new CountDownLatch(1);
@@ -424,13 +565,5 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        // Fetch sites from REST API, and wait for OnSiteChanged event
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.SITE_CHANGED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        assertTrue(mSiteStore.getSitesCount() > 0);
     }
 }
