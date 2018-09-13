@@ -59,6 +59,11 @@ class PostListActivity : AppCompatActivity() {
         listManager.refresh()
     }
 
+    override fun onStop() {
+        super.onStop()
+        dispatcher.unregister(this)
+    }
+
     private fun setupViews() {
         recycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         recycler.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
@@ -155,7 +160,7 @@ class PostListActivity : AppCompatActivity() {
         }
 
         private class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val postTitle: TextView = itemView.findViewById(R.id.post_list_row_post_title)
+            val postTitle: TextView = itemView.findViewById(R.id.post_list_row_post_title) as TextView
         }
     }
 }
