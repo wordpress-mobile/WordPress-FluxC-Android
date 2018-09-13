@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
+import org.wordpress.android.fluxc.model.PostCauseOfChange;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
@@ -736,41 +737,36 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
             }
             return;
         }
-        switch (event.causeOfChange) {
-            case UPDATE_POST:
-                if (mNextEvent.equals(TestEvents.POST_UPDATED)) {
-                    mCountDownLatch.countDown();
-                }
-                break;
-            case FETCH_POSTS:
-                if (mNextEvent.equals(TestEvents.POSTS_FETCHED)) {
-                    AppLog.i(T.API, "Fetched " + event.rowsAffected + " posts, can load more: " + event.canLoadMore);
-                    mCanLoadMorePosts = event.canLoadMore;
-                    mCountDownLatch.countDown();
-                }
-                break;
-            case FETCH_PAGES:
-                if (mNextEvent.equals(TestEvents.PAGES_FETCHED)) {
-                    AppLog.i(T.API, "Fetched " + event.rowsAffected + " pages, can load more: " + event.canLoadMore);
-                    mCanLoadMorePosts = event.canLoadMore;
-                    mCountDownLatch.countDown();
-                }
-                break;
-            case DELETE_POST:
-                if (mNextEvent.equals(TestEvents.POST_DELETED)) {
-                    mCountDownLatch.countDown();
-                }
-                break;
-            case REMOVE_POST:
-                if (mNextEvent.equals(TestEvents.POST_REMOVED)) {
-                    mCountDownLatch.countDown();
-                }
-                break;
-            case REMOVE_ALL_POSTS:
-                if (mNextEvent.equals(TestEvents.ALL_POST_REMOVED)) {
-                    mCountDownLatch.countDown();
-                }
-                break;
+        if (event.causeOfChange instanceof PostCauseOfChange.UpdatePost) {
+            if (mNextEvent.equals(TestEvents.POST_UPDATED)) {
+                mCountDownLatch.countDown();
+            }
+        } else if (event.causeOfChange instanceof PostCauseOfChange.FetchPosts) {
+            if (mNextEvent.equals(TestEvents.POSTS_FETCHED)) {
+                AppLog.i(T.API, "Fetched " + event.rowsAffected + " posts, can load more: " + event.canLoadMore);
+                mCanLoadMorePosts = event.canLoadMore;
+                mCountDownLatch.countDown();
+            }
+        } else if (event.causeOfChange instanceof PostCauseOfChange.FetchPages) {
+            if (mNextEvent.equals(TestEvents.PAGES_FETCHED)) {
+                AppLog.i(T.API, "Fetched " + event.rowsAffected + " pages, can load more: " + event.canLoadMore);
+                mCanLoadMorePosts = event.canLoadMore;
+                mCountDownLatch.countDown();
+            }
+        } else if (event.causeOfChange instanceof PostCauseOfChange.DeletePost) {
+            if (mNextEvent.equals(TestEvents.POST_DELETED)) {
+                mCountDownLatch.countDown();
+            }
+        } else if (event.causeOfChange instanceof PostCauseOfChange.RemovePost) {
+            if (mNextEvent.equals(TestEvents.POST_REMOVED)) {
+                mCountDownLatch.countDown();
+            }
+        } else if (event.causeOfChange instanceof PostCauseOfChange.RemoveAllPosts) {
+            if (mNextEvent.equals(TestEvents.ALL_POST_REMOVED)) {
+                mCountDownLatch.countDown();
+            }
+        } else {
+            throw new AssertionError("Unexpected cause of change: " + event.causeOfChange.getClass().getSimpleName());
         }
     }
 
