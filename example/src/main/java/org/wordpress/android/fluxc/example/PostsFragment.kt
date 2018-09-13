@@ -84,8 +84,8 @@ class PostsFragment : Fragment() {
 
         val firstSite = getFirstSite()
         if (!postStore.getPostsForSite(firstSite).isEmpty()) {
-            if (event.causeOfChange is PostCauseOfChange.FetchPosts
-                    || event.causeOfChange is PostCauseOfChange.FetchPages) {
+            if (event.causeOfChange is PostCauseOfChange.FetchPosts ||
+                event.causeOfChange is PostCauseOfChange.FetchPages) {
                 prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.name)
             } else if (event.causeOfChange == PostAction.DELETE_POST) {
                 prependToLog("Post deleted!")
