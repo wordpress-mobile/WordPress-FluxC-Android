@@ -7,6 +7,8 @@ import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.PostCauseOfChange;
+import org.wordpress.android.fluxc.model.PostCauseOfChange.DeletePost;
+import org.wordpress.android.fluxc.model.PostCauseOfChange.UpdatePost;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
@@ -33,6 +35,7 @@ import javax.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
@@ -957,6 +960,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         }
         if (event.causeOfChange instanceof PostCauseOfChange.UpdatePost) {
             if (mNextEvent.equals(TestEvents.POST_UPDATED)) {
+                UpdatePost causeOfChange = ((UpdatePost) event.causeOfChange);
+                assertTrue(causeOfChange.getLocalPostId() > 0 || causeOfChange.getRemotePostId() > 0);
                 mCountDownLatch.countDown();
             }
         } else if (event.causeOfChange instanceof PostCauseOfChange.FetchPosts) {
@@ -973,6 +978,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
             }
         } else if (event.causeOfChange instanceof PostCauseOfChange.DeletePost) {
             if (mNextEvent.equals(TestEvents.POST_DELETED)) {
+                assertNotEquals(0, ((DeletePost) event.causeOfChange).getLocalPostId());
+                assertNotEquals(0, ((DeletePost) event.causeOfChange).getRemotePostId());
                 mCountDownLatch.countDown();
             }
         } else if (event.causeOfChange instanceof PostCauseOfChange.RemoveAllPosts) {
