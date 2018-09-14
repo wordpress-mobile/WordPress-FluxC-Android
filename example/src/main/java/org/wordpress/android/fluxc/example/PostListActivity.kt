@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.util.DiffUtil
+import android.support.v7.util.DiffUtil.DiffResult
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -14,9 +16,15 @@ import android.view.ViewGroup
 import android.widget.TextView
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.post_list_activity.*
+import kotlinx.coroutines.experimental.DefaultDispatcher
+import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.withContext
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.action.PostAction
 import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.SiteModel
@@ -27,6 +35,7 @@ import org.wordpress.android.fluxc.model.list.ListType.POST
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged
 import org.wordpress.android.fluxc.store.PostStore
+import org.wordpress.android.fluxc.store.PostStore.OnPostChanged
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
 import org.wordpress.android.fluxc.store.SiteStore
 import javax.inject.Inject
@@ -44,6 +53,7 @@ class PostListActivity : AppCompatActivity() {
     private lateinit var site: SiteModel
     private var postListAdapter: PostListAdapter? = null
     private lateinit var listManager: ListManager<PostModel>
+    private var refreshListDataJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -77,10 +87,25 @@ class PostListActivity : AppCompatActivity() {
     }
 
     private fun refreshListData() {
-        listManager = getListDataFromStore()
+        refreshListDataJob?.cancel()
+        refreshListDataJob = launch(UI) {
+            val listManager = withContext(DefaultDispatcher) { getListDataFromStore() }
+            if (isActive) {
+                val diffResult = withContext(DefaultDispatcher) {
+                    DiffUtil.calculateDiff(DiffCallback(this@PostListActivity.listManager, listManager))
+                }
+                if (isActive) {
+                    updateListManager(listManager, diffResult)
+                }
+            }
+        }
+    }
+
+    private fun updateListManager(listManager: ListManager<PostModel>, diffResult: DiffResult) {
+        this.listManager = listManager
         swipeToRefresh.isRefreshing = listManager.isFetchingFirstPage
         loadingMoreProgressBar.visibility = if (listManager.isLoadingMore) View.VISIBLE else View.GONE
-        postListAdapter?.setListManager(listManager)
+        postListAdapter?.setListManager(listManager, diffResult)
     }
 
     private fun getListDataFromStore(): ListManager<PostModel> =
@@ -92,8 +117,8 @@ class PostListActivity : AppCompatActivity() {
                 dispatcher.dispatch(PostActionBuilder.newFetchPostAction(payload))
             }
 
-            override fun getItem(listDescriptor: ListDescriptor, remoteItemId: Long): PostModel? {
-                return postStore.getPostByRemotePostId(remoteItemId, site)
+            override fun getItems(listDescriptor: ListDescriptor, remoteItemIds: List<Long>): Map<Long, PostModel> {
+                return postStore.getPostsByRemotePostIds(remoteItemIds, site)
             }
         })
 
@@ -106,14 +131,14 @@ class PostListActivity : AppCompatActivity() {
         refreshListData()
     }
 
-//    @Subscribe(threadMode = ThreadMode.MAIN)
-//    @Suppress("unused")
-//    fun onSinglePostFetched(event: OnSinglePostFetched) {
-//        if (event.isError || event.localSiteId != site.id) {
-//            return
-//        }
-//        postListAdapter?.onItemChanged(event.remotePostId)
-//    }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Suppress("unused")
+    fun onPostChanged(event: OnPostChanged) {
+        if (event.isError || event.causeOfChange != PostAction.UPDATE_POST) {
+            return
+        }
+        refreshListData()
+    }
 
     companion object {
         fun newInstance(context: Context, localSiteId: Int): Intent {
@@ -129,19 +154,9 @@ class PostListActivity : AppCompatActivity() {
     ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         private val layoutInflater = LayoutInflater.from(context)
 
-        fun setListManager(listManager: ListManager<PostModel>) {
-            val shouldUpdate = this.listManager.hasDataChanged(listManager)
+        fun setListManager(listManager: ListManager<PostModel>, diffResult: DiffResult) {
             this.listManager = listManager
-            if (shouldUpdate) {
-                notifyDataSetChanged()
-            }
-        }
-
-        fun onItemChanged(remoteItemId: Long) {
-            val index = listManager.indexOfItem(remoteItemId)
-            if (index != null) {
-                notifyItemChanged(index)
-            }
+            diffResult.dispatchUpdatesTo(this)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -162,5 +177,26 @@ class PostListActivity : AppCompatActivity() {
         private class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val postTitle: TextView = itemView.findViewById(R.id.post_list_row_post_title) as TextView
         }
+    }
+}
+
+class DiffCallback(private val old: ListManager<PostModel>, private val new: ListManager<PostModel>): DiffUtil.Callback() {
+    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        return old.getRemoteItemId(oldItemPosition) == new.getRemoteItemId(newItemPosition)
+    }
+
+    override fun getOldListSize(): Int {
+        return old.size
+    }
+
+    override fun getNewListSize(): Int {
+        return new.size
+    }
+
+    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+        val oldItem = old.getRemoteItem(oldItemPosition, false, false)
+        val newItem = new.getRemoteItem(newItemPosition, false, false)
+        return (oldItem == null && newItem == null) || (oldItem != null &&
+                newItem != null && oldItem.title == newItem.title)
     }
 }
