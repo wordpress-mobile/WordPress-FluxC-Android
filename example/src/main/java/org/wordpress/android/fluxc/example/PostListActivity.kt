@@ -20,6 +20,7 @@ import kotlinx.coroutines.experimental.DefaultDispatcher
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.runBlocking
 import kotlinx.coroutines.experimental.withContext
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -62,7 +63,7 @@ class PostListActivity : AppCompatActivity() {
 
         dispatcher.register(this)
         site = siteStore.getSiteByLocalId(intent.getIntExtra(LOCAL_SITE_ID, 0))
-        listManager = getListDataFromStore()
+        runBlocking { listManager = getListDataFromStore() }
 
         setupViews()
 
@@ -108,7 +109,7 @@ class PostListActivity : AppCompatActivity() {
         postListAdapter?.setListManager(listManager, diffResult)
     }
 
-    private fun getListDataFromStore(): ListManager<PostModel> =
+    private suspend fun getListDataFromStore(): ListManager<PostModel> =
         listStore.getListManager(listDescriptor, object : ListItemDataSource<PostModel> {
             override fun fetchItem(listDescriptor: ListDescriptor, remoteItemId: Long) {
                 val postToFetch = PostModel()
