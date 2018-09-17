@@ -181,7 +181,10 @@ class PostListActivity : AppCompatActivity() {
     }
 }
 
-class DiffCallback(private val old: ListManager<PostModel>, private val new: ListManager<PostModel>): DiffUtil.Callback() {
+class DiffCallback(
+    private val old: ListManager<PostModel>,
+    private val new: ListManager<PostModel>
+) : DiffUtil.Callback() {
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
         return old.getRemoteItemId(oldItemPosition) == new.getRemoteItemId(newItemPosition)
     }
