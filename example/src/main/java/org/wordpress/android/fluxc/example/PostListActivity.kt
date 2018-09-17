@@ -25,7 +25,6 @@ import kotlinx.coroutines.experimental.withContext
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.action.PostAction
 import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.SiteModel
@@ -36,7 +35,6 @@ import org.wordpress.android.fluxc.model.list.ListType.POST
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged
 import org.wordpress.android.fluxc.store.PostStore
-import org.wordpress.android.fluxc.store.PostStore.OnPostChanged
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
 import org.wordpress.android.fluxc.store.SiteStore
 import javax.inject.Inject
@@ -127,15 +125,6 @@ class PostListActivity : AppCompatActivity() {
     @Suppress("unused")
     fun onListChanged(event: OnListChanged) {
         if (!event.listDescriptors.contains(listDescriptor)) {
-            return
-        }
-        refreshListData()
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    @Suppress("unused")
-    fun onPostChanged(event: OnPostChanged) {
-        if (event.isError || event.causeOfChange != PostAction.UPDATE_POST) {
             return
         }
         refreshListData()
