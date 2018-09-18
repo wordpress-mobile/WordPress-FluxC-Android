@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.JsonArray
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
@@ -126,7 +127,8 @@ class OrderStatsRestClient(
      * Returns the number of visitors from the VisitorStatsApiResponse payload
      */
     private fun getVisitorsFromResponse(response: VisitorStatsApiResponse): Int {
-        val visits = response.data?.asJsonObject?.getAsJsonObject("0")?.getAsJsonObject("2")?.asInt
+        val array = response.data?.asJsonArray?.get(0) as JsonArray
+        val visits = array.get(2)?.asInt
         visits?.let { return it }
         return 0
     }

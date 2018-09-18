@@ -218,7 +218,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         with (payload) {
             assertNull(error)
             assertEquals(siteModel, site)
-            assertEquals(OrderStatsApiUnit.DAY, apiUnit)
+            assertEquals(OrderStatsApiUnit.MONTH, apiUnit)
             assertEquals(visits, 100)
         }
     }
