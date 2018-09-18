@@ -115,7 +115,12 @@ class OrderStatsRestClient(
                             val payload = FetchVisitorStatsResponsePayload(orderError, site, unit)
                             mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
                         })
+
+        request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
+        if (force) request.setShouldForceUpdate()
+
         add(request)
+
     }
 
     fun fetchTopEarnersStats(
