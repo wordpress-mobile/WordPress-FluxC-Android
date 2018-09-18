@@ -106,7 +106,7 @@ class OrderStatsRestClient(
         val request = WPComGsonRequest
                 .buildGetRequest(url, params, VisitorStatsApiResponse::class.java,
                         { response ->
-                            val visits = 0 // TODO: parse from response
+                            val visits = getVisitorsFromResponse(response)
                             val payload = FetchVisitorStatsResponsePayload(site, unit, visits)
                             mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
                         },
@@ -120,7 +120,15 @@ class OrderStatsRestClient(
         if (force) request.setShouldForceUpdate()
 
         add(request)
+    }
 
+    /**
+     * Returns the number of visitors from the VisitorStatsApiResponse payload
+     */
+    private fun getVisitorsFromResponse(response: VisitorStatsApiResponse): Int {
+        val visits = response.data?.asJsonObject?.getAsJsonObject("0")?.getAsJsonObject("2")?.asInt
+        visits?.let { return it }
+        return 0
     }
 
     fun fetchTopEarnersStats(

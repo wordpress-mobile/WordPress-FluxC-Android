@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRe
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -201,6 +202,24 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
             assertEquals(OrderStatsApiUnit.DAY, apiUnit)
             assertEquals(topEarners.size, 0)
             assertEquals(OrderStatsErrorType.INVALID_PARAM, error.type)
+        }
+    }
+
+    @Test
+    fun testVisitorStatsSuccess() {
+        interceptor.respondWith("wc-visitor-stats-response-success.json")
+        orderStatsRestClient.fetchVisitorStats(siteModel, OrderStatsApiUnit.MONTH, "2018-04-20", 1, true)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCStatsAction.FETCHED_VISITOR_STATS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchVisitorStatsResponsePayload
+        with (payload) {
+            assertNull(error)
+            assertEquals(siteModel, site)
+            assertEquals(OrderStatsApiUnit.DAY, apiUnit)
+            assertEquals(visits, 100)
         }
     }
 
