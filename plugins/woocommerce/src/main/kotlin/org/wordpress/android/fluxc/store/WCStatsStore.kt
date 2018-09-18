@@ -90,6 +90,7 @@ class WCStatsStore @Inject constructor(
     class FetchVisitorStatsPayload(
         val site: SiteModel,
         val granularity: StatsGranularity,
+        val limit: Int = 1,
         val forced: Boolean = false
     ) : Payload<BaseNetworkError>()
 
@@ -149,9 +150,12 @@ class WCStatsStore @Inject constructor(
         val actionType = action.type as? WCStatsAction ?: return
         when (actionType) {
             WCStatsAction.FETCH_ORDER_STATS -> fetchOrderStats(action.payload as FetchOrderStatsPayload)
+            WCStatsAction.FETCH_VISITOR_STATS -> fetchVisitorStats(action.payload as FetchVisitorStatsPayload)
             WCStatsAction.FETCH_TOP_EARNERS_STATS -> fetchTopEarnersStats(action.payload as FetchTopEarnersStatsPayload)
             WCStatsAction.FETCHED_ORDER_STATS ->
                 handleFetchOrderStatsCompleted(action.payload as FetchOrderStatsResponsePayload)
+            WCStatsAction.FETCHED_VISITOR_STATS ->
+                handleFetchVisitorStatsCompleted(action.payload as FetchVisitorStatsResponsePayload)
             WCStatsAction.FETCHED_TOP_EARNERS_STATS ->
                 handleFetchTopEarnersStatsCompleted(action.payload as FetchTopEarnersStatsResponsePayload)
         }
@@ -225,8 +229,13 @@ class WCStatsStore @Inject constructor(
                 getFormattedDate(payload.site, payload.granularity), quantity, payload.forced)
     }
 
-    // TODO
     private fun fetchVisitorStats(payload: FetchVisitorStatsPayload) {
+        wcOrderStatsClient.fetchVisitorStats(
+                payload.site,
+                OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
+                getFormattedDate(payload.site, payload.granularity),
+                payload.limit,
+                payload.forced)
     }
 
     private fun fetchTopEarnersStats(payload: FetchTopEarnersStatsPayload) {
@@ -250,6 +259,16 @@ class WCStatsStore @Inject constructor(
         }
 
         onStatsChanged.causeOfChange = WCStatsAction.FETCH_ORDER_STATS
+        emitChange(onStatsChanged)
+    }
+
+    private fun handleFetchVisitorStatsCompleted(payload: FetchVisitorStatsResponsePayload) {
+        val granularity = StatsGranularity.fromOrderStatsApiUnit(payload.apiUnit)
+        val onStatsChanged = OnWCStatsChanged(payload.visits, granularity)
+        if (payload.isError) {
+            onStatsChanged.error = payload.error
+        }
+        onStatsChanged.causeOfChange = WCStatsAction.FETCH_VISITOR_STATS
         emitChange(onStatsChanged)
     }
 
