@@ -83,6 +83,26 @@ class WCStatsStore @Inject constructor(
         }
     }
 
+    /**
+     * Describes the parameters for fetching visitor stats for [site], up to the current day, month, or year
+     * (depending on the given [granularity]).
+     */
+    class FetchVisitorStatsPayload(
+        val site: SiteModel,
+        val granularity: StatsGranularity,
+        val forced: Boolean = false
+    ) : Payload<BaseNetworkError>()
+
+    class FetchVisitorStatsResponsePayload(
+        val site: SiteModel,
+        val apiUnit: OrderStatsApiUnit,
+        val visits: Int = 0
+    ) : Payload<OrderStatsError>() {
+        constructor(error: OrderStatsError, site: SiteModel, apiUnit: OrderStatsApiUnit) : this(site, apiUnit) {
+            this.error = error
+        }
+    }
+
     class FetchTopEarnersStatsPayload(
         val site: SiteModel,
         val granularity: StatsGranularity,
@@ -203,6 +223,10 @@ class WCStatsStore @Inject constructor(
 
         wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
                 getFormattedDate(payload.site, payload.granularity), quantity, payload.forced)
+    }
+
+    // TODO
+    private fun fetchVisitorStats(payload: FetchVisitorStatsPayload) {
     }
 
     private fun fetchTopEarnersStats(payload: FetchTopEarnersStatsPayload) {

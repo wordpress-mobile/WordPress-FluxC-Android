@@ -4,6 +4,7 @@ import android.content.Context
 import com.android.volley.RequestQueue
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
+import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMV2
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
@@ -16,6 +17,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsError
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
@@ -86,6 +88,33 @@ class OrderStatsRestClient(
         request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
         if (force) request.setShouldForceUpdate()
 
+        add(request)
+    }
+
+    fun fetchVisitorStats(
+        site: SiteModel,
+        unit: OrderStatsApiUnit,
+        date: String,
+        limit: Int,
+        force: Boolean = false
+    ) {
+        val url = WPCOMREST.sites.site(site.siteId).stats.visits.urlV1_1
+        val params = mapOf(
+                "unit" to unit.toString(),
+                "date" to date,
+                "limit" to limit.toString())
+        val request = WPComGsonRequest
+                .buildGetRequest(url, params, VisitorStatsApiResponse::class.java,
+                        { response ->
+                            val visits = 0 // TODO: parse from response
+                            val payload = FetchVisitorStatsResponsePayload(site, unit, visits)
+                            mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
+                        },
+                        { networkError ->
+                            val orderError = networkErrorToOrderError(networkError)
+                            val payload = FetchVisitorStatsResponsePayload(orderError, site, unit)
+                            mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
+                        })
         add(request)
     }
 
