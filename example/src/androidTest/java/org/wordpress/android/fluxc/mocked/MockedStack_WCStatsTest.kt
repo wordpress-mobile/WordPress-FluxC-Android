@@ -223,6 +223,30 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         }
     }
 
+    @Test
+    fun testVisitorStatsError() {
+        val errorJson = JsonObject().apply {
+            addProperty("error", "rest_invalid_param")
+            addProperty("message", "Invalid parameter(s): date")
+        }
+
+        interceptor.respondWithError(errorJson)
+        orderStatsRestClient.fetchVisitorStats(siteModel, OrderStatsApiUnit.MONTH, "invalid", 1, true)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCStatsAction.FETCHED_VISITOR_STATS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchVisitorStatsResponsePayload
+        with(payload) {
+            assertNotNull(error)
+            assertEquals(siteModel, site)
+            assertEquals(OrderStatsApiUnit.MONTH, apiUnit)
+            assertEquals(visits, 0)
+            assertEquals(OrderStatsErrorType.INVALID_PARAM, error.type)
+        }
+    }
+
     @Suppress("unused")
     @Subscribe
     fun onAction(action: Action<*>) {
