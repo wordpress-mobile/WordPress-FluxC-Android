@@ -90,7 +90,7 @@ class WCStatsStore @Inject constructor(
     class FetchVisitorStatsPayload(
         val site: SiteModel,
         val granularity: StatsGranularity,
-        val limit: Int = 1,
+        val quantity: Int = 1,
         val forced: Boolean = false
     ) : Payload<BaseNetworkError>()
 
@@ -234,7 +234,7 @@ class WCStatsStore @Inject constructor(
                 payload.site,
                 OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
                 getFormattedDate(payload.site, payload.granularity),
-                payload.limit,
+                payload.quantity,
                 payload.forced)
     }
 

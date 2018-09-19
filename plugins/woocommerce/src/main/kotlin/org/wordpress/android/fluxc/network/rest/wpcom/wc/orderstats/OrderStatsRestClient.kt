@@ -98,14 +98,14 @@ class OrderStatsRestClient(
         site: SiteModel,
         unit: OrderStatsApiUnit,
         date: String,
-        limit: Int,
+        quantity: Int,
         force: Boolean = false
     ) {
         val url = WPCOMREST.sites.site(site.siteId).stats.visits.urlV1_1
         val params = mapOf(
                 "unit" to unit.toString(),
                 "date" to date,
-                "limit" to limit.toString())
+                "quantity" to quantity.toString())
         val request = WPComGsonRequest
                 .buildGetRequest(url, params, VisitorStatsApiResponse::class.java,
                         { response ->
