@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.release
 import kotlinx.coroutines.experimental.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -61,13 +60,23 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     }
 
     @Test
-    fun testFetchInsights() {
+    fun testFetchAllTimeInsights() {
         val site = authenticate()
 
         val fetchedInsights = runBlocking { insightsStore.fetchAllTimeInsights(site) }
 
         assertNotNull(fetchedInsights)
-        assertFalse(fetchedInsights.isError)
+        assertNotNull(fetchedInsights.allTimeModel)
+    }
+
+    @Test
+    fun testFetchLatestPostInsights() {
+        val site = authenticate()
+
+        val fetchedInsights = runBlocking { insightsStore.fetchLatestPostInsights(site) }
+
+        assertNotNull(fetchedInsights)
+        assertNotNull(fetchedInsights.latestPostModel)
     }
 
     private fun authenticate(): SiteModel {
