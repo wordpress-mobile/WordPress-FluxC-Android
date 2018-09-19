@@ -86,11 +86,13 @@ class WCStatsStore @Inject constructor(
     /**
      * Describes the parameters for fetching visitor stats for [site], up to the current day, month, or year
      * (depending on the given [granularity]).
+     *
+     * @param[granularity] the time units for the requested data
+     * @param[forced] if true, ignores any cached result and forces a refresh from the server
      */
     class FetchVisitorStatsPayload(
         val site: SiteModel,
         val granularity: StatsGranularity,
-        val quantity: Int = 1,
         val forced: Boolean = false
     ) : Payload<BaseNetworkError>()
 
@@ -214,27 +216,34 @@ class WCStatsStore @Inject constructor(
         } ?: return null
     }
 
-    private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
-        val quantity = when (payload.granularity) {
+    /**
+     * returns the quantity (how far back to go) to use when requesting stats for a specific granularity
+     */
+    private fun getQuantityForGranularity(site: SiteModel, granularity: StatsGranularity): Int {
+        return when (granularity) {
             StatsGranularity.DAYS -> STATS_QUANTITY_DAYS
             StatsGranularity.WEEKS -> STATS_QUANTITY_WEEKS
             StatsGranularity.MONTHS -> STATS_QUANTITY_MONTHS
             StatsGranularity.YEARS -> {
                 // Years since 2011 (WooCommerce initial release), inclusive
-                SiteUtils.getCurrentDateTimeForSite(payload.site, DATE_FORMAT_YEAR).toInt() - 2011 + 1
+                SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR).toInt() - 2011 + 1
             }
         }
+    }
 
+    private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
+        val quantity = getQuantityForGranularity(payload.site, payload.granularity)
         wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
                 getFormattedDate(payload.site, payload.granularity), quantity, payload.forced)
     }
 
     private fun fetchVisitorStats(payload: FetchVisitorStatsPayload) {
+        val quantity = getQuantityForGranularity(payload.site, payload.granularity)
         wcOrderStatsClient.fetchVisitorStats(
                 payload.site,
                 OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
                 getFormattedDate(payload.site, payload.granularity),
-                payload.quantity,
+                quantity,
                 payload.forced)
     }
 

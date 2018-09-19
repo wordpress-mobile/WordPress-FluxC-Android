@@ -191,14 +191,14 @@ class WooCommerceFragment : Fragment() {
 
         fetch_visitor_stats.setOnClickListener {
             getFirstWCSite()?.let {
-                val payload = FetchVisitorStatsPayload(it, StatsGranularity.MONTHS, 1, false)
+                val payload = FetchVisitorStatsPayload(it, StatsGranularity.MONTHS, false)
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchVisitorStatsAction(payload))
             } ?: showNoWCSitesToast()
         }
 
         fetch_visitor_stats_forced.setOnClickListener {
             getFirstWCSite()?.let {
-                val payload = FetchVisitorStatsPayload(it, StatsGranularity.MONTHS, 1, true)
+                val payload = FetchVisitorStatsPayload(it, StatsGranularity.MONTHS, true)
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchVisitorStatsAction(payload))
             } ?: showNoWCSitesToast()
         }
