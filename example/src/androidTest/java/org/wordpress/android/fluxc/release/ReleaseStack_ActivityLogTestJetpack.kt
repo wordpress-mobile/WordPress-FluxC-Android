@@ -28,7 +28,6 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.ActivityLogStore
 import org.wordpress.android.fluxc.store.ActivityLogStore.RewindErrorType
-import org.wordpress.android.fluxc.store.InsightsStore
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
@@ -46,7 +45,6 @@ import javax.inject.Inject
 class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     private val incomingActions: MutableList<Action<*>> = mutableListOf()
     @Inject lateinit var activityLogStore: ActivityLogStore
-    @Inject lateinit var insightsStore: InsightsStore
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var accountStore: AccountStore
     @Inject internal lateinit var activityLogSqlUtils: ActivityLogSqlUtils
@@ -69,15 +67,6 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
         // Reset expected test event
         nextEvent = TestEvents.NONE
         this.incomingActions.clear()
-    }
-
-    @Test
-    fun testFetchInsights() {
-        val site = authenticate()
-
-        val fetchedInsights = runBlocking { insightsStore.fetchAllTimeInsights(site) }
-
-        assertNotNull(fetchedInsights)
     }
 
     @Test
