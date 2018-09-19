@@ -66,7 +66,7 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val fetchedInsights = runBlocking { insightsStore.fetchAllTimeInsights(site) }
 
         assertNotNull(fetchedInsights)
-        assertNotNull(fetchedInsights.allTimeModel)
+        assertNotNull(fetchedInsights.model)
     }
 
     @Test
@@ -76,7 +76,17 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val fetchedInsights = runBlocking { insightsStore.fetchLatestPostInsights(site) }
 
         assertNotNull(fetchedInsights)
-        assertNotNull(fetchedInsights.latestPostModel)
+        assertNotNull(fetchedInsights.model)
+    }
+
+    @Test
+    fun testFetchMostPopularInsights() {
+        val site = authenticate()
+
+        val fetchedInsights = runBlocking { insightsStore.fetchMostPopularInsights(site) }
+
+        assertNotNull(fetchedInsights)
+        assertNotNull(fetchedInsights.model)
     }
 
     private fun authenticate(): SiteModel {
