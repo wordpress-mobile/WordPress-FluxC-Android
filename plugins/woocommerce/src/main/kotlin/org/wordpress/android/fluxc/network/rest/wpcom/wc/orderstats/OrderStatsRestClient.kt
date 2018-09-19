@@ -22,6 +22,8 @@ import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponseP
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsError
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
+import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T
 import javax.inject.Singleton
 
 @Singleton
@@ -127,9 +129,13 @@ class OrderStatsRestClient(
      * Returns the number of visitors from the VisitorStatsApiResponse payload
      */
     private fun getVisitorsFromResponse(response: VisitorStatsApiResponse): Int {
-        val array = response.data?.asJsonArray?.get(0) as JsonArray
-        val visits = array.get(2)?.asInt
-        visits?.let { return it }
+        try {
+            val array = response.data?.asJsonArray?.get(0) as JsonArray
+            val visits = array.get(2)?.asInt
+            visits?.let { return it }
+        } catch (e: Exception) {
+            AppLog.e(T.API, "${e.javaClass.simpleName} parsing visitor stats", e)
+        }
         return 0
     }
 
