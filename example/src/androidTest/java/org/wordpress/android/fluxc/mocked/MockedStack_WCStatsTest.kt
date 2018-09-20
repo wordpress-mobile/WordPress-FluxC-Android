@@ -68,7 +68,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         assertEquals(OrderStatsApiUnit.DAY, payload.apiUnit)
         assertNotNull(payload.stats)
 
-        with (payload.stats!!) {
+        with(payload.stats!!) {
             assertEquals(siteModel.id, localSiteId)
             assertEquals(OrderStatsApiUnit.DAY.toString(), unit)
             assertEquals(18, fieldsList.size)
@@ -172,7 +172,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
 
         assertEquals(WCStatsAction.FETCHED_TOP_EARNERS_STATS, lastAction!!.type)
         val payload = lastAction!!.payload as FetchTopEarnersStatsResponsePayload
-        with (payload) {
+        with(payload) {
             assertNull(error)
             assertEquals(siteModel, site)
             assertEquals(OrderStatsApiUnit.DAY, apiUnit)
