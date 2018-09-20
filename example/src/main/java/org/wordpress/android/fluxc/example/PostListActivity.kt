@@ -181,7 +181,7 @@ class PostListActivity : AppCompatActivity() {
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     @Suppress("unused")
     fun onListItemsChanged(event: OnListItemsChanged) {
-        if (!listDescriptor.compareIdentifier(event.listDescriptorIdentifier)) {
+        if (listDescriptor.typeIdentifier != event.type) {
             return
         }
         refreshListManagerFromStore(listDescriptor, false)
