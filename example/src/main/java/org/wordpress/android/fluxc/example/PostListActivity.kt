@@ -284,21 +284,21 @@ class PostListFilterDialog: DialogFragment() {
         statusSpinner.adapter = ArrayAdapter(
                 activity,
                 R.layout.support_simple_spinner_dropdown_item,
-                PostListFilter.values()
+                PostListFilter.values().map { it.value }
         )
         statusSpinner.setSelection(PostListFilter.values().indexOfFirst { it.value == arguments!![FILTER] })
         val orderBySpinner = view.findViewById<Spinner>(R.id.post_list_filter_order_by_spinner)
         orderBySpinner.adapter = ArrayAdapter(
                 activity,
                 R.layout.support_simple_spinner_dropdown_item,
-                PostOrderBy.values()
+                PostOrderBy.values().map { it.value }
         )
         orderBySpinner.setSelection(PostOrderBy.values().indexOfFirst { it.value == arguments!![ORDER_BY] })
         val orderSpinner = view.findViewById<Spinner>(R.id.post_list_filter_order_spinner)
         orderSpinner.adapter = ArrayAdapter(
                 activity,
                 R.layout.support_simple_spinner_dropdown_item,
-                ListOrder.values()
+                ListOrder.values().map { it.value }
         )
         orderSpinner.setSelection(ListOrder.values().indexOfFirst { it.value == arguments!![ORDER] })
         val dialogBuilder = AlertDialog.Builder(context!!)
