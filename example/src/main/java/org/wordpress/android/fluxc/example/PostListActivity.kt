@@ -42,7 +42,7 @@ import org.wordpress.android.fluxc.model.list.ListItemDataSource
 import org.wordpress.android.fluxc.model.list.ListManager
 import org.wordpress.android.fluxc.model.list.ListOrder
 import org.wordpress.android.fluxc.model.list.PostListDescriptor
-import org.wordpress.android.fluxc.model.list.PostListFilter
+import org.wordpress.android.fluxc.model.list.PostListStatus
 import org.wordpress.android.fluxc.model.list.PostOrderBy
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged
@@ -106,12 +106,12 @@ class PostListActivity : AppCompatActivity() {
             override fun onSubmit(status: String, orderBy: String, order: String, search: String) {
                 listDescriptor = PostListDescriptor(
                         localSiteId = site.id,
-                        filter = PostListFilter.values().find { it.value.toLowerCase() == status.toLowerCase() }!!,
+                        status = PostListStatus.values().find { it.value.toLowerCase() == status.toLowerCase() }!!,
                         orderBy = PostOrderBy.values().find { it.value.toLowerCase() == orderBy.toLowerCase()}!!,
                         order = ListOrder.values().find { it.value.toLowerCase() == order.toLowerCase() }!!,
                         searchQuery = search
                 )
-                title = listDescriptor.filter.value
+                title = listDescriptor.status.value
                 refreshListManagerFromStore(listDescriptor, true)
             }
         }
@@ -252,20 +252,20 @@ class DiffCallback(
     }
 }
 
-const val FILTER = "filter"
-const val ORDER = "order"
-const val ORDER_BY = "order_by"
-const val SEARCH_QUERY = "search_query"
+const val POST_FILTER_STATUS = "status"
+const val POST_FILTER_ORDER = "order"
+const val POST_FILTER_ORDER_BY = "order_by"
+const val POST_FILTER_SEARCH_QUERY = "search_query"
 
 class PostListFilterDialog: DialogFragment() {
     companion object {
         fun newInstance(listDescriptor: PostListDescriptor): PostListFilterDialog {
             val args = Bundle()
-            args.putString(FILTER, listDescriptor.filter.value)
-            args.putString(ORDER, listDescriptor.order.value)
-            args.putString(ORDER_BY, listDescriptor.orderBy.value)
+            args.putString(POST_FILTER_STATUS, listDescriptor.status.value)
+            args.putString(POST_FILTER_ORDER, listDescriptor.order.value)
+            args.putString(POST_FILTER_ORDER_BY, listDescriptor.orderBy.value)
             listDescriptor.searchQuery?.let {
-                args.putString(SEARCH_QUERY, listDescriptor.searchQuery)
+                args.putString(POST_FILTER_SEARCH_QUERY, listDescriptor.searchQuery)
             }
 
             val filterDialog = PostListFilterDialog()
@@ -279,28 +279,28 @@ class PostListFilterDialog: DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val view = activity!!.layoutInflater.inflate(R.layout.post_list_filter_dialog, null)
         val editText = view.findViewById<EditText>(R.id.post_list_filter_search_edit_text)
-        editText.setText(arguments!![SEARCH_QUERY]?.toString())
+        editText.setText(arguments!![POST_FILTER_SEARCH_QUERY]?.toString())
         val statusSpinner = view.findViewById<Spinner>(R.id.post_list_filter_status_spinner)
         statusSpinner.adapter = ArrayAdapter(
                 activity,
                 R.layout.support_simple_spinner_dropdown_item,
-                PostListFilter.values().map { it.value }
+                PostListStatus.values().map { it.value }
         )
-        statusSpinner.setSelection(PostListFilter.values().indexOfFirst { it.value == arguments!![FILTER] })
+        statusSpinner.setSelection(PostListStatus.values().indexOfFirst { it.value == arguments!![POST_FILTER_STATUS] })
         val orderBySpinner = view.findViewById<Spinner>(R.id.post_list_filter_order_by_spinner)
         orderBySpinner.adapter = ArrayAdapter(
                 activity,
                 R.layout.support_simple_spinner_dropdown_item,
                 PostOrderBy.values().map { it.value }
         )
-        orderBySpinner.setSelection(PostOrderBy.values().indexOfFirst { it.value == arguments!![ORDER_BY] })
+        orderBySpinner.setSelection(PostOrderBy.values().indexOfFirst { it.value == arguments!![POST_FILTER_ORDER_BY] })
         val orderSpinner = view.findViewById<Spinner>(R.id.post_list_filter_order_spinner)
         orderSpinner.adapter = ArrayAdapter(
                 activity,
                 R.layout.support_simple_spinner_dropdown_item,
                 ListOrder.values().map { it.value }
         )
-        orderSpinner.setSelection(ListOrder.values().indexOfFirst { it.value == arguments!![ORDER] })
+        orderSpinner.setSelection(ListOrder.values().indexOfFirst { it.value == arguments!![POST_FILTER_ORDER] })
         val dialogBuilder = AlertDialog.Builder(context!!)
         dialogBuilder.setView(view)
         dialogBuilder.setTitle("Filter")
