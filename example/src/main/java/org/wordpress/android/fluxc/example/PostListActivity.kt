@@ -29,14 +29,16 @@ import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.list.ListDescriptor
+import org.wordpress.android.fluxc.model.list.ListDescriptor.PostListDescriptor
 import org.wordpress.android.fluxc.model.list.ListItemDataSource
 import org.wordpress.android.fluxc.model.list.ListManager
-import org.wordpress.android.fluxc.model.list.ListType.POST
+import org.wordpress.android.fluxc.model.list.PostListFilter
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
 import org.wordpress.android.fluxc.store.SiteStore
+import java.util.Random
 import javax.inject.Inject
 
 private const val LOCAL_SITE_ID = "LOCAL_SITE_ID"
@@ -47,8 +49,7 @@ class PostListActivity : AppCompatActivity() {
     @Inject internal lateinit var postStore: PostStore
     @Inject internal lateinit var siteStore: SiteStore
 
-    private val listDescriptor: ListDescriptor
-        get() = ListDescriptor(type = POST, localSiteId = site.id)
+    private lateinit var listDescriptor: PostListDescriptor
     private lateinit var site: SiteModel
     private var postListAdapter: PostListAdapter? = null
     private lateinit var listManager: ListManager<PostModel>
@@ -61,7 +62,10 @@ class PostListActivity : AppCompatActivity() {
 
         dispatcher.register(this)
         site = siteStore.getSiteByLocalId(intent.getIntExtra(LOCAL_SITE_ID, 0))
-        runBlocking { listManager = getListDataFromStore() }
+        dispatcher.dispatch(PostActionBuilder.newRemoveAllPostsAction())
+        listDescriptor = randomizeListDescriptor()
+        title = listDescriptor.filter.value
+        runBlocking { listManager = getListDataFromStore(listDescriptor) }
 
         setupViews()
 
@@ -81,20 +85,34 @@ class PostListActivity : AppCompatActivity() {
         recycler.adapter = postListAdapter
 
         swipeToRefresh.setOnRefreshListener {
-            listManager.refresh()
+            listDescriptor = randomizeListDescriptor()
+            title = listDescriptor.filter.value
+            refreshListManagerFromStore(listDescriptor, true)
         }
     }
 
-    private fun refreshListData() {
+    private fun randomizeListDescriptor(): PostListDescriptor {
+        var filters = PostListFilter.values().asList()
+        if(this::listDescriptor.isInitialized) {
+            filters = filters.filter { it != listDescriptor.filter } // select any other filter
+        }
+        val selectedFilter = filters[Random().nextInt(filters.size)]
+        return PostListDescriptor(site.id, selectedFilter)
+    }
+
+    private fun refreshListManagerFromStore(listDescriptor: ListDescriptor, fetchAfter: Boolean) {
         refreshListDataJob?.cancel()
         refreshListDataJob = launch(UI) {
-            val listManager = withContext(DefaultDispatcher) { getListDataFromStore() }
-            if (isActive) {
+            val listManager = withContext(DefaultDispatcher) { getListDataFromStore(listDescriptor) }
+            if (isActive && this@PostListActivity.listDescriptor == listDescriptor) {
                 val diffResult = withContext(DefaultDispatcher) {
                     DiffUtil.calculateDiff(DiffCallback(this@PostListActivity.listManager, listManager))
                 }
-                if (isActive) {
+                if (isActive && this@PostListActivity.listDescriptor == listDescriptor) {
                     updateListManager(listManager, diffResult)
+                    if (fetchAfter) {
+                        listManager.refresh()
+                    }
                 }
             }
         }
@@ -107,7 +125,7 @@ class PostListActivity : AppCompatActivity() {
         postListAdapter?.setListManager(listManager, diffResult)
     }
 
-    private suspend fun getListDataFromStore(): ListManager<PostModel> =
+    private suspend fun getListDataFromStore(listDescriptor: ListDescriptor): ListManager<PostModel> =
         listStore.getListManager(listDescriptor, object : ListItemDataSource<PostModel> {
             override fun fetchItem(listDescriptor: ListDescriptor, remoteItemId: Long) {
                 val postToFetch = PostModel()
@@ -127,7 +145,7 @@ class PostListActivity : AppCompatActivity() {
         if (!event.listDescriptors.contains(listDescriptor)) {
             return
         }
-        refreshListData()
+        refreshListManagerFromStore(listDescriptor, false)
     }
 
     companion object {
@@ -161,7 +179,8 @@ class PostListActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val postHolder = holder as PostViewHolder
             val postModel = listManager.getRemoteItem(position)
-            postHolder.postTitle.text = postModel?.title ?: "Loading.."
+            val title = postModel?.title ?: "Loading.."
+            postHolder.postTitle.text = "${position + 1} - ${listManager.getRemoteItemId(position)} - $title"
         }
 
         private class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
