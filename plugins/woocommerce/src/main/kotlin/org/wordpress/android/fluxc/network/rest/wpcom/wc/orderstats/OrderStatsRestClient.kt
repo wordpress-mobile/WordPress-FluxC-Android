@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats
 
 import android.content.Context
 import com.android.volley.RequestQueue
-import com.google.gson.JsonArray
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
@@ -126,13 +125,20 @@ class OrderStatsRestClient(
     }
 
     /**
-     * Returns the number of visitors from the VisitorStatsApiResponse payload
+     * Returns the number of visitors from the VisitorStatsApiResponse data, which is an array of items for
+     * each period, the second element of which contains the visitor count for that period
      */
     private fun getVisitorsFromResponse(response: VisitorStatsApiResponse): Int {
         try {
-            val array = response.data?.asJsonArray?.get(0) as JsonArray
-            val visits = array.get(2)?.asInt
-            visits?.let { return it }
+            var totalVisits = 0
+            val array = response.data?.asJsonArray
+            array?.let { items ->
+                for (item in items) {
+                    val thisVisit = item.asJsonArray?.get(2)?.asInt
+                    thisVisit?.let { totalVisits += it }
+                }
+            }
+            return totalVisits
         } catch (e: Exception) {
             AppLog.e(T.API, "${e.javaClass.simpleName} parsing visitor stats", e)
         }
