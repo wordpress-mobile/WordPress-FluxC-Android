@@ -18,6 +18,9 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.Spinner
 import android.widget.TextView
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.post_list_activity.*
@@ -30,6 +33,7 @@ import kotlinx.coroutines.experimental.withContext
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.example.PostListFilterDialog.PostListFilterDialogListener
 import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.SiteModel
@@ -37,14 +41,15 @@ import org.wordpress.android.fluxc.model.list.ListDescriptor
 import org.wordpress.android.fluxc.model.list.ListDescriptor.PostListDescriptor
 import org.wordpress.android.fluxc.model.list.ListItemDataSource
 import org.wordpress.android.fluxc.model.list.ListManager
+import org.wordpress.android.fluxc.model.list.ListOrder
 import org.wordpress.android.fluxc.model.list.PostListFilter
+import org.wordpress.android.fluxc.model.list.PostOrderBy
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged
 import org.wordpress.android.fluxc.store.ListStore.OnListItemsChanged
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
 import org.wordpress.android.fluxc.store.SiteStore
-import java.util.Random
 import javax.inject.Inject
 
 private const val LOCAL_SITE_ID = "LOCAL_SITE_ID"
@@ -69,8 +74,7 @@ class PostListActivity : AppCompatActivity() {
         dispatcher.register(this)
         site = siteStore.getSiteByLocalId(intent.getIntExtra(LOCAL_SITE_ID, 0))
         dispatcher.dispatch(PostActionBuilder.newRemoveAllPostsAction())
-        listDescriptor = randomizeListDescriptor()
-        title = listDescriptor.filter.value
+        listDescriptor = PostListDescriptor(site.id)
         runBlocking { listManager = getListDataFromStore(listDescriptor) }
 
         setupViews()
@@ -97,7 +101,21 @@ class PostListActivity : AppCompatActivity() {
     }
 
     private fun showFilterMenu() {
-        PostListFilterDialog.newInstance(listDescriptor).show(supportFragmentManager, "PostListFilterDialog")
+        val dialog = PostListFilterDialog.newInstance(listDescriptor)
+        dialog.listener = object : PostListFilterDialogListener {
+            override fun onSubmit(status: String, orderBy: String, order: String, search: String) {
+                listDescriptor = PostListDescriptor(
+                        localSiteId = site.id,
+                        filter = PostListFilter.values().find { it.value.toLowerCase() == status.toLowerCase() }!!,
+                        orderBy = PostOrderBy.values().find { it.value.toLowerCase() == orderBy.toLowerCase()}!!,
+                        order = ListOrder.values().find { it.value.toLowerCase() == order.toLowerCase() }!!,
+                        searchQuery = search
+                )
+                title = listDescriptor.filter.value
+                refreshListManagerFromStore(listDescriptor, true)
+            }
+        }
+        dialog.show(supportFragmentManager, "PostListFilterDialog")
     }
 
     private fun setupViews() {
@@ -108,19 +126,8 @@ class PostListActivity : AppCompatActivity() {
         recycler.adapter = postListAdapter
 
         swipeToRefresh.setOnRefreshListener {
-            listDescriptor = randomizeListDescriptor()
-            title = listDescriptor.filter.value
             refreshListManagerFromStore(listDescriptor, true)
         }
-    }
-
-    private fun randomizeListDescriptor(): PostListDescriptor {
-        var filters = PostListFilter.values().asList()
-        if(this::listDescriptor.isInitialized) {
-            filters = filters.filter { it != listDescriptor.filter } // select any other filter
-        }
-        val selectedFilter = filters[Random().nextInt(filters.size)]
-        return PostListDescriptor(site.id, selectedFilter, searchQuery = "fluxc")
     }
 
     private fun refreshListManagerFromStore(listDescriptor: ListDescriptor, fetchAfter: Boolean) {
@@ -212,7 +219,7 @@ class PostListActivity : AppCompatActivity() {
             val postHolder = holder as PostViewHolder
             val postModel = listManager.getRemoteItem(position)
             val title = postModel?.title ?: "Loading.."
-            postHolder.postTitle.text = "${position + 1} - ${listManager.getRemoteItemId(position)} - $title"
+            postHolder.postTitle.text = "${listManager.getRemoteItemId(position)} - $title"
         }
 
         private class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -267,9 +274,49 @@ class PostListFilterDialog: DialogFragment() {
         }
     }
 
+    var listener: PostListFilterDialogListener? = null
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val view = activity!!.layoutInflater.inflate(R.layout.post_list_filter_dialog, null)
+        val editText = view.findViewById<EditText>(R.id.post_list_filter_search_edit_text)
+        editText.setText(arguments!![SEARCH_QUERY]?.toString())
+        val statusSpinner = view.findViewById<Spinner>(R.id.post_list_filter_status_spinner)
+        statusSpinner.adapter = ArrayAdapter(
+                activity,
+                R.layout.support_simple_spinner_dropdown_item,
+                PostListFilter.values()
+        )
+        statusSpinner.setSelection(PostListFilter.values().indexOfFirst { it.value == arguments!![FILTER] })
+        val orderBySpinner = view.findViewById<Spinner>(R.id.post_list_filter_order_by_spinner)
+        orderBySpinner.adapter = ArrayAdapter(
+                activity,
+                R.layout.support_simple_spinner_dropdown_item,
+                PostOrderBy.values()
+        )
+        orderBySpinner.setSelection(PostOrderBy.values().indexOfFirst { it.value == arguments!![ORDER_BY] })
+        val orderSpinner = view.findViewById<Spinner>(R.id.post_list_filter_order_spinner)
+        orderSpinner.adapter = ArrayAdapter(
+                activity,
+                R.layout.support_simple_spinner_dropdown_item,
+                ListOrder.values()
+        )
+        orderSpinner.setSelection(ListOrder.values().indexOfFirst { it.value == arguments!![ORDER] })
         val dialogBuilder = AlertDialog.Builder(context!!)
+        dialogBuilder.setView(view)
         dialogBuilder.setTitle("Filter")
+        dialogBuilder.setPositiveButton("OK") { dialog, _ ->
+            listener?.onSubmit(
+                    statusSpinner.selectedItem.toString(),
+                    orderBySpinner.selectedItem.toString(),
+                    orderSpinner.selectedItem.toString(),
+                    editText.text.toString()
+            )
+            dialog.dismiss()
+        }
         return dialogBuilder.create()
+    }
+
+    interface PostListFilterDialogListener {
+        fun onSubmit(status: String, orderBy: String, order: String, search: String)
     }
 }
