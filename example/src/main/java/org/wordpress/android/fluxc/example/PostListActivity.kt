@@ -97,7 +97,7 @@ class PostListActivity : AppCompatActivity() {
             filters = filters.filter { it != listDescriptor.filter } // select any other filter
         }
         val selectedFilter = filters[Random().nextInt(filters.size)]
-        return PostListDescriptor(site.id, selectedFilter)
+        return PostListDescriptor(site.id, selectedFilter, searchQuery = "fluxc")
     }
 
     private fun refreshListManagerFromStore(listDescriptor: ListDescriptor, fetchAfter: Boolean) {
