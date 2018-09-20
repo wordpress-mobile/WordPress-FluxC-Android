@@ -129,20 +129,12 @@ class OrderStatsRestClient(
      * each period, the second element of which contains the visitor count for that period
      */
     private fun getVisitorsFromResponse(response: VisitorStatsApiResponse): Int {
-        try {
-            var totalVisits = 0
-            val array = response.data?.asJsonArray
-            array?.let { items ->
-                for (item in items) {
-                    val thisVisit = item.asJsonArray?.get(2)?.asInt
-                    thisVisit?.let { totalVisits += it }
-                }
-            }
-            return totalVisits
+        return try {
+            response.data?.asJsonArray?.map { it.asJsonArray?.get(2)?.asInt ?: 0 }?.sum() ?: 0
         } catch (e: Exception) {
             AppLog.e(T.API, "${e.javaClass.simpleName} parsing visitor stats", e)
+            0
         }
-        return 0
     }
 
     fun fetchTopEarnersStats(
