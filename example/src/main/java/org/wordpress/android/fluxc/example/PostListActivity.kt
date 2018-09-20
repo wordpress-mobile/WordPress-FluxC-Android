@@ -38,10 +38,10 @@ import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.list.ListDescriptor
-import org.wordpress.android.fluxc.model.list.ListDescriptor.PostListDescriptor
 import org.wordpress.android.fluxc.model.list.ListItemDataSource
 import org.wordpress.android.fluxc.model.list.ListManager
 import org.wordpress.android.fluxc.model.list.ListOrder
+import org.wordpress.android.fluxc.model.list.PostListDescriptor
 import org.wordpress.android.fluxc.model.list.PostListFilter
 import org.wordpress.android.fluxc.model.list.PostOrderBy
 import org.wordpress.android.fluxc.store.ListStore
