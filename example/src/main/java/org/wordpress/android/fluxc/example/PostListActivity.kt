@@ -35,6 +35,7 @@ import org.wordpress.android.fluxc.model.list.ListManager
 import org.wordpress.android.fluxc.model.list.PostListFilter
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged
+import org.wordpress.android.fluxc.store.ListStore.OnListItemsChanged
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
 import org.wordpress.android.fluxc.store.SiteStore
@@ -139,10 +140,19 @@ class PostListActivity : AppCompatActivity() {
             }
         })
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
     @Suppress("unused")
     fun onListChanged(event: OnListChanged) {
         if (!event.listDescriptors.contains(listDescriptor)) {
+            return
+        }
+        refreshListManagerFromStore(listDescriptor, false)
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Suppress("unused")
+    fun onListItemsChanged(event: OnListItemsChanged) {
+        if (!listDescriptor.compareIdentifier(event.listDescriptorIdentifier)) {
             return
         }
         refreshListManagerFromStore(listDescriptor, false)
