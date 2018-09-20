@@ -215,7 +215,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
 
         assertEquals(WCStatsAction.FETCHED_VISITOR_STATS, lastAction!!.type)
         val payload = lastAction!!.payload as FetchVisitorStatsResponsePayload
-        with (payload) {
+        with(payload) {
             assertNull(error)
             assertEquals(siteModel, site)
             assertEquals(OrderStatsApiUnit.MONTH, apiUnit)

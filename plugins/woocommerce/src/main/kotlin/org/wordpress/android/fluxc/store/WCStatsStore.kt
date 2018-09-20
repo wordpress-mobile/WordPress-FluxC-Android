@@ -253,11 +253,12 @@ class WCStatsStore @Inject constructor(
                 OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
                 getFormattedDate(payload.site, payload.granularity),
                 payload.limit,
-                payload.forced)
+                payload.forced
+        )
     }
 
     private fun handleFetchOrderStatsCompleted(payload: FetchOrderStatsResponsePayload) {
-        val onStatsChanged = with (payload) {
+        val onStatsChanged = with(payload) {
             val granularity = StatsGranularity.fromOrderStatsApiUnit(apiUnit)
             if (isError || stats == null) {
                 return@with OnWCStatsChanged(0, granularity).also { it.error = payload.error }
@@ -328,7 +329,8 @@ class WCStatsStore @Inject constructor(
         AppLog.e(T.API, "Missing field from stats endpoint - returned fields: " + orderStatsModel.fields)
         val unexpectedError = OnUnexpectedError(
                 IllegalStateException("Missing field from stats endpoint"),
-                orderStatsModel.fields)
+                orderStatsModel.fields
+        )
         mDispatcher.emitChange(unexpectedError)
     }
 }
