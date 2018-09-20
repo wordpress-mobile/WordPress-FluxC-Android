@@ -46,8 +46,10 @@ class WCStatsStoreTest {
     fun setUp() {
         val appContext = RuntimeEnvironment.application.applicationContext
 
-        val config = SingleStoreWellSqlConfigForTests(appContext, WCOrderStatsModel::class.java,
-                WellSqlConfig.ADDON_WOOCOMMERCE)
+        val config = SingleStoreWellSqlConfigForTests(
+                appContext, WCOrderStatsModel::class.java,
+                WellSqlConfig.ADDON_WOOCOMMERCE
+        )
         WellSql.init(config)
         config.reset()
     }
@@ -58,7 +60,7 @@ class WCStatsStoreTest {
 
         WCStatsSqlUtils.insertOrUpdateStats(orderStatsModel)
 
-        with (WellSql.select(WCOrderStatsModel::class.java).asModel) {
+        with(WellSql.select(WCOrderStatsModel::class.java).asModel) {
             assertEquals(1, size)
             assertEquals("day", first().unit)
         }
@@ -68,7 +70,7 @@ class WCStatsStoreTest {
                 WCStatsTestUtils.generateSampleStatsModel(unit = "month", fields = "fake-data", data = "fake-data")
         WCStatsSqlUtils.insertOrUpdateStats(orderStatsModel2)
 
-        with (WellSql.select(WCOrderStatsModel::class.java).asModel) {
+        with(WellSql.select(WCOrderStatsModel::class.java).asModel) {
             assertEquals(2, size)
             assertEquals("day", first().unit)
             assertEquals("month", get(1).unit)
@@ -78,7 +80,7 @@ class WCStatsStoreTest {
         val orderStatsModel3 = WCStatsTestUtils.generateSampleStatsModel()
         WCStatsSqlUtils.insertOrUpdateStats(orderStatsModel3)
 
-        with (WellSql.select(WCOrderStatsModel::class.java).asModel) {
+        with(WellSql.select(WCOrderStatsModel::class.java).asModel) {
             assertEquals(2, size)
             assertEquals("day", first().unit)
             assertEquals("month", get(1).unit)
@@ -88,7 +90,7 @@ class WCStatsStoreTest {
         val orderStatsModel4 = WCStatsTestUtils.generateSampleStatsModel(localSiteId = 8)
         WCStatsSqlUtils.insertOrUpdateStats(orderStatsModel4)
 
-        with (WellSql.select(WCOrderStatsModel::class.java).asModel) {
+        with(WellSql.select(WCOrderStatsModel::class.java).asModel) {
             assertEquals(3, size)
             assertEquals("day", first().unit)
             assertEquals("month", get(1).unit)
@@ -150,7 +152,7 @@ class WCStatsStoreTest {
 
         val dayOrderStats = WCStatsSqlUtils.getRawStatsForSiteAndUnit(site, OrderStatsApiUnit.DAY)
         assertNotNull(dayOrderStats)
-        with (dayOrderStats!!) {
+        with(dayOrderStats!!) {
             assertEquals("day", unit)
         }
 
@@ -159,12 +161,13 @@ class WCStatsStoreTest {
 
         val monthOrderStatus = WCStatsSqlUtils.getRawStatsForSiteAndUnit(site, OrderStatsApiUnit.MONTH)
         assertNotNull(monthOrderStatus)
-        with (monthOrderStatus!!) {
+        with(monthOrderStatus!!) {
             assertEquals("month", unit)
         }
 
         val nonExistentSite = WCStatsSqlUtils.getRawStatsForSiteAndUnit(
-                SiteModel().apply { id = 88 }, OrderStatsApiUnit.DAY)
+                SiteModel().apply { id = 88 }, OrderStatsApiUnit.DAY
+        )
         assertNull(nonExistentSite)
 
         val missingData = WCStatsSqlUtils.getRawStatsForSiteAndUnit(site, OrderStatsApiUnit.YEAR)

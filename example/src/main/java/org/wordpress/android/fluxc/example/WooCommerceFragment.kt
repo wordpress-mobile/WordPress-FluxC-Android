@@ -84,7 +84,8 @@ class WooCommerceFragment : Fragment() {
             getFirstWCSite()?.let { site ->
                 showSingleLineDialog(
                         activity,
-                        "Enter a single order status to filter by or leave blank for no filter:") { editText ->
+                        "Enter a single order status to filter by or leave blank for no filter:"
+                ) { editText ->
 
                     // only use the status for filtering if it's not empty
                     val statusFilter = editText.text.toString().trim().takeIf { it.isNotEmpty() }
@@ -117,8 +118,10 @@ class WooCommerceFragment : Fragment() {
                         pendingFetchOrdersFilter = null
                         prependToLog("No valid filters defined, fetching all orders...")
                     } else {
-                        prependToLog("Submitting request to fetch " +
-                                "orders matching the following statuses $pendingFetchOrdersFilter")
+                        prependToLog(
+                                "Submitting request to fetch " +
+                                        "orders matching the following statuses $pendingFetchOrdersFilter"
+                        )
                     }
                     // First fetch orders from the API to seed the database with data before attempting to pull
                     // orders by order status.
@@ -265,14 +268,17 @@ class WooCommerceFragment : Fragment() {
                     FETCH_ORDER_NOTES -> {
                         val notes = wcOrderStore.getOrderNotesForOrder(pendingNotesOrderModel!!)
                         prependToLog(
-                            "Fetched ${notes.size} order notes for order " +
-                                    "${pendingNotesOrderModel!!.remoteOrderId}. ${event.rowsAffected} " +
-                                    "notes inserted into database.")
+                                "Fetched ${notes.size} order notes for order " +
+                                        "${pendingNotesOrderModel!!.remoteOrderId}. ${event.rowsAffected} " +
+                                        "notes inserted into database."
+                        )
                     }
-                    POST_ORDER_NOTE -> prependToLog("Posted ${event.rowsAffected} " +
-                            "note to the api for order ${pendingNotesOrderModel!!.remoteOrderId}")
+                    POST_ORDER_NOTE -> prependToLog(
+                            "Posted ${event.rowsAffected} " +
+                                    "note to the api for order ${pendingNotesOrderModel!!.remoteOrderId}"
+                    )
                     UPDATE_ORDER_STATUS ->
-                        with (orderList[0]) { prependToLog("Updated order status for $number to $status") }
+                        with(orderList[0]) { prependToLog("Updated order status for $number to $status") }
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
                 }
             }
@@ -296,8 +302,10 @@ class WooCommerceFragment : Fragment() {
 
                 when (event.causeOfChange) {
                     WCStatsAction.FETCH_ORDER_STATS ->
-                        prependToLog("Fetched stats for " + statsMap.size + " " +
-                                event.granularity.toString().toLowerCase() + " from " + site.name)
+                        prependToLog(
+                                "Fetched stats for " + statsMap.size + " " +
+                                        event.granularity.toString().toLowerCase() + " from " + site.name
+                        )
                     else -> prependToLog("WooCommerce stats were updated from a " + event.causeOfChange)
                 }
             }
@@ -312,8 +320,10 @@ class WooCommerceFragment : Fragment() {
             return
         }
 
-        prependToLog("Fetched ${event.topEarners.size} top earner stats for ${event.granularity.toString()
-                .toLowerCase()} from ${getFirstWCSite()?.name}")
+        prependToLog(
+                "Fetched ${event.topEarners.size} top earner stats for ${event.granularity.toString()
+                        .toLowerCase()} from ${getFirstWCSite()?.name}"
+        )
     }
 
     private fun getFirstWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(0)
