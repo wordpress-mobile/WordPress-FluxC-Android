@@ -1,8 +1,11 @@
 package org.wordpress.android.fluxc.example
 
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.support.v4.app.DialogFragment
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.util.DiffUtil
 import android.support.v7.util.DiffUtil.DiffResult
@@ -11,6 +14,8 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.RecyclerView.ViewHolder
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -76,6 +81,23 @@ class PostListActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         dispatcher.unregister(this)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.post_list_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.post_list_filter) {
+            showFilterMenu()
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun showFilterMenu() {
+        PostListFilterDialog.newInstance(listDescriptor).show(supportFragmentManager, "PostListFilterDialog")
     }
 
     private fun setupViews() {
@@ -220,5 +242,34 @@ class DiffCallback(
         val newItem = new.getRemoteItem(newItemPosition, false, false)
         return (oldItem == null && newItem == null) || (oldItem != null &&
                 newItem != null && oldItem.title == newItem.title)
+    }
+}
+
+const val FILTER = "filter"
+const val ORDER = "order"
+const val ORDER_BY = "order_by"
+const val SEARCH_QUERY = "search_query"
+
+class PostListFilterDialog: DialogFragment() {
+    companion object {
+        fun newInstance(listDescriptor: PostListDescriptor): PostListFilterDialog {
+            val args = Bundle()
+            args.putString(FILTER, listDescriptor.filter.value)
+            args.putString(ORDER, listDescriptor.order.value)
+            args.putString(ORDER_BY, listDescriptor.orderBy.value)
+            listDescriptor.searchQuery?.let {
+                args.putString(SEARCH_QUERY, listDescriptor.searchQuery)
+            }
+
+            val filterDialog = PostListFilterDialog()
+            filterDialog.arguments = args
+            return filterDialog
+        }
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialogBuilder = AlertDialog.Builder(context!!)
+        dialogBuilder.setTitle("Filter")
+        return dialogBuilder.create()
     }
 }
