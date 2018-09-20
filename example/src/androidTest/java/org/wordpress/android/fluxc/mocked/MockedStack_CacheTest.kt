@@ -59,7 +59,7 @@ class MockedStack_CacheTest : MockedStack_Base() {
         requestQueue.cache.clear()
 
         // Make initial request
-        with (prepareAndCreateRequest()) {
+        with(prepareAndCreateRequest()) {
             enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
             wpComRestClient.exposedAdd(this)
         }
@@ -72,7 +72,7 @@ class MockedStack_CacheTest : MockedStack_Base() {
         assertNotNull(firstRequestCacheEntry)
 
         // Repeat same request
-        with (prepareAndCreateRequest()) {
+        with(prepareAndCreateRequest()) {
             enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
             wpComRestClient.exposedAdd(this)
         }
@@ -93,7 +93,7 @@ class MockedStack_CacheTest : MockedStack_Base() {
         requestQueue.cache.clear()
 
         // Make initial request with 1 millisecond cache expiry
-        with (prepareAndCreateRequest()) {
+        with(prepareAndCreateRequest()) {
             enableCaching(1)
             wpComRestClient.exposedAdd(this)
         }
@@ -109,7 +109,7 @@ class MockedStack_CacheTest : MockedStack_Base() {
         assertTrue(firstRequestCacheEntry.isExpired) // Should already be expired by the time we get here
 
         // Repeat same request
-        with (prepareAndCreateRequest()) {
+        with(prepareAndCreateRequest()) {
             enableCaching(1)
             wpComRestClient.exposedAdd(this)
         }
@@ -130,7 +130,7 @@ class MockedStack_CacheTest : MockedStack_Base() {
 
         // Make initial request
         val paramMap = mutableMapOf("param" to "testvalue")
-        with (prepareAndCreateRequest(paramMap)) {
+        with(prepareAndCreateRequest(paramMap)) {
             enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
             wpComRestClient.exposedAdd(this)
         }
@@ -144,7 +144,7 @@ class MockedStack_CacheTest : MockedStack_Base() {
 
         // Repeat same request but with a parameter change
         paramMap["param"] = "differentvalue"
-        with (prepareAndCreateRequest(paramMap)) {
+        with(prepareAndCreateRequest(paramMap)) {
             enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
             wpComRestClient.exposedAdd(this)
         }
@@ -164,7 +164,7 @@ class MockedStack_CacheTest : MockedStack_Base() {
         requestQueue.cache.clear()
 
         // Make initial request
-        with (prepareAndCreateRequest()) {
+        with(prepareAndCreateRequest()) {
             enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
             wpComRestClient.exposedAdd(this)
         }
@@ -177,7 +177,7 @@ class MockedStack_CacheTest : MockedStack_Base() {
         assertNotNull(firstRequestCacheEntry)
 
         // Make the same request, but this time force update the network request
-        with (prepareAndCreateRequest()) {
+        with(prepareAndCreateRequest()) {
             enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
             setShouldForceUpdate()
             wpComRestClient.exposedAdd(this)
@@ -197,9 +197,11 @@ class MockedStack_CacheTest : MockedStack_Base() {
     private fun prepareAndCreateRequest(params: Map<String, String> = mapOf()): WPComGsonRequest<*> {
         interceptor.respondWith(responseJson)
 
-        return WPComGsonRequest.buildGetRequest(requestUrl, params, Any::class.java,
+        return WPComGsonRequest.buildGetRequest(
+                requestUrl, params, Any::class.java,
                 { countDownLatch.countDown() },
-                networkErrorHandler)
+                networkErrorHandler
+        )
     }
 
     @Singleton
@@ -213,6 +215,8 @@ class MockedStack_CacheTest : MockedStack_Base() {
         /**
          * Wraps and exposes the protected [add] method so that tests can add requests directly.
          */
-        fun <T> exposedAdd(request: WPComGsonRequest<T>?) { add(request) }
+        fun <T> exposedAdd(request: WPComGsonRequest<T>?) {
+            add(request)
+        }
     }
 }

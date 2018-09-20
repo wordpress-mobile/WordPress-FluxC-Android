@@ -37,7 +37,8 @@ class WCOrderStoreTest {
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
                 listOf(WCOrderModel::class.java, WCOrderNoteModel::class.java),
-                WellSqlConfig.ADDON_WOOCOMMERCE)
+                WellSqlConfig.ADDON_WOOCOMMERCE
+        )
         WellSql.init(config)
         config.reset()
     }
@@ -119,7 +120,7 @@ class WCOrderStoreTest {
         val payload = RemoteOrderPayload(orderModel.apply { status = CoreOrderStatus.REFUNDED.value }, site)
         orderStore.onAction(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
 
-        with (orderStore.getOrderByIdentifier(orderModel.getIdentifier())!!) {
+        with(orderStore.getOrderByIdentifier(orderModel.getIdentifier())!!) {
             // The version of the order model in the database should have the updated status
             assertEquals(CoreOrderStatus.REFUNDED.value, status)
             // Other fields should not be altered by the update
