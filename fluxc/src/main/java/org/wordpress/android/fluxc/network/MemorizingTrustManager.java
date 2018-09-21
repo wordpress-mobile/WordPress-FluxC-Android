@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.wordpress.android.fluxc.BuildConfig;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -31,7 +32,7 @@ import javax.net.ssl.X509TrustManager;
 
 public class MemorizingTrustManager implements X509TrustManager {
     private static final String KEYSTORE_FILENAME = "wpstore_certs_truststore.bks";
-    private static final String KEYSTORE_PASSWORD = "secret";
+    private static final String KEYSTORE_PASSWORD = BuildConfig.KEYSTORE_PASSWORD;
     private static final long FUTURE_TASK_TIMEOUT_SECONDS = 10;
 
     private FutureTask<X509TrustManager> mTrustManagerFutureTask;
