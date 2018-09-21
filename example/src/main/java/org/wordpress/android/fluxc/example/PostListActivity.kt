@@ -74,7 +74,7 @@ class PostListActivity : AppCompatActivity() {
         dispatcher.register(this)
         site = siteStore.getSiteByLocalId(intent.getIntExtra(LOCAL_SITE_ID, 0))
         dispatcher.dispatch(PostActionBuilder.newRemoveAllPostsAction())
-        listDescriptor = PostListDescriptor(site.id)
+        listDescriptor = PostListDescriptor(site)
         runBlocking { listManager = getListDataFromStore(listDescriptor) }
 
         setupViews()
@@ -105,7 +105,7 @@ class PostListActivity : AppCompatActivity() {
         dialog.listener = object : PostListFilterDialogListener {
             override fun onSubmit(status: String, orderBy: String, order: String, search: String) {
                 listDescriptor = PostListDescriptor(
-                        localSiteId = site.id,
+                        site = site,
                         status = PostListStatus.values().find { it.value.toLowerCase() == status.toLowerCase() }!!,
                         orderBy = PostOrderBy.values().find { it.value.toLowerCase() == orderBy.toLowerCase()}!!,
                         order = ListOrder.values().find { it.value.toLowerCase() == order.toLowerCase() }!!,
