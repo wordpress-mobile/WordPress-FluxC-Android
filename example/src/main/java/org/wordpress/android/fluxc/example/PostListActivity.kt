@@ -223,6 +223,7 @@ class PostListActivity : AppCompatActivity() {
         example.content = "Bunch of content here"
         example.setIsLocalDraft(true)
         PostSqlUtils.insertOrUpdatePost(example, false)
+        refreshListManagerFromStore(listDescriptor, false)
     }
 
     private fun localItems(): List<PostModel>? {
