@@ -104,7 +104,8 @@ class OrderStatsRestClient(
         val params = mapOf(
                 "unit" to unit.toString(),
                 "date" to date,
-                "quantity" to quantity.toString())
+                "quantity" to quantity.toString(),
+                "stat_fields" to "visitors")
         val request = WPComGsonRequest
                 .buildGetRequest(url, params, VisitorStatsApiResponse::class.java,
                         { response ->
@@ -126,11 +127,11 @@ class OrderStatsRestClient(
 
     /**
      * Returns the number of visitors from the VisitorStatsApiResponse data, which is an array of items for
-     * each period, the second element of which contains the visitor count for that period
+     * each period, the first element of which contains the date and the second contains the visitor count
      */
     private fun getVisitorsFromResponse(response: VisitorStatsApiResponse): Int {
         return try {
-            response.data?.asJsonArray?.map { it.asJsonArray?.get(2)?.asInt ?: 0 }?.sum() ?: 0
+            response.data?.asJsonArray?.map { it.asJsonArray?.get(1)?.asInt ?: 0 }?.sum() ?: 0
         } catch (e: Exception) {
             AppLog.e(T.API, "${e.javaClass.simpleName} parsing visitor stats", e)
             0
