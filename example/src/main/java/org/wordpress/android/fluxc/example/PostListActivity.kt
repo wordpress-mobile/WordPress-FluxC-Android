@@ -73,7 +73,6 @@ class PostListActivity : AppCompatActivity() {
 
         dispatcher.register(this)
         site = siteStore.getSiteByLocalId(intent.getIntExtra(LOCAL_SITE_ID, 0))
-        dispatcher.dispatch(PostActionBuilder.newRemoveAllPostsAction())
         listDescriptor = if (site.isUsingWpComRestApi) {
             PostListDescriptorForRestSite(site)
         } else {
@@ -308,4 +307,3 @@ class DiffCallback(
                 newItem != null && oldItem.title == newItem.title)
     }
 }
-
