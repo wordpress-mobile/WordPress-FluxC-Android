@@ -75,7 +75,11 @@ class PostListActivity : AppCompatActivity() {
         dispatcher.register(this)
         site = siteStore.getSiteByLocalId(intent.getIntExtra(LOCAL_SITE_ID, 0))
         dispatcher.dispatch(PostActionBuilder.newRemoveAllPostsAction())
-        listDescriptor = PostListDescriptorForRestSite(site)
+        listDescriptor = if (site.isUsingWpComRestApi) {
+            PostListDescriptorForRestSite(site)
+        } else {
+            PostListDescriptorForXmlRpcSite(site)
+        }
         runBlocking { listManager = getListDataFromStore(listDescriptor) }
 
         setupViews()
@@ -111,10 +115,10 @@ class PostListActivity : AppCompatActivity() {
         dialogBuilder.setView(view)
         dialogBuilder.setTitle("Filter")
         dialogBuilder.setPositiveButton("OK") { dialog, _ ->
-            val selectedStatus = statusSpinner.selectedItem.toString()
+            val selectedStatus = statusSpinner?.selectedItem.toString()
             val selectedOrderBy = orderBySpinner.selectedItem.toString()
             val selectedOrder = ListOrder.fromValue(orderSpinner.selectedItem.toString())!!
-            val selectedSearchQuery = searchEditText.text.toString()
+            val selectedSearchQuery = searchEditText?.text.toString()
             when (listDescriptor) {
                 is PostListDescriptorForRestSite -> {
                     listDescriptor = PostListDescriptorForRestSite(
