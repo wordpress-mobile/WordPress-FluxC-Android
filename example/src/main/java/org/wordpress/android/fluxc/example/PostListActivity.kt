@@ -44,12 +44,14 @@ import org.wordpress.android.fluxc.model.list.PostListDescriptor.PostListDescrip
 import org.wordpress.android.fluxc.model.list.PostListDescriptor.PostListDescriptorForRestSite.PostStatusForRestSite
 import org.wordpress.android.fluxc.model.list.PostListDescriptor.PostListDescriptorForXmlRpcSite
 import org.wordpress.android.fluxc.model.list.PostListOrderBy
+import org.wordpress.android.fluxc.persistence.PostSqlUtils
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged
 import org.wordpress.android.fluxc.store.ListStore.OnListItemsChanged
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
 import org.wordpress.android.fluxc.store.SiteStore
+import java.util.Random
 import javax.inject.Inject
 
 private const val LOCAL_SITE_ID = "LOCAL_SITE_ID"
@@ -73,6 +75,7 @@ class PostListActivity : AppCompatActivity() {
 
         dispatcher.register(this)
         site = siteStore.getSiteByLocalId(intent.getIntExtra(LOCAL_SITE_ID, 0))
+        dispatcher.dispatch(PostActionBuilder.newRemoveAllPostsAction())
         listDescriptor = if (site.isUsingWpComRestApi) {
             PostListDescriptorForRestSite(site)
         } else {
@@ -99,6 +102,8 @@ class PostListActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.post_list_filter) {
             showFilterMenu()
+        } else if(item.itemId == R.id.post_list_create_local_draft) {
+            createLocalDraft()
         }
         return super.onOptionsItemSelected(item)
     }
@@ -211,6 +216,15 @@ class PostListActivity : AppCompatActivity() {
         postListAdapter?.setListManager(listManager, diffResult)
     }
 
+    private fun createLocalDraft() {
+        val example = PostModel()
+        example.localSiteId = site.id
+        example.title = "Local draft: ${Random().nextInt(1000)}"
+        example.content = "Bunch of content here"
+        example.setIsLocalDraft(true)
+        PostSqlUtils.insertOrUpdatePost(example, false)
+    }
+
     private fun localItems(): List<PostModel>? {
         return postStore.getLocalPostsForDescriptor(listDescriptor)
     }
@@ -293,7 +307,7 @@ class DiffCallback(
     private val new: ListManager<PostModel>
 ) : DiffUtil.Callback() {
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return ListManager.areItemsTheSame(new, old, oldItemPosition, newItemPosition) { oldItem, newItem ->
+        return ListManager.areItemsTheSame(new, old, newItemPosition, oldItemPosition) { oldItem, newItem ->
             oldItem.id == newItem.id
         }
     }
