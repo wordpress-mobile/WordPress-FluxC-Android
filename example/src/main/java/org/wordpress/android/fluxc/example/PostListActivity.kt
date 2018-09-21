@@ -211,14 +211,8 @@ class PostListActivity : AppCompatActivity() {
         postListAdapter?.setListManager(listManager, diffResult)
     }
 
-    private fun localItems(): List<PostModel> {
-        val item1 = PostModel()
-        item1.id = 1700
-        item1.title = "Local item 1"
-        val item2 = PostModel()
-        item2.id = 1701
-        item2.title = "Local item 2"
-        return listOf(item1, item2)
+    private fun localItems(): List<PostModel>? {
+        return postStore.getLocalPostsForDescriptor(listDescriptor)
     }
 
     private suspend fun getListDataFromStore(listDescriptor: ListDescriptor): ListManager<PostModel> =
