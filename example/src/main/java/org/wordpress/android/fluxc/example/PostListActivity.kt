@@ -211,8 +211,18 @@ class PostListActivity : AppCompatActivity() {
         postListAdapter?.setListManager(listManager, diffResult)
     }
 
+    private fun localItems(): List<PostModel> {
+        val item1 = PostModel()
+        item1.id = 1700
+        item1.title = "Local item 1"
+        val item2 = PostModel()
+        item2.id = 1701
+        item2.title = "Local item 2"
+        return listOf(item1, item2)
+    }
+
     private suspend fun getListDataFromStore(listDescriptor: ListDescriptor): ListManager<PostModel> =
-            listStore.getListManager(listDescriptor, object : ListItemDataSource<PostModel> {
+            listStore.getListManager(listDescriptor, localItems(), object : ListItemDataSource<PostModel> {
                 override fun fetchItem(listDescriptor: ListDescriptor, remoteItemId: Long) {
                     val postToFetch = PostModel()
                     postToFetch.remotePostId = remoteItemId
@@ -273,9 +283,9 @@ class PostListActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val postHolder = holder as PostViewHolder
-            val postModel = listManager.getRemoteItem(position)
+            val postModel = listManager.getItem(position)
             val title = postModel?.title ?: "Loading.."
-            postHolder.postTitle.text = "${listManager.getRemoteItemId(position)} - $title"
+            postHolder.postTitle.text = title
         }
 
         private class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -289,7 +299,9 @@ class DiffCallback(
     private val new: ListManager<PostModel>
 ) : DiffUtil.Callback() {
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        return old.getRemoteItemId(oldItemPosition) == new.getRemoteItemId(newItemPosition)
+        return ListManager.areItemsTheSame(new, old, oldItemPosition, newItemPosition) { oldItem, newItem ->
+            oldItem.id == newItem.id
+        }
     }
 
     override fun getOldListSize(): Int {
@@ -301,8 +313,8 @@ class DiffCallback(
     }
 
     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-        val oldItem = old.getRemoteItem(oldItemPosition, false, false)
-        val newItem = new.getRemoteItem(newItemPosition, false, false)
+        val oldItem = old.getItem(oldItemPosition, false, false)
+        val newItem = new.getItem(newItemPosition, false, false)
         return (oldItem == null && newItem == null) || (oldItem != null &&
                 newItem != null && oldItem.title == newItem.title)
     }
