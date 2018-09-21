@@ -41,10 +41,9 @@ import org.wordpress.android.fluxc.model.list.ListManager
 import org.wordpress.android.fluxc.model.list.ListOrder
 import org.wordpress.android.fluxc.model.list.PostListDescriptor
 import org.wordpress.android.fluxc.model.list.PostListDescriptor.PostListDescriptorForRestSite
-import org.wordpress.android.fluxc.model.list.PostListDescriptor.PostListDescriptorForRestSite.PostOrderByForRestSite
 import org.wordpress.android.fluxc.model.list.PostListDescriptor.PostListDescriptorForRestSite.PostStatusForRestSite
 import org.wordpress.android.fluxc.model.list.PostListDescriptor.PostListDescriptorForXmlRpcSite
-import org.wordpress.android.fluxc.model.list.PostListDescriptor.PostListDescriptorForXmlRpcSite.PostOrderByForXmlRpcSite
+import org.wordpress.android.fluxc.model.list.PostListOrderBy
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged
 import org.wordpress.android.fluxc.store.ListStore.OnListItemsChanged
@@ -116,7 +115,7 @@ class PostListActivity : AppCompatActivity() {
         dialogBuilder.setTitle("Filter")
         dialogBuilder.setPositiveButton("OK") { dialog, _ ->
             val selectedStatus = statusSpinner?.selectedItem.toString()
-            val selectedOrderBy = orderBySpinner.selectedItem.toString()
+            val selectedOrderBy = PostListOrderBy.fromValue(orderBySpinner.selectedItem.toString())!!
             val selectedOrder = ListOrder.fromValue(orderSpinner.selectedItem.toString())!!
             val selectedSearchQuery = searchEditText?.text.toString()
             when (listDescriptor) {
@@ -124,7 +123,7 @@ class PostListActivity : AppCompatActivity() {
                     listDescriptor = PostListDescriptorForRestSite(
                             site = site,
                             status = PostStatusForRestSite.fromValue(selectedStatus)!!,
-                            orderBy = PostOrderByForRestSite.fromValue(selectedOrderBy)!!,
+                            orderBy = selectedOrderBy,
                             order = selectedOrder,
                             searchQuery = selectedSearchQuery
                     )
@@ -132,7 +131,7 @@ class PostListActivity : AppCompatActivity() {
                 is PostListDescriptorForXmlRpcSite -> {
                     listDescriptor = PostListDescriptorForXmlRpcSite(
                             site = site,
-                            orderBy = PostOrderByForXmlRpcSite.fromValue(selectedOrderBy)!!,
+                            orderBy = selectedOrderBy,
                             order = selectedOrder
                     )
                 }
@@ -152,10 +151,10 @@ class PostListActivity : AppCompatActivity() {
             when (this) {
                 is PostListDescriptorForRestSite -> {
                     setupSpinnerAdapter(statusSpinner, PostStatusForRestSite.values().map { it.value })
-                    setupSpinnerAdapter(orderBySpinner, PostOrderByForRestSite.values().map { it.value })
+                    setupSpinnerAdapter(orderBySpinner, PostListOrderBy.values().map { it.value })
 
                     statusSpinner.setSelection(PostStatusForRestSite.values().indexOfFirst { it.value == status.value })
-                    orderBySpinner.setSelection(PostOrderByForRestSite.values().indexOfFirst {
+                    orderBySpinner.setSelection(PostListOrderBy.values().indexOfFirst {
                         it.value == orderBy.value
                     })
                     orderSpinner.setSelection(ListOrder.values().indexOfFirst { it.value == order.value })
@@ -164,9 +163,9 @@ class PostListActivity : AppCompatActivity() {
                 is PostListDescriptorForXmlRpcSite -> {
                     statusSpinner.visibility = GONE
                     searchEditText.visibility = GONE
-                    setupSpinnerAdapter(orderBySpinner, PostOrderByForXmlRpcSite.values().map { it.value })
+                    setupSpinnerAdapter(orderBySpinner, PostListOrderBy.values().map { it.value })
 
-                    orderBySpinner.setSelection(PostOrderByForXmlRpcSite.values().indexOfFirst {
+                    orderBySpinner.setSelection(PostListOrderBy.values().indexOfFirst {
                         it.value == orderBy.value
                     })
                     orderSpinner.setSelection(ListOrder.values().indexOfFirst { it.value == order.value })
