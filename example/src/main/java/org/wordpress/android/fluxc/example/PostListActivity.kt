@@ -102,7 +102,7 @@ class PostListActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.post_list_filter) {
             showFilterMenu()
-        } else if(item.itemId == R.id.post_list_create_local_draft) {
+        } else if (item.itemId == R.id.post_list_create_local_draft) {
             createLocalDraft()
         }
         return super.onOptionsItemSelected(item)
