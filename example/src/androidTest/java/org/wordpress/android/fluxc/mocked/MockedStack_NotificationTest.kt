@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.mocked
 import com.google.gson.JsonObject
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.Dispatcher
@@ -61,7 +61,7 @@ class MockedStack_NotificationTest : MockedStack_Base() {
         assertEquals(gcmToken, requestBodyMap["device_token"])
         assertEquals("org.wordpress.android", requestBodyMap["app_secret_key"])
         // No site was specified, so the site selection param should be omitted
-        assertNull(requestBodyMap["selected_blog_id"])
+        assertFalse(requestBodyMap.keys.contains("selected_blog_id"))
 
         val payload = lastAction!!.payload as RegisterDeviceResponsePayload
 
