@@ -95,6 +95,24 @@ class MockedStack_NotificationTest : MockedStack_Base() {
         assertEquals(responseJson.get("ID").asString, payload.deviceId)
     }
 
+    @Test
+    fun testUnregistration() {
+        val responseJson = JsonObject().apply { addProperty("success", "true") }
+
+        interceptor.respondWith(responseJson)
+
+        notificationRestClient.unregisterDeviceForPushNotifications("12345678")
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(NotificationAction.UNREGISTERED_DEVICE, lastAction!!.type)
+
+        val requestBodyMap = interceptor.lastRequestBody
+
+        assertTrue(requestBodyMap.isEmpty())
+    }
+
     @Suppress("unused")
     @Subscribe
     fun onAction(action: Action<*>) {
