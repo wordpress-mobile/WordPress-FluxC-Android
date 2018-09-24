@@ -36,6 +36,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsPayload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OnWCStatsChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.OnWCTopEarnersChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
@@ -191,6 +192,20 @@ class WooCommerceFragment : Fragment() {
             } ?: showNoWCSitesToast()
         }
 
+        fetch_visitor_stats.setOnClickListener {
+            getFirstWCSite()?.let {
+                val payload = FetchVisitorStatsPayload(it, StatsGranularity.MONTHS, false)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchVisitorStatsAction(payload))
+            } ?: showNoWCSitesToast()
+        }
+
+        fetch_visitor_stats_forced.setOnClickListener {
+            getFirstWCSite()?.let {
+                val payload = FetchVisitorStatsPayload(it, StatsGranularity.MONTHS, true)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchVisitorStatsAction(payload))
+            } ?: showNoWCSitesToast()
+        }
+
         fetch_top_earners_stats.setOnClickListener {
             getFirstWCSite()?.let {
                 val payload = FetchTopEarnersStatsPayload(it, StatsGranularity.DAYS, 10, false)
@@ -293,22 +308,21 @@ class WooCommerceFragment : Fragment() {
             return
         }
 
-        getFirstWCSite()?.let { site ->
-            wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS).let { statsMap ->
+        val site = getFirstWCSite()
+        when (event.causeOfChange) {
+            WCStatsAction.FETCH_ORDER_STATS -> {
+                val statsMap = wcStatsStore.getRevenueStats(site!!, event.granularity)
                 if (statsMap.isEmpty()) {
                     prependToLog("No stats were stored for site " + site.name + " =(")
-                    return
-                }
-
-                when (event.causeOfChange) {
-                    WCStatsAction.FETCH_ORDER_STATS ->
-                        prependToLog(
-                                "Fetched stats for " + statsMap.size + " " +
-                                        event.granularity.toString().toLowerCase() + " from " + site.name
-                        )
-                    else -> prependToLog("WooCommerce stats were updated from a " + event.causeOfChange)
+                } else {
+                    prependToLog("Fetched stats for " + statsMap.size + " " +
+                                    event.granularity.toString().toLowerCase() + " from " + site.name)
                 }
             }
+            WCStatsAction.FETCH_VISITOR_STATS ->
+                prependToLog("Fetched visitor stats from ${site!!.name}")
+            else ->
+                prependToLog("WooCommerce stats were updated from a " + event.causeOfChange)
         }
     }
 
