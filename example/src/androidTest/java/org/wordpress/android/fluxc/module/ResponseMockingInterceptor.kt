@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.module
 
+import com.google.gson.Gson
 import com.google.gson.JsonElement
 import okhttp3.Interceptor
 import okhttp3.MediaType
@@ -7,6 +8,7 @@ import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody
+import okio.Buffer
 import okio.BufferedSource
 import okio.Okio
 import org.wordpress.android.fluxc.TestUtils
@@ -22,8 +24,22 @@ class ResponseMockingInterceptor : Interceptor {
     private var nextResponseJson: String? = null
     private var nextResponseCode: Int = 200
 
+    private val gson by lazy { Gson() }
+
+    var lastRequest: Request? = null
+        private set
+
     var lastRequestUrl: String = ""
         private set
+
+    val lastRequestBody: HashMap<String, Any>
+        get() {
+            val buffer = Buffer().apply {
+                lastRequest?.body()?.writeTo(this)
+            }
+
+            return gson.fromJson<HashMap<String, Any>>(buffer.readUtf8(), HashMap::class.java) ?: hashMapOf()
+        }
 
     fun respondWith(jsonResponseFileName: String) {
         nextResponseJson = getStringFromResourceFile(jsonResponseFileName)
@@ -54,6 +70,7 @@ class ResponseMockingInterceptor : Interceptor {
         // Give some time to create a realistic network event
         TestUtils.waitFor(1000)
 
+        lastRequest = request
         lastRequestUrl = request.url().toString()
 
         nextResponseJson?.let {

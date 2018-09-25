@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.ErrorLi
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Listener;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Token;
 import org.wordpress.android.fluxc.network.rest.wpcom.media.MediaRestClient;
+import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.SiteRestClient;
@@ -157,6 +158,14 @@ public class MockedNetworkModule {
     public AccountRestClient provideAccountRestClient(Context appContext, Dispatcher dispatcher, RequestQueue
             requestQueue, AppSecrets appSecrets, AccessToken token, UserAgent userAgent) {
         return new AccountRestClient(appContext, dispatcher, requestQueue, appSecrets, token, userAgent);
+    }
+
+    @Singleton
+    @Provides
+    public NotificationRestClient provideNotificationRestClient(Context appContext, Dispatcher dispatcher,
+                                                                RequestQueue requestQueue,
+                                                                AccessToken token, UserAgent userAgent) {
+        return new NotificationRestClient(appContext, dispatcher, requestQueue, token, userAgent);
     }
 
     @Singleton
