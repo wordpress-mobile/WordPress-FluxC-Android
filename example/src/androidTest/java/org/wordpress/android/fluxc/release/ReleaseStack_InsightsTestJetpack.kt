@@ -67,6 +67,10 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
+
+        val insightsFromDb = insightsStore.getAllTimeInsights(site)
+
+        assertEquals(fetchedInsights.model, insightsFromDb)
     }
 
     @Test
@@ -77,6 +81,10 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
+
+        val insightsFromDb = insightsStore.getLatestPostInsights(site)
+
+        assertEquals(fetchedInsights.model, insightsFromDb)
     }
 
     @Test
@@ -87,6 +95,10 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
+
+        val insightsFromDb = insightsStore.getMostPopularInsights(site)
+
+        assertEquals(fetchedInsights.model, insightsFromDb)
     }
 
     private fun authenticate(): SiteModel {
