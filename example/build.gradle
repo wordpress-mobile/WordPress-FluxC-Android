@@ -105,6 +105,7 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:2.20.1'
     testImplementation 'com.nhaarman:mockito-kotlin:1.6.0'
     testImplementation 'org.assertj:assertj-core:2.9.1'
+    testImplementation "android.arch.persistence.room:testing:$roomVersion"
 
     androidTestImplementation 'com.google.dexmaker:dexmaker:1.2'
     androidTestImplementation 'com.google.dexmaker:dexmaker-mockito:1.2'
@@ -123,4 +124,7 @@ dependencies {
     // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.26.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:0.26.1'
+
+    api "android.arch.persistence.room:runtime:$roomVersion"
+    kapt "android.arch.persistence.room:compiler:$roomVersion"
 }

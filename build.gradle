@@ -70,4 +70,5 @@ subprojects {
 ext {
     daggerVersion = '2.11'
     supportLibraryVersion = '27.1.1'
+    roomVersion = "1.1.1"
 }
