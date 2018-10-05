@@ -31,6 +31,7 @@ import org.wordpress.android.fluxc.store.ActivityLogStore.RewindErrorType
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
+import org.wordpress.android.fluxc.tools.FormattableContent
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Date
@@ -196,7 +197,7 @@ class ReleaseStack_ActivityLogTestJetpack : ReleaseStack_Base() {
     private fun activityLogModel(index: Long): ActivityLogModel {
         return ActivityLogModel(activityID = "$index",
                 summary = "summary$index",
-                text = "text$index",
+                content = FormattableContent(text = "text$index"),
                 name = "name$index",
                 type = "type",
                 published = Date(index * 100),

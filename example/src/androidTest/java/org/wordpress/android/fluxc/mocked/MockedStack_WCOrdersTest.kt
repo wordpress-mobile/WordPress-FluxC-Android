@@ -158,7 +158,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
         assertEquals(WCOrderAction.UPDATED_ORDER_STATUS, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteOrderPayload
-        with (payload) {
+        with(payload) {
             assertNull(error)
             assertEquals(originalOrder.id, order.id)
             assertEquals(siteModel.id, order.localSiteId)
@@ -190,7 +190,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
         assertEquals(WCOrderAction.UPDATED_ORDER_STATUS, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteOrderPayload
-        with (payload) {
+        with(payload) {
             // Expecting a 'invalid id' error from the server
             assertNotNull(error)
             assertEquals(OrderErrorType.INVALID_ID, error.type)
@@ -205,7 +205,8 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
                     localSiteId = 5
                     id = 8
                     remoteOrderId = 88
-                }, siteModel)
+                }, siteModel
+        )
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -221,8 +222,10 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals("2018-04-27T20:48:10Z", dateCreated)
             assertEquals(5, localSiteId)
             assertEquals(8, localOrderId)
-            assertEquals("Email queued: Poster Purchase Follow-Up scheduled " +
-                    "on Poster Purchase Follow-Up<br/>Trigger: Poster Purchase Follow-Up", note)
+            assertEquals(
+                    "Email queued: Poster Purchase Follow-Up scheduled " +
+                            "on Poster Purchase Follow-Up<br/>Trigger: Poster Purchase Follow-Up", note
+            )
             assertEquals(false, isCustomerNote)
         }
 
@@ -241,14 +244,15 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
                     localSiteId = 5
                     id = 8
                     remoteOrderId = 88
-                }, siteModel)
+                }, siteModel
+        )
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
         assertEquals(WCOrderAction.FETCHED_ORDER_NOTES, lastAction!!.type)
         val payload = lastAction!!.payload as FetchOrderNotesResponsePayload
-        with (payload) {
+        with(payload) {
             // Expecting a 'invalid id' error from the server
             assertNotNull(error)
             assertEquals(OrderErrorType.INVALID_ID, error.type)
@@ -273,7 +277,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
         assertEquals(WCOrderAction.POSTED_ORDER_NOTE, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteOrderNotePayload
-        with (payload) {
+        with(payload) {
             assertNull(error)
             assertEquals(originalNote.note, note.note)
             assertEquals(originalNote.isCustomerNote, note.isCustomerNote)
@@ -305,7 +309,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
         assertEquals(WCOrderAction.POSTED_ORDER_NOTE, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteOrderNotePayload
-        with (payload) {
+        with(payload) {
             // Expecting a 'invalid id' error from the server
             assertNotNull(error)
             assertEquals(OrderErrorType.INVALID_ID, error.type)
