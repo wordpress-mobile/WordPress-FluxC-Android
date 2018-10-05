@@ -83,6 +83,29 @@ class WCStatsStore @Inject constructor(
         }
     }
 
+    /**
+     * Describes the parameters for fetching visitor stats for [site], up to the current day, month, or year
+     * (depending on the given [granularity]).
+     *
+     * @param[granularity] the time units for the requested data
+     * @param[forced] if true, ignores any cached result and forces a refresh from the server
+     */
+    class FetchVisitorStatsPayload(
+        val site: SiteModel,
+        val granularity: StatsGranularity,
+        val forced: Boolean = false
+    ) : Payload<BaseNetworkError>()
+
+    class FetchVisitorStatsResponsePayload(
+        val site: SiteModel,
+        val apiUnit: OrderStatsApiUnit,
+        val visits: Int = 0
+    ) : Payload<OrderStatsError>() {
+        constructor(error: OrderStatsError, site: SiteModel, apiUnit: OrderStatsApiUnit) : this(site, apiUnit) {
+            this.error = error
+        }
+    }
+
     class FetchTopEarnersStatsPayload(
         val site: SiteModel,
         val granularity: StatsGranularity,
@@ -129,9 +152,12 @@ class WCStatsStore @Inject constructor(
         val actionType = action.type as? WCStatsAction ?: return
         when (actionType) {
             WCStatsAction.FETCH_ORDER_STATS -> fetchOrderStats(action.payload as FetchOrderStatsPayload)
+            WCStatsAction.FETCH_VISITOR_STATS -> fetchVisitorStats(action.payload as FetchVisitorStatsPayload)
             WCStatsAction.FETCH_TOP_EARNERS_STATS -> fetchTopEarnersStats(action.payload as FetchTopEarnersStatsPayload)
             WCStatsAction.FETCHED_ORDER_STATS ->
                 handleFetchOrderStatsCompleted(action.payload as FetchOrderStatsResponsePayload)
+            WCStatsAction.FETCHED_VISITOR_STATS ->
+                handleFetchVisitorStatsCompleted(action.payload as FetchVisitorStatsResponsePayload)
             WCStatsAction.FETCHED_TOP_EARNERS_STATS ->
                 handleFetchTopEarnersStatsCompleted(action.payload as FetchTopEarnersStatsResponsePayload)
         }
@@ -190,19 +216,35 @@ class WCStatsStore @Inject constructor(
         } ?: return null
     }
 
-    private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
-        val quantity = when (payload.granularity) {
+    /**
+     * returns the quantity (how far back to go) to use when requesting stats for a specific granularity
+     */
+    private fun getQuantityForGranularity(site: SiteModel, granularity: StatsGranularity): Int {
+        return when (granularity) {
             StatsGranularity.DAYS -> STATS_QUANTITY_DAYS
             StatsGranularity.WEEKS -> STATS_QUANTITY_WEEKS
             StatsGranularity.MONTHS -> STATS_QUANTITY_MONTHS
             StatsGranularity.YEARS -> {
                 // Years since 2011 (WooCommerce initial release), inclusive
-                SiteUtils.getCurrentDateTimeForSite(payload.site, DATE_FORMAT_YEAR).toInt() - 2011 + 1
+                SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR).toInt() - 2011 + 1
             }
         }
+    }
 
+    private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
+        val quantity = getQuantityForGranularity(payload.site, payload.granularity)
         wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
                 getFormattedDate(payload.site, payload.granularity), quantity, payload.forced)
+    }
+
+    private fun fetchVisitorStats(payload: FetchVisitorStatsPayload) {
+        val quantity = getQuantityForGranularity(payload.site, payload.granularity)
+        wcOrderStatsClient.fetchVisitorStats(
+                payload.site,
+                OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
+                getFormattedDate(payload.site, payload.granularity),
+                quantity,
+                payload.forced)
     }
 
     private fun fetchTopEarnersStats(payload: FetchTopEarnersStatsPayload) {
@@ -211,11 +253,12 @@ class WCStatsStore @Inject constructor(
                 OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
                 getFormattedDate(payload.site, payload.granularity),
                 payload.limit,
-                payload.forced)
+                payload.forced
+        )
     }
 
     private fun handleFetchOrderStatsCompleted(payload: FetchOrderStatsResponsePayload) {
-        val onStatsChanged = with (payload) {
+        val onStatsChanged = with(payload) {
             val granularity = StatsGranularity.fromOrderStatsApiUnit(apiUnit)
             if (isError || stats == null) {
                 return@with OnWCStatsChanged(0, granularity).also { it.error = payload.error }
@@ -226,6 +269,16 @@ class WCStatsStore @Inject constructor(
         }
 
         onStatsChanged.causeOfChange = WCStatsAction.FETCH_ORDER_STATS
+        emitChange(onStatsChanged)
+    }
+
+    private fun handleFetchVisitorStatsCompleted(payload: FetchVisitorStatsResponsePayload) {
+        val granularity = StatsGranularity.fromOrderStatsApiUnit(payload.apiUnit)
+        val onStatsChanged = OnWCStatsChanged(payload.visits, granularity)
+        if (payload.isError) {
+            onStatsChanged.error = payload.error
+        }
+        onStatsChanged.causeOfChange = WCStatsAction.FETCH_VISITOR_STATS
         emitChange(onStatsChanged)
     }
 
@@ -276,7 +329,8 @@ class WCStatsStore @Inject constructor(
         AppLog.e(T.API, "Missing field from stats endpoint - returned fields: " + orderStatsModel.fields)
         val unexpectedError = OnUnexpectedError(
                 IllegalStateException("Missing field from stats endpoint"),
-                orderStatsModel.fields)
+                orderStatsModel.fields
+        )
         mDispatcher.emitChange(unexpectedError)
     }
 }
