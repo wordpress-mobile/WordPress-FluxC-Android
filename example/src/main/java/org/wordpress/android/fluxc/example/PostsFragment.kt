@@ -13,6 +13,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.PostAction
 import org.wordpress.android.fluxc.generated.PostActionBuilder
+import org.wordpress.android.fluxc.model.CauseOfOnPostChanged
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload
@@ -83,7 +84,8 @@ class PostsFragment : Fragment() {
 
         val firstSite = getFirstSite()
         if (!postStore.getPostsForSite(firstSite).isEmpty()) {
-            if (event.causeOfChange == PostAction.FETCH_POSTS || event.causeOfChange == PostAction.FETCH_PAGES) {
+            if (event.causeOfChange is CauseOfOnPostChanged.FetchPosts ||
+                event.causeOfChange is CauseOfOnPostChanged.FetchPages) {
                 prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.name)
             } else if (event.causeOfChange == PostAction.DELETE_POST) {
                 prependToLog("Post deleted!")

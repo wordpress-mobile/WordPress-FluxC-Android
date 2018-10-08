@@ -6,6 +6,9 @@ import org.junit.Test;
 import org.wordpress.android.fluxc.TestUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
+import org.wordpress.android.fluxc.model.CauseOfOnPostChanged;
+import org.wordpress.android.fluxc.model.CauseOfOnPostChanged.DeletePost;
+import org.wordpress.android.fluxc.model.CauseOfOnPostChanged.UpdatePost;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
@@ -32,6 +35,7 @@ import javax.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
@@ -954,36 +958,36 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
             }
             return;
         }
-        switch (event.causeOfChange) {
-            case UPDATE_POST:
-                if (mNextEvent.equals(TestEvents.POST_UPDATED)) {
-                    mCountDownLatch.countDown();
-                }
-                break;
-            case FETCH_POSTS:
-                if (mNextEvent.equals(TestEvents.POSTS_FETCHED)) {
-                    AppLog.i(T.API, "Fetched " + event.rowsAffected + " posts, can load more: " + event.canLoadMore);
-                    mCanLoadMorePosts = event.canLoadMore;
-                    mCountDownLatch.countDown();
-                }
-                break;
-            case FETCH_PAGES:
-                if (mNextEvent.equals(TestEvents.PAGES_FETCHED)) {
-                    AppLog.i(T.API, "Fetched " + event.rowsAffected + " pages, can load more: " + event.canLoadMore);
-                    mCanLoadMorePosts = event.canLoadMore;
-                    mCountDownLatch.countDown();
-                }
-                break;
-            case DELETE_POST:
-                if (mNextEvent.equals(TestEvents.POST_DELETED)) {
-                    mCountDownLatch.countDown();
-                }
-                break;
-            case REMOVE_ALL_POSTS:
-                if (mNextEvent.equals(TestEvents.ALL_POST_REMOVED)) {
-                    mCountDownLatch.countDown();
-                }
-                break;
+        if (event.causeOfChange instanceof CauseOfOnPostChanged.UpdatePost) {
+            if (mNextEvent.equals(TestEvents.POST_UPDATED)) {
+                UpdatePost causeOfChange = ((UpdatePost) event.causeOfChange);
+                assertTrue(causeOfChange.getLocalPostId() > 0 || causeOfChange.getRemotePostId() > 0);
+                mCountDownLatch.countDown();
+            }
+        } else if (event.causeOfChange instanceof CauseOfOnPostChanged.FetchPosts) {
+            if (mNextEvent.equals(TestEvents.POSTS_FETCHED)) {
+                AppLog.i(T.API, "Fetched " + event.rowsAffected + " posts, can load more: " + event.canLoadMore);
+                mCanLoadMorePosts = event.canLoadMore;
+                mCountDownLatch.countDown();
+            }
+        } else if (event.causeOfChange instanceof CauseOfOnPostChanged.FetchPages) {
+            if (mNextEvent.equals(TestEvents.PAGES_FETCHED)) {
+                AppLog.i(T.API, "Fetched " + event.rowsAffected + " pages, can load more: " + event.canLoadMore);
+                mCanLoadMorePosts = event.canLoadMore;
+                mCountDownLatch.countDown();
+            }
+        } else if (event.causeOfChange instanceof CauseOfOnPostChanged.DeletePost) {
+            if (mNextEvent.equals(TestEvents.POST_DELETED)) {
+                assertNotEquals(0, ((DeletePost) event.causeOfChange).getLocalPostId());
+                assertNotEquals(0, ((DeletePost) event.causeOfChange).getRemotePostId());
+                mCountDownLatch.countDown();
+            }
+        } else if (event.causeOfChange instanceof CauseOfOnPostChanged.RemoveAllPosts) {
+            if (mNextEvent.equals(TestEvents.ALL_POST_REMOVED)) {
+                mCountDownLatch.countDown();
+            }
+        } else {
+            throw new AssertionError("Unexpected cause of change: " + event.causeOfChange.getClass().getSimpleName());
         }
     }
 
