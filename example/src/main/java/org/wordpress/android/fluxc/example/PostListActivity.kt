@@ -23,9 +23,10 @@ import android.widget.Spinner
 import android.widget.TextView
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.post_list_activity.*
-import kotlinx.coroutines.experimental.DefaultDispatcher
+import kotlinx.coroutines.experimental.Dispatchers
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.android.Main
 import kotlinx.coroutines.experimental.isActive
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
@@ -141,6 +142,7 @@ class PostListActivity : AppCompatActivity() {
                     )
                 }
             }
+            swipeToRefresh.isRefreshing = true
             refreshListManagerFromStore(listDescriptor, true)
             dialog.dismiss()
         }
@@ -194,10 +196,10 @@ class PostListActivity : AppCompatActivity() {
 
     private fun refreshListManagerFromStore(listDescriptor: ListDescriptor, fetchAfter: Boolean) {
         refreshListDataJob?.cancel()
-        refreshListDataJob = launch(UI) {
-            val listManager = withContext(DefaultDispatcher) { getListDataFromStore(listDescriptor) }
+        refreshListDataJob = GlobalScope.launch(Dispatchers.Main) {
+            val listManager = withContext(Dispatchers.Default) { getListDataFromStore(listDescriptor) }
             if (isActive && this@PostListActivity.listDescriptor == listDescriptor) {
-                val diffResult = withContext(DefaultDispatcher) {
+                val diffResult = withContext(Dispatchers.Default) {
                     DiffUtil.calculateDiff(DiffCallback(this@PostListActivity.listManager, listManager))
                 }
                 if (isActive && this@PostListActivity.listDescriptor == listDescriptor) {
