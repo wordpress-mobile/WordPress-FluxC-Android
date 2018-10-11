@@ -83,6 +83,12 @@ class MainFragment : Fragment() {
         account.setOnClickListener(getOnClickListener(AccountFragment()))
         sites.setOnClickListener(getOnClickListener(SitesFragment()))
         posts.setOnClickListener(getOnClickListener(PostsFragment()))
+        post_list.setOnClickListener {
+            if (siteStore.hasSite()) {
+                val firstSite = siteStore.sites[0]
+                startActivity(PostListActivity.newInstance(activity, firstSite.id))
+            }
+        }
         comments.setOnClickListener(getOnClickListener(CommentsFragment()))
         media.setOnClickListener(getOnClickListener(MediaFragment()))
         taxonomies.setOnClickListener(getOnClickListener(TaxonomiesFragment()))

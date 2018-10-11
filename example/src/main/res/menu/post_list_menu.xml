@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/post_list_create_local_draft"
+        android:title="Create Draft"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/post_list_filter"
+        android:title="Filter"
+        app:showAsAction="ifRoom" />
+</menu>
