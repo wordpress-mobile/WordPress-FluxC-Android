@@ -51,6 +51,7 @@ import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged
 import org.wordpress.android.fluxc.store.ListStore.OnListItemsChanged
 import org.wordpress.android.fluxc.store.PostStore
+import org.wordpress.android.fluxc.store.PostStore.FetchPostListPayload
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
 import org.wordpress.android.fluxc.store.SiteStore
 import java.util.Random
@@ -240,6 +241,13 @@ class PostListActivity : AppCompatActivity() {
                     postToFetch.remotePostId = remoteItemId
                     val payload = RemotePostPayload(postToFetch, site)
                     dispatcher.dispatch(PostActionBuilder.newFetchPostAction(payload))
+                }
+
+                override fun fetchList(listDescriptor: ListDescriptor, loadMore: Boolean, offset: Int) {
+                    if (listDescriptor is PostListDescriptor) {
+                        val fetchPostListPayload = FetchPostListPayload(listDescriptor, offset)
+                        dispatcher.dispatch(PostActionBuilder.newFetchPostListAction(fetchPostListPayload))
+                    }
                 }
 
                 override fun getItems(listDescriptor: ListDescriptor, remoteItemIds: List<Long>): Map<Long, PostModel> {
