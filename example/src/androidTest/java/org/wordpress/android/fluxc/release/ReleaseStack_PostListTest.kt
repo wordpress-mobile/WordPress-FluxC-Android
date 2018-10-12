@@ -12,6 +12,8 @@ import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.list.ListDescriptor
 import org.wordpress.android.fluxc.model.list.ListItemDataSource
+import org.wordpress.android.fluxc.model.list.ListManager
+import org.wordpress.android.fluxc.model.list.PostListDescriptor
 import org.wordpress.android.fluxc.model.list.PostListDescriptor.PostListDescriptorForRestSite
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged
@@ -25,7 +27,8 @@ class ReleaseStack_PostListTest : ReleaseStack_WPComBase() {
     internal enum class TestEvent {
         NONE,
         FETCHED_FIRST_PAGE,
-        LIST_STATE_CHANGED
+        LIST_STATE_CHANGED,
+        LOADED_MORE
     }
 
     @Inject internal lateinit var listStore: ListStore
@@ -57,6 +60,13 @@ class ReleaseStack_PostListTest : ReleaseStack_WPComBase() {
             val fetchPostListPayload = FetchPostListPayload(postListDescriptor, offset)
             mDispatcher.dispatch(PostActionBuilder.newFetchPostListAction(fetchPostListPayload))
         }
+        fetchFirstPageAndAssert(postListDescriptor, dataSource)
+    }
+
+    private fun fetchFirstPageAndAssert(
+        postListDescriptor: PostListDescriptor,
+        dataSource: ListItemDataSource<PostModel>
+    ): ListManager<PostModel> {
         // Get the initial ListManager from ListStore and assert that everything is as expected
         val listManagerBefore = runBlocking {
             listStore.getListManager(postListDescriptor, null, dataSource)
@@ -81,6 +91,46 @@ class ReleaseStack_PostListTest : ReleaseStack_WPComBase() {
             listStore.getListManager(postListDescriptor, null, dataSource)
         }
         assertFalse(listManagerAfter.size == 0)
+        assertFalse(listManagerAfter.isFetchingFirstPage)
+        assertFalse(listManagerAfter.isLoadingMore)
+        return listManagerAfter
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun loadMore() {
+        var fetchedFirstPage = false
+        val postListDescriptor = PostListDescriptorForRestSite(sSite)
+        val dataSource = listItemDataSource { listDescriptor, offset ->
+            assertEquals(TestEvent.LIST_STATE_CHANGED, nextEvent)
+            // Assert that we are fetching the correct ListDescriptor
+            assertEquals(postListDescriptor, listDescriptor)
+            // Set the expected event depending on which fetch this is
+            nextEvent = if (fetchedFirstPage) TestEvent.LOADED_MORE else TestEvent.FETCHED_FIRST_PAGE
+            val fetchPostListPayload = FetchPostListPayload(postListDescriptor, offset)
+            mDispatcher.dispatch(PostActionBuilder.newFetchPostListAction(fetchPostListPayload))
+        }
+        // Fetch the first page and get the current ListManager.
+        val listManagerBefore = fetchFirstPageAndAssert(postListDescriptor, dataSource)
+        fetchedFirstPage = true
+        // IMPORTANT: This test requires a site with at least 2 pages of data. Otherwise it'll fail.
+        assertTrue(listManagerBefore.canLoadMore)
+
+        // The first expected event is the list change
+        nextEvent = TestEvent.LIST_STATE_CHANGED
+        // 2 events should happen in total:
+        // First event will be for list state change and the second will be for completed fetch
+        mCountDownLatch = CountDownLatch(2)
+        // Requesting the last item in `ListManager` will trigger a load more if there is more data to be loaded
+        listManagerBefore.getItem(listManagerBefore.size - 1, shouldLoadMoreIfNecessary = true)
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(TestEvent.LOADED_MORE, nextEvent)
+        // Retrieve the updated ListManager from ListStore and assert that we have more data than before
+        val listManagerAfter = runBlocking {
+            listStore.getListManager(postListDescriptor, null, dataSource)
+        }
+        assertTrue(listManagerAfter.size > listManagerBefore.size)
         assertFalse(listManagerAfter.isFetchingFirstPage)
         assertFalse(listManagerAfter.isLoadingMore)
     }
