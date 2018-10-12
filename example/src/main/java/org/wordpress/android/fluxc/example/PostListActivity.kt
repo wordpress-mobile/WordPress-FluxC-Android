@@ -243,7 +243,7 @@ class PostListActivity : AppCompatActivity() {
                     dispatcher.dispatch(PostActionBuilder.newFetchPostAction(payload))
                 }
 
-                override fun fetchList(listDescriptor: ListDescriptor, loadMore: Boolean, offset: Int) {
+                override fun fetchList(listDescriptor: ListDescriptor, offset: Int) {
                     if (listDescriptor is PostListDescriptor) {
                         val fetchPostListPayload = FetchPostListPayload(listDescriptor, offset)
                         dispatcher.dispatch(PostActionBuilder.newFetchPostListAction(fetchPostListPayload))

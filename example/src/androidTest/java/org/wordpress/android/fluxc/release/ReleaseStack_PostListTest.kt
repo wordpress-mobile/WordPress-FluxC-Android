@@ -47,7 +47,7 @@ class ReleaseStack_PostListTest : ReleaseStack_WPComBase() {
     @Test
     fun fetchFirstPage() {
         val postListDescriptor = PostListDescriptorForRestSite(sSite)
-        val dataSource = listItemDataSource { listDescriptor, _, offset ->
+        val dataSource = listItemDataSource { listDescriptor, offset ->
             assertEquals(TestEvent.LIST_STATE_CHANGED, nextEvent)
             // Assert that we are fetching the correct ListDescriptor
             assertEquals(postListDescriptor, listDescriptor)
@@ -94,13 +94,13 @@ class ReleaseStack_PostListTest : ReleaseStack_WPComBase() {
         mCountDownLatch.countDown()
     }
 
-    private fun listItemDataSource(fetchList: (ListDescriptor, Boolean, Int) -> Unit): ListItemDataSource<PostModel> =
+    private fun listItemDataSource(fetchList: (ListDescriptor, Int) -> Unit): ListItemDataSource<PostModel> =
             object : ListItemDataSource<PostModel> {
                 override fun fetchItem(listDescriptor: ListDescriptor, remoteItemId: Long) {
                 }
 
-                override fun fetchList(listDescriptor: ListDescriptor, loadMore: Boolean, offset: Int) {
-                    fetchList(listDescriptor, loadMore, offset)
+                override fun fetchList(listDescriptor: ListDescriptor, offset: Int) {
+                    fetchList(listDescriptor, offset)
                 }
 
                 override fun getItems(listDescriptor: ListDescriptor, remoteItemIds: List<Long>): Map<Long, PostModel> {
