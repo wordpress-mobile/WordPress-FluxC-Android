@@ -6,7 +6,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
-import org.junit.Test
+import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.PostModel
@@ -14,7 +14,6 @@ import org.wordpress.android.fluxc.model.list.ListDescriptor
 import org.wordpress.android.fluxc.model.list.ListItemDataSource
 import org.wordpress.android.fluxc.model.list.ListManager
 import org.wordpress.android.fluxc.model.list.PostListDescriptor
-import org.wordpress.android.fluxc.model.list.PostListDescriptor.PostListDescriptorForRestSite
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged
 import org.wordpress.android.fluxc.store.PostStore
@@ -23,7 +22,10 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-class ReleaseStack_PostListTest : ReleaseStack_WPComBase() {
+class PostListConnectedTestHelper(
+    private val dispatcher: Dispatcher,
+    releaseStackComponent: ReleaseStack_AppComponent
+) {
     internal enum class TestEvent {
         NONE,
         FETCHED_FIRST_PAGE,
@@ -35,21 +37,15 @@ class ReleaseStack_PostListTest : ReleaseStack_WPComBase() {
     @Inject internal lateinit var postStore: PostStore
 
     private var nextEvent: TestEvent = TestEvent.NONE
+    private lateinit var countDownLatch: CountDownLatch
 
-    @Throws(Exception::class)
-    override fun setUp() {
-        super.setUp()
-        mReleaseStackAppComponent.inject(this)
-        // Register
-        init()
-        // Reset expected test event
-        nextEvent = TestEvent.NONE
+    init {
+        releaseStackComponent.inject(this)
+        dispatcher.register(this)
     }
 
     @Throws(InterruptedException::class)
-    @Test
-    fun fetchFirstPage() {
-        val postListDescriptor = PostListDescriptorForRestSite(sSite)
+    internal fun fetchFirstPageHelper(postListDescriptor: PostListDescriptor) {
         val dataSource = listItemDataSource { listDescriptor, offset ->
             assertEquals(TestEvent.LIST_STATE_CHANGED, nextEvent)
             // Assert that we are fetching the correct ListDescriptor
@@ -58,7 +54,7 @@ class ReleaseStack_PostListTest : ReleaseStack_WPComBase() {
             nextEvent = TestEvent.FETCHED_FIRST_PAGE
             // Fetch the post list for the given ListDescriptor and offset
             val fetchPostListPayload = FetchPostListPayload(postListDescriptor, offset)
-            mDispatcher.dispatch(PostActionBuilder.newFetchPostListAction(fetchPostListPayload))
+            dispatcher.dispatch(PostActionBuilder.newFetchPostListAction(fetchPostListPayload))
         }
         fetchFirstPageAndAssert(postListDescriptor, dataSource)
     }
@@ -79,10 +75,10 @@ class ReleaseStack_PostListTest : ReleaseStack_WPComBase() {
         nextEvent = TestEvent.LIST_STATE_CHANGED
         // 2 events should happen in total:
         // First event will be for list state change and the second will be for completed fetch
-        mCountDownLatch = CountDownLatch(2)
+        countDownLatch = CountDownLatch(2)
         // Call `refresh` on the ListManager which should trigger the state change and then fetch the list
         listManagerBefore.refresh()
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
         // Assert that the expected event is updated within `ListItemDataSource.fetchList`
         assertEquals(TestEvent.FETCHED_FIRST_PAGE, nextEvent)
@@ -97,10 +93,8 @@ class ReleaseStack_PostListTest : ReleaseStack_WPComBase() {
     }
 
     @Throws(InterruptedException::class)
-    @Test
-    fun loadMore() {
+    internal fun loadMoreHelper(postListDescriptor: PostListDescriptor) {
         var fetchedFirstPage = false
-        val postListDescriptor = PostListDescriptorForRestSite(sSite)
         val dataSource = listItemDataSource { listDescriptor, offset ->
             assertEquals(TestEvent.LIST_STATE_CHANGED, nextEvent)
             // Assert that we are fetching the correct ListDescriptor
@@ -108,7 +102,7 @@ class ReleaseStack_PostListTest : ReleaseStack_WPComBase() {
             // Set the expected event depending on which fetch this is
             nextEvent = if (fetchedFirstPage) TestEvent.LOADED_MORE else TestEvent.FETCHED_FIRST_PAGE
             val fetchPostListPayload = FetchPostListPayload(postListDescriptor, offset)
-            mDispatcher.dispatch(PostActionBuilder.newFetchPostListAction(fetchPostListPayload))
+            dispatcher.dispatch(PostActionBuilder.newFetchPostListAction(fetchPostListPayload))
         }
         // Fetch the first page and get the current ListManager.
         val listManagerBefore = fetchFirstPageAndAssert(postListDescriptor, dataSource)
@@ -120,10 +114,10 @@ class ReleaseStack_PostListTest : ReleaseStack_WPComBase() {
         nextEvent = TestEvent.LIST_STATE_CHANGED
         // 2 events should happen in total:
         // First event will be for list state change and the second will be for completed fetch
-        mCountDownLatch = CountDownLatch(2)
+        countDownLatch = CountDownLatch(2)
         // Requesting the last item in `ListManager` will trigger a load more if there is more data to be loaded
         listManagerBefore.getItem(listManagerBefore.size - 1, shouldLoadMoreIfNecessary = true)
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
         assertEquals(TestEvent.LOADED_MORE, nextEvent)
         // Retrieve the updated ListManager from ListStore and assert that we have more data than before
@@ -141,7 +135,7 @@ class ReleaseStack_PostListTest : ReleaseStack_WPComBase() {
         event.error?.let {
             throw AssertionError("OnListChanged has error: " + it.type)
         }
-        mCountDownLatch.countDown()
+        countDownLatch.countDown()
     }
 
     private fun listItemDataSource(fetchList: (ListDescriptor, Int) -> Unit): ListItemDataSource<PostModel> =

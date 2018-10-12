@@ -53,5 +53,6 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_UploadTest test);
     void inject(ReleaseStack_WCBaseStoreTest test);
     void inject(ReleaseStack_WCOrderTest test);
-    void inject(ReleaseStack_PostListTest test);
+    void inject(ReleaseStack_PostListTestWpCom test);
+    void inject(PostListConnectedTestHelper test);
 }
