@@ -8,6 +8,8 @@ import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCOrderListDescriptor
+import org.wordpress.android.fluxc.model.WCOrderListItemModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.network.UserAgent
@@ -19,9 +21,11 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
@@ -36,6 +40,50 @@ class OrderRestClient(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+    /**
+     * Testing list management code. Ideally we'd be defining specific fields (id, date_created_gmt, date_modified_gmt)
+     * to make this call as fast and light weight as possible, but it doesn't appear this is currently an option
+     * available in the woo api.
+     *
+     * @param [listDescriptor] todo
+     * @param [offset] the page offset to fetch. 0 = first page
+     * @param [countOnly] Default false. If true, only a total count of orders will be returned in the payload.
+     */
+    fun fetchOrders(listDescriptor: WCOrderListDescriptor, offset: Int, countOnly: Boolean = false) {
+        val statusFilter =
+                if (listDescriptor.statusFilter.isNullOrBlank()) { "any" } else { listDescriptor.statusFilter!! }
+        val url = WOOCOMMERCE.orders.pathV2
+        val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
+        val params = mapOf(
+                "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
+                "offset" to offset.toString(),
+                "status" to statusFilter)
+
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, listDescriptor.site.siteId, params, responseType,
+                { response: List<OrderApiResponse>? ->
+                    val orderListModels = response?.map {
+                        orderResponseToOrderListModel(it)
+                    }.orEmpty()
+
+                    val canLoadMore = orderListModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
+
+                    val payload = FetchOrderListResponsePayload(
+                            listDescriptor,
+                            orderListModels,
+                            offset > 0,
+                            canLoadMore
+                    )
+                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
+                    val payload = FetchOrderListResponsePayload(orderError, listDescriptor)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
     /**
      * Makes a GET call to `/wc/v2/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of orders for the given WooCommerce [SiteModel].
@@ -85,6 +133,29 @@ class OrderRestClient(
                         val payload = FetchOrdersResponsePayload(orderError, site)
                         mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                     }
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    fun fetchSingleOrder(site: SiteModel, remoteOrderId: Long) {
+        val url = WOOCOMMERCE.orders.id(remoteOrderId).pathV2
+        val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
+        val params = emptyMap<String, String>()
+
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: OrderApiResponse? ->
+                    response?.let {
+                        val orderModel = orderResponseToOrderModel(it)
+                        val payload = FetchSingleOrderResponsePayload(site, orderModel)
+                        mDispatcher.dispatch(WCOrderActionBuilder.newFetchedSingleOrderAction(payload))
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
+                    val orderModel = WCOrderModel().apply { this.remoteOrderId = remoteOrderId }
+                    val payload = FetchSingleOrderResponsePayload(orderError, site, orderModel)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedSingleOrderAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
@@ -218,6 +289,14 @@ class OrderRestClient(
         add(request)
     }
 
+    private fun orderResponseToOrderListModel(response: OrderApiResponse): WCOrderListItemModel {
+        return WCOrderListItemModel().apply {
+            remoteOrderId = response.id ?: 0
+            dateModified = response.date_modified_gmt?.let { "${it}Z" }
+                    ?: response.date_created_gmt?.let { "${it}Z" }.orEmpty()
+        }
+    }
+
     private fun orderResponseToOrderModel(response: OrderApiResponse): WCOrderModel {
         return WCOrderModel().apply {
             remoteOrderId = response.id ?: 0
@@ -225,6 +304,8 @@ class OrderRestClient(
             status = response.status ?: ""
             currency = response.currency ?: ""
             dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: "" // Store the date in UTC format
+            dateModified = response.date_modified_gmt?.let { "${it}Z" } ?:
+                    response.date_created_gmt?.let { "${it}Z" }.orEmpty()  // Store the date in UTC format
             total = response.total ?: ""
             totalTax = response.total_tax ?: ""
             shippingTotal = response.shipping_total ?: ""

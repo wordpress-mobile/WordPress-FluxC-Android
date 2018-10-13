@@ -116,4 +116,15 @@ object OrderSqlUtils {
                 .endWhere()
                 .execute()
     }
+
+    fun getOrdersByRemoteIds(remoteIds: List<Long>, localSiteId: Int): List<WCOrderModel> {
+        return if (remoteIds.isNotEmpty()) {
+            WellSql.select(WCOrderModel::class.java)
+                    .where().isIn(WCOrderModelTable.REMOTE_ORDER_ID, remoteIds)
+                    .equals(WCOrderModelTable.LOCAL_SITE_ID, localSiteId).endWhere()
+                    .asModel
+        } else {
+            emptyList()
+        }
+    }
 }
