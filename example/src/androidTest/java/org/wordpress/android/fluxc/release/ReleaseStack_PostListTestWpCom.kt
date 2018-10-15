@@ -23,7 +23,7 @@ class ReleaseStack_PostListTestWpCom : ReleaseStack_WPComBase() {
     @Test
     fun loadMore() {
         val postListConnectedTestHelper = PostListConnectedTestHelper(mDispatcher, mReleaseStackAppComponent)
-        val postListDescriptor = PostListDescriptorForRestSite(sSite)
+        val postListDescriptor = PostListDescriptorForRestSite(sSite, pageSize = 10)
         postListConnectedTestHelper.loadMoreHelper(postListDescriptor)
     }
 }
