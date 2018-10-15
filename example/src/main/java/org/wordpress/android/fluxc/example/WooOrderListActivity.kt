@@ -1,8 +1,10 @@
 package org.wordpress.android.fluxc.example
 
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.util.DiffUtil
 import android.support.v7.util.DiffUtil.DiffResult
@@ -12,9 +14,9 @@ import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.RecyclerView.ViewHolder
 import android.view.LayoutInflater
 import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import android.widget.TextView
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.activity_woo_order_list.*
@@ -69,6 +71,9 @@ class WooOrderListActivity : AppCompatActivity() {
 
     private var listAdapter: OrderListAdapter? = null
     private var refreshListDataJob: Job? = null
+    private val filterStatusOptions: Array<String> by lazy {
+        resources.getStringArray(R.array.order_filter_options)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -95,9 +100,18 @@ class WooOrderListActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        // todo - add menu to change order status filter
+        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.order_list_menu, menu)
+        return true
+    }
 
-        return super.onCreateOptionsMenu(menu)
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        item?.let {
+            if (it.itemId == R.id.menu_order_filter) {
+                showFilterMenu()
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun setupViews() {
@@ -115,7 +129,7 @@ class WooOrderListActivity : AppCompatActivity() {
     private fun refreshListManagerFromStore(listDescriptor: ListDescriptor, fetchAfter: Boolean) {
         refreshListDataJob?.cancel()
         refreshListDataJob = GlobalScope.launch(Dispatchers.Main) {
-            val listManager = withContext(Dispatchers.Default) { getListDataFromStore(listDescriptor)}
+            val listManager = withContext(Dispatchers.Default) { getListDataFromStore(listDescriptor) }
             if (isActive && this@WooOrderListActivity.listDescriptor == listDescriptor) {
                 val diffResult = withContext(Dispatchers.Default) {
                     DiffUtil.calculateDiff(DiffCallback(this@WooOrderListActivity.listManager, listManager))
@@ -138,7 +152,7 @@ class WooOrderListActivity : AppCompatActivity() {
     }
 
     private suspend fun getListDataFromStore(listDescriptor: ListDescriptor): ListManager<WCOrderModel> {
-        return listStore.getListManager(listDescriptor, null, object: ListItemDataSource<WCOrderModel> {
+        return listStore.getListManager(listDescriptor, null, object : ListItemDataSource<WCOrderModel> {
             override fun fetchItem(listDescriptor: ListDescriptor, remoteItemId: Long) {
                 val orderToFetch = WCOrderModel().apply {
                     this.remoteOrderId = remoteItemId
@@ -179,6 +193,33 @@ class WooOrderListActivity : AppCompatActivity() {
             return
         }
         refreshListManagerFromStore(listDescriptor, false)
+    }
+    // endregion
+
+    // region Filtering
+    private fun showFilterMenu() {
+        val builder = AlertDialog.Builder(this)
+        builder.apply {
+            setTitle("Filter by Order Status")
+            setItems(filterStatusOptions, DialogInterface.OnClickListener { _, which ->
+                applyFilter(which)
+            })
+            setNegativeButton("Clear Filter", DialogInterface.OnClickListener { _, _ ->
+                clearFilter()
+            })
+        }
+        builder.create().show()
+    }
+
+    private fun clearFilter() {
+        listDescriptor = WCOrderListDescriptor(site)
+        refreshListManagerFromStore(listDescriptor, true)
+    }
+
+    private fun applyFilter(selectedIndex: Int) {
+        val selectedFilter = filterStatusOptions[selectedIndex]
+        listDescriptor = WCOrderListDescriptor(site, selectedFilter)
+        refreshListManagerFromStore(listDescriptor, true)
     }
     // endregion
 

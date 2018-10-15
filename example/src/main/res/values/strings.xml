@@ -3,4 +3,14 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string-array name="order_filter_options">
+        <item>pending</item>
+        <item>processing</item>
+        <item>on-hold</item>
+        <item>completed</item>
+        <item>cancelled</item>
+        <item>refunded</item>
+        <item>failed</item>
+    </string-array>
 </resources>
