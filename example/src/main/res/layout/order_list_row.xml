@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:padding="5dp">
 
     <LinearLayout
@@ -14,7 +14,9 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="ID:"/>
+            android:text="ID:"
+            android:paddingRight="8dp"
+            android:paddingEnd="8dp"/>
         <TextView
             android:id="@+id/order_id"
             android:layout_width="wrap_content"
@@ -30,7 +32,9 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Customer:"/>
+            android:text="Customer:"
+            android:paddingRight="8dp"
+            android:paddingEnd="8dp"/>
         <TextView
             android:id="@+id/cust_name"
             android:layout_width="wrap_content"
@@ -46,7 +50,9 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Status:"/>
+            android:text="Status:"
+            android:paddingRight="8dp"
+            android:paddingEnd="8dp"/>
         <TextView
             android:id="@+id/order_status"
             android:layout_width="wrap_content"

@@ -10,11 +10,29 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <Button
-            android:id="@+id/log_sites"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Log Sites"/>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/log_sites"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Log Sites"/>
+
+            <android.support.v4.widget.Space
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+            <Button
+                android:id="@+id/order_list"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Order List"/>
+        </LinearLayout>
+
 
         <Button
             android:id="@+id/fetch_orders"

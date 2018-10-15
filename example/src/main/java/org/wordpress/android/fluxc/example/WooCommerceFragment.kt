@@ -74,6 +74,12 @@ class WooCommerceFragment : Fragment() {
             }
         }
 
+        order_list.setOnClickListener {
+            getFirstWCSite()?.let {
+                startActivity(WooOrderListActivity.newInstance(activity, it.id))
+            }
+        }
+
         fetch_orders.setOnClickListener {
             getFirstWCSite()?.let {
                 val payload = FetchOrdersPayload(it, loadMore = false)

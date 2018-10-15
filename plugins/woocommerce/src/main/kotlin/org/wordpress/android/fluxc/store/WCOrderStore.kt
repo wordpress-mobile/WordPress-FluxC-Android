@@ -74,11 +74,6 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
     }
 
-    class FetchSingleOrderPayload(
-        var site: SiteModel,
-        var remoteOrderId: Long
-    ) : Payload<BaseNetworkError>()
-
     class FetchSingleOrderResponsePayload(
         var site: SiteModel,
         var order: WCOrderModel
@@ -209,7 +204,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             // remote actions
             WCOrderAction.FETCH_ORDER_LIST -> fetchOrderList(action.payload as FetchOrderListPayload)
             WCOrderAction.FETCH_ORDERS -> fetchOrders(action.payload as FetchOrdersPayload)
-            WCOrderAction.FETCH_SINGLE_ORDER -> fetchSingleOrder(action.payload as FetchSingleOrderPayload)
+            WCOrderAction.FETCH_SINGLE_ORDER -> fetchSingleOrder(action.payload as RemoteOrderPayload)
             WCOrderAction.FETCH_ORDERS_COUNT -> fetchOrdersCount(action.payload as FetchOrdersCountPayload)
             WCOrderAction.UPDATE_ORDER_STATUS -> updateOrderStatus(action.payload as UpdateOrderStatusPayload)
             WCOrderAction.FETCH_ORDER_NOTES -> fetchOrderNotes(action.payload as FetchOrderNotesPayload)
@@ -246,8 +241,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         wcOrderRestClient.fetchOrders(payload.site, offset, payload.statusFilter)
     }
 
-    private fun fetchSingleOrder(payload: FetchSingleOrderPayload) {
-        with(payload) { wcOrderRestClient.fetchSingleOrder(site, remoteOrderId) }
+    private fun fetchSingleOrder(payload: RemoteOrderPayload) {
+        with(payload) { wcOrderRestClient.fetchSingleOrder(site, order.remoteOrderId) }
     }
 
     private fun fetchOrdersCount(payload: FetchOrdersCountPayload) {
@@ -270,9 +265,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         wcOrderRestClient.postOrderNote(payload.order, payload.site, payload.note)
     }
 
-    private fun getOrdersByRemoteOrderIds(remoteIds: List<Long>, site: SiteModel): Map<Long, WCOrderModel> {
+    fun getOrdersByRemoteOrderIds(remoteIds: List<Long>, site: SiteModel): Map<Long, WCOrderModel> {
         val orderList = OrderSqlUtils.getOrdersByRemoteIds(remoteIds, site.id)
-//        val orderMap: Map<Long, WCOrderModel> = orderList.map { it.remoteOrderId to it }.toMap()
         return orderList.associateBy({it.remoteOrderId}, {it})
     }
 
@@ -295,7 +289,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 if (order != null && order.dateModified != it.dateModified) {
                     // Dispatch a request to fetch this single order
                     mDispatcher.dispatch(WCOrderActionBuilder.newFetchSingleOrderAction(
-                            FetchSingleOrderPayload(site, order.remoteOrderId)))
+                            RemoteOrderPayload(order, site)))
                 }
             }
         }
@@ -344,7 +338,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
         // Let the list manager know something has changed
         mDispatcher.dispatch(ListActionBuilder.newListItemsChangedAction(
-                ListItemsChangedPayload(WCOrderListDescriptor.calculateTypeIdentifier(payload.order.localSiteId))))
+                ListItemsChangedPayload(WCOrderListDescriptor.calculateTypeIdentifier(payload.site.id))))
     }
 
     /**
@@ -391,7 +385,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
         // Let the list manager know something has changed
         mDispatcher.dispatch(ListActionBuilder.newListItemsChangedAction(
-                ListItemsChangedPayload(WCOrderListDescriptor.calculateTypeIdentifier(payload.order.localSiteId))))
+                ListItemsChangedPayload(WCOrderListDescriptor.calculateTypeIdentifier(payload.site.id))))
     }
 
     private fun updateOrder(order: WCOrderModel) = OrderSqlUtils.insertOrUpdateOrder(order)

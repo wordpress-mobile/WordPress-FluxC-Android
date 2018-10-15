@@ -20,6 +20,9 @@
         <activity
             android:name=".PostListActivity"
             android:label="Post List"/>
+        <activity
+            android:name=".WooOrderListActivity"
+            android:label="Woo Order List"/>
     </application>
 
 </manifest>

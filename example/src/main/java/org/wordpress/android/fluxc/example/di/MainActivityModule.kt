@@ -4,6 +4,7 @@ import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import org.wordpress.android.fluxc.example.MainExampleActivity
 import org.wordpress.android.fluxc.example.PostListActivity
+import org.wordpress.android.fluxc.example.WooOrderListActivity
 
 @Module
 internal abstract class MainActivityModule {
@@ -12,4 +13,7 @@ internal abstract class MainActivityModule {
 
     @ContributesAndroidInjector
     abstract fun providePostListActivityInjector(): PostListActivity
+
+    @ContributesAndroidInjector
+    abstract fun provideWooOrderListActivityInjector(): WooOrderListActivity
 }

@@ -140,13 +140,13 @@ class OrderRestClient(
 
     fun fetchSingleOrder(site: SiteModel, remoteOrderId: Long) {
         val url = WOOCOMMERCE.orders.id(remoteOrderId).pathV2
-        val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
+        val responseType = object : TypeToken<OrderApiResponse>() {}.type
         val params = emptyMap<String, String>()
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: OrderApiResponse? ->
                     response?.let {
-                        val orderModel = orderResponseToOrderModel(it)
+                        val orderModel = orderResponseToOrderModel(it).apply { localSiteId = site.id  }
                         val payload = FetchSingleOrderResponsePayload(site, orderModel)
                         mDispatcher.dispatch(WCOrderActionBuilder.newFetchedSingleOrderAction(payload))
                     }
