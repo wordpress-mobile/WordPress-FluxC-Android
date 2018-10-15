@@ -55,5 +55,9 @@ public enum WCOrderAction implements IAction {
     @Action(payloadType = RemoteOrderNotePayload.class)
     POSTED_ORDER_NOTE,
     @Action(payloadType = FetchHasOrdersResponsePayload.class)
-    FETCHED_HAS_ORDERS
+    FETCHED_HAS_ORDERS,
+
+    // Local actions
+    @Action
+    REMOVE_ALL_ORDERS
 }

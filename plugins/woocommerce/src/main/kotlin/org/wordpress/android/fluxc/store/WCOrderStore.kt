@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
+import org.wordpress.android.fluxc.action.WCOrderAction.REMOVE_ALL_ORDERS
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
@@ -225,6 +226,9 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             WCOrderAction.POSTED_ORDER_NOTE -> handlePostOrderNoteCompleted(action.payload as RemoteOrderNotePayload)
             WCOrderAction.FETCHED_HAS_ORDERS -> handleFetchHasOrdersCompleted(
                     action.payload as FetchHasOrdersResponsePayload)
+
+            // local actions
+            WCOrderAction.REMOVE_ALL_ORDERS -> removeAllLocalOrders()
         }
     }
 
@@ -416,5 +420,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
         onOrderChanged.causeOfChange = POST_ORDER_NOTE
         emitChange(onOrderChanged)
+    }
+
+    private fun removeAllLocalOrders() {
+        val rowsAffected: Int = OrderSqlUtils.deleteAllOrders()
+        emitChange(OnOrderChanged(rowsAffected).apply { causeOfChange = REMOVE_ALL_ORDERS })
     }
 }

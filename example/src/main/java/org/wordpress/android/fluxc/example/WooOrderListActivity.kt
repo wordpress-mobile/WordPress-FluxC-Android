@@ -77,7 +77,8 @@ class WooOrderListActivity : AppCompatActivity() {
         dispatcher.register(this)
         site = siteStore.getSiteByLocalId(intent.getIntExtra(LOCAL_SITE_ID, 0))
 
-        // todo add remove-orders action
+        // delete all local orders from the database
+        dispatcher.dispatch(WCOrderActionBuilder.newRemoveAllOrdersAction())
 
         listDescriptor = WCOrderListDescriptor(site)
 

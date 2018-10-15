@@ -72,6 +72,8 @@ object OrderSqlUtils {
                 .execute()
     }
 
+    fun deleteAllOrders() = WellSql.delete(WCOrderModel::class.java).execute()
+
     fun insertOrIgnoreOrderNotes(notes: List<WCOrderNoteModel>): Int {
         var totalChanged = 0
         notes.forEach { totalChanged += insertOrIgnoreOrderNote(it) }
