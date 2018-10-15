@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="70dp"
     android:padding="5dp">
 
     <LinearLayout
+        android:id="@+id/order_id_view"
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -26,6 +27,8 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/order_name_view"
+        android:layout_below="@+id/order_id_view"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -44,6 +47,8 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/order_status_view"
+        android:layout_below="@+id/order_name_view"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -60,4 +65,20 @@
             android:textStyle="bold"
             tools:text="Processing"/>
     </LinearLayout>
-</LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/order_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFFFFFFF"
+        android:visibility="gone"
+        android:layout_centerInParent="true"
+        tools:visibility="visible">
+        <ProgressBar
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            android:layout_width="80dp"
+            android:layout_height="50dp"
+            style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"/>
+    </FrameLayout>
+</RelativeLayout>

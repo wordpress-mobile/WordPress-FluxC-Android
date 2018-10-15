@@ -14,6 +14,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.activity_woo_order_list.*
@@ -203,19 +204,33 @@ class WooOrderListActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val orderHolder = holder as OrderViewHolder
             val orderModel = listManager.getItem(position)
-            val id = orderModel?.remoteOrderId ?: 0
-            val customerName = orderModel?.getCustomerName() ?: "Loading..."
-            val orderStatus = orderModel?.status.orEmpty()
 
-            orderHolder.orderIdView.text = id.toString()
-            orderHolder.customerView.text = customerName
-            orderHolder.statusView.text = orderStatus
+            orderModel?.let {
+                val id = it.remoteOrderId
+                val customerName = it.getCustomerName()
+                val orderStatus = it.status.orEmpty()
+
+                orderHolder.orderIdView.text = id.toString()
+                orderHolder.customerView.text = customerName
+                orderHolder.statusView.text = orderStatus
+
+                hideLoadingView(orderHolder.loadingView)
+            } ?: showLoadingView(orderHolder.loadingView)
+        }
+
+        private fun showLoadingView(loadingView: ViewGroup) {
+            loadingView.visibility = View.VISIBLE
+        }
+
+        private fun hideLoadingView(loadingView: ViewGroup) {
+            loadingView.visibility = View.GONE
         }
 
         private class OrderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             val orderIdView: TextView = itemView.findViewById(R.id.order_id)
             val customerView: TextView = itemView.findViewById(R.id.cust_name)
             val statusView: TextView = itemView.findViewById(R.id.order_status)
+            val loadingView: ViewGroup = itemView.findViewById(R.id.order_loading)
         }
     }
 
