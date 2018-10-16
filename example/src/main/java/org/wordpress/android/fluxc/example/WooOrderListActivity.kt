@@ -295,7 +295,8 @@ class WooOrderListActivity : AppCompatActivity() {
 
             return (oldItem == null && newItem == null) ||
                     ((oldItem?.remoteOrderId == newItem?.remoteOrderId) &&
-                            (oldItem?.getCustomerName() == newItem?.getCustomerName()) &&
+                            (oldItem?.dateModified == newItem?.dateModified) &&
+                            (oldItem?.dateCreated == newItem?.dateCreated) &&
                             (oldItem?.status == newItem?.status))
         }
     }
