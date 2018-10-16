@@ -233,7 +233,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun fetchOrderList(payload: FetchOrderListPayload) {
-        with(payload) { wcOrderRestClient.fetchOrders(listDescriptor, offset) }
+        with(payload) { wcOrderRestClient.fetchOrderList(listDescriptor, offset) }
     }
 
     private fun fetchOrders(payload: FetchOrdersPayload) {
@@ -271,7 +271,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     fun getOrdersByRemoteOrderIds(remoteIds: List<Long>, site: SiteModel): Map<Long, WCOrderModel> {
         val orderList = OrderSqlUtils.getOrdersByRemoteIds(remoteIds, site.id)
-        return orderList.associateBy({it.remoteOrderId}, {it})
+        return orderList.associateBy({ it.remoteOrderId }, { it })
     }
 
     private fun handleFetchOrderListCompleted(payload: FetchOrderListResponsePayload) {
@@ -283,17 +283,18 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         } else {
             val site = payload.listDescriptor.site
             payload.orderListItems.forEach { orderIds.add(it.remoteOrderId) }
-
-            // Fetch the order detail for each item
             val orders: Map<Long, WCOrderModel> = getOrdersByRemoteOrderIds(orderIds, site)
 
             //
             payload.orderListItems.forEach {
-                val order: WCOrderModel? = orders[it.remoteOrderId]
-                if (order != null && order.dateModified != it.dateModified) {
-                    // Dispatch a request to fetch this single order
+                val localOrder: WCOrderModel? = orders[it.remoteOrderId]
+                if (localOrder == null || localOrder.dateModified != it.dateModified) {
+                    // Dispatch a request to fetch this single order from the api to refresh the local store
                     mDispatcher.dispatch(WCOrderActionBuilder.newFetchSingleOrderAction(
-                            RemoteOrderPayload(order, site)))
+                            RemoteOrderPayload(WCOrderModel().apply {
+                                remoteOrderId = it.remoteOrderId
+                                localSiteId = site.id
+                            }, site)))
                 }
             }
         }

@@ -47,9 +47,8 @@ class OrderRestClient(
      *
      * @param [listDescriptor] todo
      * @param [offset] the page offset to fetch. 0 = first page
-     * @param [countOnly] Default false. If true, only a total count of orders will be returned in the payload.
      */
-    fun fetchOrders(listDescriptor: WCOrderListDescriptor, offset: Int, countOnly: Boolean = false) {
+    fun fetchOrderList(listDescriptor: WCOrderListDescriptor, offset: Int) {
         val statusFilter =
                 if (listDescriptor.statusFilter.isNullOrBlank()) { "any" } else { listDescriptor.statusFilter!! }
         val url = WOOCOMMERCE.orders.pathV2
@@ -146,7 +145,7 @@ class OrderRestClient(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: OrderApiResponse? ->
                     response?.let {
-                        val orderModel = orderResponseToOrderModel(it).apply { localSiteId = site.id  }
+                        val orderModel = orderResponseToOrderModel(it).apply { localSiteId = site.id }
                         val payload = FetchSingleOrderResponsePayload(site, orderModel)
                         mDispatcher.dispatch(WCOrderActionBuilder.newFetchedSingleOrderAction(payload))
                     }
@@ -304,8 +303,8 @@ class OrderRestClient(
             status = response.status ?: ""
             currency = response.currency ?: ""
             dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: "" // Store the date in UTC format
-            dateModified = response.date_modified_gmt?.let { "${it}Z" } ?:
-                    response.date_created_gmt?.let { "${it}Z" }.orEmpty()  // Store the date in UTC format
+            dateModified = response.date_modified_gmt?.let { "${it}Z" }
+                    ?: response.date_created_gmt?.let { "${it}Z" }.orEmpty() // Store the date in UTC format
             total = response.total ?: ""
             totalTax = response.total_tax ?: ""
             shippingTotal = response.shipping_total ?: ""
