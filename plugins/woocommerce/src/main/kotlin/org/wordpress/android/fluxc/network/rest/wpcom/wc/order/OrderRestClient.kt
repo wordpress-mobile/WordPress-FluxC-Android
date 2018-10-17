@@ -56,7 +56,8 @@ class OrderRestClient(
         val params = mapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
-                "status" to statusFilter)
+                "status" to statusFilter,
+                "_fields" to "id,date_created_gmt")
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, listDescriptor.site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
