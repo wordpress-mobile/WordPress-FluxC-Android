@@ -69,6 +69,11 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
     }
 
+    class FetchSingleOrderPayload(
+        var site: SiteModel,
+        var remoteOrderId: Long
+    ) : Payload<BaseNetworkError>()
+
     class FetchHasOrdersPayload(
         var site: SiteModel,
         var statusFilter: String? = null
@@ -172,6 +177,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             // remote actions
             WCOrderAction.FETCH_ORDERS -> fetchOrders(action.payload as FetchOrdersPayload)
             WCOrderAction.FETCH_ORDERS_COUNT -> fetchOrdersCount(action.payload as FetchOrdersCountPayload)
+            WCOrderAction.FETCH_SINGLE_ORDER -> fetchSingleOrder(action.payload as FetchSingleOrderPayload)
             WCOrderAction.UPDATE_ORDER_STATUS -> updateOrderStatus(action.payload as UpdateOrderStatusPayload)
             WCOrderAction.FETCH_ORDER_NOTES -> fetchOrderNotes(action.payload as FetchOrderNotesPayload)
             WCOrderAction.POST_ORDER_NOTE -> postOrderNote(action.payload as PostOrderNotePayload)
@@ -181,6 +187,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             WCOrderAction.FETCHED_ORDERS -> handleFetchOrdersCompleted(action.payload as FetchOrdersResponsePayload)
             WCOrderAction.FETCHED_ORDERS_COUNT ->
                 handleFetchOrdersCountCompleted(action.payload as FetchOrdersCountResponsePayload)
+            WCOrderAction.FETCHED_SINGLE_ORDER -> handleFetchSingleOrderCompleted(action.payload as RemoteOrderPayload)
             WCOrderAction.UPDATED_ORDER_STATUS -> handleUpdateOrderStatusCompleted(action.payload as RemoteOrderPayload)
             WCOrderAction.FETCHED_ORDER_NOTES ->
                 handleFetchOrderNotesCompleted(action.payload as FetchOrderNotesResponsePayload)
@@ -205,6 +212,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     private fun fetchHasOrders(payload: FetchHasOrdersPayload) {
         with(payload) { wcOrderRestClient.fetchHasOrders(site, statusFilter) }
+    }
+
+    private fun fetchSingleOrder(payload: FetchSingleOrderPayload) {
+        with(payload) { wcOrderRestClient.fetchSingleOrder(site, remoteOrderId) }
     }
 
     private fun updateOrderStatus(payload: UpdateOrderStatusPayload) {
@@ -253,6 +264,20 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         } else {
             with(payload) { OnOrderChanged(count, statusFilter, canLoadMore) }
         }.also { it.causeOfChange = FETCH_ORDERS_COUNT }
+        emitChange(onOrderChanged)
+    }
+
+    private fun handleFetchSingleOrderCompleted(payload: RemoteOrderPayload) {
+        val onOrderChanged: OnOrderChanged
+
+        if (payload.isError) {
+            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
+        } else {
+            val rowsAffected = OrderSqlUtils.insertOrUpdateOrder(payload.order)
+            onOrderChanged = OnOrderChanged(rowsAffected)
+        }
+
+        onOrderChanged.causeOfChange = WCOrderAction.FETCH_SINGLE_ORDER
         emitChange(onOrderChanged)
     }
 
