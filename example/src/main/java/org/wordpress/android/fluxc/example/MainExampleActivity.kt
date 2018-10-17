@@ -1,17 +1,17 @@
 package org.wordpress.android.fluxc.example
 
-import android.app.Activity
-import android.app.Fragment
 import android.os.Bundle
+import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentActivity
 import android.text.method.ScrollingMovementMethod
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
-import dagger.android.HasFragmentInjector
+import dagger.android.support.HasSupportFragmentInjector
 import kotlinx.android.synthetic.main.activity_example.*
 import javax.inject.Inject
 
-class MainExampleActivity : Activity(), HasFragmentInjector {
+class MainExampleActivity : FragmentActivity(), HasSupportFragmentInjector {
     @Inject lateinit var fragmentInjector: DispatchingAndroidInjector<Fragment>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,7 +22,7 @@ class MainExampleActivity : Activity(), HasFragmentInjector {
 
         if (savedInstanceState == null) {
             val mf = MainFragment()
-            fragmentManager.beginTransaction().add(R.id.fragment_container, mf).commit()
+            supportFragmentManager.beginTransaction().add(R.id.fragment_container, mf).commit()
         }
         log.movementMethod = ScrollingMovementMethod()
         prependToLog("I'll log stuff here.")
@@ -33,5 +33,5 @@ class MainExampleActivity : Activity(), HasFragmentInjector {
         log.text = output
     }
 
-    override fun fragmentInjector(): AndroidInjector<Fragment> = fragmentInjector
+    override fun supportFragmentInjector(): AndroidInjector<Fragment> = fragmentInjector
 }

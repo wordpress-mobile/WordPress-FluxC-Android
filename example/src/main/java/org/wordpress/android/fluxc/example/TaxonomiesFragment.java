@@ -1,8 +1,8 @@
 package org.wordpress.android.fluxc.example;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -27,7 +27,7 @@ import java.util.Random;
 
 import javax.inject.Inject;
 
-import dagger.android.AndroidInjection;
+import dagger.android.support.AndroidSupportInjection;
 
 public class TaxonomiesFragment extends Fragment {
     @Inject SiteStore mSiteStore;
@@ -36,7 +36,7 @@ public class TaxonomiesFragment extends Fragment {
 
     @Override
     public void onAttach(Context context) {
-        AndroidInjection.inject(this);
+        AndroidSupportInjection.inject(this);
         super.onAttach(context);
     }
 

@@ -1,9 +1,9 @@
 package org.wordpress.android.fluxc.example
 
-import android.app.AlertDialog
 import android.app.Dialog
-import android.app.DialogFragment
 import android.os.Bundle
+import android.support.v4.app.DialogFragment
+import android.support.v7.app.AlertDialog
 import android.text.TextUtils
 import android.view.View
 import android.widget.EditText
@@ -27,31 +27,34 @@ class ThreeEditTextDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val builder = AlertDialog.Builder(activity)
-        val inflater = activity.layoutInflater
-        val view = inflater.inflate(R.layout.signin_dialog, null)
-        editText1 = view.findViewById(R.id.text1) as EditText
-        editText2 = view.findViewById(R.id.text2) as EditText
-        editText3 = view.findViewById(R.id.text3) as EditText
+        activity?.let {
+            val builder = AlertDialog.Builder(it)
+            val inflater = it.layoutInflater
+            val view = inflater.inflate(R.layout.signin_dialog, null)
+            editText1 = view.findViewById(R.id.text1) as EditText
+            editText2 = view.findViewById(R.id.text2) as EditText
+            editText3 = view.findViewById(R.id.text3) as EditText
 
-        editText1.hint = hint1
-        editText2.hint = hint2
-        editText3.hint = hint3
-        if (TextUtils.isEmpty(hint1)) {
-            editText1.visibility = View.GONE
-        }
-        if (TextUtils.isEmpty(hint2)) {
-            editText2.visibility = View.GONE
-        }
-        if (TextUtils.isEmpty(hint3)) {
-            editText3.visibility = View.GONE
-        }
-        builder.setView(view)
-                .setPositiveButton(android.R.string.ok) { dialog, id ->
-                    listener?.onClick(editText1.text.toString(), editText2.text.toString(), editText3.text.toString())
-                }
-                .setNegativeButton(android.R.string.cancel, null)
-        return builder.create()
+            editText1.hint = hint1
+            editText2.hint = hint2
+            editText3.hint = hint3
+            if (TextUtils.isEmpty(hint1)) {
+                editText1.visibility = View.GONE
+            }
+            if (TextUtils.isEmpty(hint2)) {
+                editText2.visibility = View.GONE
+            }
+            if (TextUtils.isEmpty(hint3)) {
+                editText3.visibility = View.GONE
+            }
+            builder.setView(view)
+                    .setPositiveButton(android.R.string.ok) { dialog, id ->
+                        listener?.onClick(editText1.text.toString(), editText2.text.toString(),
+                                editText3.text.toString())
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+            return builder.create()
+        } ?: throw IllegalStateException("Not attached to an activity!")
     }
 
     companion object {
