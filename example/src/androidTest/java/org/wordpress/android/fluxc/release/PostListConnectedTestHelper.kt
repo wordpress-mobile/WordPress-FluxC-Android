@@ -47,9 +47,8 @@ class PostListConnectedTestHelper(
     @Throws(InterruptedException::class)
     internal fun fetchFirstPageHelper(postListDescriptor: PostListDescriptor) {
         val dataSource = listItemDataSource { listDescriptor, offset ->
-            assertEquals(TestEvent.LIST_STATE_CHANGED, nextEvent)
-            // Assert that we are fetching the correct ListDescriptor
-            assertEquals(postListDescriptor, listDescriptor)
+            assertEquals("First event should be for state change", TestEvent.LIST_STATE_CHANGED, nextEvent)
+            assertEquals("List should be fetched for the correct ListDescriptor", postListDescriptor, listDescriptor)
             // We will do an actual fetch now, update the event so OnListChanged can check for it
             nextEvent = TestEvent.FETCHED_FIRST_PAGE
             // Fetch the post list for the given ListDescriptor and offset
@@ -67,9 +66,9 @@ class PostListConnectedTestHelper(
         val listManagerBefore = runBlocking {
             listStore.getListManager(postListDescriptor, null, dataSource)
         }
-        assertEquals(0, listManagerBefore.size)
-        assertFalse(listManagerBefore.isFetchingFirstPage)
-        assertFalse(listManagerBefore.isLoadingMore)
+        assertEquals("List should be empty at first", 0, listManagerBefore.size)
+        assertFalse("List shouldn't be fetching first page initially", listManagerBefore.isFetchingFirstPage)
+        assertFalse("List shouldn't be loading more data initially", listManagerBefore.isLoadingMore)
 
         // The first expected event is the list change
         nextEvent = TestEvent.LIST_STATE_CHANGED
@@ -80,15 +79,18 @@ class PostListConnectedTestHelper(
         listManagerBefore.refresh()
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
-        // Assert that the expected event is updated within `ListItemDataSource.fetchList`
-        assertEquals(TestEvent.FETCHED_FIRST_PAGE, nextEvent)
+        assertEquals(
+                "Assert that the expected event is updated within `ListItemDataSource.fetchList`",
+                TestEvent.FETCHED_FIRST_PAGE,
+                nextEvent
+        )
         // Retrieve the updated ListManager from ListStore and assert that we have data and the state is as expected
         val listManagerAfter = runBlocking {
             listStore.getListManager(postListDescriptor, null, dataSource)
         }
-        assertFalse(listManagerAfter.size == 0)
-        assertFalse(listManagerAfter.isFetchingFirstPage)
-        assertFalse(listManagerAfter.isLoadingMore)
+        assertFalse("List shouldn't be empty after fetch", listManagerAfter.size == 0)
+        assertFalse("List shouldn't be fetching first page anymore", listManagerAfter.isFetchingFirstPage)
+        assertFalse("List shouldn't be loading more data anymore", listManagerAfter.isLoadingMore)
         return listManagerAfter
     }
 
@@ -96,9 +98,8 @@ class PostListConnectedTestHelper(
     internal fun loadMoreHelper(postListDescriptor: PostListDescriptor) {
         var fetchedFirstPage = false
         val dataSource = listItemDataSource { listDescriptor, offset ->
-            assertEquals(TestEvent.LIST_STATE_CHANGED, nextEvent)
-            // Assert that we are fetching the correct ListDescriptor
-            assertEquals(postListDescriptor, listDescriptor)
+            assertEquals("First event should be for state change", TestEvent.LIST_STATE_CHANGED, nextEvent)
+            assertEquals("List should be fetched for the correct ListDescriptor", postListDescriptor, listDescriptor)
             // Set the expected event depending on which fetch this is
             nextEvent = if (fetchedFirstPage) TestEvent.LOADED_MORE else TestEvent.FETCHED_FIRST_PAGE
             val fetchPostListPayload = FetchPostListPayload(postListDescriptor, offset)
@@ -107,8 +108,11 @@ class PostListConnectedTestHelper(
         // Fetch the first page and get the current ListManager.
         val listManagerBefore = fetchFirstPageAndAssert(postListDescriptor, dataSource)
         fetchedFirstPage = true
-        // IMPORTANT: This test requires a site with at least 2 pages of data. Otherwise it'll fail.
-        assertTrue(listManagerBefore.canLoadMore)
+        assertTrue(
+                "This test requires the site to have at least 2 pages of data and should return canLoadMore = true" +
+                        " after the first fetch",
+                listManagerBefore.canLoadMore
+        )
 
         // The first expected event is the list change
         nextEvent = TestEvent.LIST_STATE_CHANGED
@@ -119,14 +123,18 @@ class PostListConnectedTestHelper(
         listManagerBefore.getItem(listManagerBefore.size - 1, shouldLoadMoreIfNecessary = true)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
-        assertEquals(TestEvent.LOADED_MORE, nextEvent)
+        assertEquals(
+                "Assert that the expected event is updated within `ListItemDataSource.fetchList`",
+                TestEvent.LOADED_MORE,
+                nextEvent
+        )
         // Retrieve the updated ListManager from ListStore and assert that we have more data than before
         val listManagerAfter = runBlocking {
             listStore.getListManager(postListDescriptor, null, dataSource)
         }
-        assertTrue(listManagerAfter.size > listManagerBefore.size)
-        assertFalse(listManagerAfter.isFetchingFirstPage)
-        assertFalse(listManagerAfter.isLoadingMore)
+        assertTrue("More data should be loaded after loadMore", listManagerAfter.size > listManagerBefore.size)
+        assertFalse("List shouldn't be fetching first page anymore", listManagerAfter.isFetchingFirstPage)
+        assertFalse("List shouldn't be loading more data anymore", listManagerAfter.isLoadingMore)
     }
 
     @Suppress("unused")
