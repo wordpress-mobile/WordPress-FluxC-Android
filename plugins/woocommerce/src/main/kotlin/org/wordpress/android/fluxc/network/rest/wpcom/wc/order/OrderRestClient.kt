@@ -91,6 +91,40 @@ class OrderRestClient(
     }
 
     /**
+     * Makes a GET request to `/wc/v2/orders/{remoteOrderId}` to fetch a single order by the remoteOrderId
+     *
+     * Dispatches a [WCOrderAction.FETCHED_SINGLE_ORDER] action with the result
+     *
+     * @param [remoteOrderId] Unique server id of the order to fetch
+     */
+    fun fetchSingleOrder(site: SiteModel, remoteOrderId: Long) {
+        val url = WOOCOMMERCE.orders.id(remoteOrderId).pathV2
+        val responseType = object : TypeToken<OrderApiResponse>() {}.type
+        val params = emptyMap<String, String>()
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: OrderApiResponse? ->
+                    response?.let {
+                        val newModel = orderResponseToOrderModel(it).apply {
+                            localSiteId = site.id
+                        }
+                        val payload = RemoteOrderPayload(newModel, site)
+                        mDispatcher.dispatch(WCOrderActionBuilder.newFetchedSingleOrderAction(payload))
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
+                    val payload = RemoteOrderPayload(
+                            orderError,
+                            WCOrderModel().apply { this.remoteOrderId = remoteOrderId },
+                            site
+                    )
+                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedSingleOrderAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
      * Makes a GET request to `/wc/v2/orders` for a single order of a specific type (or any type) in order to
      * determine if there are any orders in the store.
      *

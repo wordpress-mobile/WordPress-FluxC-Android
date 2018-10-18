@@ -141,6 +141,38 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     }
 
     @Test
+    fun testFetchSingleOrderSuccess() {
+        val remoteOrderId = 88L
+        interceptor.respondWith("wc-fetch-order-response-success.json")
+        orderRestClient.fetchSingleOrder(siteModel, remoteOrderId)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCOrderAction.FETCHED_SINGLE_ORDER, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteOrderPayload
+        with(payload) {
+            assertNull(error)
+            assertEquals(remoteOrderId, order.remoteOrderId)
+        }
+    }
+
+    @Test
+    fun testFetchSingleOrderError() {
+        val remoteOrderId = 88L
+
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        orderRestClient.fetchSingleOrder(siteModel, remoteOrderId)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCOrderAction.FETCHED_SINGLE_ORDER, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteOrderPayload
+        assertNotNull(payload.error)
+    }
+
+    @Test
     fun testOrderStatusUpdateSuccess() {
         val originalOrder = WCOrderModel().apply {
             id = 8
