@@ -208,7 +208,7 @@ class WCStatsStore @Inject constructor(
                 val currencyIndex = statsModel.getIndexForField(OrderStatsField.CURRENCY)
                 if (currencyIndex == -1) {
                     // The server didn't return the currency field
-                    reportMissingFieldError(statsModel)
+                    reportMissingFieldError(statsModel, OrderStatsField.CURRENCY)
                     return null
                 }
                 return it[currencyIndex] as String
@@ -316,7 +316,7 @@ class WCStatsStore @Inject constructor(
             val fieldIndex = it.getIndexForField(field)
             if (periodIndex == -1 || fieldIndex == -1) {
                 // One of the fields we need wasn't returned by the server
-                reportMissingFieldError(it)
+                reportMissingFieldError(it, field)
                 return mapOf()
             }
 
@@ -325,11 +325,12 @@ class WCStatsStore @Inject constructor(
         } ?: return mapOf()
     }
 
-    private fun reportMissingFieldError(orderStatsModel: WCOrderStatsModel) {
-        AppLog.e(T.API, "Missing field from stats endpoint - returned fields: " + orderStatsModel.fields)
+    private fun reportMissingFieldError(orderStatsModel: WCOrderStatsModel, missingField: OrderStatsField) {
+        AppLog.e(T.API, "Missing field from stats endpoint - missing field: $missingField, " +
+                "returned fields: ${orderStatsModel.fields}")
         val unexpectedError = OnUnexpectedError(
                 IllegalStateException("Missing field from stats endpoint"),
-                orderStatsModel.fields
+                "Missing field: $missingField, returned fields: ${orderStatsModel.fields}"
         )
         mDispatcher.emitChange(unexpectedError)
     }
