@@ -9,7 +9,7 @@ import org.wordpress.android.fluxc.model.stats.InsightsMostPopularModel
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient.AllTimeResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient.MostPopularResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient.PostViewsResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient.PostStatsResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient.PostsResponse.PostResponse
 import org.wordpress.android.fluxc.persistence.InsightsSqlUtils
 import org.wordpress.android.fluxc.store.InsightsStore.StatsErrorType.INVALID_RESPONSE
@@ -92,14 +92,14 @@ class InsightsStore
         val posts = responsePost.response?.posts
         return@withContext if (postsFound != null && postsFound > 0 && posts != null && posts.isNotEmpty()) {
             val latestPost = posts[0]
-            val postViews = restClient.fetchPostViewsForInsights(site, latestPost.id, forced)
+            val responsePost = restClient.fetchPostStats(site, latestPost.id, forced)
             when {
-                postViews.response != null -> {
+                responsePost.response != null -> {
                     sqlUtils.insert(site, latestPost)
-                    sqlUtils.insert(site, postViews.response)
-                    OnInsightsFetched((latestPost to postViews.response).toDomainModel(site))
+                    sqlUtils.insert(site, responsePost.response)
+                    OnInsightsFetched((latestPost to responsePost.response).toDomainModel(site))
                 }
-                postViews.isError -> OnInsightsFetched(postViews.error)
+                responsePost.isError -> OnInsightsFetched(responsePost.error)
                 else -> OnInsightsFetched()
             }
         } else if (responsePost.isError) {
@@ -111,7 +111,7 @@ class InsightsStore
 
     fun getLatestPostInsights(site: SiteModel): InsightsLatestPostModel? {
         val latestPostDetailResponse = sqlUtils.selectLatestPostDetail(site)
-        val latestPostViewsResponse = sqlUtils.selectLatestPostViews(site)
+        val latestPostViewsResponse = sqlUtils.selectLatestPostStats(site)
         return if (latestPostDetailResponse != null && latestPostViewsResponse != null) {
             (latestPostDetailResponse to latestPostViewsResponse).toDomainModel(site)
         } else {
@@ -119,7 +119,12 @@ class InsightsStore
         }
     }
 
-    private fun Pair<PostResponse, PostViewsResponse>.toDomainModel(site: SiteModel): InsightsLatestPostModel {
+    private fun Pair<PostResponse, PostStatsResponse>.toDomainModel(site: SiteModel): InsightsLatestPostModel {
+        val daysViews = if (second.fields.size > 1 && second.fields[0] == "period" && second.fields[1] == "views") {
+            second.data.map { list -> list[0] to list[1].toInt() }
+        } else {
+            listOf()
+        }
         val viewsCount = second.views
         val commentCount = first.discussion?.commentCount ?: 0
         return InsightsLatestPostModel(
@@ -130,7 +135,8 @@ class InsightsStore
                 first.id,
                 viewsCount,
                 commentCount,
-                first.likeCount
+                first.likeCount,
+                daysViews
         )
     }
 

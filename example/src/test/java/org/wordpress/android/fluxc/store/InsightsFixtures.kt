@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.store
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient.AllTimeResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient.AllTimeResponse.StatsResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient.MostPopularResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient.PostViewsResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient.PostStatsResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient.PostsResponse.PostResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient.PostsResponse.PostResponse.Discussion
 import java.util.Date
@@ -33,4 +33,12 @@ const val URL = "URL"
 const val LIKE_COUNT = 5
 const val COMMENT_COUNT = 10
 val LATEST_POST = PostResponse(ID, TITLE, DATE, URL, LIKE_COUNT, Discussion(COMMENT_COUNT))
-val POST_VIEWS = PostViewsResponse(VIEWS)
+
+val FIELDS = listOf("period", "views")
+const val FIRST_DAY = "2018-10-01"
+const val FIRST_DAY_VIEWS = 10
+const val SECOND_DAY = "2018-10-02"
+const val SECOND_DAY_VIEWS = 11
+val DATA = listOf(listOf(FIRST_DAY, FIRST_DAY_VIEWS.toString()), listOf(SECOND_DAY, SECOND_DAY_VIEWS.toString()))
+
+val POST_STATS_RESPONSE = PostStatsResponse(0, 0, 0, VIEWS, null, DATA, FIELDS, listOf(), mapOf(), mapOf())
