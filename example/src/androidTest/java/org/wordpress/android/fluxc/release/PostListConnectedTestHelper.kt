@@ -64,7 +64,7 @@ class PostListConnectedTestHelper(
     ): ListManager<PostModel> {
         // Get the initial ListManager from ListStore and assert that everything is as expected
         val listManagerBefore = runBlocking {
-            listStore.getListManager(postListDescriptor, null, dataSource)
+            listStore.getListManager(postListDescriptor, dataSource)
         }
         assertEquals("List should be empty at first", 0, listManagerBefore.size)
         assertFalse("List shouldn't be fetching first page initially", listManagerBefore.isFetchingFirstPage)
@@ -86,7 +86,7 @@ class PostListConnectedTestHelper(
         )
         // Retrieve the updated ListManager from ListStore and assert that we have data and the state is as expected
         val listManagerAfter = runBlocking {
-            listStore.getListManager(postListDescriptor, null, dataSource)
+            listStore.getListManager(postListDescriptor, dataSource)
         }
         assertFalse("List shouldn't be empty after fetch", listManagerAfter.size == 0)
         assertFalse("List shouldn't be fetching first page anymore", listManagerAfter.isFetchingFirstPage)
@@ -130,7 +130,7 @@ class PostListConnectedTestHelper(
         )
         // Retrieve the updated ListManager from ListStore and assert that we have more data than before
         val listManagerAfter = runBlocking {
-            listStore.getListManager(postListDescriptor, null, dataSource)
+            listStore.getListManager(postListDescriptor, dataSource)
         }
         assertTrue("More data should be loaded after loadMore", listManagerAfter.size > listManagerBefore.size)
         assertFalse("List shouldn't be fetching first page anymore", listManagerAfter.isFetchingFirstPage)
