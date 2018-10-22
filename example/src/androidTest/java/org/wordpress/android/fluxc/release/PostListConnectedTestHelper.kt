@@ -16,6 +16,8 @@ import org.wordpress.android.fluxc.model.list.ListManager
 import org.wordpress.android.fluxc.model.list.PostListDescriptor
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged
+import org.wordpress.android.fluxc.store.ListStore.OnListChanged.CauseOfListChange.FIRST_PAGE_FETCHED
+import org.wordpress.android.fluxc.store.ListStore.OnListChanged.CauseOfListChange.LOADED_MORE
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.FetchPostListPayload
 import java.util.concurrent.CountDownLatch
@@ -142,6 +144,21 @@ class PostListConnectedTestHelper(
     fun onListChanged(event: OnListChanged) {
         event.error?.let {
             throw AssertionError("OnListChanged has error: " + it.type)
+        }
+        when {
+            event.causeOfChange == FIRST_PAGE_FETCHED -> assertEquals(
+                    "Expected event was fetching the first page",
+                    TestEvent.FETCHED_FIRST_PAGE,
+                    nextEvent
+            )
+            event.causeOfChange == LOADED_MORE -> assertEquals(
+                    "Expected event was the loading more pages",
+                    TestEvent.LOADED_MORE,
+                    nextEvent
+            )
+            else -> {
+                assertEquals("Expected event was state change", TestEvent.LIST_STATE_CHANGED, nextEvent)
+            }
         }
         countDownLatch.countDown()
     }
