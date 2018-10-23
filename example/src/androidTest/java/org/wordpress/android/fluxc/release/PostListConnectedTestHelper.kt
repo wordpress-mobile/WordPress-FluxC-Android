@@ -16,6 +16,8 @@ import org.wordpress.android.fluxc.model.list.ListManager
 import org.wordpress.android.fluxc.model.list.PostListDescriptor
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.ListStore.OnListChanged
+import org.wordpress.android.fluxc.store.ListStore.OnListChanged.CauseOfListChange.FIRST_PAGE_FETCHED
+import org.wordpress.android.fluxc.store.ListStore.OnListChanged.CauseOfListChange.LOADED_MORE
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.FetchPostListPayload
 import java.util.concurrent.CountDownLatch
@@ -64,7 +66,7 @@ class PostListConnectedTestHelper(
     ): ListManager<PostModel> {
         // Get the initial ListManager from ListStore and assert that everything is as expected
         val listManagerBefore = runBlocking {
-            listStore.getListManager(postListDescriptor, null, dataSource)
+            listStore.getListManager(postListDescriptor, dataSource)
         }
         assertEquals("List should be empty at first", 0, listManagerBefore.size)
         assertFalse("List shouldn't be fetching first page initially", listManagerBefore.isFetchingFirstPage)
@@ -86,7 +88,7 @@ class PostListConnectedTestHelper(
         )
         // Retrieve the updated ListManager from ListStore and assert that we have data and the state is as expected
         val listManagerAfter = runBlocking {
-            listStore.getListManager(postListDescriptor, null, dataSource)
+            listStore.getListManager(postListDescriptor, dataSource)
         }
         assertFalse("List shouldn't be empty after fetch", listManagerAfter.size == 0)
         assertFalse("List shouldn't be fetching first page anymore", listManagerAfter.isFetchingFirstPage)
@@ -130,7 +132,7 @@ class PostListConnectedTestHelper(
         )
         // Retrieve the updated ListManager from ListStore and assert that we have more data than before
         val listManagerAfter = runBlocking {
-            listStore.getListManager(postListDescriptor, null, dataSource)
+            listStore.getListManager(postListDescriptor, dataSource)
         }
         assertTrue("More data should be loaded after loadMore", listManagerAfter.size > listManagerBefore.size)
         assertFalse("List shouldn't be fetching first page anymore", listManagerAfter.isFetchingFirstPage)
@@ -142,6 +144,21 @@ class PostListConnectedTestHelper(
     fun onListChanged(event: OnListChanged) {
         event.error?.let {
             throw AssertionError("OnListChanged has error: " + it.type)
+        }
+        when {
+            event.causeOfChange == FIRST_PAGE_FETCHED -> assertEquals(
+                    "Expected event was fetching the first page",
+                    TestEvent.FETCHED_FIRST_PAGE,
+                    nextEvent
+            )
+            event.causeOfChange == LOADED_MORE -> assertEquals(
+                    "Expected event was the loading more pages",
+                    TestEvent.LOADED_MORE,
+                    nextEvent
+            )
+            else -> {
+                assertEquals("Expected event was state change", TestEvent.LIST_STATE_CHANGED, nextEvent)
+            }
         }
         countDownLatch.countDown()
     }
