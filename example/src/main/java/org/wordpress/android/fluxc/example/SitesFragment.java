@@ -1,10 +1,10 @@
 package org.wordpress.android.fluxc.example;
 
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,7 +30,7 @@ import org.wordpress.android.util.AppLog.T;
 
 import javax.inject.Inject;
 
-import dagger.android.AndroidInjection;
+import dagger.android.support.AndroidSupportInjection;
 
 public class SitesFragment extends Fragment {
     @Inject SiteStore mSiteStore;
@@ -38,7 +38,7 @@ public class SitesFragment extends Fragment {
 
     @Override
     public void onAttach(Context context) {
-        AndroidInjection.inject(this);
+        AndroidSupportInjection.inject(this);
         super.onAttach(context);
     }
 
@@ -143,7 +143,7 @@ public class SitesFragment extends Fragment {
     }
 
     private void showNewSiteDialog() {
-        FragmentTransaction ft = getActivity().getFragmentManager().beginTransaction();
+        FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
         DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
             @Override
             public void onClick(String name, String title, String unused) {

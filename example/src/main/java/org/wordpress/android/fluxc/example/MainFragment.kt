@@ -1,14 +1,14 @@
 package org.wordpress.android.fluxc.example
 
-import android.app.Fragment
 import android.content.Context
 import android.os.Bundle
+import android.support.v4.app.Fragment
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.ViewGroup
-import dagger.android.AndroidInjection
+import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_main.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -49,7 +49,7 @@ class MainFragment : Fragment() {
     private var authenticatePayload: AuthenticatePayload? = null
 
     override fun onAttach(context: Context?) {
-        AndroidInjection.inject(this)
+        AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }
 
@@ -66,7 +66,7 @@ class MainFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_main, container, false)
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         sign_in_fetch_sites_button.setOnClickListener { showSigninDialog() }
@@ -74,10 +74,10 @@ class MainFragment : Fragment() {
         signout.setOnClickListener { signOut() }
 
         signed_out_actions.setOnClickListener {
-            fragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, SignedOutActionsFragment())
-                    .addToBackStack(null)
-                    .commit()
+            fragmentManager?.beginTransaction()
+                    ?.replace(R.id.fragment_container, SignedOutActionsFragment())
+                    ?.addToBackStack(null)
+                    ?.commit()
         }
 
         account.setOnClickListener(getOnClickListener(AccountFragment()))
@@ -100,14 +100,14 @@ class MainFragment : Fragment() {
             ToastUtils.showToast(activity, "You must be logged in")
             return
         }
-        fragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit()
+        fragmentManager?.beginTransaction()
+                ?.replace(R.id.fragment_container, fragment)
+                ?.addToBackStack(null)
+                ?.commit()
     }
 
     private fun showSSLWarningDialog(certifString: String) {
-        val ft = fragmentManager.beginTransaction()
+        val ft = fragmentManager?.beginTransaction()
         val newFragment = SSLWarningDialog.newInstance(
                 { dialog, which ->
                     // Add the certificate to our list
@@ -121,7 +121,7 @@ class MainFragment : Fragment() {
     }
 
     private fun showSigninDialog() {
-        val ft = fragmentManager.beginTransaction()
+        val ft = fragmentManager?.beginTransaction()
         val newFragment = ThreeEditTextDialog.newInstance(object : Listener {
             @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
             override fun onClick(username: String, password: String, url: String) {
@@ -132,7 +132,7 @@ class MainFragment : Fragment() {
     }
 
     private fun show2faDialog() {
-        val ft = fragmentManager.beginTransaction()
+        val ft = fragmentManager?.beginTransaction()
         val newFragment = ThreeEditTextDialog.newInstance(object : Listener {
             override fun onClick(text1: String, text2: String, text3: String) {
                 if (TextUtils.isEmpty(text3)) {
@@ -151,7 +151,7 @@ class MainFragment : Fragment() {
     }
 
     private fun showHTTPAuthDialog(url: String) {
-        val ft = fragmentManager.beginTransaction()
+        val ft = fragmentManager?.beginTransaction()
         val newFragment = ThreeEditTextDialog.newInstance(object : Listener {
             @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
             override fun onClick(username: String, password: String, unused: String) {
