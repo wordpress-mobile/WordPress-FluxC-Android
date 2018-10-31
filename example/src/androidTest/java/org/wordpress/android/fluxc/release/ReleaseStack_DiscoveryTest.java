@@ -435,6 +435,21 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     }
 
     @Test
+    public void testXMLRPCForbiddenDiscoveryOnSelfHostedSiteWithMovedPhpFile() throws InterruptedException {
+        mUrl = BuildConfig.TEST_WPORG_URL_DELETED_XMLRPC_PHP;
+        mUsername = BuildConfig.TEST_WPORG_USERNAME_SH_FORBIDDEN;
+        mPassword = BuildConfig.TEST_WPORG_PASSWORD_SH_FORBIDDEN;
+
+        mNextEvent = TestEvents.MISSING_XMLRPC_METHOD;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverEndpointAction(mUrl));
+
+        // Wait for a network response / onChanged event
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
     public void testXMLRPCMissingMethodDiscovery() throws InterruptedException {
         mUrl = BuildConfig.TEST_WPORG_URL_SH_MISSING_METHODS;
         mUsername = BuildConfig.TEST_WPORG_USERNAME_SH_MISSING_METHODS;
