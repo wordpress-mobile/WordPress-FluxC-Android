@@ -142,6 +142,9 @@ TEST_WPORG_PASSWORD_SH_WORDPRESS_4_3 = FIXME
 TEST_WPORG_URL_SH_WORDPRESS_4_3 = FIXME
 TEST_WPORG_URL_SH_WORDPRESS_4_3_ENDPOINT = FIXME
 
+# Self Hosted - Deleted xmlrpc.php file
+TEST_WPORG_URL_DELETED_XMLRPC_PHP = FIXME
+
 ## Jetpack
 
 # WP.com - Account with only one site, which is Jetpack
