@@ -5,12 +5,8 @@ import android.support.v4.util.LruCache;
 
 import com.android.volley.toolbox.ImageLoader.ImageCache;
 
-import javax.inject.Singleton;
-
 import dagger.Module;
 import dagger.Provides;
-import kotlin.coroutines.experimental.CoroutineContext;
-import kotlinx.coroutines.experimental.Dispatchers;
 
 @Module
 public class MockedToolsModule {
