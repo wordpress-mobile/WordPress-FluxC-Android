@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store
 
+import android.arch.lifecycle.LiveData
 import kotlinx.coroutines.experimental.withContext
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.model.SiteModel
@@ -13,6 +14,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient.P
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient.PostsResponse.PostResponse
 import org.wordpress.android.fluxc.persistence.InsightsSqlUtils
 import org.wordpress.android.fluxc.store.InsightsStore.StatsErrorType.INVALID_RESPONSE
+import org.wordpress.android.fluxc.utils.map
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.experimental.CoroutineContext
@@ -39,6 +41,10 @@ class InsightsStore
 
     fun getAllTimeInsights(site: SiteModel): InsightsAllTimeModel? {
         return sqlUtils.selectAllTimeInsights(site)?.toDomainModel(site)
+    }
+
+    fun liveAllTimeInsights(site: SiteModel): LiveData<InsightsAllTimeModel> {
+        return sqlUtils.allTimeInsightsLiveData(site).map { it.toDomainModel(site)  }
     }
 
     private fun AllTimeResponse.toDomainModel(site: SiteModel): InsightsAllTimeModel {

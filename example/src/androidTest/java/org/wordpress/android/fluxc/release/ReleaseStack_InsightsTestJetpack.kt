@@ -4,6 +4,7 @@ import kotlinx.coroutines.experimental.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
@@ -14,7 +15,8 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.persistence.ActivityLogSqlUtils
+import org.wordpress.android.fluxc.model.stats.InsightsAllTimeModel
+import org.wordpress.android.fluxc.persistence.StatsSqlUtils
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
@@ -37,7 +39,7 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     @Inject lateinit var insightsStore: InsightsStore
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var accountStore: AccountStore
-    @Inject internal lateinit var activityLogSqlUtils: ActivityLogSqlUtils
+    @Inject internal lateinit var statsSqlUtils: StatsSqlUtils
 
     private var nextEvent: TestEvents? = null
 
@@ -63,6 +65,10 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     fun testFetchAllTimeInsights() {
         val site = authenticate()
 
+        var liveAllTimeInsights: InsightsAllTimeModel? = null
+        insightsStore.liveAllTimeInsights(site).observeForever { liveAllTimeInsights = it }
+        assertNull(liveAllTimeInsights)
+
         val fetchedInsights = runBlocking { insightsStore.fetchAllTimeInsights(site) }
 
         assertNotNull(fetchedInsights)
@@ -71,6 +77,7 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val insightsFromDb = insightsStore.getAllTimeInsights(site)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
+        assertEquals(fetchedInsights.model, liveAllTimeInsights)
     }
 
     @Test

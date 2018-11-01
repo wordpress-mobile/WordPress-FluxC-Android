@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.module.ReleaseNetworkModule;
 import org.wordpress.android.fluxc.module.ReleaseOkHttpClientModule;
 import org.wordpress.android.fluxc.module.ReleaseToolsModule;
 import org.wordpress.android.fluxc.module.ReleaseWCNetworkModule;
+import org.wordpress.android.fluxc.module.TestCoroutineModule;
 
 import javax.inject.Singleton;
 
@@ -23,7 +24,8 @@ import dagger.Component;
         ReleaseNetworkModule.class,
         ReleaseWCNetworkModule.class,
         ReleaseToolsModule.class,
-        MockedToolsModule.class
+        MockedToolsModule.class,
+        TestCoroutineModule.class
 })
 public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_AccountTest test);

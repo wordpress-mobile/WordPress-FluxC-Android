@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.instaflux;
 
 import org.wordpress.android.fluxc.module.AppContextModule;
+import org.wordpress.android.fluxc.module.CoroutineModule;
 import org.wordpress.android.fluxc.module.ReleaseBaseModule;
 import org.wordpress.android.fluxc.module.ReleaseNetworkModule;
 import org.wordpress.android.fluxc.module.ReleaseOkHttpClientModule;
@@ -15,7 +16,8 @@ import dagger.Component;
         AppConfigModule.class,
         ReleaseOkHttpClientModule.class,
         ReleaseBaseModule.class,
-        ReleaseNetworkModule.class
+        ReleaseNetworkModule.class,
+        CoroutineModule.class
 })
 public interface AppComponent {
     void inject(InstafluxApp application);

@@ -53,8 +53,6 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
-import kotlin.coroutines.experimental.CoroutineContext;
-import kotlinx.coroutines.experimental.Dispatchers;
 import okhttp3.OkHttpClient;
 
 @Module
@@ -205,12 +203,6 @@ public class ReleaseNetworkModule {
                                                       WPComGsonRequestBuilder wpComGsonRequestBuilder) {
         return new JetpackRestClient(dispatcher, wpComGsonRequestBuilder, appContext, requestQueue, token,
                 userAgent);
-    }
-
-    @Singleton
-    @Provides
-    public CoroutineContext provideCoroutineContext() {
-        return Dispatchers.Default;
     }
 
     @Singleton

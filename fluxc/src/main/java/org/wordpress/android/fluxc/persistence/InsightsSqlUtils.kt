@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.persistence
 
+import android.arch.lifecycle.LiveData
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient.AllTimeResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.InsightsRestClient.MostPopularResponse
@@ -33,6 +34,10 @@ class InsightsSqlUtils
 
     fun selectAllTimeInsights(site: SiteModel): AllTimeResponse? {
         return statsSqlUtils.select(site, ALL_TIME_INSIGHTS, AllTimeResponse::class.java)
+    }
+
+    fun allTimeInsightsLiveData(site: SiteModel): LiveData<AllTimeResponse> {
+        return statsSqlUtils.liveData(site, ALL_TIME_INSIGHTS, AllTimeResponse::class.java)
     }
 
     fun selectMostPopularInsights(site: SiteModel): MostPopularResponse? {
