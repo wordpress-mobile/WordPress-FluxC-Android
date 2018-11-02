@@ -435,10 +435,8 @@ public class ReleaseStack_DiscoveryTest extends ReleaseStack_Base {
     }
 
     @Test
-    public void testXMLRPCForbiddenDiscoveryOnSelfHostedSiteWithMovedPhpFile() throws InterruptedException {
+    public void testXMLRPCDeletedXmlrpcFileDiscovery() throws InterruptedException {
         mUrl = BuildConfig.TEST_WPORG_URL_DELETED_XMLRPC_PHP;
-        mUsername = BuildConfig.TEST_WPORG_USERNAME_SH_FORBIDDEN;
-        mPassword = BuildConfig.TEST_WPORG_PASSWORD_SH_FORBIDDEN;
 
         mNextEvent = TestEvents.MISSING_XMLRPC_METHOD;
         mCountDownLatch = new CountDownLatch(1);
