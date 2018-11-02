@@ -58,8 +58,6 @@ class PostListConnectedTestHelper(
             listStore.getListManager(postListDescriptor, dataSource)
         }
         assertEquals("List should be empty at first", 0, listManagerBefore.size)
-        assertFalse("List shouldn't be fetching first page initially", listManagerBefore.isFetchingFirstPage)
-        assertFalse("List shouldn't be loading more data initially", listManagerBefore.isLoadingMore)
 
         countDownLatch = CountDownLatch(1)
         // Call `refresh` on the ListManager which should trigger the state change and then fetch the list
@@ -71,8 +69,6 @@ class PostListConnectedTestHelper(
             listStore.getListManager(postListDescriptor, dataSource)
         }
         assertFalse("List shouldn't be empty after fetch", listManagerAfter.size == 0)
-        assertFalse("List shouldn't be fetching first page anymore", listManagerAfter.isFetchingFirstPage)
-        assertFalse("List shouldn't be loading more data anymore", listManagerAfter.isLoadingMore)
         return listManagerAfter
     }
 
@@ -85,11 +81,6 @@ class PostListConnectedTestHelper(
         }
         // Fetch the first page and get the current ListManager.
         val listManagerBefore = fetchFirstPageAndAssert(postListDescriptor, dataSource)
-        assertTrue(
-                "This test requires the site to have at least 2 pages of data and should return canLoadMore = true" +
-                        " after the first fetch",
-                listManagerBefore.canLoadMore
-        )
 
         countDownLatch = CountDownLatch(1)
         // Requesting the last item in `ListManager` will trigger a load more if there is more data to be loaded
@@ -101,8 +92,6 @@ class PostListConnectedTestHelper(
             listStore.getListManager(postListDescriptor, dataSource)
         }
         assertTrue("More data should be loaded after loadMore", listManagerAfter.size > listManagerBefore.size)
-        assertFalse("List shouldn't be fetching first page anymore", listManagerAfter.isFetchingFirstPage)
-        assertFalse("List shouldn't be loading more data anymore", listManagerAfter.isLoadingMore)
     }
 
     @Suppress("unused")
