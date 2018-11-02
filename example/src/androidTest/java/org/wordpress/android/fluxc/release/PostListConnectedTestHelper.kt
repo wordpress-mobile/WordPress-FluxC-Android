@@ -28,17 +28,9 @@ class PostListConnectedTestHelper(
     private val dispatcher: Dispatcher,
     releaseStackComponent: ReleaseStack_AppComponent
 ) {
-    internal enum class TestEvent {
-        NONE,
-        FETCHED_FIRST_PAGE,
-        LIST_STATE_CHANGED,
-        LOADED_MORE
-    }
-
     @Inject internal lateinit var listStore: ListStore
     @Inject internal lateinit var postStore: PostStore
 
-    private var nextEvent: TestEvent = TestEvent.NONE
     private lateinit var countDownLatch: CountDownLatch
 
     init {
@@ -49,10 +41,7 @@ class PostListConnectedTestHelper(
     @Throws(InterruptedException::class)
     internal fun fetchFirstPageHelper(postListDescriptor: PostListDescriptor) {
         val dataSource = listItemDataSource { listDescriptor, offset ->
-            assertEquals("First event should be for state change", TestEvent.LIST_STATE_CHANGED, nextEvent)
             assertEquals("List should be fetched for the correct ListDescriptor", postListDescriptor, listDescriptor)
-            // We will do an actual fetch now, update the event so OnListChanged can check for it
-            nextEvent = TestEvent.FETCHED_FIRST_PAGE
             // Fetch the post list for the given ListDescriptor and offset
             val fetchPostListPayload = FetchPostListPayload(postListDescriptor, offset)
             dispatcher.dispatch(PostActionBuilder.newFetchPostListAction(fetchPostListPayload))
@@ -72,20 +61,11 @@ class PostListConnectedTestHelper(
         assertFalse("List shouldn't be fetching first page initially", listManagerBefore.isFetchingFirstPage)
         assertFalse("List shouldn't be loading more data initially", listManagerBefore.isLoadingMore)
 
-        // The first expected event is the list change
-        nextEvent = TestEvent.LIST_STATE_CHANGED
-        // 2 events should happen in total:
-        // First event will be for list state change and the second will be for completed fetch
-        countDownLatch = CountDownLatch(2)
+        countDownLatch = CountDownLatch(1)
         // Call `refresh` on the ListManager which should trigger the state change and then fetch the list
         listManagerBefore.refresh()
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
-        assertEquals(
-                "Assert that the expected event is updated within `ListItemDataSource.fetchList`",
-                TestEvent.FETCHED_FIRST_PAGE,
-                nextEvent
-        )
         // Retrieve the updated ListManager from ListStore and assert that we have data and the state is as expected
         val listManagerAfter = runBlocking {
             listStore.getListManager(postListDescriptor, dataSource)
@@ -98,38 +78,24 @@ class PostListConnectedTestHelper(
 
     @Throws(InterruptedException::class)
     internal fun loadMoreHelper(postListDescriptor: PostListDescriptor) {
-        var fetchedFirstPage = false
         val dataSource = listItemDataSource { listDescriptor, offset ->
-            assertEquals("First event should be for state change", TestEvent.LIST_STATE_CHANGED, nextEvent)
             assertEquals("List should be fetched for the correct ListDescriptor", postListDescriptor, listDescriptor)
-            // Set the expected event depending on which fetch this is
-            nextEvent = if (fetchedFirstPage) TestEvent.LOADED_MORE else TestEvent.FETCHED_FIRST_PAGE
             val fetchPostListPayload = FetchPostListPayload(postListDescriptor, offset)
             dispatcher.dispatch(PostActionBuilder.newFetchPostListAction(fetchPostListPayload))
         }
         // Fetch the first page and get the current ListManager.
         val listManagerBefore = fetchFirstPageAndAssert(postListDescriptor, dataSource)
-        fetchedFirstPage = true
         assertTrue(
                 "This test requires the site to have at least 2 pages of data and should return canLoadMore = true" +
                         " after the first fetch",
                 listManagerBefore.canLoadMore
         )
 
-        // The first expected event is the list change
-        nextEvent = TestEvent.LIST_STATE_CHANGED
-        // 2 events should happen in total:
-        // First event will be for list state change and the second will be for completed fetch
-        countDownLatch = CountDownLatch(2)
+        countDownLatch = CountDownLatch(1)
         // Requesting the last item in `ListManager` will trigger a load more if there is more data to be loaded
         listManagerBefore.getItem(listManagerBefore.size - 1, shouldLoadMoreIfNecessary = true)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
-        assertEquals(
-                "Assert that the expected event is updated within `ListItemDataSource.fetchList`",
-                TestEvent.LOADED_MORE,
-                nextEvent
-        )
         // Retrieve the updated ListManager from ListStore and assert that we have more data than before
         val listManagerAfter = runBlocking {
             listStore.getListManager(postListDescriptor, dataSource)
@@ -145,22 +111,9 @@ class PostListConnectedTestHelper(
         event.error?.let {
             throw AssertionError("OnListChanged has error: " + it.type)
         }
-        when {
-            event.causeOfChange == FIRST_PAGE_FETCHED -> assertEquals(
-                    "Expected event was fetching the first page",
-                    TestEvent.FETCHED_FIRST_PAGE,
-                    nextEvent
-            )
-            event.causeOfChange == LOADED_MORE -> assertEquals(
-                    "Expected event was the loading more pages",
-                    TestEvent.LOADED_MORE,
-                    nextEvent
-            )
-            else -> {
-                assertEquals("Expected event was state change", TestEvent.LIST_STATE_CHANGED, nextEvent)
-            }
+        if (event.causeOfChange == FIRST_PAGE_FETCHED || event.causeOfChange == LOADED_MORE) {
+            countDownLatch.countDown()
         }
-        countDownLatch.countDown()
     }
 
     private fun listItemDataSource(fetchList: (ListDescriptor, Int) -> Unit): ListItemDataSource<PostModel> =
