@@ -116,7 +116,7 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     }
 
     @Test
-    fun testFollowersWpComInsights() {
+    fun testFollowersInsights() {
         val site = authenticate()
 
         val fetchedInsights = runBlocking { insightsStore.fetchFollowers(site) }
