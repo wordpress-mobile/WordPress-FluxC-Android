@@ -116,15 +116,29 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     }
 
     @Test
-    fun testFollowersInsights() {
+    fun testWpComFollowersInsights() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { insightsStore.fetchFollowers(site) }
+        val fetchedInsights = runBlocking { insightsStore.fetchWpComFollowers(site) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getFollowers(site)
+        val insightsFromDb = insightsStore.getWpComFollowers(site)
+
+        assertEquals(fetchedInsights.model, insightsFromDb)
+    }
+
+    @Test
+    fun testEmailFollowersInsights() {
+        val site = authenticate()
+
+        val fetchedInsights = runBlocking { insightsStore.fetchEmailFollowers(site) }
+
+        assertNotNull(fetchedInsights)
+        assertNotNull(fetchedInsights.model)
+
+        val insightsFromDb = insightsStore.getEmailFollowers(site)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
