@@ -37,7 +37,6 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     @Inject lateinit var insightsStore: InsightsStore
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var accountStore: AccountStore
-    @Inject internal lateinit var activityLogSqlUtils: ActivityLogSqlUtils
 
     private var nextEvent: TestEvents? = null
 
