@@ -152,7 +152,7 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getTodayInsights(site)
+        val insightsFromDb = insightsStore.getComments(site)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
