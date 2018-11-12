@@ -115,6 +115,34 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
 
+    @Test
+    fun testWpComFollowersInsights() {
+        val site = authenticate()
+
+        val fetchedInsights = runBlocking { insightsStore.fetchWpComFollowers(site) }
+
+        assertNotNull(fetchedInsights)
+        assertNotNull(fetchedInsights.model)
+
+        val insightsFromDb = insightsStore.getWpComFollowers(site)
+
+        assertEquals(fetchedInsights.model, insightsFromDb)
+    }
+
+    @Test
+    fun testEmailFollowersInsights() {
+        val site = authenticate()
+
+        val fetchedInsights = runBlocking { insightsStore.fetchEmailFollowers(site) }
+
+        assertNotNull(fetchedInsights)
+        assertNotNull(fetchedInsights.model)
+
+        val insightsFromDb = insightsStore.getEmailFollowers(site)
+
+        assertEquals(fetchedInsights.model, insightsFromDb)
+    }
+
     private fun authenticate(): SiteModel {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY)
