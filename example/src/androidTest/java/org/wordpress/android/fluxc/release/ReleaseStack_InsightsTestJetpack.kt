@@ -67,6 +67,10 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
+
+        val insightsFromDb = insightsStore.getAllTimeInsights(site)
+
+        assertEquals(fetchedInsights.model, insightsFromDb)
     }
 
     @Test
@@ -77,6 +81,10 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
+
+        val insightsFromDb = insightsStore.getLatestPostInsights(site)
+
+        assertEquals(fetchedInsights.model, insightsFromDb)
     }
 
     @Test
@@ -87,6 +95,52 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
+
+        val insightsFromDb = insightsStore.getMostPopularInsights(site)
+
+        assertEquals(fetchedInsights.model, insightsFromDb)
+    }
+
+    @Test
+    fun testTodayInsights() {
+        val site = authenticate()
+
+        val fetchedInsights = runBlocking { insightsStore.fetchTodayInsights(site) }
+
+        assertNotNull(fetchedInsights)
+        assertNotNull(fetchedInsights.model)
+
+        val insightsFromDb = insightsStore.getTodayInsights(site)
+
+        assertEquals(fetchedInsights.model, insightsFromDb)
+    }
+
+    @Test
+    fun testWpComFollowersInsights() {
+        val site = authenticate()
+
+        val fetchedInsights = runBlocking { insightsStore.fetchWpComFollowers(site) }
+
+        assertNotNull(fetchedInsights)
+        assertNotNull(fetchedInsights.model)
+
+        val insightsFromDb = insightsStore.getWpComFollowers(site)
+
+        assertEquals(fetchedInsights.model, insightsFromDb)
+    }
+
+    @Test
+    fun testEmailFollowersInsights() {
+        val site = authenticate()
+
+        val fetchedInsights = runBlocking { insightsStore.fetchEmailFollowers(site) }
+
+        assertNotNull(fetchedInsights)
+        assertNotNull(fetchedInsights.model)
+
+        val insightsFromDb = insightsStore.getEmailFollowers(site)
+
+        assertEquals(fetchedInsights.model, insightsFromDb)
     }
 
     private fun authenticate(): SiteModel {

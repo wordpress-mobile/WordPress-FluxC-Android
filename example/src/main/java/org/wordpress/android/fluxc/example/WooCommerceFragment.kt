@@ -1,12 +1,12 @@
 package org.wordpress.android.fluxc.example
 
-import android.app.Fragment
 import android.content.Context
 import android.os.Bundle
+import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import dagger.android.AndroidInjection
+import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woocommerce.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_SINGLE_ORDER
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.action.WCStatsAction
@@ -24,12 +25,14 @@ import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
@@ -55,16 +58,17 @@ class WooCommerceFragment : Fragment() {
     private var pendingNotesOrderModel: WCOrderModel? = null
     private var pendingFetchOrdersFilter: List<String>? = null
     private var pendingFetchCompletedOrders: Boolean = false
+    private var pendingFetchSingleOrderRemoteId: Long? = null
 
     override fun onAttach(context: Context?) {
-        AndroidInjection.inject(this)
+        AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_woocommerce, container, false)
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         log_sites.setOnClickListener {
@@ -96,6 +100,20 @@ class WooCommerceFragment : Fragment() {
 
                     val payload = FetchOrdersCountPayload(site, statusFilter)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersCountAction(payload))
+                }
+            }
+        }
+
+        fetch_single_order.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                showSingleLineDialog(activity, "Enter the remoteOrderId of order to fetch:") { editText ->
+                    pendingFetchSingleOrderRemoteId = editText.text.toString().toLongOrNull()
+                    pendingFetchSingleOrderRemoteId?.let { id ->
+                        prependToLog("Submitting request to fetch order by remoteOrderID" +
+                                ": $pendingFetchSingleOrderRemoteId")
+                        val payload = FetchSingleOrderPayload(site, id)
+                        dispatcher.dispatch(WCOrderActionBuilder.newFetchSingleOrderAction(payload))
+                    } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
                 }
             }
         }
@@ -268,6 +286,9 @@ class WooCommerceFragment : Fragment() {
                             prependToLog("Fetched ${completedOrders.size} completed orders from ${site.name}")
                         } else {
                             prependToLog("Fetched ${event.rowsAffected} orders from: ${site.name}")
+                            prependToLog("printing the first 5 remoteOrderId's from result:")
+                            val orders = wcOrderStore.getOrdersForSite(site)
+                            orders.take(5).forEach { prependToLog("- remoteOrderId [${it.remoteOrderId}]") }
                         }
                     }
                     FETCH_ORDERS_COUNT -> {
@@ -275,6 +296,19 @@ class WooCommerceFragment : Fragment() {
                         event.statusFilter?.let {
                             prependToLog("Count of $it orders: ${event.rowsAffected}$append")
                         } ?: prependToLog("Count of all orders: ${event.rowsAffected}$append")
+                    }
+                    FETCH_SINGLE_ORDER -> {
+                        pendingFetchSingleOrderRemoteId?.let { remoteId ->
+                            pendingFetchSingleOrderRemoteId = null
+                            wcOrderStore.getOrderByIdentifier(OrderIdentifier(
+                                    WCOrderModel().apply {
+                                        remoteOrderId = remoteId
+                                        localSiteId = site.id
+                                    })
+                            )?.let {
+                                prependToLog("Single order fetched successfully!")
+                            } ?: prependToLog("WARNING: Fetched order not found in the local database!")
+                        }
                     }
                     FETCH_HAS_ORDERS -> {
                         val hasOrders = event.rowsAffected > 0

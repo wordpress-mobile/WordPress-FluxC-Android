@@ -70,4 +70,5 @@ subprojects {
 ext {
     daggerVersion = '2.11'
     supportLibraryVersion = '27.1.1'
+    arch_paging_version = '1.0.1'
 }

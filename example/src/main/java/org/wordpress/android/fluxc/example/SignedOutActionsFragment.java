@@ -1,13 +1,13 @@
 package org.wordpress.android.fluxc.example;
 
 import android.app.AlertDialog;
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -35,7 +35,7 @@ import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
 
 import javax.inject.Inject;
 
-import dagger.android.AndroidInjection;
+import dagger.android.support.AndroidSupportInjection;
 
 
 public class SignedOutActionsFragment extends Fragment {
@@ -44,7 +44,7 @@ public class SignedOutActionsFragment extends Fragment {
 
     @Override
     public void onAttach(Context context) {
-        AndroidInjection.inject(this);
+        AndroidSupportInjection.inject(this);
         super.onAttach(context);
     }
 
