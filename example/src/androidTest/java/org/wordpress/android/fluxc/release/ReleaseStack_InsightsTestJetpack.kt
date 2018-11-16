@@ -14,7 +14,6 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.persistence.ActivityLogSqlUtils
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
@@ -37,7 +36,6 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     @Inject lateinit var insightsStore: InsightsStore
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var accountStore: AccountStore
-    @Inject internal lateinit var activityLogSqlUtils: ActivityLogSqlUtils
 
     private var nextEvent: TestEvents? = null
 
@@ -139,6 +137,20 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         assertNotNull(fetchedInsights.model)
 
         val insightsFromDb = insightsStore.getEmailFollowers(site)
+
+        assertEquals(fetchedInsights.model, insightsFromDb)
+    }
+
+    @Test
+    fun testTopComments() {
+        val site = authenticate()
+
+        val fetchedInsights = runBlocking { insightsStore.fetchComments(site) }
+
+        assertNotNull(fetchedInsights)
+        assertNotNull(fetchedInsights.model)
+
+        val insightsFromDb = insightsStore.getComments(site)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
