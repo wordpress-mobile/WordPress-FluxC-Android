@@ -18,5 +18,6 @@ class WCWPAPIEndpointTest {
     fun testAllUrls() {
         // Orders
         assertEquals("/wc/v2/orders/", WOOCOMMERCE.orders.pathV2)
+        assertEquals("/wc/v3/orders/", WOOCOMMERCE.orders.pathV3)
     }
 }
