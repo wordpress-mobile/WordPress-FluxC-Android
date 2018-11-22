@@ -177,12 +177,13 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     fun testPublicizeModel() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { insightsStore.fetchPublicizeData(site) }
+        val pageSize = 5
+        val fetchedInsights = runBlocking { insightsStore.fetchPublicizeData(site, pageSize) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getPublicizeData(site)
+        val insightsFromDb = insightsStore.getPublicizeData(site, pageSize)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
