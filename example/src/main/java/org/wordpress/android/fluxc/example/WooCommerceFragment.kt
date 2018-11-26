@@ -61,6 +61,7 @@ class WooCommerceFragment : Fragment() {
     private var pendingFetchOrdersFilter: List<String>? = null
     private var pendingFetchCompletedOrders: Boolean = false
     private var pendingFetchSingleOrderRemoteId: Long? = null
+    private var pendingFetchOrdersKeyword: String ? = null
 
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
@@ -163,6 +164,22 @@ class WooCommerceFragment : Fragment() {
                 prependToLog("Submitting request to fetch only completed orders from the api")
                 pendingFetchCompletedOrders = true
                 val payload = FetchOrdersPayload(site, loadMore = false, statusFilter = CoreOrderStatus.COMPLETED.value)
+                dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
+            }
+        }
+
+        fetch_orders_by_keyword.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                showSingleLineDialog(activity, "Enter a keyword to filter by:") { editText ->
+                    pendingFetchOrdersKeyword = editText.text.toString()
+                    prependToLog("Submitting request to fetch orders matching keyword $pendingFetchOrdersKeyword")
+                }
+                val payload = FetchOrdersPayload(
+                        site,
+                        statusFilter = null,
+                        keywordFilter = pendingFetchOrdersKeyword,
+                        loadMore = false
+                )
                 dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
             }
         }
@@ -291,26 +308,33 @@ class WooCommerceFragment : Fragment() {
 
                 when (event.causeOfChange) {
                     FETCH_ORDERS -> {
-                        pendingFetchOrdersFilter?.let { filter ->
-                            getFirstWCSite()?.let { site ->
+                        when {
+                            pendingFetchOrdersKeyword != null -> {
+                                prependToLog("Fetched ${event.rowsAffected} orders from: ${site.name} " +
+                                        "matching keyword $pendingFetchOrdersKeyword")
+                                pendingFetchOrdersKeyword = null
+                            }
+                            pendingFetchOrdersFilter != null -> {
                                 // get orders and group by order.status
-                                val orders = wcOrderStore.getOrdersForSite(site, *filter.toTypedArray())
+                                val orders = wcOrderStore.getOrdersForSite(site, *pendingFetchOrdersFilter!!.toTypedArray())
                                         .groupBy { order -> order.status }
                                 // print count of orders fetched by filtered status
-                                filter.forEach { status ->
+                                pendingFetchOrdersFilter!!.forEach { status ->
                                     prependToLog("Fetched ${orders[status]?.count() ?: 0} orders for status [$status]")
                                 }
                                 pendingFetchOrdersFilter = null
                             }
-                        } ?: if (pendingFetchCompletedOrders) {
-                            pendingFetchCompletedOrders = false
-                            val completedOrders = wcOrderStore.getOrdersForSite(site, "completed")
-                            prependToLog("Fetched ${completedOrders.size} completed orders from ${site.name}")
-                        } else {
-                            prependToLog("Fetched ${event.rowsAffected} orders from: ${site.name}")
-                            prependToLog("printing the first 5 remoteOrderId's from result:")
-                            val orders = wcOrderStore.getOrdersForSite(site)
-                            orders.take(5).forEach { prependToLog("- remoteOrderId [${it.remoteOrderId}]") }
+                            pendingFetchCompletedOrders -> {
+                                pendingFetchCompletedOrders = false
+                                val completedOrders = wcOrderStore.getOrdersForSite(site, "completed")
+                                prependToLog("Fetched ${completedOrders.size} completed orders from ${site.name}")
+                            }
+                            else -> {
+                                prependToLog("Fetched ${event.rowsAffected} orders from: ${site.name}")
+                                prependToLog("printing the first 5 remoteOrderId's from result:")
+                                val orders = wcOrderStore.getOrdersForSite(site)
+                                orders.take(5).forEach { prependToLog("- remoteOrderId [${it.remoteOrderId}]") }
+                            }
                         }
                     }
                     FETCH_ORDERS_COUNT -> {

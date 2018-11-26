@@ -46,9 +46,16 @@ class OrderRestClient(
      * Dispatches a [WCOrderAction.FETCHED_ORDERS] action with the resulting list of orders.
      *
      * @param [filterByStatus] Nullable. If not null, fetch only orders with a matching order status.
+     * @param [filterByKeyword] Nullable. If not null, fetch only orders that match the passed keyword.
      * @param [countOnly] Default false. If true, only a total count of orders will be returned in the payload.
      */
-    fun fetchOrders(site: SiteModel, offset: Int, filterByStatus: String? = null, countOnly: Boolean = false) {
+    fun fetchOrders(
+        site: SiteModel,
+        offset: Int,
+        filterByStatus: String? = null,
+        filterByKeyword: String? = null,
+        countOnly: Boolean = false
+    ) {
         // If null, set the filter to the api default value of "any", which will not apply any order status filters.
         val statusFilter = if (filterByStatus.isNullOrBlank()) { "any" } else { filterByStatus!! }
 
@@ -58,6 +65,9 @@ class OrderRestClient(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter)
+        filterByKeyword?.let {
+            params.entries.plus("search" to it)
+        }
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
                     val orderModels = response?.map {
@@ -72,7 +82,8 @@ class OrderRestClient(
                         mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
                     } else {
                         val payload = FetchOrdersResponsePayload(
-                                site, orderModels, filterByStatus, offset > 0, canLoadMore)
+                                site, orderModels, filterByStatus, filterByKeyword, offset > 0, canLoadMore
+                        )
                         mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                     }
                 },

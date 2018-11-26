@@ -59,6 +59,12 @@
             android:text="Fetch Completed Orders (API)"/>
 
         <Button
+            android:id="@+id/fetch_orders_by_keyword"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Orders Filtered by Keyword"/>
+
+        <Button
             android:id="@+id/fetch_order_notes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

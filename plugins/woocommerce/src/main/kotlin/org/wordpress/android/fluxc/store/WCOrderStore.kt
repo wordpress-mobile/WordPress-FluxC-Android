@@ -36,6 +36,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     class FetchOrdersPayload(
         var site: SiteModel,
         var statusFilter: String? = null,
+        var keywordFilter: String? = null,
         var loadMore: Boolean = false
     ) : Payload<BaseNetworkError>()
 
@@ -43,6 +44,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var site: SiteModel,
         var orders: List<WCOrderModel> = emptyList(),
         var statusFilter: String? = null,
+        val keywordFilter: String? = null,
         var loadedMore: Boolean = false,
         var canLoadMore: Boolean = false
     ) : Payload<OrderError>() {
@@ -142,7 +144,12 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     // OnChanged events
-    class OnOrderChanged(var rowsAffected: Int, var statusFilter: String? = null, var canLoadMore: Boolean = false)
+    class OnOrderChanged(
+        var rowsAffected: Int,
+        var statusFilter: String? = null,
+        var keywordFilter: String? = null,
+        var canLoadMore: Boolean = false
+    )
         : OnChanged<OrderError>() {
         var causeOfChange: WCOrderAction? = null
     }
@@ -203,7 +210,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         } else {
             0
         }
-        wcOrderRestClient.fetchOrders(payload.site, offset, payload.statusFilter)
+        wcOrderRestClient.fetchOrders(payload.site, offset, payload.statusFilter, payload.keywordFilter)
     }
 
     private fun fetchOrdersCount(payload: FetchOrdersCountPayload) {
@@ -246,7 +253,12 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
             val rowsAffected = payload.orders.sumBy { OrderSqlUtils.insertOrUpdateOrder(it) }
 
-            onOrderChanged = OnOrderChanged(rowsAffected, payload.statusFilter, payload.canLoadMore)
+            onOrderChanged = OnOrderChanged(
+                    rowsAffected,
+                    payload.statusFilter,
+                    payload.keywordFilter,
+                    payload.canLoadMore
+            )
         }
 
         onOrderChanged.causeOfChange = WCOrderAction.FETCH_ORDERS
@@ -262,7 +274,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         val onOrderChanged = if (payload.isError) {
             OnOrderChanged(0).also { it.error = payload.error }
         } else {
-            with(payload) { OnOrderChanged(count, statusFilter, canLoadMore) }
+            with(payload) { OnOrderChanged(count, statusFilter, keywordFilter = null, canLoadMore = canLoadMore) }
         }.also { it.causeOfChange = FETCH_ORDERS_COUNT }
         emitChange(onOrderChanged)
     }
