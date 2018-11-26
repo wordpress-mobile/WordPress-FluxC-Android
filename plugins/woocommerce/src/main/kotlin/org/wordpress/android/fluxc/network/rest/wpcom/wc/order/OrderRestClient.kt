@@ -56,18 +56,17 @@ class OrderRestClient(
         filterByKeyword: String? = null,
         countOnly: Boolean = false
     ) {
-        // If null, set the filter to the api default value of "any", which will not apply any order status filters.
-        val statusFilter = if (filterByStatus.isNullOrBlank()) { "any" } else { filterByStatus!! }
+        // If null, set the status filter to the api default value of "any", which will not apply any order status filters.
+        val statusFilter = if (filterByStatus.isNullOrBlank()) "any" else filterByStatus!!
+        val keywordFilter = if (filterByKeyword.isNullOrBlank()) "" else filterByKeyword!!
 
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
         val params = mapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
-                "status" to statusFilter)
-        filterByKeyword?.let {
-            params.entries.plus("search" to it)
-        }
+                "status" to statusFilter,
+                "search" to keywordFilter)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
                     val orderModels = response?.map {
