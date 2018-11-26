@@ -80,7 +80,16 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
         val statusFilter = "completed"
 
-        mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(FetchOrdersPayload(sSite, statusFilter, false)))
+        mDispatcher.dispatch(
+                WCOrderActionBuilder.newFetchOrdersAction(
+                        FetchOrdersPayload(
+                                sSite,
+                                statusFilter,
+                                keywordFilter = null,
+                                loadMore = false
+                        )
+                )
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
         val firstFetchOrders = orderStore.getOrdersForSite(sSite)
