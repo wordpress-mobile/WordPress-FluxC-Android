@@ -231,7 +231,11 @@ class OrderRestClient(
     fun postOrderNote(order: WCOrderModel, site: SiteModel, note: WCOrderNoteModel) {
         val url = WOOCOMMERCE.orders.id(order.remoteOrderId).notes.pathV3
 
-        val params = mutableMapOf("note" to note.note, "customer_note" to note.isCustomerNote)
+        val params = mutableMapOf(
+                "note" to note.note,
+                "customer_note" to note.isCustomerNote,
+                "added_by_user" to true
+        )
         val request = JetpackTunnelGsonRequest.buildPostRequest(
                 url, site.siteId, params, OrderNoteApiResponse::class.java,
                 { response: OrderNoteApiResponse? ->
