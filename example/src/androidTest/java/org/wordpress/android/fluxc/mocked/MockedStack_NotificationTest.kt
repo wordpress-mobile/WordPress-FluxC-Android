@@ -4,6 +4,7 @@ import com.google.gson.JsonObject
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.Dispatcher
@@ -13,8 +14,11 @@ import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient
+import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationsResponsePayload
+import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationSeenResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.NotificationAppKey
 import org.wordpress.android.fluxc.store.NotificationStore.RegisterDeviceResponsePayload
+import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -111,6 +115,42 @@ class MockedStack_NotificationTest : MockedStack_Base() {
         val requestBodyMap = interceptor.lastRequestBody
 
         assertTrue(requestBodyMap.isEmpty())
+    }
+
+    @Test
+    fun testFetchNotificationsSuccess() {
+        interceptor.respondWith("fetch-notifications-response-success.json")
+        val siteModel = SiteModel().apply { siteId = 123456 }
+        notificationRestClient.fetchNotifications(siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(NotificationAction.FETCHED_NOTES, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchNotificationsResponsePayload
+
+        assertNotNull(payload)
+        assertEquals(siteModel.id, payload.site.id)
+        with(payload.notifs) {
+            assertEquals(52, size)
+        }
+    }
+
+    @Test
+    fun testMarkNotificationSeenSuccess() {
+        interceptor.respondWith("mark-notification-seen-response-success.json")
+        val siteModel = SiteModel().apply { siteId = 123456 }
+        notificationRestClient.markNotificationsSeen(siteModel, 1543265347)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(NotificationAction.MARKED_NOTE_SEEN, lastAction!!.type)
+        val payload = lastAction!!.payload as MarkNotificationSeenResponsePayload
+
+        assertNotNull(payload)
+        assertEquals(payload.lastSeenTime, 1543265347L)
+        assertEquals(payload.site.id, siteModel.id)
     }
 
     @Suppress("unused")
