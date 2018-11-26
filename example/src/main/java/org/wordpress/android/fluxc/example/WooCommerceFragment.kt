@@ -173,14 +173,14 @@ class WooCommerceFragment : Fragment() {
                 showSingleLineDialog(activity, "Enter a keyword to filter by:") { editText ->
                     pendingFetchOrdersKeyword = editText.text.toString()
                     prependToLog("Submitting request to fetch orders matching keyword $pendingFetchOrdersKeyword")
+                    val payload = FetchOrdersPayload(
+                            site,
+                            statusFilter = null,
+                            keywordFilter = pendingFetchOrdersKeyword,
+                            loadMore = false
+                    )
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
                 }
-                val payload = FetchOrdersPayload(
-                        site,
-                        statusFilter = null,
-                        keywordFilter = pendingFetchOrdersKeyword,
-                        loadMore = false
-                )
-                dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
             }
         }
 
