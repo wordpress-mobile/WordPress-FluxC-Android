@@ -312,6 +312,7 @@ class OrderRestClient(
             remoteNoteId = response.id ?: 0
             dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: ""
             note = response.note ?: ""
+            isSystemNote = response.author == "system"
             isCustomerNote = response.customer_note
         }
     }
