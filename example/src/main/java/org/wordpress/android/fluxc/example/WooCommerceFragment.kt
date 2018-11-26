@@ -316,8 +316,10 @@ class WooCommerceFragment : Fragment() {
                             }
                             pendingFetchOrdersFilter != null -> {
                                 // get orders and group by order.status
-                                val orders = wcOrderStore.getOrdersForSite(site, *pendingFetchOrdersFilter!!.toTypedArray())
-                                        .groupBy { order -> order.status }
+                                val orders = wcOrderStore.getOrdersForSite(
+                                        site,
+                                        *pendingFetchOrdersFilter!!.toTypedArray()
+                                ).groupBy { order -> order.status }
                                 // print count of orders fetched by filtered status
                                 pendingFetchOrdersFilter!!.forEach { status ->
                                     prependToLog("Fetched ${orders[status]?.count() ?: 0} orders for status [$status]")
