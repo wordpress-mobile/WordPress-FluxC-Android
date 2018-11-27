@@ -117,12 +117,13 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     fun testWpComFollowersInsights() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { insightsStore.fetchWpComFollowers(site) }
+        val pageSize = 5
+        val fetchedInsights = runBlocking { insightsStore.fetchWpComFollowers(site, pageSize) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getWpComFollowers(site)
+        val insightsFromDb = insightsStore.getWpComFollowers(site, pageSize)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
@@ -131,12 +132,13 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     fun testEmailFollowersInsights() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { insightsStore.fetchEmailFollowers(site) }
+        val pageSize = 5
+        val fetchedInsights = runBlocking { insightsStore.fetchEmailFollowers(site, pageSize) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getEmailFollowers(site)
+        val insightsFromDb = insightsStore.getEmailFollowers(site, pageSize)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
@@ -145,12 +147,13 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     fun testTopComments() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { insightsStore.fetchComments(site) }
+        val pageSize = 5
+        val fetchedInsights = runBlocking { insightsStore.fetchComments(site, pageSize) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getComments(site)
+        val insightsFromDb = insightsStore.getComments(site, pageSize)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
@@ -159,12 +162,13 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     fun testTagsAndCategoriesInsights() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { insightsStore.fetchTags(site) }
+        val pageSize = 5
+        val fetchedInsights = runBlocking { insightsStore.fetchTags(site, pageSize) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getTags(site)
+        val insightsFromDb = insightsStore.getTags(site, pageSize)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
