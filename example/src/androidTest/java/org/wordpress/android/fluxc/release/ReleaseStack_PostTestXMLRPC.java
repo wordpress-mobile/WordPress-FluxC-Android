@@ -57,6 +57,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         POSTS_FETCHED,
         PAGES_FETCHED,
         POST_DELETED,
+        POST_RESTORED,
         ERROR_UNKNOWN_POST,
         ERROR_UNKNOWN_POST_TYPE,
         ERROR_UNAUTHORIZED,
@@ -368,10 +369,10 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(date, newPost.getDateCreated());
 
         assertTrue(categoryIds.containsAll(newPost.getCategoryIdList())
-                && newPost.getCategoryIdList().containsAll(categoryIds));
+                   && newPost.getCategoryIdList().containsAll(categoryIds));
 
         assertTrue(tags.containsAll(newPost.getTagNameList())
-                && newPost.getTagNameList().containsAll(tags));
+                   && newPost.getTagNameList().containsAll(tags));
 
         assertEquals(featuredImageId, newPost.getFeaturedImageId());
     }
@@ -615,6 +616,28 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(0, mPostStore.getPostsCountForSite(sSite));
     }
 
+    @Test
+    public void testRestoreRemotePost() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        uploadPost(mPost);
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+        deletePost(uploadedPost);
+
+        // Make sure the post is actually removed
+        assertEquals(null, mPostStore.getPostByLocalPostId(uploadedPost.getId()));
+        assertEquals(0, WellSqlUtils.getTotalPostsCount());
+        assertEquals(0, mPostStore.getPostsCountForSite(sSite));
+
+        restorePost(uploadedPost);
+
+        assertEquals(uploadedPost, mPostStore.getPostByLocalPostId(uploadedPost.getId()));
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
+    }
+
     // Error handling tests
 
     @Test
@@ -688,6 +711,23 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(invalidPost, sSite)));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_POST error instead
+        // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
+        assertEquals("Invalid post ID.", mLastPostError.message);
+    }
+
+    @Test
+    public void testRestoreInvalidRemotePost() throws InterruptedException {
+       PostModel invalidPost = new PostModel();
+        invalidPost.setRemotePostId(6420328);
+
+        mNextEvent = TestEvents.ERROR_GENERIC;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newRestorePostAction(new RemotePostPayload(invalidPost, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -986,6 +1026,10 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
             if (mNextEvent.equals(TestEvents.ALL_POST_REMOVED)) {
                 mCountDownLatch.countDown();
             }
+        } else if (event.causeOfChange instanceof CauseOfOnPostChanged.RestorePost) {
+            if (mNextEvent.equals(TestEvents.POST_RESTORED)) {
+                mCountDownLatch.countDown();
+            }
         } else {
             throw new AssertionError("Unexpected cause of change: " + event.causeOfChange.getClass().getSimpleName());
         }
@@ -1089,6 +1133,15 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newRemoveAllPostsAction());
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void restorePost(PostModel post) throws InterruptedException {
+        mNextEvent = TestEvents.POST_RESTORED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newRestorePostAction(new RemotePostPayload(post, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
