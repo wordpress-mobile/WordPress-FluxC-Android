@@ -18,7 +18,6 @@ import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationsRes
 import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationSeenResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.NotificationAppKey
 import org.wordpress.android.fluxc.store.NotificationStore.RegisterDeviceResponsePayload
-import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject

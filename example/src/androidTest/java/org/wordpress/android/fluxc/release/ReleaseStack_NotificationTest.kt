@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.release
 
-import com.yarolegovich.wellsql.SelectQuery
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode.MAIN
 import org.junit.Assert
