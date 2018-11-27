@@ -125,7 +125,7 @@ class MockedStack_NotificationTest : MockedStack_Base() {
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
-        assertEquals(NotificationAction.FETCHED_NOTES, lastAction!!.type)
+        assertEquals(NotificationAction.FETCHED_NOTIFICATIONS, lastAction!!.type)
         val payload = lastAction!!.payload as FetchNotificationsResponsePayload
 
         assertNotNull(payload)
@@ -144,7 +144,7 @@ class MockedStack_NotificationTest : MockedStack_Base() {
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
-        assertEquals(NotificationAction.MARKED_NOTE_SEEN, lastAction!!.type)
+        assertEquals(NotificationAction.MARKED_NOTIFICATIONS_SEEN, lastAction!!.type)
         val payload = lastAction!!.payload as MarkNotificationSeenResponsePayload
 
         assertNotNull(payload)

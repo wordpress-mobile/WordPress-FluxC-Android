@@ -50,7 +50,7 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
         mCountDownLatch = CountDownLatch(1)
 
         mDispatcher.dispatch(NotificationActionBuilder
-                .newFetchNotesAction(FetchNotificationsPayload(sSite)))
+                .newFetchNotificationsAction(FetchNotificationsPayload(sSite)))
 
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
@@ -67,11 +67,11 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
 
         lastEvent = event
         when (event.causeOfChange) {
-            NotificationAction.FETCH_NOTES -> {
+            NotificationAction.FETCH_NOTIFICATIONS -> {
                 assertEquals(TestEvent.FETCHED_NOTES, nextEvent)
                 mCountDownLatch.countDown()
             }
-            NotificationAction.MARK_NOTES_SEEN -> {
+            NotificationAction.MARK_NOTIFICATIONS_SEEN -> {
                 assertEquals(TestEvent.MARKED_NOTES_SEEN, nextEvent)
                 mCountDownLatch.countDown()
             }
