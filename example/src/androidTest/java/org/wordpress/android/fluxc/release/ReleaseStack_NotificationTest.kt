@@ -40,7 +40,6 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
         init()
         // Reset expected test event
         nextEvent = TestEvent.NONE
-        sSite.apply { id = 123456 }
     }
 
     @Throws(InterruptedException::class)
@@ -50,11 +49,11 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
         mCountDownLatch = CountDownLatch(1)
 
         mDispatcher.dispatch(NotificationActionBuilder
-                .newFetchNotificationsAction(FetchNotificationsPayload(sSite)))
+                .newFetchNotificationsAction(FetchNotificationsPayload()))
 
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        val fetchedNotifs = notificationStore.getNotificationsForSite(sSite).size
+        val fetchedNotifs = notificationStore.getNotifications().size
         assertTrue(fetchedNotifs > 0 && fetchedNotifs <= NotificationRestClient.NOTIFICATION_DEFAULT_NUMBER)
     }
 
