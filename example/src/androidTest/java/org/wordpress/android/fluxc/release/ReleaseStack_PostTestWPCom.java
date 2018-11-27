@@ -58,6 +58,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PAGES_FETCHED,
         POST_DELETED,
         POST_REMOVED,
+        POST_RESTORED,
         ERROR_UNKNOWN_POST,
         ERROR_UNKNOWN_POST_TYPE,
         ERROR_GENERIC
@@ -379,10 +380,10 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(date, newPost.getDateCreated());
 
         assertTrue(categoryIds.containsAll(newPost.getCategoryIdList())
-                && newPost.getCategoryIdList().containsAll(categoryIds));
+                   && newPost.getCategoryIdList().containsAll(categoryIds));
 
         assertTrue(tags.containsAll(newPost.getTagNameList())
-                && newPost.getTagNameList().containsAll(tags));
+                   && newPost.getTagNameList().containsAll(tags));
 
         assertEquals(featuredImageId, newPost.getFeaturedImageId());
     }
@@ -631,6 +632,28 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(0, mPostStore.getPostsCountForSite(sSite));
     }
 
+    @Test
+    public void testRestoreRemotePost() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        uploadPost(mPost);
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+        deletePost(uploadedPost);
+
+        // Make sure the post is actually removed
+        assertEquals(null, mPostStore.getPostByLocalPostId(uploadedPost.getId()));
+        assertEquals(0, WellSqlUtils.getTotalPostsCount());
+        assertEquals(0, mPostStore.getPostsCountForSite(sSite));
+
+        restorePost(uploadedPost);
+
+        assertEquals(uploadedPost, mPostStore.getPostByLocalPostId(uploadedPost.getId()));
+        assertEquals(1, WellSqlUtils.getTotalPostsCount());
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
+    }
+
     // Error handling tests
 
     @Test
@@ -698,6 +721,20 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(invalidPost, sSite)));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testRestoreInvalidRemotePost() throws InterruptedException {
+        PostModel invalidPost = new PostModel();
+        invalidPost.setRemotePostId(6420328);
+        invalidPost.setRemoteSiteId(sSite.getSiteId());
+
+        mNextEvent = TestEvents.ERROR_UNKNOWN_POST;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newRestorePostAction(new RemotePostPayload(invalidPost, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -772,6 +809,10 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
             }
         } else if (event.causeOfChange instanceof CauseOfOnPostChanged.RemoveAllPosts) {
             if (mNextEvent.equals(TestEvents.ALL_POST_REMOVED)) {
+                mCountDownLatch.countDown();
+            }
+        } else if (event.causeOfChange instanceof CauseOfOnPostChanged.RestorePost) {
+            if (mNextEvent.equals(TestEvents.POST_RESTORED)) {
                 mCountDownLatch.countDown();
             }
         } else {
@@ -866,6 +907,15 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newRemoveAllPostsAction());
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void restorePost(PostModel post) throws InterruptedException {
+        mNextEvent = TestEvents.POST_RESTORED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newRestorePostAction(new RemotePostPayload(post, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
