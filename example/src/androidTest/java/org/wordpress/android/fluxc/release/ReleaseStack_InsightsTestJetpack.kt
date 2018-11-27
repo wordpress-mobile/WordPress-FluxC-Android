@@ -173,6 +173,21 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
 
+    @Test
+    fun testPublicizeModel() {
+        val site = authenticate()
+
+        val pageSize = 5
+        val fetchedInsights = runBlocking { insightsStore.fetchPublicizeData(site, pageSize) }
+
+        assertNotNull(fetchedInsights)
+        assertNotNull(fetchedInsights.model)
+
+        val insightsFromDb = insightsStore.getPublicizeData(site, pageSize)
+
+        assertEquals(fetchedInsights.model, insightsFromDb)
+    }
+
     private fun authenticate(): SiteModel {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY)
