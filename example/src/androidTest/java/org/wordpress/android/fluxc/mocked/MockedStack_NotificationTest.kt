@@ -119,8 +119,7 @@ class MockedStack_NotificationTest : MockedStack_Base() {
     @Test
     fun testFetchNotificationsSuccess() {
         interceptor.respondWith("fetch-notifications-response-success.json")
-        val siteModel = SiteModel().apply { siteId = 123456 }
-        notificationRestClient.fetchNotifications(siteModel)
+        notificationRestClient.fetchNotifications()
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -129,17 +128,15 @@ class MockedStack_NotificationTest : MockedStack_Base() {
         val payload = lastAction!!.payload as FetchNotificationsResponsePayload
 
         assertNotNull(payload)
-        assertEquals(siteModel.id, payload.site.id)
         with(payload.notifs) {
-            assertEquals(52, size)
+            assertEquals(5, size)
         }
     }
 
     @Test
     fun testMarkNotificationSeenSuccess() {
         interceptor.respondWith("mark-notification-seen-response-success.json")
-        val siteModel = SiteModel().apply { siteId = 123456 }
-        notificationRestClient.markNotificationsSeen(siteModel, 1543265347)
+        notificationRestClient.markNotificationsSeen(1543265347)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -149,7 +146,6 @@ class MockedStack_NotificationTest : MockedStack_Base() {
 
         assertNotNull(payload)
         assertEquals(payload.lastSeenTime, 1543265347L)
-        assertEquals(payload.site.id, siteModel.id)
     }
 
     @Suppress("unused")
