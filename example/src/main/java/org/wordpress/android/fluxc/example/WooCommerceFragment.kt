@@ -61,7 +61,6 @@ class WooCommerceFragment : Fragment() {
     private var pendingFetchOrdersFilter: List<String>? = null
     private var pendingFetchCompletedOrders: Boolean = false
     private var pendingFetchSingleOrderRemoteId: Long? = null
-    private var pendingFetchOrdersKeyword: String ? = null
 
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
@@ -171,12 +170,12 @@ class WooCommerceFragment : Fragment() {
         fetch_orders_by_keyword.setOnClickListener {
             getFirstWCSite()?.let { site ->
                 showSingleLineDialog(activity, "Enter a keyword to filter by:") { editText ->
-                    pendingFetchOrdersKeyword = editText.text.toString()
-                    prependToLog("Submitting request to fetch orders matching keyword $pendingFetchOrdersKeyword")
+                    val keyword = editText.text.toString()
+                    prependToLog("Submitting request to fetch orders matching keyword $keyword")
                     val payload = FetchOrdersPayload(
                             site,
                             statusFilter = null,
-                            keywordFilter = pendingFetchOrdersKeyword,
+                            keywordFilter = keyword,
                             loadMore = false
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
@@ -309,10 +308,9 @@ class WooCommerceFragment : Fragment() {
                 when (event.causeOfChange) {
                     FETCH_ORDERS -> {
                         when {
-                            pendingFetchOrdersKeyword != null -> {
+                            !event.keywordFilter.isNullOrBlank() -> {
                                 prependToLog("Fetched ${event.rowsAffected} orders from: ${site.name} " +
-                                        "matching keyword $pendingFetchOrdersKeyword")
-                                pendingFetchOrdersKeyword = null
+                                        "matching keyword ${event.keywordFilter}")
                             }
                             pendingFetchOrdersFilter != null -> {
                                 // get orders and group by order.status
