@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -34,6 +35,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         FETCHED_SINGLE_ORDER,
         FETCHED_ORDER_NOTES,
         FETCHED_HAS_ORDERS,
+        SEARCHED_ORDERS,
         POST_ORDER_NOTE,
         POSTED_ORDER_NOTE
     }
@@ -87,6 +89,21 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         val isValid = firstFetchOrders.stream().allMatch { it.status == statusFilter }
         assertTrue(firstFetchOrders.isNotEmpty() &&
                 firstFetchOrders.size <= WCOrderStore.NUM_ORDERS_PER_FETCH && isValid)
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun testSearchOrders() {
+        nextEvent = TestEvent.SEARCHED_ORDERS
+        mCountDownLatch = CountDownLatch(1)
+
+        val searchQuery = "bogus query"
+        mDispatcher.dispatch(WCOrderActionBuilder.newSearchOrdersAction(SearchOrdersPayload(sSite, searchQuery)))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        this.lastEvent?.let {
+            assertEquals(it.searchQuery, searchQuery)
+        } ?: fail()
     }
 
     @Throws(InterruptedException::class)
@@ -224,6 +241,10 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
             }
             WCOrderAction.FETCH_SINGLE_ORDER -> {
                 assertEquals(TestEvent.FETCHED_SINGLE_ORDER, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            WCOrderAction.SEARCH_ORDERS -> {
+                assertEquals(TestEvent.SEARCHED_ORDERS, nextEvent)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
