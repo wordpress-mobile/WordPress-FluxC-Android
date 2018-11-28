@@ -31,7 +31,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     : Store(dispatcher) {
     companion object {
         const val NUM_ORDERS_PER_FETCH = 25
-        const val NUM_ORDERS_PER_SEARCH = 100
+        const val NUM_ORDERS_PER_SEARCH = 50
         const val DEFAULT_ORDER_STATUS = "any"
     }
 
