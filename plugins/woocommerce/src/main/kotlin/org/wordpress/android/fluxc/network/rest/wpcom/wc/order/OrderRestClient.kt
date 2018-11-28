@@ -92,6 +92,16 @@ class OrderRestClient(
         add(request)
     }
 
+    /**
+     * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a list of orders for the given WooCommerce [SiteModel] matching [searchQuery]
+     *
+     * The number of orders fetched is defined in [WCOrderStore.NUM_ORDERS_PER_SEARCH]
+     *
+     * Dispatches a [WCOrderAction.SEARCHED_ORDERS] action with the resulting list of orders.
+     *
+     * @param [searchQuery] the keyword or phrase to match orders with
+     */
     fun searchOrders(site: SiteModel, searchQuery: String) {
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type

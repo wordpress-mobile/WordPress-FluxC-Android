@@ -161,6 +161,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var rowsAffected: Int,
         var statusFilter: String? = null,
         var searchQuery: String? = null,
+        var searchResults: List<WCOrderModel> = emptyList(),
         var canLoadMore: Boolean = false
     )
         : OnChanged<OrderError>() {
@@ -281,17 +282,17 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun handleSearchOrdersCompleted(payload: SearchOrdersResponsePayload) {
-        val onOrderChanged: OnOrderChanged
-
-        if (payload.isError) {
-            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
+        val onOrderChanged = if (payload.isError) {
+            OnOrderChanged(0).also { it.error = payload.error }
         } else {
-            val rowsAffected = payload.orders.sumBy { OrderSqlUtils.insertOrUpdateOrder(it) }
-            onOrderChanged = OnOrderChanged(rowsAffected, searchQuery = payload.searchQuery)
+            OnOrderChanged(
+                    payload.orders.size,
+                    searchQuery = payload.searchQuery,
+                    searchResults = payload.orders
+            )
         }
 
         onOrderChanged.causeOfChange = WCOrderAction.SEARCH_ORDERS
-
         emitChange(onOrderChanged)
     }
 
