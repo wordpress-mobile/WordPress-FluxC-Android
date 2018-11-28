@@ -647,8 +647,18 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(0, WellSqlUtils.getTotalPostsCount());
         assertEquals(0, mPostStore.getPostsCountForSite(sSite));
 
+        // fetch trashed post from server
+        fetchPost(uploadedPost);
+
+        // Get the current copy of the trashed post from the PostStore
+        PostModel trashedPost = mPostStore.getPostByRemotePostId(uploadedPost.getRemotePostId(), sSite);
+        assertNotNull(trashedPost);
+        assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
+
+        // restore post
         restorePost(uploadedPost);
 
+        // retrieve restored post from PostStore and make sure it's not TRASHED anymore
         PostModel restoredPost = mPostStore.getPostByRemotePostId(uploadedPost.getRemotePostId(), sSite);
         assertNotNull(restoredPost);
         assertNotEquals(PostStatus.TRASHED, PostStatus.fromPost(restoredPost));

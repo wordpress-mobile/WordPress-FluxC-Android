@@ -636,14 +636,13 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         // Get the current copy of the trashed post from the PostStore
         PostModel trashedPost = mPostStore.getPostByRemotePostId(uploadedPost.getRemotePostId(), sSite);
-
         assertNotNull(trashedPost);
         assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
 
         // restore post
         restorePost(trashedPost);
 
-        // restore post
+        // retrieve restored post from PostStore and make sure it's not TRASHED anymore
         PostModel restoredPost = mPostStore.getPostByRemotePostId(uploadedPost.getRemotePostId(), sSite);
         assertNotNull(restoredPost);
         assertNotEquals(PostStatus.fromPost(restoredPost), PostStatus.TRASHED);
