@@ -160,13 +160,15 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     class OnOrderChanged(
         var rowsAffected: Int,
         var statusFilter: String? = null,
-        var searchQuery: String? = null,
-        var searchResults: List<WCOrderModel> = emptyList(),
         var canLoadMore: Boolean = false
-    )
-        : OnChanged<OrderError>() {
+    ): OnChanged<OrderError>() {
         var causeOfChange: WCOrderAction? = null
     }
+
+    class OnOrdersSearched(
+        var searchQuery: String = "",
+        var searchResults: List<WCOrderModel> = emptyList()
+    ): OnChanged<OrderError>()
 
     override fun onRegister() = AppLog.d(T.API, "WCOrderStore onRegister")
 
@@ -282,18 +284,12 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun handleSearchOrdersCompleted(payload: SearchOrdersResponsePayload) {
-        val onOrderChanged = if (payload.isError) {
-            OnOrderChanged(0).also { it.error = payload.error }
+        val onOrdersSearched = if (payload.isError) {
+            OnOrdersSearched("", emptyList()).also { it.error = payload.error }
         } else {
-            OnOrderChanged(
-                    payload.orders.size,
-                    searchQuery = payload.searchQuery,
-                    searchResults = payload.orders
-            )
+            OnOrdersSearched(payload.searchQuery, payload.orders)
         }
-
-        onOrderChanged.causeOfChange = WCOrderAction.SEARCH_ORDERS
-        emitChange(onOrderChanged)
+        emitChange(onOrdersSearched)
     }
 
     /**

@@ -17,7 +17,6 @@ import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_SINGLE_ORDER
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
-import org.wordpress.android.fluxc.action.WCOrderAction.SEARCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.action.WCStatsAction
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
@@ -36,6 +35,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
@@ -332,9 +332,6 @@ class WooCommerceFragment : Fragment() {
                             orders.take(5).forEach { prependToLog("- remoteOrderId [${it.remoteOrderId}]") }
                         }
                     }
-                    SEARCH_ORDERS -> {
-                        prependToLog("Found ${event.rowsAffected} orders matching ${event.searchQuery}")
-                    }
                     FETCH_ORDERS_COUNT -> {
                         val append = if (event.canLoadMore) "+" else ""
                         event.statusFilter?.let {
@@ -375,6 +372,16 @@ class WooCommerceFragment : Fragment() {
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
                 }
             }
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onOrdersSearched(event: OnOrdersSearched) {
+        if (event.isError) {
+            prependToLog("Error searching orders - error: " + event.error.type)
+        } else {
+            prependToLog("Found ${event.searchResults.size} orders matching ${event.searchQuery}")
         }
     }
 
