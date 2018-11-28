@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.Companion.DEFAULT_ORDER_STATUS
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
@@ -26,6 +27,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import javax.inject.Singleton
 
 @Singleton
@@ -85,6 +87,32 @@ class OrderRestClient(
                         val payload = FetchOrdersResponsePayload(orderError, site)
                         mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                     }
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    fun searchOrders(site: SiteModel, searchQuery: String) {
+        val url = WOOCOMMERCE.orders.pathV3
+        val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
+        val params = mapOf(
+                "per_page" to WCOrderStore.NUM_ORDERS_PER_SEARCH.toString(),
+                "status" to DEFAULT_ORDER_STATUS,
+                "searcg" to searchQuery)
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<OrderApiResponse>? ->
+                    val orderModels = response?.map {
+                        orderResponseToOrderModel(it).apply { localSiteId = site.id }
+                    }.orEmpty()
+
+                    val payload = SearchOrdersResponsePayload(
+                            site, orderModels, searchQuery)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
+                    val payload = SearchOrdersResponsePayload(orderError, site)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)

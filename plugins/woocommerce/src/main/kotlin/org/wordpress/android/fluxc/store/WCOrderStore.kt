@@ -5,9 +5,9 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
@@ -16,8 +16,8 @@ import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.model.order.toIdSet
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
 import org.wordpress.android.util.AppLog
@@ -31,6 +31,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     : Store(dispatcher) {
     companion object {
         const val NUM_ORDERS_PER_FETCH = 25
+        const val NUM_ORDERS_PER_SEARCH = 100
+        const val DEFAULT_ORDER_STATUS = "any"
     }
 
     class FetchOrdersPayload(
@@ -47,6 +49,19 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var canLoadMore: Boolean = false
     ) : Payload<OrderError>() {
         constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
+    }
+
+    class SearchOrdersPayload(
+        var site: SiteModel,
+        var searchQuery: String
+    ) : Payload<BaseNetworkError>()
+
+    class SearchOrdersResponsePayload(
+        var site: SiteModel,
+        var searchQuery: String,
+        var orders: List<WCOrderModel> = emptyList()
+    ) : Payload<OrderError>() {
+        constructor(error: OrderError, site: SiteModel) : this(site, "") { this.error = error }
     }
 
     class FetchOrdersCountPayload(
