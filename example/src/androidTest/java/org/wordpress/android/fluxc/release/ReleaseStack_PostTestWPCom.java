@@ -649,7 +649,11 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         restorePost(uploadedPost);
 
-        assertEquals(uploadedPost, mPostStore.getPostByLocalPostId(uploadedPost.getId()));
+        PostModel restoredPost = mPostStore.getPostByRemotePostId(uploadedPost.getRemotePostId(), sSite);
+        assertNotNull(restoredPost);
+        assertNotEquals(PostStatus.TRASHED, PostStatus.fromPost(restoredPost));
+
+        // make sure we have only one post
         assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(sSite));
     }

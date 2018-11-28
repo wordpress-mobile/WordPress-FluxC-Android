@@ -631,9 +631,24 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(0, WellSqlUtils.getTotalPostsCount());
         assertEquals(0, mPostStore.getPostsCountForSite(sSite));
 
-        restorePost(uploadedPost);
+        // fetch trashed post from server
+        fetchPost(uploadedPost);
 
-        assertEquals(uploadedPost, mPostStore.getPostByLocalPostId(uploadedPost.getId()));
+        // Get the current copy of the trashed post from the PostStore
+        PostModel trashedPost = mPostStore.getPostByRemotePostId(uploadedPost.getRemotePostId(), sSite);
+
+        assertNotNull(trashedPost);
+        assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
+
+        // restore post
+        restorePost(trashedPost);
+
+        // restore post
+        PostModel restoredPost = mPostStore.getPostByRemotePostId(uploadedPost.getRemotePostId(), sSite);
+        assertNotNull(restoredPost);
+        assertNotEquals(PostStatus.fromPost(restoredPost), PostStatus.TRASHED);
+
+        // make sure we have only one post
         assertEquals(1, WellSqlUtils.getTotalPostsCount());
         assertEquals(1, mPostStore.getPostsCountForSite(sSite));
     }
@@ -721,7 +736,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     @Test
     public void testRestoreInvalidRemotePost() throws InterruptedException {
-       PostModel invalidPost = new PostModel();
+        PostModel invalidPost = new PostModel();
         invalidPost.setRemotePostId(6420328);
 
         mNextEvent = TestEvents.ERROR_GENERIC;
