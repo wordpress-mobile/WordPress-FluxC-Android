@@ -157,7 +157,12 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     // OnChanged events
-    class OnOrderChanged(var rowsAffected: Int, var statusFilter: String? = null, var canLoadMore: Boolean = false)
+    class OnOrderChanged(
+        var rowsAffected: Int,
+        var statusFilter: String? = null,
+        var searchQuery: String? = null,
+        var canLoadMore: Boolean = false
+    )
         : OnChanged<OrderError>() {
         var causeOfChange: WCOrderAction? = null
     }
@@ -197,6 +202,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             WCOrderAction.FETCH_ORDER_NOTES -> fetchOrderNotes(action.payload as FetchOrderNotesPayload)
             WCOrderAction.POST_ORDER_NOTE -> postOrderNote(action.payload as PostOrderNotePayload)
             WCOrderAction.FETCH_HAS_ORDERS -> fetchHasOrders(action.payload as FetchHasOrdersPayload)
+            WCOrderAction.SEARCH_ORDERS -> searchOrders(action.payload as SearchOrdersPayload)
 
             // remote responses
             WCOrderAction.FETCHED_ORDERS -> handleFetchOrdersCompleted(action.payload as FetchOrdersResponsePayload)
@@ -209,6 +215,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             WCOrderAction.POSTED_ORDER_NOTE -> handlePostOrderNoteCompleted(action.payload as RemoteOrderNotePayload)
             WCOrderAction.FETCHED_HAS_ORDERS -> handleFetchHasOrdersCompleted(
                     action.payload as FetchHasOrdersResponsePayload)
+            WCOrderAction.SEARCHED_ORDERS -> handleSearchOrdersCompleted(action.payload as SearchOrdersResponsePayload)
         }
     }
 
@@ -219,6 +226,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             0
         }
         wcOrderRestClient.fetchOrders(payload.site, offset, payload.statusFilter)
+    }
+
+    private fun searchOrders(payload: SearchOrdersPayload) {
+        wcOrderRestClient.searchOrders(payload.site, payload.searchQuery)
     }
 
     private fun fetchOrdersCount(payload: FetchOrdersCountPayload) {
@@ -261,10 +272,25 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
             val rowsAffected = payload.orders.sumBy { OrderSqlUtils.insertOrUpdateOrder(it) }
 
-            onOrderChanged = OnOrderChanged(rowsAffected, payload.statusFilter, payload.canLoadMore)
+            onOrderChanged = OnOrderChanged(rowsAffected, payload.statusFilter, canLoadMore = payload.canLoadMore)
         }
 
         onOrderChanged.causeOfChange = WCOrderAction.FETCH_ORDERS
+
+        emitChange(onOrderChanged)
+    }
+
+    private fun handleSearchOrdersCompleted(payload: SearchOrdersResponsePayload) {
+        val onOrderChanged: OnOrderChanged
+
+        if (payload.isError) {
+            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
+        } else {
+            val rowsAffected = payload.orders.sumBy { OrderSqlUtils.insertOrUpdateOrder(it) }
+            onOrderChanged = OnOrderChanged(rowsAffected, searchQuery = payload.searchQuery)
+        }
+
+        onOrderChanged.causeOfChange = WCOrderAction.SEARCH_ORDERS
 
         emitChange(onOrderChanged)
     }
@@ -277,7 +303,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         val onOrderChanged = if (payload.isError) {
             OnOrderChanged(0).also { it.error = payload.error }
         } else {
-            with(payload) { OnOrderChanged(count, statusFilter, canLoadMore) }
+            with(payload) { OnOrderChanged(count, statusFilter, canLoadMore = canLoadMore) }
         }.also { it.causeOfChange = FETCH_ORDERS_COUNT }
         emitChange(onOrderChanged)
     }

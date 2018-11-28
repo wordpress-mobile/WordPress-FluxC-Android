@@ -98,15 +98,14 @@ class OrderRestClient(
         val params = mapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_SEARCH.toString(),
                 "status" to DEFAULT_ORDER_STATUS,
-                "searcg" to searchQuery)
+                "search" to searchQuery)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
                     val orderModels = response?.map {
                         orderResponseToOrderModel(it).apply { localSiteId = site.id }
                     }.orEmpty()
 
-                    val payload = SearchOrdersResponsePayload(
-                            site, orderModels, searchQuery)
+                    val payload = SearchOrdersResponsePayload(site, searchQuery, orderModels)
                     mDispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
                 },
                 WPComErrorListener { networkError ->
