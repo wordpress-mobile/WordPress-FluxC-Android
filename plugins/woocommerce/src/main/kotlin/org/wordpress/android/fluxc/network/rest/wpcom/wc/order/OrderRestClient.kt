@@ -18,7 +18,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.store.WCOrderStore
-import org.wordpress.android.fluxc.store.WCOrderStore.Companion.DEFAULT_ORDER_STATUS
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
@@ -52,7 +51,11 @@ class OrderRestClient(
      */
     fun fetchOrders(site: SiteModel, offset: Int, filterByStatus: String? = null, countOnly: Boolean = false) {
         // If null, set the filter to the api default value of "any", which will not apply any order status filters.
-        val statusFilter = if (filterByStatus.isNullOrBlank()) { "any" } else { filterByStatus!! }
+        val statusFilter = if (filterByStatus.isNullOrBlank()) {
+            WCOrderStore.DEFAULT_ORDER_STATUS
+        } else {
+            filterByStatus!!
+        }
 
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
@@ -107,7 +110,7 @@ class OrderRestClient(
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
         val params = mapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_SEARCH.toString(),
-                "status" to DEFAULT_ORDER_STATUS,
+                "status" to WCOrderStore.DEFAULT_ORDER_STATUS,
                 "search" to searchQuery)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
