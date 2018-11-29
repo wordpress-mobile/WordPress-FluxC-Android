@@ -14,28 +14,32 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.store.AccountStore
+import org.wordpress.android.fluxc.network.utils.StatsGranularity.DAYS
+import org.wordpress.android.fluxc.network.utils.StatsGranularity.MONTHS
+import org.wordpress.android.fluxc.network.utils.StatsGranularity.WEEKS
+import org.wordpress.android.fluxc.network.utils.StatsGranularity.YEARS
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
-import org.wordpress.android.fluxc.store.InsightsStore
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
+import org.wordpress.android.fluxc.store.stats.time.PostAndPageViewsStore
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
+private const val PAGE_SIZE = 8
+
 /**
  * Tests with real credentials on real servers using the full release stack (no mock)
  */
-class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
+class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
     private val incomingActions: MutableList<Action<*>> = mutableListOf()
-    @Inject lateinit var insightsStore: InsightsStore
+    @Inject lateinit var postAndPageViewsStore: PostAndPageViewsStore
     @Inject internal lateinit var siteStore: SiteStore
-    @Inject internal lateinit var accountStore: AccountStore
 
     private var nextEvent: TestEvents? = null
 
@@ -58,132 +62,57 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     }
 
     @Test
-    fun testFetchAllTimeInsights() {
+    fun testFetchPostAndPageDayViews() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { insightsStore.fetchAllTimeInsights(site) }
+        val fetchedInsights = runBlocking { postAndPageViewsStore.fetchPostAndPageViews(site, PAGE_SIZE, DAYS, true) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getAllTimeInsights(site)
+        val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(site, DAYS, PAGE_SIZE)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
 
     @Test
-    fun testFetchLatestPostInsights() {
+    fun testFetchPostAndPageWeekViews() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { insightsStore.fetchLatestPostInsights(site) }
+        val fetchedInsights = runBlocking { postAndPageViewsStore.fetchPostAndPageViews(site, PAGE_SIZE, WEEKS, true) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getLatestPostInsights(site)
+        val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(site, WEEKS, PAGE_SIZE)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
 
     @Test
-    fun testFetchMostPopularInsights() {
+    fun testFetchPostAndPageMonthViews() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { insightsStore.fetchMostPopularInsights(site) }
+        val fetchedInsights = runBlocking { postAndPageViewsStore.fetchPostAndPageViews(site, PAGE_SIZE, MONTHS, true) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getMostPopularInsights(site)
+        val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(site, MONTHS, PAGE_SIZE)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
 
     @Test
-    fun testTodayInsights() {
+    fun testFetchPostAndPageYearViews() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { insightsStore.fetchTodayInsights(site) }
+        val fetchedInsights = runBlocking { postAndPageViewsStore.fetchPostAndPageViews(site, PAGE_SIZE, YEARS, true) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getTodayInsights(site)
-
-        assertEquals(fetchedInsights.model, insightsFromDb)
-    }
-
-    @Test
-    fun testWpComFollowersInsights() {
-        val site = authenticate()
-
-        val pageSize = 5
-        val fetchedInsights = runBlocking { insightsStore.fetchWpComFollowers(site, pageSize) }
-
-        assertNotNull(fetchedInsights)
-        assertNotNull(fetchedInsights.model)
-
-        val insightsFromDb = insightsStore.getWpComFollowers(site, pageSize)
-
-        assertEquals(fetchedInsights.model, insightsFromDb)
-    }
-
-    @Test
-    fun testEmailFollowersInsights() {
-        val site = authenticate()
-
-        val pageSize = 5
-        val fetchedInsights = runBlocking { insightsStore.fetchEmailFollowers(site, pageSize) }
-
-        assertNotNull(fetchedInsights)
-        assertNotNull(fetchedInsights.model)
-
-        val insightsFromDb = insightsStore.getEmailFollowers(site, pageSize)
-
-        assertEquals(fetchedInsights.model, insightsFromDb)
-    }
-
-    @Test
-    fun testTopComments() {
-        val site = authenticate()
-
-        val pageSize = 5
-        val fetchedInsights = runBlocking { insightsStore.fetchComments(site, pageSize) }
-
-        assertNotNull(fetchedInsights)
-        assertNotNull(fetchedInsights.model)
-
-        val insightsFromDb = insightsStore.getComments(site, pageSize)
-
-        assertEquals(fetchedInsights.model, insightsFromDb)
-    }
-
-    @Test
-    fun testTagsAndCategoriesInsights() {
-        val site = authenticate()
-
-        val pageSize = 5
-        val fetchedInsights = runBlocking { insightsStore.fetchTags(site, pageSize) }
-
-        assertNotNull(fetchedInsights)
-        assertNotNull(fetchedInsights.model)
-
-        val insightsFromDb = insightsStore.getTags(site, pageSize)
-
-        assertEquals(fetchedInsights.model, insightsFromDb)
-    }
-
-    @Test
-    fun testPublicizeModel() {
-        val site = authenticate()
-
-        val pageSize = 5
-        val fetchedInsights = runBlocking { insightsStore.fetchPublicizeData(site, pageSize) }
-
-        assertNotNull(fetchedInsights)
-        assertNotNull(fetchedInsights.model)
-
-        val insightsFromDb = insightsStore.getPublicizeData(site, pageSize)
+        val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(site, YEARS, PAGE_SIZE)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
