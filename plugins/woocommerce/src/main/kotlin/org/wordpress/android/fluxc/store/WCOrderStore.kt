@@ -285,7 +285,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     private fun handleSearchOrdersCompleted(payload: SearchOrdersResponsePayload) {
         val onOrdersSearched = if (payload.isError) {
-            OnOrdersSearched("", emptyList()).also { it.error = payload.error }
+            OnOrdersSearched(payload.searchQuery, emptyList()).also { it.error = payload.error }
         } else {
             OnOrdersSearched(payload.searchQuery, payload.orders)
         }
