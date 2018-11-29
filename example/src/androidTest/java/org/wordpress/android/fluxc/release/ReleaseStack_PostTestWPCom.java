@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.persistence.PostSqlUtils;
+import org.wordpress.android.fluxc.release.ReleaseStack_WCBaseStoreTest.TestEvent;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
@@ -34,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -627,7 +629,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         deletePost(uploadedPost);
 
         // The post should be removed from the db (regardless of whether it was deleted or just trashed on the server)
-        assertEquals(null, mPostStore.getPostByLocalPostId(uploadedPost.getId()));
+        assertNull(mPostStore.getPostByLocalPostId(uploadedPost.getId()));
         assertEquals(0, WellSqlUtils.getTotalPostsCount());
         assertEquals(0, mPostStore.getPostsCountForSite(sSite));
     }
@@ -640,15 +642,18 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         uploadPost(mPost);
 
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+        assertNotNull(uploadedPost);
+
         deletePost(uploadedPost);
 
         // Make sure the post is actually removed
-        assertEquals(null, mPostStore.getPostByLocalPostId(uploadedPost.getId()));
+        assertNull(mPostStore.getPostByLocalPostId(uploadedPost.getId()));
         assertEquals(0, WellSqlUtils.getTotalPostsCount());
         assertEquals(0, mPostStore.getPostsCountForSite(sSite));
 
         // fetch trashed post from server
         fetchPost(uploadedPost);
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
 
         // Get the current copy of the trashed post from the PostStore
         PostModel trashedPost = mPostStore.getPostByRemotePostId(uploadedPost.getRemotePostId(), sSite);
@@ -656,16 +661,13 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
 
         // restore post
-        restorePost(uploadedPost);
+        restorePost(uploadedPost, TestEvents.POST_RESTORED);
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
 
         // retrieve restored post from PostStore and make sure it's not TRASHED anymore
         PostModel restoredPost = mPostStore.getPostByRemotePostId(uploadedPost.getRemotePostId(), sSite);
         assertNotNull(restoredPost);
         assertNotEquals(PostStatus.TRASHED, PostStatus.fromPost(restoredPost));
-
-        // make sure we have only one post
-        assertEquals(1, WellSqlUtils.getTotalPostsCount());
-        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
     }
 
     // Error handling tests
@@ -745,12 +747,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         invalidPost.setRemotePostId(6420328);
         invalidPost.setRemoteSiteId(sSite.getSiteId());
 
-        mNextEvent = TestEvents.ERROR_UNKNOWN_POST;
-        mCountDownLatch = new CountDownLatch(1);
-
-        mDispatcher.dispatch(PostActionBuilder.newRestorePostAction(new RemotePostPayload(invalidPost, sSite)));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        restorePost(invalidPost, TestEvents.ERROR_UNKNOWN_POST);
     }
 
     @Test
@@ -925,8 +922,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void restorePost(PostModel post) throws InterruptedException {
-        mNextEvent = TestEvents.POST_RESTORED;
+    private void restorePost(PostModel post, TestEvents nextEvent) throws InterruptedException {
+        mNextEvent = nextEvent;
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newRestorePostAction(new RemotePostPayload(post, sSite)));
