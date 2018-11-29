@@ -625,6 +625,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         uploadPost(mPost);
 
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+        assertNotNull(uploadedPost);
 
         deletePost(uploadedPost);
 

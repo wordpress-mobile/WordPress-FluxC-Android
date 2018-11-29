@@ -608,6 +608,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         uploadPost(mPost);
 
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+        assertNotNull(uploadedPost);
 
         deletePost(uploadedPost);
 
