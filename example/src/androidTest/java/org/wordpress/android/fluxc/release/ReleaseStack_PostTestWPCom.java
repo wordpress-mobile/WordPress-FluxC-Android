@@ -14,7 +14,6 @@ import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
 import org.wordpress.android.fluxc.persistence.PostSqlUtils;
-import org.wordpress.android.fluxc.release.ReleaseStack_WCBaseStoreTest.TestEvent;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
