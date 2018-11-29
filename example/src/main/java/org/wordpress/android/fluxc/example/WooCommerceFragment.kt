@@ -35,7 +35,9 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
@@ -110,6 +112,23 @@ class WooCommerceFragment : Fragment() {
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersCountAction(payload))
                 }
             }
+        }
+
+        search_orders.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter a search query:"
+                ) { editText ->
+
+                    val searchQuery = editText.text.toString().trim().takeIf { it.isNotEmpty() }
+                    searchQuery?.let {
+                        prependToLog("Submitting request to search orders matching $it")
+                        val payload = SearchOrdersPayload(site, searchQuery)
+                        dispatcher.dispatch(WCOrderActionBuilder.newSearchOrdersAction(payload))
+                    } ?: prependToLog("No search query entered")
+                }
+            } ?: showNoWCSitesToast()
         }
 
         fetch_single_order.setOnClickListener {
@@ -353,6 +372,16 @@ class WooCommerceFragment : Fragment() {
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
                 }
             }
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onOrdersSearched(event: OnOrdersSearched) {
+        if (event.isError) {
+            prependToLog("Error searching orders - error: " + event.error.type)
+        } else {
+            prependToLog("Found ${event.searchResults.size} orders matching ${event.searchQuery}")
         }
     }
 

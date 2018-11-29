@@ -26,6 +26,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import javax.inject.Singleton
 
 @Singleton
@@ -50,7 +51,11 @@ class OrderRestClient(
      */
     fun fetchOrders(site: SiteModel, offset: Int, filterByStatus: String? = null, countOnly: Boolean = false) {
         // If null, set the filter to the api default value of "any", which will not apply any order status filters.
-        val statusFilter = if (filterByStatus.isNullOrBlank()) { "any" } else { filterByStatus!! }
+        val statusFilter = if (filterByStatus.isNullOrBlank()) {
+            WCOrderStore.DEFAULT_ORDER_STATUS
+        } else {
+            filterByStatus!!
+        }
 
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
@@ -85,6 +90,41 @@ class OrderRestClient(
                         val payload = FetchOrdersResponsePayload(orderError, site)
                         mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                     }
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a list of orders for the given WooCommerce [SiteModel] matching [searchQuery]
+     *
+     * The number of orders fetched is defined in [WCOrderStore.NUM_ORDERS_PER_SEARCH]
+     *
+     * Dispatches a [WCOrderAction.SEARCHED_ORDERS] action with the resulting list of orders.
+     *
+     * @param [searchQuery] the keyword or phrase to match orders with
+     */
+    fun searchOrders(site: SiteModel, searchQuery: String) {
+        val url = WOOCOMMERCE.orders.pathV3
+        val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
+        val params = mapOf(
+                "per_page" to WCOrderStore.NUM_ORDERS_PER_SEARCH.toString(),
+                "status" to WCOrderStore.DEFAULT_ORDER_STATUS,
+                "search" to searchQuery)
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<OrderApiResponse>? ->
+                    val orderModels = response?.map {
+                        orderResponseToOrderModel(it).apply { localSiteId = site.id }
+                    }.orEmpty()
+
+                    val payload = SearchOrdersResponsePayload(site, searchQuery, orderModels)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
+                    val payload = SearchOrdersResponsePayload(orderError, site, searchQuery)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)

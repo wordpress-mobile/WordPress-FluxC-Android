@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -108,6 +109,33 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals("60.00", discountTotal)
             assertEquals("20\$off, 40\$off", discountCodes)
         }
+    }
+
+    @Test
+    fun testSearchOrdersSuccess() {
+        interceptor.respondWith("wc-orders-response-success.json")
+        orderRestClient.searchOrders(siteModel, "")
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCOrderAction.SEARCHED_ORDERS, lastAction!!.type)
+        val payload = lastAction!!.payload as SearchOrdersResponsePayload
+        assertNull(payload.error)
+        assertEquals(4, payload.orders.size)
+    }
+
+    @Test
+    fun testSearchOrdersError() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        orderRestClient.searchOrders(SiteModel(), "")
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCOrderAction.SEARCHED_ORDERS, lastAction!!.type)
+        val payload = lastAction!!.payload as SearchOrdersResponsePayload
+        assertNotNull(payload.error)
     }
 
     @Test
