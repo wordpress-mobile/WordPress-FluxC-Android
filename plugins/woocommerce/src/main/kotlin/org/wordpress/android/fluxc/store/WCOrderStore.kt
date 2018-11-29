@@ -161,14 +161,14 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var rowsAffected: Int,
         var statusFilter: String? = null,
         var canLoadMore: Boolean = false
-    ): OnChanged<OrderError>() {
+    ) : OnChanged<OrderError>() {
         var causeOfChange: WCOrderAction? = null
     }
 
     class OnOrdersSearched(
         var searchQuery: String = "",
         var searchResults: List<WCOrderModel> = emptyList()
-    ): OnChanged<OrderError>()
+    ) : OnChanged<OrderError>()
 
     override fun onRegister() = AppLog.d(T.API, "WCOrderStore onRegister")
 
