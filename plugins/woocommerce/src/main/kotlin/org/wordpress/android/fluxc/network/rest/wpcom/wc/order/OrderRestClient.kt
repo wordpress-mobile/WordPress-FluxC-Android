@@ -123,7 +123,7 @@ class OrderRestClient(
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
-                    val payload = SearchOrdersResponsePayload(orderError, site)
+                    val payload = SearchOrdersResponsePayload(orderError, site, searchQuery)
                     mDispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })

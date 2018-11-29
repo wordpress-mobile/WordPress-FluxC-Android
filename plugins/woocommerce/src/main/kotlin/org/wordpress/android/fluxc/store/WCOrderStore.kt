@@ -61,7 +61,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var searchQuery: String,
         var orders: List<WCOrderModel> = emptyList()
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel) : this(site, "") { this.error = error }
+        constructor(error: OrderError, site: SiteModel, query: String) : this(site, query) { this.error = error }
     }
 
     class FetchOrdersCountPayload(
