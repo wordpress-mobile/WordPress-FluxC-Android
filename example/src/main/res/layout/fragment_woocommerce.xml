@@ -17,6 +17,12 @@
             android:text="Log Sites"/>
 
         <Button
+            android:id="@+id/log_woo_api_versions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Log Woo API versions"/>
+
+        <Button
             android:id="@+id/fetch_orders"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

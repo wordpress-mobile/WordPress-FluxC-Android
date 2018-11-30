@@ -27,6 +27,7 @@ public interface MockedNetworkAppComponent {
     void inject(MockedStack_SiteTest object);
     void inject(MockedStack_UploadStoreTest object);
     void inject(MockedStack_UploadTest object);
+    void inject(MockedStack_WCBaseStoreTest object);
     void inject(MockedStack_WCOrdersTest object);
     void inject(MockedStack_WCStatsTest object);
 }

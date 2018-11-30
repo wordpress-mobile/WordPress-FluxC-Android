@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.wc
 
+import com.nhaarman.mockito_kotlin.mock
 import com.yarolegovich.wellsql.WellSql
 import org.junit.Before
 import org.junit.Test
@@ -17,7 +18,7 @@ import kotlin.test.assertEquals
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class WooCommerceStoreTest {
-    private val wooCommerceStore = WooCommerceStore(Dispatcher())
+    private val wooCommerceStore = WooCommerceStore(Dispatcher(), mock())
 
     @Before
     fun setUp() {

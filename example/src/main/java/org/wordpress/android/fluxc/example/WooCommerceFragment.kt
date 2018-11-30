@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.action.WCStatsAction
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
+import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
@@ -44,6 +45,7 @@ import org.wordpress.android.fluxc.store.WCStatsStore.OnWCStatsChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.OnWCTopEarnersChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
+import org.wordpress.android.fluxc.store.WooCommerceStore.OnApiVersionFetched
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.ToastUtils
@@ -75,6 +77,12 @@ class WooCommerceFragment : Fragment() {
             for (site in wooCommerceStore.getWooCommerceSites()) {
                 prependToLog(site.name + ": " + if (site.isWpComStore) "WP.com store" else "Self-hosted store")
                 AppLog.i(T.API, LogUtils.toString(site))
+            }
+        }
+
+        log_woo_api_versions.setOnClickListener {
+            for (site in wooCommerceStore.getWooCommerceSites()) {
+                dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteApiVersionAction(site))
             }
         }
 
@@ -247,6 +255,20 @@ class WooCommerceFragment : Fragment() {
     override fun onStop() {
         super.onStop()
         dispatcher.unregister(this)
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onApiVersionFetched(event: OnApiVersionFetched) {
+        if (event.isError) {
+            prependToLog("Error in onApiVersionFetched: ${event.error.type} - ${event.error.message}")
+            return
+        }
+
+        with(event) {
+            val formattedVersion = apiVersion.substringAfterLast("/")
+            prependToLog("Max Woo version for ${site.name}: $formattedVersion")
+        }
     }
 
     @Suppress("unused")
