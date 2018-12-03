@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.network.utils.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.network.utils.StatsGranularity.MONTHS
 import org.wordpress.android.fluxc.network.utils.StatsGranularity.WEEKS
 import org.wordpress.android.fluxc.network.utils.StatsGranularity.YEARS
+import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
@@ -40,6 +41,7 @@ class ReleaseStack_StatsReferrersTestJetpack : ReleaseStack_Base() {
     private val incomingActions: MutableList<Action<*>> = mutableListOf()
     @Inject lateinit var referrersStore: ReferrersStore
     @Inject internal lateinit var siteStore: SiteStore
+    @Inject internal lateinit var accountStore: AccountStore
 
     private var nextEvent: TestEvents? = null
 
