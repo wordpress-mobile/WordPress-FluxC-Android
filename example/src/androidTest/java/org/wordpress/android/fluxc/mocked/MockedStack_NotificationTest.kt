@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationsRes
 import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationSeenResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.NotificationAppKey
 import org.wordpress.android.fluxc.store.NotificationStore.RegisterDeviceResponsePayload
+import org.wordpress.android.fluxc.store.SiteStore
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -30,6 +31,7 @@ import kotlin.properties.Delegates
 class MockedStack_NotificationTest : MockedStack_Base() {
     @Inject internal lateinit var notificationRestClient: NotificationRestClient
     @Inject internal lateinit var dispatcher: Dispatcher
+    @Inject internal lateinit var siteStore: SiteStore
 
     @Inject internal lateinit var interceptor: ResponseMockingInterceptor
 
@@ -119,7 +121,7 @@ class MockedStack_NotificationTest : MockedStack_Base() {
     @Test
     fun testFetchNotificationsSuccess() {
         interceptor.respondWith("fetch-notifications-response-success.json")
-        notificationRestClient.fetchNotifications()
+        notificationRestClient.fetchNotifications(siteStore)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
