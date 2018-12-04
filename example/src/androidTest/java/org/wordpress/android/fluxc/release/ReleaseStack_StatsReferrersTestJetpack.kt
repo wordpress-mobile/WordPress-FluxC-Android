@@ -15,9 +15,6 @@ import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.utils.StatsGranularity.DAYS
-import org.wordpress.android.fluxc.network.utils.StatsGranularity.MONTHS
-import org.wordpress.android.fluxc.network.utils.StatsGranularity.WEEKS
-import org.wordpress.android.fluxc.network.utils.StatsGranularity.YEARS
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
@@ -64,7 +61,7 @@ class ReleaseStack_StatsReferrersTestJetpack : ReleaseStack_Base() {
     }
 
     @Test
-    fun testFetchPostAndPageDayViews() {
+    fun testFetchPostAndPageViews() {
         val site = authenticate()
 
         val fetchedInsights = runBlocking { referrersStore.fetchReferrers(site, PAGE_SIZE, DAYS, true) }
@@ -73,48 +70,6 @@ class ReleaseStack_StatsReferrersTestJetpack : ReleaseStack_Base() {
         assertNotNull(fetchedInsights.model)
 
         val insightsFromDb = referrersStore.getReferrers(site, DAYS, PAGE_SIZE)
-
-        assertEquals(fetchedInsights.model, insightsFromDb)
-    }
-
-    @Test
-    fun testFetchPostAndPageWeekViews() {
-        val site = authenticate()
-
-        val fetchedInsights = runBlocking { referrersStore.fetchReferrers(site, PAGE_SIZE, WEEKS, true) }
-
-        assertNotNull(fetchedInsights)
-        assertNotNull(fetchedInsights.model)
-
-        val insightsFromDb = referrersStore.getReferrers(site, WEEKS, PAGE_SIZE)
-
-        assertEquals(fetchedInsights.model, insightsFromDb)
-    }
-
-    @Test
-    fun testFetchPostAndPageMonthViews() {
-        val site = authenticate()
-
-        val fetchedInsights = runBlocking { referrersStore.fetchReferrers(site, PAGE_SIZE, MONTHS, true) }
-
-        assertNotNull(fetchedInsights)
-        assertNotNull(fetchedInsights.model)
-
-        val insightsFromDb = referrersStore.getReferrers(site, MONTHS, PAGE_SIZE)
-
-        assertEquals(fetchedInsights.model, insightsFromDb)
-    }
-
-    @Test
-    fun testFetchPostAndPageYearViews() {
-        val site = authenticate()
-
-        val fetchedInsights = runBlocking { referrersStore.fetchReferrers(site, PAGE_SIZE, YEARS, true) }
-
-        assertNotNull(fetchedInsights)
-        assertNotNull(fetchedInsights.model)
-
-        val insightsFromDb = referrersStore.getReferrers(site, YEARS, PAGE_SIZE)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
