@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.network.utils.StatsGranularity
 import org.wordpress.android.fluxc.network.utils.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
@@ -64,19 +65,23 @@ class ReleaseStack_StatsReferrersTestJetpack : ReleaseStack_Base() {
     fun testFetchPostAndPageViews() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { referrersStore.fetchReferrers(site, PAGE_SIZE, DAYS, true) }
+        for (period in StatsGranularity.values()) {
+            val fetchedInsights = runBlocking { referrersStore.fetchReferrers(site, PAGE_SIZE, period, true) }
 
-        assertNotNull(fetchedInsights)
-        assertNotNull(fetchedInsights.model)
+            assertNotNull(fetchedInsights)
+            assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = referrersStore.getReferrers(site, DAYS, PAGE_SIZE)
+            val insightsFromDb = referrersStore.getReferrers(site, period, PAGE_SIZE)
 
-        assertEquals(fetchedInsights.model, insightsFromDb)
+            assertEquals(fetchedInsights.model, insightsFromDb)
+        }
     }
 
     private fun authenticate(): SiteModel {
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY)
+        authenticateWPComAndFetchSites(
+                BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY
+        )
 
         return siteStore.sites[0]
     }
