@@ -4,6 +4,7 @@ import com.google.gson.JsonObject
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.Dispatcher
@@ -13,6 +14,8 @@ import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient
+import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationsResponsePayload
+import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationSeenResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.NotificationAppKey
 import org.wordpress.android.fluxc.store.NotificationStore.RegisterDeviceResponsePayload
 import java.util.concurrent.CountDownLatch
@@ -111,6 +114,38 @@ class MockedStack_NotificationTest : MockedStack_Base() {
         val requestBodyMap = interceptor.lastRequestBody
 
         assertTrue(requestBodyMap.isEmpty())
+    }
+
+    @Test
+    fun testFetchNotificationsSuccess() {
+        interceptor.respondWith("fetch-notifications-response-success.json")
+        notificationRestClient.fetchNotifications()
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(NotificationAction.FETCHED_NOTIFICATIONS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchNotificationsResponsePayload
+
+        assertNotNull(payload)
+        with(payload.notifs) {
+            assertEquals(5, size)
+        }
+    }
+
+    @Test
+    fun testMarkNotificationSeenSuccess() {
+        interceptor.respondWith("mark-notification-seen-response-success.json")
+        notificationRestClient.markNotificationsSeen(1543265347)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(NotificationAction.MARKED_NOTIFICATIONS_SEEN, lastAction!!.type)
+        val payload = lastAction!!.payload as MarkNotificationSeenResponsePayload
+
+        assertNotNull(payload)
+        assertEquals(payload.lastSeenTime, 1543265347L)
     }
 
     @Suppress("unused")
