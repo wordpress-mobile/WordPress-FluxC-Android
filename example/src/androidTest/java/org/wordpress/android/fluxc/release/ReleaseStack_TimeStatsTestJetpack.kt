@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.network.utils.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.network.utils.StatsGranularity.MONTHS
 import org.wordpress.android.fluxc.network.utils.StatsGranularity.WEEKS
 import org.wordpress.android.fluxc.network.utils.StatsGranularity.YEARS
+import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
@@ -39,6 +40,7 @@ private const val PAGE_SIZE = 8
 class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
     private val incomingActions: MutableList<Action<*>> = mutableListOf()
     @Inject lateinit var postAndPageViewsStore: PostAndPageViewsStore
+    @Inject lateinit var accountStore: AccountStore
     @Inject internal lateinit var siteStore: SiteStore
 
     private var nextEvent: TestEvents? = null
