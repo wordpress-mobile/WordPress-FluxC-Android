@@ -120,12 +120,13 @@ class OrderRestClient(
                     }.orEmpty()
 
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
-                    val payload = SearchOrdersResponsePayload(site, searchQuery, offset, canLoadMore, orderModels)
+                    val nextOffset = offset + orderModels.size
+                    val payload = SearchOrdersResponsePayload(site, searchQuery, canLoadMore, nextOffset, orderModels)
                     mDispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
-                    val payload = SearchOrdersResponsePayload(orderError, site, searchQuery, offset)
+                    val payload = SearchOrdersResponsePayload(orderError, site, searchQuery)
                     mDispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })

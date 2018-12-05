@@ -59,11 +59,11 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     class SearchOrdersResponsePayload(
         var site: SiteModel,
         var searchQuery: String,
-        var offset: Int = 0,
         var canLoadMore: Boolean = false,
+        var offset: Int = 0,
         var orders: List<WCOrderModel> = emptyList()
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel, query: String, offset: Int) : this(site, query, offset) {
+        constructor(error: OrderError, site: SiteModel, query: String) : this(site, query) {
             this.error = error
         }
     }
@@ -172,7 +172,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     class OnOrdersSearched(
         var searchQuery: String = "",
         var canLoadMore: Boolean = false,
-        var offset: Int = 0,
+        var nextOffset: Int = 0,
         var searchResults: List<WCOrderModel> = emptyList()
     ) : OnChanged<OrderError>()
 
