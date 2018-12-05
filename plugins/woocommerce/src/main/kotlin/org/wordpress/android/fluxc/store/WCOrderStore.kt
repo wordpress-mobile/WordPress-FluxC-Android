@@ -171,6 +171,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     class OnOrdersSearched(
         var searchQuery: String = "",
+        var canLoadMore: Boolean = false,
+        var offset: Int = 0,
         var searchResults: List<WCOrderModel> = emptyList()
     ) : OnChanged<OrderError>()
 
@@ -289,9 +291,9 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     private fun handleSearchOrdersCompleted(payload: SearchOrdersResponsePayload) {
         val onOrdersSearched = if (payload.isError) {
-            OnOrdersSearched(payload.searchQuery, emptyList()).also { it.error = payload.error }
+            OnOrdersSearched(payload.searchQuery)
         } else {
-            OnOrdersSearched(payload.searchQuery, payload.orders)
+            OnOrdersSearched(payload.searchQuery, payload.canLoadMore, payload.offset, payload.orders)
         }
         emitChange(onOrdersSearched)
     }
