@@ -114,7 +114,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     @Test
     fun testSearchOrdersSuccess() {
         interceptor.respondWith("wc-orders-response-success.json")
-        orderRestClient.searchOrders(siteModel, "")
+        orderRestClient.searchOrders(siteModel, "", 0)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -128,7 +128,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     @Test
     fun testSearchOrdersError() {
         interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
-        orderRestClient.searchOrders(SiteModel(), "")
+        orderRestClient.searchOrders(SiteModel(), "", 0)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
