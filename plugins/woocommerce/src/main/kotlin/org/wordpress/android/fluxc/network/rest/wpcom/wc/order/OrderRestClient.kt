@@ -99,17 +99,18 @@ class OrderRestClient(
      * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of orders for the given WooCommerce [SiteModel] matching [searchQuery]
      *
-     * The number of orders fetched is defined in [WCOrderStore.NUM_ORDERS_PER_SEARCH]
+     * The number of orders fetched is defined in [WCOrderStore.NUM_ORDERS_PER_FETCH]
      *
      * Dispatches a [WCOrderAction.SEARCHED_ORDERS] action with the resulting list of orders.
      *
      * @param [searchQuery] the keyword or phrase to match orders with
      */
-    fun searchOrders(site: SiteModel, searchQuery: String) {
+    fun searchOrders(site: SiteModel, searchQuery: String, offset: Int) {
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
         val params = mapOf(
-                "per_page" to WCOrderStore.NUM_ORDERS_PER_SEARCH.toString(),
+                "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
+                "offset" to offset.toString(),
                 "status" to WCOrderStore.DEFAULT_ORDER_STATUS,
                 "search" to searchQuery)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
@@ -118,12 +119,13 @@ class OrderRestClient(
                         orderResponseToOrderModel(it).apply { localSiteId = site.id }
                     }.orEmpty()
 
-                    val payload = SearchOrdersResponsePayload(site, searchQuery, orderModels)
+                    val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
+                    val payload = SearchOrdersResponsePayload(site, searchQuery, offset, canLoadMore, orderModels)
                     mDispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
-                    val payload = SearchOrdersResponsePayload(orderError, site, searchQuery)
+                    val payload = SearchOrdersResponsePayload(orderError, site, searchQuery, offset)
                     mDispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
