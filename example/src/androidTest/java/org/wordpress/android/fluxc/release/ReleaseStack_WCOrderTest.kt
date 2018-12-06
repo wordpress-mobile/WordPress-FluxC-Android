@@ -101,7 +101,15 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.SEARCHED_ORDERS
         mCountDownLatch = CountDownLatch(1)
 
-        mDispatcher.dispatch(WCOrderActionBuilder.newSearchOrdersAction(SearchOrdersPayload(sSite, orderSearchQuery)))
+        mDispatcher.dispatch(
+                WCOrderActionBuilder.newSearchOrdersAction(
+                        SearchOrdersPayload(
+                                sSite,
+                                orderSearchQuery,
+                                0
+                        )
+                )
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
     }
 
