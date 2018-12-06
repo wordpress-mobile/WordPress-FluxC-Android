@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.action.WCStatsAction
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
+import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
@@ -34,7 +35,9 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
@@ -44,6 +47,7 @@ import org.wordpress.android.fluxc.store.WCStatsStore.OnWCStatsChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.OnWCTopEarnersChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
+import org.wordpress.android.fluxc.store.WooCommerceStore.OnApiVersionFetched
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.ToastUtils
@@ -78,6 +82,12 @@ class WooCommerceFragment : Fragment() {
             }
         }
 
+        log_woo_api_versions.setOnClickListener {
+            for (site in wooCommerceStore.getWooCommerceSites()) {
+                dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteApiVersionAction(site))
+            }
+        }
+
         fetch_orders.setOnClickListener {
             getFirstWCSite()?.let {
                 val payload = FetchOrdersPayload(it, loadMore = false)
@@ -102,6 +112,23 @@ class WooCommerceFragment : Fragment() {
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersCountAction(payload))
                 }
             }
+        }
+
+        search_orders.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter a search query:"
+                ) { editText ->
+
+                    val searchQuery = editText.text.toString().trim().takeIf { it.isNotEmpty() }
+                    searchQuery?.let {
+                        prependToLog("Submitting request to search orders matching $it")
+                        val payload = SearchOrdersPayload(site, searchQuery)
+                        dispatcher.dispatch(WCOrderActionBuilder.newSearchOrdersAction(payload))
+                    } ?: prependToLog("No search query entered")
+                }
+            } ?: showNoWCSitesToast()
         }
 
         fetch_single_order.setOnClickListener {
@@ -251,6 +278,20 @@ class WooCommerceFragment : Fragment() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onApiVersionFetched(event: OnApiVersionFetched) {
+        if (event.isError) {
+            prependToLog("Error in onApiVersionFetched: ${event.error.type} - ${event.error.message}")
+            return
+        }
+
+        with(event) {
+            val formattedVersion = apiVersion.substringAfterLast("/")
+            prependToLog("Max Woo version for ${site.name}: $formattedVersion")
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
     fun onOrderChanged(event: OnOrderChanged) {
         if (event.isError) {
             prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
@@ -331,6 +372,16 @@ class WooCommerceFragment : Fragment() {
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
                 }
             }
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onOrdersSearched(event: OnOrdersSearched) {
+        if (event.isError) {
+            prependToLog("Error searching orders - error: " + event.error.type)
+        } else {
+            prependToLog("Found ${event.searchResults.size} orders matching ${event.searchQuery}")
         }
     }
 

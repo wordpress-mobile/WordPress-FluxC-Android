@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -108,6 +109,33 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals("60.00", discountTotal)
             assertEquals("20\$off, 40\$off", discountCodes)
         }
+    }
+
+    @Test
+    fun testSearchOrdersSuccess() {
+        interceptor.respondWith("wc-orders-response-success.json")
+        orderRestClient.searchOrders(siteModel, "")
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCOrderAction.SEARCHED_ORDERS, lastAction!!.type)
+        val payload = lastAction!!.payload as SearchOrdersResponsePayload
+        assertNull(payload.error)
+        assertEquals(4, payload.orders.size)
+    }
+
+    @Test
+    fun testSearchOrdersError() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        orderRestClient.searchOrders(SiteModel(), "")
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCOrderAction.SEARCHED_ORDERS, lastAction!!.type)
+        val payload = lastAction!!.payload as SearchOrdersResponsePayload
+        assertNotNull(payload.error)
     }
 
     @Test
@@ -246,9 +274,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         assertEquals(WCOrderAction.FETCHED_ORDER_NOTES, lastAction!!.type)
         val payload = lastAction!!.payload as FetchOrderNotesResponsePayload
         assertNull(payload.error)
-        assertEquals(7, payload.notes.size)
+        assertEquals(8, payload.notes.size)
 
-        // Verify basic order fields and private note
+        // Verify basic order fields and private, system note
         with(payload.notes[0]) {
             assertEquals(1942, remoteNoteId)
             assertEquals("2018-04-27T20:48:10Z", dateCreated)
@@ -258,13 +286,22 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
                     "Email queued: Poster Purchase Follow-Up scheduled " +
                             "on Poster Purchase Follow-Up<br/>Trigger: Poster Purchase Follow-Up", note
             )
-            assertEquals(false, isCustomerNote)
+            assertFalse(isCustomerNote)
+            assertTrue(isSystemNote)
         }
 
-        // Verify customer note
+        // Verify private user-created note
         with(payload.notes[6]) {
-            assertEquals("Please gift wrap", note)
+            assertEquals("Interesting order!", note)
+            assertFalse(isCustomerNote)
+            assertFalse(isSystemNote)
+        }
+
+        // Verify customer-facing note
+        with(payload.notes[7]) {
+            assertEquals("Shipping soon!", note)
             assertTrue(isCustomerNote)
+            assertFalse(isSystemNote)
         }
     }
 
@@ -313,6 +350,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertNull(error)
             assertEquals(originalNote.note, note.note)
             assertEquals(originalNote.isCustomerNote, note.isCustomerNote)
+            assertFalse(note.isSystemNote) // Any note created from the app should be flagged as user-created
             assertEquals(originalNote.localOrderId, note.localOrderId)
             assertEquals(originalNote.localSiteId, note.localSiteId)
         }

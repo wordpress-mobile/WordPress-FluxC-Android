@@ -26,6 +26,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import javax.inject.Singleton
 
 @Singleton
@@ -37,7 +38,7 @@ class OrderRestClient(
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
-     * Makes a GET call to `/wc/v2/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of orders for the given WooCommerce [SiteModel].
      *
      * The number of orders fetched is defined in [WCOrderStore.NUM_ORDERS_PER_FETCH], and retrieving older
@@ -50,9 +51,13 @@ class OrderRestClient(
      */
     fun fetchOrders(site: SiteModel, offset: Int, filterByStatus: String? = null, countOnly: Boolean = false) {
         // If null, set the filter to the api default value of "any", which will not apply any order status filters.
-        val statusFilter = if (filterByStatus.isNullOrBlank()) { "any" } else { filterByStatus!! }
+        val statusFilter = if (filterByStatus.isNullOrBlank()) {
+            WCOrderStore.DEFAULT_ORDER_STATUS
+        } else {
+            filterByStatus!!
+        }
 
-        val url = WOOCOMMERCE.orders.pathV2
+        val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
         val params = mapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
@@ -91,14 +96,49 @@ class OrderRestClient(
     }
 
     /**
-     * Makes a GET request to `/wc/v2/orders/{remoteOrderId}` to fetch a single order by the remoteOrderId
+     * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a list of orders for the given WooCommerce [SiteModel] matching [searchQuery]
+     *
+     * The number of orders fetched is defined in [WCOrderStore.NUM_ORDERS_PER_SEARCH]
+     *
+     * Dispatches a [WCOrderAction.SEARCHED_ORDERS] action with the resulting list of orders.
+     *
+     * @param [searchQuery] the keyword or phrase to match orders with
+     */
+    fun searchOrders(site: SiteModel, searchQuery: String) {
+        val url = WOOCOMMERCE.orders.pathV3
+        val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
+        val params = mapOf(
+                "per_page" to WCOrderStore.NUM_ORDERS_PER_SEARCH.toString(),
+                "status" to WCOrderStore.DEFAULT_ORDER_STATUS,
+                "search" to searchQuery)
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<OrderApiResponse>? ->
+                    val orderModels = response?.map {
+                        orderResponseToOrderModel(it).apply { localSiteId = site.id }
+                    }.orEmpty()
+
+                    val payload = SearchOrdersResponsePayload(site, searchQuery, orderModels)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
+                    val payload = SearchOrdersResponsePayload(orderError, site, searchQuery)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Makes a GET request to `/wc/v3/orders/{remoteOrderId}` to fetch a single order by the remoteOrderId
      *
      * Dispatches a [WCOrderAction.FETCHED_SINGLE_ORDER] action with the result
      *
      * @param [remoteOrderId] Unique server id of the order to fetch
      */
     fun fetchSingleOrder(site: SiteModel, remoteOrderId: Long) {
-        val url = WOOCOMMERCE.orders.id(remoteOrderId).pathV2
+        val url = WOOCOMMERCE.orders.id(remoteOrderId).pathV3
         val responseType = object : TypeToken<OrderApiResponse>() {}.type
         val params = emptyMap<String, String>()
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
@@ -125,7 +165,7 @@ class OrderRestClient(
     }
 
     /**
-     * Makes a GET request to `/wc/v2/orders` for a single order of a specific type (or any type) in order to
+     * Makes a GET request to `/wc/v3/orders` for a single order of a specific type (or any type) in order to
      * determine if there are any orders in the store.
      *
      * Dispatches a [WCOrderAction.FETCHED_HAS_ORDERS] action with the result
@@ -135,7 +175,7 @@ class OrderRestClient(
     fun fetchHasOrders(site: SiteModel, filterByStatus: String? = null) {
         val statusFilter = if (filterByStatus.isNullOrBlank()) { "any" } else { filterByStatus!! }
 
-        val url = WOOCOMMERCE.orders.pathV2
+        val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
         val params = mapOf(
                 "per_page" to "1",
@@ -161,7 +201,7 @@ class OrderRestClient(
     }
 
     /**
-     * Makes a PUT call to `/wc/v2/orders/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * Makes a PUT call to `/wc/v3/orders/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * updating the status for the given [order] to [status].
      *
      * Dispatches a [WCOrderAction.UPDATED_ORDER_STATUS] with the updated [WCOrderModel].
@@ -171,7 +211,7 @@ class OrderRestClient(
      * [OrderErrorType.INVALID_ID] if an order by this id was not found on the server
      */
     fun updateOrderStatus(order: WCOrderModel, site: SiteModel, status: String) {
-        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).pathV2
+        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).pathV3
         val params = mapOf("status" to status)
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, params, OrderApiResponse::class.java,
                 { response: OrderApiResponse? ->
@@ -193,13 +233,13 @@ class OrderRestClient(
     }
 
     /**
-     * Makes a GET call to `/wc/v2/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * Makes a GET call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of notes for the given WooCommerce [SiteModel] and [WCOrderModel].
      *
      * Dispatches a [WCOrderAction.FETCHED_ORDER_NOTES] action with the resulting list of order notes.
      */
     fun fetchOrderNotes(order: WCOrderModel, site: SiteModel) {
-        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).notes.pathV2
+        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).notes.pathV3
         val responseType = object : TypeToken<List<OrderNoteApiResponse>>() {}.type
         val params = emptyMap<String, String>()
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
@@ -223,15 +263,19 @@ class OrderRestClient(
     }
 
     /**
-     * Makes a POST call to `/wc/v2/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * Makes a POST call to `/wc/v3/orders/<id>/notes` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * saving the provide4d note for the given WooCommerce [SiteModel] and [WCOrderModel].
      *
      * Dispatches a [WCOrderAction.POSTED_ORDER_NOTE] action with the resulting saved version of the order note.
      */
     fun postOrderNote(order: WCOrderModel, site: SiteModel, note: WCOrderNoteModel) {
-        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).notes.pathV2
+        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).notes.pathV3
 
-        val params = mutableMapOf("note" to note.note, "customer_note" to note.isCustomerNote)
+        val params = mutableMapOf(
+                "note" to note.note,
+                "customer_note" to note.isCustomerNote,
+                "added_by_user" to true
+        )
         val request = JetpackTunnelGsonRequest.buildPostRequest(
                 url, site.siteId, params, OrderNoteApiResponse::class.java,
                 { response: OrderNoteApiResponse? ->
@@ -312,6 +356,7 @@ class OrderRestClient(
             remoteNoteId = response.id ?: 0
             dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: ""
             note = response.note ?: ""
+            isSystemNote = response.author == "system"
             isCustomerNote = response.customer_note
         }
     }

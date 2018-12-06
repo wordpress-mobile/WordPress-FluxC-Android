@@ -30,6 +30,7 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_AccountAvailabilityTest test);
     void inject(ReleaseStack_ActivityLogTestJetpack test);
     void inject(ReleaseStack_InsightsTestJetpack test);
+    void inject(ReleaseStack_TimeStatsTestJetpack test);
     void inject(ReleaseStack_CommentTestWPCom test);
     void inject(ReleaseStack_CommentTestXMLRPC test);
     void inject(ReleaseStack_DiscoveryTest test);
@@ -37,6 +38,7 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_MediaTestJetpack test);
     void inject(ReleaseStack_MediaTestWPCom test);
     void inject(ReleaseStack_MediaTestXMLRPC test);
+    void inject(ReleaseStack_NotificationTest test);
     void inject(ReleaseStack_StockMediaTest test);
     void inject(ReleaseStack_WPOrgPluginTest test);
     void inject(ReleaseStack_PluginTestJetpack test);
@@ -53,7 +55,4 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_UploadTest test);
     void inject(ReleaseStack_WCBaseStoreTest test);
     void inject(ReleaseStack_WCOrderTest test);
-    void inject(ReleaseStack_PostListTestWpCom test);
-    void inject(ReleaseStack_PostListTestXMLRPC test);
-    void inject(PostListConnectedTestHelper test);
 }

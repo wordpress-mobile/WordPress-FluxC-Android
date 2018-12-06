@@ -5,9 +5,9 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
@@ -16,8 +16,8 @@ import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.model.order.toIdSet
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
 import org.wordpress.android.util.AppLog
@@ -31,6 +31,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     : Store(dispatcher) {
     companion object {
         const val NUM_ORDERS_PER_FETCH = 25
+        const val NUM_ORDERS_PER_SEARCH = 50
+        const val DEFAULT_ORDER_STATUS = "any"
     }
 
     class FetchOrdersPayload(
@@ -47,6 +49,19 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var canLoadMore: Boolean = false
     ) : Payload<OrderError>() {
         constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
+    }
+
+    class SearchOrdersPayload(
+        var site: SiteModel,
+        var searchQuery: String
+    ) : Payload<BaseNetworkError>()
+
+    class SearchOrdersResponsePayload(
+        var site: SiteModel,
+        var searchQuery: String,
+        var orders: List<WCOrderModel> = emptyList()
+    ) : Payload<OrderError>() {
+        constructor(error: OrderError, site: SiteModel, query: String) : this(site, query) { this.error = error }
     }
 
     class FetchOrdersCountPayload(
@@ -142,10 +157,18 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     // OnChanged events
-    class OnOrderChanged(var rowsAffected: Int, var statusFilter: String? = null, var canLoadMore: Boolean = false)
-        : OnChanged<OrderError>() {
+    class OnOrderChanged(
+        var rowsAffected: Int,
+        var statusFilter: String? = null,
+        var canLoadMore: Boolean = false
+    ) : OnChanged<OrderError>() {
         var causeOfChange: WCOrderAction? = null
     }
+
+    class OnOrdersSearched(
+        var searchQuery: String = "",
+        var searchResults: List<WCOrderModel> = emptyList()
+    ) : OnChanged<OrderError>()
 
     override fun onRegister() = AppLog.d(T.API, "WCOrderStore onRegister")
 
@@ -182,6 +205,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             WCOrderAction.FETCH_ORDER_NOTES -> fetchOrderNotes(action.payload as FetchOrderNotesPayload)
             WCOrderAction.POST_ORDER_NOTE -> postOrderNote(action.payload as PostOrderNotePayload)
             WCOrderAction.FETCH_HAS_ORDERS -> fetchHasOrders(action.payload as FetchHasOrdersPayload)
+            WCOrderAction.SEARCH_ORDERS -> searchOrders(action.payload as SearchOrdersPayload)
 
             // remote responses
             WCOrderAction.FETCHED_ORDERS -> handleFetchOrdersCompleted(action.payload as FetchOrdersResponsePayload)
@@ -194,6 +218,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             WCOrderAction.POSTED_ORDER_NOTE -> handlePostOrderNoteCompleted(action.payload as RemoteOrderNotePayload)
             WCOrderAction.FETCHED_HAS_ORDERS -> handleFetchHasOrdersCompleted(
                     action.payload as FetchHasOrdersResponsePayload)
+            WCOrderAction.SEARCHED_ORDERS -> handleSearchOrdersCompleted(action.payload as SearchOrdersResponsePayload)
         }
     }
 
@@ -204,6 +229,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             0
         }
         wcOrderRestClient.fetchOrders(payload.site, offset, payload.statusFilter)
+    }
+
+    private fun searchOrders(payload: SearchOrdersPayload) {
+        wcOrderRestClient.searchOrders(payload.site, payload.searchQuery)
     }
 
     private fun fetchOrdersCount(payload: FetchOrdersCountPayload) {
@@ -246,12 +275,21 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
             val rowsAffected = payload.orders.sumBy { OrderSqlUtils.insertOrUpdateOrder(it) }
 
-            onOrderChanged = OnOrderChanged(rowsAffected, payload.statusFilter, payload.canLoadMore)
+            onOrderChanged = OnOrderChanged(rowsAffected, payload.statusFilter, canLoadMore = payload.canLoadMore)
         }
 
         onOrderChanged.causeOfChange = WCOrderAction.FETCH_ORDERS
 
         emitChange(onOrderChanged)
+    }
+
+    private fun handleSearchOrdersCompleted(payload: SearchOrdersResponsePayload) {
+        val onOrdersSearched = if (payload.isError) {
+            OnOrdersSearched(payload.searchQuery, emptyList()).also { it.error = payload.error }
+        } else {
+            OnOrdersSearched(payload.searchQuery, payload.orders)
+        }
+        emitChange(onOrdersSearched)
     }
 
     /**
@@ -262,7 +300,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         val onOrderChanged = if (payload.isError) {
             OnOrderChanged(0).also { it.error = payload.error }
         } else {
-            with(payload) { OnOrderChanged(count, statusFilter, canLoadMore) }
+            with(payload) { OnOrderChanged(count, statusFilter, canLoadMore = canLoadMore) }
         }.also { it.causeOfChange = FETCH_ORDERS_COUNT }
         emitChange(onOrderChanged)
     }
