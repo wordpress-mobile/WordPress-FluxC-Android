@@ -66,12 +66,12 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
     fun testFetchPostAndPageViews() {
         val site = authenticate()
 
-        for (period in StatsGranularity.values()) {
+        for (granularity in StatsGranularity.values()) {
             val fetchedInsights = runBlocking {
                 postAndPageViewsStore.fetchPostAndPageViews(
                         site,
                         PAGE_SIZE,
-                        period,
+                        granularity,
                         true
                 )
             }
@@ -79,7 +79,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(site, period, PAGE_SIZE)
+            val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(site, granularity, PAGE_SIZE)
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
@@ -89,13 +89,13 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
     fun testFetchReferrers() {
         val site = authenticate()
 
-        for (period in StatsGranularity.values()) {
-            val fetchedInsights = runBlocking { referrersStore.fetchReferrers(site, PAGE_SIZE, period, true) }
+        for (granularity in StatsGranularity.values()) {
+            val fetchedInsights = runBlocking { referrersStore.fetchReferrers(site, PAGE_SIZE, granularity, true) }
 
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = referrersStore.getReferrers(site, period, PAGE_SIZE)
+            val insightsFromDb = referrersStore.getReferrers(site, granularity, PAGE_SIZE)
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
