@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -57,6 +58,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         POSTS_FETCHED,
         PAGES_FETCHED,
         POST_DELETED,
+        POST_RESTORED,
         ERROR_UNKNOWN_POST,
         ERROR_UNKNOWN_POST_TYPE,
         ERROR_UNAUTHORIZED,
@@ -368,10 +370,10 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(date, newPost.getDateCreated());
 
         assertTrue(categoryIds.containsAll(newPost.getCategoryIdList())
-                && newPost.getCategoryIdList().containsAll(categoryIds));
+                   && newPost.getCategoryIdList().containsAll(categoryIds));
 
         assertTrue(tags.containsAll(newPost.getTagNameList())
-                && newPost.getTagNameList().containsAll(tags));
+                   && newPost.getTagNameList().containsAll(tags));
 
         assertEquals(featuredImageId, newPost.getFeaturedImageId());
     }
@@ -606,13 +608,50 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         uploadPost(mPost);
 
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+        assertNotNull(uploadedPost);
 
         deletePost(uploadedPost);
 
         // The post should be removed from the db (regardless of whether it was deleted or just trashed on the server)
-        assertEquals(null, mPostStore.getPostByLocalPostId(uploadedPost.getId()));
+        assertNull(mPostStore.getPostByLocalPostId(uploadedPost.getId()));
         assertEquals(0, WellSqlUtils.getTotalPostsCount());
         assertEquals(0, mPostStore.getPostsCountForSite(sSite));
+    }
+
+    @Test
+    public void testRestoreRemotePost() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        uploadPost(mPost);
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+        assertNotNull(uploadedPost);
+
+        deletePost(uploadedPost);
+
+        // Make sure the post is actually removed
+        assertNull(mPostStore.getPostByLocalPostId(uploadedPost.getId()));
+        assertEquals(0, WellSqlUtils.getTotalPostsCount());
+        assertEquals(0, mPostStore.getPostsCountForSite(sSite));
+
+        // fetch trashed post from server
+        fetchPost(uploadedPost);
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
+
+        // Get the current copy of the trashed post from the PostStore
+        PostModel trashedPost = mPostStore.getPostByRemotePostId(uploadedPost.getRemotePostId(), sSite);
+        assertNotNull(trashedPost);
+        assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
+
+        // restore post
+        restorePost(trashedPost, TestEvents.POST_RESTORED);
+        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
+
+        // retrieve restored post from PostStore and make sure it's not TRASHED anymore
+        PostModel restoredPost = mPostStore.getPostByRemotePostId(uploadedPost.getRemotePostId(), sSite);
+        assertNotNull(restoredPost);
+        assertNotEquals(PostStatus.fromPost(restoredPost), PostStatus.TRASHED);
     }
 
     // Error handling tests
@@ -690,6 +729,17 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(invalidPost, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_POST error instead
+        // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
+        assertEquals("Invalid post ID.", mLastPostError.message);
+    }
+
+    @Test
+    public void testRestoreInvalidRemotePost() throws InterruptedException {
+        PostModel invalidPost = new PostModel();
+        invalidPost.setRemotePostId(6420328);
+        restorePost(invalidPost, TestEvents.ERROR_GENERIC);
 
         // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_POST error instead
         // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
@@ -986,6 +1036,10 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
             if (mNextEvent.equals(TestEvents.ALL_POST_REMOVED)) {
                 mCountDownLatch.countDown();
             }
+        } else if (event.causeOfChange instanceof CauseOfOnPostChanged.RestorePost) {
+            if (mNextEvent.equals(TestEvents.POST_RESTORED)) {
+                mCountDownLatch.countDown();
+            }
         } else {
             throw new AssertionError("Unexpected cause of change: " + event.causeOfChange.getClass().getSimpleName());
         }
@@ -1089,6 +1143,15 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newRemoveAllPostsAction());
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void restorePost(PostModel post, TestEvents nextEvent) throws InterruptedException {
+        mNextEvent = nextEvent;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newRestorePostAction(new RemotePostPayload(post, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
