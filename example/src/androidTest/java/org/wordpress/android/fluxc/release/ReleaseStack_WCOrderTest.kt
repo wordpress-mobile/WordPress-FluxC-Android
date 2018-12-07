@@ -20,7 +20,9 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -34,6 +36,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         FETCHED_SINGLE_ORDER,
         FETCHED_ORDER_NOTES,
         FETCHED_HAS_ORDERS,
+        SEARCHED_ORDERS,
         POST_ORDER_NOTE,
         POSTED_ORDER_NOTE
     }
@@ -47,6 +50,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         dateCreated = "2018-04-20T15:45:14Z"
     }
     private var lastEvent: OnOrderChanged? = null
+    private val orderSearchQuery = "bogus query"
 
     @Throws(Exception::class)
     override fun setUp() {
@@ -85,8 +89,28 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
         val firstFetchOrders = orderStore.getOrdersForSite(sSite)
         val isValid = firstFetchOrders.stream().allMatch { it.status == statusFilter }
-        assertTrue(firstFetchOrders.isNotEmpty() &&
-                firstFetchOrders.size <= WCOrderStore.NUM_ORDERS_PER_FETCH && isValid)
+        assertTrue(
+                firstFetchOrders.isNotEmpty() &&
+                        firstFetchOrders.size <= WCOrderStore.NUM_ORDERS_PER_FETCH && isValid
+        )
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun testSearchOrders() {
+        nextEvent = TestEvent.SEARCHED_ORDERS
+        mCountDownLatch = CountDownLatch(1)
+
+        mDispatcher.dispatch(
+                WCOrderActionBuilder.newSearchOrdersAction(
+                        SearchOrdersPayload(
+                                sSite,
+                                orderSearchQuery,
+                                0
+                        )
+                )
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
     }
 
     @Throws(InterruptedException::class)
@@ -97,7 +121,8 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         val statusFilter = CoreOrderStatus.COMPLETED.value
 
         mDispatcher.dispatch(
-                WCOrderActionBuilder.newFetchOrdersCountAction(FetchOrdersCountPayload(sSite, statusFilter)))
+                WCOrderActionBuilder.newFetchOrdersCountAction(FetchOrdersCountPayload(sSite, statusFilter))
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         this.lastEvent?.let {
@@ -114,7 +139,8 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         val statusFilter = ""
 
         mDispatcher.dispatch(
-                WCOrderActionBuilder.newFetchOrdersCountAction(FetchOrdersCountPayload(sSite, statusFilter)))
+                WCOrderActionBuilder.newFetchOrdersCountAction(FetchOrdersCountPayload(sSite, statusFilter))
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         this.lastEvent?.let {
@@ -129,16 +155,20 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         // Fetch a single order
         nextEvent = TestEvent.FETCHED_SINGLE_ORDER
         mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(WCOrderActionBuilder
-                .newFetchSingleOrderAction(FetchSingleOrderPayload(sSite, orderModel.remoteOrderId)))
+        mDispatcher.dispatch(
+                WCOrderActionBuilder
+                        .newFetchSingleOrderAction(FetchSingleOrderPayload(sSite, orderModel.remoteOrderId))
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
-        val fetchedOrder = orderStore.getOrderByIdentifier(OrderIdentifier(
-                WCOrderModel().apply {
-                    remoteOrderId = orderModel.remoteOrderId
-                    localSiteId = sSite.id
-                }))
+        val fetchedOrder = orderStore.getOrderByIdentifier(
+                OrderIdentifier(
+                        WCOrderModel().apply {
+                            remoteOrderId = orderModel.remoteOrderId
+                            localSiteId = sSite.id
+                        })
+        )
         assertTrue(fetchedOrder != null && fetchedOrder.remoteOrderId == orderModel.remoteOrderId)
     }
 
@@ -174,8 +204,11 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         }
         nextEvent = TestEvent.POST_ORDER_NOTE
         mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(WCOrderActionBuilder.newPostOrderNoteAction(
-                PostOrderNotePayload(orderModel, sSite, originalNote)))
+        mDispatcher.dispatch(
+                WCOrderActionBuilder.newPostOrderNoteAction(
+                        PostOrderNotePayload(orderModel, sSite, originalNote)
+                )
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
         // Verify results
@@ -228,5 +261,17 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
         }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onOrdersSearched(event: OnOrdersSearched) {
+        event.error?.let {
+            throw AssertionError("OnOrdersSearched has error: " + it.type)
+        }
+
+        assertEquals(event.searchQuery, orderSearchQuery)
+        assertEquals(TestEvent.SEARCHED_ORDERS, nextEvent)
+        mCountDownLatch.countDown()
     }
 }
