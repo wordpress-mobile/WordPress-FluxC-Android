@@ -117,13 +117,21 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
     fun testFetchClicks() {
         val site = authenticate()
 
-        for (period in StatsGranularity.values()) {
-            val fetchedInsights = runBlocking { clicksStore.fetchClicks(site, PAGE_SIZE, period, true) }
+        for (granularity in StatsGranularity.values()) {
+            val fetchedInsights = runBlocking {
+                clicksStore.fetchClicks(
+                        site,
+                        PAGE_SIZE,
+                        granularity,
+                        SELECTED_DATE,
+                        true
+                )
+            }
 
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = clicksStore.getClicks(site, period, PAGE_SIZE)
+            val insightsFromDb = clicksStore.getClicks(site, granularity, PAGE_SIZE, SELECTED_DATE)
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
