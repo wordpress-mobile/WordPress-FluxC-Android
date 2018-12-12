@@ -124,7 +124,7 @@ class WooCommerceFragment : Fragment() {
                     val searchQuery = editText.text.toString().trim().takeIf { it.isNotEmpty() }
                     searchQuery?.let {
                         prependToLog("Submitting request to search orders matching $it")
-                        val payload = SearchOrdersPayload(site, searchQuery)
+                        val payload = SearchOrdersPayload(site, searchQuery, 0)
                         dispatcher.dispatch(WCOrderActionBuilder.newSearchOrdersAction(payload))
                     } ?: prependToLog("No search query entered")
                 }

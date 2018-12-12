@@ -31,7 +31,6 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     : Store(dispatcher) {
     companion object {
         const val NUM_ORDERS_PER_FETCH = 25
-        const val NUM_ORDERS_PER_SEARCH = 50
         const val DEFAULT_ORDER_STATUS = "any"
     }
 
@@ -53,15 +52,20 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     class SearchOrdersPayload(
         var site: SiteModel,
-        var searchQuery: String
+        var searchQuery: String,
+        var offset: Int
     ) : Payload<BaseNetworkError>()
 
     class SearchOrdersResponsePayload(
         var site: SiteModel,
         var searchQuery: String,
+        var canLoadMore: Boolean = false,
+        var offset: Int = 0,
         var orders: List<WCOrderModel> = emptyList()
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel, query: String) : this(site, query) { this.error = error }
+        constructor(error: OrderError, site: SiteModel, query: String) : this(site, query) {
+            this.error = error
+        }
     }
 
     class FetchOrdersCountPayload(
@@ -167,6 +171,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     class OnOrdersSearched(
         var searchQuery: String = "",
+        var canLoadMore: Boolean = false,
+        var nextOffset: Int = 0,
         var searchResults: List<WCOrderModel> = emptyList()
     ) : OnChanged<OrderError>()
 
@@ -232,7 +238,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun searchOrders(payload: SearchOrdersPayload) {
-        wcOrderRestClient.searchOrders(payload.site, payload.searchQuery)
+        wcOrderRestClient.searchOrders(payload.site, payload.searchQuery, payload.offset)
     }
 
     private fun fetchOrdersCount(payload: FetchOrdersCountPayload) {
@@ -285,9 +291,9 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     private fun handleSearchOrdersCompleted(payload: SearchOrdersResponsePayload) {
         val onOrdersSearched = if (payload.isError) {
-            OnOrdersSearched(payload.searchQuery, emptyList()).also { it.error = payload.error }
+            OnOrdersSearched(payload.searchQuery)
         } else {
-            OnOrdersSearched(payload.searchQuery, payload.orders)
+            OnOrdersSearched(payload.searchQuery, payload.canLoadMore, payload.offset, payload.orders)
         }
         emitChange(onOrdersSearched)
     }

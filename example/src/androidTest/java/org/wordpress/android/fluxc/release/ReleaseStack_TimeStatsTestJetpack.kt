@@ -14,24 +14,26 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.utils.StatsGranularity.DAYS
-import org.wordpress.android.fluxc.network.utils.StatsGranularity.MONTHS
-import org.wordpress.android.fluxc.network.utils.StatsGranularity.WEEKS
-import org.wordpress.android.fluxc.network.utils.StatsGranularity.YEARS
+import org.wordpress.android.fluxc.network.utils.StatsGranularity
+import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
+import org.wordpress.android.fluxc.store.stats.time.ClicksStore
 import org.wordpress.android.fluxc.store.stats.time.PostAndPageViewsStore
+import org.wordpress.android.fluxc.store.stats.time.ReferrersStore
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 private const val PAGE_SIZE = 8
+private val SELECTED_DATE = Date(10)
 
 /**
  * Tests with real credentials on real servers using the full release stack (no mock)
@@ -39,6 +41,9 @@ private const val PAGE_SIZE = 8
 class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
     private val incomingActions: MutableList<Action<*>> = mutableListOf()
     @Inject lateinit var postAndPageViewsStore: PostAndPageViewsStore
+    @Inject lateinit var referrersStore: ReferrersStore
+    @Inject lateinit var clicksStore: ClicksStore
+    @Inject lateinit var accountStore: AccountStore
     @Inject internal lateinit var siteStore: SiteStore
 
     private var nextEvent: TestEvents? = null
@@ -62,64 +67,81 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
     }
 
     @Test
-    fun testFetchPostAndPageDayViews() {
+    fun testFetchPostAndPageViews() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { postAndPageViewsStore.fetchPostAndPageViews(site, PAGE_SIZE, DAYS, true) }
+        for (granularity in StatsGranularity.values()) {
+            val fetchedInsights = runBlocking {
+                postAndPageViewsStore.fetchPostAndPageViews(
+                        site,
+                        PAGE_SIZE,
+                        granularity, SELECTED_DATE,
+                        true
+                )
+            }
 
-        assertNotNull(fetchedInsights)
-        assertNotNull(fetchedInsights.model)
+            assertNotNull(fetchedInsights)
+            assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(site, DAYS, PAGE_SIZE)
+            val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(site, granularity, SELECTED_DATE, PAGE_SIZE)
 
-        assertEquals(fetchedInsights.model, insightsFromDb)
+            assertEquals(fetchedInsights.model, insightsFromDb)
+        }
     }
 
     @Test
-    fun testFetchPostAndPageWeekViews() {
+    fun testFetchReferrers() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { postAndPageViewsStore.fetchPostAndPageViews(site, PAGE_SIZE, WEEKS, true) }
+        for (granularity in StatsGranularity.values()) {
+            val fetchedInsights = runBlocking {
+                referrersStore.fetchReferrers(
+                        site,
+                        PAGE_SIZE,
+                        granularity,
+                        SELECTED_DATE,
+                        true
+                )
+            }
 
-        assertNotNull(fetchedInsights)
-        assertNotNull(fetchedInsights.model)
+            assertNotNull(fetchedInsights)
+            assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(site, WEEKS, PAGE_SIZE)
+            val insightsFromDb = referrersStore.getReferrers(site, granularity, SELECTED_DATE, PAGE_SIZE)
 
-        assertEquals(fetchedInsights.model, insightsFromDb)
+            assertEquals(fetchedInsights.model, insightsFromDb)
+        }
     }
 
     @Test
-    fun testFetchPostAndPageMonthViews() {
+    fun testFetchClicks() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { postAndPageViewsStore.fetchPostAndPageViews(site, PAGE_SIZE, MONTHS, true) }
+        for (granularity in StatsGranularity.values()) {
+            val fetchedInsights = runBlocking {
+                clicksStore.fetchClicks(
+                        site,
+                        PAGE_SIZE,
+                        granularity,
+                        SELECTED_DATE,
+                        true
+                )
+            }
 
-        assertNotNull(fetchedInsights)
-        assertNotNull(fetchedInsights.model)
+            assertNotNull(fetchedInsights)
+            assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(site, MONTHS, PAGE_SIZE)
+            val insightsFromDb = clicksStore.getClicks(site, granularity, PAGE_SIZE, SELECTED_DATE)
 
-        assertEquals(fetchedInsights.model, insightsFromDb)
-    }
-
-    @Test
-    fun testFetchPostAndPageYearViews() {
-        val site = authenticate()
-
-        val fetchedInsights = runBlocking { postAndPageViewsStore.fetchPostAndPageViews(site, PAGE_SIZE, YEARS, true) }
-
-        assertNotNull(fetchedInsights)
-        assertNotNull(fetchedInsights.model)
-
-        val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(site, YEARS, PAGE_SIZE)
-
-        assertEquals(fetchedInsights.model, insightsFromDb)
+            assertEquals(fetchedInsights.model, insightsFromDb)
+        }
     }
 
     private fun authenticate(): SiteModel {
-        authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
-                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY)
+        authenticateWPComAndFetchSites(
+                BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
+                BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY
+        )
 
         return siteStore.sites[0]
     }
