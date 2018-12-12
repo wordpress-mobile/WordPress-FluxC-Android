@@ -22,7 +22,7 @@ import javax.inject.Inject
  *
  * If these tests ever start to fail because of this ID, we can simply change it to a different value.
  */
-const val SEGMENT_ID_TO_TEST = 101L
+private const val SEGMENT_ID_TO_TEST = 101L
 
 /**
  * Tests with real credentials on real servers using the full release stack (no mock)
