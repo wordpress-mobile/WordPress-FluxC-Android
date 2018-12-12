@@ -27,11 +27,13 @@ import org.wordpress.android.fluxc.store.stats.time.PostAndPageViewsStore
 import org.wordpress.android.fluxc.store.stats.time.ReferrersStore
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 private const val PAGE_SIZE = 8
+private val SELECTED_DATE = Date(10)
 
 /**
  * Tests with real credentials on real servers using the full release stack (no mock)
@@ -73,7 +75,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
                 postAndPageViewsStore.fetchPostAndPageViews(
                         site,
                         PAGE_SIZE,
-                        granularity,
+                        granularity, SELECTED_DATE,
                         true
                 )
             }
@@ -81,7 +83,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(site, granularity, PAGE_SIZE)
+            val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(site, granularity, SELECTED_DATE, PAGE_SIZE)
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
@@ -92,12 +94,20 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
         val site = authenticate()
 
         for (granularity in StatsGranularity.values()) {
-            val fetchedInsights = runBlocking { referrersStore.fetchReferrers(site, PAGE_SIZE, granularity, true) }
+            val fetchedInsights = runBlocking {
+                referrersStore.fetchReferrers(
+                        site,
+                        PAGE_SIZE,
+                        granularity,
+                        SELECTED_DATE,
+                        true
+                )
+            }
 
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = referrersStore.getReferrers(site, granularity, PAGE_SIZE)
+            val insightsFromDb = referrersStore.getReferrers(site, granularity, SELECTED_DATE, PAGE_SIZE)
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
@@ -107,13 +117,21 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
     fun testFetchClicks() {
         val site = authenticate()
 
-        for (period in StatsGranularity.values()) {
-            val fetchedInsights = runBlocking { clicksStore.fetchClicks(site, PAGE_SIZE, period, true) }
+        for (granularity in StatsGranularity.values()) {
+            val fetchedInsights = runBlocking {
+                clicksStore.fetchClicks(
+                        site,
+                        PAGE_SIZE,
+                        granularity,
+                        SELECTED_DATE,
+                        true
+                )
+            }
 
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = clicksStore.getClicks(site, period, PAGE_SIZE)
+            val insightsFromDb = clicksStore.getClicks(site, granularity, PAGE_SIZE, SELECTED_DATE)
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
