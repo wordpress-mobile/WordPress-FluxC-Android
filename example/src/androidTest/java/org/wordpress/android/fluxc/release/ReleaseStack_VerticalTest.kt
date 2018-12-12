@@ -27,6 +27,7 @@ import javax.inject.Inject
  */
 private const val SEGMENT_ID_TO_TEST = 101L
 private const val FETCH_VERTICALS_SEARCH_QUERY = "restaurant"
+private const val FETCH_VERTICALS_LIMIT = 2
 
 /**
  * Tests with real credentials on real servers using the full release stack (no mock)
@@ -77,7 +78,7 @@ class ReleaseStack_VerticalTest : ReleaseStack_Base() {
     fun testFetchVerticals() {
         nextEvent = VERTICALS_FETCHED
         mCountDownLatch = CountDownLatch(1)
-        val payload = FetchVerticalsPayload(searchQuery = FETCH_VERTICALS_SEARCH_QUERY)
+        val payload = FetchVerticalsPayload(searchQuery = FETCH_VERTICALS_SEARCH_QUERY, limit = FETCH_VERTICALS_LIMIT)
         mDispatcher.dispatch(VerticalActionBuilder.newFetchVerticalsAction(payload))
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -112,7 +113,7 @@ class ReleaseStack_VerticalTest : ReleaseStack_Base() {
             throw AssertionError("Unexpected error occurred with type: " + event.error.type)
         }
         assertEquals(TestEvents.VERTICALS_FETCHED, nextEvent)
-        assertTrue(event.verticalList.isNotEmpty())
+        assertTrue(event.verticalList.size == FETCH_VERTICALS_LIMIT)
         mCountDownLatch.countDown()
     }
 }
