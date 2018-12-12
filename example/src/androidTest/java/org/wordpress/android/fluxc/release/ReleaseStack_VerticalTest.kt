@@ -109,7 +109,7 @@ class ReleaseStack_VerticalTest : ReleaseStack_Base() {
     @Subscribe
     @Suppress("unused")
     fun onVerticalsFetched(event: OnVerticalsFetched) {
-         if (event.isError) {
+        if (event.isError) {
             throw AssertionError("Unexpected error occurred with type: " + event.error.type)
         }
         assertEquals(TestEvents.VERTICALS_FETCHED, nextEvent)
