@@ -256,7 +256,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     @Test
     public void testWpcomSubdomainSuggestions() throws InterruptedException {
         String keywords = "awesomesubdomain";
-        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20);
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20, false);
         mDispatcher.dispatch(SiteActionBuilder.newSuggestDomainsAction(payload));
         mNextEvent = TestEvents.FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS;
         mCountDownLatch = new CountDownLatch(1);
