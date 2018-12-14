@@ -144,12 +144,12 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
         val site = authenticate()
 
         for (period in StatsGranularity.values()) {
-            val fetchedInsights = runBlocking { authorsStore.fetchAuthors(site, PAGE_SIZE, period, true) }
+            val fetchedInsights = runBlocking { authorsStore.fetchAuthors(site, PAGE_SIZE, period, SELECTED_DATE) }
 
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = authorsStore.getAuthors(site, period, PAGE_SIZE)
+            val insightsFromDb = authorsStore.getAuthors(site, period, PAGE_SIZE, SELECTED_DATE)
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
