@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
 import org.wordpress.android.fluxc.store.stats.time.ClicksStore
 import org.wordpress.android.fluxc.store.stats.time.PostAndPageViewsStore
 import org.wordpress.android.fluxc.store.stats.time.ReferrersStore
+import org.wordpress.android.fluxc.store.stats.time.VideoPlaysStore
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Date
@@ -43,6 +44,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
     @Inject lateinit var postAndPageViewsStore: PostAndPageViewsStore
     @Inject lateinit var referrersStore: ReferrersStore
     @Inject lateinit var clicksStore: ClicksStore
+    @Inject lateinit var videoPlaysStore: VideoPlaysStore
     @Inject lateinit var accountStore: AccountStore
     @Inject internal lateinit var siteStore: SiteStore
 
@@ -132,6 +134,30 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             assertNotNull(fetchedInsights.model)
 
             val insightsFromDb = clicksStore.getClicks(site, granularity, PAGE_SIZE, SELECTED_DATE)
+
+            assertEquals(fetchedInsights.model, insightsFromDb)
+        }
+    }
+
+    @Test
+    fun testFetchVideoPlays() {
+        val site = authenticate()
+
+        for (granularity in StatsGranularity.values()) {
+            val fetchedInsights = runBlocking {
+                videoPlaysStore.fetchVideoPlays(
+                        site,
+                        PAGE_SIZE,
+                        granularity,
+                        SELECTED_DATE,
+                        true
+                )
+            }
+
+            assertNotNull(fetchedInsights)
+            assertNotNull(fetchedInsights.model)
+
+            val insightsFromDb = videoPlaysStore.getVideoPlays(site, granularity, PAGE_SIZE, SELECTED_DATE)
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
