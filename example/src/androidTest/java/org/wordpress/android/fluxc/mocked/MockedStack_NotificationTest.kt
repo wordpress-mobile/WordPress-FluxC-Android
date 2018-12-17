@@ -176,6 +176,24 @@ class MockedStack_NotificationTest : MockedStack_Base() {
         assertEquals(payload.lastSeenTime, 1543265347L)
     }
 
+    @Test
+    fun testFetchNotificationSuccess() {
+        val remoteNoteId = 3695324025L
+        val remoteSiteId = 153482281L
+        interceptor.respondWith("fetch-notification-response-success.json")
+        notificationRestClient.fetchNotification(remoteNoteId)
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        assertEquals(NotificationAction.FETCHED_NOTIFICATION, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchNotificationResponsePayload
+        assertNotNull(payload)
+        assertNotNull(payload.notification)
+        with(payload) {
+            assertEquals(notification!!.remoteNoteId, remoteNoteId)
+            assertEquals(notification!!.getRemoteSiteId(), remoteSiteId)
+        }
+    }
+
     @Suppress("unused")
     @Subscribe
     fun onAction(action: Action<*>) {
