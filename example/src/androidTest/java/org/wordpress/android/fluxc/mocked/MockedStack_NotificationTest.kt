@@ -18,7 +18,6 @@ import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationsResponsePayload
-import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationReadResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationSeenResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.NotificationAppKey
 import org.wordpress.android.fluxc.store.NotificationStore.RegisterDeviceResponsePayload
@@ -175,30 +174,6 @@ class MockedStack_NotificationTest : MockedStack_Base() {
 
         assertNotNull(payload)
         assertEquals(payload.lastSeenTime, 1543265347L)
-    }
-
-    @Test
-    fun testMarkNotificationReadSuccess() {
-        val testNoteIdSet = NoteIdSet(0, 22L, 2)
-
-        interceptor.respondWith("mark-notification-read-response-success.json")
-        notificationRestClient.markNotificationRead(
-                NotificationModel(
-                        remoteNoteId = testNoteIdSet.remoteNoteId,
-                        localSiteId = testNoteIdSet.localSiteId))
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(NotificationAction.MARKED_NOTIFICATION_READ, lastAction!!.type)
-        val payload = lastAction!!.payload as MarkNotificationReadResponsePayload
-
-        assertNotNull(payload)
-        assertEquals(payload.success, true)
-        assertNotNull(payload.notification)
-        with(payload.notification!!) {
-            assertEquals(remoteNoteId, testNoteIdSet.remoteNoteId)
-        }
     }
 
     @Suppress("unused")
