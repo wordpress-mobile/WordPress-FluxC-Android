@@ -12,8 +12,6 @@ import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.NotificationAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.notification.NoteIdSet
-import org.wordpress.android.fluxc.model.notification.NotificationModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationResponsePayload
@@ -24,7 +22,6 @@ import org.wordpress.android.fluxc.store.NotificationStore.RegisterDeviceRespons
 import org.wordpress.android.fluxc.store.SiteStore
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
 import kotlin.properties.Delegates
 
