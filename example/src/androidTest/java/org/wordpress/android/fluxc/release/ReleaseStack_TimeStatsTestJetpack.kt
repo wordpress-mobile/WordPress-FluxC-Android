@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
+import org.wordpress.android.fluxc.store.stats.time.AuthorsStore
 import org.wordpress.android.fluxc.store.stats.time.ClicksStore
 import org.wordpress.android.fluxc.store.stats.time.CountryViewsStore
 import org.wordpress.android.fluxc.store.stats.time.PostAndPageViewsStore
@@ -47,6 +48,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
     @Inject lateinit var clicksStore: ClicksStore
     @Inject lateinit var visitsAndViewsStore: VisitsAndViewsStore
     @Inject lateinit var countryViewsStore: CountryViewsStore
+    @Inject lateinit var authorsStore: AuthorsStore
     @Inject lateinit var accountStore: AccountStore
     @Inject internal lateinit var siteStore: SiteStore
 
@@ -184,6 +186,22 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             assertNotNull(fetchedInsights.model)
 
             val insightsFromDb = countryViewsStore.getCountryViews(site, granularity, PAGE_SIZE, SELECTED_DATE)
+
+            assertEquals(fetchedInsights.model, insightsFromDb)
+        }
+    }
+
+    @Test
+    fun testFetchAuthors() {
+        val site = authenticate()
+
+        for (period in StatsGranularity.values()) {
+            val fetchedInsights = runBlocking { authorsStore.fetchAuthors(site, PAGE_SIZE, period, SELECTED_DATE) }
+
+            assertNotNull(fetchedInsights)
+            assertNotNull(fetchedInsights.model)
+
+            val insightsFromDb = authorsStore.getAuthors(site, period, PAGE_SIZE, SELECTED_DATE)
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
