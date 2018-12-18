@@ -22,7 +22,9 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
+import org.wordpress.android.fluxc.store.stats.time.AuthorsStore
 import org.wordpress.android.fluxc.store.stats.time.ClicksStore
+import org.wordpress.android.fluxc.store.stats.time.CountryViewsStore
 import org.wordpress.android.fluxc.store.stats.time.PostAndPageViewsStore
 import org.wordpress.android.fluxc.store.stats.time.ReferrersStore
 import org.wordpress.android.fluxc.store.stats.time.VisitsAndViewsStore
@@ -46,6 +48,8 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
     @Inject lateinit var referrersStore: ReferrersStore
     @Inject lateinit var clicksStore: ClicksStore
     @Inject lateinit var visitsAndViewsStore: VisitsAndViewsStore
+    @Inject lateinit var countryViewsStore: CountryViewsStore
+    @Inject lateinit var authorsStore: AuthorsStore
     @Inject lateinit var searchTermsStore: SearchTermsStore
     @Inject lateinit var accountStore: AccountStore
     @Inject internal lateinit var siteStore: SiteStore
@@ -160,6 +164,46 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             assertNotNull(fetchedInsights.model)
 
             val insightsFromDb = visitsAndViewsStore.getVisits(site, SELECTED_DATE, granularity)
+
+            assertEquals(fetchedInsights.model, insightsFromDb)
+        }
+    }
+
+    @Test
+    fun testFetchCountryViews() {
+        val site = authenticate()
+
+        for (granularity in StatsGranularity.values()) {
+            val fetchedInsights = runBlocking {
+                countryViewsStore.fetchCountryViews(
+                        site,
+                        PAGE_SIZE,
+                        granularity,
+                        SELECTED_DATE,
+                        true
+                )
+            }
+
+            assertNotNull(fetchedInsights)
+            assertNotNull(fetchedInsights.model)
+
+            val insightsFromDb = countryViewsStore.getCountryViews(site, granularity, PAGE_SIZE, SELECTED_DATE)
+
+            assertEquals(fetchedInsights.model, insightsFromDb)
+        }
+    }
+
+    @Test
+    fun testFetchAuthors() {
+        val site = authenticate()
+
+        for (period in StatsGranularity.values()) {
+            val fetchedInsights = runBlocking { authorsStore.fetchAuthors(site, PAGE_SIZE, period, SELECTED_DATE) }
+
+            assertNotNull(fetchedInsights)
+            assertNotNull(fetchedInsights.model)
+
+            val insightsFromDb = authorsStore.getAuthors(site, period, PAGE_SIZE, SELECTED_DATE)
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
