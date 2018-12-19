@@ -153,12 +153,13 @@ class NotificationsFragment : Fragment() {
                 } ?: ""
                 prependToLog("SUCCESS! Last seen set to $lastSeenDate")
             }
+            else -> {}
         }
     }
 
     private fun prependToLog(s: String) = (activity as MainExampleActivity).prependToLog(s)
 
-    private fun showNotificationTypeSubtypeDialog(listener: NotificationTypeSubtypeDialog.Listener){
+    private fun showNotificationTypeSubtypeDialog(listener: NotificationTypeSubtypeDialog.Listener) {
         fragmentManager?.let { fm ->
             val dialog = NotificationTypeSubtypeDialog.newInstance(listener)
             dialog.show(fm, "NotificationFragment")

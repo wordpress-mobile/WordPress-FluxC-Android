@@ -110,7 +110,7 @@ class MainFragment : Fragment() {
     private fun showSSLWarningDialog(certifString: String) {
         val ft = fragmentManager?.beginTransaction()
         val newFragment = SSLWarningDialog.newInstance(
-                { dialog, which ->
+                { _, _ ->
                     // Add the certificate to our list
                     memorizingTrustManager.storeLastFailure()
                     // Retry login action
