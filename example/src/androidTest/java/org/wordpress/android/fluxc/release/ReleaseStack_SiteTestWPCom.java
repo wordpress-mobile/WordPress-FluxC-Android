@@ -256,7 +256,17 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     @Test
     public void testWpcomSubdomainSuggestions() throws InterruptedException {
         String keywords = "awesomesubdomain";
-        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20);
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20, false);
+        mDispatcher.dispatch(SiteActionBuilder.newSuggestDomainsAction(payload));
+        mNextEvent = TestEvents.FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testWpcomSubdomainDotBlogSuggestions() throws InterruptedException {
+        String keywords = "awesomesubdomain";
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, true, 20, true);
         mDispatcher.dispatch(SiteActionBuilder.newSuggestDomainsAction(payload));
         mNextEvent = TestEvents.FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS;
         mCountDownLatch = new CountDownLatch(1);
@@ -464,9 +474,12 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         }
         assertEquals(TestEvents.FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS, mNextEvent);
 
-        final String suffix = ".wordpress.com";
+        final String wpcomSuffix = ".wordpress.com";
+        final String dotBlogSuffix = ".blog";
         for (DomainSuggestionResponse suggestionResponse : event.suggestions) {
-            assertTrue("Was expecting the domain to end in " + suffix, suggestionResponse.domain_name.endsWith(suffix));
+            String domain = suggestionResponse.domain_name;
+            assertTrue("Was expecting the domain to end in " + wpcomSuffix + " or " + dotBlogSuffix,
+                    domain.endsWith(wpcomSuffix) || domain.endsWith(dotBlogSuffix));
         }
 
         mCountDownLatch.countDown();
