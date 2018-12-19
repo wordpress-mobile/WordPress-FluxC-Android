@@ -25,7 +25,7 @@ import javax.inject.Inject
  *
  * If these tests ever start to fail because of this ID, we can simply change it to a different value.
  */
-private const val SEGMENT_ID_TO_TEST = 101L
+private const val SEGMENT_ID_TO_TEST = 1L
 private const val FETCH_VERTICALS_SEARCH_QUERY = "restaurant"
 private const val FETCH_VERTICALS_LIMIT = 2
 
