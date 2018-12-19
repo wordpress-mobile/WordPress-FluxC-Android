@@ -474,9 +474,12 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         }
         assertEquals(TestEvents.FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS, mNextEvent);
 
-        final String suffix = ".wordpress.com";
+        final String dotComSuffix = ".wordpress.com";
+        final String dotBlogSuffix = ".blog";
         for (DomainSuggestionResponse suggestionResponse : event.suggestions) {
-            assertTrue("Was expecting the domain to end in " + suffix, suggestionResponse.domain_name.endsWith(suffix));
+            String domain = suggestionResponse.domain_name;
+            assertTrue("Was expecting the domain to end in " + dotComSuffix + " or " + dotBlogSuffix,
+                    domain.endsWith(dotComSuffix) || domain.endsWith(dotBlogSuffix));
         }
 
         mCountDownLatch.countDown();
