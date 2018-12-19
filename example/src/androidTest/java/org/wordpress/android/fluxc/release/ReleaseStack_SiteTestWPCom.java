@@ -264,6 +264,16 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     }
 
     @Test
+    public void testWpcomSubdomainDotBlogSuggestions() throws InterruptedException {
+        String keywords = "awesomesubdomain";
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, true, 20, true);
+        mDispatcher.dispatch(SiteActionBuilder.newSuggestDomainsAction(payload));
+        mNextEvent = TestEvents.FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
     public void testSiteQuotaAllowed() throws InterruptedException {
         authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         // Get the first site
