@@ -89,6 +89,7 @@ class MainFragment : Fragment() {
         uploads.setOnClickListener(getOnClickListener(UploadsFragment()))
         themes.setOnClickListener(getOnClickListener(ThemeFragment()))
         woo.setOnClickListener(getOnClickListener(WooCommerceFragment()))
+        notifs.setOnClickListener(getOnClickListener(NotificationsFragment()))
     }
 
     // Private methods

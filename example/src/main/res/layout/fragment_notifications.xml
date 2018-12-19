@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".NotificationsFragment"
+    android:layout_margin="8dp"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/notifs_fetch_all"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch All Notifications from API"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="16dp"
+        android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
+        android:text="Perform actions on the first site:"/>
+
+    <Button
+        android:id="@+id/notifs_fetch_for_site"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Get Notifications For First Site (db)"/>
+
+    <Button
+        android:id="@+id/notifs_by_type_subtype"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Get Notifications by type or subtype (db)"/>
+
+    <Button
+        android:id="@+id/notifs_mark_seen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mark Notifications Seen"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="16dp"
+        android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
+        android:text="Perform actions on the first notification in list:"/>
+
+    <Button
+        android:id="@+id/notifs_fetch_first"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch Notification From API"/>
+
+    <Button
+        android:id="@+id/notifs_mark_read"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mark Read"/>
+
+    <Button
+        android:id="@+id/notifs_update_first"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Update Notification"/>
+</LinearLayout>

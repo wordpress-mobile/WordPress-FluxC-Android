@@ -6,6 +6,7 @@ import org.wordpress.android.fluxc.example.AccountFragment
 import org.wordpress.android.fluxc.example.CommentsFragment
 import org.wordpress.android.fluxc.example.MainFragment
 import org.wordpress.android.fluxc.example.MediaFragment
+import org.wordpress.android.fluxc.example.NotificationsFragment
 import org.wordpress.android.fluxc.example.PostsFragment
 import org.wordpress.android.fluxc.example.SignedOutActionsFragment
 import org.wordpress.android.fluxc.example.SitesFragment
@@ -48,4 +49,7 @@ internal abstract class FragmentsModule {
 
     @ContributesAndroidInjector
     abstract fun provideWooCommerceFragmentInjector(): WooCommerceFragment
+
+    @ContributesAndroidInjector
+    abstract fun provideNotificationsFragmentInjector(): NotificationsFragment
 }
