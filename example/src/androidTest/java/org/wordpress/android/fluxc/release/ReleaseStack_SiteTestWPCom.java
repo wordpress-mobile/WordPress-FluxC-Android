@@ -69,7 +69,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         SITE_REMOVED,
         FETCHED_CONNECT_SITE_INFO,
         FETCHED_WPCOM_SITE_BY_URL,
-        FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS,
+        FETCHED_DOMAIN_SUGGESTIONS,
         ERROR_INVALID_SITE,
         ERROR_UNKNOWN_SITE,
         INELIGIBLE_FOR_AUTOMATED_TRANSFER,
@@ -256,11 +256,24 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     @Test
     public void testWpcomSubdomainSuggestions() throws InterruptedException {
         String keywords = "awesomesubdomain";
-        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20);
-        mDispatcher.dispatch(SiteActionBuilder.newSuggestDomainsAction(payload));
-        mNextEvent = TestEvents.FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS;
-        mCountDownLatch = new CountDownLatch(1);
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20, false);
+        testSuggestDomains(payload);
+    }
+
+    @Test
+    public void testWpcomSubdomainDotBlogSuggestions() throws InterruptedException {
+        String keywords = "awesomesubdomain";
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, true, 20, true);
+        testSuggestDomains(payload);
+    }
+
+    @Test
+    public void testEmptyDomainSuggestions() throws InterruptedException {
+        // This query should return 0 results which returns a 400 error from the API. This test verifies that
+        // we are converting it to a successful response.
+        String keywords = "test";
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20, false);
+        testSuggestDomains(payload);
     }
 
     @Test
@@ -462,11 +475,14 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(TestEvents.FETCHED_WPCOM_SUBDOMAIN_SUGGESTIONS, mNextEvent);
+        assertEquals(TestEvents.FETCHED_DOMAIN_SUGGESTIONS, mNextEvent);
 
-        final String suffix = ".wordpress.com";
+        final String wpcomSuffix = ".wordpress.com";
+        final String dotBlogSuffix = ".blog";
         for (DomainSuggestionResponse suggestionResponse : event.suggestions) {
-            assertTrue("Was expecting the domain to end in " + suffix, suggestionResponse.domain_name.endsWith(suffix));
+            String domain = suggestionResponse.domain_name;
+            assertTrue("Was expecting the domain to end in " + wpcomSuffix + " or " + dotBlogSuffix,
+                    domain.endsWith(wpcomSuffix) || domain.endsWith(dotBlogSuffix));
         }
 
         mCountDownLatch.countDown();
@@ -564,6 +580,13 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Fetch account from REST API, and wait for OnAccountChanged event
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AccountActionBuilder.newFetchAccountAction());
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void testSuggestDomains(SuggestDomainsPayload payload) throws InterruptedException {
+        mDispatcher.dispatch(SiteActionBuilder.newSuggestDomainsAction(payload));
+        mNextEvent = TestEvents.FETCHED_DOMAIN_SUGGESTIONS;
+        mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }

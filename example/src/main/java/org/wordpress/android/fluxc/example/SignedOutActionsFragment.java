@@ -154,7 +154,7 @@ public class SignedOutActionsFragment extends Fragment {
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String keyword = editText.getText().toString();
-                SuggestDomainsPayload payload = new SuggestDomainsPayload(keyword, false, true, false, 5);
+                SuggestDomainsPayload payload = new SuggestDomainsPayload(keyword, false, true, false, 5, false);
                 mDispatcher.dispatch(SiteActionBuilder.newSuggestDomainsAction(payload));
             }
         });
