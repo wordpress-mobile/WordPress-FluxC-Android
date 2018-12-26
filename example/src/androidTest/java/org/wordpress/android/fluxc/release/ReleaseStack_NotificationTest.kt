@@ -106,7 +106,7 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
             Assert.assertNotNull(lastEvent)
             Assert.assertTrue(lastEvent!!.success)
             Assert.assertEquals(lastEvent!!.changedNotificationLocalIds.size, requestListSize)
-            with (lastEvent!!.changedNotificationLocalIds) {
+            with(lastEvent!!.changedNotificationLocalIds) {
                 requestList.forEach { Assert.assertTrue(contains(it.noteId)) }
             }
         } else {
