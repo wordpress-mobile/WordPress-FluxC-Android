@@ -49,12 +49,12 @@ class NotificationsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         notifs_fetch_all.setOnClickListener {
-            prependToLog("Fetching all notifications from the api...")
+            prependToLog("Fetching all notifications from the api...\n")
             dispatcher.dispatch(NotificationActionBuilder.newFetchNotificationsAction(FetchNotificationsPayload()))
         }
 
         notifs_fetch_for_site.setOnClickListener {
-            prependToLog("Getting all notifications for the first site...")
+            prependToLog("Getting all notifications for the first site...\n")
             val site = siteStore.sites.first()
             val notifs = notificationStore.getNotificationsForSite(site)
 
@@ -65,7 +65,7 @@ class NotificationsFragment : Fragment() {
         notifs_by_type_subtype.setOnClickListener {
             showNotificationTypeSubtypeDialog(object : Listener {
                 override fun onSubmitted(type: String, subtype: String) {
-                    prependToLog("Fetching notifications matching $type or $subtype...")
+                    prependToLog("Fetching notifications matching $type or $subtype...\n")
                     val notifs = notificationStore.getNotifications(listOf(type), listOf(subtype))
                     val groups = notifs.groupingBy {
                         it.subtype?.name?.takeIf { it != Subkind.UNKNOWN.name } ?: it.type.name
@@ -77,29 +77,32 @@ class NotificationsFragment : Fragment() {
         }
 
         notifs_mark_seen.setOnClickListener {
-            prependToLog("Setting notifications last seen time to now")
+            prependToLog("Setting notifications last seen time to now\n")
             dispatcher.dispatch(NotificationActionBuilder
                     .newMarkNotificationsSeenAction(MarkNotificationsSeenPayload(Date().time)))
         }
 
         notifs_fetch_first.setOnClickListener {
-            val note = notificationStore.getNotifications().first()
-            prependToLog("Fetching a single notification with remoteNoteId = ${note.remoteNoteId}")
+            val site = siteStore.sites.first()
+            val note = notificationStore.getNotificationsForSite(site).first()
+            prependToLog("Fetching a single notification with remoteNoteId = ${note.remoteNoteId}\n")
             dispatcher.dispatch(NotificationActionBuilder
                     .newFetchNotificationAction(FetchNotificationPayload(note.remoteNoteId)))
         }
 
         notifs_mark_read.setOnClickListener {
-            val note = notificationStore.getNotifications().first()
-            prependToLog("Setting notification with remoteNoteId of ${note.remoteNoteId} as read")
+            val site = siteStore.sites.first()
+            val note = notificationStore.getNotificationsForSite(site).first()
+            prependToLog("Setting notification with remoteNoteId of ${note.remoteNoteId} as read\n")
             dispatcher.dispatch(NotificationActionBuilder
-                    .newMarkNotificationReadAction(MarkNotificationReadPayload(note)))
+                    .newMarkNotificationsReadAction(MarkNotificationsReadPayload(listOf(note))))
         }
 
         notifs_update_first.setOnClickListener {
-            val note = notificationStore.getNotifications().first()
+            val site = siteStore.sites.first()
+            val note = notificationStore.getNotificationsForSite(site).first()
             note.read = !note.read
-            prependToLog("Updating notification with remoteNoteId of ${note.remoteNoteId}")
+            prependToLog("Updating notification with remoteNoteId of ${note.remoteNoteId} to [read = ${note.read}]\n")
             dispatcher.dispatch(NotificationActionBuilder.newUpdateNotificationAction(note))
         }
     }
