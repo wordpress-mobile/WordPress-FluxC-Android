@@ -39,12 +39,18 @@
         android:layout_height="wrap_content"
         android:text="Get Notifications by type or subtype (db)"/>
 
+    <Button
+        android:id="@+id/notifs_mark_all_read"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mark all unread notifications as read"/>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingTop="16dp"
         android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
-        android:text="Perform actions on the first notification in list:"/>
+        android:text="Actions on the first notification for first site:"/>
 
     <Button
         android:id="@+id/notifs_fetch_first"

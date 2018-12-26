@@ -14,7 +14,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.NotificationAction.FETCH_NOTIFICATION
 import org.wordpress.android.fluxc.action.NotificationAction.FETCH_NOTIFICATIONS
 import org.wordpress.android.fluxc.action.NotificationAction.MARK_NOTIFICATIONS_SEEN
-import org.wordpress.android.fluxc.action.NotificationAction.MARK_NOTIFICATION_READ
+import org.wordpress.android.fluxc.action.NotificationAction.MARK_NOTIFICATIONS_READ
 import org.wordpress.android.fluxc.action.NotificationAction.UPDATE_NOTIFICATION
 import org.wordpress.android.fluxc.example.NotificationTypeSubtypeDialog.Listener
 import org.wordpress.android.fluxc.generated.NotificationActionBuilder
@@ -22,7 +22,7 @@ import org.wordpress.android.fluxc.model.notification.NotificationModel.Subkind
 import org.wordpress.android.fluxc.store.NotificationStore
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationPayload
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationsPayload
-import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationReadPayload
+import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationsReadPayload
 import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationsSeenPayload
 import org.wordpress.android.fluxc.store.NotificationStore.OnNotificationChanged
 import org.wordpress.android.fluxc.store.SiteStore
@@ -98,6 +98,17 @@ class NotificationsFragment : Fragment() {
                     .newMarkNotificationsReadAction(MarkNotificationsReadPayload(listOf(note))))
         }
 
+        notifs_mark_all_read.setOnClickListener {
+            // Fetch only unread notifications from the database for the first site
+            val site = siteStore.sites.first()
+            notificationStore.getNotificationsForSite(site).filter { note -> !note.read }
+                    .takeIf { list -> list.isNotEmpty() }?.let { notes ->
+                        prependToLog("Marking [${notes.size}] unread notifications as read...\n")
+                        dispatcher.dispatch(NotificationActionBuilder
+                                .newMarkNotificationsReadAction(MarkNotificationsReadPayload(notes)))
+            } ?: prependToLog("No unread notifications found!\n")
+        }
+
         notifs_update_first.setOnClickListener {
             val site = siteStore.sites.first()
             val note = notificationStore.getNotificationsForSite(site).first()
@@ -144,10 +155,11 @@ class NotificationsFragment : Fragment() {
                     prependToLog("SUCCESS! ${it.toLogString()}")
                 }
             }
-            MARK_NOTIFICATION_READ -> {
-                val localNoteId = event.changedNotificationLocalIds[0]
-                notificationStore.getNotificationByLocalId(localNoteId)?.let {
-                    prependToLog("SUCCESS! ${it.toLogString()}")
+            MARK_NOTIFICATIONS_READ -> {
+                event.changedNotificationLocalIds.forEach {
+                    notificationStore.getNotificationByLocalId(it)?.let {
+                        prependToLog("SUCCESS! ${it.toLogString()}")
+                    }
                 }
             }
             MARK_NOTIFICATIONS_SEEN -> {

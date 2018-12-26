@@ -18,7 +18,7 @@ import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationsResponsePayload
-import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationReadResponsePayload
+import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationsReadResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationSeenResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.NotificationAppKey
 import org.wordpress.android.fluxc.store.NotificationStore.RegisterDeviceResponsePayload
@@ -177,26 +177,69 @@ class MockedStack_NotificationTest : MockedStack_Base() {
     }
 
     @Test
-    fun testMarkNotificationReadSuccess() {
+    fun testMarkSingleNotificationReadSuccess() {
         val testNoteIdSet = NoteIdSet(0, 22L, 2)
 
         interceptor.respondWith("mark-notification-read-response-success.json")
         notificationRestClient.markNotificationRead(
-                NotificationModel(
+                listOf(NotificationModel(
                         remoteNoteId = testNoteIdSet.remoteNoteId,
-                        localSiteId = testNoteIdSet.localSiteId))
+                        localSiteId = testNoteIdSet.localSiteId)))
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
-        assertEquals(NotificationAction.MARKED_NOTIFICATION_READ, lastAction!!.type)
-        val payload = lastAction!!.payload as MarkNotificationReadResponsePayload
+        assertEquals(NotificationAction.MARKED_NOTIFICATIONS_READ, lastAction!!.type)
+        val payload = lastAction!!.payload as MarkNotificationsReadResponsePayload
 
         assertNotNull(payload)
         assertEquals(payload.success, true)
-        assertNotNull(payload.notification)
-        with(payload.notification!!) {
+        assertNotNull(payload.notifications)
+        assertEquals(1, payload.notifications!!.size)
+        with(payload.notifications!![0]) {
             assertEquals(remoteNoteId, testNoteIdSet.remoteNoteId)
+        }
+    }
+
+    @Test
+    fun testMarkMultipleNotificationsReadSuccess() {
+        val testNoteIdSet1 = NoteIdSet(0, 22L, 2)
+        val testNoteIdSet2 = NoteIdSet(0, 33L, 3)
+        val testNoteIdSet3 = NoteIdSet(0, 44L, 4)
+
+        interceptor.respondWith("mark-notification-read-response-success.json")
+        notificationRestClient.markNotificationRead(listOf(
+                NotificationModel(
+                        remoteNoteId = testNoteIdSet1.remoteNoteId,
+                        localSiteId = testNoteIdSet1.localSiteId),
+                NotificationModel(
+                        remoteNoteId = testNoteIdSet2.remoteNoteId,
+                        localSiteId = testNoteIdSet2.localSiteId),
+                NotificationModel(
+                        remoteNoteId = testNoteIdSet3.remoteNoteId,
+                        localSiteId = testNoteIdSet3.localSiteId)))
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(NotificationAction.MARKED_NOTIFICATIONS_READ, lastAction!!.type)
+        val payload = lastAction!!.payload as MarkNotificationsReadResponsePayload
+
+        assertNotNull(payload)
+        assertEquals(payload.success, true)
+        assertNotNull(payload.notifications)
+        assertEquals(3, payload.notifications!!.size)
+        with(payload.notifications!![0]) {
+            assertEquals(remoteNoteId, testNoteIdSet1.remoteNoteId)
+            assertEquals(localSiteId, testNoteIdSet1.localSiteId)
+        }
+        with(payload.notifications!![1]) {
+            assertEquals(remoteNoteId, testNoteIdSet2.remoteNoteId)
+            assertEquals(localSiteId, testNoteIdSet2.localSiteId)
+        }
+        with(payload.notifications!![2]) {
+            assertEquals(remoteNoteId, testNoteIdSet3.remoteNoteId)
+            assertEquals(localSiteId, testNoteIdSet3.localSiteId)
         }
     }
 
