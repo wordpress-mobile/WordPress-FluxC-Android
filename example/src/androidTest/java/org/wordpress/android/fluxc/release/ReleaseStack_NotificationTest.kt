@@ -13,20 +13,22 @@ import org.wordpress.android.fluxc.generated.NotificationActionBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient
 import org.wordpress.android.fluxc.store.NotificationStore
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationsPayload
+import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationsReadPayload
 import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationsSeenPayload
 import org.wordpress.android.fluxc.store.NotificationStore.OnNotificationChanged
-import java.lang.AssertionError
 import java.lang.Exception
 import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
+import kotlin.AssertionError
 
 class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
     internal enum class TestEvent {
         NONE,
         FETCHED_NOTIFS,
-        MARKED_NOTIFS_SEEN
+        MARKED_NOTIFS_SEEN,
+        MARKED_NOTIFS_READ
     }
 
     @Inject internal lateinit var notificationStore: NotificationStore
@@ -74,6 +76,44 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
         assertNotNull(lastEvent?.lastSeenTime)
     }
 
+    @Throws(InterruptedException::class)
+    @Test
+    fun testMarkNotificationsRead() {
+        // First, fetch notifications and store in database.
+        nextEvent = TestEvent.FETCHED_NOTIFS
+        mCountDownLatch = CountDownLatch(1)
+
+        mDispatcher.dispatch(NotificationActionBuilder
+                .newFetchNotificationsAction(FetchNotificationsPayload()))
+
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        val fetchedNotifs = notificationStore.getNotifications()
+
+        // Second, request up to 3 notifications from the db to set to read
+        if (fetchedNotifs.isNotEmpty()) {
+            val requestList = fetchedNotifs.take(3)
+            val requestListSize = requestList.size
+
+            nextEvent = TestEvent.MARKED_NOTIFS_READ
+            mCountDownLatch = CountDownLatch(1)
+
+            mDispatcher.dispatch(NotificationActionBuilder
+                    .newMarkNotificationsReadAction(MarkNotificationsReadPayload(requestList)))
+            Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+            // Verify
+            Assert.assertNotNull(lastEvent)
+            Assert.assertTrue(lastEvent!!.success)
+            Assert.assertEquals(lastEvent!!.changedNotificationLocalIds.size, requestListSize)
+            with (lastEvent!!.changedNotificationLocalIds) {
+                requestList.forEach { Assert.assertTrue(contains(it.noteId)) }
+            }
+        } else {
+            throw AssertionError("No notifications fetched to run test with!")
+        }
+    }
+
     @Suppress("unused")
     @Subscribe(threadMode = MAIN)
     fun onNotificationChanged(event: OnNotificationChanged) {
@@ -89,6 +129,10 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
             }
             NotificationAction.MARK_NOTIFICATIONS_SEEN -> {
                 assertEquals(TestEvent.MARKED_NOTIFS_SEEN, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            NotificationAction.MARK_NOTIFICATIONS_READ -> {
+                assertEquals(TestEvent.MARKED_NOTIFS_READ, nextEvent)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: ${event.causeOfChange}")
