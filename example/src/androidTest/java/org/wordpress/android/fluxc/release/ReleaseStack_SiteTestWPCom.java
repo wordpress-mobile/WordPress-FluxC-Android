@@ -36,6 +36,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnUserRolesChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnWPComSiteFetched;
 import org.wordpress.android.fluxc.store.SiteStore.PlansErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
+import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -70,6 +71,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         FETCHED_CONNECT_SITE_INFO,
         FETCHED_WPCOM_SITE_BY_URL,
         FETCHED_DOMAIN_SUGGESTIONS,
+        DOMAIN_SUGGESTION_ERROR_INVALID_QUERY,
         ERROR_INVALID_SITE,
         ERROR_UNKNOWN_SITE,
         INELIGIBLE_FOR_AUTOMATED_TRANSFER,
@@ -257,14 +259,14 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     public void testWpcomSubdomainSuggestions() throws InterruptedException {
         String keywords = "awesomesubdomain";
         SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20, false);
-        testSuggestDomains(payload);
+        testSuggestDomains(payload, TestEvents.FETCHED_DOMAIN_SUGGESTIONS);
     }
 
     @Test
     public void testWpcomSubdomainDotBlogSuggestions() throws InterruptedException {
         String keywords = "awesomesubdomain";
         SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, true, 20, true);
-        testSuggestDomains(payload);
+        testSuggestDomains(payload, TestEvents.FETCHED_DOMAIN_SUGGESTIONS);
     }
 
     @Test
@@ -273,7 +275,15 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // we are converting it to a successful response.
         String keywords = "test";
         SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20, false);
-        testSuggestDomains(payload);
+        testSuggestDomains(payload, TestEvents.FETCHED_DOMAIN_SUGGESTIONS);
+    }
+
+    @Test
+    public void testInvalidQueryDomainSuggestions() throws InterruptedException {
+        // This query should return
+        String keywords = ".";
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20, false);
+        testSuggestDomains(payload, TestEvents.DOMAIN_SUGGESTION_ERROR_INVALID_QUERY);
     }
 
     @Test
@@ -473,7 +483,13 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     @Subscribe
     public void onSuggestedDomains(OnSuggestedDomains event) {
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            if (mNextEvent == TestEvents.DOMAIN_SUGGESTION_ERROR_INVALID_QUERY) {
+                assertEquals(event.error.type, SuggestDomainErrorType.INVALID_QUERY);
+            } else {
+                throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            }
+            mCountDownLatch.countDown();
+            return;
         }
         assertEquals(TestEvents.FETCHED_DOMAIN_SUGGESTIONS, mNextEvent);
 
@@ -583,9 +599,9 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void testSuggestDomains(SuggestDomainsPayload payload) throws InterruptedException {
+    private void testSuggestDomains(SuggestDomainsPayload payload, TestEvents nextEvent) throws InterruptedException {
         mDispatcher.dispatch(SiteActionBuilder.newSuggestDomainsAction(payload));
-        mNextEvent = TestEvents.FETCHED_DOMAIN_SUGGESTIONS;
+        mNextEvent = nextEvent;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
