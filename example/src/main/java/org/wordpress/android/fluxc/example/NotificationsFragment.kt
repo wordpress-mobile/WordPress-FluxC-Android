@@ -85,20 +85,22 @@ class NotificationsFragment : Fragment() {
         }
 
         notifs_fetch_first.setOnClickListener {
-            selectedSite?.let {
-                val note = notificationStore.getNotificationsForSite(it).first()
-                prependToLog("Fetching a single notification with remoteNoteId = ${note.remoteNoteId}\n")
-                dispatcher.dispatch(NotificationActionBuilder
-                        .newFetchNotificationAction(FetchNotificationPayload(note.remoteNoteId)))
+            selectedSite?.let { site ->
+                notificationStore.getNotificationsForSite(site).firstOrNull()?.let { note ->
+                    prependToLog("Fetching a single notification with remoteNoteId = ${note.remoteNoteId}\n")
+                    dispatcher.dispatch(NotificationActionBuilder
+                            .newFetchNotificationAction(FetchNotificationPayload(note.remoteNoteId)))
+                } ?: prependToLog("No notifications found for selected site!")
             } ?: prependToLog("No site selected!")
         }
 
         notifs_mark_read.setOnClickListener {
-            selectedSite?.let {
-                val note = notificationStore.getNotificationsForSite(it).first()
-                prependToLog("Setting notification with remoteNoteId of ${note.remoteNoteId} as read\n")
-                dispatcher.dispatch(NotificationActionBuilder
-                        .newMarkNotificationsReadAction(MarkNotificationsReadPayload(listOf(note))))
+            selectedSite?.let { site ->
+                notificationStore.getNotificationsForSite(site).firstOrNull()?.let { note ->
+                    prependToLog("Setting notification with remoteNoteId of ${note.remoteNoteId} as read\n")
+                    dispatcher.dispatch(NotificationActionBuilder
+                            .newMarkNotificationsReadAction(MarkNotificationsReadPayload(listOf(note))))
+                } ?: prependToLog("No notifications found for selected site!")
             } ?: prependToLog("No site selected!")
         }
 
@@ -115,12 +117,13 @@ class NotificationsFragment : Fragment() {
         }
 
         notifs_update_first.setOnClickListener {
-            selectedSite?.let {
-                val note = notificationStore.getNotificationsForSite(it).first()
-                note.read = !note.read
-                prependToLog("Updating notification with remoteNoteId " +
-                        "of ${note.remoteNoteId} to [read = ${note.read}]\n")
-                dispatcher.dispatch(NotificationActionBuilder.newUpdateNotificationAction(note))
+            selectedSite?.let { site ->
+                notificationStore.getNotificationsForSite(site).firstOrNull()?.let { note ->
+                    note.read = !note.read
+                    prependToLog("Updating notification with remoteNoteId " +
+                            "of ${note.remoteNoteId} to [read = ${note.read}]\n")
+                    dispatcher.dispatch(NotificationActionBuilder.newUpdateNotificationAction(note))
+                } ?: prependToLog("No notifications found for selected site!")
             } ?: prependToLog("No site selected!")
         }
 
