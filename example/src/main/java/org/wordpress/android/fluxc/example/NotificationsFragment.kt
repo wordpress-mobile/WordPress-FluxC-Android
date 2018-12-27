@@ -58,10 +58,9 @@ class NotificationsFragment : Fragment() {
 
         notifs_fetch_for_site.setOnClickListener {
             prependToLog("Getting all notifications for the first site...\n")
-            selectedSite?.let {
-                val notifs = notificationStore.getNotificationsForSite(it)
-                // todo amanda - fix display name
-                prependToLog("SUCCESS! ${notifs.size} pulled from the database for ${it.name}")
+            selectedSite?.let { site ->
+                val notifs = notificationStore.getNotificationsForSite(site)
+                prependToLog("SUCCESS! ${notifs.size} pulled from the database for ${site.name}")
             } ?: prependToLog("No site selected!")
         }
 
@@ -70,8 +69,8 @@ class NotificationsFragment : Fragment() {
                 override fun onSubmitted(type: String, subtype: String) {
                     prependToLog("Fetching notifications matching $type or $subtype...\n")
                     val notifs = notificationStore.getNotifications(listOf(type), listOf(subtype))
-                    val groups = notifs.groupingBy {
-                        it.subtype?.name?.takeIf { it != Subkind.UNKNOWN.name } ?: it.type.name
+                    val groups = notifs.groupingBy { notif ->
+                        notif.subtype?.name?.takeIf { subtype -> subtype != Subkind.UNKNOWN.name } ?: notif.type.name
                     }.fold(0) { acc, _ -> acc + 1 }
                     prependToLog("SUCCESS! Total records matching filtered selections:" +
                             "\n- $type: ${groups[type] ?: 0}\n- $subtype: ${groups[subtype] ?: 0}")
@@ -105,8 +104,8 @@ class NotificationsFragment : Fragment() {
 
         notifs_mark_all_read.setOnClickListener {
             // Fetch only unread notifications from the database for the first site
-            selectedSite?.let {
-                notificationStore.getNotificationsForSite(it).filter { note -> !note.read }
+            selectedSite?.let { site ->
+                notificationStore.getNotificationsForSite(site).filter { note -> !note.read }
                         .takeIf { list -> list.isNotEmpty() }?.let { notes ->
                             prependToLog("Marking [${notes.size}] unread notifications as read...\n")
                             dispatcher.dispatch(NotificationActionBuilder
@@ -176,8 +175,8 @@ class NotificationsFragment : Fragment() {
             }
             MARK_NOTIFICATIONS_READ -> {
                 event.changedNotificationLocalIds.forEach {
-                    notificationStore.getNotificationByLocalId(it)?.let {
-                        prependToLog("SUCCESS! ${it.toLogString()}")
+                    notificationStore.getNotificationByLocalId(it)?.let { notif ->
+                        prependToLog("SUCCESS! ${notif.toLogString()}")
                     }
                 }
             }
