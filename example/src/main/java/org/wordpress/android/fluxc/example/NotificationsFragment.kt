@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.action.NotificationAction.MARK_NOTIFICATIONS_
 import org.wordpress.android.fluxc.action.NotificationAction.UPDATE_NOTIFICATION
 import org.wordpress.android.fluxc.example.NotificationTypeSubtypeDialog.Listener
 import org.wordpress.android.fluxc.generated.NotificationActionBuilder
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.notification.NotificationModel.Subkind
 import org.wordpress.android.fluxc.store.NotificationStore
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationPayload
@@ -36,6 +37,8 @@ class NotificationsFragment : Fragment() {
     @Inject internal lateinit var siteStore: SiteStore
 
     private var typeSelectionDialog: NotificationTypeSubtypeDialog? = null
+    private var selectedSite: SiteModel? = null
+    private var selectedPos: Int = -1
 
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
@@ -55,11 +58,11 @@ class NotificationsFragment : Fragment() {
 
         notifs_fetch_for_site.setOnClickListener {
             prependToLog("Getting all notifications for the first site...\n")
-            val site = siteStore.sites.first()
-            val notifs = notificationStore.getNotificationsForSite(site)
-
-            // todo amanda - fix display name
-            prependToLog("SUCCESS! ${notifs.size} pulled from the database for ${site.name}")
+            selectedSite?.let {
+                val notifs = notificationStore.getNotificationsForSite(it)
+                // todo amanda - fix display name
+                prependToLog("SUCCESS! ${notifs.size} pulled from the database for ${it.name}")
+            } ?: prependToLog("No site selected!")
         }
 
         notifs_by_type_subtype.setOnClickListener {
@@ -83,38 +86,54 @@ class NotificationsFragment : Fragment() {
         }
 
         notifs_fetch_first.setOnClickListener {
-            val site = siteStore.sites.first()
-            val note = notificationStore.getNotificationsForSite(site).first()
-            prependToLog("Fetching a single notification with remoteNoteId = ${note.remoteNoteId}\n")
-            dispatcher.dispatch(NotificationActionBuilder
-                    .newFetchNotificationAction(FetchNotificationPayload(note.remoteNoteId)))
+            selectedSite?.let {
+                val note = notificationStore.getNotificationsForSite(it).first()
+                prependToLog("Fetching a single notification with remoteNoteId = ${note.remoteNoteId}\n")
+                dispatcher.dispatch(NotificationActionBuilder
+                        .newFetchNotificationAction(FetchNotificationPayload(note.remoteNoteId)))
+            } ?: prependToLog("No site selected!")
         }
 
         notifs_mark_read.setOnClickListener {
-            val site = siteStore.sites.first()
-            val note = notificationStore.getNotificationsForSite(site).first()
-            prependToLog("Setting notification with remoteNoteId of ${note.remoteNoteId} as read\n")
-            dispatcher.dispatch(NotificationActionBuilder
-                    .newMarkNotificationsReadAction(MarkNotificationsReadPayload(listOf(note))))
+            selectedSite?.let {
+                val note = notificationStore.getNotificationsForSite(it).first()
+                prependToLog("Setting notification with remoteNoteId of ${note.remoteNoteId} as read\n")
+                dispatcher.dispatch(NotificationActionBuilder
+                        .newMarkNotificationsReadAction(MarkNotificationsReadPayload(listOf(note))))
+            } ?: prependToLog("No site selected!")
         }
 
         notifs_mark_all_read.setOnClickListener {
             // Fetch only unread notifications from the database for the first site
-            val site = siteStore.sites.first()
-            notificationStore.getNotificationsForSite(site).filter { note -> !note.read }
-                    .takeIf { list -> list.isNotEmpty() }?.let { notes ->
-                        prependToLog("Marking [${notes.size}] unread notifications as read...\n")
-                        dispatcher.dispatch(NotificationActionBuilder
-                                .newMarkNotificationsReadAction(MarkNotificationsReadPayload(notes)))
-            } ?: prependToLog("No unread notifications found!\n")
+            selectedSite?.let {
+                notificationStore.getNotificationsForSite(it).filter { note -> !note.read }
+                        .takeIf { list -> list.isNotEmpty() }?.let { notes ->
+                            prependToLog("Marking [${notes.size}] unread notifications as read...\n")
+                            dispatcher.dispatch(NotificationActionBuilder
+                                    .newMarkNotificationsReadAction(MarkNotificationsReadPayload(notes)))
+                        } ?: prependToLog("No unread notifications found!\n")
+            } ?: prependToLog("No site selected!")
         }
 
         notifs_update_first.setOnClickListener {
-            val site = siteStore.sites.first()
-            val note = notificationStore.getNotificationsForSite(site).first()
-            note.read = !note.read
-            prependToLog("Updating notification with remoteNoteId of ${note.remoteNoteId} to [read = ${note.read}]\n")
-            dispatcher.dispatch(NotificationActionBuilder.newUpdateNotificationAction(note))
+            selectedSite?.let {
+                val note = notificationStore.getNotificationsForSite(it).first()
+                note.read = !note.read
+                prependToLog("Updating notification with remoteNoteId " +
+                        "of ${note.remoteNoteId} to [read = ${note.read}]\n")
+                dispatcher.dispatch(NotificationActionBuilder.newUpdateNotificationAction(note))
+            } ?: prependToLog("No site selected!")
+        }
+
+        notifs_select_site.setOnClickListener {
+            showSiteSelectorDialog(selectedPos, object : SiteSelectorDialog.Listener {
+                override fun onSiteSelected(site: SiteModel, pos: Int) {
+                    selectedSite = site
+                    selectedPos = pos
+                    toggleSiteDependentButtons(true)
+                    notif_selected_site.text = site.name ?: site.displayName
+                }
+            })
         }
     }
 
@@ -172,12 +191,25 @@ class NotificationsFragment : Fragment() {
         }
     }
 
-    private fun prependToLog(s: String) = (activity as MainExampleActivity).prependToLog(s)
-
     private fun showNotificationTypeSubtypeDialog(listener: NotificationTypeSubtypeDialog.Listener) {
         fragmentManager?.let { fm ->
             val dialog = NotificationTypeSubtypeDialog.newInstance(listener)
             dialog.show(fm, "NotificationFragment")
         }
+    }
+
+    private fun showSiteSelectorDialog(selectedPos: Int, listener: SiteSelectorDialog.Listener) {
+        fragmentManager?.let { fm ->
+            val dialog = SiteSelectorDialog.newInstance(listener, selectedPos)
+            dialog.show(fm, "SiteSelectorDialog")
+        }
+    }
+
+    private fun toggleSiteDependentButtons(enabled: Boolean) {
+        notifs_fetch_for_site.isEnabled = enabled
+        notifs_mark_all_read.isEnabled = enabled
+        notifs_fetch_first.isEnabled = enabled
+        notifs_mark_read.isEnabled = enabled
+        notifs_update_first.isEnabled = enabled
     }
 }
