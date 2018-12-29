@@ -49,6 +49,7 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
     private var lastAction: Action<*>? = null
     private var actionCountdownLatch: CountDownLatch by Delegates.notNull()
     private var nextAction: NotificationAction? = null
+    private val incomingActions: MutableList<Action<*>> = mutableListOf()
 
     @Throws(Exception::class)
     override fun setUp() {
@@ -59,11 +60,13 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
         init()
         // Reset expected test event
         nextEvent = TestEvent.NONE
+        this.incomingActions.clear()
+        nextAction = null
     }
 
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchNotifications() {
+    fun testFetchNotifications_basic() {
         nextEvent = TestEvent.FETCHED_NOTIFS
         mCountDownLatch = CountDownLatch(1)
 
@@ -81,15 +84,18 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
     fun testFetchNotifications_noExistingNotifsInDB() {
         nextEvent = TestEvent.FETCHED_NOTIFS
         mCountDownLatch = CountDownLatch(1)
+        nextAction = NotificationAction.FETCHED_NOTIFICATIONS
+        actionCountdownLatch = CountDownLatch(2)
 
         mDispatcher.dispatch(NotificationActionBuilder
                 .newFetchNotificationsAction(FetchNotificationsPayload()))
 
-        // Verify action is the appropriate action
-        nextAction = NotificationAction.FETCHED_NOTIFICATIONS
-        actionCountdownLatch = CountDownLatch(1)
+        // Verify expected dispatch actions
         assertTrue(actionCountdownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         assertEquals(lastAction!!.type, nextAction)
+        assertEquals(incomingActions[0].type, NotificationAction.FETCH_NOTIFICATIONS)
+        assertEquals(incomingActions[1].type, NotificationAction.FETCHED_NOTIFICATIONS)
+
         val payload = lastAction!!.payload as FetchNotificationsResponsePayload
         assertNotNull(payload)
         assertFalse(payload.isError)
@@ -105,7 +111,10 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchNotifications_synchronizeCachedNotifs() {
+        //
         // First, fetch notifications and save to db
+        //
+
         nextAction = null
         nextEvent = TestEvent.FETCHED_NOTIFS
         mCountDownLatch = CountDownLatch(1)
@@ -115,8 +124,13 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
 
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        var totalNotifs = notificationStore.getNotifications().size
+        val totalNotifs = notificationStore.getNotifications().size
         assertTrue(totalNotifs > 0 && totalNotifs <= NotificationRestClient.NOTIFICATION_DEFAULT_NUMBER)
+
+        //
+        // Second, Split the existing notifications into thirds, forcing an update, insert and ignore when new
+        // notifications are sync'd
+        //
 
         // Determine how many notifications can be changed for each of the 3 types to test
         val totalInDb = notificationSqlUtils.getNotificationsCount()
@@ -140,28 +154,39 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
                     notificationSqlUtils.deleteNotificationByRemoteId(it.remoteNoteId)
                     it.remoteNoteId }
 
-        // Attempt to fetch notifications again, this time it should route through syncing with hashes logic
+        //
+        // Third, attempt to fetch notifications again, this time it should route through the
+        // syncing with hashes logic
+        //
+
         nextEvent = TestEvent.FETCHED_NOTIFS
         mCountDownLatch = CountDownLatch(1)
         nextAction = NotificationAction.FETCHED_NOTIFICATION_HASHES
-        actionCountdownLatch = CountDownLatch(1)
+        actionCountdownLatch = CountDownLatch(2)
 
         mDispatcher.dispatch(NotificationActionBuilder
                 .newFetchNotificationsAction(FetchNotificationsPayload()))
 
-        // Verify action is the appropriate action
+        // Wait for our expected next action
         assertTrue(actionCountdownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
+        // Verify fetch hashes action and payload
         assertEquals(lastAction!!.type, nextAction)
+        assertEquals(incomingActions[0].type, NotificationAction.FETCH_NOTIFICATIONS)
+        assertEquals(incomingActions[1].type, NotificationAction.FETCHED_NOTIFICATION_HASHES)
         val payload = lastAction!!.payload as FetchNotificationHashesResponsePayload
         assertNotNull(payload)
         assertFalse(payload.isError)
         assertTrue(payload.hashesMap.isNotEmpty())
 
-        // Now wait for full event completion
+        //
+        // Finally, wait for full fetch notifications event completion, and verify results
+        //
+
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        // Verify
+
+        // Verify updated and deleted notifications have been properly taken care of
         val cachedNotifs = notificationStore.getNotifications()
         assertTrue(cachedNotifs.isNotEmpty() && cachedNotifs.size <= NotificationRestClient.NOTIFICATION_DEFAULT_NUMBER)
         assertEquals(newList.size + updateList.size, cachedNotifs.size)
@@ -247,8 +272,9 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
     @Suppress("unused")
     @Subscribe
     fun onAction(action: Action<*>) {
-        if (action.type == nextAction) {
+        if (nextAction != null && action.type is NotificationAction) {
             lastAction = action
+            incomingActions.add(action)
             actionCountdownLatch.countDown()
         }
     }
