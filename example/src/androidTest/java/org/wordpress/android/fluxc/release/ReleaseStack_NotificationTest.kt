@@ -124,8 +124,8 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
 
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        val totalNotifs = notificationStore.getNotifications().size
-        assertTrue(totalNotifs > 0 && totalNotifs <= NotificationRestClient.NOTIFICATION_DEFAULT_NUMBER)
+        val totalInitialNotifs = notificationStore.getNotifications().size
+        assertTrue(totalInitialNotifs > 0 && totalInitialNotifs <= NotificationRestClient.NOTIFICATION_DEFAULT_NUMBER)
 
         //
         // Second, Split the existing notifications into thirds, forcing an update, insert and ignore when new
@@ -184,12 +184,19 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
         //
 
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+        Assert.assertNotNull(lastEvent)
+        assertEquals(lastEvent!!.causeOfChange, NotificationAction.FETCH_NOTIFICATIONS)
 
 
-        // Verify updated and deleted notifications have been properly taken care of
+        // Fetch fresh list of cached notifications from the db
         val cachedNotifs = notificationStore.getNotifications()
         assertTrue(cachedNotifs.isNotEmpty() && cachedNotifs.size <= NotificationRestClient.NOTIFICATION_DEFAULT_NUMBER)
-        assertEquals(newList.size + updateList.size, cachedNotifs.size)
+
+        // Verify only the notifications we changed or deleted were fetched and inserted into the database.
+        assertEquals(newList.size + updateList.size, lastEvent!!.rowsAffected)
+
+        // Verify the initial size of the table is the same after second fetch
+        assertEquals(cachedNotifs.size, totalInitialNotifs)
     }
 
     @Throws(InterruptedException::class)
