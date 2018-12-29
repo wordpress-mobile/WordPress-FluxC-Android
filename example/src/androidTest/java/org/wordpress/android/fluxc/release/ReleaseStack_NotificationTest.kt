@@ -134,7 +134,7 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
 
         // Determine how many notifications can be changed for each of the 3 types to test
         val totalInDb = notificationSqlUtils.getNotificationsCount()
-        val chunkLimit = Math.floorDiv(totalInDb, 3)
+        val chunkLimit = Math.round(totalInDb/3.0).toInt()
 
         // Build a list of notification ids expected to need updating
         val updateList = notificationSqlUtils.getNotifications()
