@@ -148,7 +148,7 @@ class NotificationsFragment : Fragment() {
 
         notifs_delete_half.setOnClickListener {
             prependToLog("Deleting roughly half of notifications in the db...\n")
-            val count = Math.round(notificationSqlUtils.getNotificationsCount()/2.0).toInt()
+            val count = Math.round(notificationSqlUtils.getNotificationsCount() / 2.0).toInt()
             notificationStore.getNotifications().take(count).sumBy { notif ->
                 notificationSqlUtils.deleteNotificationByRemoteId(notif.remoteNoteId)
             }.also { total -> prependToLog("Success! [$total] records deleted") }

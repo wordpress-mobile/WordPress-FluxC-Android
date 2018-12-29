@@ -134,7 +134,7 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
 
         // Determine how many notifications can be changed for each of the 3 types to test
         val totalInDb = notificationSqlUtils.getNotificationsCount()
-        val chunkLimit = Math.round(totalInDb/3.0).toInt()
+        val chunkLimit = Math.round(totalInDb / 3.0).toInt()
 
         // Build a list of notification ids expected to need updating
         val updateList = notificationSqlUtils.getNotifications()
@@ -186,7 +186,6 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
         Assert.assertNotNull(lastEvent)
         assertEquals(lastEvent!!.causeOfChange, NotificationAction.FETCH_NOTIFICATIONS)
-
 
         // Fetch fresh list of cached notifications from the db
         val cachedNotifs = notificationStore.getNotifications()
