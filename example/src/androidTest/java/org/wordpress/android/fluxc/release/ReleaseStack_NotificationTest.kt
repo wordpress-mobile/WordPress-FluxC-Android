@@ -4,26 +4,36 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode.MAIN
 import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.NotificationAction
+import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.NotificationActionBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient
+import org.wordpress.android.fluxc.persistence.NotificationSqlUtils
 import org.wordpress.android.fluxc.store.NotificationStore
+import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationHashesResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationsPayload
+import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationsResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationsReadPayload
 import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationsSeenPayload
 import org.wordpress.android.fluxc.store.NotificationStore.OnNotificationChanged
 import java.lang.Exception
 import java.util.Date
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
 import kotlin.AssertionError
+import kotlin.properties.Delegates
 
 class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
+    companion object {
+        const val BOGUS_HASH = 1L
+    }
     internal enum class TestEvent {
         NONE,
         FETCHED_NOTIFS,
@@ -32,9 +42,13 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
     }
 
     @Inject internal lateinit var notificationStore: NotificationStore
+    @Inject internal lateinit var notificationSqlUtils: NotificationSqlUtils
 
     private var nextEvent: TestEvent = TestEvent.NONE
     private var lastEvent: OnNotificationChanged? = null
+    private var lastAction: Action<*>? = null
+    private var actionCountdownLatch: CountDownLatch by Delegates.notNull()
+    private var nextAction: NotificationAction? = null
 
     @Throws(Exception::class)
     override fun setUp() {
@@ -60,6 +74,97 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
 
         val fetchedNotifs = notificationStore.getNotifications().size
         assertTrue(fetchedNotifs > 0 && fetchedNotifs <= NotificationRestClient.NOTIFICATION_DEFAULT_NUMBER)
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchNotifications_noExistingNotifsInDB() {
+        nextEvent = TestEvent.FETCHED_NOTIFS
+        mCountDownLatch = CountDownLatch(1)
+
+        mDispatcher.dispatch(NotificationActionBuilder
+                .newFetchNotificationsAction(FetchNotificationsPayload()))
+
+        // Verify action is the appropriate action
+        nextAction = NotificationAction.FETCHED_NOTIFICATIONS
+        actionCountdownLatch = CountDownLatch(1)
+        assertTrue(actionCountdownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        assertEquals(lastAction!!.type, nextAction)
+        val payload = lastAction!!.payload as FetchNotificationsResponsePayload
+        assertNotNull(payload)
+        assertFalse(payload.isError)
+        assertTrue(payload.notifs.isNotEmpty())
+
+        // Now wait for full event completion
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        val fetchedNotifs = notificationStore.getNotifications().size
+        assertTrue(fetchedNotifs > 0 && fetchedNotifs <= NotificationRestClient.NOTIFICATION_DEFAULT_NUMBER)
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchNotifications_synchronizeCachedNotifs() {
+        // First, fetch notifications and save to db
+        nextAction = null
+        nextEvent = TestEvent.FETCHED_NOTIFS
+        mCountDownLatch = CountDownLatch(1)
+
+        mDispatcher.dispatch(NotificationActionBuilder
+                .newFetchNotificationsAction(FetchNotificationsPayload()))
+
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        var totalNotifs = notificationStore.getNotifications().size
+        assertTrue(totalNotifs > 0 && totalNotifs <= NotificationRestClient.NOTIFICATION_DEFAULT_NUMBER)
+
+        // Determine how many notifications can be changed for each of the 3 types to test
+        val totalInDb = notificationSqlUtils.getNotificationsCount()
+        val chunkLimit = Math.floorDiv(totalInDb, 3)
+
+        // Build a list of notification ids expected to need updating
+        val updateList = notificationSqlUtils.getNotifications()
+                .take(chunkLimit).map {
+                    // Change the hash to force an update
+                    it.noteHash = BOGUS_HASH
+
+                    // Save to database
+                    notificationSqlUtils.insertOrUpdateNotification(it)
+                    it.remoteNoteId }
+
+        // Build a list of notification ids expected to be inserted as new
+        val newList = notificationSqlUtils.getNotifications()
+                .filter { !updateList.contains(it.remoteNoteId) }
+                .take(chunkLimit).map {
+                    // delete from db
+                    notificationSqlUtils.deleteNotificationByRemoteId(it.remoteNoteId)
+                    it.remoteNoteId }
+
+        // Attempt to fetch notifications again, this time it should route through syncing with hashes logic
+        nextEvent = TestEvent.FETCHED_NOTIFS
+        mCountDownLatch = CountDownLatch(1)
+        nextAction = NotificationAction.FETCHED_NOTIFICATION_HASHES
+        actionCountdownLatch = CountDownLatch(1)
+
+        mDispatcher.dispatch(NotificationActionBuilder
+                .newFetchNotificationsAction(FetchNotificationsPayload()))
+
+        // Verify action is the appropriate action
+        assertTrue(actionCountdownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(lastAction!!.type, nextAction)
+        val payload = lastAction!!.payload as FetchNotificationHashesResponsePayload
+        assertNotNull(payload)
+        assertFalse(payload.isError)
+        assertTrue(payload.hashesMap.isNotEmpty())
+
+        // Now wait for full event completion
+        Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify
+        val cachedNotifs = notificationStore.getNotifications()
+        assertTrue(cachedNotifs.isNotEmpty() && cachedNotifs.size <= NotificationRestClient.NOTIFICATION_DEFAULT_NUMBER)
+        assertEquals(newList.size + updateList.size, cachedNotifs.size)
     }
 
     @Throws(InterruptedException::class)
@@ -136,6 +241,15 @@ class ReleaseStack_NotificationTest : ReleaseStack_WPComBase() {
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: ${event.causeOfChange}")
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe
+    fun onAction(action: Action<*>) {
+        if (action.type == nextAction) {
+            lastAction = action
+            actionCountdownLatch.countDown()
         }
     }
 }
