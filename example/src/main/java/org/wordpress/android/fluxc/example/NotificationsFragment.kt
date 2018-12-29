@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.example.NotificationTypeSubtypeDialog.Listene
 import org.wordpress.android.fluxc.generated.NotificationActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.notification.NotificationModel.Subkind
+import org.wordpress.android.fluxc.persistence.NotificationSqlUtils
 import org.wordpress.android.fluxc.store.NotificationStore
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationPayload
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationsPayload
@@ -35,6 +36,7 @@ class NotificationsFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var notificationStore: NotificationStore
     @Inject internal lateinit var siteStore: SiteStore
+    @Inject internal lateinit var notificationSqlUtils: NotificationSqlUtils
 
     private var typeSelectionDialog: NotificationTypeSubtypeDialog? = null
     private var selectedSite: SiteModel? = null
@@ -137,6 +139,20 @@ class NotificationsFragment : Fragment() {
                 }
             })
         }
+
+        notifs_delete_all.setOnClickListener {
+            prependToLog("Deleting all the notifications in the DB...\n")
+            val count = notificationSqlUtils.deleteAllNotifications()
+            prependToLog("SUCCESS! [$count] records deleted")
+        }
+
+        notifs_delete_half.setOnClickListener {
+            prependToLog("Deleting roughly half of notifications in the db...\n")
+            val count = Math.round(notificationSqlUtils.getNotificationsCount()/2.0).toInt()
+            notificationStore.getNotifications().take(count).sumBy { notif ->
+                notificationSqlUtils.deleteNotificationByRemoteId(notif.remoteNoteId)
+            }.also { total -> prependToLog("Success! [$total] records deleted") }
+        }
     }
 
     override fun onStart() {
@@ -161,8 +177,7 @@ class NotificationsFragment : Fragment() {
 
         when (event.causeOfChange) {
             FETCH_NOTIFICATIONS -> {
-                val notifs = notificationStore.getNotifications()
-                prependToLog("SUCCESS! - Fetched ${notifs.size} notifications from the API")
+                prependToLog("SUCCESS! - Fetched ${event.rowsAffected} notifications from the API")
             }
             FETCH_NOTIFICATION -> {
                 val localNoteId = event.changedNotificationLocalIds[0]
