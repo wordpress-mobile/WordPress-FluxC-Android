@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.model.notification.NoteIdSet
 import org.wordpress.android.fluxc.model.notification.NotificationModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient
+import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationHashesResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationsResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationsReadResponsePayload
@@ -135,6 +136,23 @@ class MockedStack_NotificationTest : MockedStack_Base() {
 
         assertNotNull(payload)
         with(payload.notifs) {
+            assertEquals(5, size)
+        }
+    }
+
+    @Test
+    fun testFetchNotificationHashesSuccess() {
+        interceptor.respondWith("fetch-notification-hashes-response-success.json")
+        notificationRestClient.fetchNotificationHashes()
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(NotificationAction.FETCHED_NOTIFICATION_HASHES, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchNotificationHashesResponsePayload
+
+        assertNotNull(payload)
+        with(payload.hashesMap) {
             assertEquals(5, size)
         }
     }
