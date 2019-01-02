@@ -70,7 +70,7 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
         val productId: Long? = null
         @SerializedName("variation_id")
         val variationId: Long? = null
-        val quantity: Int? = null
+        val quantity: Float? = null
         val subtotal: String? = null
         val total: String? = null // Price x quantity
         @SerializedName("total_tax")
