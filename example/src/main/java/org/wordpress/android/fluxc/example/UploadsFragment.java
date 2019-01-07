@@ -22,8 +22,8 @@ import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload;
-import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
+import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
@@ -220,7 +220,7 @@ public class UploadsFragment extends Fragment {
         mUploadStore.registerPostModel(examplePost, associatedMediaList);
 
         // Upload the media contained in the post
-        MediaPayload payload = new MediaPayload(site, mCurrentMediaUpload);
+        UploadMediaPayload payload = new UploadMediaPayload(site, mCurrentMediaUpload, true);
         prependToLog("Dispatching upload event for media localId=" + mCurrentMediaUpload.getId());
 
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
