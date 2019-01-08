@@ -18,9 +18,9 @@ import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor;
 import org.wordpress.android.fluxc.persistence.UploadSqlUtils;
 import org.wordpress.android.fluxc.store.MediaStore;
-import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
+import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
@@ -497,7 +497,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     private void startSuccessfulMediaUpload(MediaModel media, SiteModel site) {
         mInterceptor.respondWith("media-upload-response-success.json");
 
-        MediaPayload payload = new MediaPayload(site, media);
+        UploadMediaPayload payload = new UploadMediaPayload(site, media, true);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
@@ -509,7 +509,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         jsonResponse.addProperty("message", "The OAuth2 token is invalid.");
         mInterceptor.respondWithError(jsonResponse);
 
-        MediaPayload payload = new MediaPayload(site, media);
+        UploadMediaPayload payload = new UploadMediaPayload(site, media, true);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.MEDIA_ERROR;
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
