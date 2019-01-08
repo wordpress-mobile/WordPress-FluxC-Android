@@ -1,10 +1,10 @@
 package org.wordpress.android.fluxc.wc.stats
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.argumentCaptor
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.reset
-import com.nhaarman.mockito_kotlin.verify
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.argumentCaptor
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.reset
+import com.nhaarman.mockitokotlin2.verify
 import com.yarolegovich.wellsql.WellSql
 import org.hamcrest.CoreMatchers.anyOf
 import org.hamcrest.CoreMatchers.not
