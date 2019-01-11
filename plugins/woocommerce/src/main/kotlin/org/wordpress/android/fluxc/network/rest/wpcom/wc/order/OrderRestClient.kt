@@ -168,6 +168,38 @@ class OrderRestClient(
     }
 
     /**
+     * Makes a GET call to `/wc/v3/reports/orders/totals` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving count of orders for the given WooCommerce [SiteModel], broken down by order status.
+     *
+     * Dispatches a [WCOrderAction.FETCHED_ORDERS_COUNT] action with the resulting count.
+     *
+     * @param [filterByStatus] The order status to return a count for
+     */
+    fun fetchOrderCount(site: SiteModel, filterByStatus: String) {
+        val url = WOOCOMMERCE.reports.orders.totals.pathV3
+        val params = mapOf("status" to filterByStatus)
+        val responseType = object : TypeToken<List<OrderCountApiResponse>>() {}.type
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<OrderCountApiResponse>? ->
+                    val total = response?.find { it.slug == filterByStatus }?.total
+
+                    total?.let {
+                        val payload = FetchOrdersCountResponsePayload(site, filterByStatus, it)
+                        mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
+                    } ?: run {
+                        // TODO handle missing status case
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
+                    val payload = FetchOrdersCountResponsePayload(orderError, site, filterByStatus)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
      * Makes a GET request to `/wc/v3/orders` for a single order of a specific type (or any type) in order to
      * determine if there are any orders in the store.
      *

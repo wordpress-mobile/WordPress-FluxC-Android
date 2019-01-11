@@ -70,22 +70,17 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     class FetchOrdersCountPayload(
         var site: SiteModel,
-        var statusFilter: String? = null
+        var statusFilter: String
     ) : Payload<BaseNetworkError>()
 
-    /**
-     * [count] would be the count of orders matching the provided filter up to the default
-     * page count of [NUM_ORDERS_PER_FETCH]. If [canLoadMore] is true, then the actual total
-     * is much more. Since the API does not yet support fetching order count only, this is the
-     * safest way to display the totals: <count>+, example: 50+
-     */
     class FetchOrdersCountResponsePayload(
         var site: SiteModel,
-        var count: Int = 0,
-        var statusFilter: String? = null,
-        var canLoadMore: Boolean = false
+        var statusFilter: String,
+        var count: Int = 0
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
+        constructor(error: OrderError, site: SiteModel, statusFilter: String) : this(site, statusFilter) {
+            this.error = error
+        }
     }
 
     class FetchSingleOrderPayload(
@@ -242,7 +237,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun fetchOrdersCount(payload: FetchOrdersCountPayload) {
-        with(payload) { wcOrderRestClient.fetchOrders(site, 0, statusFilter, countOnly = true) }
+        with(payload) { wcOrderRestClient.fetchOrderCount(site, statusFilter) }
     }
 
     private fun fetchHasOrders(payload: FetchHasOrdersPayload) {
@@ -306,7 +301,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         val onOrderChanged = if (payload.isError) {
             OnOrderChanged(0).also { it.error = payload.error }
         } else {
-            with(payload) { OnOrderChanged(count, statusFilter, canLoadMore = canLoadMore) }
+            with(payload) { OnOrderChanged(count, statusFilter) }
         }.also { it.causeOfChange = FETCH_ORDERS_COUNT }
         emitChange(onOrderChanged)
     }
