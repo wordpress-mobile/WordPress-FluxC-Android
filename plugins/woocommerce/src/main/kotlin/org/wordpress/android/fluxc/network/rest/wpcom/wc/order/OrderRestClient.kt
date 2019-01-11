@@ -32,7 +32,7 @@ import javax.inject.Singleton
 @Singleton
 class OrderRestClient(
     appContext: Context,
-    dispatcher: Dispatcher,
+    private val dispatcher: Dispatcher,
     requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent
@@ -68,12 +68,12 @@ class OrderRestClient(
 
                     val payload = FetchOrdersResponsePayload(
                             site, orderModels, filterByStatus, offset > 0, canLoadMore)
-                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
                     val payload = FetchOrdersResponsePayload(orderError, site)
-                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
@@ -106,12 +106,12 @@ class OrderRestClient(
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
                     val nextOffset = offset + orderModels.size
                     val payload = SearchOrdersResponsePayload(site, searchQuery, canLoadMore, nextOffset, orderModels)
-                    mDispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
+                    dispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
                     val payload = SearchOrdersResponsePayload(orderError, site, searchQuery)
-                    mDispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
+                    dispatcher.dispatch(WCOrderActionBuilder.newSearchedOrdersAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
@@ -135,7 +135,7 @@ class OrderRestClient(
                             localSiteId = site.id
                         }
                         val payload = RemoteOrderPayload(newModel, site)
-                        mDispatcher.dispatch(WCOrderActionBuilder.newFetchedSingleOrderAction(payload))
+                        dispatcher.dispatch(WCOrderActionBuilder.newFetchedSingleOrderAction(payload))
                     }
                 },
                 WPComErrorListener { networkError ->
@@ -145,7 +145,7 @@ class OrderRestClient(
                             WCOrderModel().apply { this.remoteOrderId = remoteOrderId },
                             site
                     )
-                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedSingleOrderAction(payload))
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedSingleOrderAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
@@ -169,17 +169,17 @@ class OrderRestClient(
 
                     total?.let {
                         val payload = FetchOrdersCountResponsePayload(site, filterByStatus, it)
-                        mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
+                        dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
                     } ?: run {
                         val orderError = OrderError(OrderErrorType.ORDER_STATUS_NOT_FOUND)
                         val payload = FetchOrdersCountResponsePayload(orderError, site, filterByStatus)
-                        mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
+                        dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
                     }
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
                     val payload = FetchOrdersCountResponsePayload(orderError, site, filterByStatus)
-                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
@@ -210,12 +210,12 @@ class OrderRestClient(
                     val hasOrders = orderModels.isNotEmpty()
                     val payload = FetchHasOrdersResponsePayload(
                             site, filterByStatus, hasOrders)
-                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedHasOrdersAction(payload))
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedHasOrdersAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
                     val payload = FetchHasOrdersResponsePayload(orderError, site)
-                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedHasOrdersAction(payload))
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedHasOrdersAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
@@ -242,13 +242,13 @@ class OrderRestClient(
                             localSiteId = site.id
                         }
                         val payload = RemoteOrderPayload(newModel, site)
-                        mDispatcher.dispatch(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
+                        dispatcher.dispatch(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
                     }
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
                     val payload = RemoteOrderPayload(orderError, order, site)
-                    mDispatcher.dispatch(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
+                    dispatcher.dispatch(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
                 })
         add(request)
     }
@@ -272,12 +272,12 @@ class OrderRestClient(
                         }
                     }.orEmpty()
                     val payload = FetchOrderNotesResponsePayload(order, site, noteModels)
-                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderNotesAction(payload))
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderNotesAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
                     val payload = FetchOrderNotesResponsePayload(orderError, site, order)
-                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderNotesAction(payload))
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderNotesAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
@@ -306,13 +306,13 @@ class OrderRestClient(
                             localOrderId = order.id
                         }
                         val payload = RemoteOrderNotePayload(order, site, newNote)
-                        mDispatcher.dispatch(WCOrderActionBuilder.newPostedOrderNoteAction(payload))
+                        dispatcher.dispatch(WCOrderActionBuilder.newPostedOrderNoteAction(payload))
                     }
                 },
                 WPComErrorListener { networkError ->
                     val noteError = networkErrorToOrderError(networkError)
                     val payload = RemoteOrderNotePayload(noteError, order, site, note)
-                    mDispatcher.dispatch(WCOrderActionBuilder.newPostedOrderNoteAction(payload))
+                    dispatcher.dispatch(WCOrderActionBuilder.newPostedOrderNoteAction(payload))
                 })
         add(request)
     }
