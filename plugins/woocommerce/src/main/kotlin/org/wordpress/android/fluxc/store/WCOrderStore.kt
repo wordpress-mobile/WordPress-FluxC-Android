@@ -147,6 +147,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     enum class OrderErrorType {
         INVALID_PARAM,
         INVALID_ID,
+        ORDER_STATUS_NOT_FOUND,
         GENERIC_ERROR;
 
         companion object {

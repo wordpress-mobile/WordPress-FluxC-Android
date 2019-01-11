@@ -187,7 +187,9 @@ class OrderRestClient(
                         val payload = FetchOrdersCountResponsePayload(site, filterByStatus, it)
                         mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
                     } ?: run {
-                        // TODO handle missing status case
+                        val orderError = OrderError(OrderErrorType.ORDER_STATUS_NOT_FOUND)
+                        val payload = FetchOrdersCountResponsePayload(orderError, site, filterByStatus)
+                        mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
                     }
                 },
                 WPComErrorListener { networkError ->
