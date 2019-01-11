@@ -142,8 +142,8 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     fun testOrdersCountFetchSuccess() {
         val statusFilter = CoreOrderStatus.COMPLETED.value
 
-        interceptor.respondWith("wc-completed-orders-response-success.json")
-        orderRestClient.fetchOrders(siteModel, 0, statusFilter, countOnly = true)
+        interceptor.respondWith("wc-order-count-response-success.json")
+        orderRestClient.fetchOrderCount(siteModel, statusFilter)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -151,7 +151,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         assertEquals(WCOrderAction.FETCHED_ORDERS_COUNT, lastAction!!.type)
         val payload = lastAction!!.payload as FetchOrdersCountResponsePayload
         assertNull(payload.error)
-        assertEquals(4, payload.count)
+        assertEquals(128, payload.count)
         assertEquals(statusFilter, payload.statusFilter)
     }
 
