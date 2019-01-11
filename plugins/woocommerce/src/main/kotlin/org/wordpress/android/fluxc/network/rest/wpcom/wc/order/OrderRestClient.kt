@@ -50,11 +50,7 @@ class OrderRestClient(
      */
     fun fetchOrders(site: SiteModel, offset: Int, filterByStatus: String? = null) {
         // If null, set the filter to the api default value of "any", which will not apply any order status filters.
-        val statusFilter = if (filterByStatus.isNullOrBlank()) {
-            WCOrderStore.DEFAULT_ORDER_STATUS
-        } else {
-            filterByStatus!!
-        }
+        val statusFilter = filterByStatus.takeUnless { it.isNullOrBlank() } ?: WCOrderStore.DEFAULT_ORDER_STATUS
 
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
