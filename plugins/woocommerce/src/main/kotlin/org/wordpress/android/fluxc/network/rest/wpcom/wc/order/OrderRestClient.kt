@@ -47,9 +47,8 @@ class OrderRestClient(
      * Dispatches a [WCOrderAction.FETCHED_ORDERS] action with the resulting list of orders.
      *
      * @param [filterByStatus] Nullable. If not null, fetch only orders with a matching order status.
-     * @param [countOnly] Default false. If true, only a total count of orders will be returned in the payload.
      */
-    fun fetchOrders(site: SiteModel, offset: Int, filterByStatus: String? = null, countOnly: Boolean = false) {
+    fun fetchOrders(site: SiteModel, offset: Int, filterByStatus: String? = null) {
         // If null, set the filter to the api default value of "any", which will not apply any order status filters.
         val statusFilter = if (filterByStatus.isNullOrBlank()) {
             WCOrderStore.DEFAULT_ORDER_STATUS
@@ -71,25 +70,14 @@ class OrderRestClient(
 
                     val canLoadMore = orderModels.size == WCOrderStore.NUM_ORDERS_PER_FETCH
 
-                    if (countOnly) {
-                        val payload = FetchOrdersCountResponsePayload(
-                                site, orderModels.size, filterByStatus, canLoadMore)
-                        mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
-                    } else {
-                        val payload = FetchOrdersResponsePayload(
-                                site, orderModels, filterByStatus, offset > 0, canLoadMore)
-                        mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
-                    }
+                    val payload = FetchOrdersResponsePayload(
+                            site, orderModels, filterByStatus, offset > 0, canLoadMore)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
-                    if (countOnly) {
-                        val payload = FetchOrdersCountResponsePayload(orderError, site)
-                        mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersCountAction(payload))
-                    } else {
-                        val payload = FetchOrdersResponsePayload(orderError, site)
-                        mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
-                    }
+                    val payload = FetchOrdersResponsePayload(orderError, site)
+                    mDispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
