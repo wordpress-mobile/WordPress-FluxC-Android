@@ -29,6 +29,7 @@ import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
+import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.utils.MediaUtils;
@@ -278,7 +279,7 @@ public class MediaFragment extends Fragment {
         mCurrentUpload.setMimeType(MediaUtils.getMimeTypeForExtension(MediaUtils.getExtension(mediaUri)));
 
         // Upload
-        MediaPayload payload = new MediaPayload(site, mCurrentUpload);
+        UploadMediaPayload payload = new UploadMediaPayload(site, mCurrentUpload, true);
         prependToLog("Dispatching upload event for media localId=" + mCurrentUpload.getId());
 
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
