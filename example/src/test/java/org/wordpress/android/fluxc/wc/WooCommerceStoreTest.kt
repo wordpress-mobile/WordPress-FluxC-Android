@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.wc
 
-import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockitokotlin2.mock
 import com.yarolegovich.wellsql.WellSql
 import org.junit.Before
 import org.junit.Test

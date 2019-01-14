@@ -1,7 +1,7 @@
 package org.wordpress.android.fluxc.release
 
 import com.yarolegovich.wellsql.SelectQuery
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
