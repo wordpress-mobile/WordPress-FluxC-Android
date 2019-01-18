@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.store.MediaStore.OnStockMediaUploaded;
+import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.UploadStockMediaPayload;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
@@ -262,7 +263,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CANCELED_MEDIA;
-        MediaPayload payload = new MediaPayload(sSite, testMedia);
+        UploadMediaPayload payload = new UploadMediaPayload(sSite, testMedia, true);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
 
         // Wait a bit and issue the cancel command
@@ -279,7 +280,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CANCELED_MEDIA;
-        payload = new MediaPayload(sSite, testMedia);
+        payload = new UploadMediaPayload(sSite, testMedia, true);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
 
         // Wait a bit and issue the cancel command
@@ -641,7 +642,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private void uploadMedia(MediaModel media) throws InterruptedException {
-        MediaPayload payload = new MediaPayload(sSite, media);
+        UploadMediaPayload payload = new UploadMediaPayload(sSite, media, true);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -655,7 +656,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             throws InterruptedException {
         mCountDownLatch = new CountDownLatch(mediaList.size());
         for (MediaModel media : mediaList) {
-            MediaPayload payload = new MediaPayload(sSite, media);
+            UploadMediaPayload payload = new UploadMediaPayload(sSite, media, true);
             mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         }
 

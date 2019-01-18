@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.release
 
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -27,9 +27,9 @@ import org.wordpress.android.fluxc.store.stats.time.ClicksStore
 import org.wordpress.android.fluxc.store.stats.time.CountryViewsStore
 import org.wordpress.android.fluxc.store.stats.time.PostAndPageViewsStore
 import org.wordpress.android.fluxc.store.stats.time.ReferrersStore
-import org.wordpress.android.fluxc.store.stats.time.VisitsAndViewsStore
 import org.wordpress.android.fluxc.store.stats.time.SearchTermsStore
 import org.wordpress.android.fluxc.store.stats.time.VideoPlaysStore
+import org.wordpress.android.fluxc.store.stats.time.VisitsAndViewsStore
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Date
@@ -161,13 +161,14 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
                         true
                 )
             }
+            if (!fetchedInsights.isError) {
+                assertNotNull(fetchedInsights)
+                assertNotNull(fetchedInsights.model)
 
-            assertNotNull(fetchedInsights)
-            assertNotNull(fetchedInsights.model)
+                val insightsFromDb = visitsAndViewsStore.getVisits(site, SELECTED_DATE, granularity)
 
-            val insightsFromDb = visitsAndViewsStore.getVisits(site, SELECTED_DATE, granularity)
-
-            assertEquals(fetchedInsights.model, insightsFromDb)
+                assertEquals(fetchedInsights.model, insightsFromDb)
+            }
         }
     }
 
