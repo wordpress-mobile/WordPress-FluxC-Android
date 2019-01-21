@@ -38,7 +38,8 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         FETCHED_HAS_ORDERS,
         SEARCHED_ORDERS,
         POST_ORDER_NOTE,
-        POSTED_ORDER_NOTE
+        POSTED_ORDER_NOTE,
+        ERROR_ORDER_STATUS_NOT_FOUND
     }
 
     @Inject internal lateinit var orderStore: WCOrderStore
@@ -134,7 +135,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchOrdersCount_emptyFilter() {
-        nextEvent = TestEvent.FETCHED_ORDERS_COUNT
+        nextEvent = TestEvent.ERROR_ORDER_STATUS_NOT_FOUND
         mCountDownLatch = CountDownLatch(1)
         val statusFilter = ""
 
@@ -142,11 +143,6 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
                 WCOrderActionBuilder.newFetchOrdersCountAction(FetchOrdersCountPayload(sSite, statusFilter))
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        this.lastEvent?.let {
-            assertTrue(it.rowsAffected > 0)
-            assertEquals(it.statusFilter, statusFilter)
-        } ?: fail()
     }
 
     @Throws(InterruptedException::class)
@@ -229,7 +225,13 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onOrderChanged(event: OnOrderChanged) {
         event.error?.let {
-            throw AssertionError("OnOrderChanged has error: " + it.type)
+            when (event.causeOfChange) {
+                WCOrderAction.FETCH_ORDERS_COUNT -> {
+                    assertEquals(TestEvent.ERROR_ORDER_STATUS_NOT_FOUND, nextEvent)
+                    mCountDownLatch.countDown()
+                    return
+                } else -> throw AssertionError("OnOrderChanged has unexpected error: " + it.type)
+            }
         }
 
         lastEvent = event

@@ -99,17 +99,18 @@ class WooCommerceFragment : Fragment() {
             getFirstWCSite()?.let { site ->
                 showSingleLineDialog(
                         activity,
-                        "Enter a single order status to filter by or leave blank for no filter:"
+                        "Enter a single order status to filter by:"
                 ) { editText ->
 
                     // only use the status for filtering if it's not empty
                     val statusFilter = editText.text.toString().trim().takeIf { it.isNotEmpty() }
-                    statusFilter?.let {
-                        prependToLog("Submitting request to fetch a count of $it orders")
-                    } ?: prependToLog("No valid filters defined, fetching count of all orders")
-
-                    val payload = FetchOrdersCountPayload(site, statusFilter)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersCountAction(payload))
+                    statusFilter?.let { filter ->
+                        prependToLog("Submitting request to fetch a count of $filter orders")
+                        val payload = FetchOrdersCountPayload(site, filter)
+                        dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersCountAction(payload))
+                    } ?: run {
+                        prependToLog("No valid filters defined! Required for this request")
+                    }
                 }
             }
         }
