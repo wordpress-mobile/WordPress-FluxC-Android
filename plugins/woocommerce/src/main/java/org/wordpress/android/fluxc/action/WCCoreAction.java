@@ -11,6 +11,8 @@ public enum WCCoreAction implements IAction {
     // Remote actions
     @Action(payloadType = SiteModel.class)
     FETCH_SITE_API_VERSION,
+    @Action(payloadType = SiteModel.class)
+    FETCH_SITE_SETTINGS,
 
     // Remote responses
     @Action(payloadType = FetchApiVersionResponsePayload.class)

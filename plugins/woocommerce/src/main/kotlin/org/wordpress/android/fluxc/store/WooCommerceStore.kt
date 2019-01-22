@@ -56,6 +56,7 @@ class WooCommerceStore @Inject constructor(dispatcher: Dispatcher, private val w
         when (actionType) {
             // Remote actions
             WCCoreAction.FETCH_SITE_API_VERSION -> getApiVersion(action.payload as SiteModel)
+            WCCoreAction.FETCH_SITE_SETTINGS -> fetchSiteSettings(action.payload as SiteModel)
             // Remote responses
             WCCoreAction.FETCHED_SITE_API_VERSION ->
                 handleGetApiVersionCompleted(action.payload as FetchApiVersionResponsePayload)
@@ -66,6 +67,8 @@ class WooCommerceStore @Inject constructor(dispatcher: Dispatcher, private val w
             SiteSqlUtils.getSitesWith(SiteModelTable.HAS_WOO_COMMERCE, true).asModel
 
     private fun getApiVersion(site: SiteModel) = wcCoreRestClient.getSupportedWooApiVersion(site)
+
+    private fun fetchSiteSettings(site: SiteModel) = wcCoreRestClient.getSiteSettingsGeneral(site)
 
     private fun handleGetApiVersionCompleted(payload: FetchApiVersionResponsePayload) {
         val onApiVersionFetched: OnApiVersionFetched
