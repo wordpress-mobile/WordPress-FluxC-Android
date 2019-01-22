@@ -8,6 +8,8 @@ import org.wordpress.android.fluxc.action.WCCoreAction
 import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCSettingsModel
+import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.discovery.RootWPAPIRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -85,6 +87,14 @@ class WooCommerceRestClient(
                         val currencyThousandSep = getValueForSettingsField(it, "woocommerce_price_thousand_sep")
                         val currencyDecimalSep = getValueForSettingsField(it, "woocommerce_price_decimal_sep")
                         val currencyNumDecimals = getValueForSettingsField(it, "woocommerce_price_num_decimals")
+                        val settings = WCSettingsModel(
+                                localSiteId = site.id,
+                                currencyCode = currencyCode ?: "",
+                                currencyPosition = CurrencyPosition.fromString(currencyPosition),
+                                currencyThousandSeparator = currencyThousandSep ?: "",
+                                currencyDecimalSeparator = currencyDecimalSep ?: "",
+                                currencyDecimalNumber = currencyNumDecimals?.toIntOrNull() ?: 2
+                        )
                         // TODO Create model and dispatch
                     } ?: run {
                         // TODO Handle invalid response
