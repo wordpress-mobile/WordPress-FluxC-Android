@@ -113,8 +113,7 @@ class ReleaseStack_VerticalTest : ReleaseStack_Base() {
             throw AssertionError("Unexpected error occurred with type: " + event.error.type)
         }
         assertEquals(TestEvents.VERTICALS_FETCHED, nextEvent)
-        // TODO: Re-enable this check once the API is fixed
-//        assertTrue(event.verticalList.size == FETCH_VERTICALS_LIMIT)
+        assertTrue(event.verticalList.size == FETCH_VERTICALS_LIMIT)
         mCountDownLatch.countDown()
     }
 }
