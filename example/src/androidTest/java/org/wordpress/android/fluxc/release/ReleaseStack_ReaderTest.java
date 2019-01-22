@@ -33,7 +33,7 @@ public class ReleaseStack_ReaderTest extends ReleaseStack_Base {
 
     private List<ReaderSiteModel> mFirstSearchResults;
 
-    private static final String SEARCH_TERM = "dogs";
+    private static final String SEARCH_TERM = "dog";
     private static final String SEARCH_TERM_EMPTY_RESULTS = "asdjkgadahjsdgjadgajhdgajhjkasdkjgasdjgasjdgadjhgagdj";
     private static final int NUM_RESULTS = 10;
     private TestEvents mNextEvent;
