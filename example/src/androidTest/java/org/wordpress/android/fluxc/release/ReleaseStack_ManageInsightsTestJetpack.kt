@@ -13,7 +13,6 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.stats.InsightTypesModel
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
@@ -22,6 +21,8 @@ import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
 import org.wordpress.android.fluxc.store.stats.StatsStore
+import org.wordpress.android.fluxc.store.stats.StatsStore.InsightsTypes
+import org.wordpress.android.fluxc.store.stats.StatsStore.InsightsTypes.FOLLOWERS
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.concurrent.CountDownLatch
@@ -65,18 +66,19 @@ class ReleaseStack_ManageInsightsTestJetpack : ReleaseStack_Base() {
 
         // Starts with 4 default blocks
         assertEquals(emptyStats.size, 4)
+        if (!emptyStats.contains(InsightsTypes.FOLLOWERS)) {
+            runBlocking { statsStore.addType(site, InsightsTypes.FOLLOWERS) }
+        }
 
-        val managementModel = runBlocking { statsStore.getInsightsManagementModel(site) }
+        val statsWithFollowers = runBlocking { statsStore.getInsights(site) }
 
-        val addedTypes = managementModel.addedTypes.toMutableList()
-        addedTypes.add(managementModel.removedTypes[0])
-        val removedTypes = managementModel.removedTypes.subList(1, managementModel.removedTypes.size)
+        assertEquals(statsWithFollowers.size, 5)
 
-        runBlocking { statsStore.updateTypes(site, InsightTypesModel(addedTypes, removedTypes)) }
+        runBlocking { statsStore.removeType(site, FOLLOWERS) }
 
-        val statsWithAddedItem = runBlocking { statsStore.getInsights(site) }
+        val statsWithoutFollowers = runBlocking { statsStore.getInsights(site) }
 
-        assertEquals(statsWithAddedItem.size, 5)
+        assertEquals(statsWithoutFollowers.size, 4)
     }
 
     @Test
