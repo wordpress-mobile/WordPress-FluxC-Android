@@ -58,7 +58,7 @@ class ReleaseStack_ManageInsightsTestJetpack : ReleaseStack_Base() {
     }
 
     @Test
-    fun testFetchAllTimeInsights() {
+    fun testAddAndRemoveInsights() {
         val site = authenticate()
 
         val emptyStats = runBlocking { statsStore.getInsights(site) }
@@ -76,8 +76,37 @@ class ReleaseStack_ManageInsightsTestJetpack : ReleaseStack_Base() {
 
         val statsWithAddedItem = runBlocking { statsStore.getInsights(site) }
 
-        // Starts with 4 default blocks
         assertEquals(statsWithAddedItem.size, 5)
+    }
+
+    @Test
+    fun testMoveInsightsUp() {
+        val site = authenticate()
+
+        val stats = runBlocking { statsStore.getInsights(site) }
+
+        val secondItem = stats[1]
+
+        runBlocking { statsStore.moveTypeUp(site, secondItem) }
+
+        val updatedStats = runBlocking { statsStore.getInsights(site) }
+
+        assertEquals(updatedStats[0], secondItem)
+    }
+
+    @Test
+    fun testMoveInsightsDown() {
+        val site = authenticate()
+
+        val stats = runBlocking { statsStore.getInsights(site) }
+
+        val firstItem = stats[0]
+
+        runBlocking { statsStore.moveTypeDown(site, firstItem) }
+
+        val updatedStats = runBlocking { statsStore.getInsights(site) }
+
+        assertEquals(updatedStats[1], firstItem)
     }
 
     private fun authenticate(): SiteModel {
