@@ -22,6 +22,9 @@ import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.store.WooCommerceStore.ApiVersionError
 import org.wordpress.android.fluxc.store.WooCommerceStore.ApiVersionErrorType
 import org.wordpress.android.fluxc.store.WooCommerceStore.FetchApiVersionResponsePayload
+import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCSiteSettingsResponsePayload
+import org.wordpress.android.fluxc.store.WooCommerceStore.WCSiteSettingsError
+import org.wordpress.android.fluxc.store.WooCommerceStore.WCSiteSettingsErrorType
 import javax.inject.Singleton
 
 @Singleton
@@ -74,7 +77,8 @@ class WooCommerceRestClient(
      * Makes a GET call to `/wc/v3/settings/general` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving site settings for the given WooCommerce [SiteModel].
      *
-     * Dispatches a [WCCoreAction.FETCHED_SITE_SETTINGS] // TODO
+     * Dispatches a [WCCoreAction.FETCHED_SITE_SETTINGS] action with a selected subset of the response values,
+     * converted to a [WCSettingsModel].
      */
     fun getSiteSettingsGeneral(site: SiteModel) {
         val url = WOOCOMMERCE.settings.general.pathV3
@@ -95,13 +99,18 @@ class WooCommerceRestClient(
                                 currencyDecimalSeparator = currencyDecimalSep ?: "",
                                 currencyDecimalNumber = currencyNumDecimals?.toIntOrNull() ?: 2
                         )
-                        // TODO Create model and dispatch
+
+                        val payload = FetchWCSiteSettingsResponsePayload(site, settings)
+                        dispatcher.dispatch(WCCoreActionBuilder.newFetchedSiteSettingsAction(payload))
                     } ?: run {
-                        // TODO Handle invalid response
+                        val wcSiteSettingsError = WCSiteSettingsError(WCSiteSettingsErrorType.INVALID_RESPONSE)
+                        val payload = FetchWCSiteSettingsResponsePayload(wcSiteSettingsError, site)
+                        dispatcher.dispatch(WCCoreActionBuilder.newFetchedSiteSettingsAction(payload))
                     }
                 },
                 WPComErrorListener { networkError ->
-                    // TODO Handle error
+                    val payload = FetchWCSiteSettingsResponsePayload(networkErrorToSettingsError(networkError), site)
+                    dispatcher.dispatch(WCCoreActionBuilder.newFetchedSiteSettingsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
@@ -112,7 +121,12 @@ class WooCommerceRestClient(
     }
 
     private fun networkErrorToApiVersionError(wpComError: WPComGsonNetworkError): ApiVersionError {
-        val apiVersionErrorType = ApiVersionErrorType.fromString(wpComError.apiError)
-        return ApiVersionError(apiVersionErrorType, wpComError.message)
+        val apiVersionErrorErrorType = ApiVersionErrorType.fromString(wpComError.apiError)
+        return ApiVersionError(apiVersionErrorErrorType, wpComError.message)
+    }
+
+    private fun networkErrorToSettingsError(wpComError: WPComGsonNetworkError): WCSiteSettingsError {
+        val wcSiteSettingsErrorType = WCSiteSettingsErrorType.fromString(wpComError.apiError)
+        return WCSiteSettingsError(wcSiteSettingsErrorType, wpComError.message)
     }
 }
