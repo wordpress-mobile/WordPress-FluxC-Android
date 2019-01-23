@@ -46,6 +46,12 @@
         android:layout_height="wrap_content"
         android:text="Get Notifications by type or subtype (db)"/>
 
+    <Button
+        android:id="@+id/notifs_has_unread"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Check unread Notifications (db)"/>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
