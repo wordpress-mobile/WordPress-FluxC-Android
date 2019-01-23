@@ -6,6 +6,7 @@ import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCSettingsModel
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition
 
@@ -27,6 +28,14 @@ object WCSettingsSqlUtils {
             WellSql.update(WCSettingsBuilder::class.java).whereId(oldId)
                     .put(settings.toBuilder(), UpdateAllExceptId(WCSettingsBuilder::class.java)).execute()
         }
+    }
+
+    fun getSettingsForSite(site: SiteModel): WCSettingsModel? {
+        return WellSql.select(WCSettingsBuilder::class.java)
+                .where()
+                .equals(WCSettingsModelTable.LOCAL_SITE_ID, site.id)
+                .endWhere()
+                .asModel.firstOrNull()?.build()
     }
 
     @Table(name = "WCSettingsModel", addOn = WellSqlConfig.ADDON_WOOCOMMERCE)

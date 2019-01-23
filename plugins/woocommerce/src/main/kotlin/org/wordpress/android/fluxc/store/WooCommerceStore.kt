@@ -97,6 +97,12 @@ class WooCommerceStore @Inject constructor(dispatcher: Dispatcher, private val w
     fun getWooCommerceSites(): MutableList<SiteModel> =
             SiteSqlUtils.getSitesWith(SiteModelTable.HAS_WOO_COMMERCE, true).asModel
 
+    /**
+     * Given a [SiteModel], returns its WooCommerce site settings, or null if no settings are stored for this site.
+     */
+    fun getSiteSettings(site: SiteModel): WCSettingsModel? =
+            WCSettingsSqlUtils.getSettingsForSite(site)
+
     private fun getApiVersion(site: SiteModel) = wcCoreRestClient.getSupportedWooApiVersion(site)
 
     private fun fetchSiteSettings(site: SiteModel) = wcCoreRestClient.getSiteSettingsGeneral(site)

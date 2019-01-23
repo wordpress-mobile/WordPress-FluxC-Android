@@ -306,7 +306,11 @@ class WooCommerceFragment : Fragment() {
             return
         }
 
-        prependToLog("Updated site settings for ${event.site.name}")
+        with(event) {
+            prependToLog("Updated site settings for ${site.name}:\n" +
+                    wooCommerceStore.getSiteSettings(site).toString()
+            )
+        }
     }
 
     @Suppress("unused")
