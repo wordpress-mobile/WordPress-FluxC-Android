@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCSettingsModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
+import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Locale
@@ -74,6 +75,8 @@ class WooCommerceStore @Inject constructor(dispatcher: Dispatcher, private val w
     // OnChanged events
     class OnApiVersionFetched(val site: SiteModel, val apiVersion: String) : OnChanged<ApiVersionError>()
 
+    class OnWCSiteSettingsChanged(val site: SiteModel) : OnChanged<WCSiteSettingsError>()
+
     override fun onRegister() = AppLog.d(T.API, "WooCommerceStore onRegister")
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
@@ -99,7 +102,14 @@ class WooCommerceStore @Inject constructor(dispatcher: Dispatcher, private val w
     private fun fetchSiteSettings(site: SiteModel) = wcCoreRestClient.getSiteSettingsGeneral(site)
 
     private fun handleFetchSiteSettingsCompleted(payload: FetchWCSiteSettingsResponsePayload) {
-        // TODO Store settings in database and dispatch event
+        val onWCSiteSettingsChanged = OnWCSiteSettingsChanged(payload.site)
+        if (payload.isError || payload.settings == null) {
+            onWCSiteSettingsChanged.error = payload.error
+        } else {
+            WCSettingsSqlUtils.insertOrUpdateSettings(payload.settings)
+        }
+
+        emitChange(onWCSiteSettingsChanged)
     }
 
     private fun handleGetApiVersionCompleted(payload: FetchApiVersionResponsePayload) {
