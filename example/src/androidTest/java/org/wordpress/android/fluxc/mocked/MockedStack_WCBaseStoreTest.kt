@@ -10,10 +10,12 @@ import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCCoreAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.store.WooCommerceStore.FetchApiVersionResponsePayload
+import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCSiteSettingsResponsePayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -57,6 +59,27 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
         val payload = lastAction!!.payload as FetchApiVersionResponsePayload
         assertNull(payload.error)
         assertEquals(WooCommerceStore.WOO_API_NAMESPACE_V3, payload.version)
+    }
+
+    @Test
+    fun testWCSiteSettingsGeneralFetch() {
+        interceptor.respondWith("wc-site-settings-general-response-success.json")
+        wcRestClient.getSiteSettingsGeneral(siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCCoreAction.FETCHED_SITE_SETTINGS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchWCSiteSettingsResponsePayload
+        assertNull(payload.error)
+        with(payload.settings!!) {
+            assertEquals(siteModel.id, localSiteId)
+            assertEquals("CAD", currencyCode)
+            assertEquals(CurrencyPosition.LEFT, currencyPosition)
+            assertEquals(",", currencyThousandSeparator)
+            assertEquals(".", currencyDecimalSeparator)
+            assertEquals(2, currencyDecimalNumber)
+        }
     }
 
     @Suppress("unused")
