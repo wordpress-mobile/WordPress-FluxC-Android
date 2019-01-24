@@ -110,7 +110,8 @@ class WooCommerceStore @Inject constructor(dispatcher: Dispatcher, private val w
     private fun handleFetchSiteSettingsCompleted(payload: FetchWCSiteSettingsResponsePayload) {
         val onWCSiteSettingsChanged = OnWCSiteSettingsChanged(payload.site)
         if (payload.isError || payload.settings == null) {
-            onWCSiteSettingsChanged.error = payload.error
+            onWCSiteSettingsChanged.error =
+                    payload.error ?: WCSiteSettingsError(WCSiteSettingsErrorType.INVALID_RESPONSE)
         } else {
             WCSettingsSqlUtils.insertOrUpdateSettings(payload.settings)
         }
