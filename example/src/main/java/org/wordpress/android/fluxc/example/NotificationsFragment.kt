@@ -246,5 +246,6 @@ class NotificationsFragment : Fragment() {
         notifs_fetch_first.isEnabled = enabled
         notifs_mark_read.isEnabled = enabled
         notifs_update_first.isEnabled = enabled
+        notifs_has_unread.isEnabled = enabled
     }
 }
