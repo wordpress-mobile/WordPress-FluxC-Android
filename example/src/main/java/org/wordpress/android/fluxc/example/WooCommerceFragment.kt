@@ -48,6 +48,7 @@ import org.wordpress.android.fluxc.store.WCStatsStore.OnWCTopEarnersChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.store.WooCommerceStore.OnApiVersionFetched
+import org.wordpress.android.fluxc.store.WooCommerceStore.OnWCSiteSettingsChanged
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.ToastUtils
@@ -86,6 +87,12 @@ class WooCommerceFragment : Fragment() {
             for (site in wooCommerceStore.getWooCommerceSites()) {
                 dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteApiVersionAction(site))
             }
+        }
+
+        fetch_settings.setOnClickListener {
+            getFirstWCSite()?.let {
+                dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteSettingsAction(it))
+            } ?: showNoWCSitesToast()
         }
 
         fetch_orders.setOnClickListener {
@@ -288,6 +295,21 @@ class WooCommerceFragment : Fragment() {
         with(event) {
             val formattedVersion = apiVersion.substringAfterLast("/")
             prependToLog("Max Woo version for ${site.name}: $formattedVersion")
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onWCSiteSettingsChanged(event: OnWCSiteSettingsChanged) {
+        if (event.isError) {
+            prependToLog("Error in onWCSiteSettingsChanged: ${event.error.type} - ${event.error.message}")
+            return
+        }
+
+        with(event) {
+            prependToLog("Updated site settings for ${site.name}:\n" +
+                    wooCommerceStore.getSiteSettings(site).toString()
+            )
         }
     }
 

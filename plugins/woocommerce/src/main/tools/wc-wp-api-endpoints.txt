@@ -3,3 +3,5 @@
 /orders/<id>/notes/
 
 /reports/orders/totals/
+
+/settings/general/
