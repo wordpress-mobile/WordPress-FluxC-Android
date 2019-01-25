@@ -88,6 +88,13 @@
         android:enabled="false"
         android:text="Mark all unread notifications as read"/>
 
+    <Button
+        android:id="@+id/notifs_has_unread"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:text="Check unread Notifications (db)"/>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -115,12 +122,4 @@
         android:layout_height="wrap_content"
         android:enabled="false"
         android:text="Update Notification (DB)"/>
-
-    <Button
-        android:id="@+id/notifs_has_unread"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        android:text="Check unread Notifications (db)"/>
-
 </LinearLayout>
