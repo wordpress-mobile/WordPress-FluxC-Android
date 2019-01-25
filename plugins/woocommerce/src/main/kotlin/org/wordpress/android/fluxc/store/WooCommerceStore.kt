@@ -117,7 +117,8 @@ class WooCommerceStore @Inject constructor(
     /**
      * Formats currency amounts for display based on the site's settings and the device locale.
      *
-     * If there is no [WCSettingsModel] associated with the given [site], the [rawValue] will be returned unformatted.
+     * If there is no [WCSettingsModel] associated with the given [site], the [rawValue] will be returned without
+     * decimal formatting, but with the appropriate currency symbol prepended to the [rawValue].
      *
      * @param rawValue the amount to be formatted
      * @param site the associated [SiteModel] - this will be used to resolve the corresponding [WCSettingsModel]
@@ -133,30 +134,30 @@ class WooCommerceStore @Inject constructor(
         applyDecimalFormatting: Boolean
     ): String {
         val siteSettings = getSiteSettings(site)
-        siteSettings?.let {
-            // Resolve the currency code to a localized symbol
-            val currencySymbol = WCCurrencyUtils.getLocalizedCurrencySymbolForCode(currencyCode ?: it.currencyCode,
-                    LanguageUtils.getCurrentDeviceLanguage(appContext))
 
-            // Format the amount for display according to the site's currency settings
-            val decimalFormattedValue = if (applyDecimalFormatting) {
-                WCCurrencyUtils.formatCurrencyForDisplay(rawValue.toDoubleOrNull()?.absoluteValue ?: 0.0, it)
-            } else {
-                rawValue
-            }
+        // Resolve the currency code to a localized symbol
+        val resolvedCurrencyCode = currencyCode ?: siteSettings?.currencyCode
+        val currencySymbol = resolvedCurrencyCode?.let {
+            WCCurrencyUtils.getLocalizedCurrencySymbolForCode(it, LanguageUtils.getCurrentDeviceLanguage(appContext))
+        } ?: ""
 
-            // Append or prepend the currency symbol according to the site's settings
-            with(StringBuilder()) {
-                if (rawValue.startsWith("-")) { append("-") }
-                append(when (it.currencyPosition) {
-                    LEFT -> "$currencySymbol$decimalFormattedValue"
-                    LEFT_SPACE -> "$currencySymbol $decimalFormattedValue"
-                    RIGHT -> "$decimalFormattedValue$currencySymbol"
-                    RIGHT_SPACE -> "$decimalFormattedValue $currencySymbol"
-                })
-                return toString()
-            }
-        } ?: return rawValue
+        // Format the amount for display according to the site's currency settings
+        // Use absolute values - if the value is negative, it will be handled in the next step, with the currency symbol
+        val decimalFormattedValue = siteSettings?.takeIf { applyDecimalFormatting }?.let {
+            WCCurrencyUtils.formatCurrencyForDisplay(rawValue.toDoubleOrNull()?.absoluteValue ?: 0.0, it)
+        } ?: rawValue.removePrefix("-")
+
+        // Append or prepend the currency symbol according to the site's settings
+        with(StringBuilder()) {
+            if (rawValue.startsWith("-")) { append("-") }
+            append(when (siteSettings?.currencyPosition) {
+                null, LEFT -> "$currencySymbol$decimalFormattedValue"
+                LEFT_SPACE -> "$currencySymbol $decimalFormattedValue"
+                RIGHT -> "$decimalFormattedValue$currencySymbol"
+                RIGHT_SPACE -> "$decimalFormattedValue $currencySymbol"
+            })
+            return toString()
+        }
     }
 
     fun formatCurrencyForDisplay(
