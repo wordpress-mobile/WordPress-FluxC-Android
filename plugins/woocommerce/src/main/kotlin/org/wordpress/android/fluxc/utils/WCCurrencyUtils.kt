@@ -2,6 +2,8 @@ package org.wordpress.android.fluxc.utils
 
 import org.wordpress.android.fluxc.model.WCSettingsModel
 import java.text.DecimalFormat
+import java.util.Currency
+import java.util.Locale
 
 object WCCurrencyUtils {
     /**
@@ -28,5 +30,19 @@ object WCCurrencyUtils {
         }
 
         return decimalFormat.format(rawValue)
+    }
+
+    /**
+     * Given a locale and an ISO 4217 currency code (e.g. USD), returns the currency symbol for that currency,
+     * localized to the locale.
+     *
+     * Will return the [currencyCode] if it's found not to be a valid currency code.
+     */
+    fun getLocalizedCurrencySymbolForCode(currencyCode: String, locale: Locale): String {
+        return try {
+            Currency.getInstance(currencyCode).getSymbol(locale)
+        } catch (e: IllegalArgumentException) {
+            currencyCode
+        }
     }
 }
