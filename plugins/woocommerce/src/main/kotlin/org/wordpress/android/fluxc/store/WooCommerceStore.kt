@@ -126,7 +126,7 @@ class WooCommerceStore @Inject constructor(
      * currency symbol and positioning will be applied. This is useful for values for 'pretty' display, e.g. $1.2k.
      */
     fun formatCurrencyForDisplay(
-        rawValue: Double,
+        rawValue: String,
         site: SiteModel,
         currencyCode: String? = null,
         applyDecimalFormatting: Boolean
@@ -139,9 +139,9 @@ class WooCommerceStore @Inject constructor(
 
             // Format the amount for display according to the site's currency settings
             val decimalFormattedValue = if (applyDecimalFormatting) {
-                WCCurrencyUtils.formatCurrencyForDisplay(rawValue, it)
+                WCCurrencyUtils.formatCurrencyForDisplay(rawValue.toDoubleOrNull() ?: 0.0, it)
             } else {
-                rawValue.toString()
+                rawValue
             }
 
             // Append or prepend the currency symbol according to the site's settings
@@ -151,7 +151,16 @@ class WooCommerceStore @Inject constructor(
                 RIGHT -> "$decimalFormattedValue$currencySymbol"
                 RIGHT_SPACE -> "$decimalFormattedValue $currencySymbol"
             }
-        } ?: return rawValue.toString()
+        } ?: return rawValue
+    }
+
+    fun formatCurrencyForDisplay(
+        amount: Double,
+        site: SiteModel,
+        currencyCode: String? = null,
+        applyDecimalFormatting: Boolean
+    ): String {
+        return formatCurrencyForDisplay(amount.toString(), site, currencyCode, applyDecimalFormatting)
     }
 
     private fun getApiVersion(site: SiteModel) = wcCoreRestClient.getSupportedWooApiVersion(site)
