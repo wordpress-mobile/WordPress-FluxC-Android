@@ -16,6 +16,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.store.WooCommerceStore.FetchApiVersionResponsePayload
 import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCSiteSettingsResponsePayload
+import org.wordpress.android.fluxc.utils.WCCurrencyUtils
+import java.util.Locale
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -79,6 +81,32 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
             assertEquals(",", currencyThousandSeparator)
             assertEquals(".", currencyDecimalSeparator)
             assertEquals(2, currencyDecimalNumber)
+        }
+    }
+
+    // This is a connected test instead of a unit test because some of the internals of java.util.Currency seem to be
+    // stubbed in a unit test environment, giving results inconsistent with a normal running app
+    @Test
+    fun testGetLocalizedCurrencySymbolForCode() {
+        Locale("en", "US").let { localeEnUS ->
+            assertEquals("$", WCCurrencyUtils.getLocalizedCurrencySymbolForCode("USD", localeEnUS))
+            assertEquals("CA$", WCCurrencyUtils.getLocalizedCurrencySymbolForCode("CAD", localeEnUS))
+            assertEquals("€", WCCurrencyUtils.getLocalizedCurrencySymbolForCode("EUR", localeEnUS))
+            assertEquals("¥", WCCurrencyUtils.getLocalizedCurrencySymbolForCode("JPY", localeEnUS))
+        }
+
+        Locale("en", "CA").let { localeEnCA ->
+            assertEquals("US$", WCCurrencyUtils.getLocalizedCurrencySymbolForCode("USD", localeEnCA))
+            assertEquals("$", WCCurrencyUtils.getLocalizedCurrencySymbolForCode("CAD", localeEnCA))
+            assertEquals("€", WCCurrencyUtils.getLocalizedCurrencySymbolForCode("EUR", localeEnCA))
+            assertEquals("JP¥", WCCurrencyUtils.getLocalizedCurrencySymbolForCode("JPY", localeEnCA))
+        }
+
+        Locale("fr", "FR").let { localeFrFR ->
+            assertEquals("\$US", WCCurrencyUtils.getLocalizedCurrencySymbolForCode("USD", localeFrFR))
+            assertEquals("\$CA", WCCurrencyUtils.getLocalizedCurrencySymbolForCode("CAD", localeFrFR))
+            assertEquals("€", WCCurrencyUtils.getLocalizedCurrencySymbolForCode("EUR", localeFrFR))
+            assertEquals("JPY", WCCurrencyUtils.getLocalizedCurrencySymbolForCode("JPY", localeFrFR))
         }
     }
 
