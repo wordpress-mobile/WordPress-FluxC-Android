@@ -24,6 +24,7 @@ import org.wordpress.android.util.LanguageUtils
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.absoluteValue
 
 @Singleton
 class WooCommerceStore @Inject constructor(
@@ -139,17 +140,21 @@ class WooCommerceStore @Inject constructor(
 
             // Format the amount for display according to the site's currency settings
             val decimalFormattedValue = if (applyDecimalFormatting) {
-                WCCurrencyUtils.formatCurrencyForDisplay(rawValue.toDoubleOrNull() ?: 0.0, it)
+                WCCurrencyUtils.formatCurrencyForDisplay(rawValue.toDoubleOrNull()?.absoluteValue ?: 0.0, it)
             } else {
                 rawValue
             }
 
             // Append or prepend the currency symbol according to the site's settings
-            return when (it.currencyPosition) {
-                LEFT -> "$currencySymbol$decimalFormattedValue"
-                LEFT_SPACE -> "$currencySymbol $decimalFormattedValue"
-                RIGHT -> "$decimalFormattedValue$currencySymbol"
-                RIGHT_SPACE -> "$decimalFormattedValue $currencySymbol"
+            with(StringBuilder()) {
+                if (rawValue.startsWith("-")) { append("-") }
+                append(when (it.currencyPosition) {
+                    LEFT -> "$currencySymbol$decimalFormattedValue"
+                    LEFT_SPACE -> "$currencySymbol $decimalFormattedValue"
+                    RIGHT -> "$decimalFormattedValue$currencySymbol"
+                    RIGHT_SPACE -> "$decimalFormattedValue $currencySymbol"
+                })
+                return toString()
             }
         } ?: return rawValue
     }
