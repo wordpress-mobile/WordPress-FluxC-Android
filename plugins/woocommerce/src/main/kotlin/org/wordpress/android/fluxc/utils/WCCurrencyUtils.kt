@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.utils
 
 import org.wordpress.android.fluxc.model.WCSettingsModel
+import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T
 import java.text.DecimalFormat
 import java.util.Currency
 import java.util.Locale
@@ -42,6 +44,8 @@ object WCCurrencyUtils {
         return try {
             Currency.getInstance(currencyCode).getSymbol(locale)
         } catch (e: IllegalArgumentException) {
+            AppLog.e(T.UTILS,
+                    "Error finding valid currency symbol for currency code [$currencyCode] in locale [$locale]", e)
             currencyCode
         }
     }
