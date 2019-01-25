@@ -18,12 +18,11 @@ import kotlin.test.assertEquals
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class WooCommerceStoreTest {
-    private val wooCommerceStore = WooCommerceStore(Dispatcher(), mock())
+    private val appContext = RuntimeEnvironment.application.applicationContext
+    private val wooCommerceStore = WooCommerceStore(appContext, Dispatcher(), mock())
 
     @Before
     fun setUp() {
-        val appContext = RuntimeEnvironment.application.applicationContext
-
         val config = SingleStoreWellSqlConfigForTests(appContext, SiteModel::class.java,
                 WellSqlConfig.ADDON_WOOCOMMERCE)
         WellSql.init(config)
