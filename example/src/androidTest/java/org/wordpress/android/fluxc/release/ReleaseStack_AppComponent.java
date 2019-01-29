@@ -56,5 +56,5 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_WCBaseStoreTest test);
     void inject(ReleaseStack_WCOrderTest test);
     void inject(ReleaseStack_VerticalTest test);
-    void inject(ReleaseStack_PlansTest test);
+    void inject(ReleaseStack_PlanOffersTest test);
 }

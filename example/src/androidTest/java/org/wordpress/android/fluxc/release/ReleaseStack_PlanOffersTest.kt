@@ -4,7 +4,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
-import org.wordpress.android.fluxc.action.PlansAction
+import org.wordpress.android.fluxc.action.PlanOfferAction
 import org.wordpress.android.fluxc.generated.PlansActionBuilder
 import org.wordpress.android.fluxc.store.PlanOffersStore
 import org.wordpress.android.fluxc.store.PlanOffersStore.OnPlanOffersFetched
@@ -12,14 +12,14 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
 
-class ReleaseStack_PlansTest : ReleaseStack_Base() {
-    @Inject lateinit var planOffersStore: PlanOffersStore
+class ReleaseStack_PlanOffersTest : ReleaseStack_Base() {
+    @Inject lateinit var planOffersStore: PlanOffersStore // needs to be injected for test to work properly
     private var nextEvent: TestEvents? = null
 
     internal enum class TestEvents {
         NONE,
-        PLANS_FETCHED,
-        ERROR_FETCHING_PLANS
+        PLAN_OFFERS_FETCHED,
+        ERROR_FETCHING_PLAN_OFFERS
     }
 
     @Throws(Exception::class)
@@ -34,9 +34,9 @@ class ReleaseStack_PlansTest : ReleaseStack_Base() {
 
     @Test
     fun testFetchPlans() {
-        nextEvent = TestEvents.PLANS_FETCHED
+        nextEvent = TestEvents.PLAN_OFFERS_FETCHED
         mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(PlansActionBuilder.generateNoPayloadAction(PlansAction.FETCH_PLANS))
+        mDispatcher.dispatch(PlansActionBuilder.generateNoPayloadAction(PlanOfferAction.FETCH_PLAN_OFFERS))
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
     }
 
