@@ -6,14 +6,14 @@ import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.PlansAction
 import org.wordpress.android.fluxc.generated.PlansActionBuilder
-import org.wordpress.android.fluxc.store.PlansStore
-import org.wordpress.android.fluxc.store.PlansStore.OnPlansFetched
+import org.wordpress.android.fluxc.store.PlanOffersStore
+import org.wordpress.android.fluxc.store.PlanOffersStore.OnPlanOffersFetched
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
 
 class ReleaseStack_PlansTest : ReleaseStack_Base() {
-    @Inject lateinit var plansStore: PlansStore
+    @Inject lateinit var planOffersStore: PlanOffersStore
     private var nextEvent: TestEvents? = null
 
     internal enum class TestEvents {
@@ -42,13 +42,13 @@ class ReleaseStack_PlansTest : ReleaseStack_Base() {
 
     @Subscribe
     @Suppress("unused")
-    fun onPlansFetched(event: OnPlansFetched) {
+    fun onPlansFetched(event: OnPlanOffersFetched) {
         if (event.isError) {
             throw AssertionError("Unexpected error occurred with type: " + event.error.type)
         }
 
-        Assert.assertNotNull(event.plans)
-        Assert.assertTrue(event.plans!!.isNotEmpty())
+        Assert.assertNotNull(event.planOffers)
+        Assert.assertTrue(event.planOffers!!.isNotEmpty())
         mCountDownLatch.countDown()
     }
 }
