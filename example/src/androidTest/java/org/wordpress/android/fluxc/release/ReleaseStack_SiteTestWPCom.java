@@ -431,7 +431,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     @Subscribe
     public void onPlansFetched(OnPlansFetched event) {
         if (event.isError()) {
-            AppLog.i(T.API, "onPlanOffersFetched has error: " + event.error.type + " - " + event.error.message);
+            AppLog.i(T.API, "onPlansFetched has error: " + event.error.type + " - " + event.error.message);
             if (mNextEvent.equals(TestEvents.PLANS_UNKNOWN_BLOG_ERROR)) {
                 assertEquals(PlansErrorType.UNKNOWN_BLOG, event.error.type);
                 mCountDownLatch.countDown();
