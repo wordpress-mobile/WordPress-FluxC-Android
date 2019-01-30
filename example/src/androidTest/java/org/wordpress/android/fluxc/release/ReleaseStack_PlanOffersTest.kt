@@ -5,7 +5,7 @@ import org.junit.Assert
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.PlanOfferAction
-import org.wordpress.android.fluxc.generated.PlansActionBuilder
+import org.wordpress.android.fluxc.generated.PlanOfferActionBuilder
 import org.wordpress.android.fluxc.store.PlanOffersStore
 import org.wordpress.android.fluxc.store.PlanOffersStore.OnPlanOffersFetched
 import java.util.concurrent.CountDownLatch
@@ -18,8 +18,7 @@ class ReleaseStack_PlanOffersTest : ReleaseStack_Base() {
 
     internal enum class TestEvents {
         NONE,
-        PLAN_OFFERS_FETCHED,
-        ERROR_FETCHING_PLAN_OFFERS
+        PLAN_OFFERS_FETCHED
     }
 
     @Throws(Exception::class)
@@ -33,16 +32,16 @@ class ReleaseStack_PlanOffersTest : ReleaseStack_Base() {
     }
 
     @Test
-    fun testFetchPlans() {
+    fun testFetchPlanOffers() {
         nextEvent = TestEvents.PLAN_OFFERS_FETCHED
         mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(PlansActionBuilder.generateNoPayloadAction(PlanOfferAction.FETCH_PLAN_OFFERS))
+        mDispatcher.dispatch(PlanOfferActionBuilder.generateNoPayloadAction(PlanOfferAction.FETCH_PLAN_OFFERS))
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
     }
 
     @Subscribe
     @Suppress("unused")
-    fun onPlansFetched(event: OnPlanOffersFetched) {
+    fun onPlanOffersFetched(event: OnPlanOffersFetched) {
         if (event.isError) {
             throw AssertionError("Unexpected error occurred with type: " + event.error.type)
         }
