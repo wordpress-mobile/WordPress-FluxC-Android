@@ -4,8 +4,8 @@ import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
-import org.wordpress.android.fluxc.action.PlanOfferAction
-import org.wordpress.android.fluxc.generated.PlanOfferActionBuilder
+import org.wordpress.android.fluxc.action.PlanOffersAction
+import org.wordpress.android.fluxc.generated.PlanOffersActionBuilder
 import org.wordpress.android.fluxc.store.PlanOffersStore
 import org.wordpress.android.fluxc.store.PlanOffersStore.OnPlanOffersFetched
 import java.util.concurrent.CountDownLatch
@@ -35,7 +35,7 @@ class ReleaseStack_PlanOffersTest : ReleaseStack_Base() {
     fun testFetchPlanOffers() {
         nextEvent = TestEvents.PLAN_OFFERS_FETCHED
         mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(PlanOfferActionBuilder.generateNoPayloadAction(PlanOfferAction.FETCH_PLAN_OFFERS))
+        mDispatcher.dispatch(PlanOffersActionBuilder.generateNoPayloadAction(PlanOffersAction.FETCH_PLAN_OFFERS))
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
     }
 
