@@ -2,8 +2,10 @@ package org.wordpress.android.fluxc.release;
 
 import android.content.Context;
 
+import com.android.volley.RequestQueue;
 import com.yarolegovich.wellsql.WellSql;
 
+import org.junit.After;
 import org.junit.Before;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
@@ -13,6 +15,7 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig;
 import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import static android.support.test.InstrumentationRegistry.getInstrumentation;
 
@@ -29,6 +32,8 @@ import static android.support.test.InstrumentationRegistry.getInstrumentation;
  */
 public class ReleaseStack_Base {
     @Inject Dispatcher mDispatcher;
+    @Inject @Named("regular") RequestQueue mRequestQueueRegular;
+    @Inject @Named("custom-ssl") RequestQueue mRequestQueueCustomSsl;
 
     Context mAppContext;
     ReleaseStack_AppComponent mReleaseStackAppComponent;
@@ -46,6 +51,18 @@ public class ReleaseStack_Base {
         WellSqlConfig config = new WellSqlConfig(mAppContext, WellSqlConfig.ADDON_WOOCOMMERCE);
         WellSql.init(config);
         config.reset();
+    }
+
+    @After
+    public void tearDown() {
+        // Spin down the queue to free up memory
+        // Without this, running the full connected test suite will sometimes fail with 'out of memory' errors
+        if (mRequestQueueRegular != null) {
+            mRequestQueueRegular.stop();
+        }
+        if (mRequestQueueCustomSsl != null) {
+            mRequestQueueCustomSsl.stop();
+        }
     }
 
     protected void init() throws Exception {
