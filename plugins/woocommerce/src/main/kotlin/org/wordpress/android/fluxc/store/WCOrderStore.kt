@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.model.order.toIdSet
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
@@ -142,6 +143,15 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 : this(order, site, note) { this.error = error }
     }
 
+    class FetchOrderStatusOptionsPayload(val site: SiteModel) : Payload<BaseNetworkError>()
+
+    class FetchOrderStatusOptionsResponsePayload(
+        val site: SiteModel,
+        val labels: List<WCOrderStatusModel> = emptyList()
+    ) : Payload<OrderError>() {
+        constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
+    }
+
     class OrderError(val type: OrderErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
 
     enum class OrderErrorType {
@@ -170,6 +180,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var canLoadMore: Boolean = false,
         var nextOffset: Int = 0,
         var searchResults: List<WCOrderModel> = emptyList()
+    ) : OnChanged<OrderError>()
+
+    class OnOrderStatusOptionsChanged(
+        var rowsAffected: Int
     ) : OnChanged<OrderError>()
 
     override fun onRegister() = AppLog.d(T.API, "WCOrderStore onRegister")
@@ -208,6 +222,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             WCOrderAction.POST_ORDER_NOTE -> postOrderNote(action.payload as PostOrderNotePayload)
             WCOrderAction.FETCH_HAS_ORDERS -> fetchHasOrders(action.payload as FetchHasOrdersPayload)
             WCOrderAction.SEARCH_ORDERS -> searchOrders(action.payload as SearchOrdersPayload)
+            WCOrderAction.FETCH_ORDER_STATUS_OPTIONS ->
+                fetchOrderStatusOptions(action.payload as FetchOrderStatusOptionsPayload)
 
             // remote responses
             WCOrderAction.FETCHED_ORDERS -> handleFetchOrdersCompleted(action.payload as FetchOrdersResponsePayload)
@@ -221,6 +237,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             WCOrderAction.FETCHED_HAS_ORDERS -> handleFetchHasOrdersCompleted(
                     action.payload as FetchHasOrdersResponsePayload)
             WCOrderAction.SEARCHED_ORDERS -> handleSearchOrdersCompleted(action.payload as SearchOrdersResponsePayload)
+            WCOrderAction.FETCHED_ORDER_STATUS_OPTIONS ->
+                handleFetchOrderStatusOptionsCompleted(action.payload as FetchOrderStatusOptionsResponsePayload)
         }
     }
 
@@ -259,6 +277,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     private fun postOrderNote(payload: PostOrderNotePayload) {
         wcOrderRestClient.postOrderNote(payload.order, payload.site, payload.note)
+    }
+
+    private fun fetchOrderStatusOptions(payload: FetchOrderStatusOptionsPayload) {
+        wcOrderRestClient.fetchOrderStatusOptions(payload.site)
     }
 
     private fun handleFetchOrdersCompleted(payload: FetchOrdersResponsePayload) {
@@ -378,5 +400,18 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
         onOrderChanged.causeOfChange = POST_ORDER_NOTE
         emitChange(onOrderChanged)
+    }
+
+    private fun handleFetchOrderStatusOptionsCompleted(payload: FetchOrderStatusOptionsResponsePayload) {
+        val onOrderStatusLabelsChanged: OnOrderStatusOptionsChanged
+
+        if (payload.isError) {
+            onOrderStatusLabelsChanged = OnOrderStatusOptionsChanged(0).also { it.error = payload.error }
+        } else {
+            val rowsAffected = payload.labels.sumBy { OrderSqlUtils.insertOrUpdateOrderStatusOption(it) }
+            onOrderStatusLabelsChanged = OnOrderStatusOptionsChanged(rowsAffected)
+        }
+
+        emitChange(onOrderStatusLabelsChanged)
     }
 }

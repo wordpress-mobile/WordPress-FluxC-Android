@@ -2,11 +2,13 @@ package org.wordpress.android.fluxc.persistence
 
 import com.wellsql.generated.WCOrderModelTable
 import com.wellsql.generated.WCOrderNoteModelTable
+import com.wellsql.generated.WCOrderStatusModelTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.OrderIdSet
 
 object OrderSqlUtils {
@@ -115,5 +117,25 @@ object OrderSqlUtils {
                 .equals(WCOrderNoteModelTable.LOCAL_SITE_ID, site.id)
                 .endWhere()
                 .execute()
+    }
+
+    fun insertOrUpdateOrderStatusOption(label: WCOrderStatusModel): Int {
+        val result = WellSql.select(WCOrderStatusModel::class.java)
+                .where().beginGroup()
+                .equals(WCOrderStatusModelTable.ID, label.id)
+                .or()
+                .equals(WCOrderStatusModelTable.KEY, label.key)
+                .endGroup().endWhere().asModel
+
+        return if (result.isEmpty()) {
+            // Insert
+            WellSql.insert(label).asSingleTransaction(true).execute()
+            1
+        } else {
+            // Update
+            val oldId = result[0].id
+            WellSql.update(WCOrderStatusModel::class.java).whereId(oldId)
+                    .put(label, UpdateAllExceptId(WCOrderStatusModel::class.java)).execute()
+        }
     }
 }
