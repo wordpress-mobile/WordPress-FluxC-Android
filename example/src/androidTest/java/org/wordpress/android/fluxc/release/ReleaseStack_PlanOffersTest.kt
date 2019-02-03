@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
 
 class ReleaseStack_PlanOffersTest : ReleaseStack_Base() {
+    @Suppress("unused")
     @Inject lateinit var planOffersStore: PlanOffersStore // needs to be injected for test to work properly
     private var nextEvent: TestEvents? = null
 
