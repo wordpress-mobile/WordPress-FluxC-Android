@@ -80,8 +80,11 @@ object WCStatsSqlUtils {
 
     fun getRawStatsForSiteUnitQuantityAndDate(site: SiteModel,
         unit: OrderStatsApiUnit,
-        quantity: String,
-        date: String): WCOrderStatsModel? {
+        quantity: String? = null,
+        date: String? = null): WCOrderStatsModel? {
+        if(quantity.isNullOrEmpty() || date.isNullOrEmpty())
+            return getRawStatsForSiteAndUnit(site, unit)
+
         return WellSql.select(WCOrderStatsModel::class.java)
                 .where()
                 .beginGroup()

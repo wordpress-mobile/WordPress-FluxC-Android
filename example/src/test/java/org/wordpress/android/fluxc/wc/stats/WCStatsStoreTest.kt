@@ -856,5 +856,17 @@ class WCStatsStoreTest {
          * */
         val missingData = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site2, OrderStatsApiUnit.YEAR, "1", "2019-01-01")
         assertNull(missingData)
+
+
+        /*
+         * Test Scenario - XI
+         * Fetch data with only site and granularity:
+         * siteId - 8
+         * granularity - MONTHS
+         *
+         * */
+        val defaultOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site2, OrderStatsApiUnit.MONTH)
+        assertNotNull(defaultOrderStats)
+        assertEquals(OrderStatsApiUnit.MONTH.toString(), defaultOrderStats?.unit)
     }
 }
