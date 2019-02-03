@@ -209,6 +209,12 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     fun getOrderNotesForOrder(order: WCOrderModel): List<WCOrderNoteModel> =
             OrderSqlUtils.getOrderNotesForOrder(order.id)
 
+    /**
+     * Returns the order status options available for the provided site [SiteModel] as a list of [WCOrderStatusModel].
+     */
+    fun getOrderStatusOptionsForSite(site: SiteModel): List<WCOrderStatusModel> =
+            OrderSqlUtils.getOrderStatusOptionsForSite(site)
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCOrderAction ?: return
