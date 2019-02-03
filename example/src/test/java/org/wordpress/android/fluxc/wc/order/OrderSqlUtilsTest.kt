@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
@@ -26,7 +27,7 @@ class OrderSqlUtilsTest {
         val appContext = RuntimeEnvironment.application.applicationContext
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
-                listOf(WCOrderModel::class.java, WCOrderNoteModel::class.java),
+                listOf(WCOrderModel::class.java, WCOrderNoteModel::class.java, WCOrderStatusModel::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE)
         WellSql.init(config)
         config.reset()
@@ -184,11 +185,20 @@ class OrderSqlUtilsTest {
 
         // Save full list, but only all but the first 2 should be inserted
         rowsAffected = orderStatusOptions.sumBy { OrderSqlUtils.insertOrUpdateOrderStatusOption(it) }
-        assertEquals(7, rowsAffected)
+        assertEquals(8, rowsAffected)
+
+        // Update a single option
+        val newLabel = "New Label"
+        firstOption.apply { label = newLabel }
+        rowsAffected = OrderSqlUtils.insertOrUpdateOrderStatusOption(firstOption)
+        assertEquals(1, rowsAffected)
+        val newFirstOption = OrderSqlUtils.getOrderStatusOptionsForSite(siteModel).first {
+            it.statusKey == firstOption.statusKey
+        }
+        assertEquals(firstOption.label, newFirstOption.label)
 
         // Get order status options from the database
         val orderStatusOptionsDb = OrderSqlUtils.getOrderStatusOptionsForSite(siteModel)
         assertEquals(8, orderStatusOptionsDb.size)
-
     }
 }
