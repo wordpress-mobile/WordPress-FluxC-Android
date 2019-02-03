@@ -70,6 +70,8 @@ class WCStatsStore @Inject constructor(
     class FetchOrderStatsPayload(
         val site: SiteModel,
         val granularity: StatsGranularity,
+        val startDate: String? = null,
+        val endDate: String? = null,
         val forced: Boolean = false
     ) : Payload<BaseNetworkError>()
 
@@ -231,13 +233,31 @@ class WCStatsStore @Inject constructor(
         }
     }
 
+
+    /**
+     * returns the quantity (how far back to go) to use when requesting stats for a specific granularity
+     * and the date range
+     */
+    private fun getQuantityForGranularity(site: SiteModel, granularity: StatsGranularity, startDate: String?, endDate: String?): Int {
+        val defaultValue =  when (granularity) {
+            StatsGranularity.DAYS -> STATS_QUANTITY_DAYS
+            StatsGranularity.WEEKS -> STATS_QUANTITY_WEEKS
+            StatsGranularity.MONTHS -> STATS_QUANTITY_MONTHS
+            StatsGranularity.YEARS -> {
+                // Years since 2011 (WooCommerce initial release), inclusive
+                SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR).toInt() - 2011 + 1
+            }
+        }
+        return getQuantityByGranularity(startDate, endDate, granularity, defaultValue).toInt()
+    }
+
     /**
      * Given a {@param d1} start date, {@param d2} end date and the {@param granularity} granularity,
      * returns a quantity value.
      * If the start date or end date is empty, returns {@param defaultValue}
      */
-    fun getQuantityByGranularity(d1: String?, d2: String?, granularity: StatsGranularity, defaultValue: Long): Long {
-        if (d1.isNullOrEmpty() || d2.isNullOrEmpty()) return defaultValue
+    fun getQuantityByGranularity(d1: String?, d2: String?, granularity: StatsGranularity, defaultValue: Int): Long {
+        if (d1.isNullOrEmpty() || d2.isNullOrEmpty()) return defaultValue.toLong()
 
         val startDate = SiteUtils.getDateFromString(d1)
         val endDate = SiteUtils.getDateFromString(d2)
@@ -254,9 +274,9 @@ class WCStatsStore @Inject constructor(
     }
 
     private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
-        val quantity = getQuantityForGranularity(payload.site, payload.granularity)
+        val quantity = getQuantityForGranularity(payload.site, payload.granularity, payload.startDate, payload.endDate)
         wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
-                getFormattedDate(payload.site, payload.granularity), quantity, payload.forced)
+                getFormattedDate(payload.site, payload.granularity, payload.endDate), quantity, payload.forced)
     }
 
     private fun fetchVisitorStats(payload: FetchVisitorStatsPayload) {
@@ -320,6 +340,20 @@ class WCStatsStore @Inject constructor(
             StatsGranularity.WEEKS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_WEEK)
             StatsGranularity.MONTHS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_MONTH)
             StatsGranularity.YEARS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR)
+        }
+    }
+
+
+    /**
+     * Given a {@param endDate} end date, formats the end date based on the site's timezone
+     * If the start date or end date is empty, formats the current date
+     */
+    private fun getFormattedDate(site: SiteModel, granularity: StatsGranularity, endDate: String?): String {
+        return when (granularity) {
+            StatsGranularity.DAYS -> SiteUtils.getDateTimeForSite(site, DATE_FORMAT_DAY, endDate)
+            StatsGranularity.WEEKS -> SiteUtils.getDateTimeForSite(site, DATE_FORMAT_WEEK, endDate)
+            StatsGranularity.MONTHS -> SiteUtils.getDateTimeForSite(site, DATE_FORMAT_MONTH, endDate)
+            StatsGranularity.YEARS -> SiteUtils.getDateTimeForSite(site, DATE_FORMAT_YEAR, endDate)
         }
     }
 

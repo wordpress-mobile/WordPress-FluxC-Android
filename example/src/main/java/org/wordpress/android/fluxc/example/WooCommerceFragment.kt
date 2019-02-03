@@ -233,7 +233,7 @@ class WooCommerceFragment : Fragment() {
 
         fetch_order_stats_forced.setOnClickListener {
             getFirstWCSite()?.let {
-                val payload = FetchOrderStatsPayload(it, StatsGranularity.DAYS, true)
+                val payload = FetchOrderStatsPayload(it, StatsGranularity.DAYS, forced = true)
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
             } ?: showNoWCSitesToast()
         }

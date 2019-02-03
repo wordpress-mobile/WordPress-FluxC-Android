@@ -27,7 +27,9 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
+import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.fluxc.utils.SiteUtils.getCurrentDateTimeForSite
+import org.wordpress.android.fluxc.utils.SiteUtils.getDateTimeForSite
 import java.text.SimpleDateFormat
 import java.util.Date
 import kotlin.test.assertEquals
@@ -378,5 +380,240 @@ class WCStatsStoreTest {
 
         val defaultQuantity2 = wcStatsStore.getQuantityByGranularity(null, null, StatsGranularity.YEARS, 1)
         assertEquals(1, defaultQuantity2)
+    }
+
+    @Test
+    fun testFetchOrderStatsForDaysDate() {
+        val startDate = "2019-01-01"
+        val endDate = "2019-01-01"
+        val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
+            val payload = FetchOrderStatsPayload(it, StatsGranularity.DAYS, startDate, endDate)
+            wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+
+            val timeOnSite = getDateTimeForSite(it, "yyyy-MM-dd", endDate)
+
+            // The date value passed to the network client should match the current date on the site
+            val dateArgument = argumentCaptor<String>()
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any())
+            val siteDate = dateArgument.firstValue
+            assertEquals(timeOnSite, siteDate)
+            return@let siteDate
+        }
+
+        reset(mockOrderStatsRestClient)
+
+        val minus12SiteDate = SiteModel().apply { timezone = "-12" }.let {
+            val payload = FetchOrderStatsPayload(it, StatsGranularity.DAYS, startDate, endDate)
+            wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+
+            val timeOnSite = getDateTimeForSite(it, "yyyy-MM-dd", endDate)
+
+            // The date value passed to the network client should match the current date on the site
+            val dateArgument = argumentCaptor<String>()
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any())
+            val siteDate = dateArgument.firstValue
+            assertEquals(timeOnSite, siteDate)
+            return@let siteDate
+        }
+
+        val localDate = SiteUtils.formatDate("YYYY-MM-dd", SiteUtils.getDateFromString(endDate))
+        assertThat(localDate, anyOf(isEqual(plus12SiteDate), isEqual(minus12SiteDate)))
+        assertThat(localDate, anyOf(not(plus12SiteDate), not(minus12SiteDate)))
+    }
+
+
+    @Test
+    fun testFetchOrderStatsForWeeksDate() {
+        val startDate = "2019-01-25"
+        val endDate = "2019-01-28"
+        val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
+            val payload = FetchOrderStatsPayload(it, StatsGranularity.WEEKS, startDate, endDate)
+            wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+
+            val timeOnSite = getDateTimeForSite(it, "yyyy-'W'ww", endDate)
+
+            // The date value passed to the network client should match the current date on the site
+            val dateArgument = argumentCaptor<String>()
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any())
+            val siteDate = dateArgument.firstValue
+            assertEquals(timeOnSite, siteDate)
+            return@let siteDate
+        }
+
+        reset(mockOrderStatsRestClient)
+
+        val minus12SiteDate = SiteModel().apply { timezone = "-12" }.let {
+            val payload = FetchOrderStatsPayload(it, StatsGranularity.WEEKS, startDate, endDate)
+            wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+
+            val timeOnSite = getDateTimeForSite(it, "yyyy-'W'ww", endDate)
+
+            // The date value passed to the network client should match the current date on the site
+            val dateArgument = argumentCaptor<String>()
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any())
+            val siteDate = dateArgument.firstValue
+            assertEquals(timeOnSite, siteDate)
+            return@let siteDate
+        }
+
+        val localDate = SiteUtils.formatDate("yyyy-'W'ww", SiteUtils.getDateFromString(endDate))
+
+        assertThat(localDate, isEqual(plus12SiteDate))
+        assertThat(localDate, isEqual(minus12SiteDate))
+    }
+
+
+    @Test
+    fun testFetchOrderStatsForMonthsDate() {
+        val startDate = "2019-01-25"
+        val endDate = "2019-01-28"
+
+        val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
+            val payload = FetchOrderStatsPayload(it, StatsGranularity.MONTHS, startDate, endDate)
+            wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+
+            val timeOnSite = getDateTimeForSite(it, "yyyy-MM", endDate)
+
+            // The date value passed to the network client should match the current date on the site
+            val dateArgument = argumentCaptor<String>()
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any())
+            val siteDate = dateArgument.firstValue
+            assertEquals(timeOnSite, siteDate)
+            return@let siteDate
+        }
+
+        reset(mockOrderStatsRestClient)
+
+        val minus12SiteDate = SiteModel().apply { timezone = "-12" }.let {
+            val payload = FetchOrderStatsPayload(it, StatsGranularity.MONTHS, startDate, endDate)
+            wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+
+            val timeOnSite = getDateTimeForSite(it, "yyyy-MM", endDate)
+
+            // The date value passed to the network client should match the current date on the site
+            val dateArgument = argumentCaptor<String>()
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any())
+            val siteDate = dateArgument.firstValue
+            assertEquals(timeOnSite, siteDate)
+            return@let siteDate
+        }
+
+        val localDate = SiteUtils.formatDate("yyyy-MM", SiteUtils.getDateFromString(endDate))
+
+        assertThat(localDate, isEqual(plus12SiteDate))
+        assertThat(localDate, isEqual(minus12SiteDate))
+    }
+
+    @Test
+    fun testFetchOrderStatsForYearsDate() {
+        val startDate = "2018-12-25"
+        val endDate = "2019-01-28"
+
+        val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
+            val payload = FetchOrderStatsPayload(it, StatsGranularity.YEARS, startDate, endDate)
+            wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+
+            val timeOnSite = getDateTimeForSite(it, "yyyy", endDate)
+
+            // The date value passed to the network client should match the current date on the site
+            val dateArgument = argumentCaptor<String>()
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any())
+            val siteDate = dateArgument.firstValue
+            assertEquals(timeOnSite, siteDate)
+            return@let siteDate
+        }
+
+        reset(mockOrderStatsRestClient)
+
+        val minus12SiteDate = SiteModel().apply { timezone = "-12" }.let {
+            val payload = FetchOrderStatsPayload(it, StatsGranularity.YEARS, startDate, endDate)
+            wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+
+            val timeOnSite = getDateTimeForSite(it, "yyyy", endDate)
+
+            // The date value passed to the network client should match the current date on the site
+            val dateArgument = argumentCaptor<String>()
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any())
+            val siteDate = dateArgument.firstValue
+            assertEquals(timeOnSite, siteDate)
+            return@let siteDate
+        }
+
+        val localDate = SiteUtils.formatDate("yyyy", SiteUtils.getDateFromString(endDate))
+
+        assertThat(localDate, isEqual(plus12SiteDate))
+        assertThat(localDate, isEqual(minus12SiteDate))
+    }
+
+
+    @Test
+    fun testFetchOrderStatsForDaysQuantity() {
+        val startDate = "2019-01-01"
+        val endDate = "2019-01-01"
+
+        val siteModel = SiteModel()
+        val payload = FetchOrderStatsPayload(siteModel, StatsGranularity.DAYS, startDate, endDate)
+        wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+
+        val quantity: Long = wcStatsStore.getQuantityByGranularity(startDate, endDate, StatsGranularity.DAYS, 30)
+
+        val quantityArgument = argumentCaptor<Long>()
+        verify(mockOrderStatsRestClient).fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any())
+        val calculatedQuantity: Long = quantityArgument.firstValue
+        assertEquals(quantity, calculatedQuantity)
+    }
+
+
+    @Test
+    fun testFetchOrderStatsForWeeksQuantity() {
+        val startDate = "2019-01-25"
+        val endDate = "2019-01-28"
+
+        val siteModel = SiteModel()
+        val payload = FetchOrderStatsPayload(siteModel, StatsGranularity.WEEKS, startDate, endDate)
+        wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+
+        val quantity: Long = wcStatsStore.getQuantityByGranularity(startDate, endDate, StatsGranularity.WEEKS, 17)
+
+        val quantityArgument = argumentCaptor<Long>()
+        verify(mockOrderStatsRestClient).fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any())
+        val calculatedQuantity: Long = quantityArgument.firstValue
+        assertEquals(quantity, calculatedQuantity)
+    }
+
+
+    @Test
+    fun testFetchOrderStatsForMonthsQuantity() {
+        val startDate = "2018-12-25"
+        val endDate = "2019-01-28"
+
+        val siteModel = SiteModel()
+        val payload = FetchOrderStatsPayload(siteModel, StatsGranularity.MONTHS, startDate, endDate)
+        wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+
+        val quantity: Long = wcStatsStore.getQuantityByGranularity(startDate, endDate, StatsGranularity.MONTHS, 12)
+
+        val quantityArgument = argumentCaptor<Long>()
+        verify(mockOrderStatsRestClient).fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any())
+        val calculatedQuantity: Long = quantityArgument.firstValue
+        assertEquals(quantity, calculatedQuantity)
+    }
+
+
+    @Test
+    fun testFetchOrderStatsForYearsQuantity() {
+        val startDate = "2018-12-25"
+        val endDate = "2019-01-28"
+
+        val siteModel = SiteModel()
+        val payload = FetchOrderStatsPayload(siteModel, StatsGranularity.YEARS, startDate, endDate)
+        wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+
+        val quantity: Long = wcStatsStore.getQuantityByGranularity(startDate, endDate, StatsGranularity.YEARS, 12)
+
+        val quantityArgument = argumentCaptor<Long>()
+        verify(mockOrderStatsRestClient).fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any())
+        val calculatedQuantity: Long = quantityArgument.firstValue
+        assertEquals(quantity, calculatedQuantity)
     }
 }
