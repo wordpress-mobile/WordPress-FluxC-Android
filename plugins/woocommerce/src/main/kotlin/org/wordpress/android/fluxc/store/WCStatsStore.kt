@@ -33,6 +33,7 @@ class WCStatsStore @Inject constructor(
         const val STATS_QUANTITY_WEEKS = 17
         const val STATS_QUANTITY_MONTHS = 12
 
+        private const val DATE_FORMAT_DEFAULT = "yyyy-MM-dd"
         private const val DATE_FORMAT_DAY = "yyyy-MM-dd"
         private const val DATE_FORMAT_WEEK = "yyyy-'W'ww"
         private const val DATE_FORMAT_MONTH = "yyyy-MM"
@@ -228,6 +229,28 @@ class WCStatsStore @Inject constructor(
                 // Years since 2011 (WooCommerce initial release), inclusive
                 SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR).toInt() - 2011 + 1
             }
+        }
+    }
+
+    /**
+     * Given a {@param d1} start date, {@param d2} end date and the {@param granularity} granularity,
+     * returns a quantity value.
+     * If the start date or end date is empty, returns {@param defaultValue}
+     */
+    fun getQuantityByGranularity(d1: String?, d2: String?, granularity: StatsGranularity, defaultValue: Long): Long {
+        if (d1.isNullOrEmpty() || d2.isNullOrEmpty()) return defaultValue
+
+        val startDate = SiteUtils.getDateFromString(DATE_FORMAT_DEFAULT, d1)
+        val endDate = SiteUtils.getDateFromString(DATE_FORMAT_DEFAULT, d2)
+
+        val startDateCalendar = SiteUtils.getStartDateCalendar(if (startDate.before(endDate)) startDate else endDate)
+        val endDateCalendar = SiteUtils.getEndDateCalendar(if (startDate.before(endDate)) endDate else startDate)
+
+        return when (granularity) {
+            StatsGranularity.WEEKS -> SiteUtils.getQuantityInWeeks(startDateCalendar, endDateCalendar)
+            StatsGranularity.MONTHS -> SiteUtils.getQuantityInMonths(startDateCalendar, endDateCalendar)
+            StatsGranularity.YEARS -> SiteUtils.getQuantityInYears(startDateCalendar, endDateCalendar)
+            else -> SiteUtils.getQuantityInDays(startDateCalendar, endDateCalendar)
         }
     }
 
