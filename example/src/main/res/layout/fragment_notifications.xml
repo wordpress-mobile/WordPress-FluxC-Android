@@ -4,17 +4,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginBottom="10dp"
-    tools:context=".NotificationsFragment"
     android:layout_margin="8dp"
-    android:orientation="vertical">
+    android:layout_marginBottom="10dp"
+    android:orientation="vertical"
+    tools:context=".NotificationsFragment">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingTop="16dp"
-        android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
-        android:text="Perform actions for user:"/>
+        android:text="Perform actions for user:"
+        android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"/>
 
     <Button
         android:id="@+id/notifs_fetch_all"
@@ -50,8 +50,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingTop="16dp"
-        android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
-        android:text="Perform actions on a selected site:"/>
+        android:text="Perform actions on a selected site:"
+        android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -66,53 +66,60 @@
 
         <TextView
             android:id="@+id/notif_selected_site"
-            android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
-            android:textColor="@android:color/holo_blue_bright"
             android:layout_width="wrap_content"
-            android:paddingStart="10dp"
+            android:layout_height="wrap_content"
             android:paddingLeft="10dp"
-            android:layout_height="wrap_content"/>
+            android:paddingStart="10dp"
+            android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
+            android:textColor="@android:color/holo_blue_bright"/>
     </LinearLayout>
 
     <Button
         android:id="@+id/notifs_fetch_for_site"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Get Notifications (db)"
-        android:enabled="false"/>
+        android:enabled="false"
+        android:text="Get Notifications (db)"/>
 
     <Button
         android:id="@+id/notifs_mark_all_read"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Mark all unread notifications as read"
-        android:enabled="false"/>
+        android:enabled="false"
+        android:text="Mark all unread notifications as read"/>
+
+    <Button
+        android:id="@+id/notifs_has_unread"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:text="Check unread Notifications (db)"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingTop="16dp"
-        android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
-        android:text="Actions on the first notification for the selected site:"/>
+        android:text="Actions on the first notification for the selected site:"
+        android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"/>
 
     <Button
         android:id="@+id/notifs_fetch_first"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Fetch Notification From API"
-        android:enabled="false"/>
+        android:enabled="false"
+        android:text="Fetch Notification From API"/>
 
     <Button
         android:id="@+id/notifs_mark_read"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Mark Read"
-        android:enabled="false"/>
+        android:enabled="false"
+        android:text="Mark Read"/>
 
     <Button
         android:id="@+id/notifs_update_first"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Update Notification (DB)"
-        android:enabled="false"/>
+        android:enabled="false"
+        android:text="Update Notification (DB)"/>
 </LinearLayout>
