@@ -33,7 +33,6 @@ class WCStatsStore @Inject constructor(
         const val STATS_QUANTITY_WEEKS = 17
         const val STATS_QUANTITY_MONTHS = 12
 
-        private const val DATE_FORMAT_DEFAULT = "yyyy-MM-dd"
         private const val DATE_FORMAT_DAY = "yyyy-MM-dd"
         private const val DATE_FORMAT_WEEK = "yyyy-'W'ww"
         private const val DATE_FORMAT_MONTH = "yyyy-MM"
@@ -240,8 +239,8 @@ class WCStatsStore @Inject constructor(
     fun getQuantityByGranularity(d1: String?, d2: String?, granularity: StatsGranularity, defaultValue: Long): Long {
         if (d1.isNullOrEmpty() || d2.isNullOrEmpty()) return defaultValue
 
-        val startDate = SiteUtils.getDateFromString(DATE_FORMAT_DEFAULT, d1)
-        val endDate = SiteUtils.getDateFromString(DATE_FORMAT_DEFAULT, d2)
+        val startDate = SiteUtils.getDateFromString(d1)
+        val endDate = SiteUtils.getDateFromString(d2)
 
         val startDateCalendar = SiteUtils.getStartDateCalendar(if (startDate.before(endDate)) startDate else endDate)
         val endDateCalendar = SiteUtils.getEndDateCalendar(if (startDate.before(endDate)) endDate else startDate)
