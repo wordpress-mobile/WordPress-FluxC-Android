@@ -119,23 +119,29 @@ object OrderSqlUtils {
                 .execute()
     }
 
-    fun insertOrUpdateOrderStatusOption(label: WCOrderStatusModel): Int {
+    fun insertOrUpdateOrderStatusOption(orderStatus: WCOrderStatusModel): Int {
         val result = WellSql.select(WCOrderStatusModel::class.java)
                 .where().beginGroup()
-                .equals(WCOrderStatusModelTable.ID, label.id)
+                .equals(WCOrderStatusModelTable.ID, orderStatus.id)
                 .or()
-                .equals(WCOrderStatusModelTable.STATUS_KEY, label.statusKey)
+                .equals(WCOrderStatusModelTable.STATUS_KEY, orderStatus.statusKey)
                 .endGroup().endWhere().asModel
 
         return if (result.isEmpty()) {
             // Insert
-            WellSql.insert(label).asSingleTransaction(true).execute()
+            WellSql.insert(orderStatus).asSingleTransaction(true).execute()
             1
         } else {
             // Update
             val oldId = result[0].id
             WellSql.update(WCOrderStatusModel::class.java).whereId(oldId)
-                    .put(label, UpdateAllExceptId(WCOrderStatusModel::class.java)).execute()
+                    .put(orderStatus, UpdateAllExceptId(WCOrderStatusModel::class.java)).execute()
         }
     }
+
+    fun getOrderStatusOptionsForSite(site: SiteModel) =
+            WellSql.select(WCOrderStatusModel::class.java)
+                    .where()
+                    .equals(WCOrderStatusModelTable.LOCAL_SITE_ID, site.id)
+                    .endWhere().asModel
 }
