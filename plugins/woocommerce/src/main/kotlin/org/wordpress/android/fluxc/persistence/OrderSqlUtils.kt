@@ -124,7 +124,7 @@ object OrderSqlUtils {
                 .where().beginGroup()
                 .equals(WCOrderStatusModelTable.ID, label.id)
                 .or()
-                .equals(WCOrderStatusModelTable.KEY, label.key)
+                .equals(WCOrderStatusModelTable.STATUS_KEY, label.statusKey)
                 .endGroup().endWhere().asModel
 
         return if (result.isEmpty()) {

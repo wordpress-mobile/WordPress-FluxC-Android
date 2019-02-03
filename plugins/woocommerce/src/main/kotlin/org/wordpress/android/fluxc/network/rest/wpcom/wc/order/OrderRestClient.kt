@@ -426,7 +426,7 @@ class OrderRestClient(
     ): WCOrderStatusModel {
         return WCOrderStatusModel().apply {
             localSiteId = site.id
-            key = response.slug ?: ""
+            statusKey = response.slug ?: ""
             label = response.name ?: ""
         }
     }
