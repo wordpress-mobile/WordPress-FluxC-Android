@@ -8,6 +8,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
@@ -15,6 +16,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
@@ -161,5 +163,32 @@ class OrderSqlUtilsTest {
         assertEquals(2, deletedCount)
         val verify = OrderSqlUtils.getOrderNotesForOrder(order.id)
         assertEquals(0, verify.size)
+    }
+
+    @Test
+    fun testInsertOrUpdateOrderStatusOptions() {
+        val siteModel = SiteModel().apply { id = 1 }
+        val optionsJson = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order_status_options.json")
+        val orderStatusOptions = OrderTestUtils.getOrderStatusOptionsFromJson(optionsJson, siteModel.id)
+        assertEquals(8, orderStatusOptions.size)
+
+        // Save first option to the database, retrieve and verify fields
+        val firstOption = orderStatusOptions[0]
+        var rowsAffected = OrderSqlUtils.insertOrUpdateOrderStatusOption(firstOption)
+        assertEquals(1, rowsAffected)
+        val firstOptionDb = OrderSqlUtils.getOrderStatusOptionsForSite(siteModel).first()
+        assertNotNull(firstOptionDb)
+        assertEquals(firstOptionDb.localSiteId, firstOption.id)
+        assertEquals(firstOptionDb.statusKey, firstOption.statusKey)
+        assertEquals(firstOptionDb.label, firstOption.label)
+
+        // Save full list, but only all but the first 2 should be inserted
+        rowsAffected = orderStatusOptions.sumBy { OrderSqlUtils.insertOrUpdateOrderStatusOption(it) }
+        assertEquals(7, rowsAffected)
+
+        // Get order status options from the database
+        val orderStatusOptionsDb = OrderSqlUtils.getOrderStatusOptionsForSite(siteModel)
+        assertEquals(8, orderStatusOptionsDb.size)
+
     }
 }
