@@ -27,6 +27,7 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.WEEKS
 import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.fluxc.utils.SiteUtils.getCurrentDateTimeForSite
 import org.wordpress.android.fluxc.utils.SiteUtils.getDateTimeForSite
@@ -868,5 +869,140 @@ class WCStatsStoreTest {
         val defaultOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site2, OrderStatsApiUnit.MONTH)
         assertNotNull(defaultOrderStats)
         assertEquals(OrderStatsApiUnit.MONTH.toString(), defaultOrderStats?.unit)
+    }
+
+    @Test
+    fun testGetCustomStatsForDaysGranularity() {
+        /*
+         * Test Scenario - I
+         * Generate default stats with
+         * granularity - DAYS
+         * quantity - 30
+         * date - current date
+         * isCustomField - false
+         *
+         * 1. This generated data to be inserted to local db
+         * 2. Get Revenue and Order Stats of the same site and granularity
+         * 3. Assert Not Null
+         * */
+        val defaultDayOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel()
+        WCStatsSqlUtils.insertOrUpdateOrderStats(defaultDayOrderStatsModel)
+
+        val site = SiteModel().apply { id = defaultDayOrderStatsModel.localSiteId }
+
+        val defaultDayOrderRevenueStats = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS)
+        val defaultDayOrderStats = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS)
+        assertTrue(defaultDayOrderRevenueStats.isNotEmpty())
+        assertTrue(defaultDayOrderStats.isNotEmpty())
+
+        /*
+         * Test Scenario - II
+         * Generate custom stats for same site:
+         * granularity - DAYS
+         * quantity - 1
+         * date - 2019-01-01
+         * isCustomField - true
+         *
+         * 1. This generated data to be inserted to local db
+         * 2. Get Revenue and Order Stats of the same site and granularity
+         * 3. Assert Not Null
+         * */
+        val customDayOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2019-01-01", isCustomField = true)
+        WCStatsSqlUtils.insertOrUpdateOrderStats(customDayOrderStatsModel)
+
+        val customDayOrderRevenueStats = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS, customDayOrderStatsModel.quantity, customDayOrderStatsModel.date)
+        val customDayOrderStats = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS, customDayOrderStatsModel.quantity, customDayOrderStatsModel.date)
+        assertTrue(customDayOrderRevenueStats.isNotEmpty())
+        assertTrue(customDayOrderStats.isNotEmpty())
+
+        /*
+         * Test Scenario - III
+         * Query for custom stats that is not present in local cache: for same site, same quantity, different date
+         * granularity - DAYS
+         * quantity - 1
+         * date - 2018-12-01
+         * isCustomField - true
+         *
+         * 1. Get Revenue and Order Stats of the same site and granularity
+         * 3. Assert Null
+         * */
+        val customDayOrderStatsModel2 = WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2018-12-01", isCustomField = true)
+        val customDayOrderRevenueStats2 = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS, customDayOrderStatsModel2.quantity, customDayOrderStatsModel2.date)
+        val customDayOrderStats2 = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS, customDayOrderStatsModel2.quantity, customDayOrderStatsModel2.date)
+        assertTrue(customDayOrderRevenueStats2.isEmpty())
+        assertTrue(customDayOrderStats2.isEmpty())
+
+
+        /*
+         * Test Scenario - IV
+         * Query for custom stats that is not present in local cache: for same site, different quantity, different date
+         * granularity - DAYS
+         * quantity - 30
+         * date - 2018-12-01
+         * isCustomField - true
+         *
+         * 1. Get Revenue and Order Stats of the same site and granularity but different quantity, different date
+         * 3. Assert Null
+         * */
+        val customDayOrderStatsModel3 = WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2018-12-01", isCustomField = true)
+        val customDayOrderRevenueStats3 = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS, customDayOrderStatsModel3.quantity, customDayOrderStatsModel3.date)
+        val customDayOrderStats3 = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS, customDayOrderStatsModel3.quantity, customDayOrderStatsModel3.date)
+        assertTrue(customDayOrderRevenueStats3.isEmpty())
+        assertTrue(customDayOrderStats3.isEmpty())
+
+
+        /*
+         * Test Scenario - IV
+         * Generate custom stats for same site with different granularity, same date, same quantity
+         * granularity - WEEKS
+         * quantity - 1
+         * date - 2019-01-01
+         * isCustomField - true
+         *
+         * 1. This generated data to be inserted to local db
+         * 2. Get Revenue and Order Stats of the same site and granularity
+         * 3. Assert Not Null
+         * 4. Now if another query ran for granularity - DAYS, with same date and same quantity:
+         *    Assert Null
+         * */
+        val customWeekOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel(unit = OrderStatsApiUnit.fromStatsGranularity(WEEKS).toString(), quantity = "1", date = "2019-01-01", isCustomField = true)
+        WCStatsSqlUtils.insertOrUpdateOrderStats(customWeekOrderStatsModel)
+
+        val customWeekOrderRevenueStats = wcStatsStore.getRevenueStats(site, StatsGranularity.WEEKS, customWeekOrderStatsModel.quantity, customWeekOrderStatsModel.date)
+        val customWeekOrderStats = wcStatsStore.getOrderStats(site, StatsGranularity.WEEKS, customWeekOrderStatsModel.quantity, customWeekOrderStatsModel.date)
+        assertTrue(customWeekOrderRevenueStats.isNotEmpty())
+        assertTrue(customWeekOrderStats.isNotEmpty())
+
+        val customDayOrderRevenueStats4 = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS, customDayOrderStatsModel.quantity, customDayOrderStatsModel.date)
+        val customDayOrderStats4 = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS, customDayOrderStatsModel.quantity, customDayOrderStatsModel.date)
+        assertTrue(customDayOrderRevenueStats4.isEmpty())
+        assertTrue(customDayOrderStats4.isEmpty())
+
+
+        /*
+         * Test Scenario - V
+         * Generate custom stats for different site with same granularity, same date, same quantity
+         * site - 8
+         * granularity - WEEKS
+         * quantity - 1
+         * date - 2019-01-01
+         * isCustomField - true
+         *
+         * 1. This generated data to be inserted to local db
+         * 2. Get Revenue and Order Stats of the same site and granularity
+         * 3. Assert Not Null
+         * 4. Now if scenario IV is run again it assert NOT NULL, since the stats is for different sites
+         * */
+        val customWeekOrderStatsModel2 = WCStatsTestUtils.generateSampleStatsModel(localSiteId = 8, unit = OrderStatsApiUnit.fromStatsGranularity(WEEKS).toString(), quantity = "1", date = "2019-01-01", isCustomField = true)
+        WCStatsSqlUtils.insertOrUpdateOrderStats(customWeekOrderStatsModel2)
+
+        val customWeekOrderRevenueStats2 = wcStatsStore.getRevenueStats(site, StatsGranularity.WEEKS, customWeekOrderStatsModel2.quantity, customWeekOrderStatsModel2.date)
+        val customWeekOrderStats2 = wcStatsStore.getOrderStats(site, StatsGranularity.WEEKS, customWeekOrderStatsModel2.quantity, customWeekOrderStatsModel2.date)
+        assertTrue(customWeekOrderRevenueStats2.isNotEmpty())
+        assertTrue(customWeekOrderStats2.isNotEmpty())
+
+        /* Now if scenario IV is run again it assert NOT NULL, since the stats is for different sites */
+        assertTrue(customWeekOrderRevenueStats.isNotEmpty())
+        assertTrue(customWeekOrderStats.isNotEmpty())
     }
 }

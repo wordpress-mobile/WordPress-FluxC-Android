@@ -138,7 +138,7 @@ class WCStatsStore @Inject constructor(
     }
 
     // OnChanged events
-    class OnWCStatsChanged(val rowsAffected: Int, val granularity: StatsGranularity) : OnChanged<OrderStatsError>() {
+    class OnWCStatsChanged(val rowsAffected: Int, val granularity: StatsGranularity, val quantity: String?= null, val date: String?= null) : OnChanged<OrderStatsError>() {
         var causeOfChange: WCStatsAction? = null
     }
 
@@ -185,8 +185,11 @@ class WCStatsStore @Inject constructor(
      * [StatsGranularity.MONTHS]: "2018-05"
      * [StatsGranularity.YEARS]: "2018"
      */
-    fun getRevenueStats(site: SiteModel, granularity: StatsGranularity): Map<String, Double> {
-        return getStatsForField(site, OrderStatsField.TOTAL_SALES, granularity)
+    fun getRevenueStats(site: SiteModel,
+                        granularity: StatsGranularity,
+                        quantity: String? = null,
+                        date: String? = null): Map<String, Double> {
+        return getStatsForField(site, OrderStatsField.TOTAL_SALES, granularity, quantity, date)
     }
 
     /**
@@ -196,8 +199,11 @@ class WCStatsStore @Inject constructor(
      *
      * See [getRevenueStats] for detail on the date formatting of the map keys.
      */
-    fun getOrderStats(site: SiteModel, granularity: StatsGranularity): Map<String, Int> {
-        return getStatsForField(site, OrderStatsField.ORDERS, granularity)
+    fun getOrderStats(site: SiteModel,
+                      granularity: StatsGranularity,
+                      quantity: String? = null,
+                      date: String? = null): Map<String, Int> {
+        return getStatsForField(site, OrderStatsField.ORDERS, granularity, quantity, date)
     }
 
     /**
@@ -276,7 +282,9 @@ class WCStatsStore @Inject constructor(
     private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
         val quantity = getQuantityForGranularity(payload.site, payload.granularity, payload.startDate, payload.endDate)
         wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
-                getFormattedDate(payload.site, payload.granularity, payload.endDate), quantity, payload.forced)
+                getFormattedDate(payload.site, payload.granularity, payload.endDate),
+                quantity, payload.forced,
+                (payload.startDate != null))
     }
 
     private fun fetchVisitorStats(payload: FetchVisitorStatsPayload) {
@@ -305,8 +313,8 @@ class WCStatsStore @Inject constructor(
             if (isError || stats == null) {
                 return@with OnWCStatsChanged(0, granularity).also { it.error = payload.error }
             } else {
-                val rowsAffected = WCStatsSqlUtils.insertOrUpdateStats(stats)
-                return@with OnWCStatsChanged(rowsAffected, granularity)
+                val rowsAffected = WCStatsSqlUtils.insertOrUpdateOrderStats(stats)
+                return@with OnWCStatsChanged(rowsAffected, granularity, stats.quantity, stats.date)
             }
         }
 
@@ -363,10 +371,12 @@ class WCStatsStore @Inject constructor(
     private fun <T> getStatsForField(
         site: SiteModel,
         field: OrderStatsField,
-        granularity: StatsGranularity
+        granularity: StatsGranularity,
+        quantity: String? = null,
+        date: String? = null
     ): Map<String, T> {
         val apiUnit = OrderStatsApiUnit.fromStatsGranularity(granularity)
-        val rawStats = WCStatsSqlUtils.getRawStatsForSiteAndUnit(site, apiUnit)
+        val rawStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site, apiUnit, quantity, date)
         rawStats?.let {
             val periodIndex = it.getIndexForField(OrderStatsField.PERIOD)
             val fieldIndex = it.getIndexForField(field)

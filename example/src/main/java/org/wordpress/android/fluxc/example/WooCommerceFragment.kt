@@ -419,7 +419,7 @@ class WooCommerceFragment : Fragment() {
         val site = getFirstWCSite()
         when (event.causeOfChange) {
             WCStatsAction.FETCH_ORDER_STATS -> {
-                val statsMap = wcStatsStore.getRevenueStats(site!!, event.granularity)
+                val statsMap = wcStatsStore.getRevenueStats(site!!, event.granularity, event.quantity, event.date)
                 if (statsMap.isEmpty()) {
                     prependToLog("No stats were stored for site " + site.name + " =(")
                 } else {
