@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_SINGLE_ORDER
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.action.WCStatsAction
+import org.wordpress.android.fluxc.example.CustomStatsDialog.Listener
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
@@ -245,6 +246,32 @@ class WooCommerceFragment : Fragment() {
             } ?: showNoWCSitesToast()
         }
 
+        fetch_order_stats_custom.setOnClickListener {
+            fragmentManager?.let { fm ->
+                val dialog = CustomStatsDialog.newInstance(object : Listener {
+                    override fun onSubmitted(startDate: String, endDate: String, granularity: StatsGranularity) {
+                        getFirstWCSite()?.let {
+                            val payload = FetchOrderStatsPayload(it, granularity, startDate, endDate)
+                            dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+                        } ?: showNoWCSitesToast()
+                    } })
+                dialog.show(fm, "CustomStatsFragment")
+            }
+        }
+
+        fetch_order_stats_custom_forced.setOnClickListener {
+            fragmentManager?.let { fm ->
+                val dialog = CustomStatsDialog.newInstance(object : Listener {
+                    override fun onSubmitted(startDate: String, endDate: String, granularity: StatsGranularity) {
+                        getFirstWCSite()?.let {
+                            val payload = FetchOrderStatsPayload(it, granularity, startDate, endDate, forced = true)
+                            dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+                        } ?: showNoWCSitesToast()
+                    } })
+                dialog.show(fm, "CustomStatsFragment")
+            }
+        }
+
         fetch_visitor_stats.setOnClickListener {
             getFirstWCSite()?.let {
                 val payload = FetchVisitorStatsPayload(it, StatsGranularity.MONTHS, false)
@@ -423,8 +450,14 @@ class WooCommerceFragment : Fragment() {
                 if (statsMap.isEmpty()) {
                     prependToLog("No stats were stored for site " + site.name + " =(")
                 } else {
-                    prependToLog("Fetched stats for " + statsMap.size + " " +
-                                    event.granularity.toString().toLowerCase() + " from " + site.name)
+                    event.date?.let {
+                        prependToLog("Fetched stats for " + statsMap.size + " " +
+                                event.granularity.toString().toLowerCase() + " from " + site.name + " with quantity "
+                                + event.quantity + " and date " + event.date)
+                    } ?: run {
+                        prependToLog("Fetched stats for " + statsMap.size + " " +
+                                event.granularity.toString().toLowerCase() + " from " + site.name)
+                    }
                 }
             }
             WCStatsAction.FETCH_VISITOR_STATS ->
