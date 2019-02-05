@@ -414,7 +414,35 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         if (payload.isError) {
             onOrderStatusLabelsChanged = OnOrderStatusOptionsChanged(0).also { it.error = payload.error }
         } else {
-            val rowsAffected = payload.labels.sumBy { OrderSqlUtils.insertOrUpdateOrderStatusOption(it) }
+            val existingOptions = OrderSqlUtils.getOrderStatusOptionsForSite(payload.site)
+            val deleteOptions = mutableListOf<WCOrderStatusModel>()
+            val addOrUpdateOptions = mutableListOf<WCOrderStatusModel>()
+            existingOptions.iterator().forEach { existingOption ->
+                var exists = false
+                payload.labels.iterator().forEach noi@{ newOption ->
+                    if (newOption.statusKey == existingOption.statusKey) {
+                        exists = true
+                        return@noi
+                    }
+                }
+                if (!exists) deleteOptions.add(existingOption)
+            }
+            payload.labels.iterator().forEach { newOption ->
+                var exists = false
+                existingOptions.iterator().forEach eoi@{ existingOption ->
+                    if (newOption.statusKey == existingOption.statusKey) {
+                        exists = true
+                        if (newOption.label != existingOption.label) {
+                            addOrUpdateOptions.add(newOption)
+                        }
+                        return@eoi
+                    }
+                }
+                if (!exists) addOrUpdateOptions.add(newOption)
+            }
+
+            var rowsAffected = addOrUpdateOptions.sumBy { OrderSqlUtils.insertOrUpdateOrderStatusOption(it) }
+            rowsAffected += deleteOptions.sumBy { OrderSqlUtils.deleteOrderStatusOption(it) }
             onOrderStatusLabelsChanged = OnOrderStatusOptionsChanged(rowsAffected)
         }
 

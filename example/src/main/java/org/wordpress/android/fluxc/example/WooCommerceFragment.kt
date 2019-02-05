@@ -468,7 +468,8 @@ class WooCommerceFragment : Fragment() {
         val orderStatusOptions = getFirstWCSite()?.let {
             wcOrderStore.getOrderStatusOptionsForSite(it)
         }?.map { it.label }
-        prependToLog("Fetched ${event.rowsAffected} order status options from the api: $orderStatusOptions")
+        prependToLog("Fetched order status options from the api: $orderStatusOptions " +
+                "- updated ${event.rowsAffected} in the db")
     }
 
     private fun getFirstWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(0)
