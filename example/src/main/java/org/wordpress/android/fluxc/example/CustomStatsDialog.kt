@@ -40,23 +40,26 @@ class CustomStatsDialog : DialogFragment() {
         stats_granularity.adapter =
                 ArrayAdapter<StatsGranularity>(activity, layout.simple_dropdown_item_1line, StatsGranularity.values())
 
-
         stats_from_date.setOnClickListener {
             val now = getCalendarInstance()
-            val datePicker = DatePickerDialog(requireActivity(), DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
-                stats_label_from.text = String.format("Start Date selected: %s", getFormattedDate(year, month, dayOfMonth))
+            val datePicker = DatePickerDialog(requireActivity(), DatePickerDialog.OnDateSetListener {
+                _, year, month, dayOfMonth ->
+                stats_label_from.text = String.format("Start Date selected: %s",
+                        getFormattedDate(year, month, dayOfMonth))
             },
-                    now.get(Calendar.YEAR),now.get(Calendar.MONTH),now.get(Calendar.DAY_OF_MONTH))
+                    now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH))
             datePicker.datePicker.maxDate = now.timeInMillis
             datePicker.show()
         }
 
         stats_to_date.setOnClickListener {
             val now = getCalendarInstance()
-            val datePicker = DatePickerDialog(requireActivity(), DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
-                stats_label_to.text = String.format("End Date selected: %s", getFormattedDate(year, month, dayOfMonth))
+            val datePicker = DatePickerDialog(requireActivity(), DatePickerDialog.OnDateSetListener {
+                _, year, month, dayOfMonth ->
+                stats_label_to.text = String.format("End Date selected: %s",
+                        getFormattedDate(year, month, dayOfMonth))
             },
-                    now.get(Calendar.YEAR),now.get(Calendar.MONTH),now.get(Calendar.DAY_OF_MONTH))
+                    now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH))
             datePicker.datePicker.maxDate = now.timeInMillis
             datePicker.show()
         }
@@ -77,7 +80,7 @@ class CustomStatsDialog : DialogFragment() {
         }
     }
 
-    private fun getFormattedDate(year: Int, month: Int, dayOfMonth: Int) : String {
+    private fun getFormattedDate(year: Int, month: Int, dayOfMonth: Int): String {
         val monthOfYear = month + 1
         return String.format("$year-$monthOfYear-$dayOfMonth")
     }

@@ -452,8 +452,8 @@ class WooCommerceFragment : Fragment() {
                 } else {
                     event.date?.let {
                         prependToLog("Fetched stats for " + statsMap.size + " " +
-                                event.granularity.toString().toLowerCase() + " from " + site.name + " with quantity "
-                                + event.quantity + " and date " + event.date)
+                                event.granularity.toString().toLowerCase() + " from " + site.name +
+                                " with quantity " + event.quantity + " and date " + event.date)
                     } ?: run {
                         prependToLog("Fetched stats for " + statsMap.size + " " +
                                 event.granularity.toString().toLowerCase() + " from " + site.name)

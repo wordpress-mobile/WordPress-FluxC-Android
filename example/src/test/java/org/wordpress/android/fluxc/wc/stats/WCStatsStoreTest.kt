@@ -205,181 +205,227 @@ class WCStatsStoreTest {
         assertEquals("USD", wcStatsStore.getStatsCurrencyForSite(site))
     }
 
-
     @Test
     fun testGetQuantityForDays() {
-        val quantity1 = wcStatsStore.getQuantityByGranularity("2018-01-25", "2018-01-28", StatsGranularity.DAYS, 30)
+        val quantity1 = wcStatsStore.getQuantityByGranularity("2018-01-25", "2018-01-28",
+                StatsGranularity.DAYS, 30)
         assertEquals(4, quantity1)
 
-        val quantity2 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2018-01-01", StatsGranularity.DAYS, 30)
+        val quantity2 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2018-01-01",
+                StatsGranularity.DAYS, 30)
         assertEquals(1, quantity2)
 
-        val quantity3 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2018-01-31", StatsGranularity.DAYS, 30)
+        val quantity3 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2018-01-31",
+                StatsGranularity.DAYS, 30)
         assertEquals(31, quantity3)
 
-        val quantity4 = wcStatsStore.getQuantityByGranularity("2018-01-28", "2018-01-25", StatsGranularity.DAYS, 30)
+        val quantity4 = wcStatsStore.getQuantityByGranularity("2018-01-28", "2018-01-25",
+                StatsGranularity.DAYS, 30)
         assertEquals(4, quantity4)
 
-        val quantity5 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2018-01-01", StatsGranularity.DAYS, 30)
+        val quantity5 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2018-01-01",
+                StatsGranularity.DAYS, 30)
         assertEquals(1, quantity5)
 
-        val quantity6 = wcStatsStore.getQuantityByGranularity("2018-01-31", "2018-01-01", StatsGranularity.DAYS, 30)
+        val quantity6 = wcStatsStore.getQuantityByGranularity("2018-01-31", "2018-01-01",
+                StatsGranularity.DAYS, 30)
         assertEquals(31, quantity6)
 
-        val defaultQuantity1 = wcStatsStore.getQuantityByGranularity("", "", StatsGranularity.DAYS, 30)
+        val defaultQuantity1 = wcStatsStore.getQuantityByGranularity("", "",
+                StatsGranularity.DAYS, 30)
         assertEquals(30, defaultQuantity1)
 
-        val defaultQuantity2 = wcStatsStore.getQuantityByGranularity(null, null, StatsGranularity.DAYS, 30)
+        val defaultQuantity2 = wcStatsStore.getQuantityByGranularity(null, null,
+                StatsGranularity.DAYS, 30)
         assertEquals(30, defaultQuantity2)
     }
 
-
     @Test
     fun testGetQuantityForWeeks() {
-        val quantity1 = wcStatsStore.getQuantityByGranularity("2018-10-22", "2018-10-23", StatsGranularity.WEEKS, 17)
+        val quantity1 = wcStatsStore.getQuantityByGranularity("2018-10-22", "2018-10-23",
+                StatsGranularity.WEEKS, 17)
         assertEquals(1, quantity1)
 
-        val quantity2 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2018-01-01", StatsGranularity.WEEKS, 17)
+        val quantity2 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2018-01-01",
+                StatsGranularity.WEEKS, 17)
         assertEquals(53, quantity2)
 
-        val quantity3 = wcStatsStore.getQuantityByGranularity("2019-01-20", "2019-01-13", StatsGranularity.WEEKS, 17)
+        val quantity3 = wcStatsStore.getQuantityByGranularity("2019-01-20", "2019-01-13",
+                StatsGranularity.WEEKS, 17)
         assertEquals(2, quantity3)
 
-        val quantity4 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2018-03-01", StatsGranularity.WEEKS, 17)
+        val quantity4 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2018-03-01",
+                StatsGranularity.WEEKS, 17)
         assertEquals(61, quantity4)
 
-        val quantity5 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2018-01-31", StatsGranularity.WEEKS, 17)
+        val quantity5 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2018-01-31",
+                StatsGranularity.WEEKS, 17)
         assertEquals(5, quantity5)
 
-        val quantity6 = wcStatsStore.getQuantityByGranularity("2018-12-01", "2018-12-31", StatsGranularity.WEEKS, 17)
+        val quantity6 = wcStatsStore.getQuantityByGranularity("2018-12-01", "2018-12-31",
+                StatsGranularity.WEEKS, 17)
         assertEquals(6, quantity6)
 
-        val quantity7 = wcStatsStore.getQuantityByGranularity("2018-11-01", "2018-11-30", StatsGranularity.WEEKS, 17)
+        val quantity7 = wcStatsStore.getQuantityByGranularity("2018-11-01", "2018-11-30",
+                StatsGranularity.WEEKS, 17)
         assertEquals(5, quantity7)
 
-
-        val inverseQuantity1 = wcStatsStore.getQuantityByGranularity("2018-10-23", "2018-10-22", StatsGranularity.WEEKS, 17)
+        val inverseQuantity1 = wcStatsStore.getQuantityByGranularity("2018-10-23", "2018-10-22",
+                StatsGranularity.WEEKS, 17)
         assertEquals(1, inverseQuantity1)
 
-        val inverseQuantity2 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2017-01-01", StatsGranularity.WEEKS, 17)
+        val inverseQuantity2 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2017-01-01",
+                StatsGranularity.WEEKS, 17)
         assertEquals(53, inverseQuantity2)
 
-        val inverseQuantity3 = wcStatsStore.getQuantityByGranularity("2019-01-13", "2019-01-20", StatsGranularity.WEEKS, 17)
+        val inverseQuantity3 = wcStatsStore.getQuantityByGranularity("2019-01-13", "2019-01-20",
+                StatsGranularity.WEEKS, 17)
         assertEquals(2, inverseQuantity3)
 
-        val inverseQuantity4 = wcStatsStore.getQuantityByGranularity("2018-03-01", "2017-01-01", StatsGranularity.WEEKS, 17)
+        val inverseQuantity4 = wcStatsStore.getQuantityByGranularity("2018-03-01", "2017-01-01",
+                StatsGranularity.WEEKS, 17)
         assertEquals(61, inverseQuantity4)
 
-        val inverseQuantity5 = wcStatsStore.getQuantityByGranularity("2018-01-31", "2018-01-01", StatsGranularity.WEEKS, 17)
+        val inverseQuantity5 = wcStatsStore.getQuantityByGranularity("2018-01-31", "2018-01-01",
+                StatsGranularity.WEEKS, 17)
         assertEquals(5, inverseQuantity5)
 
-        val inverseQuantity6 = wcStatsStore.getQuantityByGranularity("2018-12-31", "2018-12-01", StatsGranularity.WEEKS, 17)
+        val inverseQuantity6 = wcStatsStore.getQuantityByGranularity("2018-12-31", "2018-12-01",
+                StatsGranularity.WEEKS, 17)
         assertEquals(6, inverseQuantity6)
 
-        val inverseQuantity7 = wcStatsStore.getQuantityByGranularity("2018-11-30", "2018-11-01", StatsGranularity.WEEKS, 17)
+        val inverseQuantity7 = wcStatsStore.getQuantityByGranularity("2018-11-30", "2018-11-01",
+                StatsGranularity.WEEKS, 17)
         assertEquals(5, inverseQuantity7)
 
-        val defaultQuantity1 = wcStatsStore.getQuantityByGranularity("", "", StatsGranularity.WEEKS, 17)
+        val defaultQuantity1 = wcStatsStore.getQuantityByGranularity("", "",
+                StatsGranularity.WEEKS, 17)
         assertEquals(17, defaultQuantity1)
 
-        val defaultQuantity2 = wcStatsStore.getQuantityByGranularity(null, null, StatsGranularity.WEEKS, 17)
+        val defaultQuantity2 = wcStatsStore.getQuantityByGranularity(null, null,
+                StatsGranularity.WEEKS, 17)
         assertEquals(17, defaultQuantity2)
     }
 
-
     @Test
     fun testGetQuantityForMonths() {
-        val quantity1 = wcStatsStore.getQuantityByGranularity("2018-10-22", "2018-10-23", StatsGranularity.MONTHS, 12)
+        val quantity1 = wcStatsStore.getQuantityByGranularity("2018-10-22", "2018-10-23",
+                StatsGranularity.MONTHS, 12)
         assertEquals(1, quantity1)
 
-        val quantity2 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2018-01-01", StatsGranularity.MONTHS, 12)
+        val quantity2 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2018-01-01",
+                StatsGranularity.MONTHS, 12)
         assertEquals(13, quantity2)
 
-        val quantity3 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2018-01-01", StatsGranularity.MONTHS, 12)
+        val quantity3 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2018-01-01",
+                StatsGranularity.MONTHS, 12)
         assertEquals(1, quantity3)
 
-        val quantity4 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2018-03-01", StatsGranularity.MONTHS, 12)
+        val quantity4 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2018-03-01",
+                StatsGranularity.MONTHS, 12)
         assertEquals(15, quantity4)
 
-        val quantity5 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2018-01-31", StatsGranularity.MONTHS, 12)
+        val quantity5 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2018-01-31",
+                StatsGranularity.MONTHS, 12)
         assertEquals(13, quantity5)
 
-        val quantity6 = wcStatsStore.getQuantityByGranularity("2018-12-31", "2019-01-01", StatsGranularity.MONTHS, 1)
+        val quantity6 = wcStatsStore.getQuantityByGranularity("2018-12-31", "2019-01-01",
+                StatsGranularity.MONTHS, 1)
         assertEquals(2, quantity6)
 
-        val inverseQuantity1 = wcStatsStore.getQuantityByGranularity("2018-10-23", "2018-10-22", StatsGranularity.MONTHS, 12)
+        val inverseQuantity1 = wcStatsStore.getQuantityByGranularity("2018-10-23", "2018-10-22",
+                StatsGranularity.MONTHS, 12)
         assertEquals(1, inverseQuantity1)
 
-        val inverseQuantity2 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2017-01-01", StatsGranularity.MONTHS, 12)
+        val inverseQuantity2 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2017-01-01",
+                StatsGranularity.MONTHS, 12)
         assertEquals(13, inverseQuantity2)
 
-        val inverseQuantity3 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2018-01-01", StatsGranularity.MONTHS, 12)
+        val inverseQuantity3 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2018-01-01",
+                StatsGranularity.MONTHS, 12)
         assertEquals(1, inverseQuantity3)
 
-        val inverseQuantity4 = wcStatsStore.getQuantityByGranularity("2018-03-01", "2017-01-01", StatsGranularity.MONTHS, 12)
+        val inverseQuantity4 = wcStatsStore.getQuantityByGranularity("2018-03-01", "2017-01-01",
+                StatsGranularity.MONTHS, 12)
         assertEquals(15, inverseQuantity4)
 
-        val inverseQuantity5 = wcStatsStore.getQuantityByGranularity("2018-01-31", "2017-01-01", StatsGranularity.MONTHS, 12)
+        val inverseQuantity5 = wcStatsStore.getQuantityByGranularity("2018-01-31", "2017-01-01",
+                StatsGranularity.MONTHS, 12)
         assertEquals(13, inverseQuantity5)
 
-        val inverseQuantity6 = wcStatsStore.getQuantityByGranularity("2019-01-01", "2018-12-31", StatsGranularity.MONTHS, 1)
+        val inverseQuantity6 = wcStatsStore.getQuantityByGranularity("2019-01-01", "2018-12-31",
+                StatsGranularity.MONTHS, 1)
         assertEquals(2, inverseQuantity6)
 
-        val defaultQuantity1 = wcStatsStore.getQuantityByGranularity("", "", StatsGranularity.MONTHS, 12)
+        val defaultQuantity1 = wcStatsStore.getQuantityByGranularity("", "",
+                StatsGranularity.MONTHS, 12)
         assertEquals(12, defaultQuantity1)
 
-        val defaultQuantity2 = wcStatsStore.getQuantityByGranularity(null, null, StatsGranularity.MONTHS, 12)
+        val defaultQuantity2 = wcStatsStore.getQuantityByGranularity(null, null,
+                StatsGranularity.MONTHS, 12)
         assertEquals(12, defaultQuantity2)
     }
 
-
     @Test
     fun testGetQuantityForYears() {
-        val quantity1 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2018-01-01", StatsGranularity.YEARS, 1)
+        val quantity1 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2018-01-01",
+                StatsGranularity.YEARS, 1)
         assertEquals(2, quantity1)
 
-        val quantity2 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2018-03-01", StatsGranularity.YEARS, 1)
+        val quantity2 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2018-03-01",
+                StatsGranularity.YEARS, 1)
         assertEquals(2, quantity2)
 
-        val quantity3 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2018-01-05", StatsGranularity.YEARS, 1)
+        val quantity3 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2018-01-05",
+                StatsGranularity.YEARS, 1)
         assertEquals(2, quantity3)
 
-        val quantity4 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2019-03-01", StatsGranularity.YEARS, 1)
+        val quantity4 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2019-03-01",
+                StatsGranularity.YEARS, 1)
         assertEquals(3, quantity4)
 
-        val quantity5 = wcStatsStore.getQuantityByGranularity("2015-03-05", "2017-01-01", StatsGranularity.YEARS, 1)
+        val quantity5 = wcStatsStore.getQuantityByGranularity("2015-03-05", "2017-01-01",
+                StatsGranularity.YEARS, 1)
         assertEquals(3, quantity5)
 
-        val quantity6 = wcStatsStore.getQuantityByGranularity("2018-12-31", "2019-01-01", StatsGranularity.YEARS, 1)
+        val quantity6 = wcStatsStore.getQuantityByGranularity("2018-12-31", "2019-01-01",
+                StatsGranularity.YEARS, 1)
         assertEquals(2, quantity6)
 
-        val quantity7 = wcStatsStore.getQuantityByGranularity("2019-01-25", "2019-01-25", StatsGranularity.YEARS, 1)
+        val quantity7 = wcStatsStore.getQuantityByGranularity("2019-01-25", "2019-01-25",
+                StatsGranularity.YEARS, 1)
         assertEquals(1, quantity7)
 
-
-        val inverseQuantity1 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2017-01-01", StatsGranularity.YEARS, 1)
+        val inverseQuantity1 = wcStatsStore.getQuantityByGranularity("2018-01-01", "2017-01-01",
+                StatsGranularity.YEARS, 1)
         assertEquals(2, inverseQuantity1)
 
-        val inverseQuantity2 = wcStatsStore.getQuantityByGranularity("2018-03-01", "2017-01-01", StatsGranularity.YEARS, 1)
+        val inverseQuantity2 = wcStatsStore.getQuantityByGranularity("2018-03-01", "2017-01-01",
+                StatsGranularity.YEARS, 1)
         assertEquals(2, inverseQuantity2)
 
-        val inverseQuantity3 = wcStatsStore.getQuantityByGranularity("2018-01-05", "2017-01-01", StatsGranularity.YEARS, 1)
+        val inverseQuantity3 = wcStatsStore.getQuantityByGranularity("2018-01-05", "2017-01-01",
+                StatsGranularity.YEARS, 1)
         assertEquals(2, inverseQuantity3)
 
-        val inverseQuantity4 = wcStatsStore.getQuantityByGranularity("2019-03-01", "2017-01-01", StatsGranularity.YEARS, 1)
+        val inverseQuantity4 = wcStatsStore.getQuantityByGranularity("2019-03-01", "2017-01-01",
+                StatsGranularity.YEARS, 1)
         assertEquals(3, inverseQuantity4)
 
-        val inverseQuantity5 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2015-03-05", StatsGranularity.YEARS, 1)
+        val inverseQuantity5 = wcStatsStore.getQuantityByGranularity("2017-01-01", "2015-03-05",
+                StatsGranularity.YEARS, 1)
         assertEquals(3, inverseQuantity5)
 
-        val inverseQuantity6 = wcStatsStore.getQuantityByGranularity("2019-01-01", "2018-12-31", StatsGranularity.YEARS, 1)
+        val inverseQuantity6 = wcStatsStore.getQuantityByGranularity("2019-01-01", "2018-12-31",
+                StatsGranularity.YEARS, 1)
         assertEquals(2, inverseQuantity6)
 
-
-        val defaultQuantity1 = wcStatsStore.getQuantityByGranularity("", "", StatsGranularity.YEARS, 1)
+        val defaultQuantity1 = wcStatsStore.getQuantityByGranularity("", "",
+                StatsGranularity.YEARS, 1)
         assertEquals(1, defaultQuantity1)
 
-        val defaultQuantity2 = wcStatsStore.getQuantityByGranularity(null, null, StatsGranularity.YEARS, 1)
+        val defaultQuantity2 = wcStatsStore.getQuantityByGranularity(null, null,
+                StatsGranularity.YEARS, 1)
         assertEquals(1, defaultQuantity2)
     }
 
@@ -422,7 +468,6 @@ class WCStatsStoreTest {
         assertThat(localDate, anyOf(not(plus12SiteDate), not(minus12SiteDate)))
     }
 
-
     @Test
     fun testFetchOrderStatsForWeeksDate() {
         val startDate = "2019-01-25"
@@ -462,7 +507,6 @@ class WCStatsStoreTest {
         assertThat(localDate, isEqual(plus12SiteDate))
         assertThat(localDate, isEqual(minus12SiteDate))
     }
-
 
     @Test
     fun testFetchOrderStatsForMonthsDate() {
@@ -546,7 +590,6 @@ class WCStatsStoreTest {
         assertThat(localDate, isEqual(minus12SiteDate))
     }
 
-
     @Test
     fun testFetchOrderStatsForDaysQuantity() {
         val startDate = "2019-01-01"
@@ -556,14 +599,16 @@ class WCStatsStoreTest {
         val payload = FetchOrderStatsPayload(siteModel, StatsGranularity.DAYS, startDate, endDate)
         wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
 
-        val quantity: Long = wcStatsStore.getQuantityByGranularity(startDate, endDate, StatsGranularity.DAYS, 30)
+        val quantity: Long =
+                wcStatsStore.getQuantityByGranularity(startDate, endDate, StatsGranularity.DAYS, 30)
 
         val quantityArgument = argumentCaptor<Long>()
-        verify(mockOrderStatsRestClient).fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any(), any())
+        verify(mockOrderStatsRestClient)
+                .fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any(), any())
+
         val calculatedQuantity: Long = quantityArgument.firstValue
         assertEquals(quantity, calculatedQuantity)
     }
-
 
     @Test
     fun testFetchOrderStatsForWeeksQuantity() {
@@ -574,14 +619,16 @@ class WCStatsStoreTest {
         val payload = FetchOrderStatsPayload(siteModel, StatsGranularity.WEEKS, startDate, endDate)
         wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
 
-        val quantity: Long = wcStatsStore.getQuantityByGranularity(startDate, endDate, StatsGranularity.WEEKS, 17)
+        val quantity: Long =
+                wcStatsStore.getQuantityByGranularity(startDate, endDate, StatsGranularity.WEEKS, 17)
 
         val quantityArgument = argumentCaptor<Long>()
-        verify(mockOrderStatsRestClient).fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any(), any())
+        verify(mockOrderStatsRestClient)
+                .fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any(), any())
+
         val calculatedQuantity: Long = quantityArgument.firstValue
         assertEquals(quantity, calculatedQuantity)
     }
-
 
     @Test
     fun testFetchOrderStatsForMonthsQuantity() {
@@ -592,14 +639,16 @@ class WCStatsStoreTest {
         val payload = FetchOrderStatsPayload(siteModel, StatsGranularity.MONTHS, startDate, endDate)
         wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
 
-        val quantity: Long = wcStatsStore.getQuantityByGranularity(startDate, endDate, StatsGranularity.MONTHS, 12)
+        val quantity: Long =
+                wcStatsStore.getQuantityByGranularity(startDate, endDate, StatsGranularity.MONTHS, 12)
 
         val quantityArgument = argumentCaptor<Long>()
-        verify(mockOrderStatsRestClient).fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any(), any())
+        verify(mockOrderStatsRestClient)
+                .fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any(), any())
+
         val calculatedQuantity: Long = quantityArgument.firstValue
         assertEquals(quantity, calculatedQuantity)
     }
-
 
     @Test
     fun testFetchOrderStatsForYearsQuantity() {
@@ -610,14 +659,16 @@ class WCStatsStoreTest {
         val payload = FetchOrderStatsPayload(siteModel, StatsGranularity.YEARS, startDate, endDate)
         wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
 
-        val quantity: Long = wcStatsStore.getQuantityByGranularity(startDate, endDate, StatsGranularity.YEARS, 12)
+        val quantity: Long =
+                wcStatsStore.getQuantityByGranularity(startDate, endDate, StatsGranularity.YEARS, 12)
 
         val quantityArgument = argumentCaptor<Long>()
-        verify(mockOrderStatsRestClient).fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any(), any())
+        verify(mockOrderStatsRestClient)
+                .fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any(), any())
+
         val calculatedQuantity: Long = quantityArgument.firstValue
         assertEquals(quantity, calculatedQuantity)
     }
-
 
     @Test
     fun testInsertionAndRetrievalForCustomStats() {
@@ -638,7 +689,9 @@ class WCStatsStoreTest {
 
         val site = SiteModel().apply { id = defaultDayOrderStatsModel.localSiteId }
 
-        val defaultDayOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site, OrderStatsApiUnit.DAY, defaultDayOrderStatsModel.quantity, defaultDayOrderStatsModel.date)
+        val defaultDayOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
+                OrderStatsApiUnit.DAY, defaultDayOrderStatsModel.quantity, defaultDayOrderStatsModel.date)
+
         assertEquals(defaultDayOrderStatsModel.unit, defaultDayOrderStats?.unit)
         assertEquals(defaultDayOrderStatsModel.quantity, defaultDayOrderStats?.quantity)
         assertEquals(defaultDayOrderStatsModel.date, defaultDayOrderStats?.date)
@@ -646,7 +699,6 @@ class WCStatsStoreTest {
         with(WellSql.select(WCOrderStatsModel::class.java).asModel) {
             assertEquals(1, size)
         }
-
 
         /*
          * Test Scenario - II
@@ -660,9 +712,13 @@ class WCStatsStoreTest {
          * 2. The data stored to be queried again to check against this generated data
          * 3. The total size of the local db table = 2
          * */
-        val customDayOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2019-01-01", isCustomField = true)
+        val customDayOrderStatsModel =
+                WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2019-01-01", isCustomField = true)
+
         WCStatsSqlUtils.insertOrUpdateOrderStats(customDayOrderStatsModel)
-        val customDayOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site, OrderStatsApiUnit.DAY, customDayOrderStatsModel.quantity, customDayOrderStatsModel.date)
+        val customDayOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
+                OrderStatsApiUnit.DAY, customDayOrderStatsModel.quantity, customDayOrderStatsModel.date)
+
         assertEquals(customDayOrderStatsModel.unit, customDayOrderStats?.unit)
         assertEquals(customDayOrderStatsModel.quantity, customDayOrderStats?.quantity)
         assertEquals(customDayOrderStatsModel.date, customDayOrderStats?.date)
@@ -670,7 +726,6 @@ class WCStatsStoreTest {
         with(WellSql.select(WCOrderStatsModel::class.java).asModel) {
             assertEquals(2, size)
         }
-
 
         /*
          * Test Scenario - III
@@ -686,7 +741,9 @@ class WCStatsStoreTest {
          * */
         val defaultDayOrderStatsModel2 = WCStatsTestUtils.generateSampleStatsModel()
         WCStatsSqlUtils.insertOrUpdateOrderStats(defaultDayOrderStatsModel2)
-        val defaultDayOrderStats2 = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site, OrderStatsApiUnit.DAY, defaultDayOrderStatsModel2.quantity, defaultDayOrderStatsModel2.date)
+        val defaultDayOrderStats2 = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
+                OrderStatsApiUnit.DAY, defaultDayOrderStatsModel2.quantity, defaultDayOrderStatsModel2.date)
+
         assertEquals(defaultDayOrderStatsModel2.unit, defaultDayOrderStats2?.unit)
         assertEquals(defaultDayOrderStatsModel2.quantity, defaultDayOrderStats2?.quantity)
         assertEquals(defaultDayOrderStatsModel2.date, defaultDayOrderStats2?.date)
@@ -694,7 +751,6 @@ class WCStatsStoreTest {
         with(WellSql.select(WCOrderStatsModel::class.java).asModel) {
             assertEquals(2, size)
         }
-
 
         /*
          * Test Scenario - IV
@@ -708,9 +764,13 @@ class WCStatsStoreTest {
          * 2. The data stored to be queried again to check against this generated data
          * 3. The total size of the local db table = 2 (since no new data is inserted)
          * */
-        val customDayOrderStatsModel2 = WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2019-01-01", isCustomField = true)
+        val customDayOrderStatsModel2 =
+                WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2019-01-01", isCustomField = true)
+
         WCStatsSqlUtils.insertOrUpdateOrderStats(customDayOrderStatsModel2)
-        val customDayOrderStats2 = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site, OrderStatsApiUnit.DAY, customDayOrderStatsModel2.quantity, customDayOrderStatsModel2.date)
+        val customDayOrderStats2 = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
+                OrderStatsApiUnit.DAY, customDayOrderStatsModel2.quantity, customDayOrderStatsModel2.date)
+
         assertEquals(customDayOrderStatsModel2.unit, customDayOrderStats2?.unit)
         assertEquals(customDayOrderStatsModel2.quantity, customDayOrderStats2?.quantity)
         assertEquals(customDayOrderStatsModel2.date, customDayOrderStats2?.date)
@@ -718,7 +778,6 @@ class WCStatsStoreTest {
         with(WellSql.select(WCOrderStatsModel::class.java).asModel) {
             assertEquals(2, size)
         }
-
 
         /*
          * Test Scenario - V
@@ -733,9 +792,13 @@ class WCStatsStoreTest {
          * 2. The data stored to be queried again to check against this generated data
          * 3. The total size of the local db table = 2 (since no old data was purged and new data was inserted)
          * */
-        val customDayOrderStatsModel3 = WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2018-12-31", isCustomField = true)
+        val customDayOrderStatsModel3 =
+                WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2018-12-31", isCustomField = true)
+
         WCStatsSqlUtils.insertOrUpdateOrderStats(customDayOrderStatsModel3)
-        val customDayOrderStats3 = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site, OrderStatsApiUnit.DAY, customDayOrderStatsModel3.quantity, customDayOrderStatsModel3.date)
+        val customDayOrderStats3 = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
+                OrderStatsApiUnit.DAY, customDayOrderStatsModel3.quantity, customDayOrderStatsModel3.date)
+
         assertEquals(customDayOrderStatsModel3.unit, customDayOrderStats3?.unit)
         assertEquals(customDayOrderStatsModel3.quantity, customDayOrderStats3?.quantity)
         assertEquals(customDayOrderStatsModel3.date, customDayOrderStats3?.date)
@@ -746,7 +809,6 @@ class WCStatsStoreTest {
         with(WellSql.select(WCOrderStatsModel::class.java).asModel) {
             assertEquals(2, size)
         }
-
 
         /*
          * Test Scenario - VI
@@ -760,9 +822,13 @@ class WCStatsStoreTest {
          * 2. The data stored to be queried again to check against this generated data
          * 3. The total size of the local db table = 3 (since stats with DAYS granularity would be stored already)
          * */
-        val defaultWeekOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel(unit = OrderStatsApiUnit.WEEK.toString(), quantity = "17")
+        val defaultWeekOrderStatsModel =
+                WCStatsTestUtils.generateSampleStatsModel(unit = OrderStatsApiUnit.WEEK.toString(), quantity = "17")
+
         WCStatsSqlUtils.insertOrUpdateOrderStats(defaultWeekOrderStatsModel)
-        val defaultWeekOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site, OrderStatsApiUnit.WEEK, defaultWeekOrderStatsModel.quantity, defaultWeekOrderStatsModel.date)
+        val defaultWeekOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
+                OrderStatsApiUnit.WEEK, defaultWeekOrderStatsModel.quantity, defaultWeekOrderStatsModel.date)
+
         assertEquals(defaultWeekOrderStatsModel.unit, defaultWeekOrderStats?.unit)
         assertEquals(defaultWeekOrderStatsModel.quantity, defaultWeekOrderStats?.quantity)
         assertEquals(defaultWeekOrderStatsModel.date, defaultWeekOrderStats?.date)
@@ -770,8 +836,6 @@ class WCStatsStoreTest {
         with(WellSql.select(WCOrderStatsModel::class.java).asModel) {
             assertEquals(3, size)
         }
-
-
 
         /*
          * Test Scenario - VII
@@ -786,9 +850,14 @@ class WCStatsStoreTest {
          * 3. The total size of the local db table = 3 (since 2 default stats would be stored
          *    already and previously stored custom stats would be purged)
          * */
-        val customWeekOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel(unit = OrderStatsApiUnit.WEEK.toString(), quantity = "2", date = "2019-01-28", isCustomField = true)
+        val customWeekOrderStatsModel =
+                WCStatsTestUtils.generateSampleStatsModel(unit = OrderStatsApiUnit.WEEK.toString(),
+                        quantity = "2", date = "2019-01-28", isCustomField = true)
+
         WCStatsSqlUtils.insertOrUpdateOrderStats(customWeekOrderStatsModel)
-        val customWeekOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site, OrderStatsApiUnit.WEEK, customWeekOrderStatsModel.quantity, customWeekOrderStatsModel.date)
+        val customWeekOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
+                OrderStatsApiUnit.WEEK, customWeekOrderStatsModel.quantity, customWeekOrderStatsModel.date)
+
         assertEquals(customWeekOrderStatsModel.unit, customWeekOrderStats?.unit)
         assertEquals(customWeekOrderStatsModel.quantity, customWeekOrderStats?.quantity)
         assertEquals(customWeekOrderStatsModel.date, customWeekOrderStats?.date)
@@ -796,7 +865,6 @@ class WCStatsStoreTest {
         with(WellSql.select(WCOrderStatsModel::class.java).asModel) {
             assertEquals(3, size)
         }
-
 
         /*
          * Test Scenario - VIII
@@ -809,12 +877,18 @@ class WCStatsStoreTest {
          *
          * 1. This generated data to be inserted to local db
          * 2. The data stored to be queried again to check against this generated data
-         * 3. The total size of the local db table = 5 (since stats with DAYS and WEEKS granularity would be stored already)
+         * 3. The total size of the local db table = 5 (since stats with DAYS and WEEKS granularity
+         *    would be stored already)
          * */
         val site2 = SiteModel().apply { id = 8 }
-        val defaultMonthOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel(localSiteId = site2.id, unit = OrderStatsApiUnit.MONTH.toString(), quantity = "12")
+        val defaultMonthOrderStatsModel =
+                WCStatsTestUtils.generateSampleStatsModel(localSiteId = site2.id,
+                        unit = OrderStatsApiUnit.MONTH.toString(), quantity = "12")
+
         WCStatsSqlUtils.insertOrUpdateOrderStats(defaultMonthOrderStatsModel)
-        val defaultMonthOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site2, OrderStatsApiUnit.MONTH, defaultMonthOrderStatsModel.quantity, defaultMonthOrderStatsModel.date)
+        val defaultMonthOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site2,
+                OrderStatsApiUnit.MONTH, defaultMonthOrderStatsModel.quantity, defaultMonthOrderStatsModel.date)
+
         assertEquals(defaultMonthOrderStatsModel.unit, defaultMonthOrderStats?.unit)
         assertEquals(defaultMonthOrderStatsModel.quantity, defaultMonthOrderStats?.quantity)
         assertEquals(defaultMonthOrderStatsModel.date, defaultMonthOrderStats?.date)
@@ -822,8 +896,6 @@ class WCStatsStoreTest {
         with(WellSql.select(WCOrderStatsModel::class.java).asModel) {
             assertEquals(4, size)
         }
-
-
 
         /*
          * Test Scenario - IX
@@ -839,9 +911,14 @@ class WCStatsStoreTest {
          * 3. The total size of the local db table = 5 (since 3 default stats for another site would be stored
          *    already and 1 stats for site 8 would be stored). No purging of data would take place
          * */
-        val customMonthOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel(localSiteId = site2.id, unit = OrderStatsApiUnit.MONTH.toString(), quantity = "2", date = "2019-01-28", isCustomField = true)
+        val customMonthOrderStatsModel =
+                WCStatsTestUtils.generateSampleStatsModel(localSiteId = site2.id,
+                        unit = OrderStatsApiUnit.MONTH.toString(), quantity = "2", date = "2019-01-28", isCustomField = true)
+
         WCStatsSqlUtils.insertOrUpdateOrderStats(customMonthOrderStatsModel)
-        val customMonthOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site2, OrderStatsApiUnit.MONTH, customMonthOrderStatsModel.quantity, customMonthOrderStatsModel.date)
+        val customMonthOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site2,
+                OrderStatsApiUnit.MONTH, customMonthOrderStatsModel.quantity, customMonthOrderStatsModel.date)
+
         assertEquals(customMonthOrderStatsModel.unit, customMonthOrderStats?.unit)
         assertEquals(customMonthOrderStatsModel.quantity, customMonthOrderStats?.quantity)
         assertEquals(customMonthOrderStatsModel.date, customMonthOrderStats?.date)
@@ -850,14 +927,14 @@ class WCStatsStoreTest {
             assertEquals(5, size)
         }
 
-
         /*
          * Test Scenario - X
          * Check if the below query returns null
          * */
-        val missingData = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site2, OrderStatsApiUnit.YEAR, "1", "2019-01-01")
-        assertNull(missingData)
+        val missingData = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site2,
+                OrderStatsApiUnit.YEAR, "1", "2019-01-01")
 
+        assertNull(missingData)
 
         /*
          * Test Scenario - XI
@@ -907,11 +984,16 @@ class WCStatsStoreTest {
          * 2. Get Revenue and Order Stats of the same site and granularity
          * 3. Assert Not Null
          * */
-        val customDayOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2019-01-01", isCustomField = true)
+        val customDayOrderStatsModel =
+                WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2019-01-01", isCustomField = true)
         WCStatsSqlUtils.insertOrUpdateOrderStats(customDayOrderStatsModel)
 
-        val customDayOrderRevenueStats = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS, customDayOrderStatsModel.quantity, customDayOrderStatsModel.date)
-        val customDayOrderStats = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS, customDayOrderStatsModel.quantity, customDayOrderStatsModel.date)
+        val customDayOrderRevenueStats = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS,
+                customDayOrderStatsModel.quantity, customDayOrderStatsModel.date)
+
+        val customDayOrderStats = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS,
+                customDayOrderStatsModel.quantity, customDayOrderStatsModel.date)
+
         assertTrue(customDayOrderRevenueStats.isNotEmpty())
         assertTrue(customDayOrderStats.isNotEmpty())
 
@@ -926,16 +1008,21 @@ class WCStatsStoreTest {
          * 1. Get Revenue and Order Stats of the same site and granularity
          * 3. Assert Null
          * */
-        val customDayOrderStatsModel2 = WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2018-12-01", isCustomField = true)
-        val customDayOrderRevenueStats2 = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS, customDayOrderStatsModel2.quantity, customDayOrderStatsModel2.date)
-        val customDayOrderStats2 = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS, customDayOrderStatsModel2.quantity, customDayOrderStatsModel2.date)
+        val customDayOrderStatsModel2 = WCStatsTestUtils.generateSampleStatsModel(quantity = "1",
+                date = "2018-12-01", isCustomField = true)
+        val customDayOrderRevenueStats2 = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS,
+                customDayOrderStatsModel2.quantity, customDayOrderStatsModel2.date)
+
+        val customDayOrderStats2 = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS,
+                customDayOrderStatsModel2.quantity, customDayOrderStatsModel2.date)
+
         assertTrue(customDayOrderRevenueStats2.isEmpty())
         assertTrue(customDayOrderStats2.isEmpty())
 
-
         /*
          * Test Scenario - IV
-         * Query for custom stats that is not present in local cache: for same site, different quantity, different date
+         * Query for custom stats that is not present in local cache:
+         * for same site, different quantity, different date
          * granularity - DAYS
          * quantity - 30
          * date - 2018-12-01
@@ -944,12 +1031,17 @@ class WCStatsStoreTest {
          * 1. Get Revenue and Order Stats of the same site and granularity but different quantity, different date
          * 3. Assert Null
          * */
-        val customDayOrderStatsModel3 = WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2018-12-01", isCustomField = true)
-        val customDayOrderRevenueStats3 = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS, customDayOrderStatsModel3.quantity, customDayOrderStatsModel3.date)
-        val customDayOrderStats3 = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS, customDayOrderStatsModel3.quantity, customDayOrderStatsModel3.date)
+        val customDayOrderStatsModel3 = WCStatsTestUtils.generateSampleStatsModel(quantity = "1",
+                date = "2018-12-01", isCustomField = true)
+
+        val customDayOrderRevenueStats3 = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS,
+                customDayOrderStatsModel3.quantity, customDayOrderStatsModel3.date)
+
+        val customDayOrderStats3 = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS,
+                customDayOrderStatsModel3.quantity, customDayOrderStatsModel3.date)
+
         assertTrue(customDayOrderRevenueStats3.isEmpty())
         assertTrue(customDayOrderStats3.isEmpty())
-
 
         /*
          * Test Scenario - IV
@@ -965,19 +1057,29 @@ class WCStatsStoreTest {
          * 4. Now if another query ran for granularity - DAYS, with same date and same quantity:
          *    Assert Null
          * */
-        val customWeekOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel(unit = OrderStatsApiUnit.fromStatsGranularity(WEEKS).toString(), quantity = "1", date = "2019-01-01", isCustomField = true)
+        val customWeekOrderStatsModel = WCStatsTestUtils.
+                generateSampleStatsModel(unit = OrderStatsApiUnit.fromStatsGranularity(WEEKS).toString(),
+                        quantity = "1", date = "2019-01-01", isCustomField = true)
+
         WCStatsSqlUtils.insertOrUpdateOrderStats(customWeekOrderStatsModel)
 
-        val customWeekOrderRevenueStats = wcStatsStore.getRevenueStats(site, StatsGranularity.WEEKS, customWeekOrderStatsModel.quantity, customWeekOrderStatsModel.date)
-        val customWeekOrderStats = wcStatsStore.getOrderStats(site, StatsGranularity.WEEKS, customWeekOrderStatsModel.quantity, customWeekOrderStatsModel.date)
+        val customWeekOrderRevenueStats = wcStatsStore.getRevenueStats(site, StatsGranularity.WEEKS,
+                customWeekOrderStatsModel.quantity, customWeekOrderStatsModel.date)
+
+        val customWeekOrderStats = wcStatsStore.getOrderStats(site, StatsGranularity.WEEKS,
+                customWeekOrderStatsModel.quantity, customWeekOrderStatsModel.date)
+
         assertTrue(customWeekOrderRevenueStats.isNotEmpty())
         assertTrue(customWeekOrderStats.isNotEmpty())
 
-        val customDayOrderRevenueStats4 = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS, customDayOrderStatsModel.quantity, customDayOrderStatsModel.date)
-        val customDayOrderStats4 = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS, customDayOrderStatsModel.quantity, customDayOrderStatsModel.date)
+        val customDayOrderRevenueStats4 = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS,
+                customDayOrderStatsModel.quantity, customDayOrderStatsModel.date)
+
+        val customDayOrderStats4 = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS,
+                customDayOrderStatsModel.quantity, customDayOrderStatsModel.date)
+
         assertTrue(customDayOrderRevenueStats4.isEmpty())
         assertTrue(customDayOrderStats4.isEmpty())
-
 
         /*
          * Test Scenario - V
@@ -993,11 +1095,18 @@ class WCStatsStoreTest {
          * 3. Assert Not Null
          * 4. Now if scenario IV is run again it assert NOT NULL, since the stats is for different sites
          * */
-        val customWeekOrderStatsModel2 = WCStatsTestUtils.generateSampleStatsModel(localSiteId = 8, unit = OrderStatsApiUnit.fromStatsGranularity(WEEKS).toString(), quantity = "1", date = "2019-01-01", isCustomField = true)
+        val customWeekOrderStatsModel2 = WCStatsTestUtils.generateSampleStatsModel(localSiteId = 8,
+                unit = OrderStatsApiUnit.fromStatsGranularity(WEEKS).toString(), quantity = "1",
+                date = "2019-01-01", isCustomField = true)
+
         WCStatsSqlUtils.insertOrUpdateOrderStats(customWeekOrderStatsModel2)
 
-        val customWeekOrderRevenueStats2 = wcStatsStore.getRevenueStats(site, StatsGranularity.WEEKS, customWeekOrderStatsModel2.quantity, customWeekOrderStatsModel2.date)
-        val customWeekOrderStats2 = wcStatsStore.getOrderStats(site, StatsGranularity.WEEKS, customWeekOrderStatsModel2.quantity, customWeekOrderStatsModel2.date)
+        val customWeekOrderRevenueStats2 = wcStatsStore.getRevenueStats(site, StatsGranularity.WEEKS,
+                customWeekOrderStatsModel2.quantity, customWeekOrderStatsModel2.date)
+
+        val customWeekOrderStats2 = wcStatsStore.getOrderStats(site, StatsGranularity.WEEKS,
+                customWeekOrderStatsModel2.quantity, customWeekOrderStatsModel2.date)
+
         assertTrue(customWeekOrderRevenueStats2.isNotEmpty())
         assertTrue(customWeekOrderStats2.isNotEmpty())
 
