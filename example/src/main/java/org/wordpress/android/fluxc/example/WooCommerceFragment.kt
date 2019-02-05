@@ -35,7 +35,9 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
@@ -97,19 +99,37 @@ class WooCommerceFragment : Fragment() {
             getFirstWCSite()?.let { site ->
                 showSingleLineDialog(
                         activity,
-                        "Enter a single order status to filter by or leave blank for no filter:"
+                        "Enter a single order status to filter by:"
                 ) { editText ->
 
                     // only use the status for filtering if it's not empty
                     val statusFilter = editText.text.toString().trim().takeIf { it.isNotEmpty() }
-                    statusFilter?.let {
-                        prependToLog("Submitting request to fetch a count of $it orders")
-                    } ?: prependToLog("No valid filters defined, fetching count of all orders")
-
-                    val payload = FetchOrdersCountPayload(site, statusFilter)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersCountAction(payload))
+                    statusFilter?.let { filter ->
+                        prependToLog("Submitting request to fetch a count of $filter orders")
+                        val payload = FetchOrdersCountPayload(site, filter)
+                        dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersCountAction(payload))
+                    } ?: run {
+                        prependToLog("No valid filters defined! Required for this request")
+                    }
                 }
             }
+        }
+
+        search_orders.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter a search query:"
+                ) { editText ->
+
+                    val searchQuery = editText.text.toString().trim().takeIf { it.isNotEmpty() }
+                    searchQuery?.let {
+                        prependToLog("Submitting request to search orders matching $it")
+                        val payload = SearchOrdersPayload(site, searchQuery, 0)
+                        dispatcher.dispatch(WCOrderActionBuilder.newSearchOrdersAction(payload))
+                    } ?: prependToLog("No search query entered")
+                }
+            } ?: showNoWCSitesToast()
         }
 
         fetch_single_order.setOnClickListener {
@@ -353,6 +373,16 @@ class WooCommerceFragment : Fragment() {
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
                 }
             }
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onOrdersSearched(event: OnOrdersSearched) {
+        if (event.isError) {
+            prependToLog("Error searching orders - error: " + event.error.type)
+        } else {
+            prependToLog("Found ${event.searchResults.size} orders matching ${event.searchQuery}")
         }
     }
 
