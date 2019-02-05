@@ -215,6 +215,12 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     fun getOrderStatusOptionsForSite(site: SiteModel): List<WCOrderStatusModel> =
             OrderSqlUtils.getOrderStatusOptionsForSite(site)
 
+    /**
+     * Returns the order status as a [WCOrderStatusModel] that matches the provided order status key.
+     */
+    fun getOrderStatusForSiteAndKey(site: SiteModel, key: String): WCOrderStatusModel? =
+            OrderSqlUtils.getOrderStatusOptionForSiteByKey(site, key)
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCOrderAction ?: return
