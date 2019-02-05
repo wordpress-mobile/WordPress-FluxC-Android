@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 
 @Config(manifest = Config.NONE)
@@ -200,5 +201,44 @@ class OrderSqlUtilsTest {
         // Get order status options from the database
         val orderStatusOptionsDb = OrderSqlUtils.getOrderStatusOptionsForSite(siteModel)
         assertEquals(8, orderStatusOptionsDb.size)
+    }
+
+    @Test
+    fun testDeleteOrderStatusOption() {
+        val siteModel = SiteModel().apply { id = 1 }
+        val optionsJson = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order_status_options.json")
+        val orderStatusOptions = OrderTestUtils.getOrderStatusOptionsFromJson(optionsJson, siteModel.id)
+        assertEquals(8, orderStatusOptions.size)
+
+        // Save the full list to the database
+        var rowsAffected = orderStatusOptions.sumBy { OrderSqlUtils.insertOrUpdateOrderStatusOption(it) }
+        assertEquals(8, rowsAffected)
+
+        // Delete the first option from the database
+        val firstOption = orderStatusOptions[0]
+        rowsAffected = OrderSqlUtils.deleteOrderStatusOption(firstOption)
+        assertEquals(1, rowsAffected)
+
+        // Fetch list and verify first option is not present
+        val allOptions = OrderSqlUtils.getOrderStatusOptionsForSite(siteModel)
+        assertEquals(7, allOptions.size)
+        assertFalse { allOptions.contains(firstOption) }
+    }
+
+    @Test
+    fun testGetOrderStatusOption() {
+        val siteModel = SiteModel().apply { id = 1 }
+        val optionsJson = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order_status_options.json")
+        val orderStatusOptions = OrderTestUtils.getOrderStatusOptionsFromJson(optionsJson, siteModel.id)
+        assertEquals(8, orderStatusOptions.size)
+
+        // Save the full list to the database
+        val rowsAffected = orderStatusOptions.sumBy { OrderSqlUtils.insertOrUpdateOrderStatusOption(it) }
+        assertEquals(8, rowsAffected)
+
+        // Get the first option from the database by the status key
+        val firstOption = OrderSqlUtils.getOrderStatusOptionForSiteByKey(siteModel, orderStatusOptions[0].statusKey)
+        assertNotNull(firstOption)
+        assertEquals(firstOption!!.label, orderStatusOptions[0].label)
     }
 }

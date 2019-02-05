@@ -144,4 +144,14 @@ object OrderSqlUtils {
                     .where()
                     .equals(WCOrderStatusModelTable.LOCAL_SITE_ID, site.id)
                     .endWhere().asModel
+
+    fun getOrderStatusOptionForSiteByKey(site: SiteModel, key: String): WCOrderStatusModel? =
+            WellSql.select(WCOrderStatusModel::class.java)
+                    .where().beginGroup()
+                    .equals(WCOrderStatusModelTable.STATUS_KEY, key)
+                    .equals(WCOrderStatusModelTable.LOCAL_SITE_ID, site.id)
+                    .endGroup().endWhere().asModel.first()
+
+    fun deleteOrderStatusOption(orderStatus: WCOrderStatusModel): Int =
+            WellSql.delete(WCOrderStatusModel::class.java).whereId(orderStatus.id)
 }
