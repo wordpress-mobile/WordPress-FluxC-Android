@@ -45,7 +45,6 @@ object WCStatsSqlUtils {
                 .asModel.firstOrNull()
     }
 
-
     fun insertOrUpdateOrderStats(stats: WCOrderStatsModel): Int {
         val statsResult = WellSql.select(WCOrderStatsModel::class.java)
                 .where().beginGroup()
@@ -63,7 +62,7 @@ object WCStatsSqlUtils {
              *      - if custom data, we need to delete any previously cached custom data
              *        for the particular site before inserting incoming data
              */
-            if(stats.isCustomField) {
+            if (stats.isCustomField) {
                 deleteCustomStatsForSite(stats.localSiteId)
             }
 
@@ -77,12 +76,13 @@ object WCStatsSqlUtils {
         }
     }
 
-
-    fun getRawStatsForSiteUnitQuantityAndDate(site: SiteModel,
+    fun getRawStatsForSiteUnitQuantityAndDate(
+        site: SiteModel,
         unit: OrderStatsApiUnit,
         quantity: String? = null,
-        date: String? = null): WCOrderStatsModel? {
-        if(quantity.isNullOrEmpty() || date.isNullOrEmpty())
+        date: String? = null
+    ): WCOrderStatsModel? {
+        if (quantity.isNullOrEmpty() || date.isNullOrEmpty())
             return getRawStatsForSiteAndUnit(site, unit)
 
         return WellSql.select(WCOrderStatsModel::class.java)
@@ -96,8 +96,7 @@ object WCStatsSqlUtils {
                 .asModel.firstOrNull()
     }
 
-
-    private fun deleteCustomStatsForSite(siteId: Int) : Int {
+    private fun deleteCustomStatsForSite(siteId: Int): Int {
         return WellSql.delete(WCOrderStatsModel::class.java)
                 .where()
                 .equals(WCOrderStatsModelTable.LOCAL_SITE_ID, siteId)

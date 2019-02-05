@@ -13,7 +13,7 @@ data class WCOrderStatsModel(@PrimaryKey @Column private var id: Int = 0) : Iden
     @Column var localSiteId = 0
     @Column var unit = "" // The unit ("day", "week", "month", "year")
     @Column var date = "" // The end date of the data
-    @Column var quantity = "" // The quantity ( how far back to go ) based on unit. i.e. 30 days, 17 weeks, 12 months, 2 years
+    @Column var quantity = "" // The quantity based on unit. i.e. 30 days, 17 weeks, 12 months, 2 years
     @Column var isCustomField = false // to check if the data is for custom stats or default stats
         @JvmName("setIsCustomField")
         set

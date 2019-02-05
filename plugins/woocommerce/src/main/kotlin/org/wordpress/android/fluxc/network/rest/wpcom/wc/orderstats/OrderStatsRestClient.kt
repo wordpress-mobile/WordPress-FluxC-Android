@@ -63,7 +63,14 @@ class OrderStatsRestClient(
      * Possible non-generic errors:
      * [OrderStatsErrorType.INVALID_PARAM] if [unit], [date], or [quantity] are invalid or incompatible
      */
-    fun fetchStats(site: SiteModel, unit: OrderStatsApiUnit, date: String, quantity: Int, force: Boolean = false, isCustomField: Boolean = false) {
+    fun fetchStats(
+        site: SiteModel,
+        unit: OrderStatsApiUnit,
+        date: String,
+        quantity: Int,
+        force: Boolean = false,
+        isCustomField: Boolean = false
+    ) {
         val url = WPCOMV2.sites.site(site.siteId).stats.orders.url
         val params = mapOf(
                 "unit" to unit.toString(),

@@ -138,7 +138,12 @@ class WCStatsStore @Inject constructor(
     }
 
     // OnChanged events
-    class OnWCStatsChanged(val rowsAffected: Int, val granularity: StatsGranularity, val quantity: String?= null, val date: String?= null) : OnChanged<OrderStatsError>() {
+    class OnWCStatsChanged(
+        val rowsAffected: Int,
+        val granularity: StatsGranularity,
+        val quantity: String? = null,
+        val date: String? = null
+    ) : OnChanged<OrderStatsError>() {
         var causeOfChange: WCStatsAction? = null
     }
 
@@ -185,10 +190,12 @@ class WCStatsStore @Inject constructor(
      * [StatsGranularity.MONTHS]: "2018-05"
      * [StatsGranularity.YEARS]: "2018"
      */
-    fun getRevenueStats(site: SiteModel,
-                        granularity: StatsGranularity,
-                        quantity: String? = null,
-                        date: String? = null): Map<String, Double> {
+    fun getRevenueStats(
+        site: SiteModel,
+        granularity: StatsGranularity,
+        quantity: String? = null,
+        date: String? = null
+    ): Map<String, Double> {
         return getStatsForField(site, OrderStatsField.TOTAL_SALES, granularity, quantity, date)
     }
 
@@ -199,10 +206,12 @@ class WCStatsStore @Inject constructor(
      *
      * See [getRevenueStats] for detail on the date formatting of the map keys.
      */
-    fun getOrderStats(site: SiteModel,
-                      granularity: StatsGranularity,
-                      quantity: String? = null,
-                      date: String? = null): Map<String, Int> {
+    fun getOrderStats(
+        site: SiteModel,
+        granularity: StatsGranularity,
+        quantity: String? = null,
+        date: String? = null
+    ): Map<String, Int> {
         return getStatsForField(site, OrderStatsField.ORDERS, granularity, quantity, date)
     }
 
@@ -239,13 +248,17 @@ class WCStatsStore @Inject constructor(
         }
     }
 
-
     /**
      * returns the quantity (how far back to go) to use when requesting stats for a specific granularity
      * and the date range
      */
-    private fun getQuantityForGranularity(site: SiteModel, granularity: StatsGranularity, startDate: String?, endDate: String?): Int {
-        val defaultValue =  when (granularity) {
+    private fun getQuantityForGranularity(
+        site: SiteModel,
+        granularity: StatsGranularity,
+        startDate: String?,
+        endDate: String?
+    ): Int {
+        val defaultValue = when (granularity) {
             StatsGranularity.DAYS -> STATS_QUANTITY_DAYS
             StatsGranularity.WEEKS -> STATS_QUANTITY_WEEKS
             StatsGranularity.MONTHS -> STATS_QUANTITY_MONTHS
@@ -350,7 +363,6 @@ class WCStatsStore @Inject constructor(
             StatsGranularity.YEARS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR)
         }
     }
-
 
     /**
      * Given a {@param endDate} end date, formats the end date based on the site's timezone

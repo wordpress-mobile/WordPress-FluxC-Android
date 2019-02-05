@@ -911,9 +911,8 @@ class WCStatsStoreTest {
          * 3. The total size of the local db table = 5 (since 3 default stats for another site would be stored
          *    already and 1 stats for site 8 would be stored). No purging of data would take place
          * */
-        val customMonthOrderStatsModel =
-                WCStatsTestUtils.generateSampleStatsModel(localSiteId = site2.id,
-                        unit = OrderStatsApiUnit.MONTH.toString(), quantity = "2", date = "2019-01-28", isCustomField = true)
+        val customMonthOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel(localSiteId = site2.id,
+                unit = OrderStatsApiUnit.MONTH.toString(), quantity = "2", date = "2019-01-28", isCustomField = true)
 
         WCStatsSqlUtils.insertOrUpdateOrderStats(customMonthOrderStatsModel)
         val customMonthOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site2,
@@ -1057,9 +1056,8 @@ class WCStatsStoreTest {
          * 4. Now if another query ran for granularity - DAYS, with same date and same quantity:
          *    Assert Null
          * */
-        val customWeekOrderStatsModel = WCStatsTestUtils.
-                generateSampleStatsModel(unit = OrderStatsApiUnit.fromStatsGranularity(WEEKS).toString(),
-                        quantity = "1", date = "2019-01-01", isCustomField = true)
+        val customWeekOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2019-01-01",
+                        unit = OrderStatsApiUnit.fromStatsGranularity(WEEKS).toString(), isCustomField = true)
 
         WCStatsSqlUtils.insertOrUpdateOrderStats(customWeekOrderStatsModel)
 
