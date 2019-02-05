@@ -27,7 +27,6 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
@@ -191,7 +190,7 @@ class WooCommerceFragment : Fragment() {
             getFirstWCSite()?.let { site ->
                 prependToLog("Submitting request to fetch only completed orders from the api")
                 pendingFetchCompletedOrders = true
-                val payload = FetchOrdersPayload(site, loadMore = false, statusFilter = CoreOrderStatus.COMPLETED.value)
+                val payload = FetchOrdersPayload(site, loadMore = false, statusFilter = "completed")
                 dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
             }
         }
