@@ -190,8 +190,6 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     /**
      * Given a [SiteModel] and optional statuses, returns all orders for that site matching any of those statuses.
-     *
-     * The default WooCommerce statuses are defined in [CoreOrderStatus]. Custom order statuses are also supported.
      */
     fun getOrdersForSite(site: SiteModel, vararg status: String): List<WCOrderModel> =
             OrderSqlUtils.getOrdersForSite(site, status = status.asList())
