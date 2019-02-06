@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRe
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.ErrorUtils.OnUnexpectedError
 import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.util.AppLog
@@ -278,17 +279,17 @@ class WCStatsStore @Inject constructor(
     fun getQuantityByGranularity(d1: String?, d2: String?, granularity: StatsGranularity, defaultValue: Int): Long {
         if (d1.isNullOrEmpty() || d2.isNullOrEmpty()) return defaultValue.toLong()
 
-        val startDate = SiteUtils.getDateFromString(d1)
-        val endDate = SiteUtils.getDateFromString(d2)
+        val startDate = DateUtils.getDateFromString(d1)
+        val endDate = DateUtils.getDateFromString(d2)
 
-        val startDateCalendar = SiteUtils.getStartDateCalendar(if (startDate.before(endDate)) startDate else endDate)
-        val endDateCalendar = SiteUtils.getEndDateCalendar(if (startDate.before(endDate)) endDate else startDate)
+        val startDateCalendar = DateUtils.getStartDateCalendar(if (startDate.before(endDate)) startDate else endDate)
+        val endDateCalendar = DateUtils.getEndDateCalendar(if (startDate.before(endDate)) endDate else startDate)
 
         return when (granularity) {
-            StatsGranularity.WEEKS -> SiteUtils.getQuantityInWeeks(startDateCalendar, endDateCalendar)
-            StatsGranularity.MONTHS -> SiteUtils.getQuantityInMonths(startDateCalendar, endDateCalendar)
-            StatsGranularity.YEARS -> SiteUtils.getQuantityInYears(startDateCalendar, endDateCalendar)
-            else -> SiteUtils.getQuantityInDays(startDateCalendar, endDateCalendar)
+            StatsGranularity.WEEKS -> DateUtils.getQuantityInWeeks(startDateCalendar, endDateCalendar)
+            StatsGranularity.MONTHS -> DateUtils.getQuantityInMonths(startDateCalendar, endDateCalendar)
+            StatsGranularity.YEARS -> DateUtils.getQuantityInYears(startDateCalendar, endDateCalendar)
+            else -> DateUtils.getQuantityInDays(startDateCalendar, endDateCalendar)
         }
     }
 
@@ -370,10 +371,10 @@ class WCStatsStore @Inject constructor(
      */
     private fun getFormattedDate(site: SiteModel, granularity: StatsGranularity, endDate: String?): String {
         return when (granularity) {
-            StatsGranularity.DAYS -> SiteUtils.getDateTimeForSite(site, DATE_FORMAT_DAY, endDate)
-            StatsGranularity.WEEKS -> SiteUtils.getDateTimeForSite(site, DATE_FORMAT_WEEK, endDate)
-            StatsGranularity.MONTHS -> SiteUtils.getDateTimeForSite(site, DATE_FORMAT_MONTH, endDate)
-            StatsGranularity.YEARS -> SiteUtils.getDateTimeForSite(site, DATE_FORMAT_YEAR, endDate)
+            StatsGranularity.DAYS -> DateUtils.getDateTimeForSite(site, DATE_FORMAT_DAY, endDate)
+            StatsGranularity.WEEKS -> DateUtils.getDateTimeForSite(site, DATE_FORMAT_WEEK, endDate)
+            StatsGranularity.MONTHS -> DateUtils.getDateTimeForSite(site, DATE_FORMAT_MONTH, endDate)
+            StatsGranularity.YEARS -> DateUtils.getDateTimeForSite(site, DATE_FORMAT_YEAR, endDate)
         }
     }
 

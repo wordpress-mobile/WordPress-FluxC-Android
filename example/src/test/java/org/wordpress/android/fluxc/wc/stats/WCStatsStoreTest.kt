@@ -28,9 +28,8 @@ import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.WEEKS
-import org.wordpress.android.fluxc.utils.SiteUtils
+import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.SiteUtils.getCurrentDateTimeForSite
-import org.wordpress.android.fluxc.utils.SiteUtils.getDateTimeForSite
 import java.text.SimpleDateFormat
 import java.util.Date
 import kotlin.test.assertEquals
@@ -437,7 +436,7 @@ class WCStatsStoreTest {
             val payload = FetchOrderStatsPayload(it, StatsGranularity.DAYS, startDate, endDate)
             wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
 
-            val timeOnSite = getDateTimeForSite(it, "yyyy-MM-dd", endDate)
+            val timeOnSite = DateUtils.getDateTimeForSite(it, "yyyy-MM-dd", endDate)
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
@@ -453,7 +452,7 @@ class WCStatsStoreTest {
             val payload = FetchOrderStatsPayload(it, StatsGranularity.DAYS, startDate, endDate)
             wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
 
-            val timeOnSite = getDateTimeForSite(it, "yyyy-MM-dd", endDate)
+            val timeOnSite = DateUtils.getDateTimeForSite(it, "yyyy-MM-dd", endDate)
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
@@ -463,7 +462,7 @@ class WCStatsStoreTest {
             return@let siteDate
         }
 
-        val localDate = SiteUtils.formatDate("YYYY-MM-dd", SiteUtils.getDateFromString(endDate))
+        val localDate = DateUtils.formatDate("YYYY-MM-dd", DateUtils.getDateFromString(endDate))
         assertThat(localDate, anyOf(isEqual(plus12SiteDate), isEqual(minus12SiteDate)))
         assertThat(localDate, anyOf(not(plus12SiteDate), not(minus12SiteDate)))
     }
@@ -476,7 +475,7 @@ class WCStatsStoreTest {
             val payload = FetchOrderStatsPayload(it, StatsGranularity.WEEKS, startDate, endDate)
             wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
 
-            val timeOnSite = getDateTimeForSite(it, "yyyy-'W'ww", endDate)
+            val timeOnSite = DateUtils.getDateTimeForSite(it, "yyyy-'W'ww", endDate)
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
@@ -492,7 +491,7 @@ class WCStatsStoreTest {
             val payload = FetchOrderStatsPayload(it, StatsGranularity.WEEKS, startDate, endDate)
             wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
 
-            val timeOnSite = getDateTimeForSite(it, "yyyy-'W'ww", endDate)
+            val timeOnSite = DateUtils.getDateTimeForSite(it, "yyyy-'W'ww", endDate)
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
@@ -502,7 +501,7 @@ class WCStatsStoreTest {
             return@let siteDate
         }
 
-        val localDate = SiteUtils.formatDate("yyyy-'W'ww", SiteUtils.getDateFromString(endDate))
+        val localDate = DateUtils.formatDate("yyyy-'W'ww", DateUtils.getDateFromString(endDate))
 
         assertThat(localDate, isEqual(plus12SiteDate))
         assertThat(localDate, isEqual(minus12SiteDate))
@@ -517,7 +516,7 @@ class WCStatsStoreTest {
             val payload = FetchOrderStatsPayload(it, StatsGranularity.MONTHS, startDate, endDate)
             wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
 
-            val timeOnSite = getDateTimeForSite(it, "yyyy-MM", endDate)
+            val timeOnSite = DateUtils.getDateTimeForSite(it, "yyyy-MM", endDate)
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
@@ -533,7 +532,7 @@ class WCStatsStoreTest {
             val payload = FetchOrderStatsPayload(it, StatsGranularity.MONTHS, startDate, endDate)
             wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
 
-            val timeOnSite = getDateTimeForSite(it, "yyyy-MM", endDate)
+            val timeOnSite = DateUtils.getDateTimeForSite(it, "yyyy-MM", endDate)
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
@@ -543,7 +542,7 @@ class WCStatsStoreTest {
             return@let siteDate
         }
 
-        val localDate = SiteUtils.formatDate("yyyy-MM", SiteUtils.getDateFromString(endDate))
+        val localDate = DateUtils.formatDate("yyyy-MM", DateUtils.getDateFromString(endDate))
 
         assertThat(localDate, isEqual(plus12SiteDate))
         assertThat(localDate, isEqual(minus12SiteDate))
@@ -558,7 +557,7 @@ class WCStatsStoreTest {
             val payload = FetchOrderStatsPayload(it, StatsGranularity.YEARS, startDate, endDate)
             wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
 
-            val timeOnSite = getDateTimeForSite(it, "yyyy", endDate)
+            val timeOnSite = DateUtils.getDateTimeForSite(it, "yyyy", endDate)
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
@@ -574,7 +573,7 @@ class WCStatsStoreTest {
             val payload = FetchOrderStatsPayload(it, StatsGranularity.YEARS, startDate, endDate)
             wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
 
-            val timeOnSite = getDateTimeForSite(it, "yyyy", endDate)
+            val timeOnSite = DateUtils.getDateTimeForSite(it, "yyyy", endDate)
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
@@ -584,7 +583,7 @@ class WCStatsStoreTest {
             return@let siteDate
         }
 
-        val localDate = SiteUtils.formatDate("yyyy", SiteUtils.getDateFromString(endDate))
+        val localDate = DateUtils.formatDate("yyyy", DateUtils.getDateFromString(endDate))
 
         assertThat(localDate, isEqual(plus12SiteDate))
         assertThat(localDate, isEqual(minus12SiteDate))
