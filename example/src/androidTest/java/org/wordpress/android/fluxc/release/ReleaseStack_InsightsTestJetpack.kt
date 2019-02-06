@@ -14,7 +14,8 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.stats.LoadMode.Paged
+import org.wordpress.android.fluxc.model.stats.CacheMode
+import org.wordpress.android.fluxc.model.stats.FetchMode.Paged
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
@@ -124,7 +125,7 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getWpComFollowers(site, Paged(pageSize, false))
+        val insightsFromDb = insightsStore.getWpComFollowers(site, CacheMode.Top(pageSize))
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
@@ -139,7 +140,7 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getEmailFollowers(site, Paged(pageSize, false))
+        val insightsFromDb = insightsStore.getEmailFollowers(site, CacheMode.Top(pageSize))
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
