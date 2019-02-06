@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -20,6 +21,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
@@ -74,6 +76,33 @@ class OrderRestClient(
                     val orderError = networkErrorToOrderError(networkError)
                     val payload = FetchOrdersResponsePayload(orderError, site)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Makes a GET call to `/wc/v3/reports/orders/totals` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a list of available order status options for the given WooCommerce [SiteModel].
+     *
+     * Dispatches a [WCOrderAction.FETCHED_ORDER_STATUS_OPTIONS] action with the resulting list of order status labels.
+     */
+    fun fetchOrderStatusOptions(site: SiteModel) {
+        val url = WOOCOMMERCE.reports.orders.totals.pathV3
+        val params = emptyMap<String, String>()
+        val responseType = object : TypeToken<List<OrderStatusApiResponse>>() {}.type
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<OrderStatusApiResponse>? ->
+                    val orderStatusOptions = response?.map {
+                        orderStatusResponseToOrderStatusModel(it, site)
+                    }.orEmpty()
+                    val payload = FetchOrderStatusOptionsResponsePayload(site, orderStatusOptions)
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
+                    val payload = FetchOrderStatusOptionsResponsePayload(orderError, site)
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
@@ -389,5 +418,16 @@ class OrderRestClient(
             else -> OrderErrorType.fromString(wpComError.apiError)
         }
         return OrderError(orderErrorType, wpComError.message)
+    }
+
+    private fun orderStatusResponseToOrderStatusModel(
+        response: OrderStatusApiResponse,
+        site: SiteModel
+    ): WCOrderStatusModel {
+        return WCOrderStatusModel().apply {
+            localSiteId = site.id
+            statusKey = response.slug ?: ""
+            label = response.name ?: ""
+        }
     }
 }
