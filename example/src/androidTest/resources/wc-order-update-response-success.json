@@ -110,12 +110,12 @@
     "_links": {
       "self": [
         {
-          "href": "https:\/\/alexforcier-test-store-1.blog\/wp-json\/wc\/v2\/orders\/88"
+          "href": "https:\/\/wordpress.com\/wp-json\/wc\/v2\/orders\/88"
         }
       ],
       "collection": [
         {
-          "href": "https:\/\/alexforcier-test-store-1.blog\/wp-json\/wc\/v2\/orders"
+          "href": "https:\/\/wordpress.com\/wp-json\/wc\/v2\/orders"
         }
       ]
     }

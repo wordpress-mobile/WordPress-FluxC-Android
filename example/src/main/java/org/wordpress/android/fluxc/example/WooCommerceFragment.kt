@@ -27,14 +27,15 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
@@ -48,6 +49,7 @@ import org.wordpress.android.fluxc.store.WCStatsStore.OnWCTopEarnersChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.store.WooCommerceStore.OnApiVersionFetched
+import org.wordpress.android.fluxc.store.WooCommerceStore.OnWCSiteSettingsChanged
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.ToastUtils
@@ -86,6 +88,12 @@ class WooCommerceFragment : Fragment() {
             for (site in wooCommerceStore.getWooCommerceSites()) {
                 dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteApiVersionAction(site))
             }
+        }
+
+        fetch_settings.setOnClickListener {
+            getFirstWCSite()?.let {
+                dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteSettingsAction(it))
+            } ?: showNoWCSitesToast()
         }
 
         fetch_orders.setOnClickListener {
@@ -182,8 +190,15 @@ class WooCommerceFragment : Fragment() {
             getFirstWCSite()?.let { site ->
                 prependToLog("Submitting request to fetch only completed orders from the api")
                 pendingFetchCompletedOrders = true
-                val payload = FetchOrdersPayload(site, loadMore = false, statusFilter = CoreOrderStatus.COMPLETED.value)
+                val payload = FetchOrdersPayload(site, loadMore = false, statusFilter = "completed")
                 dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
+            }
+        }
+
+        fetch_order_status_options.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                dispatcher.dispatch(WCOrderActionBuilder
+                        .newFetchOrderStatusOptionsAction(FetchOrderStatusOptionsPayload(site)))
             }
         }
 
@@ -288,6 +303,21 @@ class WooCommerceFragment : Fragment() {
         with(event) {
             val formattedVersion = apiVersion.substringAfterLast("/")
             prependToLog("Max Woo version for ${site.name}: $formattedVersion")
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onWCSiteSettingsChanged(event: OnWCSiteSettingsChanged) {
+        if (event.isError) {
+            prependToLog("Error in onWCSiteSettingsChanged: ${event.error.type} - ${event.error.message}")
+            return
+        }
+
+        with(event) {
+            prependToLog("Updated site settings for ${site.name}:\n" +
+                    wooCommerceStore.getSiteSettings(site).toString()
+            )
         }
     }
 
@@ -424,6 +454,21 @@ class WooCommerceFragment : Fragment() {
                 "Fetched ${event.topEarners.size} top earner stats for ${event.granularity.toString()
                         .toLowerCase()} from ${getFirstWCSite()?.name}"
         )
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onOrderStatusOptionsChanged(event: OnOrderStatusOptionsChanged) {
+        if (event.isError) {
+            prependToLog("Error fetching order status options from the api: ${event.error.message}")
+            return
+        }
+
+        val orderStatusOptions = getFirstWCSite()?.let {
+            wcOrderStore.getOrderStatusOptionsForSite(it)
+        }?.map { it.label }
+        prependToLog("Fetched order status options from the api: $orderStatusOptions " +
+                "- updated ${event.rowsAffected} in the db")
     }
 
     private fun getFirstWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(0)
