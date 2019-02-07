@@ -184,7 +184,7 @@ class WCStatsStore @Inject constructor(
      * [StatsGranularity.YEARS]: "2018"
      */
     fun getRevenueStats(site: SiteModel, granularity: StatsGranularity): Map<String, Double> {
-        return getStatsForField(site, OrderStatsField.TOTAL_SALES, granularity)
+        return getStatsForField(site, OrderStatsField.GROSS_SALES, granularity)
     }
 
     /**
