@@ -135,7 +135,7 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val site = authenticate()
 
         val pageSize = 5
-        val fetchedInsights = runBlocking { insightsStore.fetchEmailFollowers(site, Paged(pageSize, false) ) }
+        val fetchedInsights = runBlocking { insightsStore.fetchEmailFollowers(site, Paged(pageSize, false)) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
