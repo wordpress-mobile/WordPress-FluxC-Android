@@ -16,10 +16,12 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
@@ -39,7 +41,8 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         SEARCHED_ORDERS,
         POST_ORDER_NOTE,
         POSTED_ORDER_NOTE,
-        ERROR_ORDER_STATUS_NOT_FOUND
+        ERROR_ORDER_STATUS_NOT_FOUND,
+        FETCHED_ORDER_STATUS_OPTIONS
     }
 
     @Inject internal lateinit var orderStore: WCOrderStore
@@ -221,6 +224,20 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
     }
 
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchOrderStatusOptions() {
+        nextEvent = TestEvent.FETCHED_ORDER_STATUS_OPTIONS
+        mCountDownLatch = CountDownLatch(1)
+
+        mDispatcher.dispatch(WCOrderActionBuilder
+                .newFetchOrderStatusOptionsAction(FetchOrderStatusOptionsPayload(sSite)))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        val orderStatusOptions = orderStore.getOrderStatusOptionsForSite(sSite)
+        assertTrue(orderStatusOptions.isNotEmpty())
+    }
+
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onOrderChanged(event: OnOrderChanged) {
@@ -261,6 +278,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
                 assertEquals(TestEvent.FETCHED_SINGLE_ORDER, nextEvent)
                 mCountDownLatch.countDown()
             }
+
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
         }
     }
@@ -274,6 +292,17 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
 
         assertEquals(event.searchQuery, orderSearchQuery)
         assertEquals(TestEvent.SEARCHED_ORDERS, nextEvent)
+        mCountDownLatch.countDown()
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onOrderStatusOptionsChanged(event: OnOrderStatusOptionsChanged) {
+        event.error?.let {
+            throw AssertionError("OnOrderStatusOptionsChanged has error: " + it.type)
+        }
+
+        assertEquals(TestEvent.FETCHED_ORDER_STATUS_OPTIONS, nextEvent)
         mCountDownLatch.countDown()
     }
 }
