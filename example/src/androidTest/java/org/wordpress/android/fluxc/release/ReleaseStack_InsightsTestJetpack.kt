@@ -166,12 +166,12 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val site = authenticate()
 
         val pageSize = 5
-        val fetchedInsights = runBlocking { insightsStore.fetchTags(site, pageSize) }
+        val fetchedInsights = runBlocking { insightsStore.fetchTags(site, FetchMode.Top(pageSize)) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getTags(site, pageSize)
+        val insightsFromDb = insightsStore.getTags(site, CacheMode.Top(pageSize))
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
