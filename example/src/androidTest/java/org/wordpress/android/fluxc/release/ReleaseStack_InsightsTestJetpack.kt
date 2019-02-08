@@ -17,14 +17,20 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.CacheMode
 import org.wordpress.android.fluxc.model.stats.FetchMode
 import org.wordpress.android.fluxc.model.stats.FetchMode.Paged
-import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
-import org.wordpress.android.fluxc.store.stats.InsightsStore
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
+import org.wordpress.android.fluxc.store.stats.insights.AllTimeInsightsStore
+import org.wordpress.android.fluxc.store.stats.insights.CommentsStore
+import org.wordpress.android.fluxc.store.stats.insights.FollowersStore
+import org.wordpress.android.fluxc.store.stats.insights.LatestPostInsightsStore
+import org.wordpress.android.fluxc.store.stats.insights.MostPopularInsightsStore
+import org.wordpress.android.fluxc.store.stats.insights.PublicizeStore
+import org.wordpress.android.fluxc.store.stats.insights.TagsStore
+import org.wordpress.android.fluxc.store.stats.insights.TodayInsightsStore
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.concurrent.CountDownLatch
@@ -36,9 +42,15 @@ import javax.inject.Inject
  */
 class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     private val incomingActions: MutableList<Action<*>> = mutableListOf()
-    @Inject lateinit var insightsStore: InsightsStore
+    @Inject lateinit var allTimeStore: AllTimeInsightsStore
+    @Inject lateinit var commentsStore: CommentsStore
+    @Inject lateinit var followersStore: FollowersStore
+    @Inject lateinit var latestPostStore: LatestPostInsightsStore
+    @Inject lateinit var mostPopularStore: MostPopularInsightsStore
+    @Inject lateinit var publicizeStore: PublicizeStore
+    @Inject lateinit var tagsStore: TagsStore
+    @Inject lateinit var todayStore: TodayInsightsStore
     @Inject internal lateinit var siteStore: SiteStore
-    @Inject internal lateinit var accountStore: AccountStore
 
     private var nextEvent: TestEvents? = null
 
@@ -64,12 +76,12 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     fun testFetchAllTimeInsights() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { insightsStore.fetchAllTimeInsights(site) }
+        val fetchedInsights = runBlocking { allTimeStore.fetchAllTimeInsights(site) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getAllTimeInsights(site)
+        val insightsFromDb = allTimeStore.getAllTimeInsights(site)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
@@ -78,12 +90,12 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     fun testFetchLatestPostInsights() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { insightsStore.fetchLatestPostInsights(site) }
+        val fetchedInsights = runBlocking { latestPostStore.fetchLatestPostInsights(site) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getLatestPostInsights(site)
+        val insightsFromDb = latestPostStore.getLatestPostInsights(site)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
@@ -92,12 +104,12 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     fun testFetchMostPopularInsights() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { insightsStore.fetchMostPopularInsights(site) }
+        val fetchedInsights = runBlocking { mostPopularStore.fetchMostPopularInsights(site) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getMostPopularInsights(site)
+        val insightsFromDb = mostPopularStore.getMostPopularInsights(site)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
@@ -106,12 +118,12 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     fun testTodayInsights() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking { insightsStore.fetchTodayInsights(site) }
+        val fetchedInsights = runBlocking { todayStore.fetchTodayInsights(site) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getTodayInsights(site)
+        val insightsFromDb = todayStore.getTodayInsights(site)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
@@ -121,12 +133,12 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val site = authenticate()
 
         val pageSize = 5
-        val fetchedInsights = runBlocking { insightsStore.fetchWpComFollowers(site, Paged(pageSize, false)) }
+        val fetchedInsights = runBlocking { followersStore.fetchWpComFollowers(site, Paged(pageSize, false)) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getWpComFollowers(site, CacheMode.Top(pageSize))
+        val insightsFromDb = followersStore.getWpComFollowers(site, CacheMode.Top(pageSize))
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
@@ -136,12 +148,12 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val site = authenticate()
 
         val pageSize = 5
-        val fetchedInsights = runBlocking { insightsStore.fetchEmailFollowers(site, Paged(pageSize, false)) }
+        val fetchedInsights = runBlocking { followersStore.fetchEmailFollowers(site, Paged(pageSize, false)) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getEmailFollowers(site, CacheMode.Top(pageSize))
+        val insightsFromDb = followersStore.getEmailFollowers(site, CacheMode.Top(pageSize))
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
@@ -151,12 +163,12 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val site = authenticate()
 
         val pageSize = 5
-        val fetchedInsights = runBlocking { insightsStore.fetchComments(site, FetchMode.Top(pageSize)) }
+        val fetchedInsights = runBlocking { commentsStore.fetchComments(site, FetchMode.Top(pageSize)) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getComments(site, CacheMode.Top(pageSize))
+        val insightsFromDb = commentsStore.getComments(site, CacheMode.Top(pageSize))
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
@@ -166,12 +178,12 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val site = authenticate()
 
         val pageSize = 5
-        val fetchedInsights = runBlocking { insightsStore.fetchTags(site, FetchMode.Top(pageSize)) }
+        val fetchedInsights = runBlocking { tagsStore.fetchTags(site, FetchMode.Top(pageSize)) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getTags(site, CacheMode.Top(pageSize))
+        val insightsFromDb = tagsStore.getTags(site, CacheMode.Top(pageSize))
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
@@ -181,12 +193,12 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val site = authenticate()
 
         val pageSize = 5
-        val fetchedInsights = runBlocking { insightsStore.fetchPublicizeData(site, pageSize) }
+        val fetchedInsights = runBlocking { publicizeStore.fetchPublicizeData(site, pageSize) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getPublicizeData(site, pageSize)
+        val insightsFromDb = publicizeStore.getPublicizeData(site, pageSize)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
