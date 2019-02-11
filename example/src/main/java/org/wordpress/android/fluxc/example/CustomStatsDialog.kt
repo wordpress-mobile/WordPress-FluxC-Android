@@ -10,13 +10,18 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ArrayAdapter
 import kotlinx.android.synthetic.main.dialog_custom_stats.*
+import org.wordpress.android.fluxc.model.WCOrderStatsModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import java.util.Calendar
 
 class CustomStatsDialog : DialogFragment() {
     companion object {
         @JvmStatic
-        fun newInstance(listener: Listener) = CustomStatsDialog().apply { this.listener = listener }
+        fun newInstance(listener: Listener, wcOrderStatsModel: WCOrderStatsModel?) = CustomStatsDialog().apply {
+            this.listener = listener
+            this.wcOrderStatsModel = wcOrderStatsModel
+        }
     }
 
     interface Listener {
@@ -24,6 +29,7 @@ class CustomStatsDialog : DialogFragment() {
     }
 
     var listener: Listener? = null
+    var wcOrderStatsModel: WCOrderStatsModel? = null
 
     override fun onResume() {
         super.onResume()
@@ -40,12 +46,19 @@ class CustomStatsDialog : DialogFragment() {
         stats_granularity.adapter =
                 ArrayAdapter<StatsGranularity>(activity, layout.simple_dropdown_item_1line, StatsGranularity.values())
 
+        wcOrderStatsModel?.startDate?.let { stats_from_date.text = it }
+        wcOrderStatsModel?.endDate?.let { stats_to_date.text = it }
+        wcOrderStatsModel?.unit?.let {
+            stats_granularity.setSelection(StatsGranularity.fromOrderStatsApiUnit(
+                    OrderStatsApiUnit.valueOf(it.toUpperCase())).ordinal
+            )
+        }
+
         stats_from_date.setOnClickListener {
-            val now = getCalendarInstance()
+            val now = getCalendarInstance(wcOrderStatsModel?.startDate)
             val datePicker = DatePickerDialog(requireActivity(), DatePickerDialog.OnDateSetListener {
                 _, year, month, dayOfMonth ->
-                stats_label_from.text = String.format("Start Date selected: %s",
-                        getFormattedDate(year, month, dayOfMonth))
+                stats_from_date.text = getFormattedDate(year, month, dayOfMonth)
             },
                     now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH))
             datePicker.datePicker.maxDate = now.timeInMillis
@@ -53,11 +66,10 @@ class CustomStatsDialog : DialogFragment() {
         }
 
         stats_to_date.setOnClickListener {
-            val now = getCalendarInstance()
+            val now = getCalendarInstance(wcOrderStatsModel?.endDate)
             val datePicker = DatePickerDialog(requireActivity(), DatePickerDialog.OnDateSetListener {
                 _, year, month, dayOfMonth ->
-                stats_label_to.text = String.format("End Date selected: %s",
-                        getFormattedDate(year, month, dayOfMonth))
+                stats_to_date.text = getFormattedDate(year, month, dayOfMonth)
             },
                     now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH))
             datePicker.datePicker.maxDate = now.timeInMillis
@@ -65,12 +77,12 @@ class CustomStatsDialog : DialogFragment() {
         }
 
         stats_dialog_ok.setOnClickListener {
+            val startDate = stats_from_date.text.toString()
+            val endDate = stats_to_date.text.toString()
+            val granularity: StatsGranularity = stats_granularity.selectedItem as StatsGranularity
+
             listener?.let {
-                val startDate = stats_label_from.text.let { stats_label_from.text.split(": ")[1] }
-                val endDate = stats_label_to.text.let { stats_label_to.text.split(": ")[1] }
-                val granularity: StatsGranularity = stats_granularity.selectedItem as StatsGranularity
                 it.onSubmitted(startDate, endDate, granularity)
-//                Toast.makeText(requireContext(), "Start Date: $startDate, End Date: $endDate, Granularity: ${granularity.name}", LENGTH_LONG).show()
             }
             dismiss()
         }
@@ -85,5 +97,13 @@ class CustomStatsDialog : DialogFragment() {
         return String.format("$year-$monthOfYear-$dayOfMonth")
     }
 
-    private fun getCalendarInstance() = Calendar.getInstance()
+    private fun getCalendarInstance(value: String?): Calendar {
+        val cal = Calendar.getInstance()
+        if (!value.isNullOrBlank()) {
+            cal.set(value!!.split("-")[0].toInt(),
+                    value.split("-")[1].toInt(),
+                    value.split("-")[2].toInt())
+        }
+        return cal
+    }
 }

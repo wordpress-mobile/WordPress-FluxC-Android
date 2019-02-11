@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Start Date: "
+        android:text="Start Date"
         android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/stats_dialog_title"/>
@@ -31,11 +31,13 @@
     <Button
         android:id="@+id/stats_from_date"
         android:layout_width="0dp"
+        style="?android:attr/spinnerStyle"
         android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:text="Select Start Date"
-        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginTop="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/stats_label_from"
         app:layout_constraintTop_toBottomOf="@+id/stats_label_from"/>
+
 
     <TextView
         android:id="@+id/stats_label_to"
@@ -47,14 +49,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/stats_from_date"/>
 
-
     <Button
         android:id="@+id/stats_to_date"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:text="Select End Date"
-        app:layout_constraintLeft_toLeftOf="parent"
+        style="?android:attr/spinnerStyle"
+        android:layout_marginTop="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/stats_label_to"
         app:layout_constraintTop_toBottomOf="@+id/stats_label_to"/>
 
     <TextView

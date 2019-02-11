@@ -254,7 +254,7 @@ class WooCommerceFragment : Fragment() {
                             val payload = FetchOrderStatsPayload(it, granularity, startDate, endDate)
                             dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
                         } ?: showNoWCSitesToast()
-                    } })
+                    } }, getCustomStatsForSite())
                 dialog.show(fm, "CustomStatsFragment")
             }
         }
@@ -267,7 +267,7 @@ class WooCommerceFragment : Fragment() {
                             val payload = FetchOrderStatsPayload(it, granularity, startDate, endDate, forced = true)
                             dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
                         } ?: showNoWCSitesToast()
-                    } })
+                    } }, getCustomStatsForSite())
                 dialog.show(fm, "CustomStatsFragment")
             }
         }
@@ -482,6 +482,10 @@ class WooCommerceFragment : Fragment() {
     }
 
     private fun getFirstWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(0)
+
+    private fun getCustomStatsForSite() = getFirstWCSite()?.let {
+        wcStatsStore.getCustomStatsForSite(it)
+    }
 
     private fun getFirstWCOrder() = getFirstWCSite()?.let {
         wcOrderStore.getOrdersForSite(it).getOrNull(0)

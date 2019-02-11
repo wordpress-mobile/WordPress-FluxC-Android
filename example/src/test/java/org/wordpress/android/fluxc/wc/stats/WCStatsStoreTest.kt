@@ -111,7 +111,7 @@ class WCStatsStoreTest {
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
             verify(mockOrderStatsRestClient).fetchStats(any(), any(),
-                    dateArgument.capture(), any(), any(), any())
+                    dateArgument.capture(), any(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -127,7 +127,8 @@ class WCStatsStoreTest {
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any(), any())
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(),
+                    any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -441,7 +442,8 @@ class WCStatsStoreTest {
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any(), any())
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(),
+                    any(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -457,7 +459,8 @@ class WCStatsStoreTest {
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any(), any())
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(),
+                    any(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -480,7 +483,8 @@ class WCStatsStoreTest {
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any(), any())
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(),
+                    any(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -496,7 +500,8 @@ class WCStatsStoreTest {
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any(), any())
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(),
+                    any(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -521,7 +526,8 @@ class WCStatsStoreTest {
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any(), any())
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(),
+                    any(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -537,7 +543,8 @@ class WCStatsStoreTest {
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any(), any())
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(),
+                    any(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -562,7 +569,8 @@ class WCStatsStoreTest {
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any(), any())
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(),
+                    any(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -578,7 +586,8 @@ class WCStatsStoreTest {
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any(), any())
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(),
+                    any(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -604,7 +613,7 @@ class WCStatsStoreTest {
 
         val quantityArgument = argumentCaptor<Long>()
         verify(mockOrderStatsRestClient)
-                .fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any(), any())
+                .fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any(), any(), any())
 
         val calculatedQuantity: Long = quantityArgument.firstValue
         assertEquals(quantity, calculatedQuantity)
@@ -624,7 +633,7 @@ class WCStatsStoreTest {
 
         val quantityArgument = argumentCaptor<Long>()
         verify(mockOrderStatsRestClient)
-                .fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any(), any())
+                .fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any(), any(), any())
 
         val calculatedQuantity: Long = quantityArgument.firstValue
         assertEquals(quantity, calculatedQuantity)
@@ -644,7 +653,7 @@ class WCStatsStoreTest {
 
         val quantityArgument = argumentCaptor<Long>()
         verify(mockOrderStatsRestClient)
-                .fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any(), any())
+                .fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any(), any(), any())
 
         val calculatedQuantity: Long = quantityArgument.firstValue
         assertEquals(quantity, calculatedQuantity)
@@ -664,7 +673,7 @@ class WCStatsStoreTest {
 
         val quantityArgument = argumentCaptor<Long>()
         verify(mockOrderStatsRestClient)
-                .fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any(), any())
+                .fetchStats(any(), any(), any(), quantityArgument.capture().toInt(), any(), any(), any())
 
         val calculatedQuantity: Long = quantityArgument.firstValue
         assertEquals(quantity, calculatedQuantity)
@@ -1137,13 +1146,38 @@ class WCStatsStoreTest {
         WCStatsSqlUtils.insertOrUpdateOrderStats(customDayOrderStatsModel)
         val customStats1 = wcStatsStore.getCustomStatsForSite(site)
         assertEquals(StatsGranularity.MONTHS.toString(), customStats1?.unit)
-        assertEquals("2018-12-01", customStats1?.startDate)
+        assertEquals(customDayOrderStatsModel.startDate, customStats1?.startDate)
+        assertEquals(customDayOrderStatsModel.endDate, customStats1?.endDate)
+
+        /*
+         * For same site, and same stats but different unit
+         * */
+        val customDayOrderStatsModel2 = WCStatsTestUtils
+                .generateSampleStatsModel(unit = StatsGranularity.YEARS.toString(),
+                        quantity = "2", endDate = "2019-01-01", startDate = "2018-12-01")
+        WCStatsSqlUtils.insertOrUpdateOrderStats(customDayOrderStatsModel2)
+        val customStats2 = wcStatsStore.getCustomStatsForSite(site)
+        assertEquals(StatsGranularity.YEARS.toString(), customStats2?.unit)
+        assertEquals(customDayOrderStatsModel2.startDate, customStats2?.startDate)
+        assertEquals(customDayOrderStatsModel2.endDate, customStats2?.endDate)
+
+        /*
+         * For same site, and same unit but different stats
+         * */
+        val customDayOrderStatsModel3 = WCStatsTestUtils
+                .generateSampleStatsModel(unit = StatsGranularity.YEARS.toString(),
+                        quantity = "2", endDate = "2019-01-02", startDate = "2018-01-01")
+        WCStatsSqlUtils.insertOrUpdateOrderStats(customDayOrderStatsModel3)
+        val customStats3 = wcStatsStore.getCustomStatsForSite(site)
+        assertEquals(StatsGranularity.YEARS.toString(), customStats3?.unit)
+        assertEquals(customDayOrderStatsModel3.startDate, customStats3?.startDate)
+        assertEquals(customDayOrderStatsModel3.endDate, customStats3?.endDate)
 
         /*
          * For different site, but for custom stats
          * */
         val site2 = SiteModel().apply { id = 8 }
-        val customStats2 = wcStatsStore.getCustomStatsForSite(site2)
-        assertNull(customStats2)
+        val customStats4 = wcStatsStore.getCustomStatsForSite(site2)
+        assertNull(customStats4)
     }
 }

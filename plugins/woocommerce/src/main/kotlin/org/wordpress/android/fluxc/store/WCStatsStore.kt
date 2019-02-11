@@ -72,7 +72,7 @@ class WCStatsStore @Inject constructor(
         val site: SiteModel,
         val granularity: StatsGranularity,
         val startDate: String? = "",
-        val endDate: String? = null,
+        val endDate: String? = "",
         val forced: Boolean = false
     ) : Payload<BaseNetworkError>()
 
@@ -303,7 +303,7 @@ class WCStatsStore @Inject constructor(
         val quantity = getQuantityForGranularity(payload.site, payload.granularity, payload.startDate, payload.endDate)
         wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
                 getFormattedDate(payload.site, payload.granularity, payload.endDate),
-                quantity, payload.forced, payload.startDate)
+                quantity, payload.forced, payload.startDate, payload.endDate)
     }
 
     private fun fetchVisitorStats(payload: FetchVisitorStatsPayload) {
@@ -333,7 +333,7 @@ class WCStatsStore @Inject constructor(
                 return@with OnWCStatsChanged(0, granularity).also { it.error = payload.error }
             } else {
                 val rowsAffected = WCStatsSqlUtils.insertOrUpdateOrderStats(stats)
-                return@with OnWCStatsChanged(rowsAffected, granularity, stats.quantity, stats.endDate)
+                return@with OnWCStatsChanged(rowsAffected, granularity, stats.quantity, stats.date)
             }
         }
 

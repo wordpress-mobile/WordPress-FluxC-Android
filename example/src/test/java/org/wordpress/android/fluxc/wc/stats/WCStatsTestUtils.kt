@@ -23,6 +23,7 @@ object WCStatsTestUtils {
             this.endDate = endDate
             this.fields = fields
             this.data = data
+            this.date = endDate
             startDate?.let {
                 this.startDate = it
                 this.isCustomField = true

@@ -69,7 +69,8 @@ class OrderStatsRestClient(
         date: String,
         quantity: Int,
         force: Boolean = false,
-        startDate: String?
+        startDate: String?,
+        endDate: String?
     ) {
         val url = WPCOMV2.sites.site(site.siteId).stats.orders.url
         val params = mapOf(
@@ -85,7 +86,8 @@ class OrderStatsRestClient(
                         this.fields = apiResponse.fields.toString()
                         this.data = apiResponse.data.toString()
                         this.quantity = quantity.toString()
-                        this.endDate = date
+                        this.date = date
+                        endDate?.let { this.endDate = it }
                         startDate?.let {
                             this.startDate = startDate
                             this.isCustomField = true
