@@ -20,7 +20,7 @@ object WCStatsTestUtils {
             this.localSiteId = localSiteId
             this.unit = unit
             this.quantity = quantity
-            this.date = date
+            this.endDate = date
             this.fields = fields
             this.data = data
             this.isCustomField = isCustomField

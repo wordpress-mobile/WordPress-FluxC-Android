@@ -50,7 +50,7 @@ object WCStatsSqlUtils {
                 .where().beginGroup()
                 .equals(WCOrderStatsModelTable.LOCAL_SITE_ID, stats.localSiteId)
                 .equals(WCOrderStatsModelTable.UNIT, stats.unit)
-                .equals(WCOrderStatsModelTable.DATE, stats.date)
+                .equals(WCOrderStatsModelTable.END_DATE, stats.endDate)
                 .equals(WCOrderStatsModelTable.QUANTITY, stats.quantity)
                 .endGroup().endWhere()
                 .asModel
@@ -91,7 +91,7 @@ object WCStatsSqlUtils {
                 .equals(WCOrderStatsModelTable.LOCAL_SITE_ID, site.id)
                 .equals(WCOrderStatsModelTable.UNIT, unit)
                 .equals(WCOrderStatsModelTable.QUANTITY, quantity)
-                .equals(WCOrderStatsModelTable.DATE, date)
+                .equals(WCOrderStatsModelTable.END_DATE, date)
                 .endGroup().endWhere()
                 .asModel.firstOrNull()
     }

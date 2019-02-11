@@ -85,7 +85,7 @@ class OrderStatsRestClient(
                         this.fields = apiResponse.fields.toString()
                         this.data = apiResponse.data.toString()
                         this.quantity = quantity.toString()
-                        this.date = date
+                        this.endDate = date
                         this.isCustomField = isCustomField
                     }
                     val payload = FetchOrderStatsResponsePayload(site, unit, model)

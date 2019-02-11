@@ -328,7 +328,7 @@ class WCStatsStore @Inject constructor(
                 return@with OnWCStatsChanged(0, granularity).also { it.error = payload.error }
             } else {
                 val rowsAffected = WCStatsSqlUtils.insertOrUpdateOrderStats(stats)
-                return@with OnWCStatsChanged(rowsAffected, granularity, stats.quantity, stats.date)
+                return@with OnWCStatsChanged(rowsAffected, granularity, stats.quantity, stats.endDate)
             }
         }
 
