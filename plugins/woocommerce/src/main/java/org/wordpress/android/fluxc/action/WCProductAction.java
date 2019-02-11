@@ -27,7 +27,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload;
 public enum WCProductAction implements IAction {
     // Remote actions
     @Action(payloadType = FetchSingleProductPayload.class)
-    FETCH_SINGLE_ORDER,
+    FETCH_SINGLE_PRODUCT,
 
     // Remote responses
     @Action(payloadType = RemoteProductPayload.class)

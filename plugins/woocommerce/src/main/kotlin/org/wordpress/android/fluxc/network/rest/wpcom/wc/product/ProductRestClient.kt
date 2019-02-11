@@ -31,7 +31,7 @@ class ProductRestClient(
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/[remoteProductId]` to fetch a single product
      *
-     * Dispatches a [WCProductAction.FETCHED_SINGLE_PRODUCT] action with the result
+     * Dispatches a WCProductAction.FETCHED_SINGLE_PRODUCT action with the result
      *
      * @param [remoteProductId] Unique server id of the product to fetch
      */
@@ -83,11 +83,11 @@ class ProductRestClient(
             sku = response.sku ?: ""
 
             price = response.price ?: ""
-            price_html = response.price_html
+            price_html = response.price_html ?: ""
             regular_price = response.regular_price ?: ""
             sale_price = response.sale_price ?: ""
             date_on_sale_from = response.date_on_sale_from ?: ""
-            date_on_sale_from_gmt = response.date_on_sale_from_gmt
+            date_on_sale_from_gmt = response.date_on_sale_from_gmt ?: ""
             date_on_sale_to = response.date_on_sale_to ?: ""
             date_on_sale_to_gmt = response.date_on_sale_to_gmt ?: ""
             on_sale = response.on_sale
@@ -102,8 +102,8 @@ class ProductRestClient(
             external_url = response.external_url ?: ""
             button_text = response.button_text ?: ""
 
-            tax_status = response.tax_status
-            tax_class = response.tax_class
+            tax_status = response.tax_status ?: ""
+            tax_class = response.tax_class ?: ""
 
             manage_stock = response.manage_stock
             stock_quantity = response.stock_quantity
