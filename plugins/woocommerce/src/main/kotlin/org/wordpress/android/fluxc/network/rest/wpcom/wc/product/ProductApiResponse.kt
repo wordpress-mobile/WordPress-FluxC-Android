@@ -16,10 +16,10 @@ class ProductApiResponse : Response {
     var date_modified: String? = null
     var date_modified_gmt: String? = null
 
-    var type: String? = null                   // simple, grouped, external, variable
+    var type: String? = null
     var status: String? = null
     var featured = false
-    var catalog_visibility: String? = null     // visible, catalog, search, hidden
+    var catalog_visibility: String? = null
     var description: String? = null
     var short_description: String? = null
     var sku: String? = null
@@ -37,27 +37,27 @@ class ProductApiResponse : Response {
 
     var virtual = false
     var downloadable = false
-    var downloads: JsonElement? = null         // array of downloadable files
+    var downloads: JsonElement? = null
     var download_limit = -1
     var download_expiry = -1
 
     var external_url: String? = null
     var button_text: String? = null
 
-    var tax_status: String? = null             // taxable, shipping, none
+    var tax_status: String? = null
     var tax_class: String? = null
 
     var manage_stock = false
     var stock_quantity = 0
-    var stock_status: String? = null           // instock, outofstock, onbackorder
+    var stock_status: String? = null
 
-    var backorders: String? = null             // no, notify, yes
+    var backorders: String? = null
     var backorders_allowed = false
     var backordered = false
 
     var sold_individually = false
     var weight: String? = null
-    var dimensions: JsonElement? = null             // TODO: docs list this as an object
+    var dimensions: JsonElement? = null
 
     var shipping_required = false
     var shipping_taxable = false
@@ -68,20 +68,20 @@ class ProductApiResponse : Response {
     var average_rating: String? = null
     var rating_count = 0
 
-    var related_ids: JsonElement? = null            // array of related product IDs
-    var upsell_ids: JsonElement? = null             // array of up-sell product IDs
-    var cross_sell_ids: JsonElement? = null         // array of cross-sell product IDs
+    var related_ids: JsonElement? = null
+    var upsell_ids: JsonElement? = null
+    var cross_sell_ids: JsonElement? = null
 
     var parent_id = 0
     var purchase_note: String? = null
     var menu_order = 0
 
-    var categories: JsonElement? = null             // array of categories
-    var tags: JsonElement? = null                   // array of tags
-    var images: JsonElement? = null                 // array of images
-    var attributes: JsonElement? = null             // array of attributes
-    var default_attributes: JsonElement? = null     // array of default attributes
-    var variations: JsonElement? = null             // array of variation IDs
-    var grouped_products: JsonElement? = null       // array of grouped product IDs
-    var meta_data: JsonElement? = null              // array of metadata
+    var categories: JsonElement? = null
+    var tags: JsonElement? = null
+    var images: JsonElement? = null
+    var attributes: JsonElement? = null
+    var default_attributes: JsonElement? = null
+    var variations: JsonElement? = null
+    var grouped_products: JsonElement? = null
+    var meta_data: JsonElement? = null
 }

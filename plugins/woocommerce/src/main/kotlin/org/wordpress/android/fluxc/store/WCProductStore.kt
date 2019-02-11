@@ -40,7 +40,13 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         val product: WCProductModel,
         val site: SiteModel
     ) : Payload<ProductError>() {
-        constructor(error: ProductError, product: WCProductModel, site: SiteModel) : this(product, site) { this.error = error }
+        constructor(
+            error: ProductError,
+            product: WCProductModel,
+            site: SiteModel
+        ) : this(product, site) {
+            this.error = error
+        }
     }
 
     // OnChanged events
@@ -66,7 +72,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             WCProductAction.FETCH_SINGLE_PRODUCT -> fetchSingleProduct(action.payload as FetchSingleProductPayload)
 
             // remote responses
-            WCProductAction.FETCHED_SINGLE_PRODUCT -> handleFetchSingleProductCompleted(action.payload as RemoteProductPayload)
+            WCProductAction.FETCHED_SINGLE_PRODUCT ->
+                handleFetchSingleProductCompleted(action.payload as RemoteProductPayload)
         }
     }
 

@@ -24,10 +24,10 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var date_modified = ""
     @Column var date_modified_gmt = ""
 
-    @Column var type = ""                   // simple, grouped, external, variable
+    @Column var type = "" // simple, grouped, external, variable
     @Column var status = ""
     @Column var featured = false
-    @Column var catalog_visibility = ""     // visible, catalog, search, hidden
+    @Column var catalog_visibility = "" // visible, catalog, search, hidden
     @Column var description = ""
     @Column var short_description = ""
     @Column var sku = ""
@@ -45,27 +45,27 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     @Column var virtual = false
     @Column var downloadable = false
-    @Column var downloads = ""              // array of downloadable files
+    @Column var downloads = "" // array of downloadable files
     @Column var download_limit = -1
     @Column var download_expiry = -1
 
     @Column var external_url = ""
     @Column var button_text = ""
 
-    @Column var tax_status = ""             // taxable, shipping, none
+    @Column var tax_status = "" // taxable, shipping, none
     @Column var tax_class = ""
 
     @Column var manage_stock = false
     @Column var stock_quantity = 0
-    @Column var stock_status = ""           // instock, outofstock, onbackorder
+    @Column var stock_status = "" // instock, outofstock, onbackorder
 
-    @Column var backorders = ""             // no, notify, yes
+    @Column var backorders = "" // no, notify, yes
     @Column var backorders_allowed = false
     @Column var backordered = false
 
     @Column var sold_individually = false
     @Column var weight = ""
-    @Column var dimensions = ""             // TODO: docs list this as an object
+    @Column var dimensions = "" // TODO: docs list this as an object
 
     @Column var shipping_required = false
     @Column var shipping_taxable = false
@@ -76,22 +76,22 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var average_rating = ""
     @Column var rating_count = 0
 
-    @Column var related_ids = ""            // array of related product IDs
-    @Column var upsell_ids = ""             // array of up-sell product IDs
-    @Column var cross_sell_ids = ""         // array of cross-sell product IDs
+    @Column var related_ids = "" // array of related product IDs
+    @Column var upsell_ids = ""  // array of up-sell product IDs
+    @Column var cross_sell_ids = "" // array of cross-sell product IDs
 
     @Column var parent_id = 0
     @Column var purchase_note = ""
     @Column var menu_order = 0
 
-    @Column var categories = ""             // array of categories
-    @Column var tags = ""                   // array of tags
-    @Column var images = ""                 // array of images
-    @Column var attributes = ""             // array of attributes
-    @Column var default_attributes = ""     // array of default attributes
-    @Column var variations = ""             // array of variation IDs
-    @Column var grouped_products = ""       // array of grouped product IDs
-    @Column var meta_data = ""              // array of metadata
+    @Column var categories = "" // array of categories
+    @Column var tags = "" // array of tags
+    @Column var images = "" // array of images
+    @Column var attributes = "" // array of attributes
+    @Column var default_attributes = "" // array of default attributes
+    @Column var variations = "" // array of variation IDs
+    @Column var grouped_products = "" // array of grouped product IDs
+    @Column var meta_data = "" // array of metadata
 
     companion object {
         private val gson by lazy { Gson() }
