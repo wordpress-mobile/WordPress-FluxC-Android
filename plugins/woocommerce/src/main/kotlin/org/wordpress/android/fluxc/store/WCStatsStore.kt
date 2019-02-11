@@ -216,6 +216,12 @@ class WCStatsStore @Inject constructor(
         return getStatsForField(site, OrderStatsField.ORDERS, granularity, quantity, date)
     }
 
+    fun getCustomStatsForSite(
+        site: SiteModel
+    ): WCOrderStatsModel? {
+        return WCStatsSqlUtils.getCustomStatsForSite(site)
+    }
+
     /**
      * Returns the currency code associated with stored stats for the [site], as an ISO 4217 currency code (eg. USD).
      */
@@ -297,8 +303,7 @@ class WCStatsStore @Inject constructor(
         val quantity = getQuantityForGranularity(payload.site, payload.granularity, payload.startDate, payload.endDate)
         wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
                 getFormattedDate(payload.site, payload.granularity, payload.endDate),
-                quantity, payload.forced,
-                (payload.startDate != null))
+                quantity, payload.forced)
     }
 
     private fun fetchVisitorStats(payload: FetchVisitorStatsPayload) {

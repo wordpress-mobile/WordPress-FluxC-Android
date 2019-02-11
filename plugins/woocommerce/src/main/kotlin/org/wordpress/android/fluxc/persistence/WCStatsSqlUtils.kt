@@ -96,6 +96,18 @@ object WCStatsSqlUtils {
                 .asModel.firstOrNull()
     }
 
+    fun getCustomStatsForSite(
+        site: SiteModel
+    ): WCOrderStatsModel? {
+        return WellSql.select(WCOrderStatsModel::class.java)
+                .where()
+                .beginGroup()
+                .equals(WCOrderStatsModelTable.LOCAL_SITE_ID, site.id)
+                .equals(WCOrderStatsModelTable.IS_CUSTOM_FIELD, true)
+                .endGroup().endWhere()
+                .asModel.firstOrNull()
+    }
+
     private fun deleteCustomStatsForSite(siteId: Int): Int {
         return WellSql.delete(WCOrderStatsModel::class.java)
                 .where()

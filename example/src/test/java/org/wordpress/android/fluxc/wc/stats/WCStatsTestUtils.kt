@@ -11,8 +11,8 @@ object WCStatsTestUtils {
         localSiteId: Int = 6,
         unit: String = OrderStatsApiUnit.DAY.toString(),
         quantity: String = "30",
-        date: String = DateTimeFormatter.ofPattern("YYYY-MM-dd").format(LocalDateTime.now()),
-        isCustomField: Boolean = false,
+        startDate: String? = null,
+        endDate: String = DateTimeFormatter.ofPattern("YYYY-MM-dd").format(LocalDateTime.now()),
         fields: String = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order-stats-fields.json"),
         data: String = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order-stats-data.json")
     ): WCOrderStatsModel {
@@ -20,10 +20,13 @@ object WCStatsTestUtils {
             this.localSiteId = localSiteId
             this.unit = unit
             this.quantity = quantity
-            this.endDate = date
+            this.endDate = endDate
             this.fields = fields
             this.data = data
-            this.isCustomField = isCustomField
+            startDate?.let {
+                this.startDate = it
+                this.isCustomField = true
+            }
         }
     }
 }

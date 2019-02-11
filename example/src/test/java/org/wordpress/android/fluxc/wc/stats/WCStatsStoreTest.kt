@@ -110,7 +110,8 @@ class WCStatsStoreTest {
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(), any(), any())
+            verify(mockOrderStatsRestClient).fetchStats(any(), any(),
+                    dateArgument.capture(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -712,7 +713,8 @@ class WCStatsStoreTest {
          * 3. The total size of the local db table = 2
          * */
         val customDayOrderStatsModel =
-                WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2019-01-01", isCustomField = true)
+                WCStatsTestUtils.generateSampleStatsModel(quantity = "1",
+                        endDate = "2019-01-01", startDate = "2018-12-31")
 
         WCStatsSqlUtils.insertOrUpdateOrderStats(customDayOrderStatsModel)
         val customDayOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
@@ -764,7 +766,7 @@ class WCStatsStoreTest {
          * 3. The total size of the local db table = 2 (since no new data is inserted)
          * */
         val customDayOrderStatsModel2 =
-                WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2019-01-01", isCustomField = true)
+                WCStatsTestUtils.generateSampleStatsModel(quantity = "1", endDate = "2019-01-01", startDate = "2018-12-31")
 
         WCStatsSqlUtils.insertOrUpdateOrderStats(customDayOrderStatsModel2)
         val customDayOrderStats2 = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
@@ -792,7 +794,8 @@ class WCStatsStoreTest {
          * 3. The total size of the local db table = 2 (since no old data was purged and new data was inserted)
          * */
         val customDayOrderStatsModel3 =
-                WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2018-12-31", isCustomField = true)
+                WCStatsTestUtils.generateSampleStatsModel(quantity = "1",
+                        endDate = "2018-12-31", startDate = "2018-12-31")
 
         WCStatsSqlUtils.insertOrUpdateOrderStats(customDayOrderStatsModel3)
         val customDayOrderStats3 = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
@@ -851,7 +854,7 @@ class WCStatsStoreTest {
          * */
         val customWeekOrderStatsModel =
                 WCStatsTestUtils.generateSampleStatsModel(unit = OrderStatsApiUnit.WEEK.toString(),
-                        quantity = "2", date = "2019-01-28", isCustomField = true)
+                        quantity = "2", endDate = "2019-01-28", startDate = "2019-01-25")
 
         WCStatsSqlUtils.insertOrUpdateOrderStats(customWeekOrderStatsModel)
         val customWeekOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
@@ -911,7 +914,8 @@ class WCStatsStoreTest {
          *    already and 1 stats for site 8 would be stored). No purging of data would take place
          * */
         val customMonthOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel(localSiteId = site2.id,
-                unit = OrderStatsApiUnit.MONTH.toString(), quantity = "2", date = "2019-01-28", isCustomField = true)
+                unit = OrderStatsApiUnit.MONTH.toString(), quantity = "2",
+                endDate = "2019-01-28", startDate = "2018-12-31")
 
         WCStatsSqlUtils.insertOrUpdateOrderStats(customMonthOrderStatsModel)
         val customMonthOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site2,
@@ -983,7 +987,8 @@ class WCStatsStoreTest {
          * 3. Assert Not Null
          * */
         val customDayOrderStatsModel =
-                WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2019-01-01", isCustomField = true)
+                WCStatsTestUtils.generateSampleStatsModel(quantity = "1", endDate = "2019-01-01",
+                        startDate = "2019-01-01")
         WCStatsSqlUtils.insertOrUpdateOrderStats(customDayOrderStatsModel)
 
         val customDayOrderRevenueStats = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS,
@@ -1007,7 +1012,7 @@ class WCStatsStoreTest {
          * 3. Assert Null
          * */
         val customDayOrderStatsModel2 = WCStatsTestUtils.generateSampleStatsModel(quantity = "1",
-                date = "2018-12-01", isCustomField = true)
+                endDate = "2018-12-01", startDate = "2018-12-01")
         val customDayOrderRevenueStats2 = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS,
                 customDayOrderStatsModel2.quantity, customDayOrderStatsModel2.endDate)
 
@@ -1030,7 +1035,7 @@ class WCStatsStoreTest {
          * 3. Assert Null
          * */
         val customDayOrderStatsModel3 = WCStatsTestUtils.generateSampleStatsModel(quantity = "1",
-                date = "2018-12-01", isCustomField = true)
+                endDate = "2018-12-01", startDate = "2018-12-01")
 
         val customDayOrderRevenueStats3 = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS,
                 customDayOrderStatsModel3.quantity, customDayOrderStatsModel3.endDate)
@@ -1055,8 +1060,9 @@ class WCStatsStoreTest {
          * 4. Now if another query ran for granularity - DAYS, with same date and same quantity:
          *    Assert Null
          * */
-        val customWeekOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel(quantity = "1", date = "2019-01-01",
-                        unit = OrderStatsApiUnit.fromStatsGranularity(WEEKS).toString(), isCustomField = true)
+        val customWeekOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel(quantity = "1",
+                endDate = "2019-01-01", startDate = "2019-01-01",
+                unit = OrderStatsApiUnit.fromStatsGranularity(WEEKS).toString())
 
         WCStatsSqlUtils.insertOrUpdateOrderStats(customWeekOrderStatsModel)
 
@@ -1094,7 +1100,7 @@ class WCStatsStoreTest {
          * */
         val customWeekOrderStatsModel2 = WCStatsTestUtils.generateSampleStatsModel(localSiteId = 8,
                 unit = OrderStatsApiUnit.fromStatsGranularity(WEEKS).toString(), quantity = "1",
-                date = "2019-01-01", isCustomField = true)
+                endDate = "2019-01-01", startDate = "2019-01-01")
 
         WCStatsSqlUtils.insertOrUpdateOrderStats(customWeekOrderStatsModel2)
 
@@ -1110,5 +1116,34 @@ class WCStatsStoreTest {
         /* Now if scenario IV is run again it assert NOT NULL, since the stats is for different sites */
         assertTrue(customWeekOrderRevenueStats.isNotEmpty())
         assertTrue(customWeekOrderStats.isNotEmpty())
+    }
+
+    @Test
+    fun testGetCustomStatsForSite() {
+        val defaultDayOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel()
+        WCStatsSqlUtils.insertOrUpdateOrderStats(defaultDayOrderStatsModel)
+
+        val site = SiteModel().apply { id = defaultDayOrderStatsModel.localSiteId }
+        val customStats = wcStatsStore.getCustomStatsForSite(site)
+        assertNull(customStats)
+
+        /*
+         * For same site, but for custom stats
+         * */
+        val customDayOrderStatsModel = WCStatsTestUtils
+                .generateSampleStatsModel(unit = StatsGranularity.MONTHS.toString(),
+                        quantity = "2", endDate = "2019-01-01", startDate = "2018-12-01")
+        WCStatsSqlUtils.insertOrUpdateOrderStats(customDayOrderStatsModel)
+        val customStats1 = wcStatsStore.getCustomStatsForSite(site)
+        assertEquals(StatsGranularity.MONTHS.toString(), customStats1?.unit)
+        assertEquals("2018-12-01", customStats1?.startDate)
+
+
+        /*
+         * For different site, but for custom stats
+         * */
+        val site2 = SiteModel().apply { id = 8 }
+        val customStats2 = wcStatsStore.getCustomStatsForSite(site2)
+        assertNull(customStats2)
     }
 }
