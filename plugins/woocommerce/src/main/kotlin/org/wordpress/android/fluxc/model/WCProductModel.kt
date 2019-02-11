@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 
 /**
  * Single Woo product - see http://woocommerce.github.io/woocommerce-rest-api-docs/#product-properties
+ * TODO: remove underscores in property names
  */
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
@@ -68,7 +69,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     @Column var shipping_required = false
     @Column var shipping_taxable = false
-    @Column var shipping_class = false
+    @Column var shipping_class = ""
     @Column var shipping_class_id = 0
 
     @Column var reviews_allowed = true
