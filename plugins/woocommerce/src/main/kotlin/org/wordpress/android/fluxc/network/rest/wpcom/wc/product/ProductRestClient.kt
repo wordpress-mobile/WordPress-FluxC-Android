@@ -95,7 +95,7 @@ class ProductRestClient(
 
             virtual = response.virtual
             downloadable = response.downloadable
-            downloads = response.downloads ?: ""
+            downloads = response.downloads.toString()
             download_limit = response.download_limit
             download_expiry = response.download_expiry
 
@@ -114,7 +114,7 @@ class ProductRestClient(
             backordered = response.backordered
             sold_individually = response.sold_individually
             weight = response.weight ?: ""
-            dimensions = response.dimensions ?: ""
+            dimensions = response.dimensions.toString()
 
             shipping_required = response.shipping_required
             shipping_taxable = response.shipping_taxable
@@ -125,22 +125,22 @@ class ProductRestClient(
             average_rating = response.average_rating ?: ""
             rating_count = response.rating_count
 
-            related_ids = response.related_ids ?: ""
-            upsell_ids = response.upsell_ids ?: ""
-            cross_sell_ids = response.cross_sell_ids ?: ""
+            related_ids = response.related_ids.toString()
+            upsell_ids = response.upsell_ids.toString()
+            cross_sell_ids = response.cross_sell_ids.toString()
 
             parent_id = response.parent_id
             purchase_note = response.purchase_note ?: ""
             menu_order = response.menu_order
 
-            categories = response.categories ?: ""
-            tags = response.tags ?: ""
-            images = response.images ?: ""
-            attributes = response.attributes ?: ""
-            default_attributes = response.default_attributes ?: ""
-            variations = response.variations ?: ""
-            grouped_products = response.grouped_products ?: ""
-            meta_data = response.meta_data ?: ""
+            categories = response.categories.toString()
+            tags = response.tags.toString()
+            images = response.images.toString()
+            attributes = response.attributes.toString()
+            default_attributes = response.default_attributes.toString()
+            variations = response.variations.toString()
+            grouped_products = response.grouped_products.toString()
+            meta_data = response.meta_data.toString()
         }
     }
 

@@ -37,7 +37,7 @@ class ProductApiResponse : Response {
 
     var virtual = false
     var downloadable = false
-    var downloads: String? = null              // array of downloadable files
+    var downloads: JsonElement? = null         // array of downloadable files
     var download_limit = -1
     var download_expiry = -1
 
@@ -57,7 +57,7 @@ class ProductApiResponse : Response {
 
     var sold_individually = false
     var weight: String? = null
-    var dimensions: String? = null             // TODO: docs list this as an object
+    var dimensions: JsonElement? = null             // TODO: docs list this as an object
 
     var shipping_required = false
     var shipping_taxable = false
@@ -68,20 +68,20 @@ class ProductApiResponse : Response {
     var average_rating: String? = null
     var rating_count = 0
 
-    var related_ids: String? = null            // array of related product IDs
-    var upsell_ids: String? = null             // array of up-sell product IDs
-    var cross_sell_ids: String? = null         // array of cross-sell product IDs
+    var related_ids: JsonElement? = null            // array of related product IDs
+    var upsell_ids: JsonElement? = null             // array of up-sell product IDs
+    var cross_sell_ids: JsonElement? = null         // array of cross-sell product IDs
 
     var parent_id = 0
     var purchase_note: String? = null
     var menu_order = 0
 
-    var categories: String? = null             // array of categories
-    var tags: String? = null                   // array of tags
-    var images: String? = null                 // array of images
-    var attributes: String? = null             // array of attributes
-    var default_attributes: String? = null     // array of default attributes
-    var variations: String? = null             // array of variation IDs
-    var grouped_products: String? = null       // array of grouped product IDs
-    var meta_data: String? = null              // array of metadata
+    var categories: JsonElement? = null             // array of categories
+    var tags: JsonElement? = null                   // array of tags
+    var images: JsonElement? = null                 // array of images
+    var attributes: JsonElement? = null             // array of attributes
+    var default_attributes: JsonElement? = null     // array of default attributes
+    var variations: JsonElement? = null             // array of variation IDs
+    var grouped_products: JsonElement? = null       // array of grouped product IDs
+    var meta_data: JsonElement? = null              // array of metadata
 }
