@@ -766,7 +766,8 @@ class WCStatsStoreTest {
          * 3. The total size of the local db table = 2 (since no new data is inserted)
          * */
         val customDayOrderStatsModel2 =
-                WCStatsTestUtils.generateSampleStatsModel(quantity = "1", endDate = "2019-01-01", startDate = "2018-12-31")
+                WCStatsTestUtils.generateSampleStatsModel(quantity = "1",
+                        endDate = "2019-01-01", startDate = "2018-12-31")
 
         WCStatsSqlUtils.insertOrUpdateOrderStats(customDayOrderStatsModel2)
         val customDayOrderStats2 = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
@@ -1137,7 +1138,6 @@ class WCStatsStoreTest {
         val customStats1 = wcStatsStore.getCustomStatsForSite(site)
         assertEquals(StatsGranularity.MONTHS.toString(), customStats1?.unit)
         assertEquals("2018-12-01", customStats1?.startDate)
-
 
         /*
          * For different site, but for custom stats
