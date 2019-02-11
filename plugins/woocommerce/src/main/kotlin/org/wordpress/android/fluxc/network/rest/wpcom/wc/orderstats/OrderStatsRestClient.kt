@@ -69,7 +69,7 @@ class OrderStatsRestClient(
         date: String,
         quantity: Int,
         force: Boolean = false,
-        isCustomField: Boolean = false
+        startDate: String?
     ) {
         val url = WPCOMV2.sites.site(site.siteId).stats.orders.url
         val params = mapOf(
@@ -86,7 +86,10 @@ class OrderStatsRestClient(
                         this.data = apiResponse.data.toString()
                         this.quantity = quantity.toString()
                         this.endDate = date
-                        this.isCustomField = isCustomField
+                        startDate?.let {
+                            this.startDate = startDate
+                            this.isCustomField = true
+                        }
                     }
                     val payload = FetchOrderStatsResponsePayload(site, unit, model)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
