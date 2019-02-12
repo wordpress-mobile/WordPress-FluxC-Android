@@ -102,7 +102,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var width = ""
     @Column var height = ""
 
-    class Category(val id: Long, val name: String, val slug: String)
+    class ProductTriplet(val id: Long, val name: String, val slug: String)
 
     override fun getId() = id
 
@@ -110,17 +110,20 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         this.id = id
     }
 
+    fun getCategories() = getTriplets(categories)
+
+    fun getTags() = getTriplets(tags)
+
     /**
-     * Return the json categories as a list of category objects
+     * Parses the passed json string into an array of triplets
      */
-    fun getCategories(): List<Category> {
-        val cats = ArrayList<Category>()
+    private fun getTriplets(jsonStr: String): List<ProductTriplet> {
+        val triplets = ArrayList<ProductTriplet>()
         try {
-            val jsonCats = Gson().fromJson<JsonElement>(categories, JsonElement::class.java)
-            jsonCats.asJsonArray.forEach { jsonElement ->
+            Gson().fromJson<JsonElement>(jsonStr, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
                 with(jsonElement.asJsonObject) {
-                    cats.add(
-                            Category(
+                    triplets.add(
+                            ProductTriplet(
                                     id = this.getLong("id"),
                                     name = this.getString("name") ?: "",
                                     slug = this.getString("slug") ?: ""
@@ -131,6 +134,6 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         } catch (e: JsonParseException) {
             AppLog.e(T.API, e)
         }
-        return cats
+        return triplets
     }
 }
