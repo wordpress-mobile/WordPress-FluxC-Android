@@ -104,20 +104,43 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     class ProductTriplet(val id: Long, val name: String, val slug: String)
 
+    class ProductImage(val id: Long, val name: String, val src: String, val alt: String)
+
     override fun getId() = id
 
     override fun setId(id: Int) {
         this.id = id
     }
 
+    /**
+     * Parses the images json array into a list of product images
+     */
+    fun getImages(): ArrayList<ProductImage> {
+        val imageList = ArrayList<ProductImage>()
+        try {
+            Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+                with(jsonElement.asJsonObject) {
+                    imageList.add(
+                            ProductImage(
+                                    id = this.getLong("id"),
+                                    name = this.getString("name") ?: "",
+                                    src = this.getString("src") ?: "",
+                                    alt = this.getString("alt") ?: ""
+                            )
+                    )
+                }
+            }
+        } catch (e: JsonParseException) {
+            AppLog.e(T.API, e)
+        }
+        return imageList
+    }
+
     fun getCategories() = getTriplets(categories)
 
     fun getTags() = getTriplets(tags)
 
-    /**
-     * Parses the passed json string into an array of triplets
-     */
-    private fun getTriplets(jsonStr: String): List<ProductTriplet> {
+    private fun getTriplets(jsonStr: String): ArrayList<ProductTriplet> {
         val triplets = ArrayList<ProductTriplet>()
         try {
             Gson().fromJson<JsonElement>(jsonStr, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
