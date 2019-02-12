@@ -1,11 +1,17 @@
 package org.wordpress.android.fluxc.model
 
 import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonParseException
 import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
+import org.wordpress.android.fluxc.network.utils.getLong
+import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T
 
 /**
  * Single Woo product - see http://woocommerce.github.io/woocommerce-rest-api-docs/#product-properties
@@ -91,18 +97,43 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var grouped_products = "" // array of grouped product IDs
     @Column var meta_data = "" // array of metadata
 
-    companion object {
-        private val gson by lazy { Gson() }
-    }
-
     // Dimensions
     @Column var length = ""
     @Column var width = ""
     @Column var height = ""
 
+    class Category {
+        var id = 0L
+        var name = ""
+        var slug = ""
+    }
+
     override fun getId() = id
 
     override fun setId(id: Int) {
         this.id = id
+    }
+
+    /**
+     * Return the json categories as a list of category objects
+     */
+    fun getCategories(): List<Category> {
+        val cats = ArrayList<Category>()
+        val gson = Gson()
+        try {
+            val jsonCats = gson.fromJson<JsonElement>(categories, JsonElement::class.java)
+            jsonCats.asJsonArray.forEach { jsonElement ->
+                with(jsonElement.asJsonObject) {
+                    val cat = Category()
+                    if (this.has("id")) cat.id = this.getLong("id")
+                    if (this.has("name")) cat.name = this.getString("name") ?: ""
+                    if (this.has("slug")) cat.slug = this.getString("slug") ?: ""
+                    cats.add(cat)
+                }
+            }
+        } catch (e: JsonParseException) {
+            AppLog.e(T.API, e)
+        }
+        return cats
     }
 }
