@@ -16,15 +16,15 @@ object ProductSqlUtils {
                 .equals(WCProductModelTable.LOCAL_SITE_ID, product.localSiteId)
                 .endGroup()
                 .endGroup().endWhere()
-                .asModel
+                .asModel.firstOrNull()
 
-        return if (productResult.isEmpty()) {
+        return if (productResult == null) {
             // Insert
             WellSql.insert(product).asSingleTransaction(true).execute()
             1
         } else {
             // Update
-            val oldId = productResult[0].id
+            val oldId = productResult.id
             WellSql.update(WCProductModel::class.java).whereId(oldId)
                     .put(product, UpdateAllExceptId(WCProductModel::class.java)).execute()
         }

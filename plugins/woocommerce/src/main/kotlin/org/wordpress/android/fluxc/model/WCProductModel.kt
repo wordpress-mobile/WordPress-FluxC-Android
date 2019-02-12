@@ -97,6 +97,12 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         private val gson by lazy { Gson() }
     }
 
+    class Dimensions {
+        val length = ""
+        val width = ""
+        val height = ""
+    }
+
     override fun getId() = id
 
     override fun setId(id: Int) {

@@ -450,7 +450,7 @@ class WooCommerceFragment : Fragment() {
                     pendingFetchSingleProductRemoteId?.let { remoteId ->
                         pendingFetchSingleProductRemoteId = null
                         wcProductStore.getSingleProductByRemoteId(site, remoteId)?.let {
-                            prependToLog("Single product fetched successfully!")
+                            prependToLog("Single product fetched successfully! ${it.name}")
                         } ?: prependToLog("WARNING: Fetched product not found in the local database!")
                     }
                 } else -> prependToLog("Product store was updated from a " + event.causeOfChange)
