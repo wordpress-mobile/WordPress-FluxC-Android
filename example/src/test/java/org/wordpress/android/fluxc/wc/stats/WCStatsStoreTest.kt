@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.wc.stats
 
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.anyOrNull
 import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.reset
@@ -111,7 +112,7 @@ class WCStatsStoreTest {
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
             verify(mockOrderStatsRestClient).fetchStats(any(), any(),
-                    dateArgument.capture(), any(), any(), any(), any())
+                    dateArgument.capture(), any(), any(), anyOrNull(), anyOrNull())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -128,7 +129,7 @@ class WCStatsStoreTest {
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
             verify(mockOrderStatsRestClient).fetchStats(any(), any(), dateArgument.capture(), any(),
-                    any(), any(), any())
+                    any(), anyOrNull(), anyOrNull())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
