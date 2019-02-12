@@ -197,7 +197,7 @@ class WCStatsStore @Inject constructor(
         quantity: String? = null,
         date: String? = null
     ): Map<String, Double> {
-        return getStatsForField(site, OrderStatsField.TOTAL_SALES, granularity, quantity, date)
+        return getStatsForField(site, OrderStatsField.GROSS_SALES, granularity, quantity, date)
     }
 
     /**

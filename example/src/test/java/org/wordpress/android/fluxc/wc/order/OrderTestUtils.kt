@@ -4,8 +4,10 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderNoteApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatusApiResponse
 
 object OrderTestUtils {
     fun generateSampleOrder(remoteId: Long, orderStatus: String = CoreOrderStatus.PROCESSING.value): WCOrderModel {
@@ -42,6 +44,18 @@ object OrderTestUtils {
             dateCreated = "1955-11-05T14:15:00Z"
             note = "This is a test note"
             isCustomerNote = true
+        }
+    }
+
+    fun getOrderStatusOptionsFromJson(json: String, siteId: Int): List<WCOrderStatusModel> {
+        val responseType = object : TypeToken<List<OrderStatusApiResponse>>() {}.type
+        val converted = Gson().fromJson(json, responseType) as? List<OrderStatusApiResponse> ?: emptyList()
+        return converted.map {
+            WCOrderStatusModel().apply {
+                localSiteId = siteId
+                statusKey = it.slug ?: ""
+                label = it.name ?: ""
+            }
         }
     }
 }
