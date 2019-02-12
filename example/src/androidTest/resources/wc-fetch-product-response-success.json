@@ -46,9 +46,9 @@
     ],
     "description": "",
     "dimensions": {
-      "height": "",
-      "length": "",
-      "width": ""
+      "height": "1",
+      "length": "2",
+      "width": "3"
     },
     "download_expiry": -1,
     "download_limit": -1,
@@ -177,6 +177,16 @@
     "stock_quantity": 81,
     "stock_status": "instock",
     "tags": [
+      {
+        "id": 9,
+        "name": "Clothing",
+        "slug": "clothing"
+      },
+      {
+        "id": 14,
+        "name": "T-shirts",
+        "slug": "t-shirts"
+      }
     ],
     "tax_class": "",
     "tax_status": "taxable",

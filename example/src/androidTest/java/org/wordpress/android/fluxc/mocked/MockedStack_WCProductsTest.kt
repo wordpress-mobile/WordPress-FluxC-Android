@@ -57,6 +57,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(remoteProductId, product.remoteProductId)
             assertEquals(product.getCategories().size, 2)
             assertEquals(product.getImages().size, 2)
+            assertEquals(product.getTags().size, 2)
         }
     }
 
