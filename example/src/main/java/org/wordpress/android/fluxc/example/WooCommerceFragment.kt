@@ -256,7 +256,7 @@ class WooCommerceFragment : Fragment() {
                         dispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductAction(payload))
                     } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
                 }
-            }
+            } ?: showNoWCSitesToast()
         }
 
         fetch_order_stats.setOnClickListener {

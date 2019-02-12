@@ -33,7 +33,6 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var sku = ""
 
     @Column var price = ""
-    @Column var price_html = ""
     @Column var regular_price = ""
     @Column var sale_price = ""
     @Column var date_on_sale_from = ""
@@ -65,7 +64,6 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     @Column var sold_individually = false
     @Column var weight = ""
-    @Column var dimensions = "" // TODO: docs list this as an object
 
     @Column var shipping_required = false
     @Column var shipping_taxable = false
@@ -97,11 +95,10 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         private val gson by lazy { Gson() }
     }
 
-    class Dimensions {
-        val length = ""
-        val width = ""
-        val height = ""
-    }
+    // Dimensions
+    @Column var length = ""
+    @Column var width = ""
+    @Column var height = ""
 
     override fun getId() = id
 

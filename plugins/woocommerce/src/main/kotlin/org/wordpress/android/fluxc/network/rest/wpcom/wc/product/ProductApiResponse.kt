@@ -25,7 +25,6 @@ class ProductApiResponse : Response {
     var sku: String? = null
 
     var price: String? = null
-    var price_html: String? = null
     var regular_price: String? = null
     var sale_price: String? = null
     var date_on_sale_from: String? = null

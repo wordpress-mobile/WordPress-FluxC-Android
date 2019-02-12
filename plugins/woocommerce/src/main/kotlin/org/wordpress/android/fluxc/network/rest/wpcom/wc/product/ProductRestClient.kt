@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErro
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
+import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.WCProductStore.ProductError
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
@@ -83,7 +84,6 @@ class ProductRestClient(
             sku = response.sku ?: ""
 
             price = response.price ?: ""
-            price_html = response.price_html ?: ""
             regular_price = response.regular_price ?: ""
             sale_price = response.sale_price ?: ""
             date_on_sale_from = response.date_on_sale_from ?: ""
@@ -114,7 +114,6 @@ class ProductRestClient(
             backordered = response.backordered
             sold_individually = response.sold_individually
             weight = response.weight ?: ""
-            dimensions = response.dimensions.toString()
 
             shipping_required = response.shipping_required
             shipping_taxable = response.shipping_taxable
@@ -141,6 +140,12 @@ class ProductRestClient(
             variations = response.variations.toString()
             grouped_products = response.grouped_products.toString()
             meta_data = response.meta_data.toString()
+
+            response.dimensions?.asJsonObject?.let { json ->
+                if (json.has("length")) length = json.getString("length")!!
+                if (json.has("width")) width = json.getString("width")!!
+                if (json.has("height")) length = json.getString("height")!!
+            }
         }
     }
 
