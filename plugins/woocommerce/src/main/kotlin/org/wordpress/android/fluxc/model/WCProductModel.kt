@@ -115,9 +115,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      */
     fun getCategories(): List<Category> {
         val cats = ArrayList<Category>()
-        val gson = Gson()
         try {
-            val jsonCats = gson.fromJson<JsonElement>(categories, JsonElement::class.java)
+            val jsonCats = Gson().fromJson<JsonElement>(categories, JsonElement::class.java)
             jsonCats.asJsonArray.forEach { jsonElement ->
                 with(jsonElement.asJsonObject) {
                     cats.add(
