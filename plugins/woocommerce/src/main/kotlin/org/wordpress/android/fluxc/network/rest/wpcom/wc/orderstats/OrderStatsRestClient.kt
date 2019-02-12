@@ -69,8 +69,8 @@ class OrderStatsRestClient(
         date: String,
         quantity: Int,
         force: Boolean = false,
-        startDate: String?,
-        endDate: String?
+        startDate: String? = null,
+        endDate: String? = null
     ) {
         val url = WPCOMV2.sites.site(site.siteId).stats.orders.url
         val params = mapOf(
