@@ -102,11 +102,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var width = ""
     @Column var height = ""
 
-    class Category {
-        var id = 0L
-        var name = ""
-        var slug = ""
-    }
+    class Category(val id: Long, val name: String, val slug: String)
 
     override fun getId() = id
 
@@ -124,11 +120,13 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             val jsonCats = gson.fromJson<JsonElement>(categories, JsonElement::class.java)
             jsonCats.asJsonArray.forEach { jsonElement ->
                 with(jsonElement.asJsonObject) {
-                    val cat = Category()
-                    if (this.has("id")) cat.id = this.getLong("id")
-                    if (this.has("name")) cat.name = this.getString("name") ?: ""
-                    if (this.has("slug")) cat.slug = this.getString("slug") ?: ""
-                    cats.add(cat)
+                    cats.add(
+                            Category(
+                                    id = this.getLong("id"),
+                                    name = this.getString("name") ?: "",
+                                    slug = this.getString("slug") ?: ""
+                            )
+                    )
                 }
             }
         } catch (e: JsonParseException) {

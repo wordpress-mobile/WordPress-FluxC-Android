@@ -142,9 +142,9 @@ class ProductRestClient(
             meta_data = response.meta_data.toString()
 
             response.dimensions?.asJsonObject?.let { json ->
-                if (json.has("length")) length = json.getString("length")!!
-                if (json.has("width")) width = json.getString("width")!!
-                if (json.has("height")) length = json.getString("height")!!
+                length = json.getString("length") ?: ""
+                width = json.getString("width") ?: ""
+                height = json.getString("height") ?: ""
             }
         }
     }
