@@ -52,6 +52,10 @@ class WCStatsStore @Inject constructor(
                     OrderStatsApiUnit.YEAR -> StatsGranularity.YEARS
                 }
             }
+
+            fun fromString(value: String): StatsGranularity {
+                return fromOrderStatsApiUnit(OrderStatsApiUnit.valueOf(value.toUpperCase()))
+            }
         }
     }
 

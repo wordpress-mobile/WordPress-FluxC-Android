@@ -49,8 +49,7 @@ class CustomStatsDialog : DialogFragment() {
         wcOrderStatsModel?.startDate?.let { stats_from_date.text = it }
         wcOrderStatsModel?.endDate?.let { stats_to_date.text = it }
         wcOrderStatsModel?.unit?.let {
-            stats_granularity.setSelection(StatsGranularity.fromOrderStatsApiUnit(
-                    OrderStatsApiUnit.valueOf(it.toUpperCase())).ordinal
+            stats_granularity.setSelection(StatsGranularity.fromString(it).ordinal
             )
         }
 
