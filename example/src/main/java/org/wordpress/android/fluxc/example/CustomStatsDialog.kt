@@ -11,7 +11,6 @@ import android.view.WindowManager
 import android.widget.ArrayAdapter
 import kotlinx.android.synthetic.main.dialog_custom_stats.*
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import java.util.Calendar
 
@@ -80,9 +79,7 @@ class CustomStatsDialog : DialogFragment() {
             val endDate = stats_to_date.text.toString()
             val granularity: StatsGranularity = stats_granularity.selectedItem as StatsGranularity
 
-            listener?.let {
-                it.onSubmitted(startDate, endDate, granularity)
-            }
+            listener?.onSubmitted(startDate, endDate, granularity)
             dismiss()
         }
 
