@@ -22,15 +22,24 @@ public class DateUtils {
     public static @NonNull String getDateTimeForSite(@NonNull SiteModel site,
                                                      @NonNull String pattern,
                                                      String dateString) {
-        Date date = (dateString == null || dateString.isEmpty()) ? new Date() : getDateFromString(dateString);
+        /* If the date string is null, the current date is taken */
+        Date currentDate = new Date();
+        Date date = (dateString == null || dateString.isEmpty()) ? currentDate : getDateFromString(dateString);
 
+        /*
+         * Since only date is provided without the time,
+         * by default the time is set to the start of the day.
+         *
+         * This might cause timezone issues so getting the current time
+         * and setting this time to the date value
+         * */
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        calendar.add(Calendar.HOUR_OF_DAY, date.getHours());
-        calendar.add(Calendar.MINUTE, date.getMinutes());
-        calendar.add(Calendar.SECOND, date.getSeconds());
+        calendar.add(Calendar.HOUR_OF_DAY, currentDate.getHours());
+        calendar.add(Calendar.MINUTE, currentDate.getMinutes());
+        calendar.add(Calendar.SECOND, currentDate.getSeconds());
 
-        return SiteUtils.getDateTimeForSite(site, pattern, date);
+        return SiteUtils.getDateTimeForSite(site, pattern, calendar.getTime());
     }
 
     /**
