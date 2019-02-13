@@ -14,6 +14,7 @@ object WCStatsSqlUtils {
                 .equals(WCOrderStatsModelTable.UNIT, stats.unit)
                 .equals(WCOrderStatsModelTable.DATE, stats.date)
                 .equals(WCOrderStatsModelTable.QUANTITY, stats.quantity)
+                .equals(WCOrderStatsModelTable.IS_CUSTOM_FIELD, stats.isCustomField)
                 .endGroup().endWhere()
                 .asModel
 
@@ -36,16 +37,6 @@ object WCStatsSqlUtils {
             return WellSql.update(WCOrderStatsModel::class.java).whereId(oldId)
                     .put(stats, UpdateAllExceptId(WCOrderStatsModel::class.java)).execute()
         }
-    }
-
-    fun getRawStatsForSiteAndUnit(site: SiteModel, unit: OrderStatsApiUnit): WCOrderStatsModel? {
-        return WellSql.select(WCOrderStatsModel::class.java)
-                .where()
-                .beginGroup()
-                .equals(WCOrderStatsModelTable.LOCAL_SITE_ID, site.id)
-                .equals(WCOrderStatsModelTable.UNIT, unit)
-                .endGroup().endWhere()
-                .asModel.firstOrNull()
     }
 
     fun getFirstRawStatsForSite(site: SiteModel): WCOrderStatsModel? {
@@ -72,6 +63,7 @@ object WCStatsSqlUtils {
                 .equals(WCOrderStatsModelTable.UNIT, unit)
                 .equals(WCOrderStatsModelTable.QUANTITY, quantity)
                 .equals(WCOrderStatsModelTable.DATE, date)
+                .equals(WCOrderStatsModelTable.IS_CUSTOM_FIELD, true)
                 .endGroup().endWhere()
                 .asModel.firstOrNull()
     }
@@ -84,6 +76,17 @@ object WCStatsSqlUtils {
                 .beginGroup()
                 .equals(WCOrderStatsModelTable.LOCAL_SITE_ID, site.id)
                 .equals(WCOrderStatsModelTable.IS_CUSTOM_FIELD, true)
+                .endGroup().endWhere()
+                .asModel.firstOrNull()
+    }
+
+    private fun getRawStatsForSiteAndUnit(site: SiteModel, unit: OrderStatsApiUnit): WCOrderStatsModel? {
+        return WellSql.select(WCOrderStatsModel::class.java)
+                .where()
+                .beginGroup()
+                .equals(WCOrderStatsModelTable.LOCAL_SITE_ID, site.id)
+                .equals(WCOrderStatsModelTable.UNIT, unit)
+                .equals(WCOrderStatsModelTable.IS_CUSTOM_FIELD, false)
                 .endGroup().endWhere()
                 .asModel.firstOrNull()
     }

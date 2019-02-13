@@ -155,27 +155,41 @@ class WCStatsStoreTest {
         val altSiteOrderStatsModel = WCStatsTestUtils.generateSampleStatsModel(localSiteId = site2.id)
         WCStatsSqlUtils.insertOrUpdateStats(altSiteOrderStatsModel)
 
-        val dayOrderStats = WCStatsSqlUtils.getRawStatsForSiteAndUnit(site, OrderStatsApiUnit.DAY)
+        val dayOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site, OrderStatsApiUnit.DAY)
         assertNotNull(dayOrderStats)
         with(dayOrderStats!!) {
             assertEquals("day", unit)
+            assertEquals(false, isCustomField)
         }
 
-        val altSiteDayOrderStats = WCStatsSqlUtils.getRawStatsForSiteAndUnit(site2, OrderStatsApiUnit.DAY)
+        val dayOrderCustomStatsModel = WCStatsTestUtils.generateSampleStatsModel(startDate = "2019-01-15",
+                endDate = "2019-02-13")
+        WCStatsSqlUtils.insertOrUpdateStats(dayOrderCustomStatsModel)
+        val dayOrderCustomStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
+                OrderStatsApiUnit.DAY, dayOrderCustomStatsModel.quantity, dayOrderCustomStatsModel.date)
+        assertNotNull(dayOrderCustomStats)
+        with(dayOrderCustomStats!!) {
+            assertEquals("day", unit)
+            assertEquals(true, isCustomField)
+        }
+        assertNotNull(dayOrderStats)
+
+        val altSiteDayOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site2, OrderStatsApiUnit.DAY)
         assertNotNull(altSiteDayOrderStats)
 
-        val monthOrderStatus = WCStatsSqlUtils.getRawStatsForSiteAndUnit(site, OrderStatsApiUnit.MONTH)
+        val monthOrderStatus = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site, OrderStatsApiUnit.MONTH)
         assertNotNull(monthOrderStatus)
         with(monthOrderStatus!!) {
             assertEquals("month", unit)
+            assertEquals(false, isCustomField)
         }
 
-        val nonExistentSite = WCStatsSqlUtils.getRawStatsForSiteAndUnit(
+        val nonExistentSite = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(
                 SiteModel().apply { id = 88 }, OrderStatsApiUnit.DAY
         )
         assertNull(nonExistentSite)
 
-        val missingData = WCStatsSqlUtils.getRawStatsForSiteAndUnit(site, OrderStatsApiUnit.YEAR)
+        val missingData = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site, OrderStatsApiUnit.YEAR)
         assertNull(missingData)
     }
 
@@ -699,8 +713,7 @@ class WCStatsStoreTest {
 
         val site = SiteModel().apply { id = defaultDayOrderStatsModel.localSiteId }
 
-        val defaultDayOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
-                OrderStatsApiUnit.DAY, defaultDayOrderStatsModel.quantity, defaultDayOrderStatsModel.endDate)
+        val defaultDayOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site, OrderStatsApiUnit.DAY)
 
         assertEquals(defaultDayOrderStatsModel.unit, defaultDayOrderStats?.unit)
         assertEquals(defaultDayOrderStatsModel.quantity, defaultDayOrderStats?.quantity)
@@ -753,7 +766,7 @@ class WCStatsStoreTest {
         val defaultDayOrderStatsModel2 = WCStatsTestUtils.generateSampleStatsModel()
         WCStatsSqlUtils.insertOrUpdateStats(defaultDayOrderStatsModel2)
         val defaultDayOrderStats2 = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
-                OrderStatsApiUnit.DAY, defaultDayOrderStatsModel2.quantity, defaultDayOrderStatsModel2.endDate)
+                OrderStatsApiUnit.DAY)
 
         assertEquals(defaultDayOrderStatsModel2.unit, defaultDayOrderStats2?.unit)
         assertEquals(defaultDayOrderStatsModel2.quantity, defaultDayOrderStats2?.quantity)
@@ -840,7 +853,7 @@ class WCStatsStoreTest {
 
         WCStatsSqlUtils.insertOrUpdateStats(defaultWeekOrderStatsModel)
         val defaultWeekOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
-                OrderStatsApiUnit.WEEK, defaultWeekOrderStatsModel.quantity, defaultWeekOrderStatsModel.endDate)
+                OrderStatsApiUnit.WEEK)
 
         assertEquals(defaultWeekOrderStatsModel.unit, defaultWeekOrderStats?.unit)
         assertEquals(defaultWeekOrderStatsModel.quantity, defaultWeekOrderStats?.quantity)
@@ -900,7 +913,7 @@ class WCStatsStoreTest {
 
         WCStatsSqlUtils.insertOrUpdateStats(defaultMonthOrderStatsModel)
         val defaultMonthOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site2,
-                OrderStatsApiUnit.MONTH, defaultMonthOrderStatsModel.quantity, defaultMonthOrderStatsModel.endDate)
+                OrderStatsApiUnit.MONTH)
 
         assertEquals(defaultMonthOrderStatsModel.unit, defaultMonthOrderStats?.unit)
         assertEquals(defaultMonthOrderStatsModel.quantity, defaultMonthOrderStats?.quantity)
