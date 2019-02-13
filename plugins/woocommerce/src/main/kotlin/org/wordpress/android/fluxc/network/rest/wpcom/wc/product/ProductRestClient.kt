@@ -70,50 +70,50 @@ class ProductRestClient(
             slug = response.slug ?: ""
             permalink = response.permalink ?: ""
 
-            date_created = response.date_created ?: ""
-            date_modified = response.date_modified ?: ""
+            dateCreated = response.date_created ?: ""
+            dateModified = response.date_modified ?: ""
 
             type = response.type ?: ""
             status = response.status ?: ""
             featured = response.featured
-            catalog_visibility = response.catalog_visibility ?: ""
+            catalogVisibility = response.catalog_visibility ?: ""
             description = response.description ?: ""
-            short_description = response.short_description ?: ""
+            shortDescription = response.short_description ?: ""
             sku = response.sku ?: ""
 
             price = response.price ?: ""
-            regular_price = response.regular_price ?: ""
-            sale_price = response.sale_price ?: ""
-            on_sale = response.on_sale
-            total_sales = response.total_sales
+            regularPrice = response.regular_price ?: ""
+            salePrice = response.sale_price ?: ""
+            onSale = response.on_sale
+            totalSales = response.total_sales
 
             virtual = response.virtual
             downloadable = response.downloadable
 
-            tax_status = response.tax_status ?: ""
-            tax_class = response.tax_class ?: ""
+            taxStatus = response.tax_status ?: ""
+            taxClass = response.tax_class ?: ""
 
-            manage_stock = response.manage_stock
-            stock_quantity = response.stock_quantity
-            stock_status = response.stock_status ?: ""
+            manageStock = response.manage_stock
+            stockQuantity = response.stock_quantity
+            stockStatus = response.stock_status ?: ""
 
             backorders = response.backorders ?: ""
-            backorders_allowed = response.backorders_allowed
+            backordersAllowed = response.backorders_allowed
             backordered = response.backordered
-            sold_individually = response.sold_individually
+            soldIndividually = response.sold_individually
             weight = response.weight ?: ""
 
-            shipping_required = response.shipping_required
-            shipping_taxable = response.shipping_taxable
-            shipping_class = response.shipping_class ?: ""
-            shipping_class_id = response.shipping_class_id
+            shippingRequired = response.shipping_required
+            shippingTaxable = response.shipping_taxable
+            shippingClass = response.shipping_class ?: ""
+            shippingClassId = response.shipping_class_id
 
-            reviews_allowed = response.reviews_allowed
-            average_rating = response.average_rating ?: ""
-            rating_count = response.rating_count
+            reviewsAllowed = response.reviews_allowed
+            averageRating = response.average_rating ?: ""
+            ratingCount = response.rating_count
 
-            parent_id = response.parent_id
-            purchase_note = response.purchase_note ?: ""
+            parentId = response.parent_id
+            purchaseNote = response.purchase_note ?: ""
 
             categories = response.categories.toString()
             tags = response.tags.toString()

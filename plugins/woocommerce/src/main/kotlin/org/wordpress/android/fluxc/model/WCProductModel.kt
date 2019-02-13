@@ -16,7 +16,6 @@ import org.wordpress.android.util.AppLog.T
 /**
  * Single Woo product - see http://woocommerce.github.io/woocommerce-rest-api-docs/#product-properties
  * Note that products have more properties than we support below
- * TODO: remove underscores in property names
  */
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
@@ -26,49 +25,49 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var slug = ""
     @Column var permalink = ""
 
-    @Column var date_created = ""
-    @Column var date_modified = ""
+    @Column var dateCreated = ""
+    @Column var dateModified = ""
 
     @Column var type = "" // simple, grouped, external, variable
     @Column var status = ""
     @Column var featured = false
-    @Column var catalog_visibility = "" // visible, catalog, search, hidden
+    @Column var catalogVisibility = "" // visible, catalog, search, hidden
     @Column var description = ""
-    @Column var short_description = ""
+    @Column var shortDescription = ""
     @Column var sku = ""
 
     @Column var price = ""
-    @Column var regular_price = ""
-    @Column var sale_price = ""
-    @Column var on_sale = false
-    @Column var total_sales = 0
+    @Column var regularPrice = ""
+    @Column var salePrice = ""
+    @Column var onSale = false
+    @Column var totalSales = 0
 
     @Column var virtual = false
     @Column var downloadable = false
-    @Column var sold_individually = false
+    @Column var soldIndividually = false
 
-    @Column var tax_status = "" // taxable, shipping, none
-    @Column var tax_class = ""
+    @Column var taxStatus = "" // taxable, shipping, none
+    @Column var taxClass = ""
 
-    @Column var manage_stock = false
-    @Column var stock_quantity = 0
-    @Column var stock_status = "" // instock, outofstock, onbackorder
+    @Column var manageStock = false
+    @Column var stockQuantity = 0
+    @Column var stockStatus = "" // instock, outofstock, onbackorder
 
     @Column var backorders = "" // no, notify, yes
-    @Column var backorders_allowed = false
+    @Column var backordersAllowed = false
     @Column var backordered = false
 
-    @Column var shipping_required = false
-    @Column var shipping_taxable = false
-    @Column var shipping_class = ""
-    @Column var shipping_class_id = 0
+    @Column var shippingRequired = false
+    @Column var shippingTaxable = false
+    @Column var shippingClass = ""
+    @Column var shippingClassId = 0
 
-    @Column var reviews_allowed = true
-    @Column var average_rating = ""
-    @Column var rating_count = 0
+    @Column var reviewsAllowed = true
+    @Column var averageRating = ""
+    @Column var ratingCount = 0
 
-    @Column var parent_id = 0
-    @Column var purchase_note = ""
+    @Column var parentId = 0
+    @Column var purchaseNote = ""
 
     @Column var categories = "" // array of categories
     @Column var tags = "" // array of tags

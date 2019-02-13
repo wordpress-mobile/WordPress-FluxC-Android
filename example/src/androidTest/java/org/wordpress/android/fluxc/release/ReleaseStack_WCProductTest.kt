@@ -27,7 +27,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     private var nextEvent: TestEvent = TestEvent.NONE
     private val productModel = WCProductModel(8).apply {
         remoteProductId = 1537
-        date_created = "2018-04-20T15:45:14Z"
+        dateCreated = "2018-04-20T15:45:14Z"
     }
     private var lastEvent: OnProductChanged? = null
 
