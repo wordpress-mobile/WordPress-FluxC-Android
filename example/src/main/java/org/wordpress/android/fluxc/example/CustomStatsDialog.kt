@@ -9,10 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ArrayAdapter
+import android.widget.Button
 import kotlinx.android.synthetic.main.dialog_custom_stats.*
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import java.util.Calendar
+import java.util.Date
 
 class CustomStatsDialog : DialogFragment() {
     companion object {
@@ -53,25 +55,11 @@ class CustomStatsDialog : DialogFragment() {
         }
 
         stats_from_date.setOnClickListener {
-            val now = getCalendarInstance(wcOrderStatsModel?.startDate)
-            val datePicker = DatePickerDialog(requireActivity(), DatePickerDialog.OnDateSetListener {
-                _, year, month, dayOfMonth ->
-                stats_from_date.text = getFormattedDate(year, month, dayOfMonth)
-            },
-                    now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH))
-            datePicker.datePicker.maxDate = now.timeInMillis
-            datePicker.show()
+            displayDialog(getCalendarInstance(wcOrderStatsModel?.startDate), stats_from_date)
         }
 
         stats_to_date.setOnClickListener {
-            val now = getCalendarInstance(wcOrderStatsModel?.endDate)
-            val datePicker = DatePickerDialog(requireActivity(), DatePickerDialog.OnDateSetListener {
-                _, year, month, dayOfMonth ->
-                stats_to_date.text = getFormattedDate(year, month, dayOfMonth)
-            },
-                    now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH))
-            datePicker.datePicker.maxDate = now.timeInMillis
-            datePicker.show()
+            displayDialog(getCalendarInstance(wcOrderStatsModel?.endDate), stats_to_date)
         }
 
         stats_dialog_ok.setOnClickListener {
@@ -88,6 +76,18 @@ class CustomStatsDialog : DialogFragment() {
         }
     }
 
+    private fun displayDialog(
+        calendar: Calendar,
+        button: Button
+    ) {
+        val datePicker = DatePickerDialog(requireActivity(),
+                DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                    button.text = getFormattedDate(year, month, dayOfMonth)
+                }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+        datePicker.datePicker.maxDate = Date().time
+        datePicker.show()
+    }
+
     private fun getFormattedDate(year: Int, month: Int, dayOfMonth: Int): String {
         val monthOfYear = month + 1
         return String.format("$year-$monthOfYear-$dayOfMonth")
@@ -97,7 +97,7 @@ class CustomStatsDialog : DialogFragment() {
         val cal = Calendar.getInstance()
         if (!value.isNullOrBlank()) {
             cal.set(value!!.split("-")[0].toInt(),
-                    value.split("-")[1].toInt(),
+                    (value.split("-")[1].toInt()) - 1,
                     value.split("-")[2].toInt())
         }
         return cal
