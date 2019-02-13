@@ -27,7 +27,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/stats_dialog_title"/>
 
-
     <Button
         android:id="@+id/stats_from_date"
         android:layout_width="0dp"
@@ -37,7 +36,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/stats_label_from"
         app:layout_constraintTop_toBottomOf="@+id/stats_label_from"/>
-
 
     <TextView
         android:id="@+id/stats_label_to"
