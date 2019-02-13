@@ -15,6 +15,7 @@ import org.wordpress.android.util.AppLog.T
 
 /**
  * Single Woo product - see http://woocommerce.github.io/woocommerce-rest-api-docs/#product-properties
+ * Note that products have more properties than we support below
  * TODO: remove underscores in property names
  */
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
@@ -39,17 +40,12 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var price = ""
     @Column var regular_price = ""
     @Column var sale_price = ""
-    @Column var date_on_sale_from = ""
-    @Column var date_on_sale_to = ""
     @Column var on_sale = false
     @Column var total_sales = 0
 
     @Column var virtual = false
     @Column var downloadable = false
     @Column var sold_individually = false
-
-    @Column var external_url = ""
-    @Column var button_text = ""
 
     @Column var tax_status = "" // taxable, shipping, none
     @Column var tax_class = ""
@@ -71,21 +67,14 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var average_rating = ""
     @Column var rating_count = 0
 
-    @Column var related_ids = "" // array of related product IDs
-    @Column var upsell_ids = ""  // array of up-sell product IDs
-    @Column var cross_sell_ids = "" // array of cross-sell product IDs
-
     @Column var parent_id = 0
     @Column var purchase_note = ""
-    @Column var menu_order = 0
 
     @Column var categories = "" // array of categories
     @Column var tags = "" // array of tags
     @Column var images = "" // array of images
     @Column var attributes = "" // array of attributes
-    @Column var default_attributes = "" // array of default attributes
     @Column var variations = "" // array of variation IDs
-    @Column var grouped_products = "" // array of grouped product IDs
 
     @Column var weight = ""
     @Column var length = ""

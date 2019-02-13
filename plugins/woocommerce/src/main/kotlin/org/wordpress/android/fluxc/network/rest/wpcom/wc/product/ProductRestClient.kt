@@ -84,16 +84,11 @@ class ProductRestClient(
             price = response.price ?: ""
             regular_price = response.regular_price ?: ""
             sale_price = response.sale_price ?: ""
-            date_on_sale_from = response.date_on_sale_from ?: ""
-            date_on_sale_to = response.date_on_sale_to ?: ""
             on_sale = response.on_sale
             total_sales = response.total_sales
 
             virtual = response.virtual
             downloadable = response.downloadable
-
-            external_url = response.external_url ?: ""
-            button_text = response.button_text ?: ""
 
             tax_status = response.tax_status ?: ""
             tax_class = response.tax_class ?: ""
@@ -117,21 +112,14 @@ class ProductRestClient(
             average_rating = response.average_rating ?: ""
             rating_count = response.rating_count
 
-            related_ids = response.related_ids.toString()
-            upsell_ids = response.upsell_ids.toString()
-            cross_sell_ids = response.cross_sell_ids.toString()
-
             parent_id = response.parent_id
             purchase_note = response.purchase_note ?: ""
-            menu_order = response.menu_order
 
             categories = response.categories.toString()
             tags = response.tags.toString()
             images = response.images.toString()
             attributes = response.attributes.toString()
-            default_attributes = response.default_attributes.toString()
             variations = response.variations.toString()
-            grouped_products = response.grouped_products.toString()
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""
