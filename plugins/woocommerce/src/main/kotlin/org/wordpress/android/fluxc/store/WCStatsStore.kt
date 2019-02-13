@@ -286,11 +286,16 @@ class WCStatsStore @Inject constructor(
      * returns a quantity value.
      * If the start date or end date is empty, returns {@param defaultValue}
      */
-    fun getQuantityByGranularity(d1: String?, d2: String?, granularity: StatsGranularity, defaultValue: Int): Long {
-        if (d1.isNullOrEmpty() || d2.isNullOrEmpty()) return defaultValue.toLong()
+    fun getQuantityByGranularity(
+        startDateString: String?,
+        endDateString: String?,
+        granularity: StatsGranularity,
+        defaultValue: Int
+    ): Long {
+        if (startDateString.isNullOrEmpty() || endDateString.isNullOrEmpty()) return defaultValue.toLong()
 
-        val startDate = DateUtils.getDateFromString(d1)
-        val endDate = DateUtils.getDateFromString(d2)
+        val startDate = DateUtils.getDateFromString(startDateString!!)
+        val endDate = DateUtils.getDateFromString(endDateString!!)
 
         val startDateCalendar = DateUtils.getStartDateCalendar(if (startDate.before(endDate)) startDate else endDate)
         val endDateCalendar = DateUtils.getEndDateCalendar(if (startDate.before(endDate)) endDate else startDate)
