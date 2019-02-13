@@ -26,9 +26,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var permalink = ""
 
     @Column var date_created = ""
-    @Column var date_created_gmt = ""
     @Column var date_modified = ""
-    @Column var date_modified_gmt = ""
 
     @Column var type = "" // simple, grouped, external, variable
     @Column var status = ""
@@ -42,17 +40,13 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var regular_price = ""
     @Column var sale_price = ""
     @Column var date_on_sale_from = ""
-    @Column var date_on_sale_from_gmt = ""
     @Column var date_on_sale_to = ""
-    @Column var date_on_sale_to_gmt = ""
     @Column var on_sale = false
     @Column var total_sales = 0
 
     @Column var virtual = false
     @Column var downloadable = false
-    @Column var downloads = "" // array of downloadable files
-    @Column var download_limit = -1
-    @Column var download_expiry = -1
+    @Column var sold_individually = false
 
     @Column var external_url = ""
     @Column var button_text = ""
@@ -67,9 +61,6 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var backorders = "" // no, notify, yes
     @Column var backorders_allowed = false
     @Column var backordered = false
-
-    @Column var sold_individually = false
-    @Column var weight = ""
 
     @Column var shipping_required = false
     @Column var shipping_taxable = false
@@ -95,9 +86,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var default_attributes = "" // array of default attributes
     @Column var variations = "" // array of variation IDs
     @Column var grouped_products = "" // array of grouped product IDs
-    @Column var meta_data = "" // array of metadata
 
-    // Dimensions
+    @Column var weight = ""
     @Column var length = ""
     @Column var width = ""
     @Column var height = ""

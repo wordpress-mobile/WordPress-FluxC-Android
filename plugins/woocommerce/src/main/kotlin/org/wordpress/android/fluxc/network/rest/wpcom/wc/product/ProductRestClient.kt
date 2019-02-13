@@ -71,9 +71,7 @@ class ProductRestClient(
             permalink = response.permalink ?: ""
 
             date_created = response.date_created ?: ""
-            date_created_gmt = response.date_created_gmt ?: ""
             date_modified = response.date_modified ?: ""
-            date_modified_gmt = response.date_modified_gmt ?: ""
 
             type = response.type ?: ""
             status = response.status ?: ""
@@ -87,17 +85,12 @@ class ProductRestClient(
             regular_price = response.regular_price ?: ""
             sale_price = response.sale_price ?: ""
             date_on_sale_from = response.date_on_sale_from ?: ""
-            date_on_sale_from_gmt = response.date_on_sale_from_gmt ?: ""
             date_on_sale_to = response.date_on_sale_to ?: ""
-            date_on_sale_to_gmt = response.date_on_sale_to_gmt ?: ""
             on_sale = response.on_sale
             total_sales = response.total_sales
 
             virtual = response.virtual
             downloadable = response.downloadable
-            downloads = response.downloads.toString()
-            download_limit = response.download_limit
-            download_expiry = response.download_expiry
 
             external_url = response.external_url ?: ""
             button_text = response.button_text ?: ""
@@ -139,7 +132,6 @@ class ProductRestClient(
             default_attributes = response.default_attributes.toString()
             variations = response.variations.toString()
             grouped_products = response.grouped_products.toString()
-            meta_data = response.meta_data.toString()
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""
