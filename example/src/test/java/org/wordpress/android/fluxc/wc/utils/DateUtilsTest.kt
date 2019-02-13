@@ -3,7 +3,9 @@ package org.wordpress.android.fluxc.wc.utils
 import org.junit.Test
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.utils.DateUtils
+import org.wordpress.android.fluxc.utils.SiteUtils
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 import kotlin.test.assertEquals
 
@@ -31,7 +33,7 @@ class DateUtilsTest {
 
     @Test
     fun testFormatDateFromString() {
-        val d1 = "2019-02-12"
+        val d1 = DateUtils.formatDate(DATE_FORMAT_DAY, Date())
 
         val site = SiteModel().apply { id = 1 }
         val date1 = DateUtils.getDateTimeForSite(site, DATE_FORMAT_DAY, d1)
@@ -39,11 +41,11 @@ class DateUtilsTest {
 
         site.timezone = "12"
         val date2 = DateUtils.getDateTimeForSite(site, DATE_FORMAT_DAY, d1)
-        assertEquals(d1, date2)
+        assertEquals(SiteUtils.getCurrentDateTimeForSite(site, "yyyy-MM-dd"), date2)
 
         site.timezone = "-12"
         val date3 = DateUtils.getDateTimeForSite(site, DATE_FORMAT_DAY, d1)
-        assertEquals("2019-02-11", date3)
+        assertEquals(SiteUtils.getCurrentDateTimeForSite(site, "yyyy-MM-dd"), date3)
 
         site.timezone = "0"
         val date4 = DateUtils.getDateTimeForSite(site, DATE_FORMAT_DAY, d1)
