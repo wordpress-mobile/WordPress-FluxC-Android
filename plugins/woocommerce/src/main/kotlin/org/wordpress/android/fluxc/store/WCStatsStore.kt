@@ -346,7 +346,7 @@ class WCStatsStore @Inject constructor(
             if (isError || stats == null) {
                 return@with OnWCStatsChanged(0, granularity).also { it.error = payload.error }
             } else {
-                val rowsAffected = WCStatsSqlUtils.insertOrUpdateOrderStats(stats)
+                val rowsAffected = WCStatsSqlUtils.insertOrUpdateStats(stats)
                 return@with OnWCStatsChanged(rowsAffected, granularity, stats.quantity, stats.date)
             }
         }
