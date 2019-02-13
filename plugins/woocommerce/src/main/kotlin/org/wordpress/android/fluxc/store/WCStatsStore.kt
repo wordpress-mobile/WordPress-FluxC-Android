@@ -100,7 +100,9 @@ class WCStatsStore @Inject constructor(
     class FetchVisitorStatsPayload(
         val site: SiteModel,
         val granularity: StatsGranularity,
-        val forced: Boolean = false
+        val forced: Boolean = false,
+        val startDate: String? = null,
+        val endDate: String? = null
     ) : Payload<BaseNetworkError>()
 
     class FetchVisitorStatsResponsePayload(
@@ -324,11 +326,12 @@ class WCStatsStore @Inject constructor(
     }
 
     private fun fetchVisitorStats(payload: FetchVisitorStatsPayload) {
-        val quantity = getQuantityForGranularity(payload.site, payload.granularity)
+        val quantity = getQuantityForGranularity(payload.site,
+                payload.granularity, payload.startDate, payload.endDate)
         wcOrderStatsClient.fetchVisitorStats(
                 payload.site,
                 OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
-                getFormattedDate(payload.site, payload.granularity),
+                getFormattedDate(payload.site, payload.granularity, payload.endDate),
                 quantity,
                 payload.forced)
     }
