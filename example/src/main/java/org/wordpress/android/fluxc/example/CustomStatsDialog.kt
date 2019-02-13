@@ -13,8 +13,10 @@ import android.widget.Button
 import kotlinx.android.synthetic.main.dialog_custom_stats.*
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 
 class CustomStatsDialog : DialogFragment() {
     companion object {
@@ -89,15 +91,18 @@ class CustomStatsDialog : DialogFragment() {
     }
 
     private fun getFormattedDate(year: Int, month: Int, dayOfMonth: Int): String {
-        val monthOfYear = month + 1
-        return String.format("$year-$monthOfYear-$dayOfMonth")
+        val calendar = Calendar.getInstance()
+        calendar.set(year, month, dayOfMonth)
+
+        val format = SimpleDateFormat("YYYY-MM-dd", Locale.ROOT)
+        return format.format(calendar.time)
     }
 
     private fun getCalendarInstance(value: String?): Calendar {
         val cal = Calendar.getInstance()
         if (!value.isNullOrBlank()) {
             cal.set(value!!.split("-")[0].toInt(),
-                    (value.split("-")[1].toInt()) - 1,
+                    (value.split("-")[1].toInt()),
                     value.split("-")[2].toInt())
         }
         return cal

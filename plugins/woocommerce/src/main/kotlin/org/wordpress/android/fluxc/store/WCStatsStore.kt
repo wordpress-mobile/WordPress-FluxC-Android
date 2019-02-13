@@ -147,7 +147,8 @@ class WCStatsStore @Inject constructor(
         val rowsAffected: Int,
         val granularity: StatsGranularity,
         val quantity: String? = null,
-        val date: String? = null
+        val date: String? = null,
+        val isCustomField: Boolean = false
     ) : OnChanged<OrderStatsError>() {
         var causeOfChange: WCStatsAction? = null
     }
@@ -199,9 +200,10 @@ class WCStatsStore @Inject constructor(
         site: SiteModel,
         granularity: StatsGranularity,
         quantity: String? = null,
-        date: String? = null
+        date: String? = null,
+        isCustomField: Boolean = false
     ): Map<String, Double> {
-        return getStatsForField(site, OrderStatsField.GROSS_SALES, granularity, quantity, date)
+        return getStatsForField(site, OrderStatsField.GROSS_SALES, granularity, quantity, date, isCustomField)
     }
 
     /**
@@ -215,9 +217,10 @@ class WCStatsStore @Inject constructor(
         site: SiteModel,
         granularity: StatsGranularity,
         quantity: String? = null,
-        date: String? = null
+        date: String? = null,
+        isCustomField: Boolean = false
     ): Map<String, Int> {
-        return getStatsForField(site, OrderStatsField.ORDERS, granularity, quantity, date)
+        return getStatsForField(site, OrderStatsField.ORDERS, granularity, quantity, date, isCustomField)
     }
 
     fun getCustomStatsForSite(
@@ -347,7 +350,7 @@ class WCStatsStore @Inject constructor(
                 return@with OnWCStatsChanged(0, granularity).also { it.error = payload.error }
             } else {
                 val rowsAffected = WCStatsSqlUtils.insertOrUpdateStats(stats)
-                return@with OnWCStatsChanged(rowsAffected, granularity, stats.quantity, stats.date)
+                return@with OnWCStatsChanged(rowsAffected, granularity, stats.quantity, stats.date, stats.isCustomField)
             }
         }
 
@@ -405,10 +408,12 @@ class WCStatsStore @Inject constructor(
         field: OrderStatsField,
         granularity: StatsGranularity,
         quantity: String? = null,
-        date: String? = null
+        date: String? = null,
+        isCustomField: Boolean = false
     ): Map<String, T> {
         val apiUnit = OrderStatsApiUnit.fromStatsGranularity(granularity)
-        val rawStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site, apiUnit, quantity, date)
+        val rawStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(
+                site, apiUnit, quantity, date, isCustomField)
         rawStats?.let {
             val periodIndex = it.getIndexForField(OrderStatsField.PERIOD)
             val fieldIndex = it.getIndexForField(field)

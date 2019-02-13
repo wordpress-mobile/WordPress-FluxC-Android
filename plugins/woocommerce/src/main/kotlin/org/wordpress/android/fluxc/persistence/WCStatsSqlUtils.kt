@@ -51,10 +51,11 @@ object WCStatsSqlUtils {
         site: SiteModel,
         unit: OrderStatsApiUnit,
         quantity: String? = null,
-        date: String? = null
+        date: String? = null,
+        isCustomField: Boolean = false
     ): WCOrderStatsModel? {
-        if (quantity.isNullOrEmpty() || date.isNullOrEmpty())
-            return getRawStatsForSiteAndUnit(site, unit)
+        if (!isCustomField)
+                return getRawStatsForSiteAndUnit(site, unit)
 
         return WellSql.select(WCOrderStatsModel::class.java)
                 .where()
@@ -63,7 +64,7 @@ object WCStatsSqlUtils {
                 .equals(WCOrderStatsModelTable.UNIT, unit)
                 .equals(WCOrderStatsModelTable.QUANTITY, quantity)
                 .equals(WCOrderStatsModelTable.DATE, date)
-                .equals(WCOrderStatsModelTable.IS_CUSTOM_FIELD, true)
+                .equals(WCOrderStatsModelTable.IS_CUSTOM_FIELD, isCustomField)
                 .endGroup().endWhere()
                 .asModel.firstOrNull()
     }

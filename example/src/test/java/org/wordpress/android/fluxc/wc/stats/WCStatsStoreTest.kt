@@ -166,7 +166,8 @@ class WCStatsStoreTest {
                 endDate = "2019-02-13")
         WCStatsSqlUtils.insertOrUpdateStats(dayOrderCustomStatsModel)
         val dayOrderCustomStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
-                OrderStatsApiUnit.DAY, dayOrderCustomStatsModel.quantity, dayOrderCustomStatsModel.date)
+                OrderStatsApiUnit.DAY, dayOrderCustomStatsModel.quantity, dayOrderCustomStatsModel.date,
+                dayOrderCustomStatsModel.isCustomField)
         assertNotNull(dayOrderCustomStats)
         with(dayOrderCustomStats!!) {
             assertEquals("day", unit)
@@ -741,7 +742,8 @@ class WCStatsStoreTest {
 
         WCStatsSqlUtils.insertOrUpdateStats(customDayOrderStatsModel)
         val customDayOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
-                OrderStatsApiUnit.DAY, customDayOrderStatsModel.quantity, customDayOrderStatsModel.endDate)
+                OrderStatsApiUnit.DAY, customDayOrderStatsModel.quantity, customDayOrderStatsModel.endDate,
+                customDayOrderStatsModel.isCustomField)
 
         assertEquals(customDayOrderStatsModel.unit, customDayOrderStats?.unit)
         assertEquals(customDayOrderStatsModel.quantity, customDayOrderStats?.quantity)
@@ -794,7 +796,8 @@ class WCStatsStoreTest {
 
         WCStatsSqlUtils.insertOrUpdateStats(customDayOrderStatsModel2)
         val customDayOrderStats2 = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
-                OrderStatsApiUnit.DAY, customDayOrderStatsModel2.quantity, customDayOrderStatsModel2.endDate)
+                OrderStatsApiUnit.DAY, customDayOrderStatsModel2.quantity, customDayOrderStatsModel2.endDate,
+                customDayOrderStatsModel2.isCustomField)
 
         assertEquals(customDayOrderStatsModel2.unit, customDayOrderStats2?.unit)
         assertEquals(customDayOrderStatsModel2.quantity, customDayOrderStats2?.quantity)
@@ -823,7 +826,8 @@ class WCStatsStoreTest {
 
         WCStatsSqlUtils.insertOrUpdateStats(customDayOrderStatsModel3)
         val customDayOrderStats3 = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
-                OrderStatsApiUnit.DAY, customDayOrderStatsModel3.quantity, customDayOrderStatsModel3.endDate)
+                OrderStatsApiUnit.DAY, customDayOrderStatsModel3.quantity, customDayOrderStatsModel3.endDate,
+                customDayOrderStatsModel3.isCustomField)
 
         assertEquals(customDayOrderStatsModel3.unit, customDayOrderStats3?.unit)
         assertEquals(customDayOrderStatsModel3.quantity, customDayOrderStats3?.quantity)
@@ -882,7 +886,8 @@ class WCStatsStoreTest {
 
         WCStatsSqlUtils.insertOrUpdateStats(customWeekOrderStatsModel)
         val customWeekOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site,
-                OrderStatsApiUnit.WEEK, customWeekOrderStatsModel.quantity, customWeekOrderStatsModel.endDate)
+                OrderStatsApiUnit.WEEK, customWeekOrderStatsModel.quantity, customWeekOrderStatsModel.endDate,
+                customWeekOrderStatsModel.isCustomField)
 
         assertEquals(customWeekOrderStatsModel.unit, customWeekOrderStats?.unit)
         assertEquals(customWeekOrderStatsModel.quantity, customWeekOrderStats?.quantity)
@@ -943,7 +948,8 @@ class WCStatsStoreTest {
 
         WCStatsSqlUtils.insertOrUpdateStats(customMonthOrderStatsModel)
         val customMonthOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site2,
-                OrderStatsApiUnit.MONTH, customMonthOrderStatsModel.quantity, customMonthOrderStatsModel.endDate)
+                OrderStatsApiUnit.MONTH, customMonthOrderStatsModel.quantity, customMonthOrderStatsModel.endDate,
+                customMonthOrderStatsModel.isCustomField)
 
         assertEquals(customMonthOrderStatsModel.unit, customMonthOrderStats?.unit)
         assertEquals(customMonthOrderStatsModel.quantity, customMonthOrderStats?.quantity)
@@ -1016,10 +1022,12 @@ class WCStatsStoreTest {
         WCStatsSqlUtils.insertOrUpdateStats(customDayOrderStatsModel)
 
         val customDayOrderRevenueStats = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS,
-                customDayOrderStatsModel.quantity, customDayOrderStatsModel.endDate)
+                customDayOrderStatsModel.quantity, customDayOrderStatsModel.endDate,
+                customDayOrderStatsModel.isCustomField)
 
         val customDayOrderStats = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS,
-                customDayOrderStatsModel.quantity, customDayOrderStatsModel.endDate)
+                customDayOrderStatsModel.quantity, customDayOrderStatsModel.endDate,
+                customDayOrderStatsModel.isCustomField)
 
         assertTrue(customDayOrderRevenueStats.isNotEmpty())
         assertTrue(customDayOrderStats.isNotEmpty())
@@ -1038,10 +1046,12 @@ class WCStatsStoreTest {
         val customDayOrderStatsModel2 = WCStatsTestUtils.generateSampleStatsModel(quantity = "1",
                 endDate = "2018-12-01", startDate = "2018-12-01")
         val customDayOrderRevenueStats2 = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS,
-                customDayOrderStatsModel2.quantity, customDayOrderStatsModel2.endDate)
+                customDayOrderStatsModel2.quantity, customDayOrderStatsModel2.endDate,
+                customDayOrderStatsModel2.isCustomField)
 
         val customDayOrderStats2 = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS,
-                customDayOrderStatsModel2.quantity, customDayOrderStatsModel2.endDate)
+                customDayOrderStatsModel2.quantity, customDayOrderStatsModel2.endDate,
+                customDayOrderStatsModel2.isCustomField)
 
         assertTrue(customDayOrderRevenueStats2.isEmpty())
         assertTrue(customDayOrderStats2.isEmpty())
@@ -1062,10 +1072,12 @@ class WCStatsStoreTest {
                 endDate = "2018-12-01", startDate = "2018-12-01")
 
         val customDayOrderRevenueStats3 = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS,
-                customDayOrderStatsModel3.quantity, customDayOrderStatsModel3.endDate)
+                customDayOrderStatsModel3.quantity, customDayOrderStatsModel3.endDate,
+                customDayOrderStatsModel3.isCustomField)
 
         val customDayOrderStats3 = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS,
-                customDayOrderStatsModel3.quantity, customDayOrderStatsModel3.endDate)
+                customDayOrderStatsModel3.quantity, customDayOrderStatsModel3.endDate,
+                customDayOrderStatsModel3.isCustomField)
 
         assertTrue(customDayOrderRevenueStats3.isEmpty())
         assertTrue(customDayOrderStats3.isEmpty())
@@ -1091,19 +1103,23 @@ class WCStatsStoreTest {
         WCStatsSqlUtils.insertOrUpdateStats(customWeekOrderStatsModel)
 
         val customWeekOrderRevenueStats = wcStatsStore.getRevenueStats(site, StatsGranularity.WEEKS,
-                customWeekOrderStatsModel.quantity, customWeekOrderStatsModel.endDate)
+                customWeekOrderStatsModel.quantity, customWeekOrderStatsModel.endDate,
+                customWeekOrderStatsModel.isCustomField)
 
         val customWeekOrderStats = wcStatsStore.getOrderStats(site, StatsGranularity.WEEKS,
-                customWeekOrderStatsModel.quantity, customWeekOrderStatsModel.endDate)
+                customWeekOrderStatsModel.quantity, customWeekOrderStatsModel.endDate,
+                customWeekOrderStatsModel.isCustomField)
 
         assertTrue(customWeekOrderRevenueStats.isNotEmpty())
         assertTrue(customWeekOrderStats.isNotEmpty())
 
         val customDayOrderRevenueStats4 = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS,
-                customDayOrderStatsModel.quantity, customDayOrderStatsModel.endDate)
+                customDayOrderStatsModel.quantity, customDayOrderStatsModel.endDate,
+                customDayOrderStatsModel.isCustomField)
 
         val customDayOrderStats4 = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS,
-                customDayOrderStatsModel.quantity, customDayOrderStatsModel.endDate)
+                customDayOrderStatsModel.quantity, customDayOrderStatsModel.endDate,
+                customDayOrderStatsModel.isCustomField)
 
         assertTrue(customDayOrderRevenueStats4.isEmpty())
         assertTrue(customDayOrderStats4.isEmpty())
@@ -1129,10 +1145,12 @@ class WCStatsStoreTest {
         WCStatsSqlUtils.insertOrUpdateStats(customWeekOrderStatsModel2)
 
         val customWeekOrderRevenueStats2 = wcStatsStore.getRevenueStats(site, StatsGranularity.WEEKS,
-                customWeekOrderStatsModel2.quantity, customWeekOrderStatsModel2.endDate)
+                customWeekOrderStatsModel2.quantity, customWeekOrderStatsModel2.endDate,
+                customWeekOrderStatsModel2.isCustomField)
 
         val customWeekOrderStats2 = wcStatsStore.getOrderStats(site, StatsGranularity.WEEKS,
-                customWeekOrderStatsModel2.quantity, customWeekOrderStatsModel2.endDate)
+                customWeekOrderStatsModel2.quantity, customWeekOrderStatsModel2.endDate,
+                customWeekOrderStatsModel2.isCustomField)
 
         assertTrue(customWeekOrderRevenueStats2.isNotEmpty())
         assertTrue(customWeekOrderStats2.isNotEmpty())
