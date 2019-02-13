@@ -305,9 +305,14 @@ class WCStatsStore @Inject constructor(
 
     private fun fetchOrderStats(payload: FetchOrderStatsPayload) {
         val quantity = getQuantityForGranularity(payload.site, payload.granularity, payload.startDate, payload.endDate)
-        wcOrderStatsClient.fetchStats(payload.site, OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
+        wcOrderStatsClient.fetchStats(
+                payload.site,
+                OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
                 getFormattedDate(payload.site, payload.granularity, payload.endDate),
-                quantity, payload.forced, payload.startDate, payload.endDate)
+                quantity,
+                payload.forced,
+                payload.startDate,
+                payload.endDate)
     }
 
     private fun fetchVisitorStats(payload: FetchVisitorStatsPayload) {
