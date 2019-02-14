@@ -13,10 +13,10 @@ import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.model.order.toIdSet
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
@@ -70,22 +70,17 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     class FetchOrdersCountPayload(
         var site: SiteModel,
-        var statusFilter: String? = null
+        var statusFilter: String
     ) : Payload<BaseNetworkError>()
 
-    /**
-     * [count] would be the count of orders matching the provided filter up to the default
-     * page count of [NUM_ORDERS_PER_FETCH]. If [canLoadMore] is true, then the actual total
-     * is much more. Since the API does not yet support fetching order count only, this is the
-     * safest way to display the totals: <count>+, example: 50+
-     */
     class FetchOrdersCountResponsePayload(
         var site: SiteModel,
-        var count: Int = 0,
-        var statusFilter: String? = null,
-        var canLoadMore: Boolean = false
+        var statusFilter: String,
+        var count: Int = 0
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
+        constructor(error: OrderError, site: SiteModel, statusFilter: String) : this(site, statusFilter) {
+            this.error = error
+        }
     }
 
     class FetchSingleOrderPayload(
@@ -147,11 +142,21 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 : this(order, site, note) { this.error = error }
     }
 
+    class FetchOrderStatusOptionsPayload(val site: SiteModel) : Payload<BaseNetworkError>()
+
+    class FetchOrderStatusOptionsResponsePayload(
+        val site: SiteModel,
+        val labels: List<WCOrderStatusModel> = emptyList()
+    ) : Payload<OrderError>() {
+        constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
+    }
+
     class OrderError(val type: OrderErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
 
     enum class OrderErrorType {
         INVALID_PARAM,
         INVALID_ID,
+        ORDER_STATUS_NOT_FOUND,
         GENERIC_ERROR;
 
         companion object {
@@ -176,12 +181,14 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var searchResults: List<WCOrderModel> = emptyList()
     ) : OnChanged<OrderError>()
 
+    class OnOrderStatusOptionsChanged(
+        var rowsAffected: Int
+    ) : OnChanged<OrderError>()
+
     override fun onRegister() = AppLog.d(T.API, "WCOrderStore onRegister")
 
     /**
      * Given a [SiteModel] and optional statuses, returns all orders for that site matching any of those statuses.
-     *
-     * The default WooCommerce statuses are defined in [CoreOrderStatus]. Custom order statuses are also supported.
      */
     fun getOrdersForSite(site: SiteModel, vararg status: String): List<WCOrderModel> =
             OrderSqlUtils.getOrdersForSite(site, status = status.asList())
@@ -199,6 +206,18 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     fun getOrderNotesForOrder(order: WCOrderModel): List<WCOrderNoteModel> =
             OrderSqlUtils.getOrderNotesForOrder(order.id)
 
+    /**
+     * Returns the order status options available for the provided site [SiteModel] as a list of [WCOrderStatusModel].
+     */
+    fun getOrderStatusOptionsForSite(site: SiteModel): List<WCOrderStatusModel> =
+            OrderSqlUtils.getOrderStatusOptionsForSite(site)
+
+    /**
+     * Returns the order status as a [WCOrderStatusModel] that matches the provided order status key.
+     */
+    fun getOrderStatusForSiteAndKey(site: SiteModel, key: String): WCOrderStatusModel? =
+            OrderSqlUtils.getOrderStatusOptionForSiteByKey(site, key)
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCOrderAction ?: return
@@ -212,6 +231,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             WCOrderAction.POST_ORDER_NOTE -> postOrderNote(action.payload as PostOrderNotePayload)
             WCOrderAction.FETCH_HAS_ORDERS -> fetchHasOrders(action.payload as FetchHasOrdersPayload)
             WCOrderAction.SEARCH_ORDERS -> searchOrders(action.payload as SearchOrdersPayload)
+            WCOrderAction.FETCH_ORDER_STATUS_OPTIONS ->
+                fetchOrderStatusOptions(action.payload as FetchOrderStatusOptionsPayload)
 
             // remote responses
             WCOrderAction.FETCHED_ORDERS -> handleFetchOrdersCompleted(action.payload as FetchOrdersResponsePayload)
@@ -225,6 +246,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             WCOrderAction.FETCHED_HAS_ORDERS -> handleFetchHasOrdersCompleted(
                     action.payload as FetchHasOrdersResponsePayload)
             WCOrderAction.SEARCHED_ORDERS -> handleSearchOrdersCompleted(action.payload as SearchOrdersResponsePayload)
+            WCOrderAction.FETCHED_ORDER_STATUS_OPTIONS ->
+                handleFetchOrderStatusOptionsCompleted(action.payload as FetchOrderStatusOptionsResponsePayload)
         }
     }
 
@@ -242,7 +265,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun fetchOrdersCount(payload: FetchOrdersCountPayload) {
-        with(payload) { wcOrderRestClient.fetchOrders(site, 0, statusFilter, countOnly = true) }
+        with(payload) { wcOrderRestClient.fetchOrderCount(site, statusFilter) }
     }
 
     private fun fetchHasOrders(payload: FetchHasOrdersPayload) {
@@ -263,6 +286,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     private fun postOrderNote(payload: PostOrderNotePayload) {
         wcOrderRestClient.postOrderNote(payload.order, payload.site, payload.note)
+    }
+
+    private fun fetchOrderStatusOptions(payload: FetchOrderStatusOptionsPayload) {
+        wcOrderRestClient.fetchOrderStatusOptions(payload.site)
     }
 
     private fun handleFetchOrdersCompleted(payload: FetchOrdersResponsePayload) {
@@ -306,7 +333,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         val onOrderChanged = if (payload.isError) {
             OnOrderChanged(0).also { it.error = payload.error }
         } else {
-            with(payload) { OnOrderChanged(count, statusFilter, canLoadMore = canLoadMore) }
+            with(payload) { OnOrderChanged(count, statusFilter) }
         }.also { it.causeOfChange = FETCH_ORDERS_COUNT }
         emitChange(onOrderChanged)
     }
@@ -382,5 +409,46 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
         onOrderChanged.causeOfChange = POST_ORDER_NOTE
         emitChange(onOrderChanged)
+    }
+
+    private fun handleFetchOrderStatusOptionsCompleted(payload: FetchOrderStatusOptionsResponsePayload) {
+        val onOrderStatusLabelsChanged: OnOrderStatusOptionsChanged
+
+        if (payload.isError) {
+            onOrderStatusLabelsChanged = OnOrderStatusOptionsChanged(0).also { it.error = payload.error }
+        } else {
+            val existingOptions = OrderSqlUtils.getOrderStatusOptionsForSite(payload.site)
+            val deleteOptions = mutableListOf<WCOrderStatusModel>()
+            val addOrUpdateOptions = mutableListOf<WCOrderStatusModel>()
+            existingOptions.iterator().forEach { existingOption ->
+                var exists = false
+                payload.labels.iterator().forEach noi@{ newOption ->
+                    if (newOption.statusKey == existingOption.statusKey) {
+                        exists = true
+                        return@noi
+                    }
+                }
+                if (!exists) deleteOptions.add(existingOption)
+            }
+            payload.labels.iterator().forEach { newOption ->
+                var exists = false
+                existingOptions.iterator().forEach eoi@{ existingOption ->
+                    if (newOption.statusKey == existingOption.statusKey) {
+                        exists = true
+                        if (newOption.label != existingOption.label) {
+                            addOrUpdateOptions.add(newOption)
+                        }
+                        return@eoi
+                    }
+                }
+                if (!exists) addOrUpdateOptions.add(newOption)
+            }
+
+            var rowsAffected = addOrUpdateOptions.sumBy { OrderSqlUtils.insertOrUpdateOrderStatusOption(it) }
+            rowsAffected += deleteOptions.sumBy { OrderSqlUtils.deleteOrderStatusOption(it) }
+            onOrderStatusLabelsChanged = OnOrderStatusOptionsChanged(rowsAffected)
+        }
+
+        emitChange(onOrderStatusLabelsChanged)
     }
 }

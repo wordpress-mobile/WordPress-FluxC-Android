@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.store.MediaStore.MediaErrorType;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
+import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.PostErrorType;
@@ -86,7 +87,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         // Start uploading media
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
-        MediaPayload payload = new MediaPayload(sSite, testMedia);
+        UploadMediaPayload payload = new UploadMediaPayload(sSite, testMedia, true);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
 
@@ -124,7 +125,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         // Start uploading media
         MediaModel testMedia = newMediaModel(getSampleImagePath(), "not-even-close/to-an-actual-mime-type");
         mNextEvent = TestEvents.MEDIA_ERROR_MALFORMED;
-        MediaPayload payload = new MediaPayload(sSite, testMedia);
+        UploadMediaPayload payload = new UploadMediaPayload(sSite, testMedia, true);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -153,7 +154,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CANCELED_MEDIA;
-        MediaPayload payload = new MediaPayload(sSite, testMedia);
+        UploadMediaPayload payload = new UploadMediaPayload(sSite, testMedia, true);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
 
         // Wait a bit and issue the cancel command
@@ -174,7 +175,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CANCELED_MEDIA;
-        payload = new MediaPayload(sSite, testMedia);
+        payload = new UploadMediaPayload(sSite, testMedia, true);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
 
         // Wait a bit and issue the cancel command
@@ -265,7 +266,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         // Start uploading media
         MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
-        MediaPayload payload = new MediaPayload(sSite, testMedia);
+        UploadMediaPayload payload = new UploadMediaPayload(sSite, testMedia, true);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
 

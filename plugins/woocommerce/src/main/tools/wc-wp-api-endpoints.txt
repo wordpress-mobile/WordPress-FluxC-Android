@@ -1,3 +1,7 @@
 /orders/
 /orders/<id>/
-/orders/<id>/notes
+/orders/<id>/notes/
+
+/reports/orders/totals/
+
+/settings/general/
