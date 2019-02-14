@@ -56,7 +56,7 @@ import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
 
-class WooCommerceFragment : Fragment() {
+class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var wcOrderStore: WCOrderStore
@@ -256,26 +256,14 @@ class WooCommerceFragment : Fragment() {
 
         fetch_order_stats_custom.setOnClickListener {
             fragmentManager?.let { fm ->
-                val dialog = CustomStatsDialog.newInstance(object : Listener {
-                    override fun onSubmitted(startDate: String, endDate: String, granularity: StatsGranularity) {
-                        getFirstWCSite()?.let {
-                            val payload = FetchOrderStatsPayload(it, granularity, startDate, endDate)
-                            dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
-                        } ?: showNoWCSitesToast()
-                    } }, getCustomStatsForSite())
+                val dialog = CustomStatsDialog.newInstance(this, getCustomStatsForSite())
                 dialog.show(fm, "CustomStatsFragment")
             }
         }
 
         fetch_order_stats_custom_forced.setOnClickListener {
             fragmentManager?.let { fm ->
-                val dialog = CustomStatsDialog.newInstance(object : Listener {
-                    override fun onSubmitted(startDate: String, endDate: String, granularity: StatsGranularity) {
-                        getFirstWCSite()?.let {
-                            val payload = FetchOrderStatsPayload(it, granularity, startDate, endDate, forced = true)
-                            dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
-                        } ?: showNoWCSitesToast()
-                    } }, getCustomStatsForSite())
+                val dialog = CustomStatsDialog.newInstance(this, getCustomStatsForSite(), true)
                 dialog.show(fm, "CustomStatsFragment")
             }
         }
@@ -527,5 +515,12 @@ class WooCommerceFragment : Fragment() {
 
     private fun showNoOrdersToast(site: SiteModel) {
         ToastUtils.showToast(activity, "No orders found for site: " + site.name)
+    }
+
+    override fun onSubmitted(startDate: String, endDate: String, granularity: StatsGranularity, forced: Boolean) {
+        getFirstWCSite()?.let {
+            val payload = FetchOrderStatsPayload(it, granularity, startDate, endDate, forced = forced)
+            dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
+        } ?: showNoWCSitesToast()
     }
 }
