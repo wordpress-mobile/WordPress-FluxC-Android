@@ -251,21 +251,6 @@ class WCStatsStore @Inject constructor(
 
     /**
      * returns the quantity (how far back to go) to use when requesting stats for a specific granularity
-     */
-    private fun getQuantityForGranularity(site: SiteModel, granularity: StatsGranularity): Int {
-        return when (granularity) {
-            StatsGranularity.DAYS -> STATS_QUANTITY_DAYS
-            StatsGranularity.WEEKS -> STATS_QUANTITY_WEEKS
-            StatsGranularity.MONTHS -> STATS_QUANTITY_MONTHS
-            StatsGranularity.YEARS -> {
-                // Years since 2011 (WooCommerce initial release), inclusive
-                SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR).toInt() - 2011 + 1
-            }
-        }
-    }
-
-    /**
-     * returns the quantity (how far back to go) to use when requesting stats for a specific granularity
      * and the date range
      */
     private fun getQuantityForGranularity(
