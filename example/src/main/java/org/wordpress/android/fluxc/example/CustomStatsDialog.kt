@@ -14,6 +14,7 @@ import android.widget.Button
 import kotlinx.android.synthetic.main.dialog_custom_stats.*
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
+import org.wordpress.android.fluxc.utils.DateUtils
 import java.util.Calendar
 import java.util.Date
 
@@ -73,10 +74,10 @@ class CustomStatsDialog : DialogFragment() {
             stats_granularity.setSelection(savedInstanceState.getInt("granularity"))
             forced = savedInstanceState.getBoolean("forced")
         } else {
-            val startDate = wcOrderStatsModel?.startDate ?: getCurrentDateString()
+            val startDate = wcOrderStatsModel?.startDate ?: DateUtils.getCurrentDateString()
             stats_from_date.text = startDate
 
-            val endDate = wcOrderStatsModel?.endDate ?: getCurrentDateString()
+            val endDate = wcOrderStatsModel?.endDate ?: DateUtils.getCurrentDateString()
             stats_to_date.text = endDate
 
             wcOrderStatsModel?.unit?.let {
@@ -85,11 +86,15 @@ class CustomStatsDialog : DialogFragment() {
         }
 
         stats_from_date.setOnClickListener {
-            displayDialog(getCalendarInstance(stats_from_date.text.toString()), stats_from_date)
+            displayDialog(
+                    DateUtils.getCalendarInstance(stats_from_date.text.toString()),
+                    stats_from_date)
         }
 
         stats_to_date.setOnClickListener {
-            displayDialog(getCalendarInstance(stats_to_date.text.toString()), stats_to_date)
+            displayDialog(
+                    DateUtils.getCalendarInstance(stats_to_date.text.toString()),
+                    stats_to_date)
         }
 
         stats_dialog_ok.setOnClickListener {
@@ -112,33 +117,11 @@ class CustomStatsDialog : DialogFragment() {
     ) {
         val datePicker = DatePickerDialog(requireActivity(),
                 DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
-                    button.text = getFormattedDate(year, month, dayOfMonth)
+                    button.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
                 }, calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DATE))
         datePicker.datePicker.maxDate = Date().time
         datePicker.show()
-    }
-
-    private fun getCurrentDateString(): String {
-        val calendar = Calendar.getInstance()
-        calendar.time = Date()
-        val dayOfMonth = calendar.get(Calendar.DATE)
-        val year = calendar.get(Calendar.YEAR)
-        val monthOfYear = calendar.get(Calendar.MONTH)
-        return getFormattedDate(year, monthOfYear, dayOfMonth)
-    }
-
-    private fun getFormattedDate(year: Int, month: Int, dayOfMonth: Int): String {
-        return String.format("%d-%02d-%02d", year, (month + 1), dayOfMonth)
-    }
-
-    private fun getCalendarInstance(value: String): Calendar {
-        val cal = Calendar.getInstance()
-        cal.set(Calendar.DATE, value.split("-")[2].toInt())
-        cal.set(Calendar.MONTH, (value.split("-")[1].toInt()))
-        cal.add(Calendar.MONTH, -1)
-        cal.set(Calendar.YEAR, value.split("-")[0].toInt())
-        return cal
     }
 }

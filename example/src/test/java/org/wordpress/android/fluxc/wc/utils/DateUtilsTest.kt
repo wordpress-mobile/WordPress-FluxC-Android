@@ -5,6 +5,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.SiteUtils
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import kotlin.test.assertEquals
@@ -150,5 +151,36 @@ class DateUtilsTest {
         val endDateCalendar3 = DateUtils.getEndDateCalendar(endDate3)
         val quantity3 = DateUtils.getQuantityInYears(startDateCalendar3, endDateCalendar3)
         assertEquals(3, quantity3)
+    }
+
+    @Test
+    fun testGetFormattedDateString() {
+        /*
+         * Testing for all dates from 2011-2019
+         * */
+        val startDateString = "2011-01-01"
+        val endDateString = "2019-02-17"
+        val formatter = SimpleDateFormat(DATE_FORMAT_DAY)
+        val startDate = formatter.parse(startDateString)
+        val endDate = formatter.parse(endDateString)
+
+        val start = Calendar.getInstance()
+        start.time = startDate
+        val end = Calendar.getInstance()
+        end.time = endDate
+
+        var date = start.time
+        while (start.before(end)) {
+            println(date)
+            val testDateString = DateUtils.formatDate(DATE_FORMAT_DAY, date)
+            val testCalendar = DateUtils.getCalendarInstance(testDateString)
+            assertEquals(start.get(Calendar.YEAR), testCalendar.get(Calendar.YEAR))
+            assertEquals(start.get(Calendar.MONTH), testCalendar.get(Calendar.MONTH))
+            assertEquals(start.get(Calendar.DATE), testCalendar.get(Calendar.DATE))
+            assertEquals(testDateString, DateUtils.getFormattedDateString(testCalendar.get(Calendar.YEAR),
+                    testCalendar.get(Calendar.MONTH), testCalendar.get(Calendar.DATE)))
+            start.add(Calendar.DATE, 1)
+            date = start.getTime()
+        }
     }
 }

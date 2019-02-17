@@ -34,12 +34,15 @@ object DateUtils {
          * This might cause timezone issues so getting the current time
          * and setting this time to the date value
          * */
+        val now = Calendar.getInstance()
+        now.time = currentDate
+
         val date = getDateFromString(dateString!!)
         val calendar = Calendar.getInstance()
         calendar.time = date
-        calendar.add(Calendar.HOUR_OF_DAY, currentDate.hours)
-        calendar.add(Calendar.MINUTE, currentDate.minutes)
-        calendar.add(Calendar.SECOND, currentDate.seconds)
+        calendar.add(Calendar.HOUR_OF_DAY, now.get(Calendar.HOUR_OF_DAY))
+        calendar.add(Calendar.MINUTE, now.get(Calendar.MINUTE))
+        calendar.add(Calendar.SECOND, now.get(Calendar.SECOND))
         return SiteUtils.getDateTimeForSite(site, pattern, calendar.time)
     }
 
@@ -210,5 +213,41 @@ object DateUtils {
             }
         }
         return Math.abs(diff)
+    }
+
+    /**
+     * returns string of the current date
+     * in the format: YYYY-MM-dd
+     *
+     */
+    fun getCurrentDateString(): String {
+        val calendar = Calendar.getInstance()
+        calendar.time = Date()
+        val dayOfMonth = calendar.get(Calendar.DATE)
+        val year = calendar.get(Calendar.YEAR)
+        val monthOfYear = calendar.get(Calendar.MONTH)
+        return getFormattedDateString(year, monthOfYear, dayOfMonth)
+    }
+
+    /**
+     * Given a year integer, month integer, date integer,
+     * returns string in the format: YYYY-MM-dd
+     *
+     */
+    fun getFormattedDateString(year: Int, month: Int, dayOfMonth: Int): String {
+        return String.format("%d-%02d-%02d", year, (month + 1), dayOfMonth)
+    }
+
+    /**
+     * Given a date string of format YYYY-MM-dd, returns a [Calendar] instance of the same
+     *
+     */
+    fun getCalendarInstance(value: String): Calendar {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.MONTH, (value.split("-")[1].toInt()))
+        cal.add(Calendar.MONTH, -1)
+        cal.set(Calendar.DATE, value.split("-")[2].toInt())
+        cal.set(Calendar.YEAR, value.split("-")[0].toInt())
+        return cal
     }
 }
