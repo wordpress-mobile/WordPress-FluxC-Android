@@ -19,25 +19,38 @@ import java.util.Calendar
 import java.util.Date
 
 class CustomStatsDialog : DialogFragment() {
+    enum class WCOrderStatsAction {
+        FETCH_CUSTOM_ORDER_STATS,
+        FETCH_CUSTOM_ORDER_STATS_FORCED,
+        FETCH_CUSTOM_VISITOR_STATS,
+        FETCH_CUSTOM_VISITOR_STATS_FORCED
+    }
+
     companion object {
         @JvmStatic
         fun newInstance(
             fragment: Fragment,
             wcOrderStatsModel: WCOrderStatsModel?,
-            forced: Boolean = false
+            wcOrderStatsAction: WCOrderStatsAction
         ) = CustomStatsDialog().apply {
             setTargetFragment(fragment, 100)
-            this.forced = forced
             this.wcOrderStatsModel = wcOrderStatsModel
+            this.wcOrderStatsAction = wcOrderStatsAction
         }
     }
 
     interface Listener {
-        fun onSubmitted(startDate: String, endDate: String, granularity: StatsGranularity, forced: Boolean)
+        fun onSubmitted(
+            startDate: String,
+            endDate: String,
+            granularity: StatsGranularity,
+            wcOrderStatsAction: WCOrderStatsAction?
+        )
     }
 
     var forced: Boolean = false
     var listener: Listener? = null
+    var wcOrderStatsAction: WCOrderStatsAction? = null
     var wcOrderStatsModel: WCOrderStatsModel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -102,7 +115,7 @@ class CustomStatsDialog : DialogFragment() {
             val endDate = stats_to_date.text.toString()
             val granularity: StatsGranularity = stats_granularity.selectedItem as StatsGranularity
 
-            listener?.onSubmitted(startDate, endDate, granularity, forced)
+            listener?.onSubmitted(startDate, endDate, granularity, wcOrderStatsAction)
             dismiss()
         }
 
