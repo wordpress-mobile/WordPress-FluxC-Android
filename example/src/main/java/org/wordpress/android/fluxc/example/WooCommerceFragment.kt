@@ -513,7 +513,12 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                 }
             }
             WCStatsAction.FETCH_VISITOR_STATS ->
-                prependToLog("Fetched visitor stats from ${site!!.name}")
+                if (event.isCustomField) {
+                    prependToLog("Fetched visitor stats from ${site!!.name} " +
+                            "with quantity ${event.quantity} and date ${event.date}")
+                } else {
+                    prependToLog("Fetched visitor stats from ${site!!.name}")
+                }
             else ->
                 prependToLog("WooCommerce stats were updated from a " + event.causeOfChange)
         }

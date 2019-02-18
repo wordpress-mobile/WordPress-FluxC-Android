@@ -113,7 +113,8 @@ class OrderStatsRestClient(
         unit: OrderStatsApiUnit,
         date: String,
         quantity: Int,
-        force: Boolean = false
+        force: Boolean = false,
+        isCustomField: Boolean = false
     ) {
         val url = WPCOMREST.sites.site(site.siteId).stats.visits.urlV1_1
         val params = mapOf(
@@ -125,7 +126,14 @@ class OrderStatsRestClient(
                 .buildGetRequest(url, params, VisitorStatsApiResponse::class.java,
                         { response ->
                             val visits = getVisitorsFromResponse(response)
-                            val payload = FetchVisitorStatsResponsePayload(site, unit, visits)
+                            val payload = FetchVisitorStatsResponsePayload(
+                                    site = site,
+                                    apiUnit = unit,
+                                    visits = visits,
+                                    quantity = quantity.toString(),
+                                    date = date,
+                                    isCustomField = isCustomField
+                            )
                             mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
                         },
                         { networkError ->
