@@ -19,11 +19,16 @@ import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_SINGLE_ORDER
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.action.WCStatsAction
+import org.wordpress.android.fluxc.example.CustomStatsDialog.Companion.PREFS_KEY_END_DATE
+import org.wordpress.android.fluxc.example.CustomStatsDialog.Companion.PREFS_KEY_GRANULARITY
+import org.wordpress.android.fluxc.example.CustomStatsDialog.Companion.PREFS_KEY_START_DATE
 import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction
 import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_ORDER_STATS
 import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_ORDER_STATS_FORCED
 import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_VISITOR_STATS
 import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_VISITOR_STATS_FORCED
+import org.wordpress.android.fluxc.example.utils.getFluxPreferences
+import org.wordpress.android.fluxc.example.utils.getStringFromPreferences
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
@@ -260,9 +265,12 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
 
         fetch_order_stats_custom.setOnClickListener {
             fragmentManager?.let { fm ->
+                val wcOrderStatsModel = getCustomStatsForSite()
                 val dialog = CustomStatsDialog.newInstance(
                         this,
-                        getCustomStatsForSite(),
+                        wcOrderStatsModel?.startDate,
+                        wcOrderStatsModel?.endDate,
+                        wcOrderStatsModel?.unit,
                         FETCH_CUSTOM_ORDER_STATS
                 )
                 dialog.show(fm, "CustomStatsFragment")
@@ -271,9 +279,12 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
 
         fetch_order_stats_custom_forced.setOnClickListener {
             fragmentManager?.let { fm ->
+                val wcOrderStatsModel = getCustomStatsForSite()
                 val dialog = CustomStatsDialog.newInstance(
                         this,
-                        getCustomStatsForSite(),
+                        wcOrderStatsModel?.startDate,
+                        wcOrderStatsModel?.endDate,
+                        wcOrderStatsModel?.unit,
                         FETCH_CUSTOM_ORDER_STATS_FORCED
                 )
                 dialog.show(fm, "CustomStatsFragment")
@@ -296,9 +307,12 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
 
         fetch_visitor_stats_custom.setOnClickListener {
             fragmentManager?.let { fm ->
+                val prefs = getFluxPreferences(requireContext())
                 val dialog = CustomStatsDialog.newInstance(
                         this,
-                        getCustomStatsForSite(),
+                        getStringFromPreferences(prefs, PREFS_KEY_START_DATE),
+                        getStringFromPreferences(prefs, PREFS_KEY_END_DATE),
+                        getStringFromPreferences(prefs, PREFS_KEY_GRANULARITY),
                         FETCH_CUSTOM_VISITOR_STATS
                 )
                 dialog.show(fm, "CustomStatsFragment")
@@ -307,9 +321,12 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
 
         fetch_visitor_stats_custom_forced.setOnClickListener {
             fragmentManager?.let { fm ->
+                val prefs = getFluxPreferences(requireContext())
                 val dialog = CustomStatsDialog.newInstance(
                         this,
-                        getCustomStatsForSite(),
+                        getStringFromPreferences(prefs, PREFS_KEY_START_DATE),
+                        getStringFromPreferences(prefs, PREFS_KEY_END_DATE),
+                        getStringFromPreferences(prefs, PREFS_KEY_GRANULARITY),
                         FETCH_CUSTOM_VISITOR_STATS_FORCED
                 )
                 dialog.show(fm, "CustomStatsFragment")

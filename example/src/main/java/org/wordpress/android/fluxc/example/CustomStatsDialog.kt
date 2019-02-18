@@ -12,7 +12,11 @@ import android.view.WindowManager
 import android.widget.ArrayAdapter
 import android.widget.Button
 import kotlinx.android.synthetic.main.dialog_custom_stats.*
-import org.wordpress.android.fluxc.model.WCOrderStatsModel
+import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_VISITOR_STATS
+import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_VISITOR_STATS_FORCED
+import org.wordpress.android.fluxc.example.utils.addStringToPreferences
+import org.wordpress.android.fluxc.example.utils.getFluxPreferences
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.utils.DateUtils
 import java.util.Calendar
@@ -27,14 +31,22 @@ class CustomStatsDialog : DialogFragment() {
     }
 
     companion object {
+        const val PREFS_KEY_START_DATE = "start_date"
+        const val PREFS_KEY_END_DATE = "end_date"
+        const val PREFS_KEY_GRANULARITY = "granularity"
+
         @JvmStatic
         fun newInstance(
             fragment: Fragment,
-            wcOrderStatsModel: WCOrderStatsModel?,
+            startDate: String?,
+            endDate: String?,
+            unit: String?,
             wcOrderStatsAction: WCOrderStatsAction
         ) = CustomStatsDialog().apply {
             setTargetFragment(fragment, 100)
-            this.wcOrderStatsModel = wcOrderStatsModel
+            this.startDate = startDate
+            this.endDate = endDate
+            this.granularity = unit
             this.wcOrderStatsAction = wcOrderStatsAction
         }
     }
@@ -48,10 +60,11 @@ class CustomStatsDialog : DialogFragment() {
         )
     }
 
-    var forced: Boolean = false
     var listener: Listener? = null
+    var startDate: String? = null
+    var endDate: String? = null
+    var granularity: String? = null
     var wcOrderStatsAction: WCOrderStatsAction? = null
-    var wcOrderStatsModel: WCOrderStatsModel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,7 +81,7 @@ class CustomStatsDialog : DialogFragment() {
         outState.putString("start_date", stats_from_date.text.toString())
         outState.putString("end_date", stats_to_date.text.toString())
         outState.putInt("granularity", (stats_granularity.selectedItem as StatsGranularity).ordinal)
-        outState.putBoolean("forced", forced)
+        outState.putString("action", wcOrderStatsAction.toString())
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -85,15 +98,15 @@ class CustomStatsDialog : DialogFragment() {
             stats_from_date.text = savedInstanceState.getString("start_date")
             stats_to_date.text = savedInstanceState.getString("end_date")
             stats_granularity.setSelection(savedInstanceState.getInt("granularity"))
-            forced = savedInstanceState.getBoolean("forced")
+            wcOrderStatsAction = WCOrderStatsAction.valueOf(savedInstanceState.getString("action").toUpperCase())
         } else {
-            val startDate = wcOrderStatsModel?.startDate ?: DateUtils.getCurrentDateString()
+            val startDate = startDate?.let { it } ?: DateUtils.getCurrentDateString()
             stats_from_date.text = startDate
 
-            val endDate = wcOrderStatsModel?.endDate ?: DateUtils.getCurrentDateString()
+            val endDate = endDate?.let { it } ?: DateUtils.getCurrentDateString()
             stats_to_date.text = endDate
 
-            wcOrderStatsModel?.unit?.let {
+            granularity?.let {
                 stats_granularity.setSelection(StatsGranularity.fromString(it).ordinal)
             }
         }
@@ -114,6 +127,15 @@ class CustomStatsDialog : DialogFragment() {
             val startDate = stats_from_date.text.toString()
             val endDate = stats_to_date.text.toString()
             val granularity: StatsGranularity = stats_granularity.selectedItem as StatsGranularity
+
+            if (wcOrderStatsAction == FETCH_CUSTOM_VISITOR_STATS ||
+                    wcOrderStatsAction == FETCH_CUSTOM_VISITOR_STATS_FORCED) {
+                    val prefs = getFluxPreferences(requireContext())
+                    addStringToPreferences(prefs, PREFS_KEY_START_DATE, startDate)
+                    addStringToPreferences(prefs, PREFS_KEY_END_DATE, endDate)
+                    addStringToPreferences(prefs, PREFS_KEY_GRANULARITY,
+                            OrderStatsApiUnit.fromStatsGranularity(granularity).name)
+            }
 
             listener?.onSubmitted(startDate, endDate, granularity, wcOrderStatsAction)
             dismiss()
