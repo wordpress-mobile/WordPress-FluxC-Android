@@ -19,6 +19,16 @@ import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_SINGLE_ORDER
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
 import org.wordpress.android.fluxc.action.WCStatsAction
+import org.wordpress.android.fluxc.example.CustomStatsDialog.Companion.PREFS_KEY_END_DATE
+import org.wordpress.android.fluxc.example.CustomStatsDialog.Companion.PREFS_KEY_GRANULARITY
+import org.wordpress.android.fluxc.example.CustomStatsDialog.Companion.PREFS_KEY_START_DATE
+import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction
+import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_ORDER_STATS
+import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_ORDER_STATS_FORCED
+import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_VISITOR_STATS
+import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_VISITOR_STATS_FORCED
+import org.wordpress.android.fluxc.example.utils.getFluxPreferences
+import org.wordpress.android.fluxc.example.utils.getStringFromPreferences
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
@@ -55,7 +65,7 @@ import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
 
-class WooCommerceFragment : Fragment() {
+class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var wcOrderStore: WCOrderStore
@@ -248,9 +258,37 @@ class WooCommerceFragment : Fragment() {
 
         fetch_order_stats_forced.setOnClickListener {
             getFirstWCSite()?.let {
-                val payload = FetchOrderStatsPayload(it, StatsGranularity.DAYS, true)
+                val payload = FetchOrderStatsPayload(it, StatsGranularity.DAYS, forced = true)
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
             } ?: showNoWCSitesToast()
+        }
+
+        fetch_order_stats_custom.setOnClickListener {
+            fragmentManager?.let { fm ->
+                val wcOrderStatsModel = getCustomStatsForSite()
+                val dialog = CustomStatsDialog.newInstance(
+                        this,
+                        wcOrderStatsModel?.startDate,
+                        wcOrderStatsModel?.endDate,
+                        wcOrderStatsModel?.unit,
+                        FETCH_CUSTOM_ORDER_STATS
+                )
+                dialog.show(fm, "CustomStatsFragment")
+            }
+        }
+
+        fetch_order_stats_custom_forced.setOnClickListener {
+            fragmentManager?.let { fm ->
+                val wcOrderStatsModel = getCustomStatsForSite()
+                val dialog = CustomStatsDialog.newInstance(
+                        this,
+                        wcOrderStatsModel?.startDate,
+                        wcOrderStatsModel?.endDate,
+                        wcOrderStatsModel?.unit,
+                        FETCH_CUSTOM_ORDER_STATS_FORCED
+                )
+                dialog.show(fm, "CustomStatsFragment")
+            }
         }
 
         fetch_visitor_stats.setOnClickListener {
@@ -265,6 +303,34 @@ class WooCommerceFragment : Fragment() {
                 val payload = FetchVisitorStatsPayload(it, StatsGranularity.MONTHS, true)
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchVisitorStatsAction(payload))
             } ?: showNoWCSitesToast()
+        }
+
+        fetch_visitor_stats_custom.setOnClickListener {
+            fragmentManager?.let { fm ->
+                val prefs = getFluxPreferences(requireContext())
+                val dialog = CustomStatsDialog.newInstance(
+                        this,
+                        getStringFromPreferences(prefs, PREFS_KEY_START_DATE),
+                        getStringFromPreferences(prefs, PREFS_KEY_END_DATE),
+                        getStringFromPreferences(prefs, PREFS_KEY_GRANULARITY),
+                        FETCH_CUSTOM_VISITOR_STATS
+                )
+                dialog.show(fm, "CustomStatsFragment")
+            }
+        }
+
+        fetch_visitor_stats_custom_forced.setOnClickListener {
+            fragmentManager?.let { fm ->
+                val prefs = getFluxPreferences(requireContext())
+                val dialog = CustomStatsDialog.newInstance(
+                        this,
+                        getStringFromPreferences(prefs, PREFS_KEY_START_DATE),
+                        getStringFromPreferences(prefs, PREFS_KEY_END_DATE),
+                        getStringFromPreferences(prefs, PREFS_KEY_GRANULARITY),
+                        FETCH_CUSTOM_VISITOR_STATS_FORCED
+                )
+                dialog.show(fm, "CustomStatsFragment")
+            }
         }
 
         fetch_top_earners_stats.setOnClickListener {
@@ -427,16 +493,32 @@ class WooCommerceFragment : Fragment() {
         val site = getFirstWCSite()
         when (event.causeOfChange) {
             WCStatsAction.FETCH_ORDER_STATS -> {
-                val statsMap = wcStatsStore.getRevenueStats(site!!, event.granularity)
+                val statsMap = wcStatsStore.getRevenueStats(
+                        site!!,
+                        event.granularity,
+                        event.quantity,
+                        event.date,
+                        event.isCustomField)
                 if (statsMap.isEmpty()) {
                     prependToLog("No stats were stored for site " + site.name + " =(")
                 } else {
-                    prependToLog("Fetched stats for " + statsMap.size + " " +
-                                    event.granularity.toString().toLowerCase() + " from " + site.name)
+                    if (event.isCustomField) {
+                        prependToLog("Fetched stats for " + statsMap.size + " " +
+                                event.granularity.toString().toLowerCase() + " from " + site.name +
+                                " with quantity " + event.quantity + " and date " + event.date)
+                    } else {
+                        prependToLog("Fetched stats for " + statsMap.size + " " +
+                                event.granularity.toString().toLowerCase() + " from " + site.name)
+                    }
                 }
             }
             WCStatsAction.FETCH_VISITOR_STATS ->
-                prependToLog("Fetched visitor stats from ${site!!.name}")
+                if (event.isCustomField) {
+                    prependToLog("Fetched visitor stats from ${site!!.name} " +
+                            "with quantity ${event.quantity} and date ${event.date}")
+                } else {
+                    prependToLog("Fetched visitor stats from ${site!!.name}")
+                }
             else ->
                 prependToLog("WooCommerce stats were updated from a " + event.causeOfChange)
         }
@@ -473,6 +555,10 @@ class WooCommerceFragment : Fragment() {
 
     private fun getFirstWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(0)
 
+    private fun getCustomStatsForSite() = getFirstWCSite()?.let {
+        wcStatsStore.getCustomStatsForSite(it)
+    }
+
     private fun getFirstWCOrder() = getFirstWCSite()?.let {
         wcOrderStore.getOrdersForSite(it).getOrNull(0)
     }
@@ -485,5 +571,30 @@ class WooCommerceFragment : Fragment() {
 
     private fun showNoOrdersToast(site: SiteModel) {
         ToastUtils.showToast(activity, "No orders found for site: " + site.name)
+    }
+
+    override fun onSubmitted(
+        startDate: String,
+        endDate: String,
+        granularity: StatsGranularity,
+        wcOrderStatsAction: WCOrderStatsAction?
+    ) {
+        getFirstWCSite()?.let {
+            val action = when (wcOrderStatsAction) {
+                FETCH_CUSTOM_ORDER_STATS_FORCED -> WCStatsActionBuilder.newFetchOrderStatsAction(
+                        FetchOrderStatsPayload(it, granularity, startDate, endDate, forced = true)
+                )
+                FETCH_CUSTOM_VISITOR_STATS -> WCStatsActionBuilder.newFetchVisitorStatsAction(
+                        FetchVisitorStatsPayload(it, granularity, false, startDate, endDate)
+                )
+                FETCH_CUSTOM_VISITOR_STATS_FORCED -> WCStatsActionBuilder.newFetchVisitorStatsAction(
+                        FetchVisitorStatsPayload(it, granularity, true, startDate, endDate)
+                )
+                else -> WCStatsActionBuilder.newFetchOrderStatsAction(
+                        FetchOrderStatsPayload(it, granularity, startDate, endDate)
+                )
+            }
+            dispatcher.dispatch(action)
+        } ?: showNoWCSitesToast()
     }
 }

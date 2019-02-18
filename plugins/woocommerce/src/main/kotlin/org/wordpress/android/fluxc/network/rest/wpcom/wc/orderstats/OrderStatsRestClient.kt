@@ -63,7 +63,15 @@ class OrderStatsRestClient(
      * Possible non-generic errors:
      * [OrderStatsErrorType.INVALID_PARAM] if [unit], [date], or [quantity] are invalid or incompatible
      */
-    fun fetchStats(site: SiteModel, unit: OrderStatsApiUnit, date: String, quantity: Int, force: Boolean = false) {
+    fun fetchStats(
+        site: SiteModel,
+        unit: OrderStatsApiUnit,
+        date: String,
+        quantity: Int,
+        force: Boolean = false,
+        startDate: String? = null,
+        endDate: String? = null
+    ) {
         val url = WPCOMV2.sites.site(site.siteId).stats.orders.url
         val params = mapOf(
                 "unit" to unit.toString(),
@@ -77,6 +85,13 @@ class OrderStatsRestClient(
                         this.unit = unit.toString()
                         this.fields = apiResponse.fields.toString()
                         this.data = apiResponse.data.toString()
+                        this.quantity = quantity.toString()
+                        this.date = date
+                        endDate?.let { this.endDate = it }
+                        startDate?.let {
+                            this.startDate = startDate
+                            this.isCustomField = true
+                        }
                     }
                     val payload = FetchOrderStatsResponsePayload(site, unit, model)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
@@ -98,7 +113,8 @@ class OrderStatsRestClient(
         unit: OrderStatsApiUnit,
         date: String,
         quantity: Int,
-        force: Boolean = false
+        force: Boolean = false,
+        isCustomField: Boolean = false
     ) {
         val url = WPCOMREST.sites.site(site.siteId).stats.visits.urlV1_1
         val params = mapOf(
@@ -110,7 +126,14 @@ class OrderStatsRestClient(
                 .buildGetRequest(url, params, VisitorStatsApiResponse::class.java,
                         { response ->
                             val visits = getVisitorsFromResponse(response)
-                            val payload = FetchVisitorStatsResponsePayload(site, unit, visits)
+                            val payload = FetchVisitorStatsResponsePayload(
+                                    site = site,
+                                    apiUnit = unit,
+                                    visits = visits,
+                                    quantity = quantity.toString(),
+                                    date = date,
+                                    isCustomField = isCustomField
+                            )
                             mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
                         },
                         { networkError ->
