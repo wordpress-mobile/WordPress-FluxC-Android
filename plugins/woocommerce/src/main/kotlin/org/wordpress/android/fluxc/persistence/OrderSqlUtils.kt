@@ -139,7 +139,7 @@ object OrderSqlUtils {
         }
     }
 
-    fun getOrderStatusOptionsForSite(site: SiteModel) =
+    fun getOrderStatusOptionsForSite(site: SiteModel): List<WCOrderStatusModel> =
             WellSql.select(WCOrderStatusModel::class.java)
                     .where()
                     .equals(WCOrderStatusModelTable.LOCAL_SITE_ID, site.id)
@@ -150,7 +150,7 @@ object OrderSqlUtils {
                     .where().beginGroup()
                     .equals(WCOrderStatusModelTable.STATUS_KEY, key)
                     .equals(WCOrderStatusModelTable.LOCAL_SITE_ID, site.id)
-                    .endGroup().endWhere().asModel.first()
+                    .endGroup().endWhere().asModel.firstOrNull()
 
     fun deleteOrderStatusOption(orderStatus: WCOrderStatusModel): Int =
             WellSql.delete(WCOrderStatusModel::class.java).whereId(orderStatus.id)
