@@ -292,32 +292,6 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         }
     }
 
-    @Test
-    fun testCustomVisitorStatsSuccess() {
-        interceptor.respondWith("wc-visitor-stats-response-success.json")
-        orderStatsRestClient.fetchVisitorStats(
-                siteModel,
-                OrderStatsApiUnit.MONTH,
-                "2018-04-20",
-                12,
-                true,
-                true
-        )
-
-        countDownLatch = CountDownLatch(1)
-        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        assertEquals(WCStatsAction.FETCHED_VISITOR_STATS, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchVisitorStatsResponsePayload
-        assertNull(payload.error)
-        assertEquals(siteModel, payload.site)
-        assertEquals(OrderStatsApiUnit.MONTH, payload.apiUnit)
-        assertEquals(12, payload.visits)
-        assertEquals(true, payload.isCustomField)
-        assertEquals("12", payload.quantity)
-        assertEquals("2018-04-20", payload.date)
-    }
-
     @Suppress("unused")
     @Subscribe
     fun onAction(action: Action<*>) {

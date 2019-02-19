@@ -108,10 +108,7 @@ class WCStatsStore @Inject constructor(
     class FetchVisitorStatsResponsePayload(
         val site: SiteModel,
         val apiUnit: OrderStatsApiUnit,
-        val visits: Int = 0,
-        val quantity: String? = null,
-        val date: String? = null,
-        val isCustomField: Boolean = false
+        val visits: Int = 0
     ) : Payload<OrderStatsError>() {
         constructor(error: OrderStatsError, site: SiteModel, apiUnit: OrderStatsApiUnit) : this(site, apiUnit) {
             this.error = error
@@ -321,8 +318,8 @@ class WCStatsStore @Inject constructor(
                 OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
                 getFormattedDate(payload.site, payload.granularity, payload.endDate),
                 quantity,
-                payload.forced,
-                (payload.startDate != null))
+                payload.forced
+        )
     }
 
     private fun fetchTopEarnersStats(payload: FetchTopEarnersStatsPayload) {
@@ -352,13 +349,7 @@ class WCStatsStore @Inject constructor(
 
     private fun handleFetchVisitorStatsCompleted(payload: FetchVisitorStatsResponsePayload) {
         val granularity = StatsGranularity.fromOrderStatsApiUnit(payload.apiUnit)
-        val onStatsChanged = OnWCStatsChanged(
-                payload.visits,
-                granularity,
-                payload.quantity,
-                payload.date,
-                payload.isCustomField
-        )
+        val onStatsChanged = OnWCStatsChanged(payload.visits, granularity)
         if (payload.isError) {
             onStatsChanged.error = payload.error
         }
