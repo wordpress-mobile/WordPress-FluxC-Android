@@ -14,9 +14,8 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.stats.CacheMode
-import org.wordpress.android.fluxc.model.stats.FetchMode
-import org.wordpress.android.fluxc.model.stats.FetchMode.Paged
+import org.wordpress.android.fluxc.model.stats.LimitMode
+import org.wordpress.android.fluxc.model.stats.PagedMode
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
@@ -133,12 +132,14 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val site = authenticate()
 
         val pageSize = 5
-        val fetchedInsights = runBlocking { followersStore.fetchWpComFollowers(site, Paged(pageSize, false)) }
+        val fetchedInsights = runBlocking {
+            followersStore.fetchWpComFollowers(site, PagedMode(pageSize, false))
+        }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = followersStore.getWpComFollowers(site, CacheMode.Top(pageSize))
+        val insightsFromDb = followersStore.getWpComFollowers(site, LimitMode.Top(pageSize))
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
@@ -148,12 +149,14 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val site = authenticate()
 
         val pageSize = 5
-        val fetchedInsights = runBlocking { followersStore.fetchEmailFollowers(site, Paged(pageSize, false)) }
+        val fetchedInsights = runBlocking {
+            followersStore.fetchEmailFollowers(site, PagedMode(pageSize, false))
+        }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = followersStore.getEmailFollowers(site, CacheMode.Top(pageSize))
+        val insightsFromDb = followersStore.getEmailFollowers(site, LimitMode.Top(pageSize))
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
@@ -163,12 +166,12 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val site = authenticate()
 
         val pageSize = 5
-        val fetchedInsights = runBlocking { commentsStore.fetchComments(site, FetchMode.Top(pageSize)) }
+        val fetchedInsights = runBlocking { commentsStore.fetchComments(site, LimitMode.Top(pageSize)) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = commentsStore.getComments(site, CacheMode.Top(pageSize))
+        val insightsFromDb = commentsStore.getComments(site, LimitMode.Top(pageSize))
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
@@ -178,12 +181,12 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val site = authenticate()
 
         val pageSize = 5
-        val fetchedInsights = runBlocking { tagsStore.fetchTags(site, FetchMode.Top(pageSize)) }
+        val fetchedInsights = runBlocking { tagsStore.fetchTags(site, LimitMode.Top(pageSize)) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = tagsStore.getTags(site, CacheMode.Top(pageSize))
+        val insightsFromDb = tagsStore.getTags(site, LimitMode.Top(pageSize))
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }

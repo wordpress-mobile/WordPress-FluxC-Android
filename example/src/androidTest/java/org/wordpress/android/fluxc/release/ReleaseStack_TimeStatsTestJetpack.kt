@@ -14,8 +14,7 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.stats.CacheMode
-import org.wordpress.android.fluxc.model.stats.FetchMode
+import org.wordpress.android.fluxc.model.stats.LimitMode
 import org.wordpress.android.fluxc.network.utils.StatsGranularity
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
@@ -85,7 +84,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
                 postAndPageViewsStore.fetchPostAndPageViews(
                         site,
                         granularity,
-                        FetchMode.Top(PAGE_SIZE),
+                        LimitMode.Top(PAGE_SIZE),
                         SELECTED_DATE,
                         true
                 )
@@ -97,7 +96,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(
                     site,
                     granularity,
-                    CacheMode.Top(PAGE_SIZE),
+                    LimitMode.Top(PAGE_SIZE),
                     SELECTED_DATE
             )
 
