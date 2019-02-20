@@ -12,11 +12,6 @@ import android.view.WindowManager
 import android.widget.ArrayAdapter
 import android.widget.Button
 import kotlinx.android.synthetic.main.dialog_custom_stats.*
-import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_VISITOR_STATS
-import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_VISITOR_STATS_FORCED
-import org.wordpress.android.fluxc.example.utils.addStringToPreferences
-import org.wordpress.android.fluxc.example.utils.getFluxPreferences
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.utils.DateUtils
 import java.util.Calendar
@@ -31,10 +26,6 @@ class CustomStatsDialog : DialogFragment() {
     }
 
     companion object {
-        const val PREFS_KEY_START_DATE = "start_date"
-        const val PREFS_KEY_END_DATE = "end_date"
-        const val PREFS_KEY_GRANULARITY = "granularity"
-
         @JvmStatic
         fun newInstance(
             fragment: Fragment,
@@ -127,15 +118,6 @@ class CustomStatsDialog : DialogFragment() {
             val startDate = stats_from_date.text.toString()
             val endDate = stats_to_date.text.toString()
             val granularity: StatsGranularity = stats_granularity.selectedItem as StatsGranularity
-
-            if (wcOrderStatsAction == FETCH_CUSTOM_VISITOR_STATS ||
-                    wcOrderStatsAction == FETCH_CUSTOM_VISITOR_STATS_FORCED) {
-                    val prefs = getFluxPreferences(requireContext())
-                    addStringToPreferences(prefs, PREFS_KEY_START_DATE, startDate)
-                    addStringToPreferences(prefs, PREFS_KEY_END_DATE, endDate)
-                    addStringToPreferences(prefs, PREFS_KEY_GRANULARITY,
-                            OrderStatsApiUnit.fromStatsGranularity(granularity).name)
-            }
 
             listener?.onSubmitted(startDate, endDate, granularity, wcOrderStatsAction)
             dismiss()
