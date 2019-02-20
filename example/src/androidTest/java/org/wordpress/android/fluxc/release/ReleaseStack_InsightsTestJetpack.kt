@@ -195,16 +195,17 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     fun testPostingActivity() {
         val site = authenticate()
 
-        val startDate = Calendar.getInstance()
-        startDate.set(2019, 1, 1)
-        val endDate = Calendar.getInstance()
-        endDate.set(2019, 2, 14)
+        val startCalendar = Calendar.getInstance()
+        startCalendar.set(2019, 1, 1)
+        val endCalendar = Calendar.getInstance()
+        endCalendar.set(2019, 2, 14)
+        val startDate = startCalendar.time
+        val endDate = endCalendar.time
         val fetchedInsights = runBlocking {
             postingActivityStore.fetchPostingActivity(
                     site,
-                    startDate.time,
-                    endDate.time,
-                    3000,
+                    startDate,
+                    endDate,
                     false
             )
         }
@@ -212,7 +213,7 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = postingActivityStore.getPostingActivity(site, 3000)
+        val insightsFromDb = postingActivityStore.getPostingActivity(site, startDate, endDate)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
