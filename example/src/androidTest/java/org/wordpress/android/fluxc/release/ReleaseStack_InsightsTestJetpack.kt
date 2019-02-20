@@ -22,8 +22,10 @@ import org.wordpress.android.fluxc.store.InsightsStore
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
+import org.wordpress.android.fluxc.store.stats.insights.PostingActivityStore
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import java.util.Calendar
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -34,6 +36,7 @@ import javax.inject.Inject
 class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     private val incomingActions: MutableList<Action<*>> = mutableListOf()
     @Inject lateinit var insightsStore: InsightsStore
+    @Inject lateinit var postingActivityStore: PostingActivityStore
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var accountStore: AccountStore
 
@@ -184,6 +187,32 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         assertNotNull(fetchedInsights.model)
 
         val insightsFromDb = insightsStore.getPublicizeData(site, pageSize)
+
+        assertEquals(fetchedInsights.model, insightsFromDb)
+    }
+
+    @Test
+    fun testPostingActivity() {
+        val site = authenticate()
+
+        val startDate = Calendar.getInstance()
+        startDate.set(2019, 1, 1)
+        val endDate = Calendar.getInstance()
+        endDate.set(2019, 2, 14)
+        val fetchedInsights = runBlocking {
+            postingActivityStore.fetchPostingActivity(
+                    site,
+                    startDate.time,
+                    endDate.time,
+                    3000,
+                    false
+            )
+        }
+
+        assertNotNull(fetchedInsights)
+        assertNotNull(fetchedInsights.model)
+
+        val insightsFromDb = postingActivityStore.getPostingActivity(site, 3000)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
