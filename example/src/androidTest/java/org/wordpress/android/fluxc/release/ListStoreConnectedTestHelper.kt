@@ -6,8 +6,8 @@ import android.arch.lifecycle.LifecycleRegistry
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MediatorLiveData
 import android.arch.lifecycle.Observer
-import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertTrue
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.model.list.ListConfig
 import org.wordpress.android.fluxc.model.list.ListDescriptor
@@ -19,6 +19,8 @@ import org.wordpress.android.fluxc.release.IsFetchingFirstPageValue.FETCHING_FIR
 import org.wordpress.android.fluxc.release.IsFetchingFirstPageValue.NOT_FETCHING_FIRST_PAGE
 import org.wordpress.android.fluxc.release.IsLoadingMoreValue.LOADING_MORE
 import org.wordpress.android.fluxc.release.IsLoadingMoreValue.NOT_LOADING_MORE
+import org.wordpress.android.fluxc.release.ListStoreConnectedTestMode.MultiplePages
+import org.wordpress.android.fluxc.release.ListStoreConnectedTestMode.SinglePage
 import org.wordpress.android.fluxc.store.ListStore
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -29,7 +31,7 @@ private const val TEST_LIST_DB_PAGE_SIZE = 5
 private const val TEST_LIST_PRE_FETCH_DISTANCE = TEST_LIST_DB_PAGE_SIZE * 3
 
 /**
- * A [ListConfig] instance that has smaller values then the default config to make testing lists less demanding.
+ * A [ListConfig] instance that has smaller values than the default config to make testing lists less demanding.
  */
 internal val TEST_LIST_CONFIG = ListConfig(
         networkPageSize = TEST_LIST_NETWORK_PAGE_SIZE,
@@ -39,16 +41,30 @@ internal val TEST_LIST_CONFIG = ListConfig(
 )
 
 /**
- * A helper class that makes writing connected tests for [ListStore] dead easy. It provides helpers for testing fetching
- * first page and loading more data. It also makes it very easy to update/improve every connected test for [ListStore]
- * from a single place.
+ * A sealed class to be provided to [ListStoreConnectedTestHelper] to describe the expectations from a test.
+ */
+internal sealed class ListStoreConnectedTestMode {
+    /**
+     * Retrieving a single page of data is enough to pass a test in this test mode.
+     */
+    class SinglePage(val ensureListIsNotEmpty: Boolean = false) : ListStoreConnectedTestMode()
+
+    /**
+     * Multiple pages of data needs to be fetched in order to pass a test in this test mode.
+     */
+    object MultiplePages : ListStoreConnectedTestMode()
+}
+
+/**
+ * A helper class that makes writing connected tests for [ListStore] dead easy. It also makes it very easy to
+ * update/improve every connected test for [ListStore] from a single place.
  */
 internal class ListStoreConnectedTestHelper(private val listStore: ListStore) {
     /**
      * A helper function that returns the list from [ListStore] for the given [ListDescriptor] and
      * [ListDataStoreInterface].
      *
-     * It provides a default [Lifecycle] instance and skips the `transform` function to make it easier to write tests.
+     * It uses a default [Lifecycle] instance and skips the `transform` function to make it easier to write tests.
      * The default [Lifecycle] instance will NOT be destroyed throughout the test.
      *
      * @param listDescriptor [ListDescriptor] instance to be used to retrieve the list
@@ -69,8 +85,7 @@ internal class ListStoreConnectedTestHelper(private val listStore: ListStore) {
     }
 
     /**
-     * A helper function that fetches the first page of a list and asserts that correct values are observed for the
-     * given [PagedListWrapper].
+     * A helper function that tests the given [PagedListWrapper] depending on the given [ListStoreConnectedTestMode].
      *
      * This function takes a [PagedListWrapper] generator instead of a [PagedListWrapper] instance to discourage any
      * attempt of setting up the given [PagedListWrapper] and convey the intend that the setup will be performed
@@ -78,26 +93,24 @@ internal class ListStoreConnectedTestHelper(private val listStore: ListStore) {
      *
      * @param createPagedListWrapper A factory function that will create a [PagedListWrapper] instance.
      */
-    fun <T> testFetchFirstPage(createPagedListWrapper: () -> PagedListWrapper<T>) {
-        fetchFirstPageAndAssert(createPagedListWrapper())
+    fun <T> runTest(
+        testMode: ListStoreConnectedTestMode,
+        createPagedListWrapper: () -> PagedListWrapper<T>
+    ) {
+        val pagedListWrapper = createPagedListWrapper()
+        when (testMode) {
+            is SinglePage -> testFirstPage(pagedListWrapper, testMode.ensureListIsNotEmpty)
+            MultiplePages -> testLoadMore(pagedListWrapper)
+        }
     }
 
     /**
-     * A helper function that initially fetches the first page of a list and asserts that correct values are observed
-     * for the given [PagedListWrapper]. This is done so that it can then trigger loading more data to observe that
-     * all values are changed correctly.
-     *
-     * This function takes a [PagedListWrapper] generator instead of a [PagedListWrapper] instance to discourage any
-     * attempt of setting up the given [PagedListWrapper] and convey the intend that the setup will be performed
-     * by this helper instead.
-     *
-     * @param createPagedListWrapper A factory function that will create a [PagedListWrapper] instance.
+     * A helper function that initially fetches the first page of a list and then triggers loading more data to assert
+     * that correct values are observed for the given [PagedListWrapper].
      */
-    fun <T> testLoadMore(createPagedListWrapper: () -> PagedListWrapper<T>) = runWithSimpleLifecycle { lifecycle ->
-        val pagedListWrapper = createPagedListWrapper()
-        fetchFirstPageAndAssert(pagedListWrapper)
+    private fun <T> testLoadMore(pagedListWrapper: PagedListWrapper<T>) {
+        testFirstPage(pagedListWrapper, true)
         pagedListWrapper.testObservedDistinctValues(
-                lifecycle = lifecycle,
                 expectedIsEmptyValues = listOf(NOT_EMPTY),
                 expectedIsFetchingFirstPageValues = listOf(NOT_FETCHING_FIRST_PAGE),
                 expectedIsLoadingMoreValues = listOf(NOT_LOADING_MORE, LOADING_MORE, NOT_LOADING_MORE)
@@ -107,36 +120,23 @@ internal class ListStoreConnectedTestHelper(private val listStore: ListStore) {
     }
 
     /**
-     * An internal helper function that fetches the first page of a list and asserts that correct values are observed
-     * for the given [PagedListWrapper].
+     * A helper function that fetches the first page of a list and asserts that correct values are observed for the
+     * given [PagedListWrapper].
      *
      * @param pagedListWrapper [PagedListWrapper] instance that will be tested
      */
-    private fun <T> fetchFirstPageAndAssert(pagedListWrapper: PagedListWrapper<T>) =
-            runWithSimpleLifecycle { lifecycle ->
-                pagedListWrapper.testObservedDistinctValues(
-                        lifecycle = lifecycle,
-                        expectedIsEmptyValues = listOf(EMPTY, NOT_EMPTY),
-                        // TODO: Initial value should be NOT_FETCHING_FIRST_PAGE, but this is not posted by
-                        // TODO: `PagedListWrapper`
-                        expectedIsFetchingFirstPageValues = listOf(FETCHING_FIRST_PAGE, NOT_FETCHING_FIRST_PAGE),
-                        expectedIsLoadingMoreValues = listOf(NOT_LOADING_MORE)
-                ) {
-                    pagedListWrapper.fetchFirstPage()
-                }
-            }
-}
-
-/**
- * A helper function to run a block using a [SimpleTestLifecycle] which will be destroyed automatically once the
- * block is completed.
- */
-private fun runWithSimpleLifecycle(
-    lifecycle: SimpleTestLifecycle = SimpleTestLifecycle(),
-    runTest: (LifecycleOwner) -> Unit
-) {
-    runTest(lifecycle)
-    lifecycle.destroy()
+    private fun <T> testFirstPage(pagedListWrapper: PagedListWrapper<T>, ensureListIsNotEmpty: Boolean) {
+        val isEmptyValues = if (ensureListIsNotEmpty) listOf(EMPTY, NOT_EMPTY) else listOf(EMPTY)
+        pagedListWrapper.testObservedDistinctValues(
+                expectedIsEmptyValues = isEmptyValues,
+                // TODO: Initial value should be NOT_FETCHING_FIRST_PAGE, but this is not posted by
+                // TODO: `PagedListWrapper`
+                expectedIsFetchingFirstPageValues = listOf(FETCHING_FIRST_PAGE, NOT_FETCHING_FIRST_PAGE),
+                expectedIsLoadingMoreValues = listOf(NOT_LOADING_MORE)
+        ) {
+            pagedListWrapper.fetchFirstPage()
+        }
+    }
 }
 
 /**
@@ -182,7 +182,7 @@ private enum class IsLoadingMoreValue(override val value: Boolean) : ObservedVal
 /**
  * A helper function that compares the observed values with the expected ones for the given [PagedListWrapper] until
  * the given lists run out.
- * @param lifecycle [LifecycleOwner] the [LiveData] instances will be observed on.
+ *
  * @param expectedIsEmptyValues List of expected [PagedListWrapper.isEmpty] values
  * @param expectedIsFetchingFirstPageValues List of expected [PagedListWrapper.isFetchingFirstPage] values
  * @param expectedIsLoadingMoreValues List of expected [PagedListWrapper.isLoadingMore] values
@@ -190,7 +190,6 @@ private enum class IsLoadingMoreValue(override val value: Boolean) : ObservedVal
  *
  */
 private fun <T> PagedListWrapper<T>.testObservedDistinctValues(
-    lifecycle: LifecycleOwner,
     expectedIsEmptyValues: List<IsEmptyValue>,
     expectedIsFetchingFirstPageValues: List<IsFetchingFirstPageValue>,
     expectedIsLoadingMoreValues: List<IsLoadingMoreValue>,
@@ -199,27 +198,30 @@ private fun <T> PagedListWrapper<T>.testObservedDistinctValues(
     val countDownLatch = CountDownLatch(3)
     val done = { countDownLatch.countDown() }
     this.isEmpty.testObservedDistinctValues(
-            lifecycle = lifecycle,
             expectedValues = expectedIsEmptyValues.iterator(),
             assertionMessage = createAssertionMessage("IsEmpty"),
             done = done
     )
     this.isFetchingFirstPage.testObservedDistinctValues(
-            lifecycle = lifecycle,
             expectedValues = expectedIsFetchingFirstPageValues.iterator(),
             assertionMessage = createAssertionMessage("IsFetchingFirstPage"),
             done = done
     )
     this.isLoadingMore.testObservedDistinctValues(
-            lifecycle = lifecycle,
             expectedValues = expectedIsLoadingMoreValues.iterator(),
             assertionMessage = createAssertionMessage("IsLoadingMore"),
             done = done
     )
     testSetup()
-    assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+    assertTrue(
+            "The test timed out before observing all expected values!",
+            countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS)
+    )
 }
 
+/**
+ * A helper function that triggers load more call for the [PagedListWrapper] to make it easy to test.
+ */
 private fun <T> PagedListWrapper<T>.triggerLoadMore() {
     val lifecycle = SimpleTestLifecycle()
     this.data.observe(lifecycle, Observer {
@@ -236,21 +238,22 @@ private fun <T> PagedListWrapper<T>.triggerLoadMore() {
  *
  * If the observed event is the same as the last one, it'll be ignored. See [ignoreIfSame] for details.
  *
- * @param lifecycle [LifecycleOwner] the [LiveData] will be observed on.
  * @param expectedValues List of expected values
  * @param assertionMessage Assertion message that'll be used during comparison to generate meaningful errors
  * @param done Callback to be called when all events in the [expectedValues] are observed
  */
 private fun <T, OV : ObservedValue<T>> LiveData<T>.testObservedDistinctValues(
-    lifecycle: LifecycleOwner,
     expectedValues: Iterator<OV>,
     assertionMessage: String,
     done: () -> Unit
 ) {
+    val lifecycle = SimpleTestLifecycle()
     this.ignoreIfSame().observe(lifecycle, Observer { actual ->
         val expected = expectedValues.next().value
         assertEquals(assertionMessage, expected, actual)
         if (!expectedValues.hasNext()) {
+            // Destroy the lifecycle so we don't get any more values
+            lifecycle.destroy()
             done()
         }
     })
@@ -275,7 +278,7 @@ private fun <T> LiveData<T>.ignoreIfSame(): LiveData<T> {
 /**
  * A simple helper [LifecycleOwner] implementation to be used in tests.
  *
- * It marks it's state as `RESUMED` as soon as it's created.
+ * It marks its state as `RESUMED` as soon as it's created.
  */
 private class SimpleTestLifecycle : LifecycleOwner {
     private val lifecycleRegistry = LifecycleRegistry(this)
