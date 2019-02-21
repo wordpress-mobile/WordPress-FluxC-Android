@@ -9,6 +9,7 @@ import android.arch.lifecycle.Observer
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertTrue
 import org.wordpress.android.fluxc.TestUtils
+import org.wordpress.android.fluxc.model.list.ListConfig
 import org.wordpress.android.fluxc.model.list.ListDescriptor
 import org.wordpress.android.fluxc.model.list.PagedListWrapper
 import org.wordpress.android.fluxc.model.list.datastore.ListDataStoreInterface
@@ -21,6 +22,21 @@ import org.wordpress.android.fluxc.release.IsLoadingMoreValue.NOT_LOADING_MORE
 import org.wordpress.android.fluxc.store.ListStore
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+
+private const val TEST_LIST_NETWORK_PAGE_SIZE = 5
+private const val TEST_LIST_INITIAL_LOAD_SIZE = 10
+private const val TEST_LIST_DB_PAGE_SIZE = 5
+private const val TEST_LIST_PRE_FETCH_DISTANCE = TEST_LIST_DB_PAGE_SIZE * 3
+
+/**
+ * A [ListConfig] instance that has smaller values then the default config to make testing lists less demanding.
+ */
+internal val TEST_LIST_CONFIG = ListConfig(
+        networkPageSize = TEST_LIST_NETWORK_PAGE_SIZE,
+        initialLoadSize = TEST_LIST_INITIAL_LOAD_SIZE,
+        dbPageSize = TEST_LIST_DB_PAGE_SIZE,
+        prefetchDistance = TEST_LIST_PRE_FETCH_DISTANCE
+)
 
 /**
  * A helper class that makes writing connected tests for [ListStore] dead easy. It provides helpers for testing fetching
