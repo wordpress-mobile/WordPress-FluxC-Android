@@ -5,8 +5,6 @@ import android.content.Context;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.network.HTTPAuthManager;
 import org.wordpress.android.fluxc.network.OkHttpStack;
@@ -18,9 +16,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AppSecrets;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator;
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.ErrorListener;
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Listener;
-import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator.Token;
 import org.wordpress.android.fluxc.network.rest.wpcom.media.MediaRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient;
@@ -36,13 +31,6 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 import okhttp3.OkHttpClient;
-
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.spy;
 
 @Module
 public class MockedNetworkModule {
@@ -76,35 +64,7 @@ public class MockedNetworkModule {
     @Provides
     public Authenticator provideAuthenticator(Context appContext, Dispatcher dispatcher, AppSecrets appSecrets,
                                               RequestQueue requestQueue) {
-        Authenticator authenticator = new Authenticator(appContext, dispatcher, requestQueue, appSecrets);
-        Authenticator spy = spy(authenticator);
-
-        // Mock Authenticator with correct user: test/test
-        doAnswer(
-                new Answer() {
-                    public Object answer(InvocationOnMock invocation) {
-                        Object[] args = invocation.getArguments();
-                        Listener listener = (Listener) args[4];
-                        listener.onResponse(new Token("deadparrot", "", "", "", ""));
-                        return null;
-                    }
-                }
-        ).when(spy).authenticate(eq("test"), eq("test"), anyString(), anyBoolean(),
-                (Listener) any(), (ErrorListener) any());
-
-        // Mock Authenticator with erroneous user: error/error
-        doAnswer(
-                new Answer() {
-                    public Object answer(InvocationOnMock invocation) {
-                        Object[] args = invocation.getArguments();
-                        ErrorListener listener = (ErrorListener) args[5];
-                        listener.onErrorResponse(null);
-                        return null;
-                    }
-                }
-        ).when(spy).authenticate(eq("error"), eq("error"), anyString(), anyBoolean(),
-                (Listener) any(), (ErrorListener) any());
-        return spy;
+        return new Authenticator(appContext, dispatcher, requestQueue, appSecrets);
     }
 
     @Singleton
