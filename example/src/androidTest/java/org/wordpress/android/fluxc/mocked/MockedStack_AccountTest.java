@@ -95,6 +95,7 @@ public class MockedStack_AccountTest extends MockedStack_Base {
         mIsError = true;
         // Correct user we should get an OnAuthenticationChanged message
         mCountDownLatch = new CountDownLatch(1);
+        mInterceptor.respondWith("authentication-error-response.json");
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
