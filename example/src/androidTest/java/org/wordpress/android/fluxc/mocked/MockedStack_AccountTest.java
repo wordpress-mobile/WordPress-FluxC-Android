@@ -79,6 +79,7 @@ public class MockedStack_AccountTest extends MockedStack_Base {
         // Correct user we should get an OnAuthenticationChanged message
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(AuthenticationActionBuilder.newAuthenticateAction(payload));
+        mInterceptor.respondWith("authentication-success-response.json");
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Log out and clear stored dummy account
