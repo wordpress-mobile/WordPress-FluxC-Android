@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.CacheMode
+import org.wordpress.android.fluxc.model.stats.FetchMode
 import org.wordpress.android.fluxc.model.stats.FetchMode.Paged
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
@@ -150,12 +151,12 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val site = authenticate()
 
         val pageSize = 5
-        val fetchedInsights = runBlocking { insightsStore.fetchComments(site, pageSize) }
+        val fetchedInsights = runBlocking { insightsStore.fetchComments(site, FetchMode.Top(pageSize)) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = insightsStore.getComments(site, pageSize)
+        val insightsFromDb = insightsStore.getComments(site, CacheMode.Top(pageSize))
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
