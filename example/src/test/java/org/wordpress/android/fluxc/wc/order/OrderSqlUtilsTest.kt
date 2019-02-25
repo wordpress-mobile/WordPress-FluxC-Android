@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
@@ -239,6 +240,26 @@ class OrderSqlUtilsTest {
         // Get the first option from the database by the status key
         val firstOption = OrderSqlUtils.getOrderStatusOptionForSiteByKey(siteModel, orderStatusOptions[0].statusKey)
         assertNotNull(firstOption)
-        assertEquals(firstOption!!.label, orderStatusOptions[0].label)
+        assertEquals(firstOption.label, orderStatusOptions[0].label)
+    }
+
+    @Test
+    fun testGetOrderStatusOptions_Empty() {
+        val siteModel = SiteModel().apply { id = 1 }
+
+        // Attempt to fetch order status options from database.
+        // No options will be available.
+        val options = OrderSqlUtils.getOrderStatusOptionsForSite(siteModel)
+        assertNotNull(options)
+        assertEquals(0, options.size)
+    }
+
+    @Test
+    fun testGetOrderStatusOption_NotExists() {
+        val siteModel = SiteModel().apply { id = 1 }
+
+        // Get the first option from the database by the status key
+        val option = OrderSqlUtils.getOrderStatusOptionForSiteByKey(siteModel, "missing")
+        assertNull(option)
     }
 }

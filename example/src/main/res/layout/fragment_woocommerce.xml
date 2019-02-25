@@ -113,6 +113,18 @@
             android:text="Fetch 30-day Revenue Stats (forced)"/>
 
         <Button
+            android:id="@+id/fetch_order_stats_custom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Custom Revenue Stats"/>
+
+        <Button
+            android:id="@+id/fetch_order_stats_custom_forced"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Custom Revenue Stats (forced)"/>
+
+        <Button
             android:id="@+id/fetch_visitor_stats"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -123,6 +135,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Fetch 30-day Visitor Stats (forced)"/>
+
+        <Button
+            android:id="@+id/fetch_visitor_stats_custom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Custom Visitor Stats"/>
+
+        <Button
+            android:id="@+id/fetch_visitor_stats_custom_forced"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Custom Visitor Stats (forced)"/>
 
         <Button
             android:id="@+id/fetch_top_earners_stats"
