@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.model.post.PostStatus
 import org.wordpress.android.fluxc.model.post.PostStatus.DRAFT
 import org.wordpress.android.fluxc.model.post.PostStatus.SCHEDULED
 import org.wordpress.android.fluxc.model.post.PostStatus.TRASHED
+import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestHelper
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.MultiplePages
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.SinglePage

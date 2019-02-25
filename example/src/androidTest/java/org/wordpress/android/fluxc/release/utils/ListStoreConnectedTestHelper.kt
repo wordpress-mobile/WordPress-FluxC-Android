@@ -1,4 +1,4 @@
-package org.wordpress.android.fluxc.release
+package org.wordpress.android.fluxc.release.utils
 
 import android.arch.lifecycle.Lifecycle
 import org.wordpress.android.fluxc.model.list.ListDescriptor
@@ -10,12 +10,8 @@ import org.wordpress.android.fluxc.release.utils.IsFetchingFirstPageValue.FETCHI
 import org.wordpress.android.fluxc.release.utils.IsFetchingFirstPageValue.NOT_FETCHING_FIRST_PAGE
 import org.wordpress.android.fluxc.release.utils.IsLoadingMoreValue.LOADING_MORE
 import org.wordpress.android.fluxc.release.utils.IsLoadingMoreValue.NOT_LOADING_MORE
-import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.MultiplePages
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.SinglePage
-import org.wordpress.android.fluxc.release.utils.SimpleTestLifecycle
-import org.wordpress.android.fluxc.release.utils.testExpectedListWrapperStateChanges
-import org.wordpress.android.fluxc.release.utils.triggerLoadMore
 import org.wordpress.android.fluxc.store.ListStore
 
 /**
