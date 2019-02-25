@@ -110,7 +110,7 @@ internal class ListStoreConnectedTestHelper(private val listStore: ListStore) {
      */
     private fun <T> testLoadMore(pagedListWrapper: PagedListWrapper<T>) {
         testFirstPage(pagedListWrapper, true)
-        pagedListWrapper.testObservedDistinctValues(
+        pagedListWrapper.testExpectedListWrapperStateChanges(
                 expectedIsEmptyValues = listOf(NOT_EMPTY),
                 expectedIsFetchingFirstPageValues = listOf(NOT_FETCHING_FIRST_PAGE),
                 expectedIsLoadingMoreValues = listOf(NOT_LOADING_MORE, LOADING_MORE, NOT_LOADING_MORE)
@@ -127,7 +127,7 @@ internal class ListStoreConnectedTestHelper(private val listStore: ListStore) {
      */
     private fun <T> testFirstPage(pagedListWrapper: PagedListWrapper<T>, ensureListIsNotEmpty: Boolean) {
         val isEmptyValues = if (ensureListIsNotEmpty) listOf(EMPTY, NOT_EMPTY) else listOf(EMPTY)
-        pagedListWrapper.testObservedDistinctValues(
+        pagedListWrapper.testExpectedListWrapperStateChanges(
                 expectedIsEmptyValues = isEmptyValues,
                 // TODO: Initial value should be NOT_FETCHING_FIRST_PAGE, but this is not posted by
                 // TODO: `PagedListWrapper`
@@ -189,7 +189,7 @@ private enum class IsLoadingMoreValue(override val value: Boolean) : ObservedVal
  * @param testSetup The test setup to be run before waiting for all values to be observed
  *
  */
-private fun <T> PagedListWrapper<T>.testObservedDistinctValues(
+private fun <T> PagedListWrapper<T>.testExpectedListWrapperStateChanges(
     expectedIsEmptyValues: List<IsEmptyValue>,
     expectedIsFetchingFirstPageValues: List<IsFetchingFirstPageValue>,
     expectedIsLoadingMoreValues: List<IsLoadingMoreValue>,
@@ -200,17 +200,17 @@ private fun <T> PagedListWrapper<T>.testObservedDistinctValues(
     this.isEmpty.testObservedDistinctValues(
             expectedValues = expectedIsEmptyValues.iterator(),
             assertionMessage = createAssertionMessage("IsEmpty"),
-            done = done
+            onFinish = done
     )
     this.isFetchingFirstPage.testObservedDistinctValues(
             expectedValues = expectedIsFetchingFirstPageValues.iterator(),
             assertionMessage = createAssertionMessage("IsFetchingFirstPage"),
-            done = done
+            onFinish = done
     )
     this.isLoadingMore.testObservedDistinctValues(
             expectedValues = expectedIsLoadingMoreValues.iterator(),
             assertionMessage = createAssertionMessage("IsLoadingMore"),
-            done = done
+            onFinish = done
     )
     testSetup()
     assertTrue(
@@ -243,12 +243,12 @@ private fun <T> PagedListWrapper<T>.triggerLoadMore() {
  *
  * @param expectedValues List of expected values
  * @param assertionMessage Assertion message that'll be used during comparison to generate meaningful errors
- * @param done Callback to be called when all events in the [expectedValues] are observed
+ * @param onFinish Callback to be called when all events in the [expectedValues] are observed
  */
 private fun <T, OV : ObservedValue<T>> LiveData<T>.testObservedDistinctValues(
     expectedValues: Iterator<OV>,
     assertionMessage: String,
-    done: () -> Unit
+    onFinish: () -> Unit
 ) {
     val lifecycle = SimpleTestLifecycle()
     this.ignoreIfSame().observe(lifecycle, Observer { actual ->
@@ -257,7 +257,7 @@ private fun <T, OV : ObservedValue<T>> LiveData<T>.testObservedDistinctValues(
         if (!expectedValues.hasNext()) {
             // Destroy the lifecycle so we don't get any more values
             lifecycle.destroy()
-            done()
+            onFinish()
         }
     })
 }
