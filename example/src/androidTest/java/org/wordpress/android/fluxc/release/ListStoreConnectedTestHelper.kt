@@ -221,12 +221,15 @@ private fun <T> PagedListWrapper<T>.testObservedDistinctValues(
 
 /**
  * A helper function that triggers load more call for the [PagedListWrapper] to make it easy to test.
+ *
+ * It uses an internal lifecycle to observe the [PagedListWrapper.data] and calls `loadAround` on it with the last
+ * item's index to trigger loading more data from remote. It'll then destroy the lifecycle so it doesn't keep
+ * fetching more pages.
  */
 private fun <T> PagedListWrapper<T>.triggerLoadMore() {
     val lifecycle = SimpleTestLifecycle()
     this.data.observe(lifecycle, Observer {
         if (it != null && it.size > 0) {
-            // `PagedList.loadAround` is used with the final item index to trigger loading more data from remote
             it.loadAround(it.size - 1)
             lifecycle.destroy()
         }
