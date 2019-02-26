@@ -45,7 +45,8 @@ class WooCommerceRestClient(
      */
     fun getSupportedWooApiVersion(site: SiteModel) {
         val url = "/"
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, emptyMap(),
+        val params = mapOf("_fields" to "authentication,namespaces")
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params,
                 RootWPAPIRestResponse::class.java,
                 { response: RootWPAPIRestResponse? ->
                     val namespaces = response?.namespaces
