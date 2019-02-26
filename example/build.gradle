@@ -112,6 +112,7 @@ dependencies {
 
     androidTestImplementation 'org.mockito:mockito-android:2.6.3'
     androidTestImplementation 'org.apache.commons:commons-lang3:3.5'
+    androidTestImplementation "android.arch.core:core-testing:1.1.1"
     kaptAndroidTest "com.google.dagger:dagger-compiler:$daggerVersion"
     androidTestCompileOnly 'org.glassfish:javax.annotation:10.0-b28'
     // Test orchestrator
