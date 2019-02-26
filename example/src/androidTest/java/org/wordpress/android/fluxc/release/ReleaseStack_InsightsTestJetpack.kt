@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.stats.insights.PostingActivityModel.Day
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
@@ -25,7 +26,6 @@ import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
 import org.wordpress.android.fluxc.store.stats.insights.PostingActivityStore
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
-import java.util.Calendar
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -195,12 +195,8 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     fun testPostingActivity() {
         val site = authenticate()
 
-        val startCalendar = Calendar.getInstance()
-        startCalendar.set(2019, 1, 1)
-        val endCalendar = Calendar.getInstance()
-        endCalendar.set(2019, 2, 14)
-        val startDate = startCalendar.time
-        val endDate = endCalendar.time
+        val startDate = Day(2019, 1, 1)
+        val endDate = Day(2019, 2, 14)
         val fetchedInsights = runBlocking {
             postingActivityStore.fetchPostingActivity(
                     site,
