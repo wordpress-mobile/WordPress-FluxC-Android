@@ -295,7 +295,9 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     @Suppress("unused")
     @Subscribe
     fun onAction(action: Action<*>) {
-        lastAction = action
-        countDownLatch.countDown()
+        if (action.type is WCStatsAction) {
+            lastAction = action
+            countDownLatch.countDown()
+        }
     }
 }
