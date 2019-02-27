@@ -14,8 +14,8 @@ import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.stats.LimitMode
 import org.wordpress.android.fluxc.network.utils.StatsGranularity
-import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
@@ -53,7 +53,6 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
     @Inject lateinit var authorsStore: AuthorsStore
     @Inject lateinit var searchTermsStore: SearchTermsStore
     @Inject lateinit var videoPlaysStore: VideoPlaysStore
-    @Inject lateinit var accountStore: AccountStore
     @Inject internal lateinit var siteStore: SiteStore
 
     private var nextEvent: TestEvents? = null
@@ -84,8 +83,9 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             val fetchedInsights = runBlocking {
                 postAndPageViewsStore.fetchPostAndPageViews(
                         site,
-                        PAGE_SIZE,
-                        granularity, SELECTED_DATE,
+                        granularity,
+                        LimitMode.Top(PAGE_SIZE),
+                        SELECTED_DATE,
                         true
                 )
             }
@@ -93,7 +93,12 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(site, granularity, SELECTED_DATE, PAGE_SIZE)
+            val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(
+                    site,
+                    granularity,
+                    LimitMode.Top(PAGE_SIZE),
+                    SELECTED_DATE
+            )
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
