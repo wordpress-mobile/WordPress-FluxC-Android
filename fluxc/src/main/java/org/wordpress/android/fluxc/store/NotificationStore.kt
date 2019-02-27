@@ -490,6 +490,8 @@ constructor(
     }
 
     private fun updateNotification(payload: NotificationModel) {
+        println("AMANDA-TEST > NotificationStore.updateNotification > $payload")
+
         // save notification to the db
         val rowsAffected = notificationSqlUtils.insertOrUpdateNotification(payload)
         val onNotificationChanged = OnNotificationChanged(rowsAffected).apply {
