@@ -22,6 +22,9 @@ import javax.inject.Singleton
 @Singleton
 class NotificationSqlUtils @Inject constructor(private val formattableContentMapper: FormattableContentMapper) {
     fun insertOrUpdateNotification(notification: NotificationModel): Int {
+
+        println("AMANDA-TEST > NotificationSqlUtils.insertOrUpdateNotification > attempting to save $notification")
+
         val notificationResult = WellSql.select(NotificationModelBuilder::class.java)
                 .where().beginGroup()
                 .equals(NotificationModelTable.ID, notification.noteId)
@@ -34,11 +37,16 @@ class NotificationSqlUtils @Inject constructor(private val formattableContentMap
                 .asModel
 
         return if (notificationResult.isEmpty()) {
+            println("AMANDA-TEST > NotificationSqlUtils.insertOrUpdateNotification > inserting notification")
+
             // insert
             WellSql.insert(notification.toBuilder()).asSingleTransaction(true).execute()
             1
         } else {
             // update
+
+            println("AMANDA-TEST > NotificationSqlUtils.insertOrUpdateNotification > updating notification")
+
             val oldId = notificationResult[0].id
             WellSql.update(NotificationModelBuilder::class.java).whereId(oldId).put(
                     notification.toBuilder(),
@@ -176,6 +184,9 @@ class NotificationSqlUtils @Inject constructor(private val formattableContentMap
     }
 
     fun deleteAllNotifications(): Int {
+
+        println("AMANDA-TEST > NotificationSqlUtils.deleteAllNotifications > called!")
+
         return WellSql.delete(NotificationModelBuilder::class.java).execute()
     }
 
