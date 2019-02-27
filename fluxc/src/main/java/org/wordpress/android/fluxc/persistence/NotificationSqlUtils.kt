@@ -36,6 +36,8 @@ class NotificationSqlUtils @Inject constructor(private val formattableContentMap
                 .endGroup().endWhere()
                 .asModel
 
+        println("AMANDA-TEST > NotificationSqlUtils.insertOrUpdateNotification > pulled from database: $notificationResult")
+
         return if (notificationResult.isEmpty()) {
             println("AMANDA-TEST > NotificationSqlUtils.insertOrUpdateNotification > inserting notification")
 
