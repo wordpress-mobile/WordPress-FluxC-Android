@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
@@ -42,6 +43,10 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchSingleProduct() {
+        // remove all products for this site and verify there are none
+        ProductSqlUtils.deleteProductsForSite(sSite)
+        assertEquals(ProductSqlUtils.getProductCountForSite(sSite), 0)
+
         nextEvent = TestEvent.FETCHED_SINGLE_PRODUCT
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
@@ -52,7 +57,11 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         // Verify results
         val fetchedProduct = productStore.getSingleProductByRemoteId(sSite, productModel.remoteProductId)
-        assertTrue(fetchedProduct != null && fetchedProduct.remoteProductId == productModel.remoteProductId)
+        assertTrue(fetchedProduct != null)
+        assertTrue(fetchedProduct!!.remoteProductId == productModel.remoteProductId)
+
+        // Verify there's only one product for this site
+        assertEquals(ProductSqlUtils.getProductCountForSite(sSite), 1)
     }
 
     @Suppress("unused")

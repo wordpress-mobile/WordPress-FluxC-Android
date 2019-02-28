@@ -47,4 +47,12 @@ object ProductSqlUtils {
                 .endWhere()
                 .execute()
     }
+
+    fun getProductCountForSite(site: SiteModel): Long {
+        return WellSql.select(WCProductModel::class.java)
+                .where()
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .endWhere()
+                .count()
+    }
 }
