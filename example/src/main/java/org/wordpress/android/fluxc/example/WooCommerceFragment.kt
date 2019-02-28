@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_SINGLE_ORDER
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
+import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
 import org.wordpress.android.fluxc.action.WCStatsAction
 import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction
 import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_ORDER_STATS
@@ -27,6 +28,7 @@ import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
+import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
@@ -46,6 +48,9 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
+import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsPayload
@@ -65,12 +70,14 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var wcOrderStore: WCOrderStore
+    @Inject internal lateinit var wcProductStore: WCProductStore
     @Inject internal lateinit var wcStatsStore: WCStatsStore
 
     private var pendingNotesOrderModel: WCOrderModel? = null
     private var pendingFetchOrdersFilter: List<String>? = null
     private var pendingFetchCompletedOrders: Boolean = false
     private var pendingFetchSingleOrderRemoteId: Long? = null
+    private var pendingFetchSingleProductRemoteId: Long? = null
 
     private var visitorStatsStartDate: String? = null
     private var visitorStatsEndDate: String? = null
@@ -246,6 +253,19 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                         dispatcher.dispatch(WCOrderActionBuilder.newUpdateOrderStatusAction(payload))
                     }
                 } ?: showNoOrdersToast(site)
+            } ?: showNoWCSitesToast()
+        }
+
+        fetch_single_product.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                showSingleLineDialog(activity, "Enter the remoteProductId of product to fetch:") { editText ->
+                    pendingFetchSingleProductRemoteId = editText.text.toString().toLongOrNull()
+                    pendingFetchSingleProductRemoteId?.let { id ->
+                        prependToLog("Submitting request to fetch product by remoteProductID $id")
+                        val payload = FetchSingleProductPayload(site, id)
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductAction(payload))
+                    } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
+                }
             } ?: showNoWCSitesToast()
         }
 
@@ -477,6 +497,29 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
             prependToLog("Error searching orders - error: " + event.error.type)
         } else {
             prependToLog("Found ${event.searchResults.size} orders matching ${event.searchQuery}")
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductChanged(event: OnProductChanged) {
+        if (event.isError) {
+            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
+            return
+        }
+
+        getFirstWCSite()?.let { site ->
+            when (event.causeOfChange) {
+                FETCH_SINGLE_PRODUCT -> {
+                    pendingFetchSingleProductRemoteId?.let { remoteId ->
+                        pendingFetchSingleProductRemoteId = null
+                        val product = wcProductStore.getSingleProductByRemoteId(site, remoteId)
+                        product?.let {
+                            prependToLog("Single product fetched successfully! ${it.name}")
+                        } ?: prependToLog("WARNING: Fetched product not found in the local database!")
+                    }
+                } else -> prependToLog("Product store was updated from a " + event.causeOfChange)
+            }
         }
     }
 
