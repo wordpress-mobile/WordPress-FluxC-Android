@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
+import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -27,6 +28,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
 
     private var lastAction: Action<*>? = null
     private var countDownLatch: CountDownLatch by notNull()
+
+    private val remoteProductId = 1537L
 
     private val siteModel = SiteModel().apply {
         id = 5
@@ -43,7 +46,6 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
 
     @Test
     fun testFetchSingleProductSuccess() {
-        val remoteProductId = 1537L
         interceptor.respondWith("wc-fetch-product-response-success.json")
         productRestClient.fetchSingleProduct(siteModel, remoteProductId)
 
@@ -59,11 +61,23 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getImages().size, 2)
             assertEquals(product.getTags().size, 2)
         }
+
+        // save the product to the db
+        assertEquals(ProductSqlUtils.insertOrUpdateProduct(payload.product), 1)
+
+        // now verify the db stored the product correctly
+        val productFromDb = ProductSqlUtils.getSingleProductByRemoteId(siteModel, remoteProductId)
+        assertNotNull(productFromDb)
+        productFromDb?.let { product ->
+            assertEquals(product.remoteProductId, remoteProductId)
+            assertEquals(product.getCategories().size, 2)
+            assertEquals(product.getImages().size, 2)
+            assertEquals(product.getTags().size, 2)
+        }
     }
 
     @Test
     fun testFetchSingleProductError() {
-        val remoteProductId = 1537L
         interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
         productRestClient.fetchSingleProduct(siteModel, remoteProductId)
 

@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.release
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
@@ -57,8 +58,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         // Verify results
         val fetchedProduct = productStore.getSingleProductByRemoteId(sSite, productModel.remoteProductId)
-        assertTrue(fetchedProduct != null)
-        assertTrue(fetchedProduct!!.remoteProductId == productModel.remoteProductId)
+        assertNotNull(fetchedProduct)
+        assertEquals(fetchedProduct!!.remoteProductId, productModel.remoteProductId)
 
         // Verify there's only one product for this site
         assertEquals(ProductSqlUtils.getProductCountForSite(sSite), 1)
