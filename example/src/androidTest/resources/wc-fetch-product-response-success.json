@@ -1,0 +1,202 @@
+{
+  "data": {
+    "_links": {
+      "collection": [
+        {
+          "href": "https://jamosova3.mystagingwebsite.com/wp-json/wc/v3/products"
+        }
+      ],
+      "self": [
+        {
+          "href": "https://jamosova3.mystagingwebsite.com/wp-json/wc/v3/products/1537"
+        }
+      ]
+    },
+    "attributes": [
+    ],
+    "average_rating": "0.00",
+    "backordered": false,
+    "backorders": "no",
+    "backorders_allowed": false,
+    "button_text": "",
+    "catalog_visibility": "visible",
+    "categories": [
+      {
+        "id": 9,
+        "name": "Clothing",
+        "slug": "clothing"
+      },
+      {
+        "id": 14,
+        "name": "T-shirts",
+        "slug": "t-shirts"
+      }
+    ],
+    "cross_sell_ids": [
+    ],
+    "date_created": "2018-11-02T14:02:28",
+    "date_created_gmt": "2018-11-02T18:02:28",
+    "date_modified": "2019-01-18T15:15:53",
+    "date_modified_gmt": "2019-01-18T20:15:53",
+    "date_on_sale_from": null,
+    "date_on_sale_from_gmt": null,
+    "date_on_sale_to": null,
+    "date_on_sale_to_gmt": null,
+    "default_attributes": [
+    ],
+    "description": "",
+    "dimensions": {
+      "height": "1",
+      "length": "2",
+      "width": "3"
+    },
+    "download_expiry": -1,
+    "download_limit": -1,
+    "downloadable": false,
+    "downloads": [
+    ],
+    "external_url": "",
+    "featured": false,
+    "grouped_products": [
+    ],
+    "id": 1537,
+    "images": [
+      {
+        "alt": "",
+        "date_created": "2018-11-02T10:04:22",
+        "date_created_gmt": "2018-11-02T18:04:22",
+        "date_modified": "2018-11-02T10:04:22",
+        "date_modified_gmt": "2018-11-02T18:04:22",
+        "id": 1538,
+        "name": "Stranger things: Supreme Eleven shirt",
+        "src": "https://jamosova3.mystagingwebsite.com/wp-content/uploads/2018/11/eleven.jpg"
+      },
+      {
+        "alt": "",
+        "date_created": "2018-11-02T10:04:22",
+        "date_created_gmt": "2018-11-02T18:04:22",
+        "date_modified": "2018-11-02T10:04:22",
+        "date_modified_gmt": "2018-11-02T18:04:22",
+        "id": 1538,
+        "name": "Stranger things: Supreme Eleven shirt",
+        "src": "https://jamosova3.mystagingwebsite.com/wp-content/uploads/2018/11/eleven.jpg"
+      }
+    ],
+    "jetpack_publicize_connections": [
+    ],
+    "manage_stock": true,
+    "menu_order": 0,
+    "meta_data": [
+      {
+        "id": 51172,
+        "key": "_wpas_done_all",
+        "value": "1"
+      },
+      {
+        "id": 51176,
+        "key": "_product_addons",
+        "value": [
+          {
+            "adjust_price": 1,
+            "description": "",
+            "description_enable": 0,
+            "display": "select",
+            "max": 0,
+            "min": 0,
+            "name": "Initials",
+            "options": [
+              {
+                "image": "",
+                "label": "",
+                "price": "",
+                "price_type": "flat_fee"
+              }
+            ],
+            "position": 0,
+            "price": "5",
+            "price_type": "flat_fee",
+            "required": 0,
+            "restrictions": 0,
+            "restrictions_type": "any_text",
+            "title_format": "label",
+            "type": "custom_text",
+            "wc_booking_block_qty_multiplier": 0,
+            "wc_booking_person_qty_multiplier": 0
+          }
+        ]
+      },
+      {
+        "id": 51305,
+        "key": "_product_addons_exclude_global",
+        "value": "0"
+      },
+      {
+        "id": 52070,
+        "key": "_per_product_shipping",
+        "value": "yes"
+      },
+      {
+        "id": 52071,
+        "key": "_per_product_shipping_add_to_all",
+        "value": "no"
+      },
+      {
+        "id": 52072,
+        "key": "woocommerce_disable_product_enquiry",
+        "value": "no"
+      }
+    ],
+    "name": "Stranger Things T-Shirt (Product Add-On - Text Field)",
+    "on_sale": false,
+    "parent_id": 0,
+    "permalink": "https://jamosova3.mystagingwebsite.com/product/stranger-things-t-shirt-product-add-on-text-field/",
+    "price": "30",
+    "price_html": "<span class=\"woocommerce-Price-amount amount\"><span class=\"woocommerce-Price-currencySymbol\">&#36;</span>30.00</span>",
+    "purchasable": true,
+    "purchase_note": "",
+    "rating_count": 0,
+    "regular_price": "30",
+    "related_ids": [
+      292,
+      257,
+      94,
+      283,
+      40
+    ],
+    "reviews_allowed": true,
+    "sale_price": "",
+    "shipping_class": "",
+    "shipping_class_id": 0,
+    "shipping_required": true,
+    "shipping_taxable": true,
+    "short_description": "",
+    "sku": "34343-343776",
+    "slug": "stranger-things-t-shirt-product-add-on-text-field",
+    "sold_individually": false,
+    "status": "publish",
+    "stock_quantity": 81,
+    "stock_status": "instock",
+    "tags": [
+      {
+        "id": 9,
+        "name": "Clothing",
+        "slug": "clothing"
+      },
+      {
+        "id": 14,
+        "name": "T-shirts",
+        "slug": "t-shirts"
+      }
+    ],
+    "tax_class": "",
+    "tax_status": "taxable",
+    "total_sales": 11,
+    "type": "simple",
+    "upsell_ids": [
+    ],
+    "variations": [
+    ],
+    "virtual": false,
+    "weight": ""
+  }
+}
