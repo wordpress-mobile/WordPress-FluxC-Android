@@ -1,4 +1,4 @@
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'maven'
 
 repositories {
@@ -10,6 +10,6 @@ targetCompatibility = JavaVersion.VERSION_1_7
 
 dependencies {
     implementation project (':fluxc-annotations')
-    implementation 'com.google.auto.service:auto-service:1.0-rc2'
-    implementation 'com.squareup:javapoet:1.7.0'
+    api 'com.google.auto.service:auto-service:1.0-rc4'
+    api 'com.squareup:javapoet:1.7.0'
 }

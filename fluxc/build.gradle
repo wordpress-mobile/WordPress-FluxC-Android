@@ -82,6 +82,7 @@ dependencies {
 
     // Custom WellSql version
     api "org.wordpress:wellsql:$wellSqlVersion"
+    api "org.wordpress:wellsql-core:$wellSqlVersion"
     kapt "org.wordpress:wellsql-processor:$wellSqlVersion"
 
     // FluxC annotations
