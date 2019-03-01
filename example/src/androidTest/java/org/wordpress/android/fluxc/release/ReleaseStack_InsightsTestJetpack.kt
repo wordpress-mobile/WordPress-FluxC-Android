@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.LimitMode
 import org.wordpress.android.fluxc.model.stats.PagedMode
+import org.wordpress.android.fluxc.model.stats.insights.PostingActivityModel.Day
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
@@ -30,6 +31,7 @@ import org.wordpress.android.fluxc.store.stats.insights.MostPopularInsightsStore
 import org.wordpress.android.fluxc.store.stats.insights.PublicizeStore
 import org.wordpress.android.fluxc.store.stats.insights.TagsStore
 import org.wordpress.android.fluxc.store.stats.insights.TodayInsightsStore
+import org.wordpress.android.fluxc.store.stats.insights.PostingActivityStore
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.concurrent.CountDownLatch
@@ -49,6 +51,7 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     @Inject lateinit var publicizeStore: PublicizeStore
     @Inject lateinit var tagsStore: TagsStore
     @Inject lateinit var todayStore: TodayInsightsStore
+    @Inject lateinit var postingActivityStore: PostingActivityStore
     @Inject internal lateinit var siteStore: SiteStore
 
     private var nextEvent: TestEvents? = null
@@ -202,6 +205,29 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         assertNotNull(fetchedInsights.model)
 
         val insightsFromDb = publicizeStore.getPublicizeData(site, pageSize)
+
+        assertEquals(fetchedInsights.model, insightsFromDb)
+    }
+
+    @Test
+    fun testPostingActivity() {
+        val site = authenticate()
+
+        val startDate = Day(2019, 1, 1)
+        val endDate = Day(2019, 2, 14)
+        val fetchedInsights = runBlocking {
+            postingActivityStore.fetchPostingActivity(
+                    site,
+                    startDate,
+                    endDate,
+                    false
+            )
+        }
+
+        assertNotNull(fetchedInsights)
+        assertNotNull(fetchedInsights.model)
+
+        val insightsFromDb = postingActivityStore.getPostingActivity(site, startDate, endDate)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
