@@ -39,15 +39,6 @@ object ProductSqlUtils {
                 .asModel.firstOrNull()
     }
 
-    fun productExistsByRemoteId(site: SiteModel, remoteProductId: Long): Boolean {
-        return WellSql.select(WCProductModel::class.java)
-                .where().beginGroup()
-                .equals(WCProductModelTable.REMOTE_PRODUCT_ID, remoteProductId)
-                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
-                .endGroup().endWhere()
-                .exists()
-    }
-
     fun deleteProductsForSite(site: SiteModel): Int {
         return WellSql.delete(WCProductModel::class.java)
                 .where().beginGroup()
