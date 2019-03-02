@@ -61,9 +61,14 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     /**
      * returns the corresponding product from the database as a [WCProductModel].
      */
-    fun getSingleProductByRemoteId(site: SiteModel, remoteProductId: Long): WCProductModel? {
-        return ProductSqlUtils.getSingleProductByRemoteId(site, remoteProductId)
-    }
+    fun getSingleProductByRemoteId(site: SiteModel, remoteProductId: Long): WCProductModel? =
+            ProductSqlUtils.getSingleProductByRemoteId(site, remoteProductId)
+
+    /**
+     * returns a list of [WCProductModel] for the passed site from the database.
+     */
+    fun getProductsForSite(site: SiteModel): List<WCProductModel> =
+            ProductSqlUtils.getProductsForSite(site)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {

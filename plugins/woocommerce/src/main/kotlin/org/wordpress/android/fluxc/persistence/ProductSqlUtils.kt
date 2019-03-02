@@ -39,6 +39,14 @@ object ProductSqlUtils {
                 .asModel.firstOrNull()
     }
 
+    fun getProductsForSite(site: SiteModel): List<WCProductModel> {
+        return WellSql.select(WCProductModel::class.java)
+                .where()
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .endWhere()
+                .asModel
+    }
+
     fun deleteProductsForSite(site: SiteModel): Int {
         return WellSql.delete(WCProductModel::class.java)
                 .where().beginGroup()
