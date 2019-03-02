@@ -65,15 +65,6 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         return ProductSqlUtils.getSingleProductByRemoteId(site, remoteProductId)
     }
 
-    fun getProductImageByRemoteId(site: SiteModel, remoteProductId: Long): String? {
-        ProductSqlUtils.getSingleProductByRemoteId(site, remoteProductId)?.let { product ->
-            val images = product.getImages()
-            return if (images.isNotEmpty()) images[0].src else null
-        }
-
-        return null
-    }
-
     fun getProductExistsByRemoteId(site: SiteModel, remoteProductId: Long) =
             ProductSqlUtils.productExistsByRemoteId(site, remoteProductId)
 

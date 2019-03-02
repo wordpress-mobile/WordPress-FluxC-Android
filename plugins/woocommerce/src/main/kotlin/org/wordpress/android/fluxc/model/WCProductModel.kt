@@ -114,6 +114,11 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return imageList
     }
 
+    fun getFirstImage(): String? {
+        val images = getImages()
+        return if (images.isNotEmpty()) images[0].src else null
+    }
+
     fun getCategories() = getTriplets(categories)
 
     fun getTags() = getTriplets(tags)
