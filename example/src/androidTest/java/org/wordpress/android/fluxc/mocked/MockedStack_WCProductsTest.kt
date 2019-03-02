@@ -58,8 +58,9 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertNull(error)
             assertEquals(remoteProductId, product.remoteProductId)
             assertEquals(product.getCategories().size, 2)
-            assertEquals(product.getImages().size, 2)
             assertEquals(product.getTags().size, 2)
+            assertEquals(product.getImages().size, 2)
+            assertNotNull(product.getFirstImage())
         }
 
         // save the product to the db
@@ -71,8 +72,9 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         productFromDb?.let { product ->
             assertEquals(product.remoteProductId, remoteProductId)
             assertEquals(product.getCategories().size, 2)
-            assertEquals(product.getImages().size, 2)
             assertEquals(product.getTags().size, 2)
+            assertEquals(product.getImages().size, 2)
+            assertNotNull(product.getFirstImage())
         }
     }
 

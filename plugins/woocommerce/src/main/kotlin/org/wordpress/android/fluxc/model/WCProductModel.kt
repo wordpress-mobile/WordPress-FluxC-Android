@@ -115,8 +115,14 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     }
 
     fun getFirstImage(): String? {
-        val images = getImages()
-        return if (images.isNotEmpty()) images[0].src else null
+        try {
+            Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.first() { jsonElement ->
+                return (jsonElement.asJsonObject).getString("src")
+            }
+        } catch (e: JsonParseException) {
+            AppLog.e(T.API, e)
+        }
+        return null
     }
 
     fun getCategories() = getTriplets(categories)
