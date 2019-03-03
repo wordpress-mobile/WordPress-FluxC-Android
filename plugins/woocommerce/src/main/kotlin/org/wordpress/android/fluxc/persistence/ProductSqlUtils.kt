@@ -34,17 +34,9 @@ object ProductSqlUtils {
         return WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
                 .equals(WCProductModelTable.REMOTE_PRODUCT_ID, remoteProductId)
-                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.siteId)
                 .endGroup().endWhere()
                 .asModel.firstOrNull()
-    }
-
-    fun getProductsForSite(site: SiteModel): List<WCProductModel> {
-        return WellSql.select(WCProductModel::class.java)
-                .where()
-                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
-                .endWhere()
-                .asModel
     }
 
     fun deleteProductsForSite(site: SiteModel): Int {
