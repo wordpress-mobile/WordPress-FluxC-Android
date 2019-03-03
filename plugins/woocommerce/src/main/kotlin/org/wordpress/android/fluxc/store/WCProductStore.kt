@@ -52,7 +52,6 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     // OnChanged events
     class OnProductChanged(
         var rowsAffected: Int,
-        var product: WCProductModel? = null,
         var canLoadMore: Boolean = false
     ) : OnChanged<ProductError>() {
         var causeOfChange: WCProductAction? = null
@@ -96,7 +95,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             onProductChanged = OnProductChanged(0).also { it.error = payload.error }
         } else {
             val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
-            onProductChanged = OnProductChanged(rowsAffected, payload.product)
+            onProductChanged = OnProductChanged(rowsAffected)
         }
 
         onProductChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT
