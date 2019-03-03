@@ -34,7 +34,7 @@ object ProductSqlUtils {
         return WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
                 .equals(WCProductModelTable.REMOTE_PRODUCT_ID, remoteProductId)
-                .equals(WCProductModelTable.LOCAL_SITE_ID, site.siteId)
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
                 .endGroup().endWhere()
                 .asModel.firstOrNull()
     }
