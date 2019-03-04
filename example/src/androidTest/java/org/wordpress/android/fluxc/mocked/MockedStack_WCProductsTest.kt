@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
+import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
@@ -29,7 +30,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     private var lastAction: Action<*>? = null
     private var countDownLatch: CountDownLatch by notNull()
 
-    private val remoteProductId = 1537L
+    private val remoteProductId = BuildConfig.TEST_WC_PRODUCT_ID.toLong()
 
     private val siteModel = SiteModel().apply {
         id = 5
