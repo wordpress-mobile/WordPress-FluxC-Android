@@ -119,9 +119,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      */
     fun getFirstImage(): String? {
         try {
-            Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.first { jsonElement ->
-                return (jsonElement.asJsonObject).getString("src")
-            }
+            val jsonArray = Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray
+            return jsonArray?.firstOrNull()?.asJsonObject.getString("src")
         } catch (e: JsonParseException) {
             AppLog.e(T.API, e)
         }
