@@ -30,7 +30,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     private var lastAction: Action<*>? = null
     private var countDownLatch: CountDownLatch by notNull()
 
-    private val remoteProductId = BuildConfig.TEST_WC_PRODUCT_ID.toLong()
+    private val remoteProductId = 1537L
 
     private val siteModel = SiteModel().apply {
         id = 5
