@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -19,6 +20,7 @@ import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.WCProductStore.ProductError
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import javax.inject.Singleton
 
 @Singleton
@@ -58,6 +60,45 @@ class ProductRestClient(
                             site
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Makes a GET request to `POST /wp-json/wc/v3/products/[productId]/variations` to fetch
+     * variations for a product
+     *
+     * Dispatches a WCProductAction.FETCHED_PRODUCT_VARIATIONS action with the result
+     *
+     * @param [productId] Unique server id of the product
+     */
+    fun fetchProductVariations(site: SiteModel, productId: Long) {
+        val url = WOOCOMMERCE.products.id(productId).variations.pathV3
+        val responseType = object : TypeToken<ProductVariationsApiResponse>() {}.type
+        val params = emptyMap<String, String>()
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<ProductVariationsApiResponse>? ->
+                    val variationModels = response?.map {
+                        productVariationResponseToProductVariationModel(it).apply{
+                            localSiteId = site.id
+                            remoteProductId = productId
+                        }
+                    }.orEmpty()
+
+                    val payload = RemoteProductVariationsPayload(
+                            site, productId, variationModels
+                    )
+                    // TODO dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val productError = networkErrorToProductError(networkError)
+                    val payload = RemoteProductVariationsPayload(
+                            productError,
+                            site,
+                            productId
+                    )
+                    // TODO dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
@@ -120,6 +161,38 @@ class ProductRestClient(
             images = response.images.toString()
             attributes = response.attributes.toString()
             variations = response.variations.toString()
+
+            response.dimensions?.asJsonObject?.let { json ->
+                length = json.getString("length") ?: ""
+                width = json.getString("width") ?: ""
+                height = json.getString("height") ?: ""
+            }
+        }
+    }
+
+    private fun productVariationResponseToProductVariationModel(response: ProductVariationsApiResponse): WCProductVariationModel {
+        return WCProductVariationModel().apply {
+            remoteVariationId = response.id
+            permalink = response.permalink ?: ""
+
+            status = response.status ?: ""
+            description = response.description ?: ""
+            sku = response.sku ?: ""
+
+            price = response.price ?: ""
+            regularPrice = response.regular_price ?: ""
+            salePrice = response.sale_price ?: ""
+            onSale = response.on_sale
+
+            virtual = response.virtual
+            downloadable = response.downloadable
+            purchasable = response.purchasable
+
+            manageStock = response.manage_stock
+            stockQuantity = response.stock_quantity
+            stockStatus = response.stock_status ?: ""
+
+            weight = response.weight ?: ""
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""

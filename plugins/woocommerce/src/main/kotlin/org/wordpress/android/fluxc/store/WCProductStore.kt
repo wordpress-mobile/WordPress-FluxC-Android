@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
@@ -45,6 +46,20 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             product: WCProductModel,
             site: SiteModel
         ) : this(product, site) {
+            this.error = error
+        }
+    }
+
+    class RemoteProductVariationsPayload(
+        val site: SiteModel,
+        val remoteProductId: Long,
+        val variations: List<WCProductVariationModel> = emptyList()
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            site: SiteModel,
+            remoteProductId: Long
+        ) : this(site, remoteProductId) {
             this.error = error
         }
     }
