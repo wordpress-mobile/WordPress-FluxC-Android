@@ -69,13 +69,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProductChanged(event: OnProductChanged) {
         event.error?.let {
-            when (event.causeOfChange) {
-                WCProductAction.FETCH_SINGLE_PRODUCT -> {
-                    assertEquals(TestEvent.FETCHED_SINGLE_PRODUCT, nextEvent)
-                    mCountDownLatch.countDown()
-                    return
-                } else -> throw AssertionError("OnProductChanged has unexpected error: " + it.type)
-            }
+            throw AssertionError("OnProductChanged has unexpected error: " + it.type)
         }
 
         lastEvent = event
