@@ -111,8 +111,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     @Test
     public void testFetchPostFormats() throws InterruptedException {
-        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
-                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_HAS_POST_FORMATS,
+                BuildConfig.TEST_WPCOM_PASSWORD_HAS_POST_FORMATS);
 
         // Get the first site
         SiteModel firstSite = mSiteStore.getSites().get(0);

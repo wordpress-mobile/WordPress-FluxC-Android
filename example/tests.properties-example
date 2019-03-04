@@ -189,6 +189,10 @@ TEST_WPORG_URL_JETPACK_SUBFOLDER_ENDPOINT = FIXME
 TEST_WPCOM_USERNAME_JETPACK_BETA_SITE = FIXME
 TEST_WPCOM_PASSWORD_JETPACK_BETA_SITE = FIXME
 
+# WP.com - Account with a WordPress.com site using a theme that supports post formats
+TEST_WPCOM_USERNAME_HAS_POST_FORMATS = FIXME
+TEST_WPCOM_PASSWORD_HAS_POST_FORMATS = FIXME
+
 ## Woo
 
 # WP.com - Account with only one site: a Jetpack site with WooCommerce set up: http://do.wpmt.co/woo-jetpack
