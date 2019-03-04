@@ -19,13 +19,13 @@ repositories {
 
 android {
     compileSdkVersion 27
-    buildToolsVersion '27.0.3'
+    buildToolsVersion '28.0.3'
 
     defaultConfig {
         versionCode 1
         versionName "0.1"
         minSdkVersion 15
-        targetSdkVersion 25
+        targetSdkVersion 26
     }
     buildTypes {
         release {
@@ -51,8 +51,8 @@ dependencies {
         exclude group: "com.android.support"
     }
 
-    api 'org.wordpress:wellsql:1.3.0'
-    kapt 'org.wordpress:wellsql-processor:1.3.0'
+    api "org.wordpress:wellsql:$wellSqlVersion"
+    kapt "org.wordpress:wellsql-processor:$wellSqlVersion"
 
     // FluxC annotations
     api project(':fluxc-annotations')

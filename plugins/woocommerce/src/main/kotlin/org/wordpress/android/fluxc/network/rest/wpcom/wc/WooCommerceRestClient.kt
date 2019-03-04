@@ -2,14 +2,19 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCCoreAction
 import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
+import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCSettingsModel
+import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.discovery.RootWPAPIRestResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
@@ -17,6 +22,9 @@ import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.store.WooCommerceStore.ApiVersionError
 import org.wordpress.android.fluxc.store.WooCommerceStore.ApiVersionErrorType
 import org.wordpress.android.fluxc.store.WooCommerceStore.FetchApiVersionResponsePayload
+import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCSiteSettingsResponsePayload
+import org.wordpress.android.fluxc.store.WooCommerceStore.WCSiteSettingsError
+import org.wordpress.android.fluxc.store.WooCommerceStore.WCSiteSettingsErrorType
 import javax.inject.Singleton
 
 @Singleton
@@ -37,7 +45,8 @@ class WooCommerceRestClient(
      */
     fun getSupportedWooApiVersion(site: SiteModel) {
         val url = "/"
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, emptyMap(),
+        val params = mapOf("_fields" to "authentication,namespaces")
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params,
                 RootWPAPIRestResponse::class.java,
                 { response: RootWPAPIRestResponse? ->
                     val namespaces = response?.namespaces
@@ -57,7 +66,7 @@ class WooCommerceRestClient(
                         dispatcher.dispatch(WCCoreActionBuilder.newFetchedSiteApiVersionAction(payload))
                     }
                 },
-                WPComGsonRequest.WPComErrorListener { networkError ->
+                WPComErrorListener { networkError ->
                     val payload = FetchApiVersionResponsePayload(networkErrorToApiVersionError(networkError), site)
                     dispatcher.dispatch(WCCoreActionBuilder.newFetchedSiteApiVersionAction(payload))
                 },
@@ -65,8 +74,60 @@ class WooCommerceRestClient(
         add(request)
     }
 
+    /**
+     * Makes a GET call to `/wc/v3/settings/general` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving site settings for the given WooCommerce [SiteModel].
+     *
+     * Dispatches a [WCCoreAction.FETCHED_SITE_SETTINGS] action with a selected subset of the response values,
+     * converted to a [WCSettingsModel].
+     */
+    fun getSiteSettingsGeneral(site: SiteModel) {
+        val url = WOOCOMMERCE.settings.general.pathV3
+        val responseType = object : TypeToken<List<SiteSettingsGeneralResponse>>() {}.type
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, emptyMap(), responseType,
+                { response: List<SiteSettingsGeneralResponse>? ->
+                    response?.let {
+                        val currencyCode = getValueForSettingsField(it, "woocommerce_currency")
+                        val currencyPosition = getValueForSettingsField(it, "woocommerce_currency_pos")
+                        val currencyThousandSep = getValueForSettingsField(it, "woocommerce_price_thousand_sep")
+                        val currencyDecimalSep = getValueForSettingsField(it, "woocommerce_price_decimal_sep")
+                        val currencyNumDecimals = getValueForSettingsField(it, "woocommerce_price_num_decimals")
+                        val settings = WCSettingsModel(
+                                localSiteId = site.id,
+                                currencyCode = currencyCode ?: "",
+                                currencyPosition = CurrencyPosition.fromString(currencyPosition),
+                                currencyThousandSeparator = currencyThousandSep ?: "",
+                                currencyDecimalSeparator = currencyDecimalSep ?: "",
+                                currencyDecimalNumber = currencyNumDecimals?.toIntOrNull() ?: 2
+                        )
+
+                        val payload = FetchWCSiteSettingsResponsePayload(site, settings)
+                        dispatcher.dispatch(WCCoreActionBuilder.newFetchedSiteSettingsAction(payload))
+                    } ?: run {
+                        val wcSiteSettingsError = WCSiteSettingsError(WCSiteSettingsErrorType.INVALID_RESPONSE)
+                        val payload = FetchWCSiteSettingsResponsePayload(wcSiteSettingsError, site)
+                        dispatcher.dispatch(WCCoreActionBuilder.newFetchedSiteSettingsAction(payload))
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val payload = FetchWCSiteSettingsResponsePayload(networkErrorToSettingsError(networkError), site)
+                    dispatcher.dispatch(WCCoreActionBuilder.newFetchedSiteSettingsAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    private fun getValueForSettingsField(settingsResponse: List<SiteSettingsGeneralResponse>, field: String): String? {
+        return settingsResponse.find { it.id != null && it.id == field }?.value?.asString
+    }
+
     private fun networkErrorToApiVersionError(wpComError: WPComGsonNetworkError): ApiVersionError {
-        val apiVersionErrorType = ApiVersionErrorType.fromString(wpComError.apiError)
-        return ApiVersionError(apiVersionErrorType, wpComError.message)
+        val apiVersionErrorErrorType = ApiVersionErrorType.fromString(wpComError.apiError)
+        return ApiVersionError(apiVersionErrorErrorType, wpComError.message)
+    }
+
+    private fun networkErrorToSettingsError(wpComError: WPComGsonNetworkError): WCSiteSettingsError {
+        val wcSiteSettingsErrorType = WCSiteSettingsErrorType.fromString(wpComError.apiError)
+        return WCSiteSettingsError(wcSiteSettingsErrorType, wpComError.message)
     }
 }

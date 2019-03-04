@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.store.StatsStore.InsightsTypes.COMMENTS
 import org.wordpress.android.fluxc.store.StatsStore.InsightsTypes.FOLLOWERS
 import org.wordpress.android.fluxc.store.StatsStore.InsightsTypes.LATEST_POST_SUMMARY
 import org.wordpress.android.fluxc.store.StatsStore.InsightsTypes.MOST_POPULAR_DAY_AND_HOUR
+import org.wordpress.android.fluxc.store.StatsStore.InsightsTypes.POSTING_ACTIVITY
 import org.wordpress.android.fluxc.store.StatsStore.InsightsTypes.PUBLICIZE
 import org.wordpress.android.fluxc.store.StatsStore.InsightsTypes.TAGS_AND_CATEGORIES
 import org.wordpress.android.fluxc.store.StatsStore.InsightsTypes.TODAY_STATS
@@ -30,7 +31,6 @@ import org.wordpress.android.fluxc.store.StatsStore.StatsErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.StatsStore.TimeStatsTypes.AUTHORS
 import org.wordpress.android.fluxc.store.StatsStore.TimeStatsTypes.CLICKS
 import org.wordpress.android.fluxc.store.StatsStore.TimeStatsTypes.COUNTRIES
-import org.wordpress.android.fluxc.store.StatsStore.TimeStatsTypes.DATE
 import org.wordpress.android.fluxc.store.StatsStore.TimeStatsTypes.OVERVIEW
 import org.wordpress.android.fluxc.store.StatsStore.TimeStatsTypes.POSTS_AND_PAGES
 import org.wordpress.android.fluxc.store.StatsStore.TimeStatsTypes.REFERRERS
@@ -52,6 +52,7 @@ class StatsStore
                 COMMENTS,
                 TAGS_AND_CATEGORIES,
                 FOLLOWERS,
+                POSTING_ACTIVITY,
                 PUBLICIZE
         )
     }
@@ -59,7 +60,6 @@ class StatsStore
     suspend fun getTimeStatsTypes(): List<TimeStatsTypes> = withContext(coroutineContext) {
         return@withContext listOf(
                 OVERVIEW,
-                DATE,
                 POSTS_AND_PAGES,
                 REFERRERS,
                 CLICKS,
@@ -88,7 +88,6 @@ class StatsStore
 
     enum class TimeStatsTypes : StatsTypes {
         OVERVIEW,
-        DATE,
         POSTS_AND_PAGES,
         REFERRERS,
         CLICKS,

@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.4'
+        classpath 'com.android.tools.build:gradle:3.3.1'
         classpath 'com.automattic.android:fetchstyle:1.1'
     }
 }
@@ -70,6 +70,8 @@ subprojects {
 
 ext {
     daggerVersion = '2.11'
+    wellSqlVersion = '1.4.0'
     supportLibraryVersion = '27.1.1'
     arch_paging_version = '1.0.1'
+    arch_lifecycle_version = '1.1.1'
 }
