@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -88,6 +89,44 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
 
         assertEquals(WCProductAction.FETCHED_SINGLE_PRODUCT, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteProductPayload
+        assertNotNull(payload.error)
+    }
+
+    @Test
+    fun testFetchProductVariationsSuccess() {
+        interceptor.respondWith("wc-fetch-product-variations-response-success.json")
+        productRestClient.fetchProductVariations(siteModel, remoteProductId)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_PRODUCT_VARIATIONS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductVariationsPayload
+        assertNull(payload.error)
+        assertEquals(payload.remoteProductId, remoteProductId)
+        assertEquals(payload.variations.size, 1)
+
+        // save the variations to the db
+        assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(payload.variations), 1)
+
+        // now verify the db stored the variations correctly
+        val dbVariations = ProductSqlUtils.getVariationsForProduct(siteModel, remoteProductId)
+        assertNotNull(dbVariations)
+        dbVariations.forEach {
+            assertEquals(it.remoteProductId, remoteProductId)
+        }
+    }
+
+    @Test
+    fun testFetchProductVariationsError() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        productRestClient.fetchProductVariations(siteModel, remoteProductId)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_PRODUCT_VARIATIONS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductVariationsPayload
         assertNotNull(payload.error)
     }
 
