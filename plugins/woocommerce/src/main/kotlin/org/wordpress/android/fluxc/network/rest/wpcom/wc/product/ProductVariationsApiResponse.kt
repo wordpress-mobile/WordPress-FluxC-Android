@@ -24,8 +24,9 @@ class ProductVariationsApiResponse : Response {
     var stock_quantity = 0
     var stock_status: String? = null
 
-    var images: JsonElement? = null
+    var image: JsonElement? = null
 
     var weight: String? = null
     var dimensions: JsonElement? = null
+    var attributes: JsonElement? = null
 }

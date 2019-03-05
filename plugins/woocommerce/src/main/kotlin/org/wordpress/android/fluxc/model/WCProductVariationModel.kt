@@ -41,6 +41,8 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
     @Column var width = ""
     @Column var height = ""
 
+    @Column var attributes = ""
+
     override fun getId() = id
 
     override fun setId(id: Int) {

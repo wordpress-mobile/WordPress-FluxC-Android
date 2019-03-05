@@ -190,12 +190,18 @@ class ProductRestClient(
             stockQuantity = response.stock_quantity
             stockStatus = response.stock_status ?: ""
 
+            attributes = response.attributes.toString()
+
             weight = response.weight ?: ""
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""
                 width = json.getString("width") ?: ""
                 height = json.getString("height") ?: ""
+            }
+
+            response.image?.asJsonObject?.let { json ->
+                imageUrl = json.getString("src") ?: ""
             }
         }
     }
