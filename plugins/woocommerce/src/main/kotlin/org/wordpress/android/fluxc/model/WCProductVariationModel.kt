@@ -13,13 +13,14 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
     @Column var localSiteId = 0
-    @Column var remoteVariationId = 0L
     @Column var remoteProductId = 0L
+    @Column var remoteVariationId = 0L
 
     @Column var description = ""
     @Column var permalink = ""
     @Column var sku = ""
     @Column var status = ""
+
     @Column var price = ""
     @Column var regularPrice = ""
     @Column var salePrice = ""
@@ -39,8 +40,6 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
     @Column var length = ""
     @Column var width = ""
     @Column var height = ""
-
-    @Column var metaData = ""
 
     override fun getId() = id
 
