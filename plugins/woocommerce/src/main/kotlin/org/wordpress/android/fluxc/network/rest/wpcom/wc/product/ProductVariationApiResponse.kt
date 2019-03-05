@@ -15,6 +15,9 @@ class ProductVariationApiResponse : Response {
     var regular_price: String? = null
     var sale_price: String? = null
 
+    var date_created: String? = null
+    var date_modified: String? = null
+
     var on_sale = false
     var purchasable = false
     var virtual = false

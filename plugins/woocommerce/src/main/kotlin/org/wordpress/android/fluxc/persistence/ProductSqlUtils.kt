@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.persistence
 
 import com.wellsql.generated.WCProductModelTable
 import com.wellsql.generated.WCProductVariationModelTable
+import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
@@ -91,6 +92,16 @@ object ProductSqlUtils {
         return rowsAffected
     }
 
+    fun getVariationsForProduct(site: SiteModel, remoteProductId: Long): List<WCProductVariationModel> {
+        return WellSql.select(WCProductVariationModel::class.java)
+                .where()
+                .beginGroup()
+                .equals(WCProductVariationModelTable.REMOTE_PRODUCT_ID, remoteProductId)
+                .equals(WCProductVariationModelTable.LOCAL_SITE_ID, site.id)
+                .endGroup().endWhere()
+                .orderBy(WCProductVariationModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
+                .asModel
+    }
     fun deleteVariationsForProduct(site: SiteModel, remoteProductId: Long): Int {
         return WellSql.delete(WCProductVariationModel::class.java)
                 .where().beginGroup()

@@ -89,6 +89,12 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     fun geProductExistsByRemoteId(site: SiteModel, remoteProductId: Long) =
             ProductSqlUtils.geProductExistsByRemoteId(site, remoteProductId)
 
+    /**
+     * returns a list of variations for a specific product in the database
+     */
+    fun getVariationsForProduct(site: SiteModel, remoteProductId: Long): List<WCProductVariationModel> =
+            ProductSqlUtils.getVariationsForProduct(site, remoteProductId)
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCProductAction ?: return

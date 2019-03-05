@@ -175,6 +175,9 @@ class ProductRestClient(
             remoteVariationId = response.id
             permalink = response.permalink ?: ""
 
+            dateCreated = response.date_created ?: ""
+            dateModified = response.date_modified ?: ""
+
             status = response.status ?: ""
             description = response.description ?: ""
             sku = response.sku ?: ""

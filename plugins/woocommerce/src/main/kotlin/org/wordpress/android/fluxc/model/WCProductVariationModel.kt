@@ -16,6 +16,9 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
     @Column var remoteProductId = 0L
     @Column var remoteVariationId = 0L
 
+    @Column var dateCreated = ""
+    @Column var dateModified = ""
+
     @Column var description = ""
     @Column var permalink = ""
     @Column var sku = ""
