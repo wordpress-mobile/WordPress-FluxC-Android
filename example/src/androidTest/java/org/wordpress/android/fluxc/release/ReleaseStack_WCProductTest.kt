@@ -8,11 +8,13 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
+import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import java.util.concurrent.CountDownLatch
@@ -22,7 +24,8 @@ import javax.inject.Inject
 class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     internal enum class TestEvent {
         NONE,
-        FETCHED_SINGLE_PRODUCT
+        FETCHED_SINGLE_PRODUCT,
+        FETCHED_PRODUCT_VARIATIONS
     }
 
     @Inject internal lateinit var productStore: WCProductStore
@@ -66,6 +69,32 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertEquals(ProductSqlUtils.getProductCountForSite(sSite), 1)
     }
 
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchProductVariations() {
+        // remove all variations for this product and verify there are none
+        ProductSqlUtils.deleteVariationsForProduct(sSite, productModel.remoteProductId)
+        assertEquals(ProductSqlUtils.getVariationsForProduct(sSite, productModel.remoteProductId).size, 0)
+
+        nextEvent = TestEvent.FETCHED_PRODUCT_VARIATIONS
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder
+                        .newFetchProductVariationsAction(
+                                FetchProductVariationsPayload(
+                                        sSite,
+                                        productModel.remoteProductId
+                                )
+                        )
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // TODO: Verify results - not sure we want to do this since it would require BuildConfig.TEST_WC_PRODUCT_ID to
+        // point to a product that has variations
+        // val fetchedVariations = productStore.getVariationsForProduct(sSite, productModel.remoteProductId)
+        // assertNotEquals(fetchedVariations.size, 0)
+    }
+
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProductChanged(event: OnProductChanged) {
@@ -78,6 +107,10 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         when (event.causeOfChange) {
             WCProductAction.FETCH_SINGLE_PRODUCT -> {
                 assertEquals(TestEvent.FETCHED_SINGLE_PRODUCT, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            FETCH_PRODUCT_VARIATIONS -> {
+                assertEquals(TestEvent.FETCHED_PRODUCT_VARIATIONS, nextEvent)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
