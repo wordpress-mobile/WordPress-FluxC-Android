@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Authenticator {
-    private static final String WPCOM_OAUTH_PREFIX = "https://public-api.wordpress.com/oauth2";
+    private static final String WPCOM_OAUTH_PREFIX = "https://31a2c05d.ngrok.io/oauth2";
     private static final String AUTHORIZE_ENDPOINT = WPCOM_OAUTH_PREFIX + "/authorize";
     private static final String TOKEN_ENDPOINT = WPCOM_OAUTH_PREFIX + "/token";
     private static final String AUTHORIZE_ENDPOINT_FORMAT = "%s?client_id=%s&response_type=code";
