@@ -96,13 +96,13 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             // remote actions
             WCProductAction.FETCH_SINGLE_PRODUCT ->
                 fetchSingleProduct(action.payload as FetchSingleProductPayload)
-            WCProductAction.FETCH_PRODUCT_VARATIONS ->
+            WCProductAction.FETCH_PRODUCT_VARIATIONS ->
                 fetchProductVariations(action.payload as FetchProductVariationsPayload)
 
             // remote responses
             WCProductAction.FETCHED_SINGLE_PRODUCT ->
                 handleFetchSingleProductCompleted(action.payload as RemoteProductPayload)
-            WCProductAction.FETCHED_PRODUCT_VARATIONS ->
+            WCProductAction.FETCHED_PRODUCT_VARIATIONS ->
                 handleFetchProductVariationsCompleted(action.payload as RemoteProductVariationsPayload)
         }
     }
@@ -137,11 +137,11 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         if (payload.isError) {
             onProductChanged = OnProductChanged(0).also { it.error = payload.error }
         } else {
-            val rowsAffected = 0 // TODO ProductSqlUtils.insertOrUpdateProductVarations(payload.variations)
+            val rowsAffected = ProductSqlUtils.insertOrUpdateProductVariations(payload.variations)
             onProductChanged = OnProductChanged(rowsAffected)
         }
 
-        onProductChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_VARATIONS
+        onProductChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_VARIATIONS
         emitChange(onProductChanged)
     }
 }

@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_SINGLE_ORDER
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
+import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
 import org.wordpress.android.fluxc.action.WCStatsAction
 import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction
@@ -49,6 +50,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCStatsStore
@@ -264,6 +266,19 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                         prependToLog("Submitting request to fetch product by remoteProductID $id")
                         val payload = FetchSingleProductPayload(site, id)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductAction(payload))
+                    } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
+                }
+            } ?: showNoWCSitesToast()
+        }
+
+        fetch_product_variations.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                showSingleLineDialog(activity, "Enter the remoteProductId of product to fetch variations:") { editText ->
+                    val remoteProductId = editText.text.toString().toLongOrNull()
+                    remoteProductId?.let { id ->
+                        prependToLog("Submitting request to fetch product variations by remoteProductID $id")
+                        val payload = FetchProductVariationsPayload(site, id)
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchProductVariationsAction(payload))
                     } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
                 }
             } ?: showNoWCSitesToast()
@@ -518,7 +533,11 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                             prependToLog("Single product fetched successfully! ${it.name}")
                         } ?: prependToLog("WARNING: Fetched product not found in the local database!")
                     }
-                } else -> prependToLog("Product store was updated from a " + event.causeOfChange)
+                }
+                FETCH_PRODUCT_VARIATIONS -> {
+                    prependToLog("Fetched ${event.rowsAffected} product variations")
+                }
+                else -> prependToLog("Product store was updated from a " + event.causeOfChange)
             }
         }
     }

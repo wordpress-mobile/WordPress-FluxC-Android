@@ -4,7 +4,7 @@ import com.google.gson.JsonElement
 import org.wordpress.android.fluxc.network.Response
 
 @Suppress("PropertyName")
-class ProductVariationsApiResponse : Response {
+class ProductVariationApiResponse : Response {
     var id: Long = 0L
 
     var description: String? = null

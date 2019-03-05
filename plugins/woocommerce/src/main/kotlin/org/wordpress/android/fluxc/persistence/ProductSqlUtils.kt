@@ -83,6 +83,14 @@ object ProductSqlUtils {
         }
     }
 
+    fun insertOrUpdateProductVariations(variations: List<WCProductVariationModel>): Int {
+        var rowsAffected = 0
+        variations.forEach {
+            rowsAffected += insertOrUpdateProductVariation(it)
+        }
+        return rowsAffected
+    }
+
     fun deleteVariationsForProduct(site: SiteModel, remoteProductId: Long): Int {
         return WellSql.delete(WCProductVariationModel::class.java)
                 .where().beginGroup()

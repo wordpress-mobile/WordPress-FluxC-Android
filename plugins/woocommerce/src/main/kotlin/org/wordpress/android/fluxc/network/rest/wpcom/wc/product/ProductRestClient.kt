@@ -75,10 +75,10 @@ class ProductRestClient(
      */
     fun fetchProductVariations(site: SiteModel, productId: Long) {
         val url = WOOCOMMERCE.products.id(productId).variations.pathV3
-        val responseType = object : TypeToken<ProductVariationsApiResponse>() {}.type
+        val responseType = object : TypeToken<List<ProductVariationApiResponse>>() {}.type
         val params = emptyMap<String, String>()
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<ProductVariationsApiResponse>? ->
+                { response: List<ProductVariationApiResponse>? ->
                     val variationModels = response?.map {
                         productVariationResponseToProductVariationModel(it).apply{
                             localSiteId = site.id
@@ -87,7 +87,7 @@ class ProductRestClient(
                     }.orEmpty()
 
                     val payload = RemoteProductVariationsPayload(site, productId, variationModels)
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVarationsAction(payload))
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVariationsAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val productError = networkErrorToProductError(networkError)
@@ -96,7 +96,7 @@ class ProductRestClient(
                             site,
                             productId
                     )
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVarationsAction(payload))
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVariationsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
@@ -168,7 +168,7 @@ class ProductRestClient(
         }
     }
 
-    private fun productVariationResponseToProductVariationModel(response: ProductVariationsApiResponse): WCProductVariationModel {
+    private fun productVariationResponseToProductVariationModel(response: ProductVariationApiResponse): WCProductVariationModel {
         return WCProductVariationModel().apply {
             remoteVariationId = response.id
             permalink = response.permalink ?: ""

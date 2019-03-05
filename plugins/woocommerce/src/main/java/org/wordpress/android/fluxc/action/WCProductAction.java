@@ -14,11 +14,11 @@ public enum WCProductAction implements IAction {
     @Action(payloadType = FetchSingleProductPayload.class)
     FETCH_SINGLE_PRODUCT,
     @Action(payloadType = FetchProductVariationsPayload.class)
-    FETCH_PRODUCT_VARATIONS,
+    FETCH_PRODUCT_VARIATIONS,
 
     // Remote responses
     @Action(payloadType = RemoteProductPayload.class)
     FETCHED_SINGLE_PRODUCT,
     @Action(payloadType = RemoteProductVariationsPayload.class)
-    FETCHED_PRODUCT_VARATIONS
+    FETCHED_PRODUCT_VARIATIONS
 }
