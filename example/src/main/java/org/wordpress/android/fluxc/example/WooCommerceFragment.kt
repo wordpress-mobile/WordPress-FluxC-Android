@@ -513,7 +513,7 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                 FETCH_SINGLE_PRODUCT -> {
                     pendingFetchSingleProductRemoteId?.let { remoteId ->
                         pendingFetchSingleProductRemoteId = null
-                        val product = wcProductStore.getSingleProductByRemoteId(site, remoteId)
+                        val product = wcProductStore.getProductByRemoteId(site, remoteId)
                         product?.let {
                             prependToLog("Single product fetched successfully! ${it.name}")
                         } ?: prependToLog("WARNING: Fetched product not found in the local database!")

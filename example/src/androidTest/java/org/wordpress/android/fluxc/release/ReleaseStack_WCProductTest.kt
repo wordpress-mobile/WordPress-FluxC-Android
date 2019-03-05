@@ -58,7 +58,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
-        val fetchedProduct = productStore.getSingleProductByRemoteId(sSite, productModel.remoteProductId)
+        val fetchedProduct = productStore.getProductByRemoteId(sSite, productModel.remoteProductId)
         assertNotNull(fetchedProduct)
         assertEquals(fetchedProduct!!.remoteProductId, productModel.remoteProductId)
 

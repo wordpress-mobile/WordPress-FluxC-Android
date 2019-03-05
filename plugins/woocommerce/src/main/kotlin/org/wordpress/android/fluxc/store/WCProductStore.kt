@@ -60,9 +60,14 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     /**
      * returns the corresponding product from the database as a [WCProductModel].
      */
-    fun getSingleProductByRemoteId(site: SiteModel, remoteProductId: Long): WCProductModel? {
-        return ProductSqlUtils.getSingleProductByRemoteId(site, remoteProductId)
-    }
+    fun getProductByRemoteId(site: SiteModel, remoteProductId: Long): WCProductModel? =
+            ProductSqlUtils.getProductByRemoteId(site, remoteProductId)
+
+    /**
+     * returns true if the corresponding product exists in the database
+     */
+    fun geProductExistsByRemoteId(site: SiteModel, remoteProductId: Long) =
+            ProductSqlUtils.geProductExistsByRemoteId(site, remoteProductId)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
