@@ -1,9 +1,11 @@
 package org.wordpress.android.fluxc.persistence
 
 import com.wellsql.generated.WCProductModelTable
+import com.wellsql.generated.WCProductVariationModelTable
 import com.yarolegovich.wellsql.WellSql
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.WCProductVariationModel
 
 object ProductSqlUtils {
     fun insertOrUpdateProduct(product: WCProductModel): Int {
@@ -52,6 +54,40 @@ object ProductSqlUtils {
         return WellSql.delete(WCProductModel::class.java)
                 .where().beginGroup()
                 .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .endGroup()
+                .endWhere()
+                .execute()
+    }
+
+    fun insertOrUpdateProductVariation(variation: WCProductVariationModel): Int {
+        val result = WellSql.select(WCProductVariationModel::class.java)
+                .where().beginGroup()
+                .equals(WCProductVariationModelTable.ID, variation.id)
+                .or()
+                .beginGroup()
+                .equals(WCProductVariationModelTable.REMOTE_PRODUCT_ID, variation.remoteProductId)
+                .equals(WCProductVariationModelTable.LOCAL_SITE_ID, variation.localSiteId)
+                .endGroup()
+                .endGroup().endWhere()
+                .asModel.firstOrNull()
+
+        return if (result == null) {
+            // Insert
+            WellSql.insert(variation).asSingleTransaction(true).execute()
+            1
+        } else {
+            // Update
+            val oldId = result.id
+            WellSql.update(WCProductVariationModel::class.java).whereId(oldId)
+                    .put(variation, UpdateAllExceptId(WCProductVariationModel::class.java)).execute()
+        }
+    }
+
+    fun deleteVariationsForProduct(site: SiteModel, remoteProductId: Long): Int {
+        return WellSql.delete(WCProductVariationModel::class.java)
+                .where().beginGroup()
+                .equals(WCProductVariationModelTable.LOCAL_SITE_ID, site.id)
+                .equals(WCProductVariationModelTable.REMOTE_PRODUCT_ID, remoteProductId)
                 .endGroup()
                 .endWhere()
                 .execute()
