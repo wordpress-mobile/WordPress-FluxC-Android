@@ -106,14 +106,19 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(payload.remoteProductId, remoteProductId)
         assertEquals(payload.variations.size, 1)
 
-        // save the variations to the db
+        // save the variation to the db
         assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(payload.variations), 1)
 
-        // now verify the db stored the variations correctly
+        // now delete all variations for this product and save again
+        ProductSqlUtils.deleteVariationsForProduct(siteModel, remoteProductId)
+        assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(payload.variations), 1)
+
+        // now verify the db stored the variation correctly
         val dbVariations = ProductSqlUtils.getVariationsForProduct(siteModel, remoteProductId)
-        assertNotNull(dbVariations)
-        dbVariations.forEach {
-            assertEquals(it.remoteProductId, remoteProductId)
+        assertEquals(dbVariations.size, 1)
+        with(dbVariations.first()) {
+            assertEquals(this.remoteProductId, remoteProductId)
+            assertEquals(this.localSiteId, siteModel.id)
         }
     }
 
