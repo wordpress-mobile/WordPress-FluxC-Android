@@ -190,6 +190,7 @@ TEST_WPCOM_USERNAME_JETPACK_BETA_SITE = FIXME
 TEST_WPCOM_PASSWORD_JETPACK_BETA_SITE = FIXME
 
 ## Woo
+TEST_WC_PRODUCT_ID = FIXME
 
 # WP.com - Account with only one site: a Jetpack site with WooCommerce set up: http://do.wpmt.co/woo-jetpack
 TEST_WPCOM_USERNAME_WOO_JETPACK = FIXME
