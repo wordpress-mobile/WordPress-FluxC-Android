@@ -154,9 +154,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
 
     private ThemeModel getTwentySomethingFreeTheme(String oldThemeId, List<ThemeModel> themes) {
         for (ThemeModel theme : themes) {
-            // Workaround here: limit to themes we know support Post Formats (needed in other tests)
-            if (!theme.getThemeId().equals(oldThemeId)
-                && (theme.getThemeId().equals("twentyfifteen") || theme.getThemeId().equals("twentysixteen"))) {
+            if (!theme.getThemeId().equals(oldThemeId) && theme.getFree()) {
                 return theme;
             }
         }
