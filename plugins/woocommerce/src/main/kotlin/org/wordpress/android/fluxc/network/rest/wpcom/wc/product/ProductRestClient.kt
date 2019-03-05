@@ -86,10 +86,8 @@ class ProductRestClient(
                         }
                     }.orEmpty()
 
-                    val payload = RemoteProductVariationsPayload(
-                            site, productId, variationModels
-                    )
-                    // TODO dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersAction(payload))
+                    val payload = RemoteProductVariationsPayload(site, productId, variationModels)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVarationsAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val productError = networkErrorToProductError(networkError)
@@ -98,7 +96,7 @@ class ProductRestClient(
                             site,
                             productId
                     )
-                    // TODO dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductAction(payload))
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVarationsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
