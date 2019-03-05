@@ -8,6 +8,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
+import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
@@ -28,7 +29,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     private var nextEvent: TestEvent = TestEvent.NONE
     private val productModel = WCProductModel(8).apply {
-        remoteProductId = 1537
+        remoteProductId = BuildConfig.TEST_WC_PRODUCT_ID.toLong()
         dateCreated = "2018-04-20T15:45:14Z"
     }
     private var lastEvent: OnProductChanged? = null
@@ -69,13 +70,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProductChanged(event: OnProductChanged) {
         event.error?.let {
-            when (event.causeOfChange) {
-                WCProductAction.FETCH_SINGLE_PRODUCT -> {
-                    assertEquals(TestEvent.FETCHED_SINGLE_PRODUCT, nextEvent)
-                    mCountDownLatch.countDown()
-                    return
-                } else -> throw AssertionError("OnProductChanged has unexpected error: " + it.type)
-            }
+            throw AssertionError("OnProductChanged has unexpected error: " + it.type)
         }
 
         lastEvent = event
