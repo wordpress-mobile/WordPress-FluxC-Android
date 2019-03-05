@@ -273,7 +273,10 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
 
         fetch_product_variations.setOnClickListener {
             getFirstWCSite()?.let { site ->
-                showSingleLineDialog(activity, "Enter the remoteProductId of product to fetch variations:") { editText ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the remoteProductId of product to fetch variations:"
+                ) { editText ->
                     val remoteProductId = editText.text.toString().toLongOrNull()
                     remoteProductId?.let { id ->
                         prependToLog("Submitting request to fetch product variations by remoteProductID $id")

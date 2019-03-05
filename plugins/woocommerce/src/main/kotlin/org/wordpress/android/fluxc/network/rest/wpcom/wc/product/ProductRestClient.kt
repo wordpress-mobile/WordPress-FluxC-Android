@@ -80,7 +80,7 @@ class ProductRestClient(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductVariationApiResponse>? ->
                     val variationModels = response?.map {
-                        productVariationResponseToProductVariationModel(it).apply{
+                        productVariationResponseToProductVariationModel(it).apply {
                             localSiteId = site.id
                             remoteProductId = productId
                         }
@@ -168,7 +168,9 @@ class ProductRestClient(
         }
     }
 
-    private fun productVariationResponseToProductVariationModel(response: ProductVariationApiResponse): WCProductVariationModel {
+    private fun productVariationResponseToProductVariationModel(
+        response: ProductVariationApiResponse
+    ): WCProductVariationModel {
         return WCProductVariationModel().apply {
             remoteVariationId = response.id
             permalink = response.permalink ?: ""
