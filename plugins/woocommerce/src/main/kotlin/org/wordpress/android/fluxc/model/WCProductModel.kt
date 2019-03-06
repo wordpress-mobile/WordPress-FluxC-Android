@@ -114,6 +114,20 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return imageList
     }
 
+    /**
+     * Extract the first image from the json array of images
+     */
+    fun getFirstImage(): String? {
+        try {
+            Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.firstOrNull { jsonElement ->
+                return (jsonElement.asJsonObject).getString("src")
+            }
+        } catch (e: JsonParseException) {
+            AppLog.e(T.API, e)
+        }
+        return null
+    }
+
     fun getCategories() = getTriplets(categories)
 
     fun getTags() = getTriplets(tags)

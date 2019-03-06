@@ -46,6 +46,14 @@ android {
         // pressure on the API (authentication/fetch profile/fetch sites).
         // Uncomment the next line to enable the Orchestrator.
         // execution 'ANDROID_TEST_ORCHESTRATOR'
+
+        unitTests.all {
+            if (project.hasProperty('testsMaxHeapSize')) {
+                // maxHeapSize for tests is not limited unless we give an explicit value
+                // See https://docs.gradle.org/current/dsl/org.gradle.api.tasks.testing.Test.html
+                maxHeapSize project.properties.get('testsMaxHeapSize')
+            }
+        }
     }
 }
 

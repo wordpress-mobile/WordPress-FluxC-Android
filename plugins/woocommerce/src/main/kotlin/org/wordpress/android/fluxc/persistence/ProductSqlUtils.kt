@@ -30,13 +30,22 @@ object ProductSqlUtils {
         }
     }
 
-    fun getSingleProductByRemoteId(site: SiteModel, remoteProductId: Long): WCProductModel? {
+    fun getProductByRemoteId(site: SiteModel, remoteProductId: Long): WCProductModel? {
         return WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
                 .equals(WCProductModelTable.REMOTE_PRODUCT_ID, remoteProductId)
                 .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
                 .endGroup().endWhere()
                 .asModel.firstOrNull()
+    }
+
+    fun geProductExistsByRemoteId(site: SiteModel, remoteProductId: Long): Boolean {
+        return WellSql.select(WCProductModel::class.java)
+                .where().beginGroup()
+                .equals(WCProductModelTable.REMOTE_PRODUCT_ID, remoteProductId)
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .endGroup().endWhere()
+                .exists()
     }
 
     fun deleteProductsForSite(site: SiteModel): Int {
