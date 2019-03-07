@@ -1,7 +1,7 @@
 package org.wordpress.android.fluxc.annotations.endpoint;
 
 public class WPComEndpoint {
-    private static final String WPCOM_REST_PREFIX = "https://31a2c05d.ngrok.io";
+    private static final String WPCOM_REST_PREFIX = "http://localhost:9090";
     private static final String WPCOM_PREFIX_V1 = WPCOM_REST_PREFIX + "/rest/v1";
     private static final String WPCOM_PREFIX_V1_1 = WPCOM_REST_PREFIX + "/rest/v1.1";
     private static final String WPCOM_PREFIX_V1_2 = WPCOM_REST_PREFIX + "/rest/v1.2";
