@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Authenticator {
-    private static final String WPCOM_OAUTH_PREFIX = "http://127.0.0.1.xip.io:8282/oauth2";
+    private static final String WPCOM_OAUTH_PREFIX = "http://localhost:9090/oauth2";
     private static final String AUTHORIZE_ENDPOINT = WPCOM_OAUTH_PREFIX + "/authorize";
     private static final String TOKEN_ENDPOINT = WPCOM_OAUTH_PREFIX + "/token";
     private static final String AUTHORIZE_ENDPOINT_FORMAT = "%s?client_id=%s&response_type=code";
