@@ -8,7 +8,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRe
 
 object WCStatsSqlUtils {
     fun insertOrUpdateStats(stats: WCOrderStatsModel): Int {
-        val statsResult = if(stats.isCustomField) {
+        val statsResult = if (stats.isCustomField) {
             WellSql.select(WCOrderStatsModel::class.java)
                     .where().beginGroup()
                     .equals(WCOrderStatsModelTable.LOCAL_SITE_ID, stats.localSiteId)
