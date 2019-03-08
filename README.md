@@ -1,6 +1,6 @@
 # WordPress-FluxC-Android
 
-[![Build Status](https://travis-ci.org/wordpress-mobile/WordPress-FluxC-Android.svg?branch=develop)](https://travis-ci.org/wordpress-mobile/WordPress-FluxC-Android)
+[![CircleCI](https://circleci.com/gh/wordpress-mobile/WordPress-FluxC-Android.svg?style=svg)](https://circleci.com/gh/wordpress-mobile/WordPress-FluxC-Android)
 
 WordPress-FluxC-Android is a networking and persistence library that helps to connect and sync data from a WordPress site (self hosted, or wordpress.com site).
 
