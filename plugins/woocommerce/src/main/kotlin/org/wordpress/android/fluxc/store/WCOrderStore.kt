@@ -27,8 +27,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrderRestClient: OrderRestClient)
-    : Store(dispatcher) {
+class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrderRestClient: OrderRestClient) :
+        Store(dispatcher) {
     companion object {
         const val NUM_ORDERS_PER_FETCH = 25
         const val DEFAULT_ORDER_STATUS = "any"
@@ -138,8 +138,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         val site: SiteModel,
         val note: WCOrderNoteModel
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, order: WCOrderModel, site: SiteModel, note: WCOrderNoteModel)
-                : this(order, site, note) { this.error = error }
+        constructor(error: OrderError, order: WCOrderModel, site: SiteModel, note: WCOrderNoteModel) :
+                this(order, site, note) { this.error = error }
     }
 
     class FetchOrderStatusOptionsPayload(val site: SiteModel) : Payload<BaseNetworkError>()
