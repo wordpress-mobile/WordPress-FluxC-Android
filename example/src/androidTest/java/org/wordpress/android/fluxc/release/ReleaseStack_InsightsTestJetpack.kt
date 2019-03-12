@@ -198,13 +198,13 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     fun testPublicizeModel() {
         val site = authenticate()
 
-        val pageSize = 5
-        val fetchedInsights = runBlocking { publicizeStore.fetchPublicizeData(site, pageSize) }
+        val limitMode = LimitMode.Top(5)
+        val fetchedInsights = runBlocking { publicizeStore.fetchPublicizeData(site, limitMode) }
 
         assertNotNull(fetchedInsights)
         assertNotNull(fetchedInsights.model)
 
-        val insightsFromDb = publicizeStore.getPublicizeData(site, pageSize)
+        val insightsFromDb = publicizeStore.getPublicizeData(site, limitMode)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
     }
