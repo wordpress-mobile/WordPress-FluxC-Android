@@ -124,7 +124,6 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
 
             val insightsFromDb = referrersStore.getReferrers(site, granularity, SELECTED_DATE,
                     LimitMode.Top(ITEMS_TO_LOAD))
-
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
     }
@@ -137,8 +136,8 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             val fetchedInsights = runBlocking {
                 clicksStore.fetchClicks(
                         site,
-                        ITEMS_TO_LOAD,
                         granularity,
+                        LimitMode.Top(ITEMS_TO_LOAD),
                         SELECTED_DATE,
                         true
                 )
@@ -147,8 +146,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = clicksStore.getClicks(site, granularity, ITEMS_TO_LOAD, SELECTED_DATE)
-
+            val insightsFromDb = clicksStore.getClicks(site, granularity, SELECTED_DATE, LimitMode.Top(ITEMS_TO_LOAD))
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
     }
