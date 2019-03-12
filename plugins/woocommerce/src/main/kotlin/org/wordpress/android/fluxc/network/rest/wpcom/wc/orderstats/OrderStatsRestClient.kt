@@ -50,6 +50,8 @@ class OrderStatsRestClient(
         override fun toString() = name.toLowerCase()
     }
 
+    private final val STATS_FIELDS = "data,fields"
+
     /**
      * Makes a GET call to `/wpcom/v2/sites/$site/data/orders/`, retrieving data for the given
      * WooCommerce [SiteModel].
@@ -76,7 +78,8 @@ class OrderStatsRestClient(
         val params = mapOf(
                 "unit" to unit.toString(),
                 "date" to date,
-                "quantity" to quantity.toString())
+                "quantity" to quantity.toString(),
+                "_fields" to STATS_FIELDS)
 
         val request = WPComGsonRequest.buildGetRequest(url, params, OrderStatsApiResponse::class.java,
                 { apiResponse ->
