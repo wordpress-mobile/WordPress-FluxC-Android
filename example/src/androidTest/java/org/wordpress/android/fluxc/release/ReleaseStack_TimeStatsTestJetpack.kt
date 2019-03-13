@@ -159,9 +159,9 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             val fetchedInsights = runBlocking {
                 visitsAndViewsStore.fetchVisits(
                         site,
-                        ITEMS_TO_LOAD,
-                        SELECTED_DATE,
                         granularity,
+                        LIMIT_MODE,
+                        SELECTED_DATE,
                         true
                 )
             }
@@ -169,7 +169,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
                 assertNotNull(fetchedInsights)
                 assertNotNull(fetchedInsights.model)
 
-                val insightsFromDb = visitsAndViewsStore.getVisits(site, SELECTED_DATE, granularity)
+                val insightsFromDb = visitsAndViewsStore.getVisits(site, granularity, LIMIT_MODE, SELECTED_DATE)
 
                 assertEquals(fetchedInsights.model, insightsFromDb)
             }
