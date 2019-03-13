@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  android: wordpress-mobile/android@0.0.22
+  android: wordpress-mobile/android@dev:firebase-test-results
   slack: circleci/slack@2.0.0
 
 commands:
