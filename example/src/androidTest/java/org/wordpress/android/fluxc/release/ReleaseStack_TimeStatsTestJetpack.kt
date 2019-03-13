@@ -146,7 +146,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = clicksStore.getClicks(site, granularity, SELECTED_DATE, LimitMode.Top(ITEMS_TO_LOAD))
+            val insightsFromDb = clicksStore.getClicks(site, granularity, LimitMode.Top(ITEMS_TO_LOAD), SELECTED_DATE)
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
     }
