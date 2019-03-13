@@ -57,8 +57,6 @@ android {
     }
 }
 
-kotlin { experimental { coroutines 'enable' } }
-
 android.buildTypes.all { buildType ->
     // Add properties named "wp.xxx" to our BuildConfig
     project.properties.any { property ->

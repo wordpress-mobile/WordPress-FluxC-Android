@@ -18,8 +18,8 @@ import org.wordpress.android.util.AppLog.T
 import java.util.Locale
 import javax.inject.Inject
 
-class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcProductRestClient: ProductRestClient)
-    : Store(dispatcher) {
+class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcProductRestClient: ProductRestClient) :
+        Store(dispatcher) {
     class FetchSingleProductPayload(
         var site: SiteModel,
         var remoteProductId: Long
