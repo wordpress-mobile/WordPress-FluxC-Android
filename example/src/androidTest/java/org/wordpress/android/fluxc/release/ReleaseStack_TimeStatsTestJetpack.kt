@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 private const val ITEMS_TO_LOAD = 8
+private val LIMIT_MODE = LimitMode.Top(ITEMS_TO_LOAD)
 private val SELECTED_DATE = Date(10)
 
 /**
@@ -84,7 +85,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
                 postAndPageViewsStore.fetchPostAndPageViews(
                         site,
                         granularity,
-                        LimitMode.Top(ITEMS_TO_LOAD),
+                        LIMIT_MODE,
                         SELECTED_DATE,
                         true
                 )
@@ -96,7 +97,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             val insightsFromDb = postAndPageViewsStore.getPostAndPageViews(
                     site,
                     granularity,
-                    LimitMode.Top(ITEMS_TO_LOAD),
+                    LIMIT_MODE,
                     SELECTED_DATE
             )
 
@@ -113,7 +114,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
                 referrersStore.fetchReferrers(
                         site,
                         granularity,
-                        LimitMode.Top(ITEMS_TO_LOAD),
+                        LIMIT_MODE,
                         SELECTED_DATE,
                         true
                 )
@@ -122,8 +123,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = referrersStore.getReferrers(site, granularity, LimitMode.Top(ITEMS_TO_LOAD),
-                    SELECTED_DATE)
+            val insightsFromDb = referrersStore.getReferrers(site, granularity, LIMIT_MODE, SELECTED_DATE)
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
     }
@@ -137,7 +137,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
                 clicksStore.fetchClicks(
                         site,
                         granularity,
-                        LimitMode.Top(ITEMS_TO_LOAD),
+                        LIMIT_MODE,
                         SELECTED_DATE,
                         true
                 )
@@ -146,7 +146,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = clicksStore.getClicks(site, granularity, LimitMode.Top(ITEMS_TO_LOAD), SELECTED_DATE)
+            val insightsFromDb = clicksStore.getClicks(site, granularity, LIMIT_MODE, SELECTED_DATE)
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
     }
@@ -185,7 +185,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
                 countryViewsStore.fetchCountryViews(
                         site,
                         granularity,
-                        LimitMode.Top(ITEMS_TO_LOAD),
+                        LIMIT_MODE,
                         SELECTED_DATE,
                         true
                 )
@@ -194,8 +194,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = countryViewsStore.getCountryViews(site, granularity, LimitMode.Top(ITEMS_TO_LOAD),
-                    SELECTED_DATE)
+            val insightsFromDb = countryViewsStore.getCountryViews(site, granularity, LIMIT_MODE, SELECTED_DATE)
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
@@ -206,13 +205,12 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
         val site = authenticate()
 
         for (period in StatsGranularity.values()) {
-            val limitMode = LimitMode.Top(ITEMS_TO_LOAD)
-            val fetchedInsights = runBlocking { authorsStore.fetchAuthors(site, period, limitMode, SELECTED_DATE) }
+            val fetchedInsights = runBlocking { authorsStore.fetchAuthors(site, period, LIMIT_MODE, SELECTED_DATE) }
 
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = authorsStore.getAuthors(site, period, limitMode, SELECTED_DATE)
+            val insightsFromDb = authorsStore.getAuthors(site, period, LIMIT_MODE, SELECTED_DATE)
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
@@ -227,7 +225,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
                 searchTermsStore.fetchSearchTerms(
                         site,
                         granularity,
-                        LimitMode.Top(ITEMS_TO_LOAD),
+                        LIMIT_MODE,
                         SELECTED_DATE,
                         true
                 )
@@ -236,8 +234,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = searchTermsStore.getSearchTerms(site, granularity,
-                    LimitMode.Top(ITEMS_TO_LOAD), SELECTED_DATE)
+            val insightsFromDb = searchTermsStore.getSearchTerms(site, granularity, LIMIT_MODE, SELECTED_DATE)
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
@@ -251,8 +248,8 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             val fetchedInsights = runBlocking {
                 videoPlaysStore.fetchVideoPlays(
                         site,
-                        ITEMS_TO_LOAD,
                         granularity,
+                        LIMIT_MODE,
                         SELECTED_DATE,
                         true
                 )
@@ -261,7 +258,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = videoPlaysStore.getVideoPlays(site, granularity, ITEMS_TO_LOAD, SELECTED_DATE)
+            val insightsFromDb = videoPlaysStore.getVideoPlays(site, granularity, LIMIT_MODE, SELECTED_DATE)
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
