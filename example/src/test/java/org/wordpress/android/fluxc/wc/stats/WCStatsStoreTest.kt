@@ -1006,6 +1006,23 @@ class WCStatsStoreTest {
 
         /*
          * Test Scenario - II
+         * Generate default stats with a different date in the future
+         */
+        val defaultDayOrderStatsModel2 = WCStatsTestUtils.generateSampleStatsModel(endDate = "2019-03-20")
+        WCStatsSqlUtils.insertOrUpdateStats(defaultDayOrderStatsModel2)
+
+        WCStatsSqlUtils.getFirstRawStatsForSite(site)?.let {
+            assertEquals(defaultDayOrderStatsModel2.date, it.date)
+        }
+
+        val defaultDayOrderRevenueStats2 = wcStatsStore.getRevenueStats(site, StatsGranularity.DAYS)
+        val defaultDayOrderStats2 = wcStatsStore.getOrderStats(site, StatsGranularity.DAYS)
+
+        assertTrue(defaultDayOrderRevenueStats2.isNotEmpty())
+        assertTrue(defaultDayOrderStats2.isNotEmpty())
+
+        /*
+         * Test Scenario - III
          * Generate custom stats for same site:
          * granularity - DAYS
          * quantity - 1
@@ -1033,7 +1050,7 @@ class WCStatsStoreTest {
         assertTrue(customDayOrderStats.isNotEmpty())
 
         /*
-         * Test Scenario - III
+         * Test Scenario - IV
          * Query for custom stats that is not present in local cache: for same site, same quantity, different date
          * granularity - DAYS
          * quantity - 1
@@ -1057,7 +1074,7 @@ class WCStatsStoreTest {
         assertTrue(customDayOrderStats2.isEmpty())
 
         /*
-         * Test Scenario - IV
+         * Test Scenario - V
          * Query for custom stats that is not present in local cache:
          * for same site, different quantity, different date
          * granularity - DAYS
@@ -1083,7 +1100,7 @@ class WCStatsStoreTest {
         assertTrue(customDayOrderStats3.isEmpty())
 
         /*
-         * Test Scenario - IV
+         * Test Scenario - VI
          * Generate custom stats for same site with different granularity, same date, same quantity
          * granularity - WEEKS
          * quantity - 1
@@ -1125,7 +1142,7 @@ class WCStatsStoreTest {
         assertTrue(customDayOrderStats4.isEmpty())
 
         /*
-         * Test Scenario - V
+         * Test Scenario - VII
          * Generate custom stats for different site with same granularity, same date, same quantity
          * site - 8
          * granularity - WEEKS

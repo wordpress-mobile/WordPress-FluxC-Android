@@ -8,15 +8,25 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRe
 
 object WCStatsSqlUtils {
     fun insertOrUpdateStats(stats: WCOrderStatsModel): Int {
-        val statsResult = WellSql.select(WCOrderStatsModel::class.java)
-                .where().beginGroup()
-                .equals(WCOrderStatsModelTable.LOCAL_SITE_ID, stats.localSiteId)
-                .equals(WCOrderStatsModelTable.UNIT, stats.unit)
-                .equals(WCOrderStatsModelTable.DATE, stats.date)
-                .equals(WCOrderStatsModelTable.QUANTITY, stats.quantity)
-                .equals(WCOrderStatsModelTable.IS_CUSTOM_FIELD, stats.isCustomField)
-                .endGroup().endWhere()
-                .asModel
+        val statsResult = if (stats.isCustomField) {
+            WellSql.select(WCOrderStatsModel::class.java)
+                    .where().beginGroup()
+                    .equals(WCOrderStatsModelTable.LOCAL_SITE_ID, stats.localSiteId)
+                    .equals(WCOrderStatsModelTable.UNIT, stats.unit)
+                    .equals(WCOrderStatsModelTable.DATE, stats.date)
+                    .equals(WCOrderStatsModelTable.QUANTITY, stats.quantity)
+                    .equals(WCOrderStatsModelTable.IS_CUSTOM_FIELD, stats.isCustomField)
+                    .endGroup().endWhere()
+                    .asModel
+        } else {
+            WellSql.select(WCOrderStatsModel::class.java)
+                    .where().beginGroup()
+                    .equals(WCOrderStatsModelTable.LOCAL_SITE_ID, stats.localSiteId)
+                    .equals(WCOrderStatsModelTable.UNIT, stats.unit)
+                    .equals(WCOrderStatsModelTable.IS_CUSTOM_FIELD, stats.isCustomField)
+                    .endGroup().endWhere()
+                    .asModel
+        }
 
         if (statsResult.isEmpty()) {
             /*
