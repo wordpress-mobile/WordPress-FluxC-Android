@@ -120,13 +120,13 @@ workflows:
           timeout: 10m
           post-slack-status: false
   nightly:
-    triggers:
-      - schedule:
-          cron: "0 0 * * *"
-          filters:
-            branches:
-              only:
-                - develop
+    # triggers:
+    #   - schedule:
+    #       cron: "0 0 * * *"
+    #       filters:
+    #         branches:
+    #           only:
+    #             - develop
     jobs:
       - Firebase Test:
           name: Connected Tests
