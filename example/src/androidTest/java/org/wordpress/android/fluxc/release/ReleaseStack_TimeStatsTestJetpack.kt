@@ -184,8 +184,8 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             val fetchedInsights = runBlocking {
                 countryViewsStore.fetchCountryViews(
                         site,
-                        ITEMS_TO_LOAD,
                         granularity,
+                        LimitMode.Top(ITEMS_TO_LOAD),
                         SELECTED_DATE,
                         true
                 )
@@ -194,7 +194,8 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             assertNotNull(fetchedInsights)
             assertNotNull(fetchedInsights.model)
 
-            val insightsFromDb = countryViewsStore.getCountryViews(site, granularity, ITEMS_TO_LOAD, SELECTED_DATE)
+            val insightsFromDb = countryViewsStore.getCountryViews(site, granularity, LimitMode.Top(ITEMS_TO_LOAD),
+                    SELECTED_DATE)
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
