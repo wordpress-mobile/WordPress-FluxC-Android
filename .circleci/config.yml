@@ -1,7 +1,8 @@
 version: 2.1
 
 orbs:
-  android: wordpress-mobile/android@0.0.21
+  android: wordpress-mobile/android@0.0.22
+  slack: circleci/slack@2.0.0
 
 commands:
   copy-gradle-properties:
@@ -9,6 +10,18 @@ commands:
       - run:
           name: Setup gradle.properties
           command: cp example/gradle.properties-example example/gradle.properties
+  decrypt-file:
+    parameters:
+      input:
+        type: string
+      output:
+        type: string
+      secret:
+        type: string
+    steps:
+      - run:
+          name: Decrypt << parameters.input >>
+          command: openssl aes-256-cbc -md sha256 -d -in "<< parameters.input >>" -out "<< parameters.output >>" -k "${<< parameters.secret >>}"
 
 jobs:
   Lint:
@@ -17,8 +30,7 @@ jobs:
       api-version: "27"
     steps:
       - checkout
-      - android/restore-gradle-cache:
-          cache-prefix: lint
+      - android/restore-gradle-cache
       - copy-gradle-properties
       - run:
           name: Check Style
@@ -28,57 +40,98 @@ jobs:
           command: |
             ./gradlew --stacktrace lintRelease || (grep -A20 -B2 'severity="Error"' */build/**/*.xml; exit 1);
             find . -iname "*XMLRPCClient*java" | xargs grep getSiteId && (echo "You should not use _getSiteId_ in a XMLRPClient, did you mean _selfHostedId_?" && exit 1) || exit 0;
-      - android/save-gradle-cache:
-          cache-prefix: lint
-      - store_artifacts:
-          path: fluxc/build/reports
-          destination: reports
+      - android/save-gradle-cache
+      - android/save-lint-results
   Unit Tests:
     executor: 
       name: android/default
       api-version: "27"
     steps:
       - checkout
-      - android/restore-gradle-cache:
-          cache-prefix: unit-tests
+      - android/restore-gradle-cache
       - copy-gradle-properties
       - run:
           name: Unit tests
           command: ./gradlew --stacktrace -PtestsMaxHeapSize=1536m example:testRelease
-      - android/save-gradle-cache:
-          cache-prefix: unit-tests
+      - android/save-gradle-cache
       - android/save-test-results
-  Mocked Connected Tests:
+  Firebase Test:
+    parameters:
+      results-history-name:
+        type: string
+      package:
+        type: string
+      timeout:
+        type: string
+      post-slack-status:
+        type: boolean
+      device:
+        type: string
     executor: 
       name: android/default
       api-version: "27"
     steps:
       - checkout
       - android/restore-gradle-cache:
-          cache-prefix: mocked-connected-tests
+          cache-prefix: connected-tests
+      - decrypt-file:
+          input: .circleci/tests.properties.enc
+          output: example/tests.properties
+          secret: TESTS_PROPERTIES_ENCRYPTION_KEY
+      - decrypt-file:
+          input: .circleci/gradle.properties.enc
+          output: example/gradle.properties
+          secret: TESTS_PROPERTIES_ENCRYPTION_KEY
       - run:
           name: Build
           command: ./gradlew --stacktrace example:assembleDebug example:assembleDebugAndroidTest
-      - run:
-          name: Decrypt credentials
-          command: openssl aes-256-cbc -md sha256 -d -in .firebase.secrets.json.enc -out .firebase.secrets.json -k "${FIREBASE_SECRETS_ENCRYPTION_KEY}"
+      - decrypt-file:
+          input: .circleci/.firebase.secrets.json.enc
+          output: .firebase.secrets.json
+          secret: FIREBASE_SECRETS_ENCRYPTION_KEY
       - android/firebase-test:
           key-file: .firebase.secrets.json
-          results-history-name: CircleCI FluxC Mocked Tests
+          results-history-name: << parameters.results-history-name >>
           type: instrumentation
           apk-path: example/build/outputs/apk/debug/example-debug.apk
           test-apk-path: example/build/outputs/apk/androidTest/debug/example-debug-androidTest.apk
-          test-targets: package org.wordpress.android.fluxc.mocked
-          device: model=Nexus5X,version=26,locale=en,orientation=portrait
+          test-targets: package << parameters.package >>
+          device: << parameters.device >>
           project: api-project-108380595987
-          timeout: 10m
+          timeout: << parameters.timeout >>
           no-record-video: true
       - android/save-gradle-cache:
-          cache-prefix: mocked-connected-tests
+          cache-prefix: connected-tests
+      - when:
+          condition: << parameters.post-slack-status >>
+          steps:
+            - slack/status
 
 workflows:
   fluxc:
     jobs:
       - Lint
       - Unit Tests
-      - Mocked Connected Tests
+      - Firebase Test:
+          name: Mocked Connected Tests
+          results-history-name: CircleCI FluxC Mocked Tests
+          package: org.wordpress.android.fluxc.mocked
+          device: model=Nexus5X,version=26,locale=en,orientation=portrait
+          timeout: 10m
+          post-slack-status: false
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - develop
+    jobs:
+      - Firebase Test:
+          name: Connected Tests
+          results-history-name: CircleCI FluxC Tests
+          package: org.wordpress.android.fluxc
+          device: model=walleye,version=26,locale=en,orientation=portrait
+          timeout: 30m
+          post-slack-status: true
