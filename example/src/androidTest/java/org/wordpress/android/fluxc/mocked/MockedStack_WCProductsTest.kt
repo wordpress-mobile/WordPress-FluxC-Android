@@ -60,7 +60,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getCategories().size, 2)
             assertEquals(product.getTags().size, 2)
             assertEquals(product.getImages().size, 2)
-            assertNotNull(product.getFirstImage())
+            assertNotNull(product.getFirstImageUrl())
         }
 
         // save the product to the db
@@ -74,7 +74,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getCategories().size, 2)
             assertEquals(product.getTags().size, 2)
             assertEquals(product.getImages().size, 2)
-            assertNotNull(product.getFirstImage())
+            assertNotNull(product.getFirstImageUrl())
         }
     }
 

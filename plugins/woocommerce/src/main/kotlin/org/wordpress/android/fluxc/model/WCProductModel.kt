@@ -115,9 +115,9 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     }
 
     /**
-     * Extract the first image from the json array of images
+     * Extract the first image url from the json array of images
      */
-    fun getFirstImage(): String? {
+    fun getFirstImageUrl(): String? {
         try {
             Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.firstOrNull { jsonElement ->
                 return (jsonElement.asJsonObject).getString("src")
@@ -128,9 +128,37 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return null
     }
 
+    /**
+     * Extract all image urls from the json array of images
+     */
+    fun getImageUrls(): List<String> {
+        val imageUrls = ArrayList<String>()
+        getImages().forEach {
+            imageUrls.add(it.src)
+        }
+        return imageUrls
+    }
+
     fun getCategories() = getTriplets(categories)
 
+    fun getCommaSeparatedCategoryNames() = getCommaSeparatedTripletNames(getCategories())
+
     fun getTags() = getTriplets(tags)
+
+    fun getCommaSeparatedTagNames() = getCommaSeparatedTripletNames(getTags())
+
+    private fun getCommaSeparatedTripletNames(triplets: List<ProductTriplet>): String {
+        if (triplets.isEmpty()) return ""
+        var names = ""
+        triplets.forEach {
+            if (names.isEmpty()) {
+                names = it.name
+            } else {
+                names += ", $it.name"
+            }
+        }
+        return names
+    }
 
     private fun getTriplets(jsonStr: String): ArrayList<ProductTriplet> {
         val triplets = ArrayList<ProductTriplet>()
