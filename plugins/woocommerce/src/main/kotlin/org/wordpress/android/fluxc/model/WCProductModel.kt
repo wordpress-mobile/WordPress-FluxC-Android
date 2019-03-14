@@ -154,7 +154,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             if (names.isEmpty()) {
                 names = it.name
             } else {
-                names += ", $it.name"
+                names += ", ${it.name}"
             }
         }
         return names
