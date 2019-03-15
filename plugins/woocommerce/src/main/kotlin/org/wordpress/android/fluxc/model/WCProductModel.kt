@@ -195,8 +195,19 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return attrList
     }
 
-    fun getDownloadableFilesCount() =
-            Gson().fromJson<JsonElement>(downloads, JsonElement::class.java).asJsonArray.size()
+    fun getDownloadableFiles(): List<String> {
+        val fileList = ArrayList<String>()
+        try {
+            Gson().fromJson<JsonElement>(downloads, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+                jsonElement.asJsonObject.getString("file")?.let {
+                    fileList.add(it)
+                }
+            }
+        } catch (e: JsonParseException) {
+            AppLog.e(T.API, e)
+        }
+        return fileList
+    }
 
     fun getCategories() = getTriplets(categories)
 
