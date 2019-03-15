@@ -2,28 +2,15 @@
   "data": [
     {
       "id": 949,
-      "parent_id": 0,
       "number": "949",
-      "order_key": "wc_order_5ac244e370297",
-      "created_via": "checkout",
-      "version": "3.3.4",
       "status": "processing",
       "currency": "USD",
-      "date_created": "2018-04-02T10:57:39",
       "date_created_gmt": "2018-04-02T14:57:39",
-      "date_modified": "2018-04-02T10:57:43",
-      "date_modified_gmt": "2018-04-02T14:57:43",
       "discount_total": "0.00",
-      "discount_tax": "0.00",
       "shipping_total": "4.00",
-      "shipping_tax": "0.00",
-      "cart_tax": "0.00",
       "total": "44.00",
       "total_tax": "0.00",
       "prices_include_tax": false,
-      "customer_id": 1,
-      "customer_ip_address": "100.2.138.170",
-      "customer_user_agent": "mozilla\/5.0 (macintosh; intel mac os x 10_13_3) applewebkit\/537.36 (khtml, like gecko) chrome\/65.0.3325.162 safari\/537.36",
       "customer_note": "",
       "billing": {
         "first_name": "Jake",
@@ -51,13 +38,6 @@
       },
       "payment_method": "stripe",
       "payment_method_title": "Credit Card (Stripe)",
-      "transaction_id": "ch_abcdef123456",
-      "date_paid": "2018-04-02T10:57:43",
-      "date_paid_gmt": "2018-04-02T14:57:43",
-      "date_completed": null,
-      "date_completed_gmt": null,
-      "cart_hash": "437b930db84b8079c2dd804a71936b5f",
-      "meta_data": [],
       "line_items": [
         {
           "id": 879,
@@ -92,69 +72,20 @@
           "price": 30
         }
       ],
-      "tax_lines": [],
-      "shipping_lines": [
-        {
-          "id": 881,
-          "method_title": "Flat rate",
-          "method_id": "flat_rate:31",
-          "total": "4.00",
-          "total_tax": "0.00",
-          "taxes": [],
-          "meta_data": [
-            {
-              "id": 6426,
-              "key": "Items",
-              "value": "Black T-shirt (H&M) &times; 1"
-            }
-          ]
-        }
-      ],
-      "fee_lines": [],
       "coupon_lines": [],
-      "refunds": [],
-      "_links": {
-        "self": [
-          {
-            "href": "https:\/\/example.com\/wp-json\/wc\/v2\/orders\/949"
-          }
-        ],
-        "collection": [
-          {
-            "href": "https:\/\/example.com\/wp-json\/wc\/v2\/orders"
-          }
-        ],
-        "customer": [
-          {
-            "href": "https:\/\/example.com\/wp-json\/wc\/v2\/customers\/1"
-          }
-        ]
-      }
+      "refunds": []
     },
     {
       "id": 939,
-      "parent_id": 0,
       "number": "939",
-      "order_key": "wc_order_5abff457cc653",
-      "created_via": "checkout",
-      "version": "3.3.4",
       "status": "processing",
       "currency": "USD",
-      "date_created": "2018-03-31T16:49:27",
       "date_created_gmt": "2018-03-31T20:49:27",
-      "date_modified": "2018-03-31T16:49:28",
-      "date_modified_gmt": "2018-03-31T20:49:28",
       "discount_total": "0.00",
-      "discount_tax": "0.00",
       "shipping_total": "4.00",
-      "shipping_tax": "0.00",
-      "cart_tax": "0.00",
       "total": "64.00",
       "total_tax": "0.00",
       "prices_include_tax": false,
-      "customer_id": 1,
-      "customer_ip_address": "100.2.138.170",
-      "customer_user_agent": "mozilla\/5.0 (macintosh; intel mac os x 10_13_3) applewebkit\/537.36 (khtml, like gecko) chrome\/65.0.3325.162 safari\/537.36",
       "customer_note": "test checkout field editor note",
       "billing": {
         "first_name": "Jake",
@@ -182,13 +113,6 @@
       },
       "payment_method": "cod",
       "payment_method_title": "Cash on delivery",
-      "transaction_id": "",
-      "date_paid": null,
-      "date_paid_gmt": null,
-      "date_completed": null,
-      "date_completed_gmt": null,
-      "cart_hash": "437b930db84b8079c2dd804a71936b5f",
-      "meta_data": [],
       "line_items": [
         {
           "id": 877,
@@ -207,69 +131,20 @@
           "price": 60
         }
       ],
-      "tax_lines": [],
-      "shipping_lines": [
-        {
-          "id": 878,
-          "method_title": "Flat rate",
-          "method_id": "flat_rate:31",
-          "total": "4.00",
-          "total_tax": "0.00",
-          "taxes": [],
-          "meta_data": [
-            {
-              "id": 6403,
-              "key": "Items",
-              "value": "Blue T-shirt (Zara) &times; 1"
-            }
-          ]
-        }
-      ],
-      "fee_lines": [],
       "coupon_lines": [],
-      "refunds": [],
-      "_links": {
-        "self": [
-          {
-            "href": "https:\/\/example.com\/wp-json\/wc\/v2\/orders\/939"
-          }
-        ],
-        "collection": [
-          {
-            "href": "https:\/\/example.com\/wp-json\/wc\/v2\/orders"
-          }
-        ],
-        "customer": [
-          {
-            "href": "https:\/\/example.com\/wp-json\/wc\/v2\/customers\/1"
-          }
-        ]
-      }
+      "refunds": []
     },
     {
       "id": 937,
-      "parent_id": 0,
       "number": "937",
-      "order_key": "wc_order_5abfef9ba073e",
-      "created_via": "checkout",
-      "version": "3.3.4",
       "status": "refunded",
       "currency": "USD",
-      "date_created": "2018-03-31T16:29:15",
       "date_created_gmt": "2018-03-31T20:29:15",
-      "date_modified": "2018-03-31T16:52:05",
-      "date_modified_gmt": "2018-03-31T20:52:05",
       "discount_total": "0.00",
-      "discount_tax": "0.00",
       "shipping_total": "7.00",
-      "shipping_tax": "0.00",
-      "cart_tax": "0.00",
       "total": "92.00",
       "total_tax": "0.00",
       "prices_include_tax": false,
-      "customer_id": 1,
-      "customer_ip_address": "100.2.138.170",
-      "customer_user_agent": "mozilla\/5.0 (macintosh; intel mac os x 10_13_3) applewebkit\/537.36 (khtml, like gecko) chrome\/65.0.3325.162 safari\/537.36",
       "customer_note": "",
       "billing": {
         "first_name": "Jake",
@@ -297,13 +172,6 @@
       },
       "payment_method": "cod",
       "payment_method_title": "Cash on delivery",
-      "transaction_id": "",
-      "date_paid": null,
-      "date_paid_gmt": null,
-      "date_completed": null,
-      "date_completed_gmt": null,
-      "cart_hash": "437b930db84b8079c2dd804a71936b5f",
-      "meta_data": [],
       "line_items": [
         {
           "id": 874,
@@ -338,75 +206,25 @@
           "price": 30
         }
       ],
-      "tax_lines": [],
-      "shipping_lines": [
-        {
-          "id": 876,
-          "method_title": "Flat rate",
-          "method_id": "flat_rate:31",
-          "total": "7.00",
-          "total_tax": "0.00",
-          "taxes": [],
-          "meta_data": [
-            {
-              "id": 6389,
-              "key": "Items",
-              "value": "Twin Peaks T-Shirt (Product Add-On) &times; 1, Black T-shirt (H&M) &times; 2"
-            }
-          ]
-        }
-      ],
-      "fee_lines": [],
-      "coupon_lines": [],
       "refunds": [
         {
           "id": 940,
           "refund": "Order fully refunded",
           "total": "-92.00"
         }
-      ],
-      "_links": {
-        "self": [
-          {
-            "href": "https:\/\/example.com\/wp-json\/wc\/v2\/orders\/937"
-          }
-        ],
-        "collection": [
-          {
-            "href": "https:\/\/example.com\/wp-json\/wc\/v2\/orders"
-          }
-        ],
-        "customer": [
-          {
-            "href": "https:\/\/example.com\/wp-json\/wc\/v2\/customers\/1"
-          }
-        ]
-      }
+      ]
     },
     {
       "id": 786,
-      "parent_id": 0,
       "number": "56AQ",
-      "order_key": "wc_order_5a7cd18fc8e37",
-      "created_via": "checkout",
-      "version": "3.3.1",
       "status": "completed",
       "currency": "USD",
-      "date_created": "2018-02-08T17:39:11",
       "date_created_gmt": "2018-02-08T22:39:11",
-      "date_modified": "2018-02-19T18:19:03",
-      "date_modified_gmt": "2018-02-19T23:19:03",
       "discount_total": "60.00",
-      "discount_tax": "0.00",
       "shipping_total": "7.59",
-      "shipping_tax": "0.00",
-      "cart_tax": "0.00",
       "total": "7.59",
       "total_tax": "0.00",
       "prices_include_tax": false,
-      "customer_id": 1,
-      "customer_ip_address": "108.30.4.3",
-      "customer_user_agent": "mozilla\/5.0 (macintosh; intel mac os x 10_12_6) applewebkit\/537.36 (khtml, like gecko) chrome\/63.0.3239.132 safari\/537.36",
       "customer_note": "",
       "billing": {
         "first_name": "John",
@@ -434,13 +252,6 @@
       },
       "payment_method": "stripe",
       "payment_method_title": "Credit Card (Stripe)",
-      "transaction_id": "ch_abcdef123456",
-      "date_paid": "2018-02-08T17:39:13",
-      "date_paid_gmt": "2018-02-08T22:39:13",
-      "date_completed": "2018-02-19T18:19:03",
-      "date_completed_gmt": "2018-02-19T23:19:03",
-      "cart_hash": "437b930db84b8079c2dd804a71936b5f",
-      "meta_data": [],
       "line_items": [
         {
           "id": 822,
@@ -475,25 +286,6 @@
           "price": 0
         }
       ],
-      "tax_lines": [],
-      "shipping_lines": [
-        {
-          "id": 824,
-          "method_title": "Retail Ground&#8482;",
-          "method_id": "usps:D_STANDARD_POST",
-          "total": "7.59",
-          "total_tax": "0.00",
-          "taxes": [],
-          "meta_data": [
-            {
-              "id": 6019,
-              "key": "Package 1",
-              "value": "1 \u00d7 1 \u00d7 1 (in) 1lbs"
-            }
-          ]
-        }
-      ],
-      "fee_lines": [],
       "coupon_lines": [
         {
           "id": 825,
@@ -592,24 +384,7 @@
           ]
         }
       ],
-      "refunds": [],
-      "_links": {
-        "self": [
-          {
-            "href": "https:\/\/example.com\/wp-json\/wc\/v2\/orders\/786"
-          }
-        ],
-        "collection": [
-          {
-            "href": "https:\/\/example.com\/wp-json\/wc\/v2\/orders"
-          }
-        ],
-        "customer": [
-          {
-            "href": "https:\/\/example.com\/wp-json\/wc\/v2\/customers\/1"
-          }
-        ]
-      }
+      "refunds": []
     }
   ]
 }

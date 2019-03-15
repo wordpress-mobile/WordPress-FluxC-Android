@@ -3,6 +3,7 @@
 /orders/<id>/notes/
 
 /products/<id>/
+/products/<id>/variations/
 
 /reports/orders/totals/
 
