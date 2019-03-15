@@ -159,8 +159,14 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     fun getAttributes(): List<ProductAttribute> {
         fun getAttributeOptions(jsonArray: JsonArray?): List<String> {
             val options = ArrayList<String>()
-            jsonArray?.forEach {
-                options.add(it.toString())
+            try {
+                jsonArray?.forEach {
+                    options.add(it.asString)
+                }
+            } catch (e: ClassCastException) {
+                AppLog.e(T.API, e)
+            } catch (e: IllegalStateException) {
+                AppLog.e(T.API, e)
             }
             return options
         }
