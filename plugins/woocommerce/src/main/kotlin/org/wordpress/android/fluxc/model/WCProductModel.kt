@@ -1,15 +1,14 @@
 package org.wordpress.android.fluxc.model
 
 import com.google.gson.Gson
+import com.google.gson.JsonArray
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
 import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.network.utils.getBoolean
-import org.wordpress.android.fluxc.network.utils.getJsonObject
 import org.wordpress.android.fluxc.network.utils.getLong
 import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
@@ -158,12 +157,10 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     }
 
     fun getAttributes(): List<ProductAttribute> {
-        fun getAttributeOptions(jsonObject: JsonObject?): List<String> {
+        fun getAttributeOptions(jsonArray: JsonArray?): List<String> {
             val options = ArrayList<String>()
-            jsonObject?.asJsonArray?.forEach { jsonElement ->
-                with(jsonElement.asJsonObject) {
-                    options.add(this.toString())
-                }
+            jsonArray?.forEach {
+                options.add(it.toString())
             }
             return options
         }
@@ -177,7 +174,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                                     id = this.getLong("id"),
                                     name = this.getString("name") ?: "",
                                     visible = this.getBoolean("visible", true),
-                                    options = getAttributeOptions(this.getJsonObject("options"))
+                                    options = getAttributeOptions(this.getAsJsonArray("options"))
                             )
                     )
                 }
