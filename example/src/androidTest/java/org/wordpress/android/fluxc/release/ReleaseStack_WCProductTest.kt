@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.release
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -33,6 +34,10 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     private var nextEvent: TestEvent = TestEvent.NONE
     private val productModel = WCProductModel(8).apply {
         remoteProductId = BuildConfig.TEST_WC_PRODUCT_ID.toLong()
+        dateCreated = "2018-04-20T15:45:14Z"
+    }
+    private val productModelWithVariations = WCProductModel(8).apply {
+        remoteProductId = BuildConfig.TEST_WC_PRODUCT_WITH_VARIATIONS_ID.toLong()
         dateCreated = "2018-04-20T15:45:14Z"
     }
     private var lastEvent: OnProductChanged? = null
@@ -73,8 +78,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     @Test
     fun testFetchProductVariations() {
         // remove all variations for this product and verify there are none
-        ProductSqlUtils.deleteVariationsForProduct(sSite, productModel.remoteProductId)
-        assertEquals(ProductSqlUtils.getVariationsForProduct(sSite, productModel.remoteProductId).size, 0)
+        ProductSqlUtils.deleteVariationsForProduct(sSite, productModelWithVariations.remoteProductId)
+        assertEquals(ProductSqlUtils.getVariationsForProduct(sSite, productModelWithVariations.remoteProductId).size, 0)
 
         nextEvent = TestEvent.FETCHED_PRODUCT_VARIATIONS
         mCountDownLatch = CountDownLatch(1)
@@ -83,16 +88,15 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
                         .newFetchProductVariationsAction(
                                 FetchProductVariationsPayload(
                                         sSite,
-                                        productModel.remoteProductId
+                                        productModelWithVariations.remoteProductId
                                 )
                         )
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        // TODO: Verify results - not sure we want to do this since it would require BuildConfig.TEST_WC_PRODUCT_ID to
-        // point to a product that has variations
-        // val fetchedVariations = productStore.getVariationsForProduct(sSite, productModel.remoteProductId)
-        // assertNotEquals(fetchedVariations.size, 0)
+        // Verify results
+        val fetchedVariations = productStore.getVariationsForProduct(sSite, productModelWithVariations.remoteProductId)
+        assertNotEquals(fetchedVariations.size, 0)
     }
 
     @Suppress("unused")
