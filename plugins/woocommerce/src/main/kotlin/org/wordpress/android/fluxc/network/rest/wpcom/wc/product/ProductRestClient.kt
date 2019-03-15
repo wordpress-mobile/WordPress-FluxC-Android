@@ -128,6 +128,9 @@ class ProductRestClient(
 
             virtual = response.virtual
             downloadable = response.downloadable
+            downloadLimit = response.download_limit
+            downloadExpiry = response.download_expiry
+            externalUrl = response.external_url ?: ""
 
             taxStatus = response.tax_status ?: ""
             taxClass = response.tax_class ?: ""
@@ -159,6 +162,7 @@ class ProductRestClient(
             images = response.images.toString()
             attributes = response.attributes.toString()
             variations = response.variations.toString()
+            downloads = response.downloads.toString()
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""

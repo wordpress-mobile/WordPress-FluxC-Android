@@ -46,7 +46,10 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     @Column var virtual = false
     @Column var downloadable = false
+    @Column var downloadLimit = 0
+    @Column var downloadExpiry = 0
     @Column var soldIndividually = false
+    @Column var externalUrl = ""
 
     @Column var taxStatus = "" // taxable, shipping, none
     @Column var taxClass = ""
@@ -76,6 +79,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var images = "" // array of images
     @Column var attributes = "" // array of attributes
     @Column var variations = "" // array of variation IDs
+    @Column var downloads = "" // array of downloadable files
 
     @Column var weight = ""
     @Column var length = ""
@@ -190,6 +194,9 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         }
         return attrList
     }
+
+    fun getDownloadableFilesCount() =
+            Gson().fromJson<JsonElement>(downloads, JsonElement::class.java).asJsonArray.size()
 
     fun getCategories() = getTriplets(categories)
 

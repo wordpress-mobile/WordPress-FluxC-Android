@@ -30,6 +30,9 @@ class ProductApiResponse : Response {
 
     var virtual = false
     var downloadable = false
+    var download_limit = 0
+    var download_expiry = 0
+    var external_url: String? = null
 
     var tax_status: String? = null
     var tax_class: String? = null
@@ -63,4 +66,5 @@ class ProductApiResponse : Response {
     var images: JsonElement? = null
     var attributes: JsonElement? = null
     var variations: JsonElement? = null
+    var downloads: JsonElement? = null
 }
