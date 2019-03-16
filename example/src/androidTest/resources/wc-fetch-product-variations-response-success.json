@@ -1,81 +1,256 @@
 {
   "data": [
     {
-      "id": 732,
-      "date_created": "2017-03-23T00:36:38",
-      "date_created_gmt": "2017-03-23T03:36:38",
-      "date_modified": "2017-03-23T00:36:38",
-      "date_modified_gmt": "2017-03-23T03:36:38",
-      "description": "",
-      "permalink": "https://example.com/product/ship-your-idea/?attribute_pa_color=black",
-      "sku": "",
-      "price": "9.00",
-      "regular_price": "9.00",
-      "sale_price": "",
-      "date_on_sale_from": null,
-      "date_on_sale_from_gmt": null,
-      "date_on_sale_to": null,
-      "date_on_sale_to_gmt": null,
-      "on_sale": false,
-      "status": "publish",
-      "purchasable": true,
-      "virtual": false,
-      "downloadable": false,
-      "downloads": [],
-      "download_limit": -1,
-      "download_expiry": -1,
-      "tax_status": "taxable",
-      "tax_class": "",
-      "manage_stock": false,
-      "stock_quantity": null,
-      "stock_status": "instock",
-      "backorders": "no",
-      "backorders_allowed": false,
-      "backordered": false,
-      "weight": "",
-      "dimensions": {
-        "length": "",
-        "width": "",
-        "height": ""
-      },
-      "shipping_class": "",
-      "shipping_class_id": 0,
-      "image": {
-        "id": 423,
-        "date_created": "2016-10-19T12:21:14",
-        "date_created_gmt": "2016-10-19T16:21:14",
-        "date_modified": "2016-10-19T12:21:14",
-        "date_modified_gmt": "2016-10-19T16:21:14",
-        "src": "https://example.com/wp-content/uploads/2016/10/T_4_front-12.jpg",
-        "name": "",
-        "alt": ""
-      },
-      "attributes": [
-        {
-          "id": 6,
-          "name": "Color",
-          "option": "Black"
-        }
-      ],
-      "menu_order": 0,
-      "meta_data": [],
       "_links": {
-        "self": [
-          {
-            "href": "https://example.com/wp-json/wc/v3/products/22/variations/732"
-          }
-        ],
         "collection": [
           {
-            "href": "https://example.com/wp-json/wc/v3/products/22/variations"
+            "href": "https://example.com/wp-json/wc/v3/products/152/variations"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/products/152/variations/181"
           }
         ],
         "up": [
           {
-            "href": "https://example.com/wp-json/wc/v3/products/22"
+            "href": "https://example.com/wp-json/wc/v3/products/152"
           }
         ]
-      }
+      },
+      "attributes": [
+        {
+          "id": 0,
+          "name": "Size",
+          "option": "Large"
+        }
+      ],
+      "backordered": false,
+      "backorders": "no",
+      "backorders_allowed": false,
+      "date_created": "2019-03-16T05:14:57",
+      "date_created_gmt": "2019-03-16T10:14:57",
+      "date_modified": "2019-03-16T05:14:57",
+      "date_modified_gmt": "2019-03-16T10:14:57",
+      "date_on_sale_from": null,
+      "date_on_sale_from_gmt": null,
+      "date_on_sale_to": null,
+      "date_on_sale_to_gmt": null,
+      "description": "",
+      "dimensions": {
+        "height": "",
+        "length": "",
+        "width": ""
+      },
+      "download_expiry": -1,
+      "download_limit": -1,
+      "downloadable": false,
+      "downloads": [
+      ],
+      "id": 181,
+      "image": {
+        "alt": "",
+        "date_created": "2019-03-14T07:34:12",
+        "date_created_gmt": "2019-03-14T16:34:12",
+        "date_modified": "2019-03-15T10:25:58",
+        "date_modified_gmt": "2019-03-15T19:25:58",
+        "id": 175,
+        "name": "profile-rockem-sockem",
+        "src": "https://example.com/wp-content/uploads/2019/03/profile-rockem-sockem.png?fit=300%2C225&ssl=1"
+      },
+      "manage_stock": false,
+      "menu_order": 0,
+      "meta_data": [
+        {
+          "id": 1348,
+          "key": "_created_via",
+          "value": "ajax-unknown"
+        }
+      ],
+      "on_sale": false,
+      "permalink": "https://example.com/product/test-product/?attribute_size=Large",
+      "price": "",
+      "purchasable": false,
+      "regular_price": "",
+      "sale_price": "",
+      "shipping_class": "",
+      "shipping_class_id": 0,
+      "sku": "",
+      "status": "publish",
+      "stock_quantity": null,
+      "stock_status": "instock",
+      "tax_class": "",
+      "tax_status": "taxable",
+      "virtual": false,
+      "weight": ""
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/products/152/variations"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/products/152/variations/180"
+          }
+        ],
+        "up": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/products/152"
+          }
+        ]
+      },
+      "attributes": [
+        {
+          "id": 0,
+          "name": "Size",
+          "option": "Medium"
+        }
+      ],
+      "backordered": false,
+      "backorders": "no",
+      "backorders_allowed": false,
+      "date_created": "2019-03-16T05:14:57",
+      "date_created_gmt": "2019-03-16T10:14:57",
+      "date_modified": "2019-03-16T05:14:57",
+      "date_modified_gmt": "2019-03-16T10:14:57",
+      "date_on_sale_from": null,
+      "date_on_sale_from_gmt": null,
+      "date_on_sale_to": null,
+      "date_on_sale_to_gmt": null,
+      "description": "",
+      "dimensions": {
+        "height": "",
+        "length": "",
+        "width": ""
+      },
+      "download_expiry": -1,
+      "download_limit": -1,
+      "downloadable": false,
+      "downloads": [
+      ],
+      "id": 180,
+      "image": {
+        "alt": "",
+        "date_created": "2019-03-14T07:34:12",
+        "date_created_gmt": "2019-03-14T16:34:12",
+        "date_modified": "2019-03-15T10:25:58",
+        "date_modified_gmt": "2019-03-15T19:25:58",
+        "id": 175,
+        "name": "profile-rockem-sockem",
+        "src": "https://example.com/wp-content/uploads/2019/03/profile-rockem-sockem.png?fit=300%2C225&ssl=1"
+      },
+      "manage_stock": false,
+      "menu_order": 0,
+      "meta_data": [
+        {
+          "id": 1312,
+          "key": "_created_via",
+          "value": "ajax-unknown"
+        }
+      ],
+      "on_sale": false,
+      "permalink": "https://example.com/product/test-product/?attribute_size=Medium",
+      "price": "",
+      "purchasable": false,
+      "regular_price": "",
+      "sale_price": "",
+      "shipping_class": "",
+      "shipping_class_id": 0,
+      "sku": "",
+      "status": "publish",
+      "stock_quantity": null,
+      "stock_status": "instock",
+      "tax_class": "",
+      "tax_status": "taxable",
+      "virtual": false,
+      "weight": ""
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/products/152/variations"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/products/152/variations/179"
+          }
+        ],
+        "up": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/products/152"
+          }
+        ]
+      },
+      "attributes": [
+        {
+          "id": 0,
+          "name": "Size",
+          "option": "Small"
+        }
+      ],
+      "backordered": false,
+      "backorders": "no",
+      "backorders_allowed": false,
+      "date_created": "2019-03-16T05:14:57",
+      "date_created_gmt": "2019-03-16T10:14:57",
+      "date_modified": "2019-03-16T05:14:57",
+      "date_modified_gmt": "2019-03-16T10:14:57",
+      "date_on_sale_from": null,
+      "date_on_sale_from_gmt": null,
+      "date_on_sale_to": null,
+      "date_on_sale_to_gmt": null,
+      "description": "",
+      "dimensions": {
+        "height": "",
+        "length": "",
+        "width": ""
+      },
+      "download_expiry": -1,
+      "download_limit": -1,
+      "downloadable": false,
+      "downloads": [
+      ],
+      "id": 179,
+      "image": {
+        "alt": "",
+        "date_created": "2019-03-14T07:34:12",
+        "date_created_gmt": "2019-03-14T16:34:12",
+        "date_modified": "2019-03-15T10:25:58",
+        "date_modified_gmt": "2019-03-15T19:25:58",
+        "id": 175,
+        "name": "profile-rockem-sockem",
+        "src": "https://example.com/wp-content/uploads/2019/03/profile-rockem-sockem.png?fit=300%2C225&ssl=1"
+      },
+      "manage_stock": false,
+      "menu_order": 0,
+      "meta_data": [
+        {
+          "id": 1276,
+          "key": "_created_via",
+          "value": "ajax-unknown"
+        }
+      ],
+      "on_sale": false,
+      "permalink": "https://example.com/product/test-product/?attribute_size=Small",
+      "price": "",
+      "purchasable": false,
+      "regular_price": "",
+      "sale_price": "",
+      "shipping_class": "",
+      "shipping_class_id": 0,
+      "sku": "",
+      "status": "publish",
+      "stock_quantity": null,
+      "stock_status": "instock",
+      "tax_class": "",
+      "tax_status": "taxable",
+      "virtual": false,
+      "weight": ""
     }
   ]
 }

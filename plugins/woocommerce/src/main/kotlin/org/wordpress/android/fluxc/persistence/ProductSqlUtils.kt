@@ -67,6 +67,7 @@ object ProductSqlUtils {
                 .or()
                 .beginGroup()
                 .equals(WCProductVariationModelTable.REMOTE_PRODUCT_ID, variation.remoteProductId)
+                .equals(WCProductVariationModelTable.REMOTE_VARIATION_ID, variation.remoteVariationId)
                 .equals(WCProductVariationModelTable.LOCAL_SITE_ID, variation.localSiteId)
                 .endGroup()
                 .endGroup().endWhere()
