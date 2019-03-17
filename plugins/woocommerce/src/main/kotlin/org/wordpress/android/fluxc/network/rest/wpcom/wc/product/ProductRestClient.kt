@@ -160,9 +160,12 @@ class ProductRestClient(
             categories = response.categories.toString()
             tags = response.tags.toString()
             images = response.images.toString()
-            attributes = response.attributes.toString()
-            variations = response.variations.toString()
-            downloads = response.downloads.toString()
+            attributes = response.attributes?.toString() ?: ""
+            variations = response.variations?.toString() ?: ""
+            downloads = response.downloads?.toString() ?: ""
+            relatedIds = response.related_ids?.toString() ?: ""
+            crossSellIds = response.cross_sell_ids?.toString() ?: ""
+            upSellIds = response.upsell_ids?.toString() ?: ""
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""

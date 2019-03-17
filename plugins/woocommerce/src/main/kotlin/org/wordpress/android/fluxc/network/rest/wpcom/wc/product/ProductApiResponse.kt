@@ -67,4 +67,7 @@ class ProductApiResponse : Response {
     var attributes: JsonElement? = null
     var variations: JsonElement? = null
     var downloads: JsonElement? = null
+    var related_ids: JsonElement? = null
+    var cross_sell_ids: JsonElement? = null
+    var upsell_ids: JsonElement? = null
 }
