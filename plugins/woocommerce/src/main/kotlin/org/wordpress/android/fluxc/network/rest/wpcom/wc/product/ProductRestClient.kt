@@ -157,9 +157,9 @@ class ProductRestClient(
             parentId = response.parent_id
             purchaseNote = response.purchase_note ?: ""
 
-            categories = response.categories.toString()
-            tags = response.tags.toString()
-            images = response.images.toString()
+            categories = response.categories?.toString() ?: ""
+            tags = response.tags?.toString() ?: ""
+            images = response.images?.toString() ?: ""
             attributes = response.attributes?.toString() ?: ""
             variations = response.variations?.toString() ?: ""
             downloads = response.downloads?.toString() ?: ""
@@ -202,7 +202,7 @@ class ProductRestClient(
             stockQuantity = response.stock_quantity
             stockStatus = response.stock_status ?: ""
 
-            attributes = response.attributes.toString()
+            attributes = response.attributes?.toString() ?: ""
 
             weight = response.weight ?: ""
 
