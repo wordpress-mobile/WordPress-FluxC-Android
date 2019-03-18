@@ -8,9 +8,11 @@ import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
 import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.list.ListOrder
+import org.wordpress.android.fluxc.model.list.ListOrder.DESC
 import org.wordpress.android.fluxc.model.list.PagedListWrapper
 import org.wordpress.android.fluxc.model.list.PostListDescriptor.PostListDescriptorForRestSite
 import org.wordpress.android.fluxc.model.list.PostListOrderBy
+import org.wordpress.android.fluxc.model.list.PostListOrderBy.DATE
 import org.wordpress.android.fluxc.model.list.datastore.PostListDataStore
 import org.wordpress.android.fluxc.model.post.PostStatus
 import org.wordpress.android.fluxc.model.post.PostStatus.DRAFT
@@ -30,8 +32,9 @@ private const val TEST_POST_LIST_SEARCH_QUERY = "a"
 
 internal class RestPostListTestCase(
     val statusList: List<PostStatus> = DEFAULT_POST_STATUS_LIST,
-    val order: ListOrder = ListOrder.DESC,
-    val orderBy: PostListOrderBy = PostListOrderBy.DATE,
+    val onlyAuthorId: Int? = null,
+    val order: ListOrder = DESC,
+    val orderBy: PostListOrderBy = DATE,
     val searchQuery: String? = null,
     val testMode: ListStoreConnectedTestMode = SinglePage(false)
 )
@@ -62,6 +65,7 @@ internal class ReleaseStack_PostListTestWpCom(
                 RestPostListTestCase(order = ListOrder.ASC, testMode = MultiplePages),
                 RestPostListTestCase(orderBy = PostListOrderBy.ID, testMode = MultiplePages),
                 RestPostListTestCase(searchQuery = TEST_POST_LIST_SEARCH_QUERY)
+                // TODO add once we know the author ID of the testRestPostListTestCase(onlyAuthorId = null)
         )
     }
 
@@ -88,6 +92,7 @@ internal class ReleaseStack_PostListTestWpCom(
         val descriptor = PostListDescriptorForRestSite(
                 site = sSite,
                 statusList = testCase.statusList,
+                onlyAuthorId = testCase.onlyAuthorId,
                 order = testCase.order,
                 orderBy = testCase.orderBy,
                 searchQuery = testCase.searchQuery,
