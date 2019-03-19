@@ -46,6 +46,8 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     private TestEvents mNextEvent;
     private AuthenticatePayload mAuthenticatePayload;
 
+    protected boolean mTestRequiresUserId = false;
+
     @BeforeClass
     public static void beforeClass() {
         sSite = null;
@@ -58,7 +60,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         // and are supposed to use a different WordPress.com account
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
         context.getSharedPreferences(context.getPackageName() + "_fluxc-preferences", Context.MODE_PRIVATE)
-                .edit().putString("ACCOUNT_TOKEN_PREF_KEY", null).apply();
+               .edit().putString("ACCOUNT_TOKEN_PREF_KEY", null).apply();
     }
 
     @Override
@@ -66,7 +68,8 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         super.init();
         mNextEvent = TestEvents.NONE;
 
-        if (!mAccountStore.getAccessToken().isEmpty() && sSite != null) {
+        if (!mAccountStore.getAccessToken().isEmpty() && sSite != null
+            && (!mTestRequiresUserId || mAccountStore.getAccount().getUserId() != 0)) {
             // We have all we need, move on (the AccountStore is probably empty, but we don't need it)
             return;
         }

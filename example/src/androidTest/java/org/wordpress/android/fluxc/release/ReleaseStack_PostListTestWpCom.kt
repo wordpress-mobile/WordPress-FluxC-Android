@@ -32,11 +32,12 @@ private const val TEST_POST_LIST_SEARCH_QUERY = "a"
 
 internal class RestPostListTestCase(
     val statusList: List<PostStatus> = DEFAULT_POST_STATUS_LIST,
-    val onlyAuthorId: Int? = null,
+    val onlyUser: Boolean = false,
     val order: ListOrder = DESC,
     val orderBy: PostListOrderBy = DATE,
     val searchQuery: String? = null,
-    val testMode: ListStoreConnectedTestMode = SinglePage(false)
+    val testMode: ListStoreConnectedTestMode = SinglePage(false),
+    val requiresUserId: Boolean = false
 )
 
 @RunWith(Parameterized::class)
@@ -64,8 +65,17 @@ internal class ReleaseStack_PostListTestWpCom(
                 RestPostListTestCase(statusList = listOf(TRASHED)),
                 RestPostListTestCase(order = ListOrder.ASC, testMode = MultiplePages),
                 RestPostListTestCase(orderBy = PostListOrderBy.ID, testMode = MultiplePages),
-                RestPostListTestCase(searchQuery = TEST_POST_LIST_SEARCH_QUERY)
-                // TODO add once we know the author ID of the testRestPostListTestCase(onlyAuthorId = null)
+                RestPostListTestCase(searchQuery = TEST_POST_LIST_SEARCH_QUERY),
+                RestPostListTestCase(
+                        onlyUser = false,
+                        testMode = SinglePage(ensureListIsNotEmpty = true),
+                        requiresUserId = true
+                ),
+                RestPostListTestCase(
+                        onlyUser = true,
+                        testMode = SinglePage(ensureListIsNotEmpty = true),
+                        requiresUserId = true
+                )
         )
     }
 
@@ -79,6 +89,7 @@ internal class ReleaseStack_PostListTestWpCom(
 
     override fun setUp() {
         super.setUp()
+        mTestRequiresUserId = testCase.requiresUserId
         mReleaseStackAppComponent.inject(this)
         init()
     }
@@ -89,10 +100,15 @@ internal class ReleaseStack_PostListTestWpCom(
     }
 
     private fun createPagedListWrapper(): PagedListWrapper<PostModel> {
+        val authorId: Long? = when (testCase.onlyUser) {
+            true -> mAccountStore.account.userId
+            else -> null
+        }
+
         val descriptor = PostListDescriptorForRestSite(
                 site = sSite,
                 statusList = testCase.statusList,
-                onlyAuthorId = testCase.onlyAuthorId,
+                onlyAuthorId = authorId,
                 order = testCase.order,
                 orderBy = testCase.orderBy,
                 searchQuery = testCase.searchQuery,
