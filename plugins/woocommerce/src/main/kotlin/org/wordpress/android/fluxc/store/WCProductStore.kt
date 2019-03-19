@@ -95,6 +95,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     fun getVariationsForProduct(site: SiteModel, remoteProductId: Long): List<WCProductVariationModel> =
             ProductSqlUtils.getVariationsForProduct(site, remoteProductId)
 
+    fun deleteProductsForSite(site: SiteModel) = ProductSqlUtils.deleteProductsForSite(site)
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCProductAction ?: return
