@@ -12,9 +12,7 @@ class ProductApiResponse : Response {
     var permalink: String? = null
 
     var date_created: String? = null
-    var date_created_gmt: String? = null
     var date_modified: String? = null
-    var date_modified_gmt: String? = null
 
     var type: String? = null
     var status: String? = null
@@ -27,21 +25,11 @@ class ProductApiResponse : Response {
     var price: String? = null
     var regular_price: String? = null
     var sale_price: String? = null
-    var date_on_sale_from: String? = null
-    var date_on_sale_from_gmt: String? = null
-    var date_on_sale_to: String? = null
-    var date_on_sale_to_gmt: String? = null
     var on_sale = false
     var total_sales = 0
 
     var virtual = false
     var downloadable = false
-    var downloads: JsonElement? = null
-    var download_limit = -1
-    var download_expiry = -1
-
-    var external_url: String? = null
-    var button_text: String? = null
 
     var tax_status: String? = null
     var tax_class: String? = null
@@ -67,20 +55,12 @@ class ProductApiResponse : Response {
     var average_rating: String? = null
     var rating_count = 0
 
-    var related_ids: JsonElement? = null
-    var upsell_ids: JsonElement? = null
-    var cross_sell_ids: JsonElement? = null
-
     var parent_id = 0
     var purchase_note: String? = null
-    var menu_order = 0
 
     var categories: JsonElement? = null
     var tags: JsonElement? = null
     var images: JsonElement? = null
     var attributes: JsonElement? = null
-    var default_attributes: JsonElement? = null
     var variations: JsonElement? = null
-    var grouped_products: JsonElement? = null
-    var meta_data: JsonElement? = null
 }

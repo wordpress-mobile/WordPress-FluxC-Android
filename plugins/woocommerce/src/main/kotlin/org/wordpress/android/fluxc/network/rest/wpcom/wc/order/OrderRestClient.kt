@@ -39,6 +39,9 @@ class OrderRestClient(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+    private val ORDER_FIELDS = "id,number,status,currency,date_created_gmt,total,total_tax,shipping_total," +
+            "payment_method,payment_method_title,prices_include_tax,customer_note,discount_total," +
+            "coupon_lines,refunds,billing,shipping,line_items"
     /**
      * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of orders for the given WooCommerce [SiteModel].
@@ -59,7 +62,8 @@ class OrderRestClient(
         val params = mapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
-                "status" to statusFilter)
+                "status" to statusFilter,
+                "_fields" to ORDER_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
                     val orderModels = response?.map {
@@ -125,7 +129,8 @@ class OrderRestClient(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
                 "status" to WCOrderStore.DEFAULT_ORDER_STATUS,
-                "search" to searchQuery)
+                "search" to searchQuery,
+                "_fields" to ORDER_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
                     val orderModels = response?.map {
@@ -156,7 +161,7 @@ class OrderRestClient(
     fun fetchSingleOrder(site: SiteModel, remoteOrderId: Long) {
         val url = WOOCOMMERCE.orders.id(remoteOrderId).pathV3
         val responseType = object : TypeToken<OrderApiResponse>() {}.type
-        val params = emptyMap<String, String>()
+        val params = mapOf("_fields" to ORDER_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: OrderApiResponse? ->
                     response?.let {
