@@ -30,7 +30,6 @@ import javax.inject.Inject
 
 internal class XmlRpcPostListTestCase(
     val statusList: List<PostStatus> = DEFAULT_POST_STATUS_LIST,
-    val onlyAuthorId: Int? = null,
     val order: ListOrder = DESC,
     val orderBy: PostListOrderBy = DATE,
     val testMode: ListStoreConnectedTestMode = SinglePage(false)
@@ -61,7 +60,6 @@ internal class ReleaseStack_PostListTestXMLRPC(
                 XmlRpcPostListTestCase(statusList = listOf(TRASHED)),
                 XmlRpcPostListTestCase(order = ListOrder.ASC, testMode = MultiplePages),
                 XmlRpcPostListTestCase(orderBy = PostListOrderBy.ID, testMode = MultiplePages)
-                // TODO add in once we know what the author id is to test with XmlRpcPostListTestCase(onlyAuthorId = null)
         )
     }
 
@@ -87,7 +85,6 @@ internal class ReleaseStack_PostListTestXMLRPC(
         val descriptor = PostListDescriptorForXmlRpcSite(
                 site = sSite,
                 statusList = testCase.statusList,
-                onlyAuthorId = testCase.onlyAuthorId,
                 order = testCase.order,
                 orderBy = testCase.orderBy,
                 config = TEST_LIST_CONFIG
