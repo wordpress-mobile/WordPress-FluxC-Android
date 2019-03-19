@@ -46,7 +46,16 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     private TestEvents mNextEvent;
     private AuthenticatePayload mAuthenticatePayload;
 
-    protected boolean mTestRequiresUserId = false;
+    private final boolean mTestRequiresUserId;
+
+    public ReleaseStack_WPComBase() {
+        this(false);
+    }
+
+    public ReleaseStack_WPComBase(boolean testRequiresUserId) {
+        super();
+        mTestRequiresUserId = testRequiresUserId;
+    }
 
     @BeforeClass
     public static void beforeClass() {

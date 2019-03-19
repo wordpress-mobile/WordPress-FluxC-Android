@@ -43,7 +43,7 @@ internal class RestPostListTestCase(
 @RunWith(Parameterized::class)
 internal class ReleaseStack_PostListTestWpCom(
     private val testCase: RestPostListTestCase
-) : ReleaseStack_WPComBase() {
+) : ReleaseStack_WPComBase(testCase.requiresUserId) {
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
 
@@ -89,7 +89,6 @@ internal class ReleaseStack_PostListTestWpCom(
 
     override fun setUp() {
         super.setUp()
-        mTestRequiresUserId = testCase.requiresUserId
         mReleaseStackAppComponent.inject(this)
         init()
     }
