@@ -100,7 +100,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertTrue(mNextEvent == TestEvents.ACTIVATED_THEME);
+        assertEquals(TestEvents.ACTIVATED_THEME, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -110,7 +110,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        assertEquals(mNextEvent, TestEvents.FETCHED_WPCOM_THEMES);
+        assertEquals(TestEvents.FETCHED_WPCOM_THEMES, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -121,7 +121,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
 
-        assertTrue(mNextEvent == TestEvents.FETCHED_CURRENT_THEME);
+        assertEquals(TestEvents.FETCHED_CURRENT_THEME, mNextEvent);
         mCountDownLatch.countDown();
     }
 
@@ -154,8 +154,7 @@ public class ReleaseStack_ThemeTestWPCom extends ReleaseStack_WPComBase {
 
     private ThemeModel getTwentySomethingFreeTheme(String oldThemeId, List<ThemeModel> themes) {
         for (ThemeModel theme : themes) {
-            // Workaround here: limit to "Twenty ..." themes, they all support Post Formats (needed in other tests).
-            if (!theme.getThemeId().equals(oldThemeId) && theme.getFree() && theme.getName().contains("Twenty")) {
+            if (!theme.getThemeId().equals(oldThemeId) && theme.getFree()) {
                 return theme;
             }
         }
