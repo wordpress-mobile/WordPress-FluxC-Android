@@ -2,4 +2,9 @@
 /orders/<id>/
 /orders/<id>/notes/
 
+/products/<id>/
+/products/<id>/variations/
+
 /reports/orders/totals/
+
+/settings/general/

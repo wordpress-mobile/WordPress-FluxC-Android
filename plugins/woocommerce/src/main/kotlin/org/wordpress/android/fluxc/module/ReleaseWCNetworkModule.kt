@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -34,6 +35,16 @@ class ReleaseWCNetworkModule {
         token: AccessToken,
         userAgent: UserAgent
     ) = OrderRestClient(appContext, dispatcher, requestQueue, token, userAgent)
+
+    @Singleton
+    @Provides
+    fun provideProductRestClient(
+        appContext: Context,
+        dispatcher: Dispatcher,
+        @Named("regular") requestQueue: RequestQueue,
+        token: AccessToken,
+        userAgent: UserAgent
+    ) = ProductRestClient(appContext, dispatcher, requestQueue, token, userAgent)
 
     @Singleton
     @Provides

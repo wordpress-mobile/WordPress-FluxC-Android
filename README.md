@@ -1,6 +1,6 @@
 # WordPress-FluxC-Android
 
-[![Build Status](https://travis-ci.org/wordpress-mobile/WordPress-FluxC-Android.svg?branch=develop)](https://travis-ci.org/wordpress-mobile/WordPress-FluxC-Android)
+[![CircleCI](https://circleci.com/gh/wordpress-mobile/WordPress-FluxC-Android.svg?style=svg)](https://circleci.com/gh/wordpress-mobile/WordPress-FluxC-Android)
 
 WordPress-FluxC-Android is a networking and persistence library that helps to connect and sync data from a WordPress site (self hosted, or wordpress.com site).
 
@@ -33,11 +33,19 @@ our example:
     $ ./gradlew testDebug # Unit tests
 
 Note: this is the default `example/gradle.properties` file. You'll have to get
-a WordPress.com OAuth2 ID and secret.
+a [WordPress.com OAuth2 ID and secret](#oauth2-authentication).
 
 We have some tests connecting to real HTTP servers, URL and credentials are defined in `example/tests.properties`, you must edit it or obtain the real file to run the tests.
 
 Please note that, unless using special credentials which cannot be shared publicly, some of the WordPress.com connected tests will not pass unless the OAuth2 ID and secret are registered to the account that the test is attempting to log into.
+
+## OAuth2 Authentication
+
+To test with your own OAuth2 ID and Secret you will need to create an application or view the details for your existing application with our [WordPress.com applications manager][7].
+
+When creating your application, you should select "Native client" for the application type. The applications manager currently requires a "redirect URL", but this isn't used for mobile apps. Just use "https://localhost".
+
+Once you've created your application in the [applications manager][7], you'll need to edit the `example/gradle.properties` file and change the `wp.OAUTH.APP.ID` and `wp.OAUTH.APP.SECRET` fields.
 
 ## Setting up Checkstyle
 
@@ -105,3 +113,4 @@ WordPress-FluxC-Android is an Open Source project covered by the [GNU General Pu
 [4]: https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/ba9dd84c54b12d53e01dfdb8efb4a18ed8343311/fluxc/src/main/java/org/wordpress/android/fluxc/store/SiteStore.java
 [5]: https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/ba9dd84c54b12d53e01dfdb8efb4a18ed8343311/fluxc/src/main/java/org/wordpress/android/fluxc/action/SiteAction.java
 [6]: https://make.wordpress.org/chat/
+[7]: https://developer.wordpress.com/apps/

@@ -50,6 +50,8 @@ class OrderStatsRestClient(
         override fun toString() = name.toLowerCase()
     }
 
+    private final val STATS_FIELDS = "data,fields"
+
     /**
      * Makes a GET call to `/wpcom/v2/sites/$site/data/orders/`, retrieving data for the given
      * WooCommerce [SiteModel].
@@ -63,12 +65,21 @@ class OrderStatsRestClient(
      * Possible non-generic errors:
      * [OrderStatsErrorType.INVALID_PARAM] if [unit], [date], or [quantity] are invalid or incompatible
      */
-    fun fetchStats(site: SiteModel, unit: OrderStatsApiUnit, date: String, quantity: Int, force: Boolean = false) {
+    fun fetchStats(
+        site: SiteModel,
+        unit: OrderStatsApiUnit,
+        date: String,
+        quantity: Int,
+        force: Boolean = false,
+        startDate: String? = null,
+        endDate: String? = null
+    ) {
         val url = WPCOMV2.sites.site(site.siteId).stats.orders.url
         val params = mapOf(
                 "unit" to unit.toString(),
                 "date" to date,
-                "quantity" to quantity.toString())
+                "quantity" to quantity.toString(),
+                "_fields" to STATS_FIELDS)
 
         val request = WPComGsonRequest.buildGetRequest(url, params, OrderStatsApiResponse::class.java,
                 { apiResponse ->
@@ -77,6 +88,13 @@ class OrderStatsRestClient(
                         this.unit = unit.toString()
                         this.fields = apiResponse.fields.toString()
                         this.data = apiResponse.data.toString()
+                        this.quantity = quantity.toString()
+                        this.date = date
+                        endDate?.let { this.endDate = it }
+                        startDate?.let {
+                            this.startDate = startDate
+                            this.isCustomField = true
+                        }
                     }
                     val payload = FetchOrderStatsResponsePayload(site, unit, model)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
@@ -110,7 +128,11 @@ class OrderStatsRestClient(
                 .buildGetRequest(url, params, VisitorStatsApiResponse::class.java,
                         { response ->
                             val visits = getVisitorsFromResponse(response)
-                            val payload = FetchVisitorStatsResponsePayload(site, unit, visits)
+                            val payload = FetchVisitorStatsResponsePayload(
+                                    site = site,
+                                    apiUnit = unit,
+                                    visits = visits
+                            )
                             mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
                         },
                         { networkError ->

@@ -133,7 +133,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         fetchMediaImageList();
         List<MediaModel> mediaList = mMediaStore.getSiteImages(sSite);
         assertFalse(mediaList.isEmpty());
-        assertTrue(mMediaStore.getSiteMediaCount(sSite) == mediaList.size());
+        assertEquals(mediaList.size(), mMediaStore.getSiteMediaCount(sSite));
 
         // delete test image
         mNextEvent = TestEvents.DELETED_MEDIA;
@@ -599,9 +599,9 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
         MediaModel testMedia = mMediaStore.instantiateMediaModel();
         testMedia.setFilePath(mediaPath);
-        testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1, mediaPath.length()));
+        testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1));
         testMedia.setMimeType(mimeType + testMedia.getFileExtension());
-        testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/"), mediaPath.length()));
+        testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/")));
         testMedia.setTitle(testTitle);
         testMedia.setDescription(testDescription);
         testMedia.setCaption(testCaption);
@@ -656,7 +656,8 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             throws InterruptedException {
         mCountDownLatch = new CountDownLatch(mediaList.size());
         for (MediaModel media : mediaList) {
-            UploadMediaPayload payload = new UploadMediaPayload(sSite, media, true);
+            // Don't strip location, as all media are the same file and we end up with concurrent read/writes
+            UploadMediaPayload payload = new UploadMediaPayload(sSite, media, false);
             mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         }
 

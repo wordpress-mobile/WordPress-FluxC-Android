@@ -14,7 +14,7 @@ apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 27
-    buildToolsVersion '27.0.3'
+    buildToolsVersion '28.0.3'
 
     defaultConfig {
         applicationId "org.wordpress.android.fluxc.example"
@@ -38,6 +38,7 @@ android {
 
     lintOptions {
         warning 'InvalidPackage'
+        disable 'ExpiredTargetSdkVersion'
     }
 
     testOptions {
@@ -45,10 +46,16 @@ android {
         // pressure on the API (authentication/fetch profile/fetch sites).
         // Uncomment the next line to enable the Orchestrator.
         // execution 'ANDROID_TEST_ORCHESTRATOR'
+
+        unitTests.all {
+            if (project.hasProperty('testsMaxHeapSize')) {
+                // maxHeapSize for tests is not limited unless we give an explicit value
+                // See https://docs.gradle.org/current/dsl/org.gradle.api.tasks.testing.Test.html
+                maxHeapSize project.properties.get('testsMaxHeapSize')
+            }
+        }
     }
 }
-
-kotlin { experimental { coroutines 'enable' } }
 
 android.buildTypes.all { buildType ->
     // Add properties named "wp.xxx" to our BuildConfig
@@ -107,16 +114,16 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:2.23.0'
     testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0'
     testImplementation 'org.assertj:assertj-core:3.11.1'
+    testImplementation "android.arch.core:core-testing:$arch_lifecycle_version"
 
-    androidTestImplementation 'com.google.dexmaker:dexmaker:1.2'
-    androidTestImplementation 'com.google.dexmaker:dexmaker-mockito:1.2'
-    androidTestImplementation 'org.mockito:mockito-core:1.10.19'
+    androidTestImplementation 'org.mockito:mockito-android:2.6.3'
     androidTestImplementation 'org.apache.commons:commons-lang3:3.5'
+    androidTestImplementation "android.arch.core:core-testing:1.1.1"
     kaptAndroidTest "com.google.dagger:dagger-compiler:$daggerVersion"
     androidTestCompileOnly 'org.glassfish:javax.annotation:10.0-b28'
     // Test orchestrator
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestUtil 'com.android.support.test:orchestrator:1.0.1'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestUtil 'com.android.support.test:orchestrator:1.0.2'
 
     // Debug dependencies
     debugImplementation 'com.facebook.stetho:stetho:1.5.0'

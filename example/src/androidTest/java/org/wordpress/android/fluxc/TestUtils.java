@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -12,6 +13,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Locale;
 import java.util.UUID;
 
 public class TestUtils {
@@ -77,5 +79,10 @@ public class TestUtils {
         }
         return copyAndGetAssetPath(context, targetContext, SAMPLE_VIDEO);
     }
-}
 
+    public static Context updateLocale(Context context, Locale locale) {
+        Configuration config = context.getApplicationContext().getResources().getConfiguration();
+        config.setLocale(locale);
+        return context.createConfigurationContext(config);
+    }
+}

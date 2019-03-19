@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -20,6 +21,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
@@ -37,6 +39,9 @@ class OrderRestClient(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+    private val ORDER_FIELDS = "id,number,status,currency,date_created_gmt,total,total_tax,shipping_total," +
+            "payment_method,payment_method_title,prices_include_tax,customer_note,discount_total," +
+            "coupon_lines,refunds,billing,shipping,line_items"
     /**
      * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of orders for the given WooCommerce [SiteModel].
@@ -57,7 +62,8 @@ class OrderRestClient(
         val params = mapOf(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
-                "status" to statusFilter)
+                "status" to statusFilter,
+                "_fields" to ORDER_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
                     val orderModels = response?.map {
@@ -80,6 +86,33 @@ class OrderRestClient(
     }
 
     /**
+     * Makes a GET call to `/wc/v3/reports/orders/totals` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a list of available order status options for the given WooCommerce [SiteModel].
+     *
+     * Dispatches a [WCOrderAction.FETCHED_ORDER_STATUS_OPTIONS] action with the resulting list of order status labels.
+     */
+    fun fetchOrderStatusOptions(site: SiteModel) {
+        val url = WOOCOMMERCE.reports.orders.totals.pathV3
+        val params = emptyMap<String, String>()
+        val responseType = object : TypeToken<List<OrderStatusApiResponse>>() {}.type
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<OrderStatusApiResponse>? ->
+                    val orderStatusOptions = response?.map {
+                        orderStatusResponseToOrderStatusModel(it, site)
+                    }.orEmpty()
+                    val payload = FetchOrderStatusOptionsResponsePayload(site, orderStatusOptions)
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
+                    val payload = FetchOrderStatusOptionsResponsePayload(orderError, site)
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
      * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of orders for the given WooCommerce [SiteModel] matching [searchQuery]
      *
@@ -96,7 +129,8 @@ class OrderRestClient(
                 "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
                 "status" to WCOrderStore.DEFAULT_ORDER_STATUS,
-                "search" to searchQuery)
+                "search" to searchQuery,
+                "_fields" to ORDER_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
                     val orderModels = response?.map {
@@ -127,7 +161,7 @@ class OrderRestClient(
     fun fetchSingleOrder(site: SiteModel, remoteOrderId: Long) {
         val url = WOOCOMMERCE.orders.id(remoteOrderId).pathV3
         val responseType = object : TypeToken<OrderApiResponse>() {}.type
-        val params = emptyMap<String, String>()
+        val params = mapOf("_fields" to ORDER_FIELDS)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: OrderApiResponse? ->
                     response?.let {
@@ -389,5 +423,16 @@ class OrderRestClient(
             else -> OrderErrorType.fromString(wpComError.apiError)
         }
         return OrderError(orderErrorType, wpComError.message)
+    }
+
+    private fun orderStatusResponseToOrderStatusModel(
+        response: OrderStatusApiResponse,
+        site: SiteModel
+    ): WCOrderStatusModel {
+        return WCOrderStatusModel().apply {
+            localSiteId = site.id
+            statusKey = response.slug ?: ""
+            label = response.name ?: ""
+        }
     }
 }

@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
@@ -399,6 +400,25 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         assertNull(payload.error)
         assertTrue(payload.hasOrders)
         assertNull(payload.statusFilter)
+    }
+
+    @Test
+    fun testOrderStatusOptionsFetchSuccess() {
+        interceptor.respondWith("wc-fetch-order-status-options-success.json")
+        orderRestClient.fetchOrderStatusOptions(siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCOrderAction.FETCHED_ORDER_STATUS_OPTIONS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchOrderStatusOptionsResponsePayload
+        assertNull(payload.error)
+        assertEquals(8, payload.labels.size)
+
+        with(payload.labels[0]) {
+            assertEquals("pending", statusKey)
+            assertEquals("Pending payment", label)
+        }
     }
 
     @Suppress("unused")

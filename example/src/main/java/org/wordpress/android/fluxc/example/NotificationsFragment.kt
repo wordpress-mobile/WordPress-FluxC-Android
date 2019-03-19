@@ -80,6 +80,24 @@ class NotificationsFragment : Fragment() {
             })
         }
 
+        notifs_has_unread.setOnClickListener {
+            if (selectedSite == null) {
+                prependToLog("No site selected")
+            } else {
+                showNotificationTypeSubtypeDialog(object : Listener {
+                    override fun onSubmitted(type: String, subtype: String) {
+                        prependToLog("Checking unread notifications matching $type or $subtype...\n")
+                        val hasUnread = notificationStore.hasUnreadNotificationsForSite(
+                                selectedSite!!,
+                                listOf(type),
+                                listOf(subtype)
+                        )
+                        prependToLog("Has unread notifications is $hasUnread")
+                    }
+                })
+            }
+        }
+
         notifs_mark_seen.setOnClickListener {
             prependToLog("Setting notifications last seen time to now\n")
             dispatcher.dispatch(NotificationActionBuilder
@@ -228,5 +246,6 @@ class NotificationsFragment : Fragment() {
         notifs_fetch_first.isEnabled = enabled
         notifs_mark_read.isEnabled = enabled
         notifs_update_first.isEnabled = enabled
+        notifs_has_unread.isEnabled = enabled
     }
 }
