@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.model.order.toIdSet
@@ -151,12 +152,26 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
     }
 
+    class FetchOrderShipmentTrackingsPayload(
+        val site: SiteModel,
+        val order: WCOrderModel
+    ) : Payload<BaseNetworkError>()
+
+    class FetchOrderShipmentTrackingsResponsePayload(
+        var site: SiteModel,
+        var order: WCOrderModel,
+        var trackings: List<WCOrderShipmentTrackingModel> = emptyList()
+    ) : Payload<OrderError>() {
+        constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(site, order) { this.error = error }
+    }
+
     class OrderError(val type: OrderErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
 
     enum class OrderErrorType {
         INVALID_PARAM,
         INVALID_ID,
         ORDER_STATUS_NOT_FOUND,
+        PLUGIN_NOT_ACTIVE,
         GENERIC_ERROR;
 
         companion object {
