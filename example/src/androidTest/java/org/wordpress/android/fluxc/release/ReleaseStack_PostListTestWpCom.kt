@@ -19,6 +19,8 @@ import org.wordpress.android.fluxc.model.post.PostStatus
 import org.wordpress.android.fluxc.model.post.PostStatus.DRAFT
 import org.wordpress.android.fluxc.model.post.PostStatus.SCHEDULED
 import org.wordpress.android.fluxc.model.post.PostStatus.TRASHED
+import org.wordpress.android.fluxc.release.AuthorTestFilter.EVERYONE
+import org.wordpress.android.fluxc.release.AuthorTestFilter.SPECIFIC_AUTHOR
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestHelper
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.MultiplePages
@@ -31,20 +33,21 @@ import javax.inject.Inject
 
 private const val TEST_POST_LIST_SEARCH_QUERY = "a"
 
+enum class AuthorTestFilter { EVERYONE, SPECIFIC_AUTHOR }
+
 internal class RestPostListTestCase(
     val statusList: List<PostStatus> = DEFAULT_POST_STATUS_LIST,
-    val onlyUser: Boolean = false,
+    val author: AuthorTestFilter = EVERYONE,
     val order: ListOrder = DESC,
     val orderBy: PostListOrderBy = DATE,
     val searchQuery: String? = null,
-    val testMode: ListStoreConnectedTestMode = SinglePage(false),
-    val requiresUserId: Boolean = false
+    val testMode: ListStoreConnectedTestMode = SinglePage(false)
 )
 
 @RunWith(Parameterized::class)
 internal class ReleaseStack_PostListTestWpCom(
     private val testCase: RestPostListTestCase
-) : ReleaseStack_WPComBase(testCase.requiresUserId) {
+) : ReleaseStack_WPComBase() {
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
 
@@ -68,14 +71,8 @@ internal class ReleaseStack_PostListTestWpCom(
                 RestPostListTestCase(orderBy = PostListOrderBy.ID, testMode = MultiplePages),
                 RestPostListTestCase(searchQuery = TEST_POST_LIST_SEARCH_QUERY),
                 RestPostListTestCase(
-                        onlyUser = false,
-                        testMode = SinglePage(ensureListIsNotEmpty = true),
-                        requiresUserId = true
-                ),
-                RestPostListTestCase(
-                        onlyUser = true,
-                        testMode = SinglePage(ensureListIsNotEmpty = true),
-                        requiresUserId = true
+                        author = SPECIFIC_AUTHOR,
+                        testMode = SinglePage(ensureListIsNotEmpty = true)
                 )
         )
     }
@@ -91,7 +88,7 @@ internal class ReleaseStack_PostListTestWpCom(
     override fun setUp() {
         super.setUp()
         mReleaseStackAppComponent.inject(this)
-        init()
+        init(testCase.author == SPECIFIC_AUTHOR)
     }
 
     @Test
@@ -100,9 +97,9 @@ internal class ReleaseStack_PostListTestWpCom(
     }
 
     private fun createPagedListWrapper(): PagedListWrapper<PostModel> {
-        val authorFilter: AuthorFilter = when (testCase.onlyUser) {
-            true -> AuthorFilter.SpecificAuthor(mAccountStore.account.userId)
-            else -> AuthorFilter.Everyone
+        val authorFilter: AuthorFilter = when (testCase.author) {
+            EVERYONE -> AuthorFilter.SpecificAuthor(mAccountStore.account.userId)
+            SPECIFIC_AUTHOR -> AuthorFilter.Everyone
         }
 
         val descriptor = PostListDescriptorForRestSite(

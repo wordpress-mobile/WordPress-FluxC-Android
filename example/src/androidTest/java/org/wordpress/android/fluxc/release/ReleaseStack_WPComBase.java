@@ -46,17 +46,6 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     private TestEvents mNextEvent;
     private AuthenticatePayload mAuthenticatePayload;
 
-    private final boolean mTestRequiresUserId;
-
-    public ReleaseStack_WPComBase() {
-        this(false);
-    }
-
-    public ReleaseStack_WPComBase(boolean testRequiresUserId) {
-        super();
-        mTestRequiresUserId = testRequiresUserId;
-    }
-
     @BeforeClass
     public static void beforeClass() {
         sSite = null;
@@ -75,10 +64,19 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     @Override
     protected void init() throws Exception {
         super.init();
+        internalInit(false);
+    }
+
+    protected void init(Boolean testRequiresUserId) throws Exception {
+        super.init();
+        internalInit(testRequiresUserId);
+    }
+
+    private void internalInit(Boolean testRequiresUserId) throws Exception {
         mNextEvent = TestEvents.NONE;
 
         if (!mAccountStore.getAccessToken().isEmpty() && sSite != null
-            && (!mTestRequiresUserId || mAccountStore.getAccount().getUserId() != 0)) {
+            && (!testRequiresUserId || mAccountStore.getAccount().getUserId() != 0)) {
             // We have all we need, move on (the AccountStore is probably empty, but we don't need it)
             return;
         }
