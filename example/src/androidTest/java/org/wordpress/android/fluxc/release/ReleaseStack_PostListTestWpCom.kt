@@ -7,6 +7,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
 import org.wordpress.android.fluxc.model.PostModel
+import org.wordpress.android.fluxc.model.list.AuthorFilter
 import org.wordpress.android.fluxc.model.list.ListOrder
 import org.wordpress.android.fluxc.model.list.ListOrder.DESC
 import org.wordpress.android.fluxc.model.list.PagedListWrapper
@@ -99,15 +100,15 @@ internal class ReleaseStack_PostListTestWpCom(
     }
 
     private fun createPagedListWrapper(): PagedListWrapper<PostModel> {
-        val authorId: Long? = when (testCase.onlyUser) {
-            true -> mAccountStore.account.userId
-            else -> null
+        val authorFilter: AuthorFilter = when (testCase.onlyUser) {
+            true -> AuthorFilter.SpecificAuthor(mAccountStore.account.userId)
+            else -> AuthorFilter.Everyone
         }
 
         val descriptor = PostListDescriptorForRestSite(
                 site = sSite,
                 statusList = testCase.statusList,
-                onlyAuthorId = authorId,
+                author = authorFilter,
                 order = testCase.order,
                 orderBy = testCase.orderBy,
                 searchQuery = testCase.searchQuery,
