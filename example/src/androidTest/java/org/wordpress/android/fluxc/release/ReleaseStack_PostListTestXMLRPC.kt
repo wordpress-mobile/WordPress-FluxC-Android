@@ -8,11 +8,9 @@ import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
 import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.list.ListOrder
-import org.wordpress.android.fluxc.model.list.ListOrder.DESC
 import org.wordpress.android.fluxc.model.list.PagedListWrapper
 import org.wordpress.android.fluxc.model.list.PostListDescriptor.PostListDescriptorForXmlRpcSite
 import org.wordpress.android.fluxc.model.list.PostListOrderBy
-import org.wordpress.android.fluxc.model.list.PostListOrderBy.DATE
 import org.wordpress.android.fluxc.model.list.datastore.PostListDataStore
 import org.wordpress.android.fluxc.model.post.PostStatus
 import org.wordpress.android.fluxc.model.post.PostStatus.DRAFT
@@ -30,8 +28,8 @@ import javax.inject.Inject
 
 internal class XmlRpcPostListTestCase(
     val statusList: List<PostStatus> = DEFAULT_POST_STATUS_LIST,
-    val order: ListOrder = DESC,
-    val orderBy: PostListOrderBy = DATE,
+    val order: ListOrder = ListOrder.DESC,
+    val orderBy: PostListOrderBy = PostListOrderBy.DATE,
     val testMode: ListStoreConnectedTestMode = SinglePage(false)
 )
 
