@@ -2,12 +2,14 @@ package org.wordpress.android.fluxc.persistence
 
 import com.wellsql.generated.WCOrderModelTable
 import com.wellsql.generated.WCOrderNoteModelTable
+import com.wellsql.generated.WCOrderShipmentTrackingModelTable
 import com.wellsql.generated.WCOrderStatusModelTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.OrderIdSet
 
@@ -154,4 +156,33 @@ object OrderSqlUtils {
 
     fun deleteOrderStatusOption(orderStatus: WCOrderStatusModel): Int =
             WellSql.delete(WCOrderStatusModel::class.java).whereId(orderStatus.id)
+
+    fun insertOrIgnoreOrderShipmentTracking(tracking: WCOrderShipmentTrackingModel): Int {
+        val result = WellSql.select(WCOrderShipmentTrackingModel::class.java)
+                .where().beginGroup()
+                .equals(WCOrderShipmentTrackingModelTable.ID, tracking.id)
+                .or()
+                .beginGroup()
+                .equals(WCOrderShipmentTrackingModelTable.LOCAL_SITE_ID, tracking.localSiteId)
+                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, tracking.localOrderId)
+                .equals(WCOrderShipmentTrackingModelTable.REMOTE_TRACKING_ID, tracking.remoteTrackingId)
+                .endGroup().endGroup().endWhere().asModel
+
+        return if (result.isEmpty()) {
+            WellSql.insert(tracking).asSingleTransaction(true).execute()
+            1
+        } else {
+            0
+        }
+    }
+
+    fun getShipmentTrackingsForOrder(order: WCOrderModel): List<WCOrderShipmentTrackingModel> {
+        return WellSql.select(WCOrderShipmentTrackingModel::class.java)
+                .where()
+                .beginGroup()
+                .equals(WCOrderShipmentTrackingModelTable.LOCAL_SITE_ID, order.localSiteId)
+                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, order.id)
+                .endGroup().endWhere()
+                .orderBy(WCOrderShipmentTrackingModelTable.DATE_SHIPPED, SelectQuery.ORDER_DESCENDING).asModel
+    }
 }
