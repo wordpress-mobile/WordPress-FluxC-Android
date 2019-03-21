@@ -1,12 +1,14 @@
 package org.wordpress.android.fluxc.model
 
 import com.google.gson.Gson
+import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonParseException
 import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
+import org.wordpress.android.fluxc.network.utils.getBoolean
 import org.wordpress.android.fluxc.network.utils.getLong
 import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
@@ -44,7 +46,10 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     @Column var virtual = false
     @Column var downloadable = false
+    @Column var downloadLimit = 0
+    @Column var downloadExpiry = 0
     @Column var soldIndividually = false
+    @Column var externalUrl = ""
 
     @Column var taxStatus = "" // taxable, shipping, none
     @Column var taxClass = ""
@@ -74,6 +79,10 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var images = "" // array of images
     @Column var attributes = "" // array of attributes
     @Column var variations = "" // array of variation IDs
+    @Column var downloads = "" // array of downloadable files
+    @Column var relatedIds = "" // array of related product IDs
+    @Column var crossSellIds = "" // array of cross-sell product IDs
+    @Column var upSellIds = "" // array of up-sell product IDs
 
     @Column var weight = ""
     @Column var length = ""
@@ -83,6 +92,21 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     class ProductTriplet(val id: Long, val name: String, val slug: String)
 
     class ProductImage(val id: Long, val name: String, val src: String, val alt: String)
+
+    class ProductAttribute(val id: Long, val name: String, val visible: Boolean, val options: List<String>) {
+        fun getCommaSeparatedOptions(): String {
+            if (options.isEmpty()) return ""
+            var commaSeparatedOptions = ""
+            options.forEach { option ->
+                if (commaSeparatedOptions.isEmpty()) {
+                    commaSeparatedOptions = option
+                } else {
+                    commaSeparatedOptions += ", $option"
+                }
+            }
+            return commaSeparatedOptions
+        }
+    }
 
     override fun getId() = id
 
@@ -115,9 +139,9 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     }
 
     /**
-     * Extract the first image from the json array of images
+     * Extract the first image url from the json array of images
      */
-    fun getFirstImage(): String? {
+    fun getFirstImageUrl(): String? {
         try {
             Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.firstOrNull { jsonElement ->
                 return (jsonElement.asJsonObject).getString("src")
@@ -128,9 +152,86 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return null
     }
 
+    /**
+     * Extract all image urls from the json array of images
+     */
+    fun getImageUrls(): List<String> {
+        val imageUrls = ArrayList<String>()
+        getImages().forEach {
+            imageUrls.add(it.src)
+        }
+        return imageUrls
+    }
+
+    fun getAttributes(): List<ProductAttribute> {
+        fun getAttributeOptions(jsonArray: JsonArray?): List<String> {
+            val options = ArrayList<String>()
+            try {
+                jsonArray?.forEach {
+                    options.add(it.asString)
+                }
+            } catch (e: ClassCastException) {
+                AppLog.e(T.API, e)
+            } catch (e: IllegalStateException) {
+                AppLog.e(T.API, e)
+            }
+            return options
+        }
+
+        val attrList = ArrayList<ProductAttribute>()
+        try {
+            Gson().fromJson<JsonElement>(attributes, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+                with(jsonElement.asJsonObject) {
+                    attrList.add(
+                            ProductAttribute(
+                                    id = this.getLong("id"),
+                                    name = this.getString("name") ?: "",
+                                    visible = this.getBoolean("visible", true),
+                                    options = getAttributeOptions(this.getAsJsonArray("options"))
+                            )
+                    )
+                }
+            }
+        } catch (e: JsonParseException) {
+            AppLog.e(T.API, e)
+        }
+        return attrList
+    }
+
+    fun getDownloadableFiles(): List<String> {
+        val fileList = ArrayList<String>()
+        try {
+            Gson().fromJson<JsonElement>(downloads, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+                jsonElement.asJsonObject.getString("file")?.let {
+                    fileList.add(it)
+                }
+            }
+        } catch (e: JsonParseException) {
+            AppLog.e(T.API, e)
+        }
+        return fileList
+    }
+
     fun getCategories() = getTriplets(categories)
 
+    fun getCommaSeparatedCategoryNames() = getCommaSeparatedTripletNames(getCategories())
+
     fun getTags() = getTriplets(tags)
+
+    fun getCommaSeparatedTagNames() = getCommaSeparatedTripletNames(getTags())
+
+    private fun getCommaSeparatedTripletNames(triplets: List<ProductTriplet>): String {
+        if (triplets.isEmpty()) return ""
+        var commaSeparatedNames = ""
+        triplets.forEach {
+            if (commaSeparatedNames.isEmpty()) {
+                commaSeparatedNames = it.name
+            } else {
+                commaSeparatedNames += ", ${it.name}"
+            }
+        }
+        return commaSeparatedNames
+    }
 
     private fun getTriplets(jsonStr: String): ArrayList<ProductTriplet> {
         val triplets = ArrayList<ProductTriplet>()
