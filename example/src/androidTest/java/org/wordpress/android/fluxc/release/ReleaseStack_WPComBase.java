@@ -67,12 +67,12 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
         internalInit(false);
     }
 
-    protected void init(Boolean testRequiresUserId) throws Exception {
+    protected void init(boolean testRequiresUserId) throws Exception {
         super.init();
         internalInit(testRequiresUserId);
     }
 
-    private void internalInit(Boolean testRequiresUserId) throws Exception {
+    private void internalInit(boolean testRequiresUserId) throws Exception {
         mNextEvent = TestEvents.NONE;
 
         if (!mAccountStore.getAccessToken().isEmpty() && sSite != null

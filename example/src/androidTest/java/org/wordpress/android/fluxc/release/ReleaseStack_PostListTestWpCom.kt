@@ -33,7 +33,7 @@ import javax.inject.Inject
 
 private const val TEST_POST_LIST_SEARCH_QUERY = "a"
 
-enum class AuthorTestFilter { EVERYONE, SPECIFIC_AUTHOR }
+internal enum class AuthorTestFilter { EVERYONE, SPECIFIC_AUTHOR }
 
 internal class RestPostListTestCase(
     val statusList: List<PostStatus> = DEFAULT_POST_STATUS_LIST,
@@ -98,8 +98,8 @@ internal class ReleaseStack_PostListTestWpCom(
 
     private fun createPagedListWrapper(): PagedListWrapper<PostModel> {
         val authorFilter: AuthorFilter = when (testCase.author) {
-            EVERYONE -> AuthorFilter.SpecificAuthor(mAccountStore.account.userId)
-            SPECIFIC_AUTHOR -> AuthorFilter.Everyone
+            EVERYONE -> AuthorFilter.Everyone
+            SPECIFIC_AUTHOR -> AuthorFilter.SpecificAuthor(mAccountStore.account.userId)
         }
 
         val descriptor = PostListDescriptorForRestSite(
