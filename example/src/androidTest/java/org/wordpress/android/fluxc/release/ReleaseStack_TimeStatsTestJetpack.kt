@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.LimitMode
 import org.wordpress.android.fluxc.network.utils.StatsGranularity
+import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
@@ -55,6 +56,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
     @Inject lateinit var searchTermsStore: SearchTermsStore
     @Inject lateinit var videoPlaysStore: VideoPlaysStore
     @Inject internal lateinit var siteStore: SiteStore
+    @Inject internal lateinit var accountStore: AccountStore
 
     private var nextEvent: TestEvents? = null
 

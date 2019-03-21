@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.LimitMode
 import org.wordpress.android.fluxc.model.stats.PagedMode
 import org.wordpress.android.fluxc.model.stats.insights.PostingActivityModel.Day
+import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
@@ -28,10 +29,10 @@ import org.wordpress.android.fluxc.store.stats.insights.CommentsStore
 import org.wordpress.android.fluxc.store.stats.insights.FollowersStore
 import org.wordpress.android.fluxc.store.stats.insights.LatestPostInsightsStore
 import org.wordpress.android.fluxc.store.stats.insights.MostPopularInsightsStore
+import org.wordpress.android.fluxc.store.stats.insights.PostingActivityStore
 import org.wordpress.android.fluxc.store.stats.insights.PublicizeStore
 import org.wordpress.android.fluxc.store.stats.insights.TagsStore
 import org.wordpress.android.fluxc.store.stats.insights.TodayInsightsStore
-import org.wordpress.android.fluxc.store.stats.insights.PostingActivityStore
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.concurrent.CountDownLatch
@@ -53,6 +54,7 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     @Inject lateinit var todayStore: TodayInsightsStore
     @Inject lateinit var postingActivityStore: PostingActivityStore
     @Inject internal lateinit var siteStore: SiteStore
+    @Inject internal lateinit var accountStore: AccountStore
 
     private var nextEvent: TestEvents? = null
 
