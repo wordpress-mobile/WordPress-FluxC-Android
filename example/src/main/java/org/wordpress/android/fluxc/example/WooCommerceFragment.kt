@@ -440,7 +440,7 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
 
         with(event) {
             prependToLog("Updated product settings for ${site.name}:\n" +
-                    wooCommerceStore.getSiteSettings(site).toString() // TODO <- product settings model
+                    wooCommerceStore.getProductSettings(site)
             )
         }
     }

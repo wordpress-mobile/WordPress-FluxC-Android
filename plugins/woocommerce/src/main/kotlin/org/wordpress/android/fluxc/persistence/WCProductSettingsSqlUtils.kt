@@ -8,7 +8,7 @@ import org.wordpress.android.fluxc.model.WCProductSettingsModel
 object WCProductSettingsSqlUtils {
     fun insertOrUpdateProductSettings(settings: WCProductSettingsModel): Int {
         val result = WellSql.select(WCProductSettingsModel::class.java)
-                .where().beginGroup()
+                .where()
                 .equals(WCProductSettingsModelTable.LOCAL_SITE_ID, settings.localSiteId)
                 .endWhere()
                 .asModel.firstOrNull()

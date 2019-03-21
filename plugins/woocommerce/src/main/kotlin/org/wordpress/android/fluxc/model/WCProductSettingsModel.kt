@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCProductSettingsModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
+    // note that there are many more product settings than this, but for now these are all we need
     @Column var localSiteId = 0
     @Column var weightUnit = ""
     @Column var dimensionUnit = ""

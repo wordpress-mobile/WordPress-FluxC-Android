@@ -209,11 +209,11 @@ class WooCommerceStore @Inject constructor(
 
     private fun handleFetchProductSettingsCompleted(payload: FetchWCProductSettingsResponsePayload) {
         val onWCProductSettingsChanged = OnWCProductSettingsChanged(payload.site)
-        if (payload.isError) { // TODO  || payload.settings == null
+        if (payload.isError || payload.settings == null) {
             onWCProductSettingsChanged.error =
                     payload.error ?: WCSiteSettingsError(WCSiteSettingsErrorType.INVALID_RESPONSE)
         } else {
-            // TODO WCSettingsSqlUtils.insertOrUpdateSettings(payload.settings)
+            WCProductSettingsSqlUtils.insertOrUpdateProductSettings(payload.settings)
         }
 
         emitChange(onWCProductSettingsChanged)
