@@ -185,4 +185,7 @@ object OrderSqlUtils {
                 .endGroup().endWhere()
                 .orderBy(WCOrderShipmentTrackingModelTable.DATE_SHIPPED, SelectQuery.ORDER_DESCENDING).asModel
     }
+
+    fun deleteShipmentTrackingById(tracking: WCOrderShipmentTrackingModel): Int =
+            WellSql.delete(WCOrderShipmentTrackingModel::class.java).whereId(tracking.id)
 }
