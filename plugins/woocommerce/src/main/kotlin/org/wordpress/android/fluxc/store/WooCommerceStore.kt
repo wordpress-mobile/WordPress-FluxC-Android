@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT_SPACE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
+import org.wordpress.android.fluxc.persistence.WCProductSettingsSqlUtils
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils
 import org.wordpress.android.fluxc.utils.WCCurrencyUtils
 import org.wordpress.android.util.AppLog
@@ -126,6 +127,12 @@ class WooCommerceStore @Inject constructor(
      */
     fun getSiteSettings(site: SiteModel): WCSettingsModel? =
             WCSettingsSqlUtils.getSettingsForSite(site)
+
+    /**
+     * Given a [SiteModel], returns its WooCommerce product settings, or null if no settings are stored for this site.
+     */
+    fun getProductSettings(site: SiteModel): WCProductSettingsModel? =
+            WCProductSettingsSqlUtils.getProductSettingsForSite(site)
 
     /**
      * Formats currency amounts for display based on the site's settings and the device locale.

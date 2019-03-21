@@ -127,11 +127,11 @@ class WooCommerceRestClient(
                     response?.let {
                         val weightUnit = getValueForSettingsField(it, "woocommerce_weight_unit")
                         val dimensionUnit = getValueForSettingsField(it, "woocommerce_dimension_unit")
-                        val settings = WCProductSettingsModel(
-                                localSiteId = site.id,
-                                dimensionUnit = dimensionUnit ?: "",
-                                weightUnit = weightUnit ?: ""
-                        )
+
+                        val settings = WCProductSettingsModel()
+                        settings.localSiteId = site.id
+                        settings.dimensionUnit = dimensionUnit ?: ""
+                        settings.weightUnit = weightUnit ?: ""
 
                         val payload = FetchWCProductSettingsResponsePayload(site, settings)
                         dispatcher.dispatch(WCCoreActionBuilder.newFetchedProductSettingsAction(payload))
