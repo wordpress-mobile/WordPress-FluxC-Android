@@ -62,6 +62,7 @@ import org.wordpress.android.fluxc.store.WCStatsStore.OnWCTopEarnersChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.store.WooCommerceStore.OnApiVersionFetched
+import org.wordpress.android.fluxc.store.WooCommerceStore.OnWCProductSettingsChanged
 import org.wordpress.android.fluxc.store.WooCommerceStore.OnWCSiteSettingsChanged
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -112,6 +113,12 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
         fetch_settings.setOnClickListener {
             getFirstWCSite()?.let {
                 dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteSettingsAction(it))
+            } ?: showNoWCSitesToast()
+        }
+
+        fetch_product_settings.setOnClickListener {
+            getFirstWCSite()?.let {
+                dispatcher.dispatch(WCCoreActionBuilder.newFetchProductSettingsAction(it))
             } ?: showNoWCSitesToast()
         }
 
@@ -419,6 +426,21 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
         with(event) {
             prependToLog("Updated site settings for ${site.name}:\n" +
                     wooCommerceStore.getSiteSettings(site).toString()
+            )
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onWCProductSettingsChanged(event: OnWCProductSettingsChanged) {
+        if (event.isError) {
+            prependToLog("Error in onWCProductSettingsChanged: ${event.error.type} - ${event.error.message}")
+            return
+        }
+
+        with(event) {
+            prependToLog("Updated product settings for ${site.name}:\n" +
+                    wooCommerceStore.getSiteSettings(site).toString() // TODO <- product settings model
             )
         }
     }

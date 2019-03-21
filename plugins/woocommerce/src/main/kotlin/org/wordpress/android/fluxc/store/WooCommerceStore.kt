@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCCoreAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductSettingsModel
 import org.wordpress.android.fluxc.model.WCSettingsModel
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT_SPACE
@@ -83,10 +84,19 @@ class WooCommerceStore @Inject constructor(
         }
     }
 
+    class FetchWCProductSettingsResponsePayload(
+        val site: SiteModel,
+        val settings: WCProductSettingsModel?
+    ) : Payload<WCSiteSettingsError>() {
+        constructor(error: WCSiteSettingsError, site: SiteModel) : this(site, null) { this.error = error }
+    }
+
     // OnChanged events
     class OnApiVersionFetched(val site: SiteModel, val apiVersion: String) : OnChanged<ApiVersionError>()
 
     class OnWCSiteSettingsChanged(val site: SiteModel) : OnChanged<WCSiteSettingsError>()
+
+    class OnWCProductSettingsChanged(val site: SiteModel) : OnChanged<WCSiteSettingsError>()
 
     override fun onRegister() = AppLog.d(T.API, "WooCommerceStore onRegister")
 
@@ -97,11 +107,14 @@ class WooCommerceStore @Inject constructor(
             // Remote actions
             WCCoreAction.FETCH_SITE_API_VERSION -> getApiVersion(action.payload as SiteModel)
             WCCoreAction.FETCH_SITE_SETTINGS -> fetchSiteSettings(action.payload as SiteModel)
+            WCCoreAction.FETCH_PRODUCT_SETTINGS -> fetchProductSettings(action.payload as SiteModel)
             // Remote responses
             WCCoreAction.FETCHED_SITE_API_VERSION ->
                 handleGetApiVersionCompleted(action.payload as FetchApiVersionResponsePayload)
             WCCoreAction.FETCHED_SITE_SETTINGS ->
                 handleFetchSiteSettingsCompleted(action.payload as FetchWCSiteSettingsResponsePayload)
+            WCCoreAction.FETCHED_PRODUCT_SETTINGS ->
+                handleFetchProductSettingsCompleted(action.payload as FetchWCProductSettingsResponsePayload)
         }
     }
 
@@ -173,6 +186,8 @@ class WooCommerceStore @Inject constructor(
 
     private fun fetchSiteSettings(site: SiteModel) = wcCoreRestClient.getSiteSettingsGeneral(site)
 
+    private fun fetchProductSettings(site: SiteModel) = wcCoreRestClient.getSiteSettingsProducts(site)
+
     private fun handleFetchSiteSettingsCompleted(payload: FetchWCSiteSettingsResponsePayload) {
         val onWCSiteSettingsChanged = OnWCSiteSettingsChanged(payload.site)
         if (payload.isError || payload.settings == null) {
@@ -183,6 +198,18 @@ class WooCommerceStore @Inject constructor(
         }
 
         emitChange(onWCSiteSettingsChanged)
+    }
+
+    private fun handleFetchProductSettingsCompleted(payload: FetchWCProductSettingsResponsePayload) {
+        val onWCProductSettingsChanged = OnWCProductSettingsChanged(payload.site)
+        if (payload.isError) { // TODO  || payload.settings == null
+            onWCProductSettingsChanged.error =
+                    payload.error ?: WCSiteSettingsError(WCSiteSettingsErrorType.INVALID_RESPONSE)
+        } else {
+            // TODO WCSettingsSqlUtils.insertOrUpdateSettings(payload.settings)
+        }
+
+        emitChange(onWCProductSettingsChanged)
     }
 
     private fun handleGetApiVersionCompleted(payload: FetchApiVersionResponsePayload) {

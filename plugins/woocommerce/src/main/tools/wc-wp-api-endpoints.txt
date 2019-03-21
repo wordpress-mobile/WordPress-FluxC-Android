@@ -8,3 +8,4 @@
 /reports/orders/totals/
 
 /settings/general/
+/settings/products/
