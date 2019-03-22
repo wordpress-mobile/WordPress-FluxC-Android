@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
@@ -23,6 +24,8 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import java.util.concurrent.CountDownLatch
@@ -42,7 +45,8 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         POST_ORDER_NOTE,
         POSTED_ORDER_NOTE,
         ERROR_ORDER_STATUS_NOT_FOUND,
-        FETCHED_ORDER_STATUS_OPTIONS
+        FETCHED_ORDER_STATUS_OPTIONS,
+        ERROR_ORDER_SHIPMENT_TRACKINGS_PLUGIN_NOT_ACTIVE
     }
 
     @Inject internal lateinit var orderStore: WCOrderStore
@@ -238,6 +242,24 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         assertTrue(orderStatusOptions.isNotEmpty())
     }
 
+    /**
+     * Tests the woo mobile implementation of the Shipment Trackings
+     * plugin. This test specifically tests a site where the plugin is not installed.
+     */
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchShipmentTrackingsForOrder_pluginNotInstalled() {
+        nextEvent = TestEvent.ERROR_ORDER_SHIPMENT_TRACKINGS_PLUGIN_NOT_ACTIVE
+        mCountDownLatch = CountDownLatch(1)
+
+        mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentTrackingsAction(
+                FetchOrderShipmentTrackingsPayload(sSite, orderModel)))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        val trackings = orderStore.getShipmentTrackingsForOrder(orderModel)
+        assertTrue(trackings.isEmpty())
+    }
+
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onOrderChanged(event: OnOrderChanged) {
@@ -247,7 +269,15 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
                     assertEquals(TestEvent.ERROR_ORDER_STATUS_NOT_FOUND, nextEvent)
                     mCountDownLatch.countDown()
                     return
-                } else -> throw AssertionError("OnOrderChanged has unexpected error: " + it.type)
+                }
+                WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS -> {
+                    assertEquals(TestEvent.ERROR_ORDER_SHIPMENT_TRACKINGS_PLUGIN_NOT_ACTIVE, nextEvent)
+                    assertTrue(event.isError)
+                    assertEquals(OrderErrorType.PLUGIN_NOT_ACTIVE, event.error.type)
+                    mCountDownLatch.countDown()
+                    return
+                }
+                else -> throw AssertionError("OnOrderChanged has unexpected error: " + it.type)
             }
         }
 
