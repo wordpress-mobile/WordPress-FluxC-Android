@@ -201,6 +201,13 @@ TEST_WC_PRODUCT_WITH_VARIATIONS_ID = FIXME
 TEST_WPCOM_USERNAME_WOO_JETPACK = FIXME
 TEST_WPCOM_PASSWORD_WOO_JETPACK = FIXME
 
+# WP.com - Account with only one site: a Jetpack site with WooCommerce and the Shipment Tracking extension
+TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID = FIXME
+TEST_WC_ORDER_WITHOUT_SHIPMENT_TRACKINGS_ID = FIXME
+TEST_WPCOM_USERNAME_WOO_JETPACK_SHIPMENT_TRACKINGS = FIXME
+TEST_WPCOM_PASSWORD_WOO_JETPACK_SHIPMENT_TRACKINGS = FIXME
+TEST_WPCOM_URL_WOO_JETPACK_SHIPMENT_TRACKINGS = FIXME
+
 # Local files to override default samples. Keep the empty string to use default samples.
 # These files should be at least 500KB, otherwise they may cause cancellation tests to fail on fast enough connections.
 # Path (on device) to a test image for uploading, e.g. /sdcard/Pictures/flux-capacitor-schematics.png
