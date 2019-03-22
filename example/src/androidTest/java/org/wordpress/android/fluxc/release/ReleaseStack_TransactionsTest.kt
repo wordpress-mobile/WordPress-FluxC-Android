@@ -21,6 +21,11 @@ class ReleaseStack_TransactionsTest : ReleaseStack_WPComBase() {
     @Inject lateinit var siteStore: SiteStore
     private var nextEvent: TestEvents? = null
 
+    companion object {
+        private const val TEST_DOMAIN_NAME = "superraredomainname156726.blog"
+        private const val TEST_DOMAIN_PRODUCT_ID = 76
+    }
+
     internal enum class TestEvents {
         NONE,
         COUNTRIES_FETCHED,
@@ -41,7 +46,11 @@ class ReleaseStack_TransactionsTest : ReleaseStack_WPComBase() {
     fun testFetchCountries() {
         nextEvent = TestEvents.COUNTRIES_FETCHED
         mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(TransactionActionBuilder.generateNoPayloadAction(TransactionAction.FETCH_SUPPORTED_COUNTRIES))
+        mDispatcher.dispatch(
+                TransactionActionBuilder.generateNoPayloadAction(
+                        TransactionAction.FETCH_SUPPORTED_COUNTRIES
+                )
+        )
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
     }
 
@@ -51,7 +60,7 @@ class ReleaseStack_TransactionsTest : ReleaseStack_WPComBase() {
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
                 TransactionActionBuilder.newCreateShoppingCartAction(
-                        CreateShoppingCartPayload(sSite, "76", "cooldomain.blog", true)
+                        CreateShoppingCartPayload(sSite, TEST_DOMAIN_PRODUCT_ID.toString(), TEST_DOMAIN_NAME, true)
                 )
         )
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -82,16 +91,10 @@ class ReleaseStack_TransactionsTest : ReleaseStack_WPComBase() {
 
         Assert.assertNotNull(event.cartDetails!!.products)
         Assert.assertTrue(event.cartDetails!!.products!!.isNotEmpty())
-        Assert.assertEquals(event.cartDetails!!.products!!.size, 3)
+        Assert.assertEquals(event.cartDetails!!.products!!.size, 2)
 
-
-        Assert.assertEquals(event.cartDetails!!.products!![0].product_id, 76)
-        Assert.assertEquals(event.cartDetails!!.products!![0].meta, "cooldomain.blog")
-        Assert.assertEquals(event.cartDetails!!.products!![1].product_id, 16)
-        Assert.assertEquals(event.cartDetails!!.products!![1].meta, "cooldomain.blog")
-        Assert.assertEquals(event.cartDetails!!.products!![2].product_id, 1003)
-        Assert.assertEquals(event.cartDetails!!.products!![2].meta, "")
-
+        Assert.assertEquals(event.cartDetails!!.products!![0].product_id, TEST_DOMAIN_PRODUCT_ID)
+        Assert.assertEquals(event.cartDetails!!.products!![0].meta, TEST_DOMAIN_NAME)
         mCountDownLatch.countDown()
     }
 }
