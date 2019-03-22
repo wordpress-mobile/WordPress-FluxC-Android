@@ -269,8 +269,8 @@ class OrderSqlUtilsTest {
         val orderModel = OrderTestUtils.generateSampleOrder(3, siteId = 1)
         val json = UnitTestUtils
                 .getStringFromResourceFile(this.javaClass, "wc/order-shipment-trackings-multiple.json")
-        val trackings = OrderTestUtils.
-                getOrderShipmentTrackingsFromJson(json, siteModel.id, orderModel.id)
+        val trackings = OrderTestUtils
+                .getOrderShipmentTrackingsFromJson(json, siteModel.id, orderModel.id)
                 .toMutableList()
         assertEquals(2, trackings.size)
 
