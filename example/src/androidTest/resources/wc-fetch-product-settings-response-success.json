@@ -1,0 +1,507 @@
+{
+  "data": [
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_shop_page_id"
+          }
+        ]
+      },
+      "default": "",
+      "description": "<br/>The base page can also be used in your <a href=\"https://example.com/wp-admin/options-permalink.php\">product permalinks</a>.",
+      "id": "woocommerce_shop_page_id",
+      "label": "Shop page",
+      "options": {
+        "156": "About",
+        "2": "Welcome to My Store",
+        "3": "Blog",
+        "32": "Shop",
+        "33": "Cart",
+        "34": "Checkout",
+        "35": "My account",
+        "5": "Contact"
+      },
+      "tip": "This sets the base page of your shop - this is where your product archive will be.",
+      "type": "select",
+      "value": "32"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_cart_redirect_after_add"
+          }
+        ]
+      },
+      "default": "no",
+      "description": "Redirect to the cart page after successful addition",
+      "id": "woocommerce_cart_redirect_after_add",
+      "label": "Add to cart behaviour",
+      "type": "checkbox",
+      "value": "yes"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_enable_ajax_add_to_cart"
+          }
+        ]
+      },
+      "default": "yes",
+      "description": "Enable AJAX add to cart buttons on archives",
+      "id": "woocommerce_enable_ajax_add_to_cart",
+      "label": "",
+      "type": "checkbox",
+      "value": "yes"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_placeholder_image"
+          }
+        ]
+      },
+      "default": "",
+      "description": "",
+      "id": "woocommerce_placeholder_image",
+      "label": "Placeholder image",
+      "tip": "This is the attachment ID, or image URL, used for placeholder images in the product catalog. Products with no image will use this.",
+      "type": "text",
+      "value": ""
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_weight_unit"
+          }
+        ]
+      },
+      "default": "kg",
+      "description": "This controls what unit you will define weights in.",
+      "id": "woocommerce_weight_unit",
+      "label": "Weight unit",
+      "options": {
+        "g": "g",
+        "kg": "kg",
+        "lbs": "lbs",
+        "oz": "oz"
+      },
+      "tip": "This controls what unit you will define weights in.",
+      "type": "select",
+      "value": "oz"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_dimension_unit"
+          }
+        ]
+      },
+      "default": "cm",
+      "description": "This controls what unit you will define lengths in.",
+      "id": "woocommerce_dimension_unit",
+      "label": "Dimensions unit",
+      "options": {
+        "cm": "cm",
+        "in": "in",
+        "m": "m",
+        "mm": "mm",
+        "yd": "yd"
+      },
+      "tip": "This controls what unit you will define lengths in.",
+      "type": "select",
+      "value": "in"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_enable_reviews"
+          }
+        ]
+      },
+      "default": "yes",
+      "description": "Enable product reviews",
+      "id": "woocommerce_enable_reviews",
+      "label": "Enable reviews",
+      "type": "checkbox",
+      "value": "yes"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_review_rating_verification_label"
+          }
+        ]
+      },
+      "default": "yes",
+      "description": "Show \"verified owner\" label on customer reviews",
+      "id": "woocommerce_review_rating_verification_label",
+      "label": "",
+      "type": "checkbox",
+      "value": "yes"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_review_rating_verification_required"
+          }
+        ]
+      },
+      "default": "no",
+      "description": "Reviews can only be left by \"verified owners\"",
+      "id": "woocommerce_review_rating_verification_required",
+      "label": "",
+      "type": "checkbox",
+      "value": "yes"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_enable_review_rating"
+          }
+        ]
+      },
+      "default": "yes",
+      "description": "Enable star rating on reviews",
+      "id": "woocommerce_enable_review_rating",
+      "label": "Product ratings",
+      "type": "checkbox",
+      "value": "yes"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_review_rating_required"
+          }
+        ]
+      },
+      "default": "yes",
+      "description": "Star ratings should be required, not optional",
+      "id": "woocommerce_review_rating_required",
+      "label": "",
+      "type": "checkbox",
+      "value": "yes"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_manage_stock"
+          }
+        ]
+      },
+      "default": "yes",
+      "description": "Enable stock management",
+      "id": "woocommerce_manage_stock",
+      "label": "Manage stock",
+      "type": "checkbox",
+      "value": "yes"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_hold_stock_minutes"
+          }
+        ]
+      },
+      "default": "60",
+      "description": "Hold stock (for unpaid orders) for x minutes. When this limit is reached, the pending order will be cancelled. Leave blank to disable.",
+      "id": "woocommerce_hold_stock_minutes",
+      "label": "Hold stock (minutes)",
+      "type": "number",
+      "value": "60"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_notify_low_stock"
+          }
+        ]
+      },
+      "default": "yes",
+      "description": "Enable low stock notifications",
+      "id": "woocommerce_notify_low_stock",
+      "label": "Notifications",
+      "type": "checkbox",
+      "value": "yes"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_notify_no_stock"
+          }
+        ]
+      },
+      "default": "yes",
+      "description": "Enable out of stock notifications",
+      "id": "woocommerce_notify_no_stock",
+      "label": "",
+      "type": "checkbox",
+      "value": "yes"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_stock_email_recipient"
+          }
+        ]
+      },
+      "default": "user@example.com",
+      "description": "Enter recipients (comma separated) that will receive this notification.",
+      "id": "woocommerce_stock_email_recipient",
+      "label": "Notification recipient(s)",
+      "tip": "Enter recipients (comma separated) that will receive this notification.",
+      "type": "text",
+      "value": "user@example.com"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_notify_low_stock_amount"
+          }
+        ]
+      },
+      "default": "2",
+      "description": "When product stock reaches this amount you will be notified via email.",
+      "id": "woocommerce_notify_low_stock_amount",
+      "label": "Low stock threshold",
+      "tip": "When product stock reaches this amount you will be notified via email.",
+      "type": "number",
+      "value": "2"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_notify_no_stock_amount"
+          }
+        ]
+      },
+      "default": "0",
+      "description": "When product stock reaches this amount the stock status will change to \"out of stock\" and you will be notified via email. This setting does not affect existing \"in stock\" products.",
+      "id": "woocommerce_notify_no_stock_amount",
+      "label": "Out of stock threshold",
+      "tip": "When product stock reaches this amount the stock status will change to \"out of stock\" and you will be notified via email. This setting does not affect existing \"in stock\" products.",
+      "type": "number",
+      "value": "0"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_hide_out_of_stock_items"
+          }
+        ]
+      },
+      "default": "no",
+      "description": "Hide out of stock items from the catalog",
+      "id": "woocommerce_hide_out_of_stock_items",
+      "label": "Out of stock visibility",
+      "type": "checkbox",
+      "value": "no"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_stock_format"
+          }
+        ]
+      },
+      "default": "",
+      "description": "This controls how stock quantities are displayed on the frontend.",
+      "id": "woocommerce_stock_format",
+      "label": "Stock display format",
+      "options": {
+        "low_amount": "Only show quantity remaining in stock when low e.g. \"Only 2 left in stock\"",
+        "no_amount": "Never show quantity remaining in stock"
+      },
+      "tip": "This controls how stock quantities are displayed on the frontend.",
+      "type": "select",
+      "value": ""
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_file_download_method"
+          }
+        ]
+      },
+      "default": "force",
+      "description": "Forcing downloads will keep URLs hidden, but some servers may serve large files unreliably. If supported, <code>X-Accel-Redirect</code> / <code>X-Sendfile</code> can be used to serve downloads instead (server requires <code>mod_xsendfile</code>).",
+      "id": "woocommerce_file_download_method",
+      "label": "File download method",
+      "options": {
+        "force": "Force downloads",
+        "redirect": "Redirect only",
+        "xsendfile": "X-Accel-Redirect/X-Sendfile"
+      },
+      "tip": "Forcing downloads will keep URLs hidden, but some servers may serve large files unreliably. If supported, <code>X-Accel-Redirect</code> / <code>X-Sendfile</code> can be used to serve downloads instead (server requires <code>mod_xsendfile</code>).",
+      "type": "select",
+      "value": "force"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_downloads_require_login"
+          }
+        ]
+      },
+      "default": "no",
+      "description": "Downloads require login",
+      "id": "woocommerce_downloads_require_login",
+      "label": "Access restriction",
+      "tip": "This setting does not apply to guest purchases.",
+      "type": "checkbox",
+      "value": "no"
+    },
+    {
+      "_links": {
+        "collection": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products"
+          }
+        ],
+        "self": [
+          {
+            "href": "https://example.com/wp-json/wc/v3/settings/products/woocommerce_downloads_grant_access_after_payment"
+          }
+        ]
+      },
+      "default": "yes",
+      "description": "Grant access to downloadable products after payment",
+      "id": "woocommerce_downloads_grant_access_after_payment",
+      "label": "",
+      "tip": "Enable this option to grant access to downloads when orders are \"processing\", rather than \"completed\".",
+      "type": "checkbox",
+      "value": "yes"
+    }
+  ]
+}
