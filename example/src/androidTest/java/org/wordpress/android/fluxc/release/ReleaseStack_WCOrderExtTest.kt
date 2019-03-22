@@ -56,7 +56,8 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
 
         val orderModel = WCOrderModel().apply {
-            id = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toInt()
+            id = 8
+            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()
             localSiteId = sSite.id
         }
         mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentTrackingsAction(
@@ -80,7 +81,8 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
 
         val orderModel = WCOrderModel().apply {
-            id = BuildConfig.TEST_WC_ORDER_WITHOUT_SHIPMENT_TRACKINGS_ID.toInt()
+            id = 9
+            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITHOUT_SHIPMENT_TRACKINGS_ID.toLong()
             localSiteId = sSite.id
         }
         mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentTrackingsAction(
@@ -95,7 +97,6 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onOrderChanged(event: OnOrderChanged) {
         event.error?.let {
-            val site = sSite
             throw AssertionError("OnOrderChanged has unexpected error: " + it.type)
         }
 
