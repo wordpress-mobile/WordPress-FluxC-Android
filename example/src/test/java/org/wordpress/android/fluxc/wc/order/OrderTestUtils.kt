@@ -76,6 +76,11 @@ object OrderTestUtils {
             WCOrderShipmentTrackingModel().apply {
                 localSiteId = siteId
                 localOrderId = orderId
+                remoteTrackingId = it.tracking_id ?: ""
+                trackingNumber = it.tracking_number ?: ""
+                trackingProvider = it.tracking_provider ?: ""
+                trackingLink = it.tracking_link ?: ""
+                dateShipped = it.date_shipped ?: ""
             }
         }
     }
