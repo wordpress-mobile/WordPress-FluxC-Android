@@ -234,6 +234,12 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     fun getOrderStatusForSiteAndKey(site: SiteModel, key: String): WCOrderStatusModel? =
             OrderSqlUtils.getOrderStatusOptionForSiteByKey(site, key)
 
+    /**
+     * Returns shipment trackings as list of [WCOrderShipmentTrackingModel] for a single [WCOrderModel]
+     */
+    fun getShipmentTrackingsForOrder(order: WCOrderModel): List<WCOrderShipmentTrackingModel> =
+            OrderSqlUtils.getShipmentTrackingsForOrder(order)
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCOrderAction ?: return
@@ -328,6 +334,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             if (!payload.loadedMore) {
                 OrderSqlUtils.deleteOrdersForSite(payload.site)
                 OrderSqlUtils.deleteOrderNotesForSite(payload.site)
+                OrderSqlUtils.deleteOrderShipmentTrackingsForSite(payload.site)
             }
 
             val rowsAffected = payload.orders.sumBy { OrderSqlUtils.insertOrUpdateOrder(it) }
@@ -495,7 +502,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 }
                 if (!exists) deleteTrackings.add(existing)
             }
-            var rowsAffected = deleteTrackings.sumBy { OrderSqlUtils.deleteShipmentTrackingById(it) }
+            var rowsAffected = deleteTrackings.sumBy { OrderSqlUtils.deleteOrderShipmentTrackingById(it) }
 
             // Save new shipment trackings to the database
             rowsAffected += payload.trackings.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) }
@@ -503,5 +510,6 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         }
 
         onOrderChanged.causeOfChange = FETCH_ORDER_SHIPMENT_TRACKINGS
+        emitChange(onOrderChanged)
     }
 }

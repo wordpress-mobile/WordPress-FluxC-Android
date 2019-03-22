@@ -186,6 +186,13 @@ object OrderSqlUtils {
                 .orderBy(WCOrderShipmentTrackingModelTable.DATE_SHIPPED, SelectQuery.ORDER_DESCENDING).asModel
     }
 
-    fun deleteShipmentTrackingById(tracking: WCOrderShipmentTrackingModel): Int =
+    fun deleteOrderShipmentTrackingById(tracking: WCOrderShipmentTrackingModel): Int =
             WellSql.delete(WCOrderShipmentTrackingModel::class.java).whereId(tracking.id)
+
+    fun deleteOrderShipmentTrackingsForSite(site: SiteModel): Int =
+            WellSql.delete(WCOrderShipmentTrackingModel::class.java)
+                    .where()
+                    .equals(WCOrderShipmentTrackingModelTable.LOCAL_SITE_ID, site.id)
+                    .endWhere()
+                    .execute()
 }
