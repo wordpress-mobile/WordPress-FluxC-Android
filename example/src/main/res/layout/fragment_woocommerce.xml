@@ -107,6 +107,12 @@
             android:text="Fetch Product Variations"/>
 
         <Button
+            android:id="@+id/fetch_shipment_trackings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Shipment Trackings"/>
+
+        <Button
             android:id="@+id/fetch_order_stats"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
