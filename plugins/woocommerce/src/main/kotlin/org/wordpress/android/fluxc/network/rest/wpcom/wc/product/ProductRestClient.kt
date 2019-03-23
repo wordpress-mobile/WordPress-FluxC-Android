@@ -165,7 +165,7 @@ class ProductRestClient(
             downloads = response.downloads?.toString() ?: ""
             relatedIds = response.related_ids?.toString() ?: ""
             crossSellIds = response.cross_sell_ids?.toString() ?: ""
-            upSellIds = response.upsell_ids?.toString() ?: ""
+            upsellIds = response.upsell_ids?.toString() ?: ""
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""
