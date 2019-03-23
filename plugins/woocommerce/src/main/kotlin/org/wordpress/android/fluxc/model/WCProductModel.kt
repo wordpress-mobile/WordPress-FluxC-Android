@@ -82,7 +82,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var downloads = "" // array of downloadable files
     @Column var relatedIds = "" // array of related product IDs
     @Column var crossSellIds = "" // array of cross-sell product IDs
-    @Column var upSellIds = "" // array of up-sell product IDs
+    @Column var upsellIds = "" // array of up-sell product IDs
 
     @Column var weight = ""
     @Column var length = ""
