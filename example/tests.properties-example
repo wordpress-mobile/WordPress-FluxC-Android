@@ -194,12 +194,12 @@ TEST_WPCOM_USERNAME_HAS_POST_FORMATS = FIXME
 TEST_WPCOM_PASSWORD_HAS_POST_FORMATS = FIXME
 
 ## Woo
-TEST_WC_PRODUCT_ID = FIXME
-TEST_WC_PRODUCT_WITH_VARIATIONS_ID = FIXME
 
 # WP.com - Account with only one site: a Jetpack site with WooCommerce set up: http://do.wpmt.co/woo-jetpack
 TEST_WPCOM_USERNAME_WOO_JETPACK = FIXME
 TEST_WPCOM_PASSWORD_WOO_JETPACK = FIXME
+TEST_WC_PRODUCT_ID = FIXME
+TEST_WC_PRODUCT_WITH_VARIATIONS_ID = FIXME
 
 # Local files to override default samples. Keep the empty string to use default samples.
 # These files should be at least 500KB, otherwise they may cause cancellation tests to fail on fast enough connections.
