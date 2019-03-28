@@ -22,6 +22,23 @@ commands:
       - run:
           name: Decrypt << parameters.input >>
           command: openssl aes-256-cbc -md sha256 -d -in "<< parameters.input >>" -out "<< parameters.output >>" -k "${<< parameters.secret >>}"
+  decrypt-properties-files:
+    steps:
+      - decrypt-file:
+          input: .circleci/gradle.properties.enc
+          output: example/gradle.properties
+          secret: CIRCLECI_FLUXC_ENCRYPTION_KEY
+      - decrypt-file:
+          input: .circleci/tests.properties.enc
+          output: .circleci/tests.properties
+          secret: CIRCLECI_FLUXC_ENCRYPTION_KEY
+      - decrypt-file:
+          input: .circleci/tests.properties-extra.enc
+          output: .circleci/tests.properties-extra
+          secret: CIRCLECI_FLUXC_ENCRYPTION_KEY
+      - run:
+          name: Merge properties files
+          command: ./tools/merge_properties.sh .circleci/tests.properties-extra .circleci/tests.properties > example/tests.properties
 
 jobs:
   Lint:
@@ -74,14 +91,7 @@ jobs:
       - checkout
       - android/restore-gradle-cache:
           cache-prefix: connected-tests
-      - decrypt-file:
-          input: .circleci/tests.properties.enc
-          output: example/tests.properties
-          secret: TESTS_PROPERTIES_ENCRYPTION_KEY
-      - decrypt-file:
-          input: .circleci/gradle.properties.enc
-          output: example/gradle.properties
-          secret: TESTS_PROPERTIES_ENCRYPTION_KEY
+      - decrypt-properties-files
       - run:
           name: Build
           command: ./gradlew --stacktrace example:assembleDebug example:assembleDebugAndroidTest
