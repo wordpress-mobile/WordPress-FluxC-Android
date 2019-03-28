@@ -5,6 +5,7 @@ import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.store.WooCommerceStore.FetchApiVersionResponsePayload;
+import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCProductSettingsResponsePayload;
 import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCSiteSettingsResponsePayload;
 
 @ActionEnum
@@ -14,10 +15,14 @@ public enum WCCoreAction implements IAction {
     FETCH_SITE_API_VERSION,
     @Action(payloadType = SiteModel.class)
     FETCH_SITE_SETTINGS,
+    @Action(payloadType = SiteModel.class)
+    FETCH_PRODUCT_SETTINGS,
 
     // Remote responses
     @Action(payloadType = FetchApiVersionResponsePayload.class)
     FETCHED_SITE_API_VERSION,
     @Action(payloadType = FetchWCSiteSettingsResponsePayload.class)
-    FETCHED_SITE_SETTINGS
+    FETCHED_SITE_SETTINGS,
+    @Action(payloadType = FetchWCProductSettingsResponsePayload.class)
+    FETCHED_PRODUCT_SETTINGS
 }
