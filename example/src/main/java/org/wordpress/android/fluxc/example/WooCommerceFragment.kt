@@ -529,7 +529,8 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                         pendingShipmentTrackingOrder?.let {
                             val trackings = wcOrderStore.getShipmentTrackingsForOrder(it)
                             prependToLog("[${trackings.size}] shipment trackings retrieved for " +
-                                    "remoteOrderId: ${it.id}, and [${event.rowsAffected}] rows changed in the db")
+                                    "remoteOrderId: ${it.remoteOrderId}, and [${event.rowsAffected}] rows changed in " +
+                                    "the db")
                             pendingShipmentTrackingOrder = null
                         }
                     }
