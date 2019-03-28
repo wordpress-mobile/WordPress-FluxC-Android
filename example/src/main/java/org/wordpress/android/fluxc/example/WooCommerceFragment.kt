@@ -399,7 +399,8 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                             pendingShipmentTrackingOrder = order
                             val payload = FetchOrderShipmentTrackingsPayload(site, order)
                             dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentTrackingsAction(payload))
-                        } ?: prependToLog("No order found in the db for remoteOrderId: $remoteOrderId")
+                        } ?: prependToLog("No order found in the db for remoteOrderId: $remoteOrderId, " +
+                                "please fetch orders first.")
                     } ?: prependToLog("No valid remoteOrderId submitted for search")
                 }
             } ?: showNoWCSitesToast()
