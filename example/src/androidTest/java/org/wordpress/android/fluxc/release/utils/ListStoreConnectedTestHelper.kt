@@ -29,7 +29,7 @@ internal class ListStoreConnectedTestHelper(private val listStore: ListStore) {
      * @param dataStore [ListItemDataStoreInterface] instance to be used to retrieve the list
      * @param lifecycle [Lifecycle] instance to be used to retrieve the list.
      */
-    fun <LD: ListDescriptor, ID, T> getList(
+    fun <LD : ListDescriptor, ID, T> getList(
         listDescriptor: LD,
         dataStore: ListItemDataStoreInterface<LD, ID, T>,
         lifecycle: Lifecycle = SimpleTestLifecycle().lifecycle
