@@ -438,11 +438,12 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
             return
         }
 
-        with(event) {
-            prependToLog("Updated product settings for ${site.name}:\n" +
-                    wooCommerceStore.getProductSettings(site)
+        wooCommerceStore.getProductSettings(event.site)?.let { settings ->
+            prependToLog(
+                    "Updated product settings for ${event.site.name}: " +
+                            "weight unit = ${settings.weightUnit}, dimension unit = ${settings.dimensionUnit}"
             )
-        }
+        } ?: prependToLog("Error getting product settings from db")
     }
 
     @Suppress("unused")
