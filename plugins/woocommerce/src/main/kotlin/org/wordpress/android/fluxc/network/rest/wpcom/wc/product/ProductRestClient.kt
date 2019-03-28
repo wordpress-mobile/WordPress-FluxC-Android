@@ -128,6 +128,9 @@ class ProductRestClient(
 
             virtual = response.virtual
             downloadable = response.downloadable
+            downloadLimit = response.download_limit
+            downloadExpiry = response.download_expiry
+            externalUrl = response.external_url ?: ""
 
             taxStatus = response.tax_status ?: ""
             taxClass = response.tax_class ?: ""
@@ -154,11 +157,15 @@ class ProductRestClient(
             parentId = response.parent_id
             purchaseNote = response.purchase_note ?: ""
 
-            categories = response.categories.toString()
-            tags = response.tags.toString()
-            images = response.images.toString()
-            attributes = response.attributes.toString()
-            variations = response.variations.toString()
+            categories = response.categories?.toString() ?: ""
+            tags = response.tags?.toString() ?: ""
+            images = response.images?.toString() ?: ""
+            attributes = response.attributes?.toString() ?: ""
+            variations = response.variations?.toString() ?: ""
+            downloads = response.downloads?.toString() ?: ""
+            relatedIds = response.related_ids?.toString() ?: ""
+            crossSellIds = response.cross_sell_ids?.toString() ?: ""
+            upsellIds = response.upsell_ids?.toString() ?: ""
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""
@@ -195,7 +202,7 @@ class ProductRestClient(
             stockQuantity = response.stock_quantity
             stockStatus = response.stock_status ?: ""
 
-            attributes = response.attributes.toString()
+            attributes = response.attributes?.toString() ?: ""
 
             weight = response.weight ?: ""
 
