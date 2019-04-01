@@ -29,6 +29,12 @@
             android:text="Fetch WC site settings"/>
 
         <Button
+            android:id="@+id/fetch_product_settings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch WC product settings"/>
+
+        <Button
             android:id="@+id/fetch_orders"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -87,6 +93,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Post Order Note"/>
+
+        <Button
+            android:id="@+id/fetch_shipment_trackings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Order Shipment Trackings"/>
 
         <Button
             android:id="@+id/update_latest_order_status"

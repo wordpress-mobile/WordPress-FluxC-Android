@@ -1,6 +1,7 @@
 /orders/
 /orders/<id>/
 /orders/<id>/notes/
+/orders/<id>/shipment-trackings/
 
 /products/<id>/
 /products/<id>/variations/
@@ -8,3 +9,4 @@
 /reports/orders/totals/
 
 /settings/general/
+/settings/products/
