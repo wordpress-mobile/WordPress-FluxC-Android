@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
@@ -418,6 +419,31 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         with(payload.labels[0]) {
             assertEquals("pending", statusKey)
             assertEquals("Pending payment", label)
+        }
+    }
+
+    @Test
+    fun testOrderShipmentTrackingsFetchSuccess() {
+        val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
+        interceptor.respondWith("wc-order-shipment-trackings-success.json")
+        orderRestClient.fetchOrderShipmentTrackings(siteModel, orderModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCOrderAction.FETCHED_ORDER_SHIPMENT_TRACKINGS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchOrderShipmentTrackingsResponsePayload
+        assertNull(payload.error)
+        assertEquals(2, payload.trackings.size)
+
+        with(payload.trackings[0]) {
+            assertEquals(remoteTrackingId, "19b28e4151dc5b4ae1c27294ede241f9")
+            assertEquals(trackingProvider, "USPS")
+            assertEquals(
+                    trackingLink,
+                    "https://tools.usps.com/go/TrackConfirmAction_input?qtc_tLabels1=11122233344466666")
+            assertEquals(trackingNumber, "11122233344466666")
+            assertEquals(dateShipped, "2019-02-19")
         }
     }
 

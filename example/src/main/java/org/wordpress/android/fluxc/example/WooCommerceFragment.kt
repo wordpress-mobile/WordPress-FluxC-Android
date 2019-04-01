@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_SINGLE_ORDER
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
@@ -39,6 +40,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRe
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
@@ -62,6 +64,7 @@ import org.wordpress.android.fluxc.store.WCStatsStore.OnWCTopEarnersChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.store.WooCommerceStore.OnApiVersionFetched
+import org.wordpress.android.fluxc.store.WooCommerceStore.OnWCProductSettingsChanged
 import org.wordpress.android.fluxc.store.WooCommerceStore.OnWCSiteSettingsChanged
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -80,6 +83,7 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
     private var pendingFetchCompletedOrders: Boolean = false
     private var pendingFetchSingleOrderRemoteId: Long? = null
     private var pendingFetchSingleProductRemoteId: Long? = null
+    private var pendingShipmentTrackingOrder: WCOrderModel? = null
 
     private var visitorStatsStartDate: String? = null
     private var visitorStatsEndDate: String? = null
@@ -112,6 +116,12 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
         fetch_settings.setOnClickListener {
             getFirstWCSite()?.let {
                 dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteSettingsAction(it))
+            } ?: showNoWCSitesToast()
+        }
+
+        fetch_product_settings.setOnClickListener {
+            getFirstWCSite()?.let {
+                dispatcher.dispatch(WCCoreActionBuilder.newFetchProductSettingsAction(it))
             } ?: showNoWCSitesToast()
         }
 
@@ -282,7 +292,7 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                         prependToLog("Submitting request to fetch product variations by remoteProductID $id")
                         val payload = FetchProductVariationsPayload(site, id)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchProductVariationsAction(payload))
-                    } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
+                    } ?: prependToLog("No valid remoteProductId defined...doing nothing")
                 }
             } ?: showNoWCSitesToast()
         }
@@ -382,6 +392,26 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchTopEarnersStatsAction(payload))
             } ?: showNoWCSitesToast()
         }
+
+        fetch_shipment_trackings.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the remoteOrderId to fetch shipment trackings:"
+                ) { editText ->
+                    editText.text.toString().toLongOrNull()?.let { remoteOrderId ->
+                        wcOrderStore.getOrderByIdentifier(OrderIdentifier(site.id, remoteOrderId))?.let { order ->
+                            prependToLog("Submitting request to fetch shipment trackings for " +
+                                    "remoteOrderId: ${order.remoteOrderId}")
+                            pendingShipmentTrackingOrder = order
+                            val payload = FetchOrderShipmentTrackingsPayload(site, order)
+                            dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentTrackingsAction(payload))
+                        } ?: prependToLog("No order found in the db for remoteOrderId: $remoteOrderId, " +
+                                "please fetch orders first.")
+                    } ?: prependToLog("No valid remoteOrderId submitted for search")
+                }
+            } ?: showNoWCSitesToast()
+        }
     }
 
     override fun onStart() {
@@ -421,6 +451,22 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                     wooCommerceStore.getSiteSettings(site).toString()
             )
         }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onWCProductSettingsChanged(event: OnWCProductSettingsChanged) {
+        if (event.isError) {
+            prependToLog("Error in onWCProductSettingsChanged: ${event.error.type} - ${event.error.message}")
+            return
+        }
+
+        wooCommerceStore.getProductSettings(event.site)?.let { settings ->
+            prependToLog(
+                    "Updated product settings for ${event.site.name}: " +
+                            "weight unit = ${settings.weightUnit}, dimension unit = ${settings.dimensionUnit}"
+            )
+        } ?: prependToLog("Error getting product settings from db")
     }
 
     @Suppress("unused")
@@ -502,6 +548,18 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                     )
                     UPDATE_ORDER_STATUS ->
                         with(orderList[0]) { prependToLog("Updated order status for $number to $status") }
+                    FETCH_ORDER_SHIPMENT_TRACKINGS -> {
+                        pendingShipmentTrackingOrder?.let {
+                            val trackings = wcOrderStore.getShipmentTrackingsForOrder(it)
+                            trackings.forEach { tracking ->
+                                prependToLog("- shipped:${tracking.dateShipped}: ${tracking.trackingNumber}")
+                            }
+                            prependToLog("[${trackings.size}] shipment trackings retrieved for " +
+                                    "remoteOrderId: ${it.remoteOrderId}, and [${event.rowsAffected}] rows changed in " +
+                                    "the db:")
+                            pendingShipmentTrackingOrder = null
+                        }
+                    }
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
                 }
             }

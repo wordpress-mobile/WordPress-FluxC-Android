@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils
 import org.wordpress.android.fluxc.persistence.WCSettingsSqlUtils.WCSettingsBuilder
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.store.WooCommerceStore.FetchApiVersionResponsePayload
+import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCProductSettingsResponsePayload
 import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCSiteSettingsResponsePayload
 import org.wordpress.android.fluxc.utils.WCCurrencyUtils
 import java.util.Locale
@@ -88,6 +89,24 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
             assertEquals(",", currencyThousandSeparator)
             assertEquals(".", currencyDecimalSeparator)
             assertEquals(2, currencyDecimalNumber)
+        }
+    }
+
+    @Test
+    fun testWCProductSettingsFetch() {
+        interceptor.respondWith("wc-fetch-product-settings-response-success.json")
+        wcRestClient.getSiteSettingsProducts(siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCCoreAction.FETCHED_PRODUCT_SETTINGS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchWCProductSettingsResponsePayload
+        assertNull(payload.error)
+        with(payload.settings!!) {
+            assertEquals(siteModel.id, localSiteId)
+            assertEquals("in", dimensionUnit)
+            assertEquals("oz", weightUnit)
         }
     }
 

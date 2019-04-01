@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
@@ -29,7 +30,11 @@ class OrderSqlUtilsTest {
         val appContext = RuntimeEnvironment.application.applicationContext
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
-                listOf(WCOrderModel::class.java, WCOrderNoteModel::class.java, WCOrderStatusModel::class.java),
+                listOf(
+                        WCOrderModel::class.java,
+                        WCOrderNoteModel::class.java,
+                        WCOrderStatusModel::class.java,
+                        WCOrderShipmentTrackingModel::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE)
         WellSql.init(config)
         config.reset()
@@ -261,5 +266,77 @@ class OrderSqlUtilsTest {
         // Get the first option from the database by the status key
         val option = OrderSqlUtils.getOrderStatusOptionForSiteByKey(siteModel, "missing")
         assertNull(option)
+    }
+
+    @Test
+    fun testGetOrderShipmentTrackingsForOrder() {
+        val siteModel = SiteModel().apply { id = 1 }
+        val orderModel = OrderTestUtils.generateSampleOrder(3, siteId = 1)
+        val json = UnitTestUtils
+                .getStringFromResourceFile(this.javaClass, "wc/order-shipment-trackings-multiple.json")
+        val trackings = OrderTestUtils
+                .getOrderShipmentTrackingsFromJson(json, siteModel.id, orderModel.id)
+                .toMutableList()
+        assertEquals(2, trackings.size)
+
+        // Save full list to the database
+        var rowsAffected = trackings.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) }
+        assertEquals(2, rowsAffected)
+
+        // Attempt to save again (should ignore both existing entries and add new one)
+        trackings.add(OrderTestUtils.generateOrderShipmentTracking(siteModel.id, orderModel.id))
+        rowsAffected = trackings.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) }
+        assertEquals(1, rowsAffected)
+
+        // Get all shipment trackings for a single order
+        val trackingsForOrder = OrderSqlUtils.getShipmentTrackingsForOrder(orderModel)
+        assertEquals(3, trackingsForOrder.size)
+    }
+
+    @Test
+    fun testDeleteOrderShipmentTrackingsForSite() {
+        // Insert shipment trackings into the database
+        val siteModel = SiteModel().apply { id = 1 }
+        val orderModel = OrderTestUtils.generateSampleOrder(3, siteId = 1)
+        val json = UnitTestUtils
+                .getStringFromResourceFile(this.javaClass, "wc/order-shipment-trackings-multiple.json")
+        val trackings = OrderTestUtils
+                .getOrderShipmentTrackingsFromJson(json, siteModel.id, orderModel.id)
+                .toMutableList()
+        assertEquals(2, trackings.size)
+        var rowsAffected = trackings.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) }
+        assertEquals(2, rowsAffected)
+
+        // Delete all shipment trackings for site
+        rowsAffected = OrderSqlUtils.deleteOrderShipmentTrackingsForSite(siteModel)
+        assertEquals(2, rowsAffected)
+
+        // Verify no shipment trackings in db
+        val trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(orderModel)
+        assertEquals(0, trackingsInDb.size)
+    }
+
+    @Test
+    fun testDeleteOrderShipmentTrackingsById() {
+        // Insert shipment trackings into the database
+        val siteModel = SiteModel().apply { id = 1 }
+        val orderModel = OrderTestUtils.generateSampleOrder(3, siteId = 1)
+        val json = UnitTestUtils
+                .getStringFromResourceFile(this.javaClass, "wc/order-shipment-trackings-multiple.json")
+        val trackings = OrderTestUtils
+                .getOrderShipmentTrackingsFromJson(json, siteModel.id, orderModel.id)
+                .toMutableList()
+        assertEquals(2, trackings.size)
+        var rowsAffected = trackings.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) }
+        assertEquals(2, rowsAffected)
+
+        // Delete the first shipment tracking
+        var trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(orderModel)
+        rowsAffected = OrderSqlUtils.deleteOrderShipmentTrackingById(trackingsInDb.get(0))
+        assertEquals(1, rowsAffected)
+
+        // Verify only a single shipment tracking row in db
+        trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(orderModel)
+        assertEquals(1, trackingsInDb.size)
     }
 }
