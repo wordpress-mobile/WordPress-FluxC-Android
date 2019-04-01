@@ -243,11 +243,7 @@ object DateUtils {
      *
      */
     fun getCalendarInstance(value: String): Calendar {
-        val cal = Calendar.getInstance()
-        cal.set(Calendar.MONTH, (value.split("-")[1].toInt()))
-        cal.add(Calendar.MONTH, -1)
-        cal.set(Calendar.DATE, value.split("-")[2].toInt())
-        cal.set(Calendar.YEAR, value.split("-")[0].toInt())
-        return cal
+        val (year, month, day) = value.split("-").map { it.toInt() }
+        return Calendar.getInstance().apply { set(year, month - 1, day) }
     }
 }
