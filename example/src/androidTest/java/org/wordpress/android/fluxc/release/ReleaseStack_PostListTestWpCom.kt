@@ -6,8 +6,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
-import org.wordpress.android.fluxc.release.utils.TestPostUIItem
-
 import org.wordpress.android.fluxc.model.list.AuthorFilter
 import org.wordpress.android.fluxc.model.list.ListOrder
 import org.wordpress.android.fluxc.model.list.ListOrder.DESC
@@ -27,6 +25,7 @@ import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.Mult
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.SinglePage
 import org.wordpress.android.fluxc.release.utils.TEST_LIST_CONFIG
 import org.wordpress.android.fluxc.release.utils.TestPostListDataStore
+import org.wordpress.android.fluxc.release.utils.TestPostUIItem
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.DEFAULT_POST_STATUS_LIST
@@ -108,6 +107,6 @@ internal class ReleaseStack_PostListTestWpCom(
                 searchQuery = testCase.searchQuery,
                 config = TEST_LIST_CONFIG
         )
-        return listStoreConnectedTestHelper.getList(descriptor, TestPostListDataStore(mDispatcher, postStore))
+        return listStoreConnectedTestHelper.getList(descriptor, TestPostListDataStore(mDispatcher))
     }
 }

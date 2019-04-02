@@ -83,6 +83,6 @@ internal class ReleaseStack_PostListTestXMLRPC(
                 orderBy = testCase.orderBy,
                 config = TEST_LIST_CONFIG
         )
-        return listStoreConnectedTestHelper.getList(descriptor, TestPostListDataStore(mDispatcher, postStore))
+        return listStoreConnectedTestHelper.getList(descriptor, TestPostListDataStore(mDispatcher))
     }
 }
