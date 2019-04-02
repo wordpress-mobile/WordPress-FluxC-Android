@@ -13,6 +13,30 @@
       ]
     },
     "attributes": [
+      {
+        "id": 0,
+        "name": "Size",
+        "options": [
+          "Small",
+          "Medium",
+          "Large"
+        ],
+        "position": 0,
+        "variation": true,
+        "visible": false
+      },
+      {
+        "id": 1,
+        "name": "Color",
+        "options": [
+          "Blue",
+          "Green",
+          "Red"
+        ],
+        "position": 1,
+        "variation": true,
+        "visible": true
+      }
     ],
     "average_rating": "0.00",
     "backordered": false,
