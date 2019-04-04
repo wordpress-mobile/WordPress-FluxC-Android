@@ -71,7 +71,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             error: ProductError,
             site: SiteModel,
             remoteProductId: Long,
-                variationId: Long
+            variationId: Long
         ) : this(site, remoteProductId, variationId) {
             this.error = error
         }

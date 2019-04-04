@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_SHIPMENT_TRA
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_SINGLE_ORDER
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
+import org.wordpress.android.fluxc.action.WCProductAction.FETCHED_SINGLE_PRODUCT_VARIATION
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
 import org.wordpress.android.fluxc.action.WCStatsAction
@@ -54,6 +55,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
@@ -281,6 +283,28 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
             } ?: showNoWCSitesToast()
         }
 
+        fetch_single_product_variation.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the comma separated remoteProductId and variationId to fetch:"
+                ) { editText ->
+                    val entries = editText.text.toString().split(",")
+                    if (entries.size == 2) {
+                        val remoteProductId = entries[0].trim().toLong()
+                        val variationId = entries[1].trim().toLong()
+                        prependToLog(
+                                "Submitting request to fetch single variation by remoteProductID $id, " +
+                                        "variationId $variationId"
+                        )
+                        val payload = FetchSingleProductVariationPayload(site, remoteProductId, variationId)
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductVariationAction(payload))
+                    } else {
+                        prependToLog("Invalid entry...doing nothing")
+                    }
+                }
+            } ?: showNoWCSitesToast()
+        }
         fetch_product_variations.setOnClickListener {
             getFirstWCSite()?.let { site ->
                 showSingleLineDialog(
@@ -595,6 +619,7 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                         } ?: prependToLog("WARNING: Fetched product not found in the local database!")
                     }
                 }
+                FETCHED_SINGLE_PRODUCT_VARIATION,
                 FETCH_PRODUCT_VARIATIONS -> {
                     prependToLog("Fetched ${event.rowsAffected} product variations")
                 }

@@ -113,6 +113,12 @@
             android:text="Fetch Single Product"/>
 
         <Button
+            android:id="@+id/fetch_single_product_variation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Single Product Variation"/>
+
+        <Button
             android:id="@+id/fetch_product_variations"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
