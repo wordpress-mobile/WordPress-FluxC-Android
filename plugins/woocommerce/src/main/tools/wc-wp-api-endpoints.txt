@@ -5,6 +5,7 @@
 
 /products/<id>/
 /products/<id>/variations/
+/products/<id>/variations/<id>
 
 /reports/orders/totals/
 
