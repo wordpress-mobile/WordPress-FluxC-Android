@@ -20,20 +20,16 @@ import org.wordpress.android.fluxc.store.ListStore
  */
 internal class ListStoreConnectedTestHelper(private val listStore: ListStore) {
     /**
-     * A helper function that returns the list from [ListStore] for the given [ListDescriptor] and
+     * A helper function that returns the list from [ListStore] for the given [LIST_DESCRIPTOR] and
      * [ListItemDataStoreInterface].
      *
      * It uses a default [Lifecycle] instance which will NOT be destroyed throughout the test.
-     *
-     * @param listDescriptor [ListDescriptor] instance to be used to retrieve the list
-     * @param dataStore [ListItemDataStoreInterface] instance to be used to retrieve the list
-     * @param lifecycle [Lifecycle] instance to be used to retrieve the list.
      */
-    fun <LD : ListDescriptor, ID, T> getList(
-        listDescriptor: LD,
-        dataStore: ListItemDataStoreInterface<LD, ID, T>,
+    fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM> getList(
+        listDescriptor: LIST_DESCRIPTOR,
+        dataStore: ListItemDataStoreInterface<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>,
         lifecycle: Lifecycle = SimpleTestLifecycle().lifecycle
-    ): PagedListWrapper<T> {
+    ): PagedListWrapper<LIST_ITEM> {
         return listStore.getList(
                 listDescriptor = listDescriptor,
                 dataStore = dataStore,
