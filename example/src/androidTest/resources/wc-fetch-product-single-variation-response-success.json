@@ -1,0 +1,86 @@
+{
+  "data": {
+    "_links": {
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/152/variations"
+        }
+      ],
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/152/variations/193"
+        }
+      ],
+      "up": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/152"
+        }
+      ]
+    },
+    "attributes": [
+      {
+        "id": 0,
+        "name": "Size",
+        "option": "Large"
+      }
+    ],
+    "backordered": false,
+    "backorders": "notify",
+    "backorders_allowed": true,
+    "date_created": "2019-04-04T08:07:20",
+    "date_created_gmt": "2019-04-04T13:07:20",
+    "date_modified": "2019-04-04T08:07:20",
+    "date_modified_gmt": "2019-04-04T13:07:20",
+    "date_on_sale_from": null,
+    "date_on_sale_from_gmt": null,
+    "date_on_sale_to": null,
+    "date_on_sale_to_gmt": null,
+    "description": "",
+    "dimensions": {
+      "height": "3",
+      "length": "1",
+      "width": "1"
+    },
+    "download_expiry": -1,
+    "download_limit": -1,
+    "downloadable": false,
+    "downloads": [
+    ],
+    "id": 193,
+    "image": {
+      "alt": "",
+      "date_created": "2019-02-26T06:32:20",
+      "date_created_gmt": "2019-02-26T16:32:20",
+      "date_modified": "2019-03-05T04:29:21",
+      "date_modified_gmt": "2019-03-05T14:29:21",
+      "id": 151,
+      "name": "profile-rockem-sockem",
+      "src": "https://i1.wp.com/example.com/wp-content/uploads/2019/02/profile-rockem-sockem.png?fit=300%2C225&ssl=1"
+    },
+    "manage_stock": "parent",
+    "menu_order": 2,
+    "meta_data": [
+      {
+        "id": 1469,
+        "key": "_created_via",
+        "value": "ajax-unknown"
+      }
+    ],
+    "on_sale": false,
+    "permalink": "https://example.com/product/test-product/?attribute_size=Large",
+    "price": "",
+    "purchasable": false,
+    "regular_price": "",
+    "sale_price": "",
+    "shipping_class": "booklet",
+    "shipping_class_id": 1372,
+    "sku": "test-product-sku",
+    "status": "publish",
+    "stock_quantity": 14,
+    "stock_status": "instock",
+    "tax_class": "",
+    "tax_status": "taxable",
+    "virtual": false,
+    "weight": "4"
+  }
+}

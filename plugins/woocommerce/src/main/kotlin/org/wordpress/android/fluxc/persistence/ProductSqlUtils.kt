@@ -103,6 +103,19 @@ object ProductSqlUtils {
                 .orderBy(WCProductVariationModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
                 .asModel
     }
+
+    fun getProductVariation(site: SiteModel, remoteProductId: Long, variationId: Long): WCProductVariationModel? {
+        return WellSql.select(WCProductVariationModel::class.java)
+                .where()
+                .beginGroup()
+                .equals(WCProductVariationModelTable.LOCAL_SITE_ID, site.id)
+                .equals(WCProductVariationModelTable.REMOTE_PRODUCT_ID, remoteProductId)
+                .equals(WCProductVariationModelTable.REMOTE_VARIATION_ID, variationId)
+                .endGroup().endWhere()
+                .orderBy(WCProductVariationModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
+                .asModel.firstOrNull()
+    }
+
     fun deleteVariationsForProduct(site: SiteModel, remoteProductId: Long): Int {
         return WellSql.delete(WCProductVariationModel::class.java)
                 .where().beginGroup()

@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -31,6 +32,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     private var countDownLatch: CountDownLatch by notNull()
 
     private val remoteProductId = 1537L
+    private val variationId = 193L
 
     private val siteModel = SiteModel().apply {
         id = 5
@@ -99,6 +101,50 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
+    fun testFetcSingleProductVariationSuccess() {
+        interceptor.respondWith("wc-fetch-product-single-variation-response-success.json")
+        productRestClient.fetchSingleProductVariation(siteModel, remoteProductId, variationId)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_SINGLE_PRODUCT_VARIATION, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductVariationPayload
+        assertNull(payload.error)
+        assertEquals(payload.remoteProductId, remoteProductId)
+        assertNotNull(payload.variation)
+
+        // save the variation to the db
+        assertEquals(ProductSqlUtils.insertOrUpdateProductVariation(payload.variation!!), 1)
+
+        // now delete all variations for this product and save again
+        ProductSqlUtils.deleteVariationsForProduct(siteModel, remoteProductId)
+        assertEquals(ProductSqlUtils.insertOrUpdateProductVariation(payload.variation!!), 1)
+
+        // now verify the db stored the variation correctly
+        val dbVariations = ProductSqlUtils.getVariationsForProduct(siteModel, remoteProductId)
+        assertEquals(dbVariations.size, 1)
+        with(dbVariations.first()) {
+            assertEquals(this.remoteProductId, remoteProductId)
+            assertEquals(this.remoteVariationId, variationId)
+            assertEquals(this.localSiteId, siteModel.id)
+        }
+    }
+
+    @Test
+    fun testFetcSingleProductVariationError() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        productRestClient.fetchSingleProductVariation(siteModel, remoteProductId, variationId)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_SINGLE_PRODUCT_VARIATION, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductVariationPayload
+        assertNotNull(payload.error)
+    }
+
+    @Test
     fun testFetchProductVariationsSuccess() {
         interceptor.respondWith("wc-fetch-product-variations-response-success.json")
         productRestClient.fetchProductVariations(siteModel, remoteProductId)
@@ -112,14 +158,14 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(payload.remoteProductId, remoteProductId)
         assertEquals(payload.variations.size, 3)
 
-        // save the variation to the db
+        // save the variations to the db
         assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(payload.variations), 3)
 
         // now delete all variations for this product and save again
         ProductSqlUtils.deleteVariationsForProduct(siteModel, remoteProductId)
         assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(payload.variations), 3)
 
-        // now verify the db stored the variation correctly
+        // now verify the db stored the variations correctly
         val dbVariations = ProductSqlUtils.getVariationsForProduct(siteModel, remoteProductId)
         assertEquals(dbVariations.size, 3)
         with(dbVariations.first()) {
