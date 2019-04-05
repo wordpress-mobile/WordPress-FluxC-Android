@@ -21,6 +21,39 @@ import org.wordpress.android.util.AppLog.T
  */
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
+    companion object {
+        fun fromVariation(v: WCProductVariationModel): WCProductModel {
+            with(WCProductModel()) {
+                localSiteId = v.localSiteId
+                remoteProductId = v.remoteProductId
+                dateCreated = v.dateCreated
+                dateModified = v.dateModified
+                description = v.description
+                permalink = v.permalink
+                sku = v.sku
+                status = v.status
+                price = v.price
+                regularPrice = v.regularPrice
+                salePrice = v.salePrice
+                onSale = v.onSale
+                // TODO v.purchasable
+                virtual = v.virtual
+                downloadable = v.downloadable
+                manageStock = v.manageStock
+                stockQuantity = v.stockQuantity
+                stockStatus = v.stockStatus
+                // TODO images =
+                weight = v.weight
+                length = v.length
+                width = v.width
+                height = v.height
+                attributes = v.attributes
+
+                return this
+            }
+        }
+    }
+
     @Column var localSiteId = 0
     @Column var remoteProductId = 0L // The unique identifier for this product on the server
     @Column var name = ""
