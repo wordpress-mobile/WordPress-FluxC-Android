@@ -111,6 +111,12 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             ProductSqlUtils.geProductExistsByRemoteId(site, remoteProductId)
 
     /**
+     * returns a single product variation
+     */
+    fun getProductVariation(site: SiteModel, remoteProductId: Long, variationId: Long) =
+            ProductSqlUtils.getProductVariation(site, remoteProductId, variationId)
+
+    /**
      * returns a list of variations for a specific product in the database
      */
     fun getVariationsForProduct(site: SiteModel, remoteProductId: Long): List<WCProductVariationModel> =
