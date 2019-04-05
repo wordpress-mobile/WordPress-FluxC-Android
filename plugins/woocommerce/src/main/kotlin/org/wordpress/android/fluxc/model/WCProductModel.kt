@@ -21,41 +21,9 @@ import org.wordpress.android.util.AppLog.T
  */
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
-    companion object {
-        fun fromVariation(v: WCProductVariationModel): WCProductModel {
-            with(WCProductModel()) {
-                localSiteId = v.localSiteId
-                remoteProductId = v.remoteProductId
-                dateCreated = v.dateCreated
-                dateModified = v.dateModified
-                description = v.description
-                permalink = v.permalink
-                sku = v.sku
-                status = v.status
-                price = v.price
-                regularPrice = v.regularPrice
-                salePrice = v.salePrice
-                onSale = v.onSale
-                // TODO v.purchasable
-                virtual = v.virtual
-                downloadable = v.downloadable
-                manageStock = v.manageStock
-                stockQuantity = v.stockQuantity
-                stockStatus = v.stockStatus
-                // TODO images =
-                weight = v.weight
-                length = v.length
-                width = v.width
-                height = v.height
-                attributes = v.attributes
-
-                return this
-            }
-        }
-    }
-
     @Column var localSiteId = 0
     @Column var remoteProductId = 0L // The unique identifier for this product on the server
+    @Column var remoteVariationId = 0L
     @Column var name = ""
     @Column var slug = ""
     @Column var permalink = ""
@@ -76,12 +44,13 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var salePrice = ""
     @Column var onSale = false
     @Column var totalSales = 0
+    @Column(name = "IS_VIRTUAL") var virtual = false
 
-    @Column var virtual = false
     @Column var downloadable = false
     @Column var downloadLimit = 0
     @Column var downloadExpiry = 0
     @Column var soldIndividually = false
+    @Column var purchasable = false
     @Column var externalUrl = ""
 
     @Column var taxStatus = "" // taxable, shipping, none
@@ -252,6 +221,32 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     fun getTags() = getTriplets(tags)
 
     fun getCommaSeparatedTagNames() = getCommaSeparatedTripletNames(getTags())
+
+    fun updateFromVariation(variation: WCProductVariationModel) {
+        remoteVariationId = variation.remoteVariationId
+        dateCreated = variation.dateCreated
+        dateModified = variation.dateModified
+        description = variation.description
+        permalink = variation.permalink
+        sku = variation.sku
+        status = variation.status
+        price = variation.price
+        regularPrice = variation.regularPrice
+        salePrice = variation.salePrice
+        onSale = variation.onSale
+        purchasable = variation.purchasable
+        virtual = variation.virtual
+        downloadable = variation.downloadable
+        manageStock = variation.manageStock
+        stockQuantity = variation.stockQuantity
+        stockStatus = variation.stockStatus
+        images = variation.image
+        weight = variation.weight
+        length = variation.length
+        width = variation.width
+        height = variation.height
+        attributes = variation.attributes
+    }
 
     private fun getCommaSeparatedTripletNames(triplets: List<ProductTriplet>): String {
         if (triplets.isEmpty()) return ""

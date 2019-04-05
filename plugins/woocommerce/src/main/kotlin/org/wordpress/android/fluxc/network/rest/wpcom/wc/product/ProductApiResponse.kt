@@ -29,6 +29,7 @@ class ProductApiResponse : Response {
     var total_sales = 0
 
     var virtual = false
+    val purchasable = false
     var downloadable = false
     var download_limit = 0
     var download_expiry = 0

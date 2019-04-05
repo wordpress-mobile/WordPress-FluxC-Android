@@ -143,6 +143,8 @@ class ProductRestClient(
     private fun productResponseToProductModel(response: ProductApiResponse): WCProductModel {
         return WCProductModel().apply {
             remoteProductId = response.id ?: 0
+            remoteVariationId = 0
+
             name = response.name ?: ""
             slug = response.slug ?: ""
             permalink = response.permalink ?: ""
@@ -165,6 +167,7 @@ class ProductRestClient(
             totalSales = response.total_sales
 
             virtual = response.virtual
+            purchasable = response.purchasable
             downloadable = response.downloadable
             downloadLimit = response.download_limit
             downloadExpiry = response.download_expiry
@@ -241,6 +244,7 @@ class ProductRestClient(
             stockStatus = response.stock_status ?: ""
 
             attributes = response.attributes?.toString() ?: ""
+            image = response.image?.toString() ?: ""
 
             weight = response.weight ?: ""
 
@@ -248,10 +252,6 @@ class ProductRestClient(
                 length = json.getString("length") ?: ""
                 width = json.getString("width") ?: ""
                 height = json.getString("height") ?: ""
-            }
-
-            response.image?.asJsonObject?.let { json ->
-                imageUrl = json.getString("src") ?: ""
             }
         }
     }

@@ -30,14 +30,14 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
 
     @Column var onSale = false
     @Column var purchasable = false
-    @Column var virtual = false
     @Column var downloadable = false
+    @Column(name = "IS_VIRTUAL") var virtual = false
 
     @Column var manageStock = false
     @Column var stockQuantity = 0
     @Column var stockStatus = ""
 
-    @Column var imageUrl = ""
+    @Column var image = ""
 
     @Column var weight = ""
     @Column var length = ""
