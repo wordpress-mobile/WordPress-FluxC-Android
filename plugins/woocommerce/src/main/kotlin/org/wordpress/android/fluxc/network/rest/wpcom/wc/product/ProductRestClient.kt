@@ -166,7 +166,6 @@ class ProductRestClient(
 
             categories = response.categories?.toString() ?: ""
             tags = response.tags?.toString() ?: ""
-            images = response.images?.toString() ?: ""
             attributes = response.attributes?.toString() ?: ""
             variations = response.variations?.toString() ?: ""
             downloads = response.downloads?.toString() ?: ""
@@ -178,6 +177,10 @@ class ProductRestClient(
                 length = json.getString("length") ?: ""
                 width = json.getString("width") ?: ""
                 height = json.getString("height") ?: ""
+            }
+
+            response.images?.asJsonArray?.get(0)?.asJsonObject?.let { json ->
+                imageUrl = json.getString("src") ?: ""
             }
         }
     }
@@ -212,7 +215,6 @@ class ProductRestClient(
             stockStatus = response.stock_status ?: ""
 
             attributes = response.attributes?.toString() ?: ""
-            image = response.image?.toString() ?: ""
 
             weight = response.weight ?: ""
 
@@ -220,6 +222,10 @@ class ProductRestClient(
                 length = json.getString("length") ?: ""
                 width = json.getString("width") ?: ""
                 height = json.getString("height") ?: ""
+            }
+
+            response.image?.asJsonObject?.let { json ->
+                imageUrl = json.getString("src") ?: ""
             }
         }
     }

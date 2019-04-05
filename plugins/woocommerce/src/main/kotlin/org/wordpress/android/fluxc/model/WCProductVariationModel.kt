@@ -31,7 +31,7 @@ data class WCProductVariationModel(
     var stockQuantity = 0
     var stockStatus = ""
 
-    var image = ""
+    var imageUrl = ""
 
     var weight = ""
     var length = ""

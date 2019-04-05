@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.mocked
 
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -68,8 +69,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(productId, product.remoteProductId)
             assertEquals(product.getCategories().size, 2)
             assertEquals(product.getTags().size, 2)
-            assertEquals(product.getImages().size, 2)
-            assertNotNull(product.getFirstImageUrl())
+            assertTrue(product.imageUrl.isNotBlank())
             assertEquals(product.getAttributes().size, 2)
             assertEquals(product.getAttributes()[0].options.size, 3)
             assertEquals(product.getAttributes()[0].getCommaSeparatedOptions(), "Small, Medium, Large")
@@ -85,8 +85,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.remoteProductId, productId)
             assertEquals(product.getCategories().size, 2)
             assertEquals(product.getTags().size, 2)
-            assertEquals(product.getImages().size, 2)
-            assertNotNull(product.getFirstImageUrl())
+            assertNotNull(product.imageUrl)
             assertEquals(product.getAttributes().size, 2)
             assertEquals(product.getAttributes()[0].options.size, 3)
             assertEquals(product.getAttributes()[0].getCommaSeparatedOptions(), "Small, Medium, Large")
@@ -116,10 +115,13 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
 
         assertEquals(WCProductAction.FETCHED_SINGLE_PRODUCT, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteProductPayload
-        assertNull(payload.error)
-        assertNotNull(payload.product)
-        assertEquals(payload.product.remoteProductId, productId)
-        assertEquals(payload.variationId, variationId)
+        with(payload) {
+            assertNull(error)
+            assertNotNull(product)
+            assertEquals(product.remoteProductId, productId)
+            assertEquals(variationId, variationId)
+            assertTrue(product.imageUrl.isNotBlank())
+        }
 
         // save the product variation to the db
         assertEquals(ProductSqlUtils.insertOrUpdateProduct(payload.product), 1)

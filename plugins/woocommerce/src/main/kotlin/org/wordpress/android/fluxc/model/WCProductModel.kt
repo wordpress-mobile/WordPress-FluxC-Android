@@ -27,6 +27,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var name = ""
     @Column var slug = ""
     @Column var permalink = ""
+    @Column var imageUrl = ""
 
     @Column var dateCreated = ""
     @Column var dateModified = ""
@@ -78,7 +79,6 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     @Column var categories = "" // array of categories
     @Column var tags = "" // array of tags
-    @Column var images = "" // array of images
     @Column var attributes = "" // array of attributes
     @Column var variations = "" // array of variation IDs
     @Column var downloads = "" // array of downloadable files
@@ -114,55 +114,6 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     override fun setId(id: Int) {
         this.id = id
-    }
-
-    /**
-     * Parses the images json array into a list of product images
-     */
-    fun getImages(): ArrayList<ProductImage> {
-        val imageList = ArrayList<ProductImage>()
-        try {
-            Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                with(jsonElement.asJsonObject) {
-                    imageList.add(
-                            ProductImage(
-                                    id = this.getLong("id"),
-                                    name = this.getString("name") ?: "",
-                                    src = this.getString("src") ?: "",
-                                    alt = this.getString("alt") ?: ""
-                            )
-                    )
-                }
-            }
-        } catch (e: JsonParseException) {
-            AppLog.e(T.API, e)
-        }
-        return imageList
-    }
-
-    /**
-     * Extract the first image url from the json array of images
-     */
-    fun getFirstImageUrl(): String? {
-        try {
-            Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.firstOrNull { jsonElement ->
-                return (jsonElement.asJsonObject).getString("src")
-            }
-        } catch (e: JsonParseException) {
-            AppLog.e(T.API, e)
-        }
-        return null
-    }
-
-    /**
-     * Extract all image urls from the json array of images
-     */
-    fun getImageUrls(): List<String> {
-        val imageUrls = ArrayList<String>()
-        getImages().forEach {
-            imageUrls.add(it.src)
-        }
-        return imageUrls
     }
 
     fun getAttributes(): List<ProductAttribute> {
@@ -230,21 +181,26 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         permalink = variation.permalink
         sku = variation.sku
         status = variation.status
+
         price = variation.price
         regularPrice = variation.regularPrice
         salePrice = variation.salePrice
         onSale = variation.onSale
+
         purchasable = variation.purchasable
         virtual = variation.virtual
         downloadable = variation.downloadable
+
         manageStock = variation.manageStock
         stockQuantity = variation.stockQuantity
         stockStatus = variation.stockStatus
-        images = variation.image
+
         weight = variation.weight
         length = variation.length
         width = variation.width
         height = variation.height
+
+        imageUrl = variation.imageUrl
         attributes = variation.attributes
     }
 
