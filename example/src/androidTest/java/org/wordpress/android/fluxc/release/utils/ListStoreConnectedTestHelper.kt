@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.release.utils
 import android.arch.lifecycle.Lifecycle
 import org.wordpress.android.fluxc.model.list.ListDescriptor
 import org.wordpress.android.fluxc.model.list.PagedListWrapper
-import org.wordpress.android.fluxc.model.list.datastore.ListItemDataSourceInterface
+import org.wordpress.android.fluxc.model.list.datasource.ListItemDataSourceInterface
 import org.wordpress.android.fluxc.release.utils.IsEmptyValue.EMPTY
 import org.wordpress.android.fluxc.release.utils.IsEmptyValue.NOT_EMPTY
 import org.wordpress.android.fluxc.release.utils.IsFetchingFirstPageValue.FETCHING_FIRST_PAGE
