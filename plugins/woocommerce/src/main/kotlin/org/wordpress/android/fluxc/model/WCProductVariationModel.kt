@@ -7,7 +7,7 @@ package org.wordpress.android.fluxc.model
 data class WCProductVariationModel(
     val localSiteId: Int,
     val remoteProductId: Long
-){
+) {
     var remoteVariationId: Long = 0L
 
     var dateCreated = ""

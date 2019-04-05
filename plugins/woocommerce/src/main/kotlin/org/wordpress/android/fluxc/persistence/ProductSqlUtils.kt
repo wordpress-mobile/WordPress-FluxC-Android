@@ -60,12 +60,20 @@ object ProductSqlUtils {
                 .execute()
     }
 
-    fun getProductCountForSite(site: SiteModel): Long {
-        return WellSql.select(WCProductModel::class.java)
-                .where()
-                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
-                .equals(WCProductModelTable.REMOTE_VARIATION_ID, 0L)
-                .endWhere()
-                .count()
+    fun getProductCountForSite(site: SiteModel, excludeVariations: Boolean = true): Long {
+        return if (excludeVariations) {
+            WellSql.select(WCProductModel::class.java)
+                    .where()
+                    .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                    .equals(WCProductModelTable.REMOTE_VARIATION_ID, 0L)
+                    .endWhere()
+                    .count()
+        } else {
+            WellSql.select(WCProductModel::class.java)
+                    .where()
+                    .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                    .endWhere()
+                    .count()
+        }
     }
 }

@@ -8,7 +8,6 @@ import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
-import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
@@ -22,13 +21,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         Store(dispatcher) {
     class FetchSingleProductPayload(
         var site: SiteModel,
-        var remoteProductId: Long
-    ) : Payload<BaseNetworkError>()
-
-    class FetchSingleProductVariationPayload(
-        var site: SiteModel,
-        var product: WCProductModel,
-        var variationId: Long
+        var remoteProductId: Long,
+        var remoteVariationId: Long = 0L
     ) : Payload<BaseNetworkError>()
 
     enum class ProductErrorType {
@@ -44,29 +38,15 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     class ProductError(val type: ProductErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
 
     class RemoteProductPayload(
-        val product: WCProductModel,
-        val site: SiteModel
-    ) : Payload<ProductError>() {
-        constructor(
-            error: ProductError,
-            product: WCProductModel,
-            site: SiteModel
-        ) : this(product, site) {
-            this.error = error
-        }
-    }
-
-    class RemoteProductVariationPayload(
         val site: SiteModel,
         val product: WCProductModel,
-        val variationId: Long,
-        val variation: WCProductVariationModel? = null
+        var variationId: Long = 0L
     ) : Payload<ProductError>() {
         constructor(
-            error: ProductError,
             site: SiteModel,
             product: WCProductModel,
-            variationId: Long
+            variationId: Long,
+            error: ProductError
         ) : this(site, product, variationId) {
             this.error = error
         }
@@ -101,14 +81,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             // remote actions
             WCProductAction.FETCH_SINGLE_PRODUCT ->
                 fetchSingleProduct(action.payload as FetchSingleProductPayload)
-            WCProductAction.FETCH_SINGLE_PRODUCT_VARIATION ->
-                fetchSingleProductVariation(action.payload as FetchSingleProductVariationPayload)
 
             // remote responses
             WCProductAction.FETCHED_SINGLE_PRODUCT ->
                 handleFetchSingleProductCompleted(action.payload as RemoteProductPayload)
-            WCProductAction.FETCHED_SINGLE_PRODUCT_VARIATION ->
-                handleFetchSingleProductVariationCompleted(action.payload as RemoteProductVariationPayload)
         }
     }
 
@@ -116,10 +92,6 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     private fun fetchSingleProduct(payload: FetchSingleProductPayload) {
         with(payload) { wcProductRestClient.fetchSingleProduct(site, remoteProductId) }
-    }
-
-    private fun fetchSingleProductVariation(payload: FetchSingleProductVariationPayload) {
-        with(payload) { wcProductRestClient.fetchSingleProductVariation(site, product, variationId) }
     }
 
     private fun handleFetchSingleProductCompleted(payload: RemoteProductPayload) {
@@ -133,23 +105,6 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         }
 
         onProductChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT
-        emitChange(onProductChanged)
-    }
-
-    private fun handleFetchSingleProductVariationCompleted(payload: RemoteProductVariationPayload) {
-        val onProductChanged: OnProductChanged
-
-        if (payload.isError || payload.variation == null) {
-            onProductChanged = OnProductChanged(0).also { it.error = payload.error }
-        } else {
-            val product = payload.product.apply {
-                updateFromVariation(payload.variation)
-            }
-            val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(product)
-            onProductChanged = OnProductChanged(rowsAffected)
-        }
-
-        onProductChanged.causeOfChange = WCProductAction.FETCHED_SINGLE_PRODUCT_VARIATION
         emitChange(onProductChanged)
     }
 }

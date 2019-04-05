@@ -119,12 +119,6 @@
             android:text="Fetch Single Product Variation"/>
 
         <Button
-            android:id="@+id/fetch_product_variations"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Product Variations"/>
-
-        <Button
             android:id="@+id/fetch_order_stats"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
