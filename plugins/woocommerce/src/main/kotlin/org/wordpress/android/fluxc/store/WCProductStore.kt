@@ -91,7 +91,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     override fun onRegister() = AppLog.d(T.API, "WCProductStore onRegister")
 
     private fun fetchSingleProduct(payload: FetchSingleProductPayload) {
-        with(payload) { wcProductRestClient.fetchSingleProduct(site, remoteProductId) }
+        with(payload) { wcProductRestClient.fetchSingleProduct(site, remoteProductId, remoteVariationId) }
     }
 
     private fun handleFetchSingleProductCompleted(payload: RemoteProductPayload) {
