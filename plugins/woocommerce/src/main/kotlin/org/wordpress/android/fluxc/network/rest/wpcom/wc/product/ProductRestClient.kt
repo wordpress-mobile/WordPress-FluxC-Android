@@ -21,7 +21,6 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductError
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationPayload
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import javax.inject.Singleton
 
 @Singleton
@@ -67,26 +66,20 @@ class ProductRestClient(
     }
 
     /**
-     * Makes a GET request to `POST /wp-json/wc/v3/products/[productId]/variations/[variationId]` to fetch
+     * Makes a GET request to `POST /wp-json/wc/v3/products/productId/variations/[variationId]` to fetch
      * a single variation for a product
      *
      * Dispatches a WCProductAction.FETCHED_PRODUCT_VARIATION action with the result
-     *
-     * @param [productId] Unique server id of the product
      */
-    fun fetchSingleProductVariation(site: SiteModel, productId: Long, variationId: Long) {
-        val url = WOOCOMMERCE.products.id(productId).variations.id(variationId).pathV3
+    fun fetchSingleProductVariation(site: SiteModel, product: WCProductModel, variationId: Long) {
+        val url = WOOCOMMERCE.products.id(product.remoteProductId).variations.id(variationId).pathV3
         val responseType = object : TypeToken<ProductVariationApiResponse>() {}.type
         val params = emptyMap<String, String>()
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: ProductVariationApiResponse? ->
                     val variationModel =
-                            productVariationResponseToProductVariationModel(response!!).apply {
-                                localSiteId = site.id
-                                remoteProductId = productId
-                            }
-
-                    val payload = RemoteProductVariationPayload(site, productId, variationId, variationModel)
+                            productVariationResponseToProductVariationModel(site, product, response!!)
+                    val payload = RemoteProductVariationPayload(site, product, variationId, variationModel)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductVariationAction(payload))
                 },
                 WPComErrorListener { networkError ->
@@ -94,47 +87,10 @@ class ProductRestClient(
                     val payload = RemoteProductVariationPayload(
                             productError,
                             site,
-                            productId,
+                            product,
                             variationId
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductVariationAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
-    }
-
-    /**
-     * Makes a GET request to `POST /wp-json/wc/v3/products/[productId]/variations` to fetch
-     * variations for a product
-     *
-     * Dispatches a WCProductAction.FETCHED_PRODUCT_VARIATIONS action with the result
-     *
-     * @param [productId] Unique server id of the product
-     */
-    fun fetchProductVariations(site: SiteModel, productId: Long) {
-        val url = WOOCOMMERCE.products.id(productId).variations.pathV3
-        val responseType = object : TypeToken<List<ProductVariationApiResponse>>() {}.type
-        val params = emptyMap<String, String>()
-        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
-                { response: List<ProductVariationApiResponse>? ->
-                    val variationModels = response?.map {
-                        productVariationResponseToProductVariationModel(it).apply {
-                            localSiteId = site.id
-                            remoteProductId = productId
-                        }
-                    }.orEmpty()
-
-                    val payload = RemoteProductVariationsPayload(site, productId, variationModels)
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVariationsAction(payload))
-                },
-                WPComErrorListener { networkError ->
-                    val productError = networkErrorToProductError(networkError)
-                    val payload = RemoteProductVariationsPayload(
-                            productError,
-                            site,
-                            productId
-                    )
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVariationsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
@@ -217,9 +173,11 @@ class ProductRestClient(
     }
 
     private fun productVariationResponseToProductVariationModel(
+        site: SiteModel,
+        product: WCProductModel,
         response: ProductVariationApiResponse
     ): WCProductVariationModel {
-        return WCProductVariationModel().apply {
+        return WCProductVariationModel(site.id, product.remoteProductId).apply {
             remoteVariationId = response.id
             permalink = response.permalink ?: ""
 

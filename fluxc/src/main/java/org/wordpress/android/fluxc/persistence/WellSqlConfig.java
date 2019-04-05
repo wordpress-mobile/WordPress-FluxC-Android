@@ -745,6 +745,7 @@ public class WellSqlConfig extends DefaultWellConfig {
                                + "DATE_SHIPPED TEXT NOT NULL)");
                     break;
                 case 65:
+                    db.execSQL("DROP TABLE IF EXISTS WCProductVariationModel");
                     db.execSQL("DROP TABLE IF EXISTS WCProductModel");
                     db.execSQL("CREATE TABLE WCProductModel (_id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                + "LOCAL_SITE_ID INTEGER,"
@@ -804,34 +805,6 @@ public class WellSqlConfig extends DefaultWellConfig {
                                + "CROSS_SELL_IDS TEXT NOT NULL,"
                                + "UPSELL_IDS TEXT NOT NULL,"
                                + "VARIATIONS TEXT NOT NULL)");
-
-                    db.execSQL("DROP TABLE IF EXISTS WCProductVariationModel");
-                    db.execSQL("CREATE TABLE WCProductVariationModel (_id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                               + "LOCAL_SITE_ID INTEGER,"
-                               + "REMOTE_PRODUCT_ID INTEGER,"
-                               + "REMOTE_VARIATION_ID INTEGER,"
-                               + "DATE_CREATED TEXT NOT NULL,"
-                               + "DATE_MODIFIED TEXT NOT NULL,"
-                               + "DESCRIPTION TEXT NOT NULL,"
-                               + "PERMALINK TEXT NOT NULL,"
-                               + "SKU TEXT NOT NULL,"
-                               + "STATUS TEXT NOT NULL,"
-                               + "PRICE TEXT NOT NULL,"
-                               + "REGULAR_PRICE TEXT NOT NULL,"
-                               + "SALE_PRICE TEXT NOT NULL,"
-                               + "ON_SALE INTEGER,"
-                               + "PURCHASABLE INTEGER,"
-                               + "IS_VIRTUAL INTEGER,"
-                               + "DOWNLOADABLE INTEGER,"
-                               + "MANAGE_STOCK INTEGER,"
-                               + "STOCK_QUANTITY INTEGER,"
-                               + "STOCK_STATUS TEXT NOT NULL,"
-                               + "IMAGE TEXT NOT NULL,"
-                               + "WEIGHT TEXT NOT NULL,"
-                               + "LENGTH TEXT NOT NULL,"
-                               + "WIDTH TEXT NOT NULL,"
-                               + "HEIGHT TEXT NOT NULL,"
-                               + "ATTRIBUTES TEXT NOT NULL)");
                     break;
             }
         }
