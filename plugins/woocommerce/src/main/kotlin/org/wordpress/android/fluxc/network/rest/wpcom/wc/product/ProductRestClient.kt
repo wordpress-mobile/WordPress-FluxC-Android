@@ -207,8 +207,11 @@ class ProductRestClient(
             onSale = response.on_sale
 
             virtual = response.virtual
-            downloadable = response.downloadable
             purchasable = response.purchasable
+
+            downloadable = response.downloadable
+            downloadLimit = response.download_limit
+            downloadExpiry = response.download_expiry
 
             manageStock = response.manage_stock
             stockQuantity = response.stock_quantity

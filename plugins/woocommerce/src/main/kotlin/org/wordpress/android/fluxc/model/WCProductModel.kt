@@ -173,6 +173,9 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     fun getCommaSeparatedTagNames() = getCommaSeparatedTripletNames(getTags())
 
+    /**
+     * Updates this product model to use the values from the passed variation model
+     */
     fun updateFromVariation(variation: WCProductVariationModel) {
         remoteVariationId = variation.remoteVariationId
         dateCreated = variation.dateCreated
@@ -189,7 +192,10 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
         purchasable = variation.purchasable
         virtual = variation.virtual
+
         downloadable = variation.downloadable
+        downloadLimit = variation.downloadLimit
+        downloadExpiry = variation.downloadExpiry
 
         manageStock = variation.manageStock
         stockQuantity = variation.stockQuantity

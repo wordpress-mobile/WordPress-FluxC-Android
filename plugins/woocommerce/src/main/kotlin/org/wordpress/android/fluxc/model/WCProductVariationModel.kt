@@ -24,8 +24,11 @@ data class WCProductVariationModel(
 
     var onSale = false
     var purchasable = false
-    var downloadable = false
     var virtual = false
+
+    var downloadable = false
+    var downloadLimit = 0
+    var downloadExpiry = 0
 
     var manageStock = false
     var stockQuantity = 0
