@@ -33,6 +33,10 @@ data class WCProductVariationModel(
     var taxStatus = ""
     var taxClass = ""
 
+    var backorders = ""
+    var backordersAllowed = false
+    var backordered = false
+
     var manageStock = false
     var stockQuantity = 0
     var stockStatus = ""

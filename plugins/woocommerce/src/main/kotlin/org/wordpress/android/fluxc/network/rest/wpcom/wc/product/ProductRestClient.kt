@@ -213,6 +213,10 @@ class ProductRestClient(
             downloadLimit = response.download_limit
             downloadExpiry = response.download_expiry
 
+            backordered = response.backordered
+            backorders = response.backorders ?: ""
+            backordersAllowed = response.backorders_allowed
+
             taxClass = response.tax_class ?: ""
             taxStatus = response.tax_status ?: ""
 

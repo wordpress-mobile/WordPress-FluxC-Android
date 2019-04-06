@@ -200,6 +200,10 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         taxClass = variation.taxClass
         taxStatus = variation.taxStatus
 
+        backorders = variation.backorders
+        backordered = variation.backordered
+        backordersAllowed = variation.backordersAllowed
+
         manageStock = variation.manageStock
         stockQuantity = variation.stockQuantity
         stockStatus = variation.stockStatus

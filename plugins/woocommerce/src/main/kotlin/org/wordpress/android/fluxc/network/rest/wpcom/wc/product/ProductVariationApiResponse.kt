@@ -30,6 +30,10 @@ class ProductVariationApiResponse : Response {
     var stock_quantity = 0
     var stock_status: String? = null
 
+    var backorders: String? = null
+    var backorders_allowed = false
+    var backordered = false
+
     var tax_status: String? = null
     var tax_class: String? = null
 
