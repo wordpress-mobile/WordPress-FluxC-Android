@@ -66,12 +66,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         with(payload) {
             assertNull(error)
             assertEquals(productId, product.remoteProductId)
-            assertEquals(product.getCategories().size, 2)
-            assertEquals(product.getTags().size, 2)
             assertTrue(product.imageUrl.isNotBlank())
-            assertEquals(product.getAttributes().size, 2)
-            assertEquals(product.getAttributes()[0].options.size, 3)
-            assertEquals(product.getAttributes()[0].getCommaSeparatedOptions(), "Small, Medium, Large")
         }
 
         // save the product to the db
@@ -82,12 +77,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertNotNull(productFromDb)
         productFromDb?.let { product ->
             assertEquals(product.remoteProductId, productId)
-            assertEquals(product.getCategories().size, 2)
-            assertEquals(product.getTags().size, 2)
             assertNotNull(product.imageUrl)
-            assertEquals(product.getAttributes().size, 2)
-            assertEquals(product.getAttributes()[0].options.size, 3)
-            assertEquals(product.getAttributes()[0].getCommaSeparatedOptions(), "Small, Medium, Large")
         }
     }
 

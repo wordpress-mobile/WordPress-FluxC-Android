@@ -1,15 +1,12 @@
 package org.wordpress.android.fluxc.model
 
 import com.google.gson.Gson
-import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonParseException
 import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
-import org.wordpress.android.fluxc.network.utils.getBoolean
-import org.wordpress.android.fluxc.network.utils.getLong
 import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.util.AppLog
@@ -91,64 +88,10 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var width = ""
     @Column var height = ""
 
-    class ProductTriplet(val id: Long, val name: String, val slug: String)
-
-    class ProductImage(val id: Long, val name: String, val src: String, val alt: String)
-
-    class ProductAttribute(val id: Long, val name: String, val visible: Boolean, val options: List<String>) {
-        fun getCommaSeparatedOptions(): String {
-            if (options.isEmpty()) return ""
-            var commaSeparatedOptions = ""
-            options.forEach { option ->
-                if (commaSeparatedOptions.isEmpty()) {
-                    commaSeparatedOptions = option
-                } else {
-                    commaSeparatedOptions += ", $option"
-                }
-            }
-            return commaSeparatedOptions
-        }
-    }
-
     override fun getId() = id
 
     override fun setId(id: Int) {
         this.id = id
-    }
-
-    fun getAttributes(): List<ProductAttribute> {
-        fun getAttributeOptions(jsonArray: JsonArray?): List<String> {
-            val options = ArrayList<String>()
-            try {
-                jsonArray?.forEach {
-                    options.add(it.asString)
-                }
-            } catch (e: ClassCastException) {
-                AppLog.e(T.API, e)
-            } catch (e: IllegalStateException) {
-                AppLog.e(T.API, e)
-            }
-            return options
-        }
-
-        val attrList = ArrayList<ProductAttribute>()
-        try {
-            Gson().fromJson<JsonElement>(attributes, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                with(jsonElement.asJsonObject) {
-                    attrList.add(
-                            ProductAttribute(
-                                    id = this.getLong("id"),
-                                    name = this.getString("name") ?: "",
-                                    visible = this.getBoolean("visible", true),
-                                    options = getAttributeOptions(this.getAsJsonArray("options"))
-                            )
-                    )
-                }
-            }
-        } catch (e: JsonParseException) {
-            AppLog.e(T.API, e)
-        }
-        return attrList
     }
 
     fun getDownloadableFiles(): List<String> {
@@ -164,14 +107,6 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         }
         return fileList
     }
-
-    fun getCategories() = getTriplets(categories)
-
-    fun getCommaSeparatedCategoryNames() = getCommaSeparatedTripletNames(getCategories())
-
-    fun getTags() = getTriplets(tags)
-
-    fun getCommaSeparatedTagNames() = getCommaSeparatedTripletNames(getTags())
 
     /**
      * Updates this product model to use the values from the passed variation model
@@ -218,38 +153,5 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
         imageUrl = variation.imageUrl
         attributes = variation.attributes
-    }
-
-    private fun getCommaSeparatedTripletNames(triplets: List<ProductTriplet>): String {
-        if (triplets.isEmpty()) return ""
-        var commaSeparatedNames = ""
-        triplets.forEach {
-            if (commaSeparatedNames.isEmpty()) {
-                commaSeparatedNames = it.name
-            } else {
-                commaSeparatedNames += ", ${it.name}"
-            }
-        }
-        return commaSeparatedNames
-    }
-
-    private fun getTriplets(jsonStr: String): ArrayList<ProductTriplet> {
-        val triplets = ArrayList<ProductTriplet>()
-        try {
-            Gson().fromJson<JsonElement>(jsonStr, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                with(jsonElement.asJsonObject) {
-                    triplets.add(
-                            ProductTriplet(
-                                    id = this.getLong("id"),
-                                    name = this.getString("name") ?: "",
-                                    slug = this.getString("slug") ?: ""
-                            )
-                    )
-                }
-            }
-        } catch (e: JsonParseException) {
-            AppLog.e(T.API, e)
-        }
-        return triplets
     }
 }
