@@ -131,6 +131,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         downloadable = variation.downloadable
         downloadLimit = variation.downloadLimit
         downloadExpiry = variation.downloadExpiry
+        downloads = variation.downloads
 
         taxClass = variation.taxClass
         taxStatus = variation.taxStatus

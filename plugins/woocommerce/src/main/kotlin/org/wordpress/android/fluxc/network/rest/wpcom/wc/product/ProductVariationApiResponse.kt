@@ -25,6 +25,7 @@ class ProductVariationApiResponse : Response {
     var downloadable = false
     var download_limit = 0
     var download_expiry = 0
+    var downloads: JsonElement? = null
 
     var manage_stock = false
     var stock_quantity = 0

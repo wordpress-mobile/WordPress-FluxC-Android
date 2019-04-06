@@ -212,6 +212,7 @@ class ProductRestClient(
             downloadable = response.downloadable
             downloadLimit = response.download_limit
             downloadExpiry = response.download_expiry
+            downloads = response.downloads?.toString() ?: ""
 
             backordered = response.backordered
             backorders = response.backorders ?: ""

@@ -29,6 +29,7 @@ data class WCProductVariationModel(
     var downloadable = false
     var downloadLimit = 0
     var downloadExpiry = 0
+    var downloads = ""
 
     var taxStatus = ""
     var taxClass = ""
