@@ -30,6 +30,9 @@ data class WCProductVariationModel(
     var downloadLimit = 0
     var downloadExpiry = 0
 
+    var taxStatus = ""
+    var taxClass = ""
+
     var manageStock = false
     var stockQuantity = 0
     var stockStatus = ""

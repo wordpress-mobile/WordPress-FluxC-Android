@@ -213,6 +213,9 @@ class ProductRestClient(
             downloadLimit = response.download_limit
             downloadExpiry = response.download_expiry
 
+            taxClass = response.tax_class ?: ""
+            taxStatus = response.tax_status ?: ""
+
             manageStock = response.manage_stock
             stockQuantity = response.stock_quantity
             stockStatus = response.stock_status ?: ""

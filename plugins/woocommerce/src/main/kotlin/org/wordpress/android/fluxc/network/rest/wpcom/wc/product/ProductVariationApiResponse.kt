@@ -30,6 +30,9 @@ class ProductVariationApiResponse : Response {
     var stock_quantity = 0
     var stock_status: String? = null
 
+    var tax_status: String? = null
+    var tax_class: String? = null
+
     var image: JsonElement? = null
 
     var weight: String? = null
