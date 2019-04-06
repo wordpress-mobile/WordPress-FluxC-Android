@@ -37,6 +37,9 @@ data class WCProductVariationModel(
     var backordersAllowed = false
     var backordered = false
 
+    var shippingClass = ""
+    var shippingClassId = 0
+
     var manageStock = false
     var stockQuantity = 0
     var stockStatus = ""

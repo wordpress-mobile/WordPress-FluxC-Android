@@ -208,6 +208,9 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         stockQuantity = variation.stockQuantity
         stockStatus = variation.stockStatus
 
+        shippingClass = variation.shippingClass
+        shippingClassId = variation.shippingClassId
+
         weight = variation.weight
         length = variation.length
         width = variation.width

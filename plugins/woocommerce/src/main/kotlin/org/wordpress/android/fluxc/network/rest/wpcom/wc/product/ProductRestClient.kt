@@ -220,6 +220,9 @@ class ProductRestClient(
             taxClass = response.tax_class ?: ""
             taxStatus = response.tax_status ?: ""
 
+            shippingClass = response.shipping_class ?: ""
+            shippingClassId = response.shipping_class_id
+
             manageStock = response.manage_stock
             stockQuantity = response.stock_quantity
             stockStatus = response.stock_status ?: ""
