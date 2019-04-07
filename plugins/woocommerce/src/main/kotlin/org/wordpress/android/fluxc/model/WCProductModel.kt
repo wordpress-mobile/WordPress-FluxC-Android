@@ -108,51 +108,5 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return fileList
     }
 
-    /**
-     * Updates this product model to use the values from the passed variation model
-     */
-    fun updateFromVariation(variation: WCProductVariationModel) {
-        remoteVariationId = variation.remoteVariationId
-        dateCreated = variation.dateCreated
-        dateModified = variation.dateModified
-        description = variation.description
-        permalink = variation.permalink
-        sku = variation.sku
-        status = variation.status
-
-        price = variation.price
-        regularPrice = variation.regularPrice
-        salePrice = variation.salePrice
-        onSale = variation.onSale
-
-        purchasable = variation.purchasable
-        virtual = variation.virtual
-
-        downloadable = variation.downloadable
-        downloadLimit = variation.downloadLimit
-        downloadExpiry = variation.downloadExpiry
-        downloads = variation.downloads
-
-        taxClass = variation.taxClass
-        taxStatus = variation.taxStatus
-
-        backorders = variation.backorders
-        backordered = variation.backordered
-        backordersAllowed = variation.backordersAllowed
-
-        manageStock = variation.manageStock
-        stockQuantity = variation.stockQuantity
-        stockStatus = variation.stockStatus
-
-        shippingClass = variation.shippingClass
-        shippingClassId = variation.shippingClassId
-
-        weight = variation.weight
-        length = variation.length
-        width = variation.width
-        height = variation.height
-
-        imageUrl = variation.imageUrl
-        attributes = variation.attributes
-    }
+    fun getDownloadableFileCount() = getDownloadableFiles().size
 }

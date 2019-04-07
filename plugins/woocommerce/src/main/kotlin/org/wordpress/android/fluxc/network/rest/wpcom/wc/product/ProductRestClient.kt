@@ -32,9 +32,7 @@ class ProductRestClient(
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/[remoteProductId]` to fetch a single product, optionally
-     * also fetching a product variation
-     * Dispatches eitjer a WCProductAction.FETCHED_SINGLE_PRODUCT or WCProductAction.FETCHED_SINGLE_PRODUCT_VARIATION
-     * action with the result
+     * also fetching a product variation. Dispatches a WCProductAction.FETCHED_SINGLE_PRODUCT with the result.
      */
     fun fetchSingleProduct(site: SiteModel, remoteProductId: Long, remoteVariationId: Long = 0L) {
         val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
@@ -48,7 +46,8 @@ class ProductRestClient(
                         }
 
                         // we're done if this isn't a request for a product variation, otherwise we fire
-                        // a separate request to fetch the variation
+                        // a separate request to fetch the variation (and that request will dispatch
+                        // the FETCHED_SINGLE_PRODUCT action)
                         if (remoteVariationId == 0L) {
                             val payload = RemoteProductPayload(site, product)
                             dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductAction(payload))
@@ -71,6 +70,11 @@ class ProductRestClient(
         add(request)
     }
 
+    /**
+     * Makes a GET request to `/wp-json/wc/v3/products/[productId]/variations/[variationId]` to fetch a single product
+     * variation. Upon success, update the passed product model with the properties of the variation model then
+     * dispatches a WCProductAction.FETCHED_SINGLE_PRODUCT with the result.
+     */
     fun fetchProductVariation(site: SiteModel, product: WCProductModel, remoteVariationId: Long) {
         val url = WOOCOMMERCE.products.id(product.remoteProductId).variations.id(remoteVariationId).pathV3
         val responseType = object : TypeToken<ProductVariationApiResponse>() {}.type
@@ -83,8 +87,8 @@ class ProductRestClient(
                             product,
                             response!!
                     )
-                    product.updateFromVariation(variationModel)
-                    val payload = RemoteProductPayload(site, product, remoteVariationId)
+                    val updatedProduct = updateProductModelFromVariationModel(product, variationModel)
+                    val payload = RemoteProductPayload(site, updatedProduct, remoteVariationId)
                     dispatcher.dispatch(
                             WCProductActionBuilder.newFetchedSingleProductAction(payload))
                 },
@@ -242,6 +246,61 @@ class ProductRestClient(
                 imageUrl = json.getString("src") ?: ""
             }
         }
+    }
+
+    /**
+     * Updates a product model to use the values from the passed variation model and returns the result
+     */
+    private fun updateProductModelFromVariationModel(
+        product: WCProductModel,
+        variation: WCProductVariationModel
+    ): WCProductModel {
+        with(product) {
+            remoteVariationId = variation.remoteVariationId
+            dateCreated = variation.dateCreated
+            dateModified = variation.dateModified
+            description = variation.description
+            permalink = variation.permalink
+            sku = variation.sku
+            status = variation.status
+
+            price = variation.price
+            regularPrice = variation.regularPrice
+            salePrice = variation.salePrice
+            onSale = variation.onSale
+
+            purchasable = variation.purchasable
+            virtual = variation.virtual
+
+            downloadable = variation.downloadable
+            downloadLimit = variation.downloadLimit
+            downloadExpiry = variation.downloadExpiry
+            downloads = variation.downloads
+
+            taxClass = variation.taxClass
+            taxStatus = variation.taxStatus
+
+            backorders = variation.backorders
+            backordered = variation.backordered
+            backordersAllowed = variation.backordersAllowed
+
+            manageStock = variation.manageStock
+            stockQuantity = variation.stockQuantity
+            stockStatus = variation.stockStatus
+
+            shippingClass = variation.shippingClass
+            shippingClassId = variation.shippingClassId
+
+            weight = variation.weight
+            length = variation.length
+            width = variation.width
+            height = variation.height
+
+            imageUrl = variation.imageUrl
+            attributes = variation.attributes
+        }
+
+        return product
     }
 
     private fun networkErrorToProductError(wpComError: WPComGsonNetworkError): ProductError {
