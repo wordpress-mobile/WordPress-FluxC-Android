@@ -61,7 +61,6 @@ class ProductRestClient(
                     val payload = RemoteProductPayload(
                             site,
                             WCProductModel().apply { this.remoteProductId = remoteProductId },
-                            0L,
                             productError
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductAction(payload))
@@ -71,9 +70,9 @@ class ProductRestClient(
     }
 
     /**
-     * Makes a GET request to `/wp-json/wc/v3/products/[productId]/variations/[variationId]` to fetch a single product
-     * variation. Upon success, update the passed product model with the properties of the variation model then
-     * dispatches a WCProductAction.FETCHED_SINGLE_PRODUCT with the result.
+     * Makes a GET request to `/wp-json/wc/v3/products/remoteProductId/variations/[remoteVariationId]` to
+     * fetch a single product variation. Upon success, update the passed product model with the properties of the
+     * variation model then dispatches a WCProductAction.FETCHED_SINGLE_PRODUCT with the result.
      */
     fun fetchProductVariation(site: SiteModel, product: WCProductModel, remoteVariationId: Long) {
         val url = WOOCOMMERCE.products.id(product.remoteProductId).variations.id(remoteVariationId).pathV3
@@ -88,7 +87,7 @@ class ProductRestClient(
                             response!!
                     )
                     val updatedProduct = updateProductModelFromVariationModel(product, variationModel)
-                    val payload = RemoteProductPayload(site, updatedProduct, remoteVariationId)
+                    val payload = RemoteProductPayload(site, updatedProduct)
                     dispatcher.dispatch(
                             WCProductActionBuilder.newFetchedSingleProductAction(payload))
                 },
@@ -96,11 +95,7 @@ class ProductRestClient(
                     val productError = networkErrorToProductError(networkError)
                     val payload = RemoteProductPayload(
                             site,
-                            WCProductModel().apply {
-                                this.remoteProductId = product.remoteProductId
-                                this.remoteVariationId = remoteVariationId
-                            },
-                            0L,
+                            WCProductModel().apply { this.remoteProductId = product.remoteProductId },
                             productError
                     )
                     dispatcher.dispatch(

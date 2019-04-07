@@ -39,15 +39,13 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     class RemoteProductPayload(
         val site: SiteModel,
-        val product: WCProductModel,
-        var variationId: Long = 0L
+        val product: WCProductModel
     ) : Payload<ProductError>() {
         constructor(
             site: SiteModel,
             product: WCProductModel,
-            variationId: Long,
             error: ProductError
-        ) : this(site, product, variationId) {
+        ) : this(site, product) {
             this.error = error
         }
     }
