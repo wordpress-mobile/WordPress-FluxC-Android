@@ -88,7 +88,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     @Test
     public void testWPComAuthenticationIncorrectUsernameOrPassword() throws InterruptedException {
         mNextEvent = TestEvents.INCORRECT_USERNAME_OR_PASSWORD_ERROR;
-        authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_BAD_PASSWORD);
+        authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, "afakepassword19551105");
     }
 
     @Test
