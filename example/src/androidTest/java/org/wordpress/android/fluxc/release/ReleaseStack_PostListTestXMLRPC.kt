@@ -19,7 +19,7 @@ import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.MultiplePages
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.SinglePage
 import org.wordpress.android.fluxc.release.utils.TEST_LIST_CONFIG
-import org.wordpress.android.fluxc.release.utils.TestPostListDataStore
+import org.wordpress.android.fluxc.release.utils.TestPostListDataSource
 import org.wordpress.android.fluxc.release.utils.TestPostUIItem
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.PostStore
@@ -83,6 +83,6 @@ internal class ReleaseStack_PostListTestXMLRPC(
                 orderBy = testCase.orderBy,
                 config = TEST_LIST_CONFIG
         )
-        return listStoreConnectedTestHelper.getList(descriptor, TestPostListDataStore(mDispatcher))
+        return listStoreConnectedTestHelper.getList(descriptor, TestPostListDataSource(mDispatcher))
     }
 }

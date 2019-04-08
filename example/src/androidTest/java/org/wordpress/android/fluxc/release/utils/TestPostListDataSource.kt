@@ -4,14 +4,14 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.list.PostListDescriptor
-import org.wordpress.android.fluxc.model.list.datastore.ListItemDataStoreInterface
+import org.wordpress.android.fluxc.model.list.datasource.ListItemDataSourceInterface
 import org.wordpress.android.fluxc.store.PostStore.FetchPostListPayload
 
 internal class TestPostUIItem
 
-internal class TestPostListDataStore(
+internal class TestPostListDataSource(
     val dispatcher: Dispatcher
-) : ListItemDataStoreInterface<PostListDescriptor, RemoteId, TestPostUIItem> {
+) : ListItemDataSourceInterface<PostListDescriptor, RemoteId, TestPostUIItem> {
     override fun getItemsAndFetchIfNecessary(
         listDescriptor: PostListDescriptor,
         itemIdentifiers: List<RemoteId>

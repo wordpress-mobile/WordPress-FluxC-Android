@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.release.utils
 import android.arch.lifecycle.Lifecycle
 import org.wordpress.android.fluxc.model.list.ListDescriptor
 import org.wordpress.android.fluxc.model.list.PagedListWrapper
-import org.wordpress.android.fluxc.model.list.datastore.ListItemDataStoreInterface
+import org.wordpress.android.fluxc.model.list.datasource.ListItemDataSourceInterface
 import org.wordpress.android.fluxc.release.utils.IsEmptyValue.EMPTY
 import org.wordpress.android.fluxc.release.utils.IsEmptyValue.NOT_EMPTY
 import org.wordpress.android.fluxc.release.utils.IsFetchingFirstPageValue.FETCHING_FIRST_PAGE
@@ -20,23 +20,19 @@ import org.wordpress.android.fluxc.store.ListStore
  */
 internal class ListStoreConnectedTestHelper(private val listStore: ListStore) {
     /**
-     * A helper function that returns the list from [ListStore] for the given [ListDescriptor] and
-     * [ListItemDataStoreInterface].
+     * A helper function that returns the list from [ListStore] for the given [LIST_DESCRIPTOR] and
+     * [ListItemDataSourceInterface].
      *
      * It uses a default [Lifecycle] instance which will NOT be destroyed throughout the test.
-     *
-     * @param listDescriptor [ListDescriptor] instance to be used to retrieve the list
-     * @param dataStore [ListItemDataStoreInterface] instance to be used to retrieve the list
-     * @param lifecycle [Lifecycle] instance to be used to retrieve the list.
      */
-    fun <LD : ListDescriptor, ID, T> getList(
-        listDescriptor: LD,
-        dataStore: ListItemDataStoreInterface<LD, ID, T>,
+    fun <LIST_DESCRIPTOR : ListDescriptor, ITEM_IDENTIFIER, LIST_ITEM> getList(
+        listDescriptor: LIST_DESCRIPTOR,
+        dataSource: ListItemDataSourceInterface<LIST_DESCRIPTOR, ITEM_IDENTIFIER, LIST_ITEM>,
         lifecycle: Lifecycle = SimpleTestLifecycle().lifecycle
-    ): PagedListWrapper<T> {
+    ): PagedListWrapper<LIST_ITEM> {
         return listStore.getList(
                 listDescriptor = listDescriptor,
-                dataStore = dataStore,
+                dataSource = dataSource,
                 lifecycle = lifecycle
         )
     }
