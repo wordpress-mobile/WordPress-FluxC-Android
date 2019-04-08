@@ -88,7 +88,7 @@ class PostsFragment : Fragment() {
                 event.causeOfChange is CauseOfOnPostChanged.FetchPages) {
                 prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.name)
             } else if (event.causeOfChange == PostAction.DELETE_POST) {
-                prependToLog("Post deleted!")
+                prependToLog("Post trashed!")
             }
         }
     }
