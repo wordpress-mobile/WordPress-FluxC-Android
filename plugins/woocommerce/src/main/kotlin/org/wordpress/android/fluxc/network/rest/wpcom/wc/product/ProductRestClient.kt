@@ -71,8 +71,8 @@ class ProductRestClient(
 
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/remoteProductId/variations/[remoteVariationId]` to
-     * fetch a single product variation. Upon success, update the passed product model with the properties of the
-     * variation model then dispatches a WCProductAction.FETCHED_SINGLE_PRODUCT with the result.
+     * fetch a single product variation. Upon success, update the passed product model with the properties
+     * of the variation model then dispatches a WCProductAction.FETCHED_SINGLE_PRODUCT with the result.
      */
     fun fetchProductVariation(site: SiteModel, product: WCProductModel, remoteVariationId: Long) {
         val url = WOOCOMMERCE.products.id(product.remoteProductId).variations.id(remoteVariationId).pathV3
