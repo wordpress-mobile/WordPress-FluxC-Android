@@ -74,4 +74,5 @@ ext {
     supportLibraryVersion = '27.1.1'
     arch_paging_version = '1.0.1'
     arch_lifecycle_version = '1.1.1'
+    roomVersion = '1.1.1'
 }

@@ -55,6 +55,7 @@ import org.wordpress.android.fluxc.network.xmlrpc.media.MediaXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.post.PostXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.site.SiteXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.taxonomy.TaxonomyXMLRPCClient;
+import org.wordpress.android.fluxc.persistence.StatsDatabase;
 
 import java.io.File;
 
@@ -428,5 +429,11 @@ public class ReleaseNetworkModule {
         gsonBuilder.registerTypeHierarchyAdapter(JsonObjectOrEmptyArray.class,
                 new JsonObjectOrEmptyArrayDeserializer());
         return gsonBuilder.create();
+    }
+
+    @Singleton
+    @Provides
+    public StatsDatabase provideStatsDatabase(Context context) {
+        return StatsDatabase.Companion.build(context);
     }
 }
