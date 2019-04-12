@@ -259,6 +259,7 @@ class MainFragment : Fragment() {
                 AuthenticationErrorType.INVALID_OTP -> { }
                 AuthenticationErrorType.INVALID_REQUEST,
                 AuthenticationErrorType.UNSUPPORTED_RESPONSE_TYPE,
+                AuthenticationErrorType.EMAIL_LOGIN_NOT_ALLOWED,
                 AuthenticationErrorType.GENERIC_ERROR,
                 null -> {
                     // Show Toast "Network Error"?
