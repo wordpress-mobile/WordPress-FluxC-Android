@@ -738,7 +738,14 @@ public class PostStore extends Store {
 
         PostModel postToSave;
         if (payload.deletedPostResponse != null) {
-            postToSave = payload.deletedPostResponse;
+            if (payload.postToBeDeleted.isLocallyChanged()) {
+                // If the post is locally changed, we can't override it with the response from remote
+                postToSave = payload.postToBeDeleted;
+                // Override the locally changed post's status with the new one
+                postToSave.setStatus(payload.deletedPostResponse.getStatus());
+            } else {
+                postToSave = payload.deletedPostResponse;
+            }
         } else {
             /*
              * XML-RPC delete request doesn't return the updated post, so we need to manually change the status
