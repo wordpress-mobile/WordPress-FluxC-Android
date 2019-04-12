@@ -108,7 +108,8 @@ class ListStore @Inject constructor(
                 },
                 invalidate = factory::invalidate,
                 isListEmpty = {
-                    getListItemsCount(listDescriptor) == 0L
+                    val size = pagedListData.value?.size ?: 0
+                    size == 0
                 },
                 parentCoroutineContext = coroutineContext
         )
