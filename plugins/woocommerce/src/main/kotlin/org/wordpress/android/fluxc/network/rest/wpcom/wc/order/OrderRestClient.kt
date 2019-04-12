@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -21,6 +22,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
@@ -42,6 +44,8 @@ class OrderRestClient(
     private val ORDER_FIELDS = "id,number,status,currency,date_created_gmt,total,total_tax,shipping_total," +
             "payment_method,payment_method_title,prices_include_tax,customer_note,discount_total," +
             "coupon_lines,refunds,billing,shipping,line_items"
+    private val TRACKING_FIELDS = "tracking_id,tracking_number,tracking_link,tracking_provider,date_shipped"
+
     /**
      * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of orders for the given WooCommerce [SiteModel].
@@ -351,6 +355,41 @@ class OrderRestClient(
         add(request)
     }
 
+    /**
+     * Makes a GET call to `/wc/v2/orders/<order_id>/shipment-trackings/` via the Jetpack tunnel
+     * (see [JetpackTunnelGsonRequest]), retrieving a list of shipment tracking objects for a single [WCOrderModel].
+     *
+     * Note: This is not currently supported in v3, but will be in the short future.
+     *
+     * Dispatches a [WCOrderAction.FETCHED_ORDER_SHIPMENT_TRACKINGS] action with the results
+     */
+    fun fetchOrderShipmentTrackings(site: SiteModel, order: WCOrderModel) {
+        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).shipment_trackings.pathV2
+
+        val responseType = object : TypeToken<List<OrderShipmentTrackingApiResponse>>() {}.type
+        val params = mapOf(
+                "_fields" to TRACKING_FIELDS)
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<OrderShipmentTrackingApiResponse>? ->
+                    val trackings = response?.map {
+                        orderShipmentTrackingResponseToModel(it).apply {
+                            localSiteId = site.id
+                            localOrderId = order.id
+                        }
+                    }.orEmpty()
+
+                    val payload = FetchOrderShipmentTrackingsResponsePayload(site, order, trackings)
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentTrackingsAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val trackingsError = networkErrorToOrderError(networkError)
+                    val payload = FetchOrderShipmentTrackingsResponsePayload(trackingsError, site, order)
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentTrackingsAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
     private fun orderResponseToOrderModel(response: OrderApiResponse): WCOrderModel {
         return WCOrderModel().apply {
             remoteOrderId = response.id ?: 0
@@ -420,6 +459,7 @@ class OrderRestClient(
         val orderErrorType = when (wpComError.apiError) {
             "rest_invalid_param" -> OrderErrorType.INVALID_PARAM
             "woocommerce_rest_shop_order_invalid_id" -> OrderErrorType.INVALID_ID
+            "rest_no_route" -> OrderErrorType.PLUGIN_NOT_ACTIVE
             else -> OrderErrorType.fromString(wpComError.apiError)
         }
         return OrderError(orderErrorType, wpComError.message)
@@ -433,6 +473,18 @@ class OrderRestClient(
             localSiteId = site.id
             statusKey = response.slug ?: ""
             label = response.name ?: ""
+        }
+    }
+
+    private fun orderShipmentTrackingResponseToModel(
+        response: OrderShipmentTrackingApiResponse
+    ): WCOrderShipmentTrackingModel {
+        return WCOrderShipmentTrackingModel().apply {
+            remoteTrackingId = response.tracking_id ?: ""
+            trackingNumber = response.tracking_number ?: ""
+            trackingProvider = response.tracking_provider ?: ""
+            trackingLink = response.tracking_link ?: ""
+            dateShipped = response.date_shipped ?: ""
         }
     }
 }

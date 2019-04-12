@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.action.WCCoreAction
 import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductSettingsModel
 import org.wordpress.android.fluxc.model.WCSettingsModel
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition
 import org.wordpress.android.fluxc.network.UserAgent
@@ -22,6 +23,7 @@ import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.store.WooCommerceStore.ApiVersionError
 import org.wordpress.android.fluxc.store.WooCommerceStore.ApiVersionErrorType
 import org.wordpress.android.fluxc.store.WooCommerceStore.FetchApiVersionResponsePayload
+import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCProductSettingsResponsePayload
 import org.wordpress.android.fluxc.store.WooCommerceStore.FetchWCSiteSettingsResponsePayload
 import org.wordpress.android.fluxc.store.WooCommerceStore.WCSiteSettingsError
 import org.wordpress.android.fluxc.store.WooCommerceStore.WCSiteSettingsErrorType
@@ -83,9 +85,9 @@ class WooCommerceRestClient(
      */
     fun getSiteSettingsGeneral(site: SiteModel) {
         val url = WOOCOMMERCE.settings.general.pathV3
-        val responseType = object : TypeToken<List<SiteSettingsGeneralResponse>>() {}.type
+        val responseType = object : TypeToken<List<SiteSettingsResponse>>() {}.type
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, emptyMap(), responseType,
-                { response: List<SiteSettingsGeneralResponse>? ->
+                { response: List<SiteSettingsResponse>? ->
                     response?.let {
                         val currencyCode = getValueForSettingsField(it, "woocommerce_currency")
                         val currencyPosition = getValueForSettingsField(it, "woocommerce_currency_pos")
@@ -117,7 +119,38 @@ class WooCommerceRestClient(
         add(request)
     }
 
-    private fun getValueForSettingsField(settingsResponse: List<SiteSettingsGeneralResponse>, field: String): String? {
+    fun getSiteSettingsProducts(site: SiteModel) {
+        val url = WOOCOMMERCE.settings.products.pathV3
+        val responseType = object : TypeToken<List<SiteSettingsResponse>>() {}.type
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, emptyMap(), responseType,
+                { response: List<SiteSettingsResponse>? ->
+                    response?.let {
+                        val weightUnit = getValueForSettingsField(it, "woocommerce_weight_unit")
+                        val dimensionUnit = getValueForSettingsField(it, "woocommerce_dimension_unit")
+
+                        val settings = WCProductSettingsModel().apply {
+                            localSiteId = site.id
+                            this.dimensionUnit = dimensionUnit ?: ""
+                            this.weightUnit = weightUnit ?: ""
+                        }
+
+                        val payload = FetchWCProductSettingsResponsePayload(site, settings)
+                        dispatcher.dispatch(WCCoreActionBuilder.newFetchedProductSettingsAction(payload))
+                    } ?: run {
+                        val wcSiteSettingsError = WCSiteSettingsError(WCSiteSettingsErrorType.INVALID_RESPONSE)
+                        val payload = FetchWCProductSettingsResponsePayload(wcSiteSettingsError, site)
+                        dispatcher.dispatch(WCCoreActionBuilder.newFetchedProductSettingsAction(payload))
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val payload = FetchWCProductSettingsResponsePayload(networkErrorToSettingsError(networkError), site)
+                    dispatcher.dispatch(WCCoreActionBuilder.newFetchedProductSettingsAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    private fun getValueForSettingsField(settingsResponse: List<SiteSettingsResponse>, field: String): String? {
         return settingsResponse.find { it.id != null && it.id == field }?.value?.asString
     }
 

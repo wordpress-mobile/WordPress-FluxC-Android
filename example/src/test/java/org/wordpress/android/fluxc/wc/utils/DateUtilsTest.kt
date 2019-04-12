@@ -171,7 +171,6 @@ class DateUtilsTest {
 
         var date = start.time
         while (start.before(end)) {
-            println(date)
             val testDateString = DateUtils.formatDate(DATE_FORMAT_DAY, date)
             val testCalendar = DateUtils.getCalendarInstance(testDateString)
             assertEquals(start.get(Calendar.YEAR), testCalendar.get(Calendar.YEAR))
