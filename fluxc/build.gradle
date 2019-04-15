@@ -29,6 +29,12 @@ android {
         versionName "0.1"
         minSdkVersion 15
         targetSdkVersion 26
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation":
+                                     "$projectDir/schemas".toString()]
+            }
+        }
     }
     buildTypes {
         release {
@@ -82,11 +88,6 @@ dependencies {
     api "org.wordpress:wellsql:$wellSqlVersion"
     kapt "org.wordpress:wellsql-processor:$wellSqlVersion"
 
-    // Room
-    implementation "android.arch.persistence.room:runtime:$roomVersion"
-    kapt "android.arch.persistence.room:compiler:$roomVersion"
-    testImplementation "android.arch.persistence.room:testing:$roomVersion"
-
     // FluxC annotations
     api project(':fluxc-annotations')
     kapt project(':fluxc-processor')
@@ -108,6 +109,11 @@ dependencies {
     // Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
+
+    // Room
+    implementation "android.arch.persistence.room:runtime:$roomVersion"
+    kapt "android.arch.persistence.room:compiler:$roomVersion"
+    testImplementation "android.arch.persistence.room:testing:$roomVersion"
 }
 
 version = android.defaultConfig.versionName

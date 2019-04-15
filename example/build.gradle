@@ -29,6 +29,11 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
+    sourceSets {
+        androidTest.assets.srcDirs +=
+                files("$projectDir/../fluxc/schemas".toString())
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -119,6 +124,7 @@ dependencies {
     androidTestImplementation 'org.mockito:mockito-android:2.6.3'
     androidTestImplementation 'org.apache.commons:commons-lang3:3.5'
     androidTestImplementation "android.arch.core:core-testing:1.1.1"
+    androidTestImplementation 'com.squareup.assertj:assertj-android:1.2.0'
     kaptAndroidTest "com.google.dagger:dagger-compiler:$daggerVersion"
     androidTestCompileOnly 'org.glassfish:javax.annotation:10.0-b28'
     // Test orchestrator
@@ -132,4 +138,9 @@ dependencies {
     // Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
+
+    // Room
+    implementation "android.arch.persistence.room:runtime:$roomVersion"
+    kapt "android.arch.persistence.room:compiler:$roomVersion"
+    androidTestImplementation "android.arch.persistence.room:testing:$roomVersion"
 }

@@ -1,4 +1,4 @@
-package org.wordpress.android.fluxc.persistence
+package org.wordpress.android.fluxc.persistence.room
 
 import android.arch.lifecycle.LiveData
 import android.arch.persistence.room.ColumnInfo
@@ -8,10 +8,9 @@ import android.arch.persistence.room.Insert
 import android.arch.persistence.room.OnConflictStrategy.REPLACE
 import android.arch.persistence.room.PrimaryKey
 import android.arch.persistence.room.Query
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType
-import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType.ALL_TIME_INSIGHTS
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.StatsType
-import org.wordpress.android.fluxc.persistence.StatsSqlUtils.StatsType.INSIGHTS
 
 @Dao
 interface StatsDao {
@@ -60,6 +59,23 @@ interface StatsDao {
         postId: Long? = null
     ): LiveData<StatsBlock>
 
+    @Query("""
+        SELECT * FROM StatsBlock
+        WHERE localSiteId == :localSiteId
+        AND blockType == :blockType
+        AND statsType == :statsType
+        AND (:date IS NULL OR date == :date)
+        AND (:postId IS NULL OR postId == :postId)
+        LIMIT 1
+        """)
+    fun select(
+        localSiteId: Int,
+        blockType: BlockType,
+        statsType: StatsType,
+        date: String? = null,
+        postId: Long? = null
+    ): StatsBlock?
+
     @Entity(tableName = "StatsBlock")
     data class StatsBlock(
         @PrimaryKey(autoGenerate = true) var id: Long?,
@@ -67,10 +83,8 @@ interface StatsDao {
         @ColumnInfo var blockType: BlockType,
         @ColumnInfo var statsType: StatsType,
         @ColumnInfo var date: String?,
-        @ColumnInfo var postId: Long?,
+        @ColumnInfo var postId: Long,
         @ColumnInfo var json: String
 
-    ) {
-        constructor() : this(null, 0, ALL_TIME_INSIGHTS, INSIGHTS, null, null, "")
-    }
+    )
 }

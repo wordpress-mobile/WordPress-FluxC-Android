@@ -55,7 +55,7 @@ import org.wordpress.android.fluxc.network.xmlrpc.media.MediaXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.post.PostXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.site.SiteXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.taxonomy.TaxonomyXMLRPCClient;
-import org.wordpress.android.fluxc.persistence.StatsDatabase;
+import org.wordpress.android.fluxc.persistence.room.StatsDatabase;
 
 import java.io.File;
 
