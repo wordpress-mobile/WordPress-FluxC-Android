@@ -7,7 +7,7 @@ import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
-data class WCOrderShipmentTrackingProviderModel(@PrimaryKey @Column private var id: Int = 0) :Identifiable {
+data class WCOrderShipmentProviderModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
     @Column var localSiteId = 0
     @Column var country = ""
     @Column var carrierName = ""
