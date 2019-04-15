@@ -411,7 +411,8 @@ class OrderRestClient(
                     response?.let {
                         val providers = jsonResponseToShipmentProviderList(site, it)
                         val payload = FetchOrderShipmentProvidersResponsePayload(site, order, providers)
-                        dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentTrackingProvidersAction(payload))
+                        dispatcher.dispatch(
+                                WCOrderActionBuilder.newFetchedOrderShipmentTrackingProvidersAction(payload))
                     }
                 },
                 WPComErrorListener { networkError ->
