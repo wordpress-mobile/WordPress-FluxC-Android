@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
+import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingProviderModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.model.order.toIdSet
@@ -166,6 +167,19 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(site, order) { this.error = error }
     }
 
+    class FetchOrderShipmentTrackingProvidersPayload(
+        val site: SiteModel,
+        val order: WCOrderModel
+    ) : Payload<BaseNetworkError>()
+
+    class FetchOrderShipmentTrackingProvidersResponsePayload(
+        val site: SiteModel,
+        val order: WCOrderModel,
+        val providers: List<WCOrderShipmentTrackingProviderModel> = emptyList()
+    ) : Payload<OrderError>() {
+        constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(site, order) { this.error = error }
+    }
+
     class OrderError(val type: OrderErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
 
     enum class OrderErrorType {
@@ -198,6 +212,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     ) : OnChanged<OrderError>()
 
     class OnOrderStatusOptionsChanged(
+        var rowsAffected: Int
+    ) : OnChanged<OrderError>()
+
+    class OnOrderShipmentTrackingProvidersChanged(
         var rowsAffected: Int
     ) : OnChanged<OrderError>()
 
