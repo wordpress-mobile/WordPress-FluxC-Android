@@ -13,7 +13,7 @@ import org.wordpress.android.fluxc.persistence.room.StatsDatabase
 open class StatsDatabaseTest {
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
-    val database= Room.inMemoryDatabaseBuilder(InstrumentationRegistry.getContext(), StatsDatabase::class.java)
+    val database = Room.inMemoryDatabaseBuilder(InstrumentationRegistry.getContext(), StatsDatabase::class.java)
             .allowMainThreadQueries()
             .build()
 
