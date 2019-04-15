@@ -423,7 +423,7 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                     prependToLog("Fetching a list of providers from the API")
 
                     val payload = FetchOrderShipmentProvidersPayload(site, order)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentTrackingProvidersAction(payload))
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentProvidersAction(payload))
                 } ?: prependToLog("No orders found in db to use as seed. Fetch orders first.")
             }
         }

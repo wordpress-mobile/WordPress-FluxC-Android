@@ -411,13 +411,13 @@ class OrderRestClient(
                     response?.let {
                         val providers = jsonResponseToShipmentProviderList(site, it)
                         val payload = FetchOrderShipmentProvidersResponsePayload(site, order, providers)
-                        dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentTrackingProvidersAction(payload))
+                        dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentProvidersAction(payload))
                     }
                 },
                 WPComErrorListener { networkError ->
                     val providersError = networkErrorToOrderError(networkError)
                     val payload = FetchOrderShipmentProvidersResponsePayload(providersError, site, order)
-                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentTrackingProvidersAction(payload))
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentProvidersAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
