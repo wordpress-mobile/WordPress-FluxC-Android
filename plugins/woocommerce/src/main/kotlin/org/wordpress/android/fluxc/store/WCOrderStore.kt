@@ -15,7 +15,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
-import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingProviderModel
+import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.model.order.toIdSet
@@ -167,15 +167,15 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(site, order) { this.error = error }
     }
 
-    class FetchOrderShipmentTrackingProvidersPayload(
+    class FetchOrderShipmentProvidersPayload(
         val site: SiteModel,
         val order: WCOrderModel
     ) : Payload<BaseNetworkError>()
 
-    class FetchOrderShipmentTrackingProvidersResponsePayload(
+    class FetchOrderShipmentProvidersResponsePayload(
         val site: SiteModel,
         val order: WCOrderModel,
-        val providers: List<WCOrderShipmentTrackingProviderModel> = emptyList()
+        val providers: List<WCOrderShipmentProviderModel> = emptyList()
     ) : Payload<OrderError>() {
         constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(site, order) { this.error = error }
     }
@@ -215,7 +215,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var rowsAffected: Int
     ) : OnChanged<OrderError>()
 
-    class OnOrderShipmentTrackingProvidersChanged(
+    class OnOrderShipmentProvidersChanged(
         var rowsAffected: Int
     ) : OnChanged<OrderError>()
 
@@ -258,6 +258,12 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     fun getShipmentTrackingsForOrder(order: WCOrderModel): List<WCOrderShipmentTrackingModel> =
             OrderSqlUtils.getShipmentTrackingsForOrder(order)
 
+    /**
+     * Returns the shipment providers as a list of [WCOrderShipmentProviderModel]
+     */
+    fun getShipmentProvidersForSite(site: SiteModel): List<WCOrderShipmentProviderModel> =
+            OrderSqlUtils.getOrderShipmentProvidersForSite(site)
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCOrderAction ?: return
@@ -275,6 +281,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 fetchOrderStatusOptions(action.payload as FetchOrderStatusOptionsPayload)
             WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS ->
                 fetchOrderShipmentTrackings(action.payload as FetchOrderShipmentTrackingsPayload)
+            WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKING_PROVIDERS ->
+                fetchOrderShipmentProviders(action.payload as FetchOrderShipmentProvidersPayload)
 
             // remote responses
             WCOrderAction.FETCHED_ORDERS -> handleFetchOrdersCompleted(action.payload as FetchOrdersResponsePayload)
@@ -292,6 +300,9 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 handleFetchOrderStatusOptionsCompleted(action.payload as FetchOrderStatusOptionsResponsePayload)
             WCOrderAction.FETCHED_ORDER_SHIPMENT_TRACKINGS ->
                 handleFetchOrderShipmentTrackingsCompleted(action.payload as FetchOrderShipmentTrackingsResponsePayload)
+            WCOrderAction.FETCHED_ORDER_SHIPMENT_TRACKING_PROVIDERS ->
+                handleFetchOrderShipmentProvidersCompleted(
+                        action.payload as FetchOrderShipmentProvidersResponsePayload)
         }
     }
 
@@ -338,6 +349,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     private fun fetchOrderShipmentTrackings(payload: FetchOrderShipmentTrackingsPayload) {
         wcOrderRestClient.fetchOrderShipmentTrackings(payload.site, payload.order)
+    }
+
+    private fun fetchOrderShipmentProviders(payload: FetchOrderShipmentProvidersPayload) {
+        wcOrderRestClient.fetchOrderShipmentProviders(payload.site, payload.order)
     }
 
     private fun handleFetchOrdersCompleted(payload: FetchOrdersResponsePayload) {
@@ -529,5 +544,24 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
         onOrderChanged.causeOfChange = FETCH_ORDER_SHIPMENT_TRACKINGS
         emitChange(onOrderChanged)
+    }
+
+    private fun handleFetchOrderShipmentProvidersCompleted(
+        payload: FetchOrderShipmentProvidersResponsePayload
+    ) {
+        val onProviderChanged: OnOrderShipmentProvidersChanged
+
+        if (payload.isError) {
+            onProviderChanged = OnOrderShipmentProvidersChanged(0).also { it.error = payload.error }
+        } else {
+            // Delete all providers from the db
+            OrderSqlUtils.deleteOrderShipmentProvidersForSite(payload.site)
+
+            // Add new list to the database
+            val rowsAffected = payload.providers.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentProvider(it) }
+            onProviderChanged = OnOrderShipmentProvidersChanged(rowsAffected)
+        }
+
+        emitChange(onProviderChanged)
     }
 }
