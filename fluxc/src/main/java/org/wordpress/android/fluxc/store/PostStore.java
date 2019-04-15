@@ -845,7 +845,19 @@ public class PostStore extends Store {
             emitChange(event);
         } else {
             if (payload.site.isUsingWpComRestApi() || syncingNonWpComPost) {
-                restorePost(payload.post);
+                PostModel postToSave;
+                PostModel localPost = getPostByLocalPostId(payload.post.getId());
+
+                // If the post is locally changed, we can't override it with the response from remote
+                if (localPost.isLocallyChanged()) {
+                    postToSave = localPost;
+                    // Override the locally changed post's status with the new one
+                    postToSave.setStatus(payload.post.getStatus());
+                } else {
+                    postToSave = payload.post;
+                }
+
+                restorePost(postToSave);
             } else {
                 // XML-RPC responds to post restore request with status boolean
                 // Update the post locally to reflect its published state, and request a fresh copy
