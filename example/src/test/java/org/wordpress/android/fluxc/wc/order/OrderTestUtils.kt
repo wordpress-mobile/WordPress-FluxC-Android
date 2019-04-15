@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.wc.order
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
-import com.google.gson.JsonPrimitive
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
