@@ -1,15 +1,20 @@
 package org.wordpress.android.fluxc.wc.order
 
 import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonParser
+import com.google.gson.JsonPrimitive
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderNoteApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderShipmentTrackingApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatusApiResponse
+import kotlin.collections.MutableMap.MutableEntry
 
 object OrderTestUtils {
     fun generateSampleOrder(
@@ -94,6 +99,34 @@ object OrderTestUtils {
             trackingProvider = "USPS"
             trackingLink = ""
             dateShipped = "2019-01-01"
+        }
+    }
+
+    fun getOrderShipmentProvidersFromJson(json: String, siteId: Int): List<WCOrderShipmentProviderModel> {
+        val providers = mutableListOf<WCOrderShipmentProviderModel>()
+        val jsonElement = JsonParser().parse(json)
+        jsonElement.asJsonObject.entrySet().forEach { countryEntry: MutableEntry<String, JsonElement> ->
+            countryEntry.value.asJsonObject.entrySet().map { carrierEntry ->
+                carrierEntry?.let { carrier ->
+                    val provider = WCOrderShipmentProviderModel().apply {
+                        localSiteId = siteId
+                        this.country = countryEntry.key ?: ""
+                        this.carrierName = carrier.key
+                        this.carrierLink = carrier.value.asString
+                    }
+                    providers.add(provider)
+                }
+            }
+        }
+        return providers
+    }
+
+    fun generateOrderShipmentProvider(siteId: Int): WCOrderShipmentProviderModel {
+        return WCOrderShipmentProviderModel().apply {
+            localSiteId = siteId
+            country = "Australia"
+            carrierName = "Amanda Test"
+            carrierLink = "http://google.com"
         }
     }
 }
