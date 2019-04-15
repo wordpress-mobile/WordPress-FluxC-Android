@@ -49,7 +49,7 @@ public enum WCOrderAction implements IAction {
     @Action(payloadType = FetchOrderShipmentTrackingsPayload.class)
     FETCH_ORDER_SHIPMENT_TRACKINGS,
     @Action(payloadType = FetchOrderShipmentProvidersPayload.class)
-    FETCH_ORDER_SHIPMENT_TRACKING_PROVIDERS,
+    FETCH_ORDER_SHIPMENT_PROVIDERS,
 
     // Remote responses
     @Action(payloadType = FetchOrdersResponsePayload.class)
@@ -73,5 +73,5 @@ public enum WCOrderAction implements IAction {
     @Action(payloadType = FetchOrderShipmentTrackingsResponsePayload.class)
     FETCHED_ORDER_SHIPMENT_TRACKINGS,
     @Action(payloadType = FetchOrderShipmentProvidersResponsePayload.class)
-    FETCHED_ORDER_SHIPMENT_TRACKING_PROVIDERS
+    FETCHED_ORDER_SHIPMENT_PROVIDERS
 }

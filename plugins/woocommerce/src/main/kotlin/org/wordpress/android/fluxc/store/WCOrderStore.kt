@@ -281,7 +281,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 fetchOrderStatusOptions(action.payload as FetchOrderStatusOptionsPayload)
             WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS ->
                 fetchOrderShipmentTrackings(action.payload as FetchOrderShipmentTrackingsPayload)
-            WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKING_PROVIDERS ->
+            WCOrderAction.FETCH_ORDER_SHIPMENT_PROVIDERS ->
                 fetchOrderShipmentProviders(action.payload as FetchOrderShipmentProvidersPayload)
 
             // remote responses
@@ -300,7 +300,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 handleFetchOrderStatusOptionsCompleted(action.payload as FetchOrderStatusOptionsResponsePayload)
             WCOrderAction.FETCHED_ORDER_SHIPMENT_TRACKINGS ->
                 handleFetchOrderShipmentTrackingsCompleted(action.payload as FetchOrderShipmentTrackingsResponsePayload)
-            WCOrderAction.FETCHED_ORDER_SHIPMENT_TRACKING_PROVIDERS ->
+            WCOrderAction.FETCHED_ORDER_SHIPMENT_PROVIDERS ->
                 handleFetchOrderShipmentProvidersCompleted(
                         action.payload as FetchOrderShipmentProvidersResponsePayload)
         }
