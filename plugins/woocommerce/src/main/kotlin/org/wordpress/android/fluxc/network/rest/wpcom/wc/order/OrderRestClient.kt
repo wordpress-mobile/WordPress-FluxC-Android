@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction
@@ -11,6 +12,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
+import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -22,6 +24,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
@@ -32,6 +35,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import javax.inject.Singleton
+import kotlin.collections.MutableMap.MutableEntry
 
 @Singleton
 class OrderRestClient(
@@ -390,6 +394,35 @@ class OrderRestClient(
         add(request)
     }
 
+    /**
+     * Fetches a list of shipment providers from the WooCommerce Shipment Tracking plugin.
+     *
+     * Makes a GET call to `/wc/v2/orders/<order_id>/shipment-trackings/providers/` via the Jetpack tunnel
+     * (see [JetpackTunnelGsonRequest]), retrieving a list of shipment tracking provider objects. The `<order_id>`
+     * argument is only needed because it is a requirement of the plugins API even though this data is not directly
+     * related to shipment providers.
+     */
+    fun fetchOrderShipmentProviders(site: SiteModel, order: WCOrderModel) {
+        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).shipment_trackings.providers.pathV2
+
+        val params = emptyMap<String, String>()
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, JsonElement::class.java,
+                { response: JsonElement? ->
+                    response?.let {
+                        val providers = jsonResponseToShipmentProviderList(site, it)
+                        val payload = FetchOrderShipmentProvidersResponsePayload(site, order, providers)
+                        dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentProvidersAction(payload))
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val providersError = networkErrorToOrderError(networkError)
+                    val payload = FetchOrderShipmentProvidersResponsePayload(providersError, site, order)
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentProvidersAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
     private fun orderResponseToOrderModel(response: OrderApiResponse): WCOrderModel {
         return WCOrderModel().apply {
             remoteOrderId = response.id ?: 0
@@ -486,5 +519,26 @@ class OrderRestClient(
             trackingLink = response.tracking_link ?: ""
             dateShipped = response.date_shipped ?: ""
         }
+    }
+
+    private fun jsonResponseToShipmentProviderList(
+        site: SiteModel,
+        response: JsonElement
+    ): List<WCOrderShipmentProviderModel> {
+        val providers = mutableListOf<WCOrderShipmentProviderModel>()
+        response.asJsonObject.entrySet().forEach { countryEntry: MutableEntry<String, JsonElement> ->
+            countryEntry.value.asJsonObject.entrySet().map { carrierEntry ->
+                carrierEntry?.let { carrier ->
+                    val provider = WCOrderShipmentProviderModel().apply {
+                        localSiteId = site.id
+                        this.country = countryEntry.key ?: ""
+                        this.carrierName = carrier.key
+                        this.carrierLink = carrier.value.asString
+                    }
+                    providers.add(provider)
+                }
+            }
+        }
+        return providers
     }
 }
