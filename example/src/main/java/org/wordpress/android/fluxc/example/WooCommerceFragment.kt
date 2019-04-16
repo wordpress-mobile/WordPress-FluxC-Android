@@ -11,6 +11,7 @@ import kotlinx.android.synthetic.main.fragment_woocommerce.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.action.WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
@@ -35,9 +36,11 @@ import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload
@@ -86,6 +89,7 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
     private var pendingFetchSingleOrderRemoteId: Long? = null
     private var pendingFetchSingleProductRemoteId: Long? = null
     private var pendingShipmentTrackingOrder: WCOrderModel? = null
+    private var pendingDeleteShipmentTracking: WCOrderShipmentTrackingModel? = null
 
     private var visitorStatsStartDate: String? = null
     private var visitorStatsEndDate: String? = null
@@ -415,6 +419,30 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
             } ?: showNoWCSitesToast()
         }
 
+        delete_shipment_tracking.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the remoteOrderId to delete the first shipment tracking for:"
+                ) { editText ->
+                    editText.text.toString().toLongOrNull()?.let { remoteOrderId ->
+                        wcOrderStore.getOrderByIdentifier(OrderIdentifier(site.id, remoteOrderId))?.let { order ->
+                            prependToLog("Submitting request to fetch shipment trackings for " +
+                                    "remoteOrderId: ${order.remoteOrderId}")
+
+                            wcOrderStore.getShipmentTrackingsForOrder(order).firstOrNull()?.let { tracking ->
+                                pendingDeleteShipmentTracking = tracking
+                                val payload = DeleteOrderShipmentTrackingPayload(site, order, tracking)
+                                dispatcher.dispatch(WCOrderActionBuilder.newDeleteOrderShipmentTrackingAction(payload))
+                            } ?: prependToLog("No shipment trackings in the db for remoteOrderId: $remoteOrderId, " +
+                                    "please fetch records first for this order")
+                        } ?: prependToLog("No order found in the db for remoteOrderId: $remoteOrderId, " +
+                                "please fetch orders first.")
+                    }
+                }
+            }
+        }
+
         fetch_shipment_providers.setOnClickListener {
             getFirstWCSite()?.let { site ->
                 // Just use the first order, the shipment trackings api oddly requires an order_id for fetching
@@ -588,6 +616,13 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                                     "remoteOrderId: ${it.remoteOrderId}, and [${event.rowsAffected}] rows changed in " +
                                     "the db:")
                             pendingShipmentTrackingOrder = null
+                        }
+                    }
+                    DELETE_ORDER_SHIPMENT_TRACKING -> {
+                        pendingDeleteShipmentTracking?.let {
+                            prependToLog("Shipment tracking deleted successfully! [${event.rowsAffected}] db rows " +
+                                    "affected.")
+                            pendingDeleteShipmentTracking = null
                         }
                     }
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
