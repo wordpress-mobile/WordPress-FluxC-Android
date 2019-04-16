@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
@@ -34,7 +35,8 @@ class OrderSqlUtilsTest {
                         WCOrderModel::class.java,
                         WCOrderNoteModel::class.java,
                         WCOrderStatusModel::class.java,
-                        WCOrderShipmentTrackingModel::class.java),
+                        WCOrderShipmentTrackingModel::class.java,
+                        WCOrderShipmentProviderModel::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE)
         WellSql.init(config)
         config.reset()
@@ -338,5 +340,30 @@ class OrderSqlUtilsTest {
         // Verify only a single shipment tracking row in db
         trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(orderModel)
         assertEquals(1, trackingsInDb.size)
+    }
+
+    @Test
+    fun testGetOrderShipmentProvidersForOrder() {
+        val siteModel = SiteModel().apply { id = 1 }
+        val orderModel = OrderTestUtils.generateSampleOrder(3, siteId = 1)
+        val json = UnitTestUtils
+                .getStringFromResourceFile(this.javaClass, "wc/order-shipment-providers.json")
+        val providers = OrderTestUtils
+                .getOrderShipmentProvidersFromJson(json, siteModel.id)
+                .toMutableList()
+        assertEquals(54, providers.size)
+
+        // Save full list to the database
+        var rowsAffected = providers.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentProvider(it) }
+        assertEquals(54, rowsAffected)
+
+        // Attempt to save again (should ignore existing entries and add new one)
+        providers.add(OrderTestUtils.generateOrderShipmentProvider(siteModel.id))
+        rowsAffected = providers.sumBy { OrderSqlUtils.insertOrIgnoreOrderShipmentProvider(it) }
+        assertEquals(1, rowsAffected)
+
+        // Get all shipment providers for a single site
+        val providersForSite = OrderSqlUtils.getOrderShipmentProvidersForSite(siteModel)
+        assertEquals(55, providersForSite.size)
     }
 }
