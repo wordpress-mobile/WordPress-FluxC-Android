@@ -376,7 +376,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun deleteOrderShipmentTracking(payload: DeleteOrderShipmentTrackingPayload) {
-        with (payload) { wcOrderRestClient.deleteShipmentTrackingForOrder(site, order, tracking) }
+        with(payload) { wcOrderRestClient.deleteShipmentTrackingForOrder(site, order, tracking) }
     }
 
     private fun fetchOrderShipmentProviders(payload: FetchOrderShipmentProvidersPayload) {
