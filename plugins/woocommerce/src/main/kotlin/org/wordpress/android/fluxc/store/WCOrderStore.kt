@@ -180,6 +180,22 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(site, order) { this.error = error }
     }
 
+    class DeleteOrderShipmentTrackingPayload(
+        val site: SiteModel,
+        val tracking: WCOrderShipmentTrackingModel
+    ) : Payload<BaseNetworkError>()
+
+    class DeleteOrderShipmentTrackingResponsePayload(
+        val site: SiteModel,
+        val tracking: WCOrderShipmentTrackingModel
+    ) : Payload<OrderError>() {
+        constructor(
+            error: OrderError,
+            site: SiteModel,
+            tracking: WCOrderShipmentTrackingModel
+        ) : this(site, tracking) { this.error = error }
+    }
+
     class OrderError(val type: OrderErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
 
     enum class OrderErrorType {
@@ -281,6 +297,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 fetchOrderStatusOptions(action.payload as FetchOrderStatusOptionsPayload)
             WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS ->
                 fetchOrderShipmentTrackings(action.payload as FetchOrderShipmentTrackingsPayload)
+            WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING ->
+                deleteOrderShipmentTracking(action.payload as DeleteOrderShipmentTrackingPayload)
             WCOrderAction.FETCH_ORDER_SHIPMENT_PROVIDERS ->
                 fetchOrderShipmentProviders(action.payload as FetchOrderShipmentProvidersPayload)
 
@@ -300,6 +318,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 handleFetchOrderStatusOptionsCompleted(action.payload as FetchOrderStatusOptionsResponsePayload)
             WCOrderAction.FETCHED_ORDER_SHIPMENT_TRACKINGS ->
                 handleFetchOrderShipmentTrackingsCompleted(action.payload as FetchOrderShipmentTrackingsResponsePayload)
+            WCOrderAction.DELETED_ORDER_SHIPMENT_TRACKING ->
+                handleDeleteOrderShipmentTrackingCompleted(action.payload as DeleteOrderShipmentTrackingResponsePayload)
             WCOrderAction.FETCHED_ORDER_SHIPMENT_PROVIDERS ->
                 handleFetchOrderShipmentProvidersCompleted(
                         action.payload as FetchOrderShipmentProvidersResponsePayload)
@@ -349,6 +369,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     private fun fetchOrderShipmentTrackings(payload: FetchOrderShipmentTrackingsPayload) {
         wcOrderRestClient.fetchOrderShipmentTrackings(payload.site, payload.order)
+    }
+
+    private fun deleteOrderShipmentTracking(payload: DeleteOrderShipmentTrackingPayload) {
+        // TODO
     }
 
     private fun fetchOrderShipmentProviders(payload: FetchOrderShipmentProvidersPayload) {
@@ -544,6 +568,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
         onOrderChanged.causeOfChange = FETCH_ORDER_SHIPMENT_TRACKINGS
         emitChange(onOrderChanged)
+    }
+
+    private fun handleDeleteOrderShipmentTrackingCompleted(payload: DeleteOrderShipmentTrackingResponsePayload) {
+        // TODO
     }
 
     private fun handleFetchOrderShipmentProvidersCompleted(
