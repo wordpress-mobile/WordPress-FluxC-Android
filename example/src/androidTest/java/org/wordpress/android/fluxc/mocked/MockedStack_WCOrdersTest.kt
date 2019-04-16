@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
@@ -444,6 +445,28 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
                     "https://tools.usps.com/go/TrackConfirmAction_input?qtc_tLabels1=11122233344466666")
             assertEquals(trackingNumber, "11122233344466666")
             assertEquals(dateShipped, "2019-02-19")
+        }
+    }
+
+    @Test
+    fun testOrderShipmentProvidersFetchSuccess() {
+        val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
+        interceptor.respondWith("wc-order-shipment-providers-success.json")
+        orderRestClient.fetchOrderShipmentProviders(siteModel, orderModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCOrderAction.FETCHED_ORDER_SHIPMENT_PROVIDERS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchOrderShipmentProvidersResponsePayload
+        assertNull(payload.error)
+        assertEquals(54, payload.providers.size)
+
+        with(payload.providers[0]) {
+            assertEquals(localSiteId, siteModel.id)
+            assertEquals("Australia", country)
+            assertEquals("Australia Post", carrierName)
+            assertEquals("http://auspost.com.au/track/track.html?id=%1\$s", carrierLink)
         }
     }
 
