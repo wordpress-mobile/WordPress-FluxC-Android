@@ -5,6 +5,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
+import org.wordpress.android.fluxc.action.WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
@@ -580,8 +581,12 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
         } else {
             // Remove the record from the database and send response
-            // TODO
+            val rowsAffected = payload.tracking?.let { OrderSqlUtils.deleteOrderShipmentTrackingById(it) } ?: 0
+            onOrderChanged = OnOrderChanged(rowsAffected)
         }
+
+        onOrderChanged.causeOfChange = DELETE_ORDER_SHIPMENT_TRACKING
+        emitChange(onOrderChanged)
     }
 
     private fun handleFetchOrderShipmentProvidersCompleted(

@@ -2,7 +2,7 @@
 /orders/<id>/
 /orders/<id>/notes/
 /orders/<id>/shipment-trackings/
-/orders/<id>/shipment-trackings/<id>
+/orders/<id>/shipment-trackings/<tracking>#String/
 /orders/<id>/shipment-trackings/providers/
 
 /products/<id>/

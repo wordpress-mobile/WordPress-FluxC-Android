@@ -407,20 +407,21 @@ class OrderRestClient(
      */
     fun deleteShipmentTrackingForOrder(site: SiteModel, order: WCOrderModel, tracking: WCOrderShipmentTrackingModel) {
         val url = WOOCOMMERCE.orders.id(order.remoteOrderId)
-                .shipment_trackings.id(tracking.remoteTrackingId.toLong()).pathV2
+                .shipment_trackings.tracking(tracking.remoteTrackingId).pathV2
 
         val responseType = object : TypeToken<OrderShipmentTrackingApiResponse>() {}.type
         val params = emptyMap<String, String>()
         val request = JetpackTunnelGsonRequest.buildDeleteRequest(url, site.siteId, params, responseType,
                 { response: OrderShipmentTrackingApiResponse? ->
-                    val tracking = response?.let {
+                    val trackingResponse = response?.let {
                         orderShipmentTrackingResponseToModel(it).apply {
                             localSiteId = site.id
                             localOrderId = order.id
+                            id = tracking.id
                         }
                     }
 
-                    val payload = DeleteOrderShipmentTrackingResponsePayload(site, order, tracking)
+                    val payload = DeleteOrderShipmentTrackingResponsePayload(site, order, trackingResponse)
                     dispatcher.dispatch(WCOrderActionBuilder.newDeletedOrderShipmentTrackingAction(payload))
                 },
                 WPComErrorListener { networkError ->
