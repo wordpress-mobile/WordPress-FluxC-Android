@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload
@@ -391,6 +392,42 @@ class OrderRestClient(
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentTrackingsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Deletes a single shipment tracking record for an order.
+     *
+     * Makes a POST call requesting a DELETE method on `/wc/v2/orders/<order_id>/shipment_trackings/<tracking_id>/`
+     * via the Jetpack tunnel (see [JetpackTunnelGsonRequest].
+     *
+     * Note this is currently not supported in v3, but will be in the future.
+     *
+     * Dispatches a [WCOrderAction.DELETED_ORDER_SHIPMENT_TRACKING] action with the results
+     */
+    fun deleteShipmentTrackingForOrder(site: SiteModel, order: WCOrderModel, tracking: WCOrderShipmentTrackingModel) {
+        val url = WOOCOMMERCE.orders.id(order.remoteOrderId)
+                .shipment_trackings.id(tracking.remoteTrackingId.toLong()).pathV2
+
+        val responseType = object : TypeToken<OrderShipmentTrackingApiResponse>() {}.type
+        val params = emptyMap<String, String>()
+        val request = JetpackTunnelGsonRequest.buildDeleteRequest(url, site.siteId, params, responseType,
+                { response: OrderShipmentTrackingApiResponse? ->
+                    val tracking = response?.let {
+                        orderShipmentTrackingResponseToModel(it).apply {
+                            localSiteId = site.id
+                            localOrderId = order.id
+                        }
+                    }
+
+                    val payload = DeleteOrderShipmentTrackingResponsePayload(site, order, tracking)
+                    dispatcher.dispatch(WCOrderActionBuilder.newDeletedOrderShipmentTrackingAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val trackingsError = networkErrorToOrderError(networkError)
+                    val payload = DeleteOrderShipmentTrackingResponsePayload(trackingsError, site, order, tracking)
+                    dispatcher.dispatch(WCOrderActionBuilder.newDeletedOrderShipmentTrackingAction(payload))
+                })
         add(request)
     }
 

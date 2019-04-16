@@ -182,18 +182,21 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     class DeleteOrderShipmentTrackingPayload(
         val site: SiteModel,
+        val order: WCOrderModel,
         val tracking: WCOrderShipmentTrackingModel
     ) : Payload<BaseNetworkError>()
 
     class DeleteOrderShipmentTrackingResponsePayload(
         val site: SiteModel,
-        val tracking: WCOrderShipmentTrackingModel
+        val order: WCOrderModel,
+        val tracking: WCOrderShipmentTrackingModel?
     ) : Payload<OrderError>() {
         constructor(
             error: OrderError,
             site: SiteModel,
-            tracking: WCOrderShipmentTrackingModel
-        ) : this(site, tracking) { this.error = error }
+            order: WCOrderModel,
+            tracking: WCOrderShipmentTrackingModel?
+        ) : this(site, order, tracking) { this.error = error }
     }
 
     class OrderError(val type: OrderErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
@@ -372,7 +375,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun deleteOrderShipmentTracking(payload: DeleteOrderShipmentTrackingPayload) {
-        // TODO
+        with (payload) { wcOrderRestClient.deleteShipmentTrackingForOrder(site, order, tracking) }
     }
 
     private fun fetchOrderShipmentProviders(payload: FetchOrderShipmentProvidersPayload) {
@@ -571,7 +574,14 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun handleDeleteOrderShipmentTrackingCompleted(payload: DeleteOrderShipmentTrackingResponsePayload) {
-        // TODO
+        val onOrderChanged: OnOrderChanged
+
+        if (payload.isError) {
+            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
+        } else {
+            // Remove the record from the database and send response
+            // TODO
+        }
     }
 
     private fun handleFetchOrderShipmentProvidersCompleted(
