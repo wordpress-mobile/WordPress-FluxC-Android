@@ -5,6 +5,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
+import org.wordpress.android.fluxc.action.WCOrderAction.ADD_ORDER_SHIPMENT_TRACKING
 import org.wordpress.android.fluxc.action.WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
@@ -178,16 +179,14 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     class AddOrderShipmentTrackingResponsePayload(
         val site: SiteModel,
         val order: WCOrderModel,
-        val tracking: WCOrderShipmentTrackingModel?,
-        val isCustomProvider: Boolean = false
+        val tracking: WCOrderShipmentTrackingModel?
     ) : Payload<OrderError>() {
         constructor(
             error: OrderError,
             site: SiteModel,
             order: WCOrderModel,
-            tracking: WCOrderShipmentTrackingModel,
-            isCustomProvider: Boolean
-        ) : this(site, order, tracking, isCustomProvider) { this.error = error }
+            tracking: WCOrderShipmentTrackingModel
+        ) : this(site, order, tracking) { this.error = error }
     }
 
     class DeleteOrderShipmentTrackingPayload(
@@ -605,7 +604,17 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun handleAddOrderShipmentTrackingCompleted(payload: AddOrderShipmentTrackingResponsePayload) {
-        // TODO
+        val onOrderChanged: OnOrderChanged
+
+        if (payload.isError) {
+            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
+        } else {
+            val rowsAffected = payload.tracking?.let { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) } ?: 0
+            onOrderChanged = OnOrderChanged(rowsAffected)
+        }
+
+        onOrderChanged.causeOfChange = ADD_ORDER_SHIPMENT_TRACKING
+        emitChange(onOrderChanged)
     }
 
     private fun handleDeleteOrderShipmentTrackingCompleted(payload: DeleteOrderShipmentTrackingResponsePayload) {

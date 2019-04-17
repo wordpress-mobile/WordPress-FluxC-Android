@@ -431,13 +431,12 @@ class OrderRestClient(
                         orderShipmentTrackingResponseToModel(it)
                     }
                     val payload = AddOrderShipmentTrackingResponsePayload(
-                            site, order, trackingResponse, isCustomProvider)
+                            site, order, trackingResponse)
                     dispatcher.dispatch(WCOrderActionBuilder.newAddedOrderShipmentTrackingAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val trackingsError = networkErrorToOrderError(networkError)
-                    val payload = AddOrderShipmentTrackingResponsePayload(
-                            trackingsError, site, order, tracking, isCustomProvider)
+                    val payload = AddOrderShipmentTrackingResponsePayload(trackingsError, site, order, tracking)
                     dispatcher.dispatch(WCOrderActionBuilder.newAddedOrderShipmentTrackingAction(payload))
                 })
         add(request)
