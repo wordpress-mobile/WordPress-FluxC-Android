@@ -87,9 +87,15 @@
         <property name="message" value="Stores must be annotated with @Singleton"/>
     </module>
 
-    <!-- Specific to FluxC -->
+    <!-- Specific to FluxC - Java -->
     <module name="RegexpMultiline">
         <property name="format" value="(?&lt;!^@Singleton)\n.*extends Base[\w]*Client[\s{]"/>
+        <property name="message" value="Network clients must be annotated with @Singleton"/>
+    </module>
+
+    <!-- Specific to FluxC - Kotlin -->
+    <module name="RegexpMultiline">
+        <property name="format" value="(?&lt;!@Singleton)\n.*class(.+\n)*.*:[\n\s]*Base[\w]*Client\("/>
         <property name="message" value="Network clients must be annotated with @Singleton"/>
     </module>
 
