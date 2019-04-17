@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
@@ -392,6 +393,53 @@ class OrderRestClient(
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentTrackingsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Posts a new Order Shipment Tracking record to the API for an order.
+     *
+     * Makes a POST call to save a Shipment Tracking record via the Jetpack tunnel (see [JetpackTunnelGsonRequest]).
+     * The API calls for different fields depending on if the new record uses a custom provider or not, so this is
+     * why there is an if-statement. Either way, the same standard [WCOrderShipmentTrackingModel] is returned.
+     *
+     * Note: This API does not currently support v3.
+     *
+     * Dispatches [WCOrderAction.ADDED_ORDER_SHIPMENT_TRACKING] action with the results.
+     */
+    fun addOrderShipmentTrackingForOrder(
+        site: SiteModel,
+        order: WCOrderModel,
+        tracking: WCOrderShipmentTrackingModel,
+        isCustomProvider: Boolean
+    ) {
+        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).shipment_trackings.pathV2
+
+        val responseType = object : TypeToken<OrderShipmentTrackingApiResponse>() {}.type
+        val params = if (isCustomProvider) {
+            mutableMapOf(
+                    "custom_tracking_provider" to tracking.trackingProvider,
+                    "custom_tracking_link" to tracking.trackingLink)
+        } else {
+            mutableMapOf("tracking_provider" to tracking.trackingProvider)
+        }
+        params.put("tracking_number", tracking.trackingNumber)
+        params.put("date_shipped", tracking.dateShipped)
+        val request = JetpackTunnelGsonRequest.buildPostRequest(url, site.siteId, params, responseType,
+                { response: OrderShipmentTrackingApiResponse? ->
+                    val trackingResponse = response?.let {
+                        orderShipmentTrackingResponseToModel(it)
+                    }
+                    val payload = AddOrderShipmentTrackingResponsePayload(
+                            site, order, trackingResponse, isCustomProvider)
+                    dispatcher.dispatch(WCOrderActionBuilder.newAddedOrderShipmentTrackingAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val trackingsError = networkErrorToOrderError(networkError)
+                    val payload = AddOrderShipmentTrackingResponsePayload(
+                            trackingsError, site, order, tracking, isCustomProvider)
+                    dispatcher.dispatch(WCOrderActionBuilder.newAddedOrderShipmentTrackingAction(payload))
+                })
         add(request)
     }
 
