@@ -428,7 +428,10 @@ class OrderRestClient(
         val request = JetpackTunnelGsonRequest.buildPostRequest(url, site.siteId, params, responseType,
                 { response: OrderShipmentTrackingApiResponse? ->
                     val trackingResponse = response?.let {
-                        orderShipmentTrackingResponseToModel(it)
+                        orderShipmentTrackingResponseToModel(it).apply {
+                            localOrderId = order.id
+                            localSiteId = site.id
+                        }
                     }
                     val payload = AddOrderShipmentTrackingResponsePayload(
                             site, order, trackingResponse)
