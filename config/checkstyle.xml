@@ -83,7 +83,7 @@
 
     <!-- Specific to FluxC -->
     <module name="RegexpMultiline">
-        <property name="format" value="(?&lt;!^@Singleton)\n.*extends Store[\s{]"/>
+        <property name="format" value="(?&lt;!@Singleton)\n.*class \S*Store [^{]"/>
         <property name="message" value="Stores must be annotated with @Singleton"/>
     </module>
 
