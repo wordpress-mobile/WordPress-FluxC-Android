@@ -168,19 +168,6 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(site, order) { this.error = error }
     }
 
-    class FetchOrderShipmentProvidersPayload(
-        val site: SiteModel,
-        val order: WCOrderModel
-    ) : Payload<BaseNetworkError>()
-
-    class FetchOrderShipmentProvidersResponsePayload(
-        val site: SiteModel,
-        val order: WCOrderModel,
-        val providers: List<WCOrderShipmentProviderModel> = emptyList()
-    ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(site, order) { this.error = error }
-    }
-
     class DeleteOrderShipmentTrackingPayload(
         val site: SiteModel,
         val order: WCOrderModel,
@@ -198,6 +185,19 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             order: WCOrderModel,
             tracking: WCOrderShipmentTrackingModel?
         ) : this(site, order, tracking) { this.error = error }
+    }
+
+    class FetchOrderShipmentProvidersPayload(
+        val site: SiteModel,
+        val order: WCOrderModel
+    ) : Payload<BaseNetworkError>()
+
+    class FetchOrderShipmentProvidersResponsePayload(
+        val site: SiteModel,
+        val order: WCOrderModel,
+        val providers: List<WCOrderShipmentProviderModel> = emptyList()
+    ) : Payload<OrderError>() {
+        constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(site, order) { this.error = error }
     }
 
     class OrderError(val type: OrderErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
