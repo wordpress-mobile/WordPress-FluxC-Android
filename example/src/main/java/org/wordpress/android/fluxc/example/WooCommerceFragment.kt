@@ -40,12 +40,14 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRe
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchSingleOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderShipmentProvidersChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderStatusOptionsChanged
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
@@ -412,6 +414,19 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                 }
             } ?: showNoWCSitesToast()
         }
+
+        fetch_shipment_providers.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                // Just use the first order, the shipment trackings api oddly requires an order_id for fetching
+                // a list of providers, even though the providers are not order specific.
+                getFirstWCOrder()?.let { order ->
+                    prependToLog("Fetching a list of providers from the API")
+
+                    val payload = FetchOrderShipmentProvidersPayload(site, order)
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentProvidersAction(payload))
+                } ?: prependToLog("No orders found in db to use as seed. Fetch orders first.")
+            }
+        }
     }
 
     override fun onStart() {
@@ -467,6 +482,21 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                             "weight unit = ${settings.weightUnit}, dimension unit = ${settings.dimensionUnit}"
             )
         } ?: prependToLog("Error getting product settings from db")
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onOrderShipmentProviderChanged(event: OnOrderShipmentProvidersChanged) {
+        if (event.isError) {
+            prependToLog("Error fetching shipment providers - error: " + event.error.type)
+        } else {
+            getFirstWCSite()?.let { site ->
+                wcOrderStore.getShipmentProvidersForSite(site).forEach { provider ->
+                    prependToLog(" - ${provider.carrierName}")
+                }
+                prependToLog("[${event.rowsAffected}] shipment providers fetched successfully!")
+            }
+        }
     }
 
     @Suppress("unused")

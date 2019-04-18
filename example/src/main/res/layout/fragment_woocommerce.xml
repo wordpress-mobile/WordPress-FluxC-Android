@@ -101,6 +101,12 @@
             android:text="Fetch Order Shipment Trackings"/>
 
         <Button
+            android:id="@+id/fetch_shipment_providers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Order Shipment Providers"/>
+
+        <Button
             android:id="@+id/update_latest_order_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

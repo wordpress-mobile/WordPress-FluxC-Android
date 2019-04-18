@@ -11,9 +11,13 @@ import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
+import org.wordpress.android.fluxc.store.Store.OnChanged
 import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.OnOrderShipmentProvidersChanged
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import java.lang.AssertionError
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -22,7 +26,8 @@ import javax.inject.Inject
 class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
     internal enum class TestEvent {
         NONE,
-        FETCHED_ORDER_SHIPMENT_TRACKINGS
+        FETCHED_ORDER_SHIPMENT_TRACKINGS,
+        FETCHED_ORDER_SHIPMENT_PROVIDERS
     }
 
     @Inject internal lateinit var orderStore: WCOrderStore
@@ -32,7 +37,7 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
             BuildConfig.TEST_WPCOM_PASSWORD_WOO_JETPACK_EXTENSIONS)
 
     private var nextEvent: TestEvent = TestEvent.NONE
-    private var lastEvent: OnOrderChanged? = null
+    private var lastEvent: OnChanged<OrderError>? = null
 
     @Throws(Exception::class)
     override fun setUp() {
@@ -93,6 +98,34 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         assertTrue(trackings.isEmpty())
     }
 
+    /**
+     * Tests the Woo mobile implementation of the Shipment Trackings
+     * plugin by attempting to fetch the shipment providers for an order. This plugin requires
+     * the order ID to fetch the list of shipment providers even though these providers are not
+     * linked to an order_id. It's strange, but that's the way it's written currently.
+     *
+     * There is a ticket to get this fixed:
+     * https://github.com/woocommerce/woocommerce-shipment-tracking/issues/97
+     */
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchShipmentProviders() {
+        nextEvent = TestEvent.FETCHED_ORDER_SHIPMENT_PROVIDERS
+        mCountDownLatch = CountDownLatch(1)
+
+        val orderModel = WCOrderModel().apply {
+            id = 8
+            remoteOrderId = BuildConfig.TEST_WC_ORDER_WITH_SHIPMENT_TRACKINGS_ID.toLong()
+            localSiteId = sSite.id
+        }
+        mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentProvidersAction(
+                FetchOrderShipmentProvidersPayload(sSite, orderModel)))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        val providers = orderStore.getShipmentProvidersForSite(sSite)
+        assertTrue(providers.isNotEmpty())
+    }
+
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onOrderChanged(event: OnOrderChanged) {
@@ -109,5 +142,18 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
         }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onOrderShipmentProvidersChanged(event: OnOrderShipmentProvidersChanged) {
+        event.error?.let {
+            throw AssertionError("onOrderShipmentProvidersChanged has unexpected error: " + it.type)
+        }
+
+        lastEvent = event
+
+        assertEquals(TestEvent.FETCHED_ORDER_SHIPMENT_PROVIDERS, nextEvent)
+        mCountDownLatch.countDown()
     }
 }
