@@ -62,7 +62,7 @@ class ReleaseStack_ManageInsightsTestJetpack : ReleaseStack_Base() {
     fun testAddAndRemoveInsights() {
         val site = authenticate()
 
-        val emptyStats = runBlocking { statsStore.getInsights(site) }
+        val emptyStats = runBlocking { statsStore.getAddedInsights(site) }
 
         // Starts with 4 default blocks
         assertEquals(emptyStats.size, 4)
@@ -70,13 +70,13 @@ class ReleaseStack_ManageInsightsTestJetpack : ReleaseStack_Base() {
             runBlocking { statsStore.addType(site, InsightType.FOLLOWERS) }
         }
 
-        val statsWithFollowers = runBlocking { statsStore.getInsights(site) }
+        val statsWithFollowers = runBlocking { statsStore.getAddedInsights(site) }
 
         assertEquals(statsWithFollowers.size, 5)
 
         runBlocking { statsStore.removeType(site, FOLLOWERS) }
 
-        val statsWithoutFollowers = runBlocking { statsStore.getInsights(site) }
+        val statsWithoutFollowers = runBlocking { statsStore.getAddedInsights(site) }
 
         assertEquals(statsWithoutFollowers.size, 4)
     }
@@ -85,13 +85,13 @@ class ReleaseStack_ManageInsightsTestJetpack : ReleaseStack_Base() {
     fun testMoveInsightsUp() {
         val site = authenticate()
 
-        val stats = runBlocking { statsStore.getInsights(site) }
+        val stats = runBlocking { statsStore.getAddedInsights(site) }
 
         val secondItem = stats[1]
 
         runBlocking { statsStore.moveTypeUp(site, secondItem) }
 
-        val updatedStats = runBlocking { statsStore.getInsights(site) }
+        val updatedStats = runBlocking { statsStore.getAddedInsights(site) }
 
         assertEquals(updatedStats[0], secondItem)
     }
@@ -100,13 +100,13 @@ class ReleaseStack_ManageInsightsTestJetpack : ReleaseStack_Base() {
     fun testMoveInsightsDown() {
         val site = authenticate()
 
-        val stats = runBlocking { statsStore.getInsights(site) }
+        val stats = runBlocking { statsStore.getAddedInsights(site) }
 
         val firstItem = stats[0]
 
         runBlocking { statsStore.moveTypeDown(site, firstItem) }
 
-        val updatedStats = runBlocking { statsStore.getInsights(site) }
+        val updatedStats = runBlocking { statsStore.getAddedInsights(site) }
 
         assertEquals(updatedStats[1], firstItem)
     }
