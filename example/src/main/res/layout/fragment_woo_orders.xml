@@ -1,0 +1,91 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="org.wordpress.android.fluxc.example.ui.orders.WooOrdersFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/fetch_orders"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Orders"/>
+
+        <Button
+            android:id="@+id/fetch_orders_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Orders Count"/>
+
+        <Button
+            android:id="@+id/fetch_single_order"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Single Order"/>
+
+        <Button
+            android:id="@+id/fetch_has_orders"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Has Orders"/>
+
+        <Button
+            android:id="@+id/fetch_orders_by_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Load Orders Filtered By Status (DB)"/>
+
+        <Button
+            android:id="@+id/fetch_orders_by_status_api"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Completed Orders (API)"/>
+
+        <Button
+            android:id="@+id/fetch_order_status_options"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Order Status Options"/>
+
+        <Button
+            android:id="@+id/search_orders"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Search Orders"/>
+
+        <Button
+            android:id="@+id/fetch_order_notes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Order Notes"/>
+
+        <Button
+            android:id="@+id/post_order_note"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Post Order Note"/>
+
+        <Button
+            android:id="@+id/fetch_shipment_trackings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Order Shipment Trackings"/>
+
+        <Button
+            android:id="@+id/fetch_shipment_providers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Order Shipment Providers"/>
+
+        <Button
+            android:id="@+id/update_latest_order_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Update Latest Order Status"/>
+    </LinearLayout>
+</ScrollView>
