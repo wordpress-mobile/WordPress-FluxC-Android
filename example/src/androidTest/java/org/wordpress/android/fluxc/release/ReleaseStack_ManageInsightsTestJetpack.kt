@@ -21,8 +21,8 @@ import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
 import org.wordpress.android.fluxc.store.StatsStore
-import org.wordpress.android.fluxc.store.StatsStore.InsightsTypes
-import org.wordpress.android.fluxc.store.StatsStore.InsightsTypes.FOLLOWERS
+import org.wordpress.android.fluxc.store.StatsStore.InsightType
+import org.wordpress.android.fluxc.store.StatsStore.InsightType.FOLLOWERS
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.concurrent.CountDownLatch
@@ -66,8 +66,8 @@ class ReleaseStack_ManageInsightsTestJetpack : ReleaseStack_Base() {
 
         // Starts with 4 default blocks
         assertEquals(emptyStats.size, 4)
-        if (!emptyStats.contains(InsightsTypes.FOLLOWERS)) {
-            runBlocking { statsStore.addType(site, InsightsTypes.FOLLOWERS) }
+        if (!emptyStats.contains(InsightType.FOLLOWERS)) {
+            runBlocking { statsStore.addType(site, InsightType.FOLLOWERS) }
         }
 
         val statsWithFollowers = runBlocking { statsStore.getInsights(site) }
