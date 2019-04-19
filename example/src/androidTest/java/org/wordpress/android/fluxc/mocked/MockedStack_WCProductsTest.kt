@@ -128,7 +128,6 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertTrue(payloadParent.product.manageStock)
     }
 
-
     @Test
     fun testFetchProductVariationsSuccess() {
         interceptor.respondWith("wc-fetch-product-variations-response-success.json")
