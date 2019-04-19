@@ -17,10 +17,8 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.utils.DateUtils
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
-import java.util.Locale
 
 class WCAddOrderShipmentTrackingDialog : DialogFragment() {
     companion object {
@@ -40,7 +38,12 @@ class WCAddOrderShipmentTrackingDialog : DialogFragment() {
 
     interface Listener {
         fun onTrackingSubmitted(
-            site: SiteModel, order: WCOrderModel, tracking: WCOrderShipmentTrackingModel, isCustomProvider: Boolean)
+            site: SiteModel,
+            order: WCOrderModel,
+            tracking:
+            WCOrderShipmentTrackingModel,
+            isCustomProvider: Boolean
+        )
     }
 
     lateinit var listener: Listener
