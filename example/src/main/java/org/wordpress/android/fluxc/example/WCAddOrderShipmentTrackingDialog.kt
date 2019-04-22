@@ -110,6 +110,7 @@ class WCAddOrderShipmentTrackingDialog : DialogFragment() {
                     this.trackingProvider = tracking_cboProvider.selectedItem.toString()
                 }
                 this.dateShipped = tracking_dateShipped.text.toString()
+                this.trackingNumber = tracking_number.text.toString()
             }
             listener.onTrackingSubmitted(site, order, tracking, isCustomProvider = isCustomSelected)
             dismiss()
