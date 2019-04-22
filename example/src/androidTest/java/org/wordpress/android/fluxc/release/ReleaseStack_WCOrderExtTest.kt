@@ -71,7 +71,6 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
 
         val trackings = orderStore.getShipmentTrackingsForOrder(orderModel)
         assertTrue(trackings.isNotEmpty())
-        assertEquals(2, trackings.size)
     }
 
     /**
