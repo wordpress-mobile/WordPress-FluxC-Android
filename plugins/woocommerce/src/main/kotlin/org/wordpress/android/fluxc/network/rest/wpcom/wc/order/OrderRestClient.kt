@@ -9,10 +9,11 @@ import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
-import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
+import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -23,6 +24,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsResponsePayload
@@ -34,6 +36,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.WCOrderModelId
 import javax.inject.Singleton
 import kotlin.collections.MutableMap.MutableEntry
 
@@ -93,6 +96,42 @@ class OrderRestClient(
         add(request)
     }
 
+    fun fetchOrderList(listDescriptor: WCOrderListDescriptor, offset: Long) {
+        // If null, set the filter to the api default value of "any", which will not apply any order status filters.
+        val statusFilter = listDescriptor.statusFilter.takeUnless { it.isNullOrBlank() }
+                ?: WCOrderStore.DEFAULT_ORDER_STATUS
+
+        val url = WOOCOMMERCE.orders.pathV3
+        val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
+        val params = mapOf(
+                "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
+                "offset" to offset.toString(),
+                "status" to statusFilter,
+                "_fields" to "id")
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, listDescriptor.site.siteId, params, responseType,
+                { response: List<OrderApiResponse>? ->
+                    val orderModelIds = response?.map {
+                        WCOrderModelId(id = orderResponseToOrderModel(it).remoteOrderId)
+                    }.orEmpty()
+
+                    val canLoadMore = orderModelIds.size == WCOrderStore.NUM_ORDERS_PER_FETCH
+
+                    val payload = FetchOrderListResponsePayload(
+                            listDescriptor = listDescriptor,
+                            orderIds = orderModelIds,
+                            loadedMore = offset > 0,
+                            canLoadMore = canLoadMore
+                    )
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
+                    val payload = FetchOrderListResponsePayload(error = orderError, listDescriptor = listDescriptor)
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderListAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
     /**
      * Makes a GET call to `/wc/v3/reports/orders/totals` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of available order status options for the given WooCommerce [SiteModel].

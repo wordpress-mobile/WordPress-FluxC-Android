@@ -11,17 +11,22 @@ import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.annotations.action.Action
+import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
-import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
+import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.model.order.toIdSet
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
+import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
+import org.wordpress.android.fluxc.store.ListStore.ListError
+import org.wordpress.android.fluxc.store.ListStore.ListErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -43,6 +48,11 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var loadMore: Boolean = false
     ) : Payload<BaseNetworkError>()
 
+    class FetchOrderListPayload(
+        val listDescriptor: WCOrderListDescriptor,
+        val offset: Long
+    ) : Payload<BaseNetworkError>()
+
     class FetchOrdersResponsePayload(
         var site: SiteModel,
         var orders: List<WCOrderModel> = emptyList(),
@@ -51,6 +61,19 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var canLoadMore: Boolean = false
     ) : Payload<OrderError>() {
         constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
+    }
+
+    data class WCOrderModelId(val id: Long)
+
+    class FetchOrderListResponsePayload(
+        val listDescriptor: WCOrderListDescriptor,
+        var orderIds: List<WCOrderModelId> = emptyList(),
+        var loadedMore: Boolean = false,
+        var canLoadMore: Boolean = false
+    ) : Payload<OrderError>() {
+        constructor(error: OrderError, listDescriptor: WCOrderListDescriptor) : this(listDescriptor) {
+            this.error = error
+        }
     }
 
     class SearchOrdersPayload(
@@ -270,6 +293,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         when (actionType) {
             // remote actions
             WCOrderAction.FETCH_ORDERS -> fetchOrders(action.payload as FetchOrdersPayload)
+            WCOrderAction.FETCH_ORDER_LIST -> fetchOrderList(action.payload as FetchOrderListPayload)
             WCOrderAction.FETCH_ORDERS_COUNT -> fetchOrdersCount(action.payload as FetchOrdersCountPayload)
             WCOrderAction.FETCH_SINGLE_ORDER -> fetchSingleOrder(action.payload as FetchSingleOrderPayload)
             WCOrderAction.UPDATE_ORDER_STATUS -> updateOrderStatus(action.payload as UpdateOrderStatusPayload)
@@ -286,6 +310,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
             // remote responses
             WCOrderAction.FETCHED_ORDERS -> handleFetchOrdersCompleted(action.payload as FetchOrdersResponsePayload)
+            WCOrderAction.FETCHED_ORDER_LIST ->
+                handleFetchOrderListCompleted(action.payload as FetchOrderListResponsePayload)
             WCOrderAction.FETCHED_ORDERS_COUNT ->
                 handleFetchOrdersCountCompleted(action.payload as FetchOrdersCountResponsePayload)
             WCOrderAction.FETCHED_SINGLE_ORDER -> handleFetchSingleOrderCompleted(action.payload as RemoteOrderPayload)
@@ -313,6 +339,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             0
         }
         wcOrderRestClient.fetchOrders(payload.site, offset, payload.statusFilter)
+    }
+
+    private fun fetchOrderList(payload: FetchOrderListPayload) {
+        wcOrderRestClient.fetchOrderList(payload.listDescriptor, payload.offset)
     }
 
     private fun searchOrders(payload: SearchOrdersPayload) {
@@ -378,6 +408,20 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         onOrderChanged.causeOfChange = WCOrderAction.FETCH_ORDERS
 
         emitChange(onOrderChanged)
+    }
+
+    private fun handleFetchOrderListCompleted(payload: FetchOrderListResponsePayload) {
+        // TODO: Handle whatever handleFetchOrdersCompleted is handling as well
+        mDispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(FetchedListItemsPayload(
+                listDescriptor = payload.listDescriptor,
+                remoteItemIds = payload.orderIds.map { it.id },
+                loadedMore = payload.loadedMore,
+                canLoadMore = payload.canLoadMore,
+                error = payload.error?.let { fetchError ->
+                    // TODO: Use the actual error type
+                    ListError(type = ListErrorType.GENERIC_ERROR, message = fetchError.message)
+                }
+        )))
     }
 
     private fun handleSearchOrdersCompleted(payload: SearchOrdersResponsePayload) {
