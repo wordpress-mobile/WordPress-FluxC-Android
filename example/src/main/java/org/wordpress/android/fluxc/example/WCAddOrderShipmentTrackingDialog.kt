@@ -40,8 +40,7 @@ class WCAddOrderShipmentTrackingDialog : DialogFragment() {
         fun onTrackingSubmitted(
             site: SiteModel,
             order: WCOrderModel,
-            tracking:
-            WCOrderShipmentTrackingModel,
+            tracking: WCOrderShipmentTrackingModel,
             isCustomProvider: Boolean
         )
     }
