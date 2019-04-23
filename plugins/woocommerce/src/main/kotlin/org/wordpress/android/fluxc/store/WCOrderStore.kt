@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_SHIPMENT_TRA
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderModel
@@ -249,6 +250,11 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
      */
     fun getOrdersForSite(site: SiteModel, vararg status: String): List<WCOrderModel> =
             OrderSqlUtils.getOrdersForSite(site, status = status.asList())
+
+    fun getOrdersForDescriptor(orderListDescriptor: WCOrderListDescriptor, remoteOrderIds: List<RemoteId>): Map<RemoteId, WCOrderModel> {
+        val orders = OrderSqlUtils.getOrdersForSiteByRemoteIds(orderListDescriptor.site, remoteOrderIds)
+        return orders.associateBy { RemoteId(it.remoteOrderId) }
+    }
 
     /**
      * Given an [OrderIdentifier], returns the corresponding order from the database as a [WCOrderModel].
