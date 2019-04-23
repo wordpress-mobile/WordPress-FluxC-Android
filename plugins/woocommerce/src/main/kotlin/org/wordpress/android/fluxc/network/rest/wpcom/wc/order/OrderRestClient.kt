@@ -103,8 +103,9 @@ class OrderRestClient(
 
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
+        val networkPageSize = listDescriptor.config.networkPageSize
         val params = mapOf(
-                "per_page" to WCOrderStore.NUM_ORDERS_PER_FETCH.toString(),
+                "per_page" to networkPageSize.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter,
                 "_fields" to "id")
@@ -114,7 +115,7 @@ class OrderRestClient(
                         WCOrderModelId(id = orderResponseToOrderModel(it).remoteOrderId)
                     }.orEmpty()
 
-                    val canLoadMore = orderModelIds.size == WCOrderStore.NUM_ORDERS_PER_FETCH
+                    val canLoadMore = orderModelIds.size == networkPageSize
 
                     val payload = FetchOrderListResponsePayload(
                             listDescriptor = listDescriptor,
