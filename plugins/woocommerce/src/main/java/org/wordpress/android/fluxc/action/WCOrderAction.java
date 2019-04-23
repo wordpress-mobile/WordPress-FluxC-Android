@@ -15,6 +15,8 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTracking
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload;
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload;
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountPayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload;
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersPayload;
@@ -34,6 +36,8 @@ public enum WCOrderAction implements IAction {
     FETCH_ORDERS,
     @Action(payloadType = FetchOrderListPayload.class)
     FETCH_ORDER_LIST,
+    @Action(payloadType = FetchOrdersByIdsPayload.class)
+    FETCH_ORDERS_BY_IDS,
     @Action(payloadType = FetchOrdersCountPayload.class)
     FETCH_ORDERS_COUNT,
     @Action(payloadType = FetchSingleOrderPayload.class)
@@ -60,6 +64,8 @@ public enum WCOrderAction implements IAction {
     FETCHED_ORDERS,
     @Action(payloadType = FetchOrderListResponsePayload.class)
     FETCHED_ORDER_LIST,
+    @Action(payloadType = FetchOrdersByIdsResponsePayload.class)
+    FETCHED_ORDERS_BY_IDS,
     @Action(payloadType = FetchOrdersCountResponsePayload.class)
     FETCHED_ORDERS_COUNT,
     @Action(payloadType = RemoteOrderPayload.class)

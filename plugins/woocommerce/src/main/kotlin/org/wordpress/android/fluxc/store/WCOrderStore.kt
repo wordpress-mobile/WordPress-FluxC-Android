@@ -54,6 +54,11 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         val offset: Long
     ) : Payload<BaseNetworkError>()
 
+    class FetchOrdersByIdsPayload(
+        val site: SiteModel,
+        val remoteIds: List<RemoteId>
+    ) : Payload<BaseNetworkError>()
+
     class FetchOrdersResponsePayload(
         var site: SiteModel,
         var orders: List<WCOrderModel> = emptyList(),
@@ -73,6 +78,15 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var canLoadMore: Boolean = false
     ) : Payload<OrderError>() {
         constructor(error: OrderError, listDescriptor: WCOrderListDescriptor) : this(listDescriptor) {
+            this.error = error
+        }
+    }
+
+    class FetchOrdersByIdsResponsePayload(
+        val site: SiteModel,
+        var orders: List<WCOrderModel> = emptyList()
+    ) : Payload<OrderError>() {
+        constructor(error: OrderError, site: SiteModel) : this(site = site) {
             this.error = error
         }
     }
@@ -228,6 +242,15 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         var causeOfChange: WCOrderAction? = null
     }
 
+    class OnOrdersFetchedByIds(
+        val site: SiteModel,
+        val orderIds: List<RemoteId> = emptyList()
+    ) : OnChanged<OrderError>() {
+        constructor(site: SiteModel, error: OrderError): this(site) {
+            this.error = error
+        }
+    }
+
     class OnOrdersSearched(
         var searchQuery: String = "",
         var canLoadMore: Boolean = false,
@@ -303,6 +326,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             // remote actions
             WCOrderAction.FETCH_ORDERS -> fetchOrders(action.payload as FetchOrdersPayload)
             WCOrderAction.FETCH_ORDER_LIST -> fetchOrderList(action.payload as FetchOrderListPayload)
+            WCOrderAction.FETCH_ORDERS_BY_IDS -> fetchOrdersByIds(action.payload as FetchOrdersByIdsPayload)
             WCOrderAction.FETCH_ORDERS_COUNT -> fetchOrdersCount(action.payload as FetchOrdersCountPayload)
             WCOrderAction.FETCH_SINGLE_ORDER -> fetchSingleOrder(action.payload as FetchSingleOrderPayload)
             WCOrderAction.UPDATE_ORDER_STATUS -> updateOrderStatus(action.payload as UpdateOrderStatusPayload)
@@ -321,6 +345,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             WCOrderAction.FETCHED_ORDERS -> handleFetchOrdersCompleted(action.payload as FetchOrdersResponsePayload)
             WCOrderAction.FETCHED_ORDER_LIST ->
                 handleFetchOrderListCompleted(action.payload as FetchOrderListResponsePayload)
+            WCOrderAction.FETCHED_ORDERS_BY_IDS ->
+                handleFetchOrderByIdsCompleted(action.payload as FetchOrdersByIdsResponsePayload)
             WCOrderAction.FETCHED_ORDERS_COUNT ->
                 handleFetchOrdersCountCompleted(action.payload as FetchOrdersCountResponsePayload)
             WCOrderAction.FETCHED_SINGLE_ORDER -> handleFetchSingleOrderCompleted(action.payload as RemoteOrderPayload)
@@ -352,6 +378,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     private fun fetchOrderList(payload: FetchOrderListPayload) {
         wcOrderRestClient.fetchOrderList(payload.listDescriptor, payload.offset)
+    }
+
+    private fun fetchOrdersByIds(payload: FetchOrdersByIdsPayload) {
+        wcOrderRestClient.fetchOrdersByIds(payload.site, payload.remoteIds)
     }
 
     private fun searchOrders(payload: SearchOrdersPayload) {
@@ -421,6 +451,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     private fun handleFetchOrderListCompleted(payload: FetchOrderListResponsePayload) {
         // TODO: Handle whatever handleFetchOrdersCompleted is handling as well
+        // TODO: Check if any of the orders in the DB is outdated and fetch those orders from remote
         mDispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(FetchedListItemsPayload(
                 listDescriptor = payload.listDescriptor,
                 remoteItemIds = payload.orderIds.map { it.id },
@@ -431,6 +462,23 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                     ListError(type = ListErrorType.GENERIC_ERROR, message = fetchError.message)
                 }
         )))
+    }
+
+    private fun handleFetchOrderByIdsCompleted(payload: FetchOrdersByIdsResponsePayload) {
+        val onOrdersFetchedByIds: OnOrdersFetchedByIds = if (payload.isError) {
+            OnOrdersFetchedByIds(payload.site, payload.error)
+        } else {
+            // TODO: We should be able to insert all orders in one sql query
+            payload.orders.forEach { OrderSqlUtils.insertOrUpdateOrder(it) }
+            OnOrdersFetchedByIds(
+                    site = payload.site,
+                    orderIds = payload.orders.map { RemoteId(it.remoteOrderId) })
+        }
+        emitChange(onOrdersFetchedByIds)
+        val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(
+                localSiteId = payload.site.id
+        )
+        mDispatcher.dispatch(ListActionBuilder.newListDataInvalidatedAction(listTypeIdentifier))
     }
 
     private fun handleSearchOrdersCompleted(payload: SearchOrdersResponsePayload) {
