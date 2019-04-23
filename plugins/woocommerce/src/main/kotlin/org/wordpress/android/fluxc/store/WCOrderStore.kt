@@ -251,7 +251,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     fun getOrdersForSite(site: SiteModel, vararg status: String): List<WCOrderModel> =
             OrderSqlUtils.getOrdersForSite(site, status = status.asList())
 
-    fun getOrdersForDescriptor(orderListDescriptor: WCOrderListDescriptor, remoteOrderIds: List<RemoteId>): Map<RemoteId, WCOrderModel> {
+    fun getOrdersForDescriptor(
+        orderListDescriptor: WCOrderListDescriptor,
+        remoteOrderIds: List<RemoteId>
+    ): Map<RemoteId, WCOrderModel> {
         val orders = OrderSqlUtils.getOrdersForSiteByRemoteIds(orderListDescriptor.site, remoteOrderIds)
         return orders.associateBy { RemoteId(it.remoteOrderId) }
     }

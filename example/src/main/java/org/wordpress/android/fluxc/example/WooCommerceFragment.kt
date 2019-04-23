@@ -134,6 +134,12 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
             } ?: showNoWCSitesToast()
         }
 
+        fetch_order_list.setOnClickListener {
+            getFirstWCSite()?.let {
+                replaceFragment(WooOrderListFragment())
+            }
+        }
+
         fetch_orders_count.setOnClickListener {
             getFirstWCSite()?.let { site ->
                 showSingleLineDialog(
@@ -697,6 +703,13 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
         }?.map { it.label }
         prependToLog("Fetched order status options from the api: $orderStatusOptions " +
                 "- updated ${event.rowsAffected} in the db")
+    }
+
+    private fun replaceFragment(fragment: Fragment) {
+        fragmentManager?.beginTransaction()
+                ?.replace(R.id.fragment_container, fragment)
+                ?.addToBackStack(null)
+                ?.commit()
     }
 
     private fun getFirstWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(0)
