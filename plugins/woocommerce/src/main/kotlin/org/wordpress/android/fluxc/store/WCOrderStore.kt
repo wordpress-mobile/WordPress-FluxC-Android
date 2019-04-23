@@ -244,12 +244,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     class OnOrdersFetchedByIds(
         val site: SiteModel,
-        val orderIds: List<RemoteId> = emptyList()
-    ) : OnChanged<OrderError>() {
-        constructor(site: SiteModel, error: OrderError): this(site) {
-            this.error = error
-        }
-    }
+        val orderIds: List<RemoteId>
+    ) : OnChanged<OrderError>()
 
     class OnOrdersSearched(
         var searchQuery: String = "",
@@ -465,14 +461,12 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun handleFetchOrderByIdsCompleted(payload: FetchOrdersByIdsResponsePayload) {
-        val onOrdersFetchedByIds: OnOrdersFetchedByIds = if (payload.isError) {
-            OnOrdersFetchedByIds(payload.site, payload.error)
+        val onOrdersFetchedByIds = OnOrdersFetchedByIds(payload.site, payload.orders.map { RemoteId(it.remoteOrderId) })
+        if (payload.isError) {
+            onOrdersFetchedByIds.error = payload.error
         } else {
             // TODO: We should be able to insert all orders in one sql query
             payload.orders.forEach { OrderSqlUtils.insertOrUpdateOrder(it) }
-            OnOrdersFetchedByIds(
-                    site = payload.site,
-                    orderIds = payload.orders.map { RemoteId(it.remoteOrderId) })
         }
         emitChange(onOrdersFetchedByIds)
         val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(

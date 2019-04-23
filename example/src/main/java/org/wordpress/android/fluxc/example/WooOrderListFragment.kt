@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.example
 
+import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.Observer
 import android.content.Context
 import android.os.Bundle
@@ -72,10 +73,10 @@ class WooOrderListFragment : Fragment() {
 
         val pagedListWrapper = listStore.getList(
                 listDescriptor = orderListDescriptor,
-                dataSource = WCOrderListItemDataSource(dispatcher, wcOrderStore),
+                dataSource = WCOrderListItemDataSource(dispatcher, wcOrderStore, lifecycle),
                 lifecycle = lifecycle
         )
-//        pagedListWrapper.fetchFirstPage()
+        pagedListWrapper.fetchFirstPage()
         pagedListWrapper.isLoadingMore.observe(this, Observer {
             it?.let { isLoadingMore ->
                 progressLoadMore?.visibility = if (isLoadingMore) View.VISIBLE else View.GONE
@@ -101,16 +102,24 @@ sealed class WCOrderListItemUIType {
 
 private class WCOrderListItemDataSource(
     val dispatcher: Dispatcher,
-    val wcOrderStore: WCOrderStore
+    val wcOrderStore: WCOrderStore,
+    val lifecycle: Lifecycle
 ) : ListItemDataSourceInterface<WCOrderListDescriptor, RemoteId, WCOrderListItemUIType> {
+    private val fetcher = WCOrderFetcher(lifecycle, dispatcher)
+
     override fun getItemsAndFetchIfNecessary(
         listDescriptor: WCOrderListDescriptor,
         itemIdentifiers: List<RemoteId>
     ): List<WCOrderListItemUIType> {
         val ordersMap = wcOrderStore.getOrdersForDescriptor(listDescriptor, itemIdentifiers)
+        // Fetch missing items
+        fetcher.fetchOrders(
+                site = listDescriptor.site,
+                remoteItemIds = itemIdentifiers.filter { !ordersMap.containsKey(it) }
+        )
+
         return itemIdentifiers.map { remoteId ->
             ordersMap[remoteId].let { order ->
-                // TODO: Fetch missing items (also talk about why we need to prevent duplicate requests)
                 if (order == null) {
                     LoadingItem(remoteId)
                 } else {
