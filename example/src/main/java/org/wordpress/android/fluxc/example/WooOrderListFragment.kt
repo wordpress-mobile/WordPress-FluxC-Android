@@ -104,7 +104,14 @@ class WooOrderListFragment : Fragment() {
     }
 
     private fun loadList(descriptor: WCOrderListDescriptor) {
-        pagedListWrapper?.data?.removeObservers(this)
+        pagedListWrapper?.apply {
+            val lifecycleOwner = this@WooOrderListFragment
+            data.removeObservers(lifecycleOwner)
+            isLoadingMore.removeObservers(lifecycleOwner)
+            isFetchingFirstPage.removeObservers(lifecycleOwner)
+            listError.removeObservers(lifecycleOwner)
+            isEmpty.removeObservers(lifecycleOwner)
+        }
 
         pagedListWrapper = listStore.getList(
                 listDescriptor = descriptor,

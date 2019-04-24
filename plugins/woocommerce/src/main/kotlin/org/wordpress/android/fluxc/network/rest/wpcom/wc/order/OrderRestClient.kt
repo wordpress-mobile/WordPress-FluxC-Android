@@ -106,7 +106,7 @@ class OrderRestClient(
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
         val networkPageSize = listDescriptor.config.networkPageSize
-        var params = mutableMapOf(
+        val params = mapOf(
                 "per_page" to networkPageSize.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter,
