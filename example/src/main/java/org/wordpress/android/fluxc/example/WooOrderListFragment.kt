@@ -45,7 +45,8 @@ class WooOrderListFragment : Fragment() {
     private val orderListDescriptor by lazy {
         WCOrderListDescriptor(
                 site = wooCommerceStore.getWooCommerceSites()[0], // crash if site is not there
-                statusFilter = null
+                statusFilter = null,
+                searchQuery = ""
         )
     }
 
@@ -99,7 +100,8 @@ sealed class WCOrderListItemUIType {
         val remoteOrderId: RemoteId,
         val orderNumber: String,
         val status: String,
-        val dateCreated: String
+        val orderName: String,
+        val orderTotal: String
     ) : WCOrderListItemUIType()
 }
 
@@ -130,7 +132,8 @@ private class WCOrderListItemDataSource(
                             remoteOrderId = RemoteId(order.remoteOrderId),
                             orderNumber = order.number,
                             status = order.status,
-                            dateCreated = order.dateCreated
+                            orderName = "${order.billingFirstName} ${order.billingLastName}",
+                            orderTotal = order.total
                     )
                 }
             }

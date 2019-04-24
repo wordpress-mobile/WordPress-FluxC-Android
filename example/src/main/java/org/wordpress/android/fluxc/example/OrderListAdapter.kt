@@ -86,12 +86,14 @@ private class WCOrderItemUIViewHolder(
     parentView: ViewGroup
 ) : RecyclerView.ViewHolder(LayoutInflater.from(parentView.context).inflate(layout, parentView, false)) {
     private val orderNumberTv: TextView = itemView.findViewById(R.id.woo_order_number)
-    private val orderDateTv: TextView = itemView.findViewById(R.id.woo_order_date)
+    private val orderNameTv: TextView = itemView.findViewById(R.id.woo_order_name)
     private val orderStatusTv: TextView = itemView.findViewById(R.id.woo_order_status)
+    private val orderTotalTv: TextView = itemView.findViewById(R.id.woo_order_total)
     fun onBind(orderUIItem: WCOrderListUIItem) {
         orderNumberTv.text = orderUIItem.orderNumber
-        orderDateTv.text = orderUIItem.dateCreated
+        orderNameTv.text = orderUIItem.orderName
         orderStatusTv.text = orderUIItem.status
+        orderTotalTv.text = orderUIItem.orderTotal
     }
 }
 
