@@ -8,8 +8,10 @@ import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.list.PagedListWrapper
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestHelper
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode
+import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.MultiplePages
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.SinglePage
 import org.wordpress.android.fluxc.release.utils.TestWCOrderListDataSource
 import org.wordpress.android.fluxc.release.utils.TestWCOrderUIItem
@@ -36,7 +38,10 @@ internal class ReleaseStack_WCOrderListTest(
         @JvmStatic
         @Parameters
         fun testCases(): List<WCOrderListTestCase> = listOf(
-                WCOrderListTestCase(testMode = SinglePage(ensureListIsNotEmpty = true))
+                WCOrderListTestCase(testMode = SinglePage(ensureListIsNotEmpty = true)),
+                WCOrderListTestCase(testMode = MultiplePages),
+                WCOrderListTestCase(statusFilter = CoreOrderStatus.COMPLETED.value),
+                WCOrderListTestCase(statusFilter = CoreOrderStatus.PROCESSING.value, testMode = MultiplePages)
         )
     }
 
