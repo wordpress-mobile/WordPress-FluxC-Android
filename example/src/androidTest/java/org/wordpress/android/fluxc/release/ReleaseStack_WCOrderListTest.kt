@@ -21,6 +21,7 @@ import javax.inject.Inject
 
 internal class WCOrderListTestCase(
     val statusFilter: String? = null,
+    val searchQuery: String? = null,
     val testMode: ListStoreConnectedTestMode = SinglePage(false)
 )
 
@@ -35,13 +36,20 @@ internal class ReleaseStack_WCOrderListTest(
     @Inject internal lateinit var orderStore: WCOrderStore
 
     companion object {
+        private const val TEST_ORDER_LIST_SEARCH_QUERY = "a"
+
         @JvmStatic
         @Parameters
         fun testCases(): List<WCOrderListTestCase> = listOf(
                 WCOrderListTestCase(testMode = SinglePage(ensureListIsNotEmpty = true)),
                 WCOrderListTestCase(testMode = MultiplePages),
                 WCOrderListTestCase(statusFilter = CoreOrderStatus.COMPLETED.value),
-                WCOrderListTestCase(statusFilter = CoreOrderStatus.PROCESSING.value, testMode = MultiplePages)
+                WCOrderListTestCase(statusFilter = CoreOrderStatus.PROCESSING.value, testMode = MultiplePages),
+                WCOrderListTestCase(searchQuery = TEST_ORDER_LIST_SEARCH_QUERY),
+                WCOrderListTestCase(
+                        statusFilter = CoreOrderStatus.COMPLETED.value,
+                        searchQuery = TEST_ORDER_LIST_SEARCH_QUERY,
+                        testMode = MultiplePages)
         )
     }
 
