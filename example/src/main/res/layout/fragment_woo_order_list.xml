@@ -18,6 +18,7 @@
             android:layout_height="wrap_content"
             android:text="Search:"
             android:textStyle="bold"
+            android:padding="12dp"
             android:layout_gravity="center_vertical"/>
 
         <EditText

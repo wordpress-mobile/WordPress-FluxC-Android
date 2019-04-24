@@ -15,12 +15,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import dagger.android.support.AndroidSupportInjection
+import kotlinx.android.synthetic.main.fragment_woo_order_list.*
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.LoadingItem
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.WCOrderListUIItem
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
+import org.wordpress.android.fluxc.model.list.PagedListWrapper
 import org.wordpress.android.fluxc.model.list.datasource.ListItemDataSourceInterface
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.WCOrderStore
@@ -37,16 +39,8 @@ class WooOrderListFragment : Fragment() {
 
     private var swipeRefreshLayout: CustomSwipeRefreshLayout? = null
     private var progressLoadMore: ProgressBar? = null
-
+    private var pagedListWrapper: PagedListWrapper<WCOrderListItemUIType>? = null
     private val orderListAdapter: OrderListAdapter = OrderListAdapter()
-
-    private val orderListDescriptor by lazy {
-        WCOrderListDescriptor(
-                site = wooCommerceStore.getWooCommerceSites()[0], // crash if site is not there
-                statusFilter = null,
-                searchQuery = ""
-        )
-    }
 
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
@@ -72,25 +66,12 @@ class WooOrderListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val pagedListWrapper = listStore.getList(
-                listDescriptor = orderListDescriptor,
-                dataSource = WCOrderListItemDataSource(dispatcher, wcOrderStore, lifecycle),
-                lifecycle = lifecycle
-        )
-        pagedListWrapper.fetchFirstPage()
-        pagedListWrapper.isLoadingMore.observe(this, Observer {
-            it?.let { isLoadingMore ->
-                progressLoadMore?.visibility = if (isLoadingMore) View.VISIBLE else View.GONE
-            }
-        })
-        pagedListWrapper.isFetchingFirstPage.observe(this, Observer {
-            swipeRefreshLayout?.isRefreshing = it == true
-        })
-        pagedListWrapper.data.observe(this, Observer {
-            it?.let { orderListData ->
-                orderListAdapter.submitList(orderListData)
-            }
-        })
+        val orderListDescriptor = WCOrderListDescriptor(
+                site = wooCommerceStore.getWooCommerceSites()[0], // crash if site is not there
+                statusFilter = null,
+                searchQuery = "")
+
+        loadList(orderListDescriptor)
 
         swipeRefreshLayout?.apply {
             activity?.let { act ->
@@ -100,8 +81,50 @@ class WooOrderListFragment : Fragment() {
                         ContextCompat.getColor(act, android.R.color.holo_orange_dark))
             }
             setOnRefreshListener {
-                pagedListWrapper.fetchFirstPage()
+                pagedListWrapper?.fetchFirstPage()
             }
+        }
+
+        order_search_submit.setOnClickListener {
+            val descriptor = WCOrderListDescriptor(
+                    site = wooCommerceStore.getWooCommerceSites()[0], // crash if site is not there
+                    statusFilter = null,
+                    searchQuery = order_search_query.text.toString())
+            loadList(descriptor)
+        }
+
+        order_search_clear.setOnClickListener {
+            order_search_query.text.clear()
+            val descriptor = WCOrderListDescriptor(
+                    site = wooCommerceStore.getWooCommerceSites()[0], // crash if site is not there
+                    statusFilter = null,
+                    searchQuery = null)
+            loadList(descriptor)
+        }
+    }
+
+    private fun loadList(descriptor: WCOrderListDescriptor) {
+        pagedListWrapper?.data?.removeObservers(this)
+
+        pagedListWrapper = listStore.getList(
+                listDescriptor = descriptor,
+                dataSource = WCOrderListItemDataSource(dispatcher, wcOrderStore, lifecycle),
+                lifecycle = lifecycle
+        ).also { wrapper ->
+            wrapper.fetchFirstPage()
+            wrapper.isLoadingMore.observe(this, Observer {
+                it?.let { isLoadingMore ->
+                    progressLoadMore?.visibility = if (isLoadingMore) View.VISIBLE else View.GONE
+                }
+            })
+            wrapper.isFetchingFirstPage.observe(this, Observer {
+                swipeRefreshLayout?.isRefreshing = it == true
+            })
+            wrapper.data.observe(this, Observer {
+                it?.let { orderListData ->
+                    orderListAdapter.submitList(orderListData)
+                }
+            })
         }
     }
 }
