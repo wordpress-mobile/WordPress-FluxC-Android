@@ -5,6 +5,8 @@ import android.arch.lifecycle.Observer
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v7.widget.DefaultItemAnimator
+import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -57,11 +59,12 @@ class WooOrderListFragment : Fragment() {
 
 //        swipeRefreshLayout = view.findViewById(R.id.ptr_layout)
 //        progressLoadMore = view.findViewById(R.id.progress)
-        val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view)
-
-        recyclerView?.layoutManager = LinearLayoutManager(context)
-        // TODO: Add item decoration
-        recyclerView?.adapter = orderListAdapter
+        view.findViewById<RecyclerView>(R.id.recycler_view)?.apply {
+            adapter = orderListAdapter
+            layoutManager = LinearLayoutManager(context)
+            itemAnimator = DefaultItemAnimator()
+            addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
+        }
 
         // TODO: create the swipe to refresh layout
 

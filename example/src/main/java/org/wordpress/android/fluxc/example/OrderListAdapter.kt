@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.LoadingItem
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.WCOrderListUIItem
+import org.wordpress.android.fluxc.utils.DateUtils
 
 private const val VIEW_TYPE_ORDER_ITEM = 0
 private const val VIEW_TYPE_LOADING = 1
