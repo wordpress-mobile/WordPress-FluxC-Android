@@ -26,7 +26,6 @@ import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
-import org.wordpress.android.util.helpers.SwipeToRefreshHelper
 import org.wordpress.android.util.widgets.CustomSwipeRefreshLayout
 import javax.inject.Inject
 
@@ -58,7 +57,7 @@ class WooOrderListFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_woo_order_list, container, false)
 
         swipeRefreshLayout = view.findViewById(R.id.ptr_layout)
-//        progressLoadMore = view.findViewById(R.id.progress)
+        progressLoadMore = view.findViewById(R.id.progress)
 
         view.findViewById<RecyclerView>(R.id.recycler_view)?.apply {
             adapter = orderListAdapter
