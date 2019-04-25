@@ -498,7 +498,7 @@ class OrderRestClient(
     private fun orderResponseToOrderSummaryModel(response: OrderApiResponse): WCOrderSummaryModel {
         return WCOrderSummaryModel().apply {
             remoteOrderId = response.id ?: 0
-            dateCreated = orderDateCreatedFromOrderResponse(response)
+            dateCreated = convertDateToUTCString(response.date_created_gmt, response)
         }
     }
 
@@ -508,7 +508,8 @@ class OrderRestClient(
             number = response.number ?: remoteOrderId.toString()
             status = response.status ?: ""
             currency = response.currency ?: ""
-            dateCreated = orderDateCreatedFromOrderResponse(response)
+            dateCreated = convertDateToUTCString(response.date_created_gmt, response)
+            dateModified = convertDateToUTCString(response.date_modified_gmt, response)
             total = response.total ?: ""
             totalTax = response.total_tax ?: ""
             shippingTotal = response.shipping_total ?: ""
@@ -600,8 +601,8 @@ class OrderRestClient(
         }
     }
 
-    private fun orderDateCreatedFromOrderResponse(response: OrderApiResponse): String =
-            response.date_created_gmt?.let { "${it}Z" } ?: "" // Store the date in UTC format
+    private fun convertDateToUTCString(date: String?, response: OrderApiResponse): String =
+            date?.let { "${it}Z" } ?: "" // Store the date in UTC format
 
     private fun jsonResponseToShipmentProviderList(
         site: SiteModel,
