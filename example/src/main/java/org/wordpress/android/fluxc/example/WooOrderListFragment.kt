@@ -264,12 +264,23 @@ private class WCOrderListItemDataSource(
                 GROUP_OLDER_MONTH -> listMonth.add(mapToRemoteOrderIdentifier(it))
             }
         }
-        // TODO: Take empty lists into account
-        return listOf(SectionHeaderIdentifier(GROUP_TODAY)) + listToday +
-                listOf(SectionHeaderIdentifier(GROUP_YESTERDAY)) + listYesterday +
-                listOf(SectionHeaderIdentifier(GROUP_OLDER_TWO_DAYS)) + listTwoDays +
-                listOf(SectionHeaderIdentifier(GROUP_OLDER_WEEK)) + listWeek +
-                listOf(SectionHeaderIdentifier(GROUP_OLDER_MONTH)) + listMonth
+        val allItems = mutableListOf<WCOrderListItemIdentifier>()
+        if (listToday.isNotEmpty()) {
+            allItems += listOf(SectionHeaderIdentifier(GROUP_TODAY)) + listToday
+        }
+        if (listYesterday.isNotEmpty()) {
+            allItems += listOf(SectionHeaderIdentifier(GROUP_YESTERDAY)) + listYesterday
+        }
+        if (listTwoDays.isNotEmpty()) {
+            allItems += listOf(SectionHeaderIdentifier(GROUP_OLDER_TWO_DAYS)) + listTwoDays
+        }
+        if (listWeek.isNotEmpty()) {
+            allItems += listOf(SectionHeaderIdentifier(GROUP_OLDER_WEEK)) + listWeek
+        }
+        if (listMonth.isNotEmpty()) {
+            allItems += listOf(SectionHeaderIdentifier(GROUP_OLDER_MONTH)) + listMonth
+        }
+        return allItems
     }
 
     override fun fetchList(listDescriptor: WCOrderListDescriptor, offset: Long) {
