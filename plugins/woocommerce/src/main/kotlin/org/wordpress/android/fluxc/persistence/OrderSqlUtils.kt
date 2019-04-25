@@ -24,13 +24,17 @@ object OrderSqlUtils {
         WellSql.insert(orderSummaries).asSingleTransaction(true).execute()
     }
 
-    fun getOrderSummariesForRemoteIds(site: SiteModel, remoteOrderIds: List<RemoteId>): List<WCOrderSummaryModel> =
-            WellSql.select(WCOrderSummaryModel::class.java)
-                    .where()
-                    .equals(WCOrderSummaryModelTable.LOCAL_SITE_ID, site.id)
-                    .isIn(WCOrderSummaryModelTable.REMOTE_ORDER_ID, remoteOrderIds.map { it.value })
-                    .endWhere()
-                    .asModel
+    fun getOrderSummariesForRemoteIds(site: SiteModel, remoteOrderIds: List<RemoteId>): List<WCOrderSummaryModel> {
+        if (remoteOrderIds.isEmpty()) {
+            return emptyList()
+        }
+        return WellSql.select(WCOrderSummaryModel::class.java)
+                .where()
+                .equals(WCOrderSummaryModelTable.LOCAL_SITE_ID, site.id)
+                .isIn(WCOrderSummaryModelTable.REMOTE_ORDER_ID, remoteOrderIds.map { it.value })
+                .endWhere()
+                .asModel
+    }
 
     fun insertOrUpdateOrder(order: WCOrderModel): Int {
         val orderResult = WellSql.select(WCOrderModel::class.java)
