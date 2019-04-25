@@ -102,7 +102,7 @@ class WooOrderListFragment : Fragment() {
         order_search_submit.setOnClickListener {
             val descriptor = WCOrderListDescriptor(
                     site = wooCommerceStore.getWooCommerceSites()[0], // crash if site is not there
-                    statusFilter = null,
+                    statusFilter = order_filter.text.toString(),
                     searchQuery = order_search_query.text.toString()
             )
             loadList(descriptor)
@@ -110,10 +110,9 @@ class WooOrderListFragment : Fragment() {
 
         order_search_clear.setOnClickListener {
             order_search_query.text.clear()
+            order_filter.text.clear()
             val descriptor = WCOrderListDescriptor(
-                    site = wooCommerceStore.getWooCommerceSites()[0], // crash if site is not there
-                    statusFilter = null,
-                    searchQuery = null
+                    site = wooCommerceStore.getWooCommerceSites()[0] // crash if site is not there
             )
             loadList(descriptor)
         }
