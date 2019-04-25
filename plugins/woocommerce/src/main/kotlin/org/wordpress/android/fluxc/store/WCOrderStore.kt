@@ -454,7 +454,6 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     private fun handleFetchOrderListCompleted(payload: FetchOrderListResponsePayload) {
         // TODO: Handle whatever handleFetchOrdersCompleted is handling as well
-        // TODO: Check if any of the orders in the DB is outdated and fetch those orders from remote
         OrderSqlUtils.insertOrUpdateOrderSummaries(payload.orderSummaries)
         mDispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(FetchedListItemsPayload(
                 listDescriptor = payload.listDescriptor,
