@@ -87,6 +87,7 @@ dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
 
+    implementation 'org.apache.commons:commons-lang3:3.7'
     implementation "com.android.support:appcompat-v7:$supportLibraryVersion"
     implementation "com.android.support:support-v4:$supportLibraryVersion"
     implementation "com.android.support:recyclerview-v7:$supportLibraryVersion"
@@ -117,7 +118,7 @@ dependencies {
     testImplementation "android.arch.core:core-testing:$arch_lifecycle_version"
 
     androidTestImplementation 'org.mockito:mockito-android:2.6.3'
-    androidTestImplementation 'org.apache.commons:commons-lang3:3.5'
+    androidTestImplementation 'org.apache.commons:commons-lang3:3.7'
     androidTestImplementation "android.arch.core:core-testing:1.1.1"
     kaptAndroidTest "com.google.dagger:dagger-compiler:$daggerVersion"
     androidTestCompileOnly 'org.glassfish:javax.annotation:10.0-b28'
