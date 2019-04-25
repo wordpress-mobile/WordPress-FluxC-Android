@@ -67,6 +67,9 @@ class OrderListAdapter : PagedListAdapter<WCOrderListItemUIType, ViewHolder>(Ord
 
 private val OrderListDiffItemCallback = object : DiffUtil.ItemCallback<WCOrderListItemUIType>() {
     override fun areItemsTheSame(oldItem: WCOrderListItemUIType, newItem: WCOrderListItemUIType): Boolean {
+        if (oldItem is SectionHeader && newItem is SectionHeader) {
+            return oldItem.title == newItem.title
+        }
         if (oldItem is LoadingItem && newItem is LoadingItem) {
             return oldItem.remoteId == newItem.remoteId
         }
@@ -80,6 +83,9 @@ private val OrderListDiffItemCallback = object : DiffUtil.ItemCallback<WCOrderLi
     }
 
     override fun areContentsTheSame(oldItem: WCOrderListItemUIType, newItem: WCOrderListItemUIType): Boolean {
+        if (oldItem is SectionHeader && newItem is SectionHeader) {
+            return oldItem.title == newItem.title
+        }
         if (oldItem is LoadingItem && newItem is LoadingItem) {
             return oldItem.remoteId == newItem.remoteId
         }
