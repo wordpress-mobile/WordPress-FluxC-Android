@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
+import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.model.order.toIdSet
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
@@ -69,11 +70,9 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
     }
 
-    data class WCOrderModelId(val id: Long)
-
     class FetchOrderListResponsePayload(
         val listDescriptor: WCOrderListDescriptor,
-        var orderIds: List<WCOrderModelId> = emptyList(),
+        var orderSummaries: List<WCOrderSummaryModel> = emptyList(),
         var loadedMore: Boolean = false,
         var canLoadMore: Boolean = false
     ) : Payload<OrderError>() {
@@ -278,6 +277,14 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         return orders.associateBy { RemoteId(it.remoteOrderId) }
     }
 
+    fun getOrderSummariesByRemoteOrderIds(
+        site: SiteModel,
+        remoteOrderIds: List<RemoteId>
+    ): Map<RemoteId, WCOrderSummaryModel> {
+        val orderSummaries = OrderSqlUtils.getOrderSummariesForRemoteIds(site, remoteOrderIds)
+        return orderSummaries.associateBy { RemoteId(it.remoteOrderId) }
+    }
+
     /**
      * Given an [OrderIdentifier], returns the corresponding order from the database as a [WCOrderModel].
      */
@@ -448,9 +455,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     private fun handleFetchOrderListCompleted(payload: FetchOrderListResponsePayload) {
         // TODO: Handle whatever handleFetchOrdersCompleted is handling as well
         // TODO: Check if any of the orders in the DB is outdated and fetch those orders from remote
+        OrderSqlUtils.insertOrUpdateOrderSummaries(payload.orderSummaries)
         mDispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(FetchedListItemsPayload(
                 listDescriptor = payload.listDescriptor,
-                remoteItemIds = payload.orderIds.map { it.id },
+                remoteItemIds = payload.orderSummaries.map { it.remoteOrderId },
                 loadedMore = payload.loadedMore,
                 canLoadMore = payload.canLoadMore,
                 error = payload.error?.let { fetchError ->

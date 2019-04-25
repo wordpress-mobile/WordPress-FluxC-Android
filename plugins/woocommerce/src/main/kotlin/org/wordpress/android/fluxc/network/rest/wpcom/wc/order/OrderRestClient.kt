@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
+import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -38,7 +39,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
-import org.wordpress.android.fluxc.store.WCOrderStore.WCOrderModelId
 import javax.inject.Singleton
 import kotlin.collections.MutableMap.MutableEntry
 
@@ -110,19 +110,19 @@ class OrderRestClient(
                 "per_page" to networkPageSize.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter,
-                "_fields" to "id",
+                "_fields" to "id,date_created_gmt",
                 "search" to listDescriptor.searchQuery.orEmpty())
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, listDescriptor.site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
-                    val orderModelIds = response?.map {
-                        WCOrderModelId(id = orderResponseToOrderModel(it).remoteOrderId)
+                    val orderSummaries = response?.map {
+                        orderResponseToOrderSummaryModel(it).apply { localSiteId = listDescriptor.site.id }
                     }.orEmpty()
 
-                    val canLoadMore = orderModelIds.size == networkPageSize
+                    val canLoadMore = orderSummaries.size == networkPageSize
 
                     val payload = FetchOrderListResponsePayload(
                             listDescriptor = listDescriptor,
-                            orderIds = orderModelIds,
+                            orderSummaries = orderSummaries,
                             loadedMore = offset > 0,
                             canLoadMore = canLoadMore
                     )
@@ -494,13 +494,21 @@ class OrderRestClient(
         add(request)
     }
 
+    // TODO: Create a new class instead of OrderApiResponse
+    private fun orderResponseToOrderSummaryModel(response: OrderApiResponse): WCOrderSummaryModel {
+        return WCOrderSummaryModel().apply {
+            remoteOrderId = response.id ?: 0
+            dateCreated = orderDateCreatedFromOrderResponse(response)
+        }
+    }
+
     private fun orderResponseToOrderModel(response: OrderApiResponse): WCOrderModel {
         return WCOrderModel().apply {
             remoteOrderId = response.id ?: 0
             number = response.number ?: remoteOrderId.toString()
             status = response.status ?: ""
             currency = response.currency ?: ""
-            dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: "" // Store the date in UTC format
+            dateCreated = orderDateCreatedFromOrderResponse(response)
             total = response.total ?: ""
             totalTax = response.total_tax ?: ""
             shippingTotal = response.shipping_total ?: ""
@@ -591,6 +599,9 @@ class OrderRestClient(
             dateShipped = response.date_shipped ?: ""
         }
     }
+
+    private fun orderDateCreatedFromOrderResponse(response: OrderApiResponse): String =
+            response.date_created_gmt?.let { "${it}Z" } ?: "" // Store the date in UTC format
 
     private fun jsonResponseToShipmentProviderList(
         site: SiteModel,

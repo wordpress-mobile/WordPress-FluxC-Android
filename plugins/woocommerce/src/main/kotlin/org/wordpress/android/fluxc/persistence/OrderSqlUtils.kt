@@ -5,6 +5,7 @@ import com.wellsql.generated.WCOrderNoteModelTable
 import com.wellsql.generated.WCOrderShipmentProviderModelTable
 import com.wellsql.generated.WCOrderShipmentTrackingModelTable
 import com.wellsql.generated.WCOrderStatusModelTable
+import com.wellsql.generated.WCOrderSummaryModelTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
@@ -14,9 +15,23 @@ import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
+import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.order.OrderIdSet
 
 object OrderSqlUtils {
+    // TODO: Test duplicate items
+    fun insertOrUpdateOrderSummaries(orderSummaries: List<WCOrderSummaryModel>) {
+        WellSql.insert(orderSummaries).asSingleTransaction(true).execute()
+    }
+
+    fun getOrderSummariesForRemoteIds(site: SiteModel, remoteOrderIds: List<RemoteId>): List<WCOrderSummaryModel> =
+            WellSql.select(WCOrderSummaryModel::class.java)
+                    .where()
+                    .equals(WCOrderSummaryModelTable.LOCAL_SITE_ID, site.id)
+                    .isIn(WCOrderSummaryModelTable.REMOTE_ORDER_ID, remoteOrderIds.map { it.value })
+                    .endWhere()
+                    .asModel
+
     fun insertOrUpdateOrder(order: WCOrderModel): Int {
         val orderResult = WellSql.select(WCOrderModel::class.java)
                 .where().beginGroup()
