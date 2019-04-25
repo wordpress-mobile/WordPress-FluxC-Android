@@ -16,13 +16,7 @@ import android.view.ViewGroup
 import android.widget.ProgressBar
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_order_list.*
-import org.apache.commons.lang3.time.DateUtils
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.example.TimeGroup.GROUP_OLDER_MONTH
-import org.wordpress.android.fluxc.example.TimeGroup.GROUP_OLDER_TWO_DAYS
-import org.wordpress.android.fluxc.example.TimeGroup.GROUP_OLDER_WEEK
-import org.wordpress.android.fluxc.example.TimeGroup.GROUP_TODAY
-import org.wordpress.android.fluxc.example.TimeGroup.GROUP_YESTERDAY
 import org.wordpress.android.fluxc.example.WCOrderListItemIdentifier.OrderIdentifier
 import org.wordpress.android.fluxc.example.WCOrderListItemIdentifier.SectionHeaderIdentifier
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.LoadingItem
@@ -30,6 +24,12 @@ import org.wordpress.android.fluxc.example.WCOrderListItemUIType.SectionHeader
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.WCOrderListUIItem
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
+import org.wordpress.android.fluxc.model.TimeGroup
+import org.wordpress.android.fluxc.model.TimeGroup.GROUP_OLDER_MONTH
+import org.wordpress.android.fluxc.model.TimeGroup.GROUP_OLDER_TWO_DAYS
+import org.wordpress.android.fluxc.model.TimeGroup.GROUP_OLDER_WEEK
+import org.wordpress.android.fluxc.model.TimeGroup.GROUP_TODAY
+import org.wordpress.android.fluxc.model.TimeGroup.GROUP_YESTERDAY
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.list.PagedListWrapper
@@ -38,9 +38,7 @@ import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
-import org.wordpress.android.util.DateTimeUtils
 import org.wordpress.android.util.widgets.CustomSwipeRefreshLayout
-import java.util.Date
 import javax.inject.Inject
 
 class WooOrderListFragment : Fragment() {
@@ -151,28 +149,6 @@ class WooOrderListFragment : Fragment() {
     }
 }
 
-enum class TimeGroup {
-    GROUP_TODAY,
-    GROUP_YESTERDAY,
-    GROUP_OLDER_TWO_DAYS,
-    GROUP_OLDER_WEEK,
-    GROUP_OLDER_MONTH;
-
-    companion object {
-        fun getTimeGroupForDate(date: Date): TimeGroup {
-            val dateToday = Date()
-            return when {
-                date < DateUtils.addMonths(dateToday, -1) -> GROUP_OLDER_MONTH
-                date < DateUtils.addWeeks(dateToday, -1) -> GROUP_OLDER_WEEK
-                date < DateUtils.addDays(dateToday, -2) -> GROUP_OLDER_TWO_DAYS
-                DateUtils.isSameDay(DateUtils.addDays(dateToday, -2), date) -> GROUP_OLDER_TWO_DAYS
-                DateUtils.isSameDay(DateUtils.addDays(dateToday, -1), date) -> GROUP_YESTERDAY
-                else -> GROUP_TODAY
-            }
-        }
-    }
-}
-
 sealed class WCOrderListItemIdentifier {
     class SectionHeaderIdentifier(val title: TimeGroup) : WCOrderListItemIdentifier()
     class OrderIdentifier(val remoteId: RemoteId) : WCOrderListItemIdentifier()
@@ -244,6 +220,7 @@ private class WCOrderListItemDataSource(
                     // TODO: order summaries should never be null, how can we make that clear?
                     remoteItemIds.mapNotNull { orderSummaryMap[it] }
                 }
+
         val listToday = ArrayList<OrderIdentifier>()
         val listYesterday = ArrayList<OrderIdentifier>()
         val listTwoDays = ArrayList<OrderIdentifier>()
@@ -252,17 +229,28 @@ private class WCOrderListItemDataSource(
         val mapToRemoteOrderIdentifier = { summary: WCOrderSummaryModel ->
             OrderIdentifier(RemoteId(summary.remoteOrderId))
         }
-        orderSummaries.forEach {
-            // Default to today if the date cannot be parsed
-            val date: Date = DateTimeUtils.dateUTCFromIso8601(it.dateCreated) ?: Date()
-            when (TimeGroup.getTimeGroupForDate(date)) {
-                GROUP_TODAY -> listToday.add(mapToRemoteOrderIdentifier(it))
-                GROUP_YESTERDAY -> listYesterday.add(mapToRemoteOrderIdentifier(it))
-                GROUP_OLDER_TWO_DAYS -> listTwoDays.add(mapToRemoteOrderIdentifier(it))
-                GROUP_OLDER_WEEK -> listWeek.add(mapToRemoteOrderIdentifier(it))
-                GROUP_OLDER_MONTH -> listMonth.add(mapToRemoteOrderIdentifier(it))
+
+        val groupBy = orderSummaries.groupBy { it.timeGroup }
+        groupBy.keys.forEach { timeGroup ->
+            when (timeGroup) {
+                TimeGroup.GROUP_TODAY -> groupBy[timeGroup]?.forEach {
+                    listToday.add(mapToRemoteOrderIdentifier(it))
+                }
+                TimeGroup.GROUP_YESTERDAY -> groupBy[timeGroup]?.forEach {
+                    listYesterday.add(mapToRemoteOrderIdentifier(it))
+                }
+                TimeGroup.GROUP_OLDER_TWO_DAYS -> groupBy[timeGroup]?.forEach {
+                    listTwoDays.add(mapToRemoteOrderIdentifier(it))
+                }
+                TimeGroup.GROUP_OLDER_WEEK -> groupBy[timeGroup]?.forEach {
+                    listWeek.add(mapToRemoteOrderIdentifier(it))
+                }
+                TimeGroup.GROUP_OLDER_MONTH -> groupBy[timeGroup]?.forEach {
+                    listMonth.add(mapToRemoteOrderIdentifier(it))
+                }
             }
         }
+
         val allItems = mutableListOf<WCOrderListItemIdentifier>()
         if (listToday.isNotEmpty()) {
             allItems += listOf(SectionHeaderIdentifier(GROUP_TODAY)) + listToday
