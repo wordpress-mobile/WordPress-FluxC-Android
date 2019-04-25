@@ -25,13 +25,7 @@ import org.wordpress.android.fluxc.example.WCOrderListItemUIType.WCOrderListUIIt
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.TimeGroup
-import org.wordpress.android.fluxc.model.TimeGroup.GROUP_OLDER_MONTH
-import org.wordpress.android.fluxc.model.TimeGroup.GROUP_OLDER_TWO_DAYS
-import org.wordpress.android.fluxc.model.TimeGroup.GROUP_OLDER_WEEK
-import org.wordpress.android.fluxc.model.TimeGroup.GROUP_TODAY
-import org.wordpress.android.fluxc.model.TimeGroup.GROUP_YESTERDAY
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
-import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.list.PagedListWrapper
 import org.wordpress.android.fluxc.model.list.datasource.ListItemDataSourceInterface
 import org.wordpress.android.fluxc.store.ListStore
@@ -209,65 +203,28 @@ private class WCOrderListItemDataSource(
         }
     }
 
-    // TODO: Optimize this calculation
     override fun getItemIdentifiers(
         listDescriptor: WCOrderListDescriptor,
         remoteItemIds: List<RemoteId>,
         isListFullyFetched: Boolean
     ): List<WCOrderListItemIdentifier> {
         val orderSummaries = wcOrderStore.getOrderSummariesByRemoteOrderIds(listDescriptor.site, remoteItemIds)
-                .let { orderSummaryMap ->
-                    // TODO: order summaries should never be null, how can we make that clear?
-                    remoteItemIds.mapNotNull { orderSummaryMap[it] }
+                .let { summariesByRemoteId ->
+                    // TODO: The summary of the order should always be in the DB, how can we best relay that in code
+                    remoteItemIds.mapNotNull { summariesByRemoteId[it] }
                 }
-
-        val listToday = ArrayList<OrderIdentifier>()
-        val listYesterday = ArrayList<OrderIdentifier>()
-        val listTwoDays = ArrayList<OrderIdentifier>()
-        val listWeek = ArrayList<OrderIdentifier>()
-        val listMonth = ArrayList<OrderIdentifier>()
-        val mapToRemoteOrderIdentifier = { summary: WCOrderSummaryModel ->
-            OrderIdentifier(RemoteId(summary.remoteOrderId))
-        }
-
-        val groupBy = orderSummaries.groupBy { it.timeGroup }
-        groupBy.keys.forEach { timeGroup ->
-            when (timeGroup) {
-                TimeGroup.GROUP_TODAY -> groupBy[timeGroup]?.forEach {
-                    listToday.add(mapToRemoteOrderIdentifier(it))
+        return orderSummaries.groupBy { it.timeGroup }.let { orderSummaryMap ->
+            orderSummaryMap.keys.fold(mutableListOf(), { allIdentifiers, key ->
+                orderSummaryMap[key]?.map {
+                    OrderIdentifier(RemoteId(it.remoteOrderId))
+                }?.let { orderIdentifiers ->
+                    // If there are order identifiers for this time group, add the header and then the identifiers
+                    allIdentifiers += SectionHeaderIdentifier(key)
+                    allIdentifiers += orderIdentifiers
                 }
-                TimeGroup.GROUP_YESTERDAY -> groupBy[timeGroup]?.forEach {
-                    listYesterday.add(mapToRemoteOrderIdentifier(it))
-                }
-                TimeGroup.GROUP_OLDER_TWO_DAYS -> groupBy[timeGroup]?.forEach {
-                    listTwoDays.add(mapToRemoteOrderIdentifier(it))
-                }
-                TimeGroup.GROUP_OLDER_WEEK -> groupBy[timeGroup]?.forEach {
-                    listWeek.add(mapToRemoteOrderIdentifier(it))
-                }
-                TimeGroup.GROUP_OLDER_MONTH -> groupBy[timeGroup]?.forEach {
-                    listMonth.add(mapToRemoteOrderIdentifier(it))
-                }
-            }
+                allIdentifiers
+            })
         }
-
-        val allItems = mutableListOf<WCOrderListItemIdentifier>()
-        if (listToday.isNotEmpty()) {
-            allItems += listOf(SectionHeaderIdentifier(GROUP_TODAY)) + listToday
-        }
-        if (listYesterday.isNotEmpty()) {
-            allItems += listOf(SectionHeaderIdentifier(GROUP_YESTERDAY)) + listYesterday
-        }
-        if (listTwoDays.isNotEmpty()) {
-            allItems += listOf(SectionHeaderIdentifier(GROUP_OLDER_TWO_DAYS)) + listTwoDays
-        }
-        if (listWeek.isNotEmpty()) {
-            allItems += listOf(SectionHeaderIdentifier(GROUP_OLDER_WEEK)) + listWeek
-        }
-        if (listMonth.isNotEmpty()) {
-            allItems += listOf(SectionHeaderIdentifier(GROUP_OLDER_MONTH)) + listMonth
-        }
-        return allItems
     }
 
     override fun fetchList(listDescriptor: WCOrderListDescriptor, offset: Long) {
