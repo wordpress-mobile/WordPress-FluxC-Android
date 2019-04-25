@@ -89,13 +89,17 @@ object OrderSqlUtils {
                 .asModel
     }
 
-    fun getOrdersForSiteByRemoteIds(site: SiteModel, remoteOrderIds: List<RemoteId>): List<WCOrderModel> =
-        WellSql.select(WCOrderModel::class.java)
+    fun getOrdersForSiteByRemoteIds(site: SiteModel, remoteOrderIds: List<RemoteId>): List<WCOrderModel> {
+        if (remoteOrderIds.isEmpty()) {
+            return emptyList()
+        }
+        return WellSql.select(WCOrderModel::class.java)
                 .where()
                 .equals(WCOrderModelTable.LOCAL_SITE_ID, site.id)
                 .isIn(WCOrderModelTable.REMOTE_ORDER_ID, remoteOrderIds.map { it.value })
                 .endWhere()
                 .asModel
+    }
 
     fun deleteOrdersForSite(site: SiteModel): Int {
         return WellSql.delete(WCOrderModel::class.java)
