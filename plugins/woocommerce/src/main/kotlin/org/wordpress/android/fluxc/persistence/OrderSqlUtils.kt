@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.persistence
 
+import android.database.Cursor
 import com.wellsql.generated.WCOrderModelTable
 import com.wellsql.generated.WCOrderNoteModelTable
 import com.wellsql.generated.WCOrderShipmentProviderModelTable
@@ -10,6 +11,7 @@ import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.TimeGroup
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
@@ -28,12 +30,24 @@ object OrderSqlUtils {
         if (remoteOrderIds.isEmpty()) {
             return emptyList()
         }
-        return WellSql.select(WCOrderSummaryModel::class.java)
-                .where()
-                .equals(WCOrderSummaryModelTable.LOCAL_SITE_ID, site.id)
-                .isIn(WCOrderSummaryModelTable.REMOTE_ORDER_ID, remoteOrderIds.map { it.value })
-                .endWhere()
-                .asModel
+        val readableDb = WellSql.giveMeReadableDb()
+        val sql = "SELECT *,\n" +
+                "    CASE \n" +
+                "        WHEN julianday('now') - julianday(date_created) < 1 THEN 'GROUP_TODAY'" +
+                "        WHEN julianday('now') - julianday(date_created) < 2 THEN 'GROUP_YESTERDAY'" +
+                "        WHEN julianday('now') - julianday(date_created) < 7 THEN 'GROUP_OLDER_TWO_DAYS'" +
+                "        WHEN julianday('now') - julianday(date_created) < 30 THEN 'GROUP_OLDER_WEEK'" +
+                "        ELSE 'GROUP_OLDER_MONTH'\n" +
+                "    END TIME_GROUP" +
+                " FROM WCOrderSummaryModel" +
+                " WHERE local_site_id = ${site.id}" +
+                " AND remote_order_id in (${remoteOrderIds.map { it.value }.joinToString()})"
+        val cursor = readableDb.rawQuery(sql, null)
+        val list = generateSequence { if (cursor.moveToNext()) cursor else null }
+                .map { getOrderSummaryModelFromCursor(it) }
+                .toList()
+        cursor.close()
+        return list
     }
 
     fun insertOrUpdateOrder(order: WCOrderModel): Int {
@@ -266,4 +280,13 @@ object OrderSqlUtils {
                     .endWhere()
                     .orderBy(WCOrderShipmentProviderModelTable.COUNTRY, SelectQuery.ORDER_ASCENDING)
                     .asModel
+
+    private fun getOrderSummaryModelFromCursor(cursor: Cursor): WCOrderSummaryModel {
+        return WCOrderSummaryModel().apply {
+            localSiteId = cursor.getInt(cursor.getColumnIndex(WCOrderSummaryModelTable.LOCAL_SITE_ID))
+            remoteOrderId = cursor.getLong(cursor.getColumnIndex(WCOrderSummaryModelTable.REMOTE_ORDER_ID))
+            dateCreated = cursor.getString(cursor.getColumnIndex(WCOrderSummaryModelTable.DATE_CREATED))
+            timeGroup = TimeGroup.valueOf(cursor.getString(cursor.getColumnIndex("TIME_GROUP")))
+        }
+    }
 }

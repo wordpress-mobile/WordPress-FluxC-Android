@@ -43,6 +43,7 @@ dependencies {
     implementation project(':fluxc')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+    implementation 'org.apache.commons:commons-lang3:3.7'
 
     // WordPress libs
     implementation ('org.wordpress:utils:1.20.0') {
