@@ -6,12 +6,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameters
-import org.wordpress.android.fluxc.model.PostModel
 import org.wordpress.android.fluxc.model.list.ListOrder
 import org.wordpress.android.fluxc.model.list.PagedListWrapper
 import org.wordpress.android.fluxc.model.list.PostListDescriptor.PostListDescriptorForXmlRpcSite
 import org.wordpress.android.fluxc.model.list.PostListOrderBy
-import org.wordpress.android.fluxc.model.list.datastore.PostListDataStore
 import org.wordpress.android.fluxc.model.post.PostStatus
 import org.wordpress.android.fluxc.model.post.PostStatus.DRAFT
 import org.wordpress.android.fluxc.model.post.PostStatus.SCHEDULED
@@ -21,6 +19,8 @@ import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.MultiplePages
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.SinglePage
 import org.wordpress.android.fluxc.release.utils.TEST_LIST_CONFIG
+import org.wordpress.android.fluxc.release.utils.TestPostListDataSource
+import org.wordpress.android.fluxc.release.utils.TestPostUIItem
 import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.DEFAULT_POST_STATUS_LIST
@@ -65,10 +65,6 @@ internal class ReleaseStack_PostListTestXMLRPC(
         ListStoreConnectedTestHelper(listStore)
     }
 
-    private val postListDataStore by lazy {
-        PostListDataStore(mDispatcher, postStore, sSite)
-    }
-
     override fun setUp() {
         super.setUp()
         mReleaseStackAppComponent.inject(this)
@@ -79,7 +75,7 @@ internal class ReleaseStack_PostListTestXMLRPC(
         listStoreConnectedTestHelper.runTest(testCase.testMode, this::createPagedListWrapper)
     }
 
-    private fun createPagedListWrapper(): PagedListWrapper<PostModel> {
+    private fun createPagedListWrapper(): PagedListWrapper<TestPostUIItem> {
         val descriptor = PostListDescriptorForXmlRpcSite(
                 site = sSite,
                 statusList = testCase.statusList,
@@ -87,6 +83,6 @@ internal class ReleaseStack_PostListTestXMLRPC(
                 orderBy = testCase.orderBy,
                 config = TEST_LIST_CONFIG
         )
-        return listStoreConnectedTestHelper.getList(descriptor, postListDataStore)
+        return listStoreConnectedTestHelper.getList(descriptor, TestPostListDataSource(mDispatcher))
     }
 }
