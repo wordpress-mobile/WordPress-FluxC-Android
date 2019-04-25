@@ -110,7 +110,7 @@ class OrderRestClient(
                 "per_page" to networkPageSize.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter,
-                "_fields" to "id,date_created_gmt",
+                "_fields" to "id,date_created_gmt,date_modified_gmt",
                 "search" to listDescriptor.searchQuery.orEmpty())
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, listDescriptor.site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
@@ -499,6 +499,7 @@ class OrderRestClient(
         return WCOrderSummaryModel().apply {
             remoteOrderId = response.id ?: 0
             dateCreated = convertDateToUTCString(response.date_created_gmt, response)
+            dateModified = convertDateToUTCString(response.date_modified_gmt, response)
         }
     }
 

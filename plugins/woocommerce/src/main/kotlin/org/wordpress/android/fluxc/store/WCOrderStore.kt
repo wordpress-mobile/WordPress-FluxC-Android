@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_SHIPMENT_TRA
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
+import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderListDescriptor
@@ -384,7 +385,9 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun fetchOrdersByIds(payload: FetchOrdersByIdsPayload) {
-        wcOrderRestClient.fetchOrdersByIds(payload.site, payload.remoteIds)
+        payload.remoteIds.chunked(NUM_ORDERS_PER_FETCH).forEach { idsToFetch ->
+            wcOrderRestClient.fetchOrdersByIds(payload.site, idsToFetch)
+        }
     }
 
     private fun searchOrders(payload: SearchOrdersPayload) {
@@ -456,6 +459,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         // TODO: Handle whatever handleFetchOrdersCompleted is handling as well
         // TODO: Check if any of the orders in the DB is outdated and fetch those orders from remote
         OrderSqlUtils.insertOrUpdateOrderSummaries(payload.orderSummaries)
+        fetchOutdatedOrders(payload.listDescriptor.site, payload.orderSummaries)
         mDispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(FetchedListItemsPayload(
                 listDescriptor = payload.listDescriptor,
                 remoteItemIds = payload.orderSummaries.map { it.remoteOrderId },
@@ -466,6 +470,16 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                     ListError(type = ListErrorType.GENERIC_ERROR, message = fetchError.message)
                 }
         )))
+    }
+
+    private fun fetchOutdatedOrders(site: SiteModel, orderSummaries: List<WCOrderSummaryModel>) {
+        val summaryModifiedDates = orderSummaries.associate { it.remoteOrderId to it.dateModified }
+        val remoteIds = orderSummaries.map { RemoteId(it.remoteOrderId) }
+        val remoteIdsToFetch = OrderSqlUtils.getOrdersForSiteByRemoteIds(site, remoteIds).filter {
+            it.dateModified != summaryModifiedDates[it.remoteOrderId]
+        }.map { RemoteId(it.remoteOrderId) }
+        val payload = FetchOrdersByIdsPayload(site = site, remoteIds = remoteIdsToFetch)
+        mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersByIdsAction(payload))
     }
 
     private fun handleFetchOrderByIdsCompleted(payload: FetchOrdersByIdsResponsePayload) {
