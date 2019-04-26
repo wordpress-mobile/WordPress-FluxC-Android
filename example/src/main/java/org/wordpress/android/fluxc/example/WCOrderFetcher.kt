@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.example
 import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.LifecycleObserver
 import android.arch.lifecycle.OnLifecycleEvent
+import android.util.Log
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -49,7 +50,11 @@ class WCOrderFetcher constructor(
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     fun onOrdersFetchedById(event: OnOrdersFetchedByIds) {
-        // TODO: Log the error
+        if (event.isError) {
+            Log.e(WCOrderFetcher::class.java.simpleName,
+                    "Error fetching orders by remoteOrderId: ${event.error.message}")
+            return
+        }
         ongoingRequests.removeAll(event.orderIds)
     }
 }

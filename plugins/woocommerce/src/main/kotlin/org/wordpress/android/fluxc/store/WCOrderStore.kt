@@ -453,7 +453,12 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun handleFetchOrderListCompleted(payload: FetchOrderListResponsePayload) {
-        // TODO: Handle whatever handleFetchOrdersCompleted is handling as well
+        // TODO: Ideally we would have a separate process that prunes the following
+        // tables of defunct records:
+        // - WCOrderSummaryModel
+        // - WCOrderModel
+        // - WCOrderNoteModel
+        // - WCOrderShipmentTrackingModel
         OrderSqlUtils.insertOrUpdateOrderSummaries(payload.orderSummaries)
         mDispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(FetchedListItemsPayload(
                 listDescriptor = payload.listDescriptor,
@@ -472,7 +477,6 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         if (payload.isError) {
             onOrdersFetchedByIds.error = payload.error
         } else {
-            // TODO: We should be able to insert all orders in one sql query
             payload.orders.forEach { OrderSqlUtils.insertOrUpdateOrder(it) }
         }
         emitChange(onOrdersFetchedByIds)
