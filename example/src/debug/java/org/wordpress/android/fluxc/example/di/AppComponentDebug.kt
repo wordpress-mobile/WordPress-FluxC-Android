@@ -20,7 +20,8 @@ import javax.inject.Singleton
         ReleaseBaseModule::class,
         ReleaseNetworkModule::class,
         ReleaseWCNetworkModule::class,
-        MainActivityModule::class))
+        MainActivityModule::class,
+        WCOrderListActivityModule::class))
 interface AppComponentDebug : AppComponent {
     @Component.Builder
     interface Builder : AppComponent.Builder {

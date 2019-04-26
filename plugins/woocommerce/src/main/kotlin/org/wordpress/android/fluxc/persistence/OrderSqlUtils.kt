@@ -26,6 +26,7 @@ object OrderSqlUtils {
         WellSql.insert(orderSummaries).asSingleTransaction(true).execute()
     }
 
+    // TODO verify and correct localization or figure out why sometimes the time may be off
     fun getOrderSummariesForRemoteIds(site: SiteModel, remoteOrderIds: List<RemoteId>): List<WCOrderSummaryModel> {
         if (remoteOrderIds.isEmpty()) {
             return emptyList()

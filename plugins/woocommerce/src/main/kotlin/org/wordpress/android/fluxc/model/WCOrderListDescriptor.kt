@@ -5,7 +5,6 @@ import org.wordpress.android.fluxc.model.list.ListDescriptor
 import org.wordpress.android.fluxc.model.list.ListDescriptorTypeIdentifier
 import org.wordpress.android.fluxc.model.list.ListDescriptorUniqueIdentifier
 
-// TODO: Add a descriptor unit test
 class WCOrderListDescriptor(
     val site: SiteModel,
     val statusFilter: String? = null,
@@ -19,7 +18,7 @@ class WCOrderListDescriptor(
     }
 
     override val typeIdentifier: ListDescriptorTypeIdentifier by lazy {
-        WCOrderListDescriptor.calculateTypeIdentifier(site.id)
+        calculateTypeIdentifier(site.id)
     }
 
     companion object {

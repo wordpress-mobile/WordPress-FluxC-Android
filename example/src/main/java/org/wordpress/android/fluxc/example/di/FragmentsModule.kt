@@ -15,7 +15,6 @@ import org.wordpress.android.fluxc.example.TaxonomiesFragment
 import org.wordpress.android.fluxc.example.ThemeFragment
 import org.wordpress.android.fluxc.example.UploadsFragment
 import org.wordpress.android.fluxc.example.WooCommerceFragment
-import org.wordpress.android.fluxc.example.WooOrderListFragment
 
 @Module
 internal abstract class FragmentsModule {
@@ -57,7 +56,4 @@ internal abstract class FragmentsModule {
 
     @ContributesAndroidInjector
     abstract fun provideSiteSelectorDialogInjector(): SiteSelectorDialog
-
-    @ContributesAndroidInjector
-    abstract fun provideWooCommerceOrderListFragmentInjector(): WooOrderListFragment
 }
