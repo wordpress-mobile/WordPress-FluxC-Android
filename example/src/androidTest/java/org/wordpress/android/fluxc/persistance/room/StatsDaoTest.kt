@@ -39,10 +39,10 @@ class StatsDaoTest : StatsDatabaseTest() {
         statsDao.insertOrReplace(insertedStatsBlock)
 
         assertThat(statsBlock).isNotNull()
-        assertEquals(statsBlock!!, insertedStatsBlock)
+        verifyBlock(statsBlock!!, insertedStatsBlock)
     }
 
-    private fun assertEquals(
+    private fun verifyBlock(
         updatedBlock: StatsBlock,
         originalBlock: StatsBlock
     ) {

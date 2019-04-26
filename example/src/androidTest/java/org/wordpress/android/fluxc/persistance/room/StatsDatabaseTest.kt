@@ -10,7 +10,7 @@ import org.junit.runner.RunWith
 import org.wordpress.android.fluxc.persistence.room.StatsDatabase
 
 @RunWith(AndroidJUnit4::class)
-open class StatsDatabaseTest {
+abstract class StatsDatabaseTest {
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
     val database = Room.inMemoryDatabaseBuilder(InstrumentationRegistry.getContext(), StatsDatabase::class.java)

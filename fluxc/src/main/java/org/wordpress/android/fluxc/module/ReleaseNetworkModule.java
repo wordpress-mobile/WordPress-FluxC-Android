@@ -429,10 +429,4 @@ public class ReleaseNetworkModule {
                 new JsonObjectOrEmptyArrayDeserializer());
         return gsonBuilder.create();
     }
-
-    @Singleton
-    @Provides
-    public StatsDatabase provideStatsDatabase(Context context) {
-        return StatsDatabase.Companion.build(context);
-    }
 }

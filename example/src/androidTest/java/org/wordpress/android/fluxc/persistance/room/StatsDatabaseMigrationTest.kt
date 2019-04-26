@@ -1,9 +1,12 @@
 package org.wordpress.android.fluxc.persistance.room
 
 import android.arch.persistence.db.SupportSQLiteDatabase
+import android.arch.persistence.room.testing.MigrationTestHelper
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase.CONFLICT_FAIL
+import android.support.test.InstrumentationRegistry
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Rule
 import org.junit.Test
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType.ALL_TIME_INSIGHTS
@@ -13,8 +16,15 @@ import org.wordpress.android.fluxc.persistence.StatsSqlUtils.StatsType.DAY
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.StatsType.INSIGHTS
 import org.wordpress.android.fluxc.persistence.room.Migration1to2
 import org.wordpress.android.fluxc.persistence.room.STATS_DB_NAME
+import org.wordpress.android.fluxc.persistence.room.StatsDatabase
 
-class StatsDatabaseMigrationTest : MigrationTest() {
+class StatsDatabaseMigrationTest {
+    @Rule
+    @JvmField
+    val testHelper = MigrationTestHelper(
+            InstrumentationRegistry.getInstrumentation(),
+            StatsDatabase::class.java.canonicalName
+    )
     @Test
     fun migrationFrom1to2() {
         val db = testHelper.createDatabase(STATS_DB_NAME, 1)
