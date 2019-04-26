@@ -601,7 +601,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
-    public void testDeleteRemotePost() throws InterruptedException {
+    public void testTrashRemotePost() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
 
@@ -612,10 +612,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         deletePost(uploadedPost);
 
-        // The post should be removed from the db (regardless of whether it was deleted or just trashed on the server)
-        assertNull(mPostStore.getPostByLocalPostId(uploadedPost.getId()));
-        assertEquals(0, WellSqlUtils.getTotalPostsCount());
-        assertEquals(0, mPostStore.getPostsCountForSite(sSite));
+        // The post status should be trashed
+        PostModel trashedPost = mPostStore.getPostByLocalPostId(uploadedPost.getId());
+        assertEquals(PostStatus.TRASHED.toString(), trashedPost.getStatus());
     }
 
     @Test
