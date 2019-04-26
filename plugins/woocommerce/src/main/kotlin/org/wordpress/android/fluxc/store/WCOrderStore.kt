@@ -465,7 +465,6 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         if (payload.isError) {
             onOrdersFetchedByIds.error = payload.error
         } else {
-            // TODO: We should be able to insert all orders in one sql query
             payload.orders.forEach { OrderSqlUtils.insertOrUpdateOrder(it) }
         }
         emitChange(onOrdersFetchedByIds)
