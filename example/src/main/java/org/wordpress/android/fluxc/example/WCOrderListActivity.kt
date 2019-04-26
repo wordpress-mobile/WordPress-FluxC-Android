@@ -12,7 +12,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.ProgressBar
 import dagger.android.AndroidInjection
-import kotlinx.android.synthetic.main.fragment_woo_order_list.*
+import kotlinx.android.synthetic.main.activity_wc_order_list.*
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.LoadingItem
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.WCOrderListUIItem
