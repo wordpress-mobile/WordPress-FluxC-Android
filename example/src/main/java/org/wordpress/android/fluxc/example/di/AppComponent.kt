@@ -21,7 +21,8 @@ import javax.inject.Singleton
         ReleaseBaseModule::class,
         ReleaseNetworkModule::class,
         ReleaseWCNetworkModule::class,
-        MainActivityModule::class))
+        MainActivityModule::class,
+        WCOrderListActivityModule::class))
 interface AppComponent : AndroidInjector<ExampleApp> {
     override fun inject(app: ExampleApp)
 
