@@ -33,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -614,7 +613,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         // The post status should be trashed
         PostModel trashedPost = mPostStore.getPostByLocalPostId(uploadedPost.getId());
-        assertEquals(PostStatus.TRASHED.toString(), trashedPost.getStatus());
+        assertNotNull(trashedPost);
+        assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
     }
 
     @Test
@@ -629,17 +629,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         deletePost(uploadedPost);
 
-        // Make sure the post is actually removed
-        assertNull(mPostStore.getPostByLocalPostId(uploadedPost.getId()));
-        assertEquals(0, WellSqlUtils.getTotalPostsCount());
-        assertEquals(0, mPostStore.getPostsCountForSite(sSite));
-
-        // fetch trashed post from server
-        fetchPost(uploadedPost);
-        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
-
-        // Get the current copy of the trashed post from the PostStore
-        PostModel trashedPost = mPostStore.getPostByRemotePostId(uploadedPost.getRemotePostId(), sSite);
+        // The post status should be trashed
+        PostModel trashedPost = mPostStore.getPostByLocalPostId(uploadedPost.getId());
         assertNotNull(trashedPost);
         assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
 
