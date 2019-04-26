@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.example
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
@@ -136,7 +137,8 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
 
         fetch_order_list.setOnClickListener {
             getFirstWCSite()?.let {
-                replaceFragment(WooOrderListFragment())
+                val intent = Intent(activity, WCOrderListActivity::class.java)
+                startActivity(intent)
             }
         }
 

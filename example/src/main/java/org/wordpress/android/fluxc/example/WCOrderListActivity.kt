@@ -2,20 +2,17 @@ package org.wordpress.android.fluxc.example
 
 import android.arch.lifecycle.Lifecycle
 import android.arch.lifecycle.Observer
-import android.content.Context
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ProgressBar
-import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_woo_order_list.*
+import dagger.android.AndroidInjection
+import kotlinx.android.synthetic.main.activity_wc_order_list.*
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.LoadingItem
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.WCOrderListUIItem
@@ -31,7 +28,7 @@ import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.widgets.CustomSwipeRefreshLayout
 import javax.inject.Inject
 
-class WooOrderListFragment : Fragment() {
+class WCOrderListActivity : AppCompatActivity() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var wcOrderStore: WCOrderStore
@@ -42,29 +39,24 @@ class WooOrderListFragment : Fragment() {
     private var pagedListWrapper: PagedListWrapper<WCOrderListItemUIType>? = null
     private val orderListAdapter: OrderListAdapter = OrderListAdapter()
 
-    override fun onAttach(context: Context?) {
-        AndroidSupportInjection.inject(this)
-        super.onAttach(context)
-    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        AndroidInjection.inject(this)
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_wc_order_list)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.fragment_woo_order_list, container, false)
+        swipeRefreshLayout = findViewById(R.id.ptr_layout)
+        progressLoadMore = findViewById(R.id.progress)
 
-        swipeRefreshLayout = view.findViewById(R.id.ptr_layout)
-        progressLoadMore = view.findViewById(R.id.progress)
-
-        view.findViewById<RecyclerView>(R.id.recycler_view)?.apply {
+        findViewById<RecyclerView>(R.id.recycler_view)?.apply {
             adapter = orderListAdapter
             layoutManager = LinearLayoutManager(context)
             itemAnimator = DefaultItemAnimator()
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
-
-        return view
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onStart() {
+        super.onStart()
 
         val orderListDescriptor = WCOrderListDescriptor(
                 site = wooCommerceStore.getWooCommerceSites()[0], // crash if site is not there
@@ -74,12 +66,10 @@ class WooOrderListFragment : Fragment() {
         loadList(orderListDescriptor)
 
         swipeRefreshLayout?.apply {
-            activity?.let { act ->
-                setColorSchemeColors(
-                        ContextCompat.getColor(act, android.R.color.holo_blue_bright),
-                        ContextCompat.getColor(act, android.R.color.holo_green_light),
-                        ContextCompat.getColor(act, android.R.color.holo_orange_dark))
-            }
+            setColorSchemeColors(
+                    ContextCompat.getColor(this@WCOrderListActivity, android.R.color.holo_blue_bright),
+                    ContextCompat.getColor(this@WCOrderListActivity, android.R.color.holo_green_light),
+                    ContextCompat.getColor(this@WCOrderListActivity, android.R.color.holo_orange_dark))
             setOnRefreshListener {
                 pagedListWrapper?.fetchFirstPage()
             }
@@ -105,7 +95,7 @@ class WooOrderListFragment : Fragment() {
 
     private fun loadList(descriptor: WCOrderListDescriptor) {
         pagedListWrapper?.apply {
-            val lifecycleOwner = this@WooOrderListFragment
+            val lifecycleOwner = this@WCOrderListActivity
             data.removeObservers(lifecycleOwner)
             isLoadingMore.removeObservers(lifecycleOwner)
             isFetchingFirstPage.removeObservers(lifecycleOwner)
