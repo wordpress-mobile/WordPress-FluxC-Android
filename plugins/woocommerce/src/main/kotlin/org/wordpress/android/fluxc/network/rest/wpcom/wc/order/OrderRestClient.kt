@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.order
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCOrderAction
@@ -11,6 +12,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
+import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -20,8 +22,11 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
@@ -32,6 +37,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import javax.inject.Singleton
+import kotlin.collections.MutableMap.MutableEntry
 
 @Singleton
 class OrderRestClient(
@@ -390,6 +396,121 @@ class OrderRestClient(
         add(request)
     }
 
+    /**
+     * Posts a new Order Shipment Tracking record to the API for an order.
+     *
+     * Makes a POST call to save a Shipment Tracking record via the Jetpack tunnel (see [JetpackTunnelGsonRequest]).
+     * The API calls for different fields depending on if the new record uses a custom provider or not, so this is
+     * why there is an if-statement. Either way, the same standard [WCOrderShipmentTrackingModel] is returned.
+     *
+     * Note: This API does not currently support v3.
+     *
+     * Dispatches [WCOrderAction.ADDED_ORDER_SHIPMENT_TRACKING] action with the results.
+     */
+    fun addOrderShipmentTrackingForOrder(
+        site: SiteModel,
+        order: WCOrderModel,
+        tracking: WCOrderShipmentTrackingModel,
+        isCustomProvider: Boolean
+    ) {
+        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).shipment_trackings.pathV2
+
+        val responseType = object : TypeToken<OrderShipmentTrackingApiResponse>() {}.type
+        val params = if (isCustomProvider) {
+            mutableMapOf(
+                    "custom_tracking_provider" to tracking.trackingProvider,
+                    "custom_tracking_link" to tracking.trackingLink)
+        } else {
+            mutableMapOf("tracking_provider" to tracking.trackingProvider)
+        }
+        params.put("tracking_number", tracking.trackingNumber)
+        params.put("date_shipped", tracking.dateShipped)
+        val request = JetpackTunnelGsonRequest.buildPostRequest(url, site.siteId, params, responseType,
+                { response: OrderShipmentTrackingApiResponse? ->
+                    val trackingResponse = response?.let {
+                        orderShipmentTrackingResponseToModel(it).apply {
+                            localOrderId = order.id
+                            localSiteId = site.id
+                        }
+                    }
+                    val payload = AddOrderShipmentTrackingResponsePayload(
+                            site, order, trackingResponse)
+                    dispatcher.dispatch(WCOrderActionBuilder.newAddedOrderShipmentTrackingAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val trackingsError = networkErrorToOrderError(networkError)
+                    val payload = AddOrderShipmentTrackingResponsePayload(trackingsError, site, order, tracking)
+                    dispatcher.dispatch(WCOrderActionBuilder.newAddedOrderShipmentTrackingAction(payload))
+                })
+        add(request)
+    }
+
+    /**
+     * Deletes a single shipment tracking record for an order.
+     *
+     * Makes a POST call requesting a DELETE method on `/wc/v2/orders/<order_id>/shipment_trackings/<tracking_id>/`
+     * via the Jetpack tunnel (see [JetpackTunnelGsonRequest].
+     *
+     * Note this is currently not supported in v3, but will be in the future.
+     *
+     * Dispatches a [WCOrderAction.DELETED_ORDER_SHIPMENT_TRACKING] action with the results
+     */
+    fun deleteShipmentTrackingForOrder(site: SiteModel, order: WCOrderModel, tracking: WCOrderShipmentTrackingModel) {
+        val url = WOOCOMMERCE.orders.id(order.remoteOrderId)
+                .shipment_trackings.tracking(tracking.remoteTrackingId).pathV2
+
+        val responseType = object : TypeToken<OrderShipmentTrackingApiResponse>() {}.type
+        val params = emptyMap<String, String>()
+        val request = JetpackTunnelGsonRequest.buildDeleteRequest(url, site.siteId, params, responseType,
+                { response: OrderShipmentTrackingApiResponse? ->
+                    val trackingResponse = response?.let {
+                        orderShipmentTrackingResponseToModel(it).apply {
+                            localSiteId = site.id
+                            localOrderId = order.id
+                            id = tracking.id
+                        }
+                    }
+
+                    val payload = DeleteOrderShipmentTrackingResponsePayload(site, order, trackingResponse)
+                    dispatcher.dispatch(WCOrderActionBuilder.newDeletedOrderShipmentTrackingAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val trackingsError = networkErrorToOrderError(networkError)
+                    val payload = DeleteOrderShipmentTrackingResponsePayload(trackingsError, site, order, tracking)
+                    dispatcher.dispatch(WCOrderActionBuilder.newDeletedOrderShipmentTrackingAction(payload))
+                })
+        add(request)
+    }
+
+    /**
+     * Fetches a list of shipment providers from the WooCommerce Shipment Tracking plugin.
+     *
+     * Makes a GET call to `/wc/v2/orders/<order_id>/shipment-trackings/providers/` via the Jetpack tunnel
+     * (see [JetpackTunnelGsonRequest]), retrieving a list of shipment tracking provider objects. The `<order_id>`
+     * argument is only needed because it is a requirement of the plugins API even though this data is not directly
+     * related to shipment providers.
+     */
+    fun fetchOrderShipmentProviders(site: SiteModel, order: WCOrderModel) {
+        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).shipment_trackings.providers.pathV2
+
+        val params = emptyMap<String, String>()
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, JsonElement::class.java,
+                { response: JsonElement? ->
+                    response?.let {
+                        val providers = jsonResponseToShipmentProviderList(site, it)
+                        val payload = FetchOrderShipmentProvidersResponsePayload(site, order, providers)
+                        dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentProvidersAction(payload))
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val providersError = networkErrorToOrderError(networkError)
+                    val payload = FetchOrderShipmentProvidersResponsePayload(providersError, site, order)
+                    dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentProvidersAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
     private fun orderResponseToOrderModel(response: OrderApiResponse): WCOrderModel {
         return WCOrderModel().apply {
             remoteOrderId = response.id ?: 0
@@ -486,5 +607,26 @@ class OrderRestClient(
             trackingLink = response.tracking_link ?: ""
             dateShipped = response.date_shipped ?: ""
         }
+    }
+
+    private fun jsonResponseToShipmentProviderList(
+        site: SiteModel,
+        response: JsonElement
+    ): List<WCOrderShipmentProviderModel> {
+        val providers = mutableListOf<WCOrderShipmentProviderModel>()
+        response.asJsonObject.entrySet().forEach { countryEntry: MutableEntry<String, JsonElement> ->
+            countryEntry.value.asJsonObject.entrySet().map { carrierEntry ->
+                carrierEntry?.let { carrier ->
+                    val provider = WCOrderShipmentProviderModel().apply {
+                        localSiteId = site.id
+                        this.country = countryEntry.key ?: ""
+                        this.carrierName = carrier.key
+                        this.carrierLink = carrier.value.asString
+                    }
+                    providers.add(provider)
+                }
+            }
+        }
+        return providers
     }
 }

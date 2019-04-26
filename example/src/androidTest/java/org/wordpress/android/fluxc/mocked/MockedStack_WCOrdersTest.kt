@@ -15,11 +15,15 @@ import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
+import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesResponsePayload
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentTrackingsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePayload
@@ -444,6 +448,110 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
                     "https://tools.usps.com/go/TrackConfirmAction_input?qtc_tLabels1=11122233344466666")
             assertEquals(trackingNumber, "11122233344466666")
             assertEquals(dateShipped, "2019-02-19")
+        }
+    }
+
+    @Test
+    fun testAddOrderShipmentTrackingSuccess() {
+        val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
+        val trackingModel = WCOrderShipmentTrackingModel().apply {
+            trackingProvider = "TNT Express (consignment)"
+            trackingNumber = "123456"
+            dateShipped = "2019-04-18"
+        }
+        interceptor.respondWith("wc-post-order-shipment-tracking-success.json")
+        orderRestClient.addOrderShipmentTrackingForOrder(siteModel, orderModel, trackingModel, isCustomProvider = false)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCOrderAction.ADDED_ORDER_SHIPMENT_TRACKING, lastAction!!.type)
+        val payload = lastAction!!.payload as AddOrderShipmentTrackingResponsePayload
+        assertNull(payload.error)
+        assertNotNull(payload.tracking)
+
+        with(payload.tracking!!) {
+            assertEquals(remoteTrackingId, "95bb641d79d7c6974001d6a03fbdabc0")
+            assertEquals(trackingNumber, "123456")
+            assertEquals(trackingProvider, "TNT Express (consignment)")
+            assertEquals(trackingLink, "http://www.tnt.com/webtracker/tracking.do?requestType=GEN&searchType=" +
+                    "CON&respLang=en&respCountry=GENERIC&sourceID=1&sourceCountry=ww&cons=123456&navigation=1&g" +
+                    "\nenericSiteIdent=")
+            assertEquals(dateShipped, "2019-04-18")
+        }
+    }
+
+    @Test
+    fun testAddOrderShipmentTrackingCustomProviderSuccess() {
+        val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
+        val trackingModel = WCOrderShipmentTrackingModel().apply {
+            trackingProvider = "Amanda Test Provider"
+            trackingNumber = "123456"
+            trackingLink = "https://www.google.com"
+            dateShipped = "2019-04-19"
+        }
+        interceptor.respondWith("wc-post-order-shipment-tracking-custom-success.json")
+        orderRestClient.addOrderShipmentTrackingForOrder(siteModel, orderModel, trackingModel, isCustomProvider = true)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCOrderAction.ADDED_ORDER_SHIPMENT_TRACKING, lastAction!!.type)
+        val payload = lastAction!!.payload as AddOrderShipmentTrackingResponsePayload
+        assertNull(payload.error)
+        assertNotNull(payload.tracking)
+
+        with(payload.tracking!!) {
+            assertEquals(remoteTrackingId, "ecfb139dcc180833b8dbe92e438913fc")
+            assertEquals(trackingNumber, "123456")
+            assertEquals(trackingProvider, "Amanda Test Provider")
+            assertEquals(trackingLink, "https://www.google.com")
+            assertEquals(dateShipped, "2019-04-19")
+        }
+    }
+
+    @Test
+    fun testDeleteOrderShipmentTrackingSuccess() {
+        val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
+        val trackingModel = WCOrderShipmentTrackingModel().apply {
+            remoteTrackingId = "95bb641d79d7c6974001d6a03fbdabc0"
+        }
+
+        interceptor.respondWith("wc-delete-order-shipment-tracking-success.json")
+        orderRestClient.deleteShipmentTrackingForOrder(siteModel, orderModel, trackingModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCOrderAction.DELETED_ORDER_SHIPMENT_TRACKING, lastAction!!.type)
+        val payload = lastAction!!.payload as DeleteOrderShipmentTrackingResponsePayload
+        assertNull(payload.error)
+        assertNotNull(payload.tracking)
+
+        with(payload.tracking!!) {
+            assertEquals(remoteTrackingId, "95bb641d79d7c6974001d6a03fbdabc0")
+        }
+    }
+
+    @Test
+    fun testOrderShipmentProvidersFetchSuccess() {
+        val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
+        interceptor.respondWith("wc-order-shipment-providers-success.json")
+        orderRestClient.fetchOrderShipmentProviders(siteModel, orderModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCOrderAction.FETCHED_ORDER_SHIPMENT_PROVIDERS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchOrderShipmentProvidersResponsePayload
+        assertNull(payload.error)
+        assertEquals(54, payload.providers.size)
+
+        with(payload.providers[0]) {
+            assertEquals(localSiteId, siteModel.id)
+            assertEquals("Australia", country)
+            assertEquals("Australia Post", carrierName)
+            assertEquals("http://auspost.com.au/track/track.html?id=%1\$s", carrierLink)
         }
     }
 
