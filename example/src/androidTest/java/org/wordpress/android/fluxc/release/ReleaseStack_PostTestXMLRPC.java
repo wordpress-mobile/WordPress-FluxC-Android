@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
+import org.wordpress.android.fluxc.store.PostStore.PostDeleteActionType;
 import org.wordpress.android.fluxc.store.PostStore.PostError;
 import org.wordpress.android.fluxc.store.PostStore.PostErrorType;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
@@ -1020,7 +1021,12 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
             if (mNextEvent.equals(TestEvents.POST_DELETED)) {
                 assertNotEquals(0, ((DeletePost) event.causeOfChange).getLocalPostId());
                 assertNotEquals(0, ((DeletePost) event.causeOfChange).getRemotePostId());
-                mCountDownLatch.countDown();
+                if (((DeletePost) event.causeOfChange).getPostDeleteActionType() == PostDeleteActionType.TRASH) {
+                    // When a post is trashed, we fetch the updated post from remote and we need to wait for its result
+                    mNextEvent = TestEvents.POST_UPDATED;
+                } else {
+                    mCountDownLatch.countDown();
+                }
             }
         } else if (event.causeOfChange instanceof CauseOfOnPostChanged.RemoveAllPosts) {
             if (mNextEvent.equals(TestEvents.ALL_POST_REMOVED)) {
