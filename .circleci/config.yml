@@ -120,6 +120,7 @@ jobs:
           steps:
             - run:
                 name: Setup Slack messages
+                when: always
                 command: |
                   FIREBASE_URL="https://console.firebase.google.com/project/api-project-108380595987/testlab/histories/bh.fbe4c2866a46a076"
                   echo "export SLACK_FAILURE_MESSAGE=':red_circle: FluxC Connected tests have failed!\nSee $FIREBASE_URL'" >> $BASH_ENV
