@@ -135,7 +135,11 @@ class ProductRestClient(
             taxStatus = response.tax_status ?: ""
             taxClass = response.tax_class ?: ""
 
-            manageStock = response.manage_stock
+            // variations may have "parent" here if inventory is enabled for the parent but not the variation
+            manageStock = response.manage_stock?.let {
+                it == "true" || it == "parent"
+            } ?: false
+
             stockQuantity = response.stock_quantity
             stockStatus = response.stock_status ?: ""
 

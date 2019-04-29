@@ -101,6 +101,18 @@
             android:text="Fetch Order Shipment Trackings"/>
 
         <Button
+            android:id="@+id/add_shipment_tracking"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Shipment Tracking To First Order"/>
+
+        <Button
+            android:id="@+id/delete_shipment_tracking"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delete First Shipment Tracking For Order"/>
+
+        <Button
             android:id="@+id/fetch_shipment_providers"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

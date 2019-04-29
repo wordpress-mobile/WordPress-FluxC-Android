@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.mocked
 
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -96,6 +97,35 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(WCProductAction.FETCHED_SINGLE_PRODUCT, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteProductPayload
         assertNotNull(payload.error)
+    }
+
+    @Test
+    fun testFetchSingleProductManageStock() {
+        // check that a product's manage stock field is correctly set to true
+        interceptor.respondWith("wc-fetch-product-response-manage-stock-true.json")
+        productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        val payloadTrue = lastAction!!.payload as RemoteProductPayload
+        assertTrue(payloadTrue.product.manageStock)
+
+        // check that a product's manage stock field is correctly set to false
+        interceptor.respondWith("wc-fetch-product-response-manage-stock-false.json")
+        productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        val payloadFalse = lastAction!!.payload as RemoteProductPayload
+        assertFalse(payloadFalse.product.manageStock)
+
+        // check that a product's manage stock field is correctly set to true when response contains
+        // "parent" rather than true/false (this is for product variations who inherit the parent's
+        // manage stock)
+        interceptor.respondWith("wc-fetch-product-response-manage-stock-parent.json")
+        productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+        val payloadParent = lastAction!!.payload as RemoteProductPayload
+        assertTrue(payloadParent.product.manageStock)
     }
 
     @Test

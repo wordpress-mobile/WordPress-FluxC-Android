@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
+import org.wordpress.android.fluxc.store.PostStore.PostDeleteActionType;
 import org.wordpress.android.fluxc.store.PostStore.PostError;
 import org.wordpress.android.fluxc.store.PostStore.PostErrorType;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
@@ -33,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -601,7 +601,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
-    public void testDeleteRemotePost() throws InterruptedException {
+    public void testTrashRemotePost() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
 
@@ -612,10 +612,10 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         deletePost(uploadedPost);
 
-        // The post should be removed from the db (regardless of whether it was deleted or just trashed on the server)
-        assertNull(mPostStore.getPostByLocalPostId(uploadedPost.getId()));
-        assertEquals(0, WellSqlUtils.getTotalPostsCount());
-        assertEquals(0, mPostStore.getPostsCountForSite(sSite));
+        // The post status should be trashed
+        PostModel trashedPost = mPostStore.getPostByLocalPostId(uploadedPost.getId());
+        assertNotNull(trashedPost);
+        assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
     }
 
     @Test
@@ -630,17 +630,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         deletePost(uploadedPost);
 
-        // Make sure the post is actually removed
-        assertNull(mPostStore.getPostByLocalPostId(uploadedPost.getId()));
-        assertEquals(0, WellSqlUtils.getTotalPostsCount());
-        assertEquals(0, mPostStore.getPostsCountForSite(sSite));
-
-        // fetch trashed post from server
-        fetchPost(uploadedPost);
-        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
-
-        // Get the current copy of the trashed post from the PostStore
-        PostModel trashedPost = mPostStore.getPostByRemotePostId(uploadedPost.getRemotePostId(), sSite);
+        // The post status should be trashed
+        PostModel trashedPost = mPostStore.getPostByLocalPostId(uploadedPost.getId());
         assertNotNull(trashedPost);
         assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
 
@@ -1030,7 +1021,12 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
             if (mNextEvent.equals(TestEvents.POST_DELETED)) {
                 assertNotEquals(0, ((DeletePost) event.causeOfChange).getLocalPostId());
                 assertNotEquals(0, ((DeletePost) event.causeOfChange).getRemotePostId());
-                mCountDownLatch.countDown();
+                if (((DeletePost) event.causeOfChange).getPostDeleteActionType() == PostDeleteActionType.TRASH) {
+                    // When a post is trashed, we fetch the updated post from remote and we need to wait for its result
+                    mNextEvent = TestEvents.POST_UPDATED;
+                } else {
+                    mCountDownLatch.countDown();
+                }
             }
         } else if (event.causeOfChange instanceof CauseOfOnPostChanged.RemoveAllPosts) {
             if (mNextEvent.equals(TestEvents.ALL_POST_REMOVED)) {
