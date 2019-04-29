@@ -83,21 +83,28 @@ class OrderStatsRestClient(
 
         val request = WPComGsonRequest.buildGetRequest(url, params, OrderStatsApiResponse::class.java,
                 { apiResponse ->
-                    val model = WCOrderStatsModel().apply {
-                        this.localSiteId = site.id
-                        this.unit = unit.toString()
-                        this.fields = apiResponse.fields.toString()
-                        this.data = apiResponse.data.toString()
-                        this.quantity = quantity.toString()
-                        this.date = date
-                        endDate?.let { this.endDate = it }
-                        startDate?.let {
-                            this.startDate = startDate
-                            this.isCustomField = true
+                    apiResponse?.let {
+                        val model = WCOrderStatsModel().apply {
+                            this.localSiteId = site.id
+                            this.unit = unit.toString()
+                            this.fields = apiResponse.fields.toString()
+                            this.data = apiResponse.data.toString()
+                            this.quantity = quantity.toString()
+                            this.date = date
+                            endDate?.let { this.endDate = it }
+                            startDate?.let {
+                                this.startDate = startDate
+                                this.isCustomField = true
+                            }
                         }
+                        val payload = FetchOrderStatsResponsePayload(site, unit, model)
+                        mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
+                    } ?: run {
+                        AppLog.e(T.API, "Response for url $url with param $params is null: $apiResponse")
+                        val orderError = OrderStatsError(OrderStatsErrorType.RESPONSE_NULL, "Response object is null")
+                        val payload = FetchOrderStatsResponsePayload(orderError, site, unit)
+                        mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
                     }
-                    val payload = FetchOrderStatsResponsePayload(site, unit, model)
-                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsAction(payload))
                 },
                 { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
