@@ -99,17 +99,17 @@ jobs:
           input: .circleci/.firebase.secrets.json.enc
           output: .firebase.secrets.json
           secret: FIREBASE_SECRETS_ENCRYPTION_KEY
-      - android/firebase-test:
-          key-file: .firebase.secrets.json
-          results-history-name: << parameters.results-history-name >>
-          type: instrumentation
-          apk-path: example/build/outputs/apk/debug/example-debug.apk
-          test-apk-path: example/build/outputs/apk/androidTest/debug/example-debug-androidTest.apk
-          test-targets: package << parameters.package >>
-          device: << parameters.device >>
-          project: api-project-108380595987
-          timeout: << parameters.timeout >>
-          no-record-video: true
+      # - android/firebase-test:
+      #     key-file: .firebase.secrets.json
+      #     results-history-name: << parameters.results-history-name >>
+      #     type: instrumentation
+      #     apk-path: example/build/outputs/apk/debug/example-debug.apk
+      #     test-apk-path: example/build/outputs/apk/androidTest/debug/example-debug-androidTest.apk
+      #     test-targets: package << parameters.package >>
+      #     device: << parameters.device >>
+      #     project: api-project-108380595987
+      #     timeout: << parameters.timeout >>
+      #     no-record-video: true
       - android/save-gradle-cache:
           cache-prefix: connected-tests
       - when:
@@ -145,13 +145,13 @@ workflows:
           timeout: 10m
           post-slack-status: false
   nightly:
-    triggers:
-      - schedule:
-          cron: "0 0 * * *"
-          filters:
-            branches:
-              only:
-                - develop
+    # triggers:
+    #   - schedule:
+    #       cron: "0 0 * * *"
+    #       filters:
+    #         branches:
+    #           only:
+    #             - develop
     jobs:
       - Firebase Test:
           name: Connected Tests
