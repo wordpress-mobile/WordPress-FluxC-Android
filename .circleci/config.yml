@@ -110,6 +110,9 @@ jobs:
       #     project: api-project-108380595987
       #     timeout: << parameters.timeout >>
       #     no-record-video: true
+      - run:
+          name: Force failure
+          command: exit 1
       - android/save-gradle-cache:
           cache-prefix: connected-tests
       - when:
@@ -121,11 +124,11 @@ jobs:
                   FIREBASE_URL="https://console.firebase.google.com/project/api-project-108380595987/testlab/histories/bh.fbe4c2866a46a076"
                   echo "export SLACK_FAILURE_MESSAGE=':red_circle: FluxC Connected tests have failed!\nSee $FIREBASE_URL'" >> $BASH_ENV
                   echo "export SLACK_SUCCESS_MESSAGE=':tada: FluxC Connected tests have succeeded!\nSee $FIREBASE_URL'" >> $BASH_ENV
-            - slack/status:
-                fail_only: 'true'
-                failure_message: '${SLACK_FAILURE_MESSAGE}'
-                success_message: '${SLACK_SUCCESS_MESSAGE}'
-                webhook: '${SLACK_FAILURE_WEBHOOK}'
+            # - slack/status:
+            #     fail_only: 'true'
+            #     failure_message: '${SLACK_FAILURE_MESSAGE}'
+            #     success_message: '${SLACK_SUCCESS_MESSAGE}'
+            #     webhook: '${SLACK_FAILURE_WEBHOOK}'
             - slack/status:
                 fail_only: 'false'
                 failure_message: '${SLACK_FAILURE_MESSAGE}'
