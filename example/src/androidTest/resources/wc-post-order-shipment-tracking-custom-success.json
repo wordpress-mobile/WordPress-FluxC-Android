@@ -1,0 +1,26 @@
+{
+  "data": {
+    "tracking_id": "ecfb139dcc180833b8dbe92e438913fc",
+    "tracking_provider": "Amanda Test Provider",
+    "tracking_link": "https:\/\/www.google.com",
+    "tracking_number": "123456",
+    "date_shipped": "2019-04-19",
+    "_links": {
+      "self": [
+        {
+          "href": "https:\/\/testwooshop.mystagingwebsite.com\/wp-json\/wc\/v2\/orders\/2707\/shipment-trackings\/ecfb139dcc180833b8dbe92e438913fc"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https:\/\/testwooshop.mystagingwebsite.com\/wp-json\/wc\/v2\/orders\/2707\/shipment-trackings"
+        }
+      ],
+      "up": [
+        {
+          "href": "https:\/\/testwooshop.mystagingwebsite.com\/wp-json\/wc\/v2\/orders\/2707"
+        }
+      ]
+    }
+  }
+}
