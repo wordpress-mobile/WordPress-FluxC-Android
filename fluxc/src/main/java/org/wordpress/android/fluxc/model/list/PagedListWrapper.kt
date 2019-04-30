@@ -104,12 +104,13 @@ class PagedListWrapper<T>(
      * Handles the [OnListStateChanged] `ListStore` event. It'll update the state information related [LiveData]
      * instances.
      */
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun onListStateChanged(event: OnListStateChanged) {
         if (event.listDescriptor != listDescriptor) {
             return
         }
+        Thread.sleep(30)
         _isFetchingFirstPage.postValue(event.newState.isFetchingFirstPage())
         _isLoadingMore.postValue(event.newState.isLoadingMore())
         _listError.postValue(event.error)
@@ -119,7 +120,7 @@ class PagedListWrapper<T>(
      * Handles the [OnListChanged] `ListStore` event. It'll invalidate the data, so it can be reloaded. It'll also
      * updates whether the list is empty or not.
      */
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun onListChanged(event: OnListChanged) {
         if (!event.listDescriptors.contains(listDescriptor)) {
@@ -132,7 +133,7 @@ class PagedListWrapper<T>(
      * Handles the [OnListItemsChanged] `ListStore` event. It'll invalidate the data, so it can be reloaded. It'll also
      * updates whether the list is empty or not.
      */
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun onListItemsChanged(event: OnListItemsChanged) {
         if (listDescriptor.typeIdentifier != event.type) {
@@ -145,7 +146,7 @@ class PagedListWrapper<T>(
      * Handles the [OnListRequiresRefresh] `ListStore` event. It'll refresh the list if the type of this list matches
      * the type of list that requires a refresh.
      */
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun onListRequiresRefresh(event: OnListRequiresRefresh) {
         if (listDescriptor.typeIdentifier == event.type) {
@@ -157,7 +158,7 @@ class PagedListWrapper<T>(
      * Handles the [OnListDataInvalidated] `ListStore` event. It'll invalidate the list if the type of this list matches
      * the type of list that is invalidated.
      */
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     @Suppress("unused")
     fun onListDataInvalidated(event: OnListDataInvalidated) {
         if (listDescriptor.typeIdentifier == event.type) {
