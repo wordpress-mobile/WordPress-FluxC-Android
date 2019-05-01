@@ -5,57 +5,57 @@
     android:layout_height="match_parent"
     tools:context="org.wordpress.android.fluxc.example.ui.WooCommerceFragment">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <Button
-            android:id="@+id/log_sites"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Log Sites"/>
-
-        <Button
-            android:id="@+id/log_woo_api_versions"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Log Woo API versions"/>
-
-        <Button
-            android:id="@+id/fetch_settings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch WC site settings"/>
-
-        <Button
-            android:id="@+id/fetch_product_settings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch WC product settings"/>
-
-        <ImageView
-            android:id="@+id/divider1"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="2dp"
-            android:background="@color/material_grey_600"/>
-
-        <Button
-            android:id="@+id/orders"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Orders"/>
+            android:orientation="vertical">
 
-        <Button
-            android:id="@+id/products"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Products"/>
+                <Button
+                    android:id="@+id/log_sites"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Log Sites"/>
 
-        <Button
-            android:id="@+id/stats"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Stats"/>
-    </LinearLayout>
+                <Button
+                    android:id="@+id/log_woo_api_versions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Log Woo API versions"/>
+
+                <Button
+                    android:id="@+id/fetch_settings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Fetch WC site settings"/>
+
+                <Button
+                    android:id="@+id/fetch_product_settings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Fetch WC product settings"/>
+
+                <ImageView
+                    android:id="@+id/divider1"
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="@color/material_grey_600"/>
+
+                <Button
+                    android:id="@+id/orders"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Orders"/>
+
+                <Button
+                    android:id="@+id/products"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Products"/>
+
+                <Button
+                    android:id="@+id/stats"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Stats"/>
+        </LinearLayout>
 </ScrollView>
