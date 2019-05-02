@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.persistence
 
+import android.arch.lifecycle.LiveData
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.AuthorsRestClient.AuthorsResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.ClicksRestClient.ClicksResponse
@@ -191,6 +192,87 @@ class TimeStatsSqlUtils
 
     fun selectVideoPlays(site: SiteModel, granularity: StatsGranularity, date: Date): VideoPlaysResponse? {
         return statsSqlUtils.select(
+                site,
+                VIDEO_PLAYS,
+                granularity.toStatsType(),
+                VideoPlaysResponse::class.java,
+                statsUtils.getFormattedDate(date)
+        )
+    }
+
+
+    fun liveSelectPostAndPageViews(site: SiteModel, granularity: StatsGranularity, date: Date): LiveData<PostAndPageViewsResponse> {
+        return statsSqlUtils.liveSelect(
+                site,
+                POSTS_AND_PAGES_VIEWS,
+                granularity.toStatsType(),
+                PostAndPageViewsResponse::class.java,
+                statsUtils.getFormattedDate(date)
+        )
+    }
+
+    fun liveSelectReferrers(site: SiteModel, granularity: StatsGranularity, date: Date): LiveData<ReferrersResponse> {
+        return statsSqlUtils.liveSelect(
+                site,
+                REFERRERS,
+                granularity.toStatsType(),
+                ReferrersResponse::class.java,
+                statsUtils.getFormattedDate(date)
+        )
+    }
+
+    fun liveSelectClicks(site: SiteModel, granularity: StatsGranularity, date: Date): LiveData<ClicksResponse> {
+        return statsSqlUtils.liveSelect(
+                site,
+                CLICKS,
+                granularity.toStatsType(),
+                ClicksResponse::class.java,
+                statsUtils.getFormattedDate(date)
+        )
+    }
+
+    fun liveSelectVisitsAndViews(site: SiteModel, granularity: StatsGranularity, date: Date): LiveData<VisitsAndViewsResponse> {
+        return statsSqlUtils.liveSelect(
+                site,
+                VISITS_AND_VIEWS,
+                granularity.toStatsType(),
+                VisitsAndViewsResponse::class.java,
+                statsUtils.getFormattedDate(date)
+        )
+    }
+
+    fun liveSelectCountryViews(site: SiteModel, granularity: StatsGranularity, date: Date): LiveData<CountryViewsResponse> {
+        return statsSqlUtils.liveSelect(
+                site,
+                COUNTRY_VIEWS,
+                granularity.toStatsType(),
+                CountryViewsResponse::class.java,
+                statsUtils.getFormattedDate(date)
+        )
+    }
+
+    fun liveSelectAuthors(site: SiteModel, granularity: StatsGranularity, date: Date): LiveData<AuthorsResponse> {
+        return statsSqlUtils.liveSelect(
+                site,
+                AUTHORS,
+                granularity.toStatsType(),
+                AuthorsResponse::class.java,
+                statsUtils.getFormattedDate(date)
+        )
+    }
+
+    fun liveSelectSearchTerms(site: SiteModel, granularity: StatsGranularity, date: Date): LiveData<SearchTermsResponse> {
+        return statsSqlUtils.liveSelect(
+                site,
+                SEARCH_TERMS,
+                granularity.toStatsType(),
+                SearchTermsResponse::class.java,
+                statsUtils.getFormattedDate(date)
+        )
+    }
+
+    fun liveSelectVideoPlays(site: SiteModel, granularity: StatsGranularity, date: Date): LiveData<VideoPlaysResponse> {
+        return statsSqlUtils.liveSelect(
                 site,
                 VIDEO_PLAYS,
                 granularity.toStatsType(),

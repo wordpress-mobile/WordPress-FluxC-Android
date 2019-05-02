@@ -6,13 +6,15 @@ import android.arch.persistence.room.RoomDatabase
 import android.arch.persistence.room.TypeConverters
 import android.content.Context
 import org.wordpress.android.fluxc.persistence.room.StatsDao.StatsBlock
+import org.wordpress.android.fluxc.persistence.room.StatsRequestDao.StatsRequest
 
 const val STATS_DB_NAME = "stats.db"
 
-@Database(entities = arrayOf(StatsBlock::class), version = 2, exportSchema = true)
+@Database(entities = arrayOf(StatsBlock::class, StatsRequest::class), version = 2, exportSchema = true)
 @TypeConverters(BlockTypeConverter::class, StatsTypeConverter::class)
 abstract class StatsDatabase : RoomDatabase() {
     abstract fun statsDao(): StatsDao
+    abstract fun statsRequestDao(): StatsRequestDao
 
     companion object {
         fun build(context: Context): StatsDatabase {

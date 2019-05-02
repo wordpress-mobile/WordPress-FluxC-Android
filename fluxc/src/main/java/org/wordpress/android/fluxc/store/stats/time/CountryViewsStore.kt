@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store.stats.time
 
+import android.arch.lifecycle.LiveData
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.LimitMode
@@ -7,6 +8,7 @@ import org.wordpress.android.fluxc.model.stats.time.CountryViewsModel
 import org.wordpress.android.fluxc.model.stats.time.TimeStatsMapper
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.CountryViewsRestClient
 import org.wordpress.android.fluxc.network.utils.StatsGranularity
+import org.wordpress.android.fluxc.network.utils.map
 import org.wordpress.android.fluxc.persistence.TimeStatsSqlUtils
 import org.wordpress.android.fluxc.store.StatsStore.OnStatsFetched
 import org.wordpress.android.fluxc.store.StatsStore.StatsError
@@ -49,5 +51,14 @@ class CountryViewsStore
         date: Date
     ): CountryViewsModel? {
         return sqlUtils.selectCountryViews(site, period, date)?.let { timeStatsMapper.map(it, limitMode) }
+    }
+
+    fun liveCountryViews(
+        site: SiteModel,
+        period: StatsGranularity,
+        limitMode: LimitMode,
+        date: Date
+    ): LiveData<CountryViewsModel> {
+        return sqlUtils.liveSelectCountryViews(site, period, date).map { timeStatsMapper.map(it, limitMode) }
     }
 }

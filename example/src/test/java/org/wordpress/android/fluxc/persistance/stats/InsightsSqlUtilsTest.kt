@@ -32,7 +32,7 @@ class InsightsSqlUtilsTest {
 
     @Test
     fun `returns response from stats utils`() {
-        whenever(statsSqlUtils.select(site, ALL_TIME_INSIGHTS, INSIGHTS, AllTimeResponse::class.java)).thenReturn(
+        whenever(statsSqlUtils.liveSelect(site, ALL_TIME_INSIGHTS, INSIGHTS, AllTimeResponse::class.java)).thenReturn(
                 ALL_TIME_RESPONSE
         )
 

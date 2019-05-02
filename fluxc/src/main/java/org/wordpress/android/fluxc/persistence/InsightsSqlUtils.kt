@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.persistence
 
+import android.arch.lifecycle.LiveData
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.insights.AllTimeInsightsRestClient.AllTimeResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.insights.CommentsRestClient.CommentsResponse
@@ -50,6 +51,14 @@ constructor(
                     postId = postId
             )
         }
+    }
+
+    fun liveSelect(site: SiteModel, postId: Long? = null): LiveData<RESPONSE_TYPE> {
+        return statsSqlUtils.liveSelect(site, blockType, INSIGHTS, classOfResponse, postId = postId)
+    }
+
+    fun liveSelectAll(site: SiteModel): LiveData<List<RESPONSE_TYPE>> {
+        return statsSqlUtils.liveSelectAll(site, blockType, INSIGHTS, classOfResponse)
     }
 
     fun select(site: SiteModel, postId: Long? = null): RESPONSE_TYPE? {

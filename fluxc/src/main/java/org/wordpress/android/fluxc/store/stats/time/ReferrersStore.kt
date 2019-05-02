@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store.stats.time
 
+import android.arch.lifecycle.LiveData
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.LimitMode.Top
@@ -7,6 +8,7 @@ import org.wordpress.android.fluxc.model.stats.time.ReferrersModel
 import org.wordpress.android.fluxc.model.stats.time.TimeStatsMapper
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.ReferrersRestClient
 import org.wordpress.android.fluxc.network.utils.StatsGranularity
+import org.wordpress.android.fluxc.network.utils.map
 import org.wordpress.android.fluxc.persistence.TimeStatsSqlUtils
 import org.wordpress.android.fluxc.store.StatsStore.OnStatsFetched
 import org.wordpress.android.fluxc.store.StatsStore.StatsError
@@ -44,5 +46,9 @@ class ReferrersStore
 
     fun getReferrers(site: SiteModel, granularity: StatsGranularity, limitMode: Top, date: Date): ReferrersModel? {
         return sqlUtils.selectReferrers(site, granularity, date)?.let { timeStatsMapper.map(it, limitMode) }
+    }
+
+    fun liveReferrers(site: SiteModel, granularity: StatsGranularity, limitMode: Top, date: Date): LiveData<ReferrersModel> {
+        return sqlUtils.liveSelectReferrers(site, granularity, date).map { timeStatsMapper.map(it, limitMode) }
     }
 }

@@ -1,11 +1,13 @@
 package org.wordpress.android.fluxc.store.stats.insights
 
+import android.arch.lifecycle.LiveData
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.InsightsMapper
 import org.wordpress.android.fluxc.model.stats.insights.PostingActivityModel
 import org.wordpress.android.fluxc.model.stats.insights.PostingActivityModel.Day
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.insights.PostingActivityRestClient
+import org.wordpress.android.fluxc.network.utils.map
 import org.wordpress.android.fluxc.persistence.InsightsSqlUtils.PostingActivitySqlUtils
 import org.wordpress.android.fluxc.store.StatsStore.OnStatsFetched
 import org.wordpress.android.fluxc.store.StatsStore.StatsError
@@ -44,5 +46,9 @@ class PostingActivityStore
 
     fun getPostingActivity(site: SiteModel, startDay: Day, endDay: Day): PostingActivityModel? {
         return sqlUtils.select(site)?.let { mapper.map(it, startDay, endDay) }
+    }
+
+    fun livePostingActivity(site: SiteModel, startDay: Day, endDay: Day): LiveData<PostingActivityModel> {
+        return sqlUtils.liveSelect(site).map { mapper.map(it, startDay, endDay) }
     }
 }

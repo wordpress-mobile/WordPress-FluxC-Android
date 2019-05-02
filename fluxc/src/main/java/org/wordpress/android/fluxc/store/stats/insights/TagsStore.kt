@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store.stats.insights
 
+import android.arch.lifecycle.LiveData
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.InsightsMapper
@@ -7,6 +8,7 @@ import org.wordpress.android.fluxc.model.stats.LimitMode
 import org.wordpress.android.fluxc.model.stats.LimitMode.Top
 import org.wordpress.android.fluxc.model.stats.TagsModel
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.insights.TagsRestClient
+import org.wordpress.android.fluxc.network.utils.map
 import org.wordpress.android.fluxc.persistence.InsightsSqlUtils.TagsSqlUtils
 import org.wordpress.android.fluxc.store.StatsStore.OnStatsFetched
 import org.wordpress.android.fluxc.store.StatsStore.StatsError
@@ -44,5 +46,9 @@ class TagsStore @Inject constructor(
 
     fun getTags(site: SiteModel, cacheMode: LimitMode): TagsModel? {
         return sqlUtils.select(site)?.let { insightsMapper.map(it, cacheMode) }
+    }
+
+    fun liveTags(site: SiteModel, cacheMode: LimitMode): LiveData<TagsModel> {
+        return sqlUtils.liveSelect(site).map { insightsMapper.map(it, cacheMode) }
     }
 }

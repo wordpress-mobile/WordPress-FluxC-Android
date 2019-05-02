@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store.stats.time
 
+import android.arch.lifecycle.LiveData
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.LimitMode
@@ -8,6 +9,7 @@ import org.wordpress.android.fluxc.model.stats.time.PostAndPageViewsModel
 import org.wordpress.android.fluxc.model.stats.time.TimeStatsMapper
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.PostAndPageViewsRestClient
 import org.wordpress.android.fluxc.network.utils.StatsGranularity
+import org.wordpress.android.fluxc.network.utils.map
 import org.wordpress.android.fluxc.persistence.TimeStatsSqlUtils
 import org.wordpress.android.fluxc.store.StatsStore.OnStatsFetched
 import org.wordpress.android.fluxc.store.StatsStore.StatsError
@@ -50,5 +52,14 @@ class PostAndPageViewsStore
         date: Date
     ): PostAndPageViewsModel? {
         return sqlUtils.selectPostAndPageViews(site, granularity, date)?.let { timeStatsMapper.map(it, cacheMode) }
+    }
+
+    fun livePostAndPageViews(
+        site: SiteModel,
+        granularity: StatsGranularity,
+        cacheMode: LimitMode,
+        date: Date
+    ): LiveData<PostAndPageViewsModel> {
+        return sqlUtils.liveSelectPostAndPageViews(site, granularity, date).map { timeStatsMapper.map(it, cacheMode) }
     }
 }

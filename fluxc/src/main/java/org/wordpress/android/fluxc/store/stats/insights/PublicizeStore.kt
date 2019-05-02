@@ -1,11 +1,13 @@
 package org.wordpress.android.fluxc.store.stats.insights
 
+import android.arch.lifecycle.LiveData
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.InsightsMapper
 import org.wordpress.android.fluxc.model.stats.LimitMode
 import org.wordpress.android.fluxc.model.stats.PublicizeModel
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.insights.PublicizeRestClient
+import org.wordpress.android.fluxc.network.utils.map
 import org.wordpress.android.fluxc.persistence.InsightsSqlUtils.PublicizeSqlUtils
 import org.wordpress.android.fluxc.store.StatsStore.OnStatsFetched
 import org.wordpress.android.fluxc.store.StatsStore.StatsError
@@ -42,5 +44,9 @@ class PublicizeStore
 
     fun getPublicizeData(site: SiteModel, limitMode: LimitMode): PublicizeModel? {
         return sqlUtils.select(site)?.let { insightsMapper.map(it, limitMode) }
+    }
+
+    fun livePublicizeData(site: SiteModel, limitMode: LimitMode): LiveData<PublicizeModel> {
+        return sqlUtils.liveSelect(site).map { insightsMapper.map(it, limitMode) }
     }
 }

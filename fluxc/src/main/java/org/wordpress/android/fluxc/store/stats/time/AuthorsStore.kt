@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store.stats.time
 
+import android.arch.lifecycle.LiveData
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.LimitMode
@@ -8,6 +9,7 @@ import org.wordpress.android.fluxc.model.stats.time.AuthorsModel
 import org.wordpress.android.fluxc.model.stats.time.TimeStatsMapper
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.AuthorsRestClient
 import org.wordpress.android.fluxc.network.utils.StatsGranularity
+import org.wordpress.android.fluxc.network.utils.map
 import org.wordpress.android.fluxc.persistence.TimeStatsSqlUtils
 import org.wordpress.android.fluxc.store.StatsStore.OnStatsFetched
 import org.wordpress.android.fluxc.store.StatsStore.StatsError
@@ -45,5 +47,9 @@ class AuthorsStore
 
     fun getAuthors(site: SiteModel, period: StatsGranularity, limitMode: LimitMode, date: Date): AuthorsModel? {
         return sqlUtils.selectAuthors(site, period, date)?.let { timeStatsMapper.map(it, limitMode) }
+    }
+
+    fun liveAuthors(site: SiteModel, period: StatsGranularity, limitMode: LimitMode, date: Date): LiveData<AuthorsModel> {
+        return sqlUtils.liveSelectAuthors(site, period, date).map { timeStatsMapper.map(it, limitMode) }
     }
 }

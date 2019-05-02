@@ -1,11 +1,13 @@
 package org.wordpress.android.fluxc.store.stats.insights
 
+import android.arch.lifecycle.LiveData
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.InsightsMapper
 import org.wordpress.android.fluxc.model.stats.VisitsModel
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.insights.TodayInsightsRestClient
 import org.wordpress.android.fluxc.network.utils.StatsGranularity.DAYS
+import org.wordpress.android.fluxc.network.utils.map
 import org.wordpress.android.fluxc.persistence.InsightsSqlUtils.TodayInsightsSqlUtils
 import org.wordpress.android.fluxc.store.StatsStore.OnStatsFetched
 import org.wordpress.android.fluxc.store.StatsStore.StatsError
@@ -42,5 +44,9 @@ class TodayInsightsStore @Inject constructor(
 
     fun getTodayInsights(site: SiteModel): VisitsModel? {
         return sqlUtils.select(site)?.let { insightsMapper.map(it) }
+    }
+
+    fun liveTodayInsights(site: SiteModel): LiveData<VisitsModel> {
+        return sqlUtils.liveSelect(site).map { insightsMapper.map(it) }
     }
 }

@@ -48,6 +48,22 @@ interface StatsDao {
         AND statsType == :statsType
         AND (:date IS NULL OR date == :date)
         AND (:postId IS NULL OR postId == :postId)
+        """)
+    fun selectAll(
+        localSiteId: Int,
+        blockType: BlockType,
+        statsType: StatsType,
+        date: String? = null,
+        postId: Long? = null
+    ): List<StatsBlock>
+
+    @Query("""
+        SELECT * FROM StatsBlock
+        WHERE localSiteId == :localSiteId
+        AND blockType == :blockType
+        AND statsType == :statsType
+        AND (:date IS NULL OR date == :date)
+        AND (:postId IS NULL OR postId == :postId)
         LIMIT 1
         """)
     fun liveSelect(
@@ -82,7 +98,7 @@ interface StatsDao {
         @ColumnInfo var blockType: BlockType,
         @ColumnInfo var statsType: StatsType,
         @ColumnInfo var date: String?,
-        @ColumnInfo var postId: Long,
+        @ColumnInfo var postId: Long?,
         @ColumnInfo var json: String
 
     )
