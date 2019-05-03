@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.release
 
+import android.text.TextUtils
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertFalse
 import junit.framework.Assert.assertNotNull
@@ -35,7 +36,7 @@ class ReleaseStack_TransactionsTest : ReleaseStack_WPComBase() {
 
     companion object {
         private const val TEST_DOMAIN_NAME = "superraredomainname156726.blog"
-        private const val TEST_DOMAIN_PRODUCT_ID = 76
+        private const val TEST_DOMAIN_PRODUCT_ID = "76"
         private val TEST_DOMAIN_CONTACT_MODEL = DomainContactModel(
                 "Wapu",
                 "Wordpress",
@@ -88,7 +89,7 @@ class ReleaseStack_TransactionsTest : ReleaseStack_WPComBase() {
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
                 TransactionActionBuilder.newCreateShoppingCartAction(
-                        CreateShoppingCartPayload(sSite, TEST_DOMAIN_PRODUCT_ID.toString(), TEST_DOMAIN_NAME, true)
+                        CreateShoppingCartPayload(sSite, TEST_DOMAIN_PRODUCT_ID, TEST_DOMAIN_NAME, true)
                 )
         )
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -96,11 +97,11 @@ class ReleaseStack_TransactionsTest : ReleaseStack_WPComBase() {
 
     @Test
     fun testRedeemingCardWithoutDomainCredit() {
-        nextEvent = TestEvents.ERROR_REDEEMING_SHOPPING_CART_INSUFFICIENT_FUNDS
+        nextEvent = ERROR_REDEEMING_SHOPPING_CART_INSUFFICIENT_FUNDS
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
                 TransactionActionBuilder.newCreateShoppingCartAction(
-                        CreateShoppingCartPayload(sSite, TEST_DOMAIN_PRODUCT_ID.toString(), TEST_DOMAIN_NAME, true)
+                        CreateShoppingCartPayload(sSite, TEST_DOMAIN_PRODUCT_ID, TEST_DOMAIN_NAME, true)
                 )
         )
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -108,11 +109,11 @@ class ReleaseStack_TransactionsTest : ReleaseStack_WPComBase() {
 
     @Test
     fun testRedeemingCardWithWrongCountryCode() {
-        nextEvent = TestEvents.ERROR_REDEEMING_SHOPPING_CART_WRONG_COUNTRY_CODE
+        nextEvent = ERROR_REDEEMING_SHOPPING_CART_WRONG_COUNTRY_CODE
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
                 TransactionActionBuilder.newCreateShoppingCartAction(
-                        CreateShoppingCartPayload(sSite, TEST_DOMAIN_PRODUCT_ID.toString(), TEST_DOMAIN_NAME, true)
+                        CreateShoppingCartPayload(sSite, TEST_DOMAIN_PRODUCT_ID, TEST_DOMAIN_NAME, true)
                 )
         )
         Assert.assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -127,6 +128,7 @@ class ReleaseStack_TransactionsTest : ReleaseStack_WPComBase() {
 
         Assert.assertNotNull(event.countries)
         Assert.assertTrue(event.countries!!.isNotEmpty())
+        Assert.assertFalse(event.countries!!.any { TextUtils.isEmpty(it.name) || TextUtils.isEmpty(it.code) })
         mCountDownLatch.countDown()
     }
 
