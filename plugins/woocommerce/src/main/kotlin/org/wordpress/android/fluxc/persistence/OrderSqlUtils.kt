@@ -7,6 +7,7 @@ import com.wellsql.generated.WCOrderShipmentTrackingModelTable
 import com.wellsql.generated.WCOrderStatusModelTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
@@ -68,6 +69,14 @@ object OrderSqlUtils {
                 .orderBy(WCOrderModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
                 .asModel
     }
+
+    fun getOrdersForSiteByRemoteIds(site: SiteModel, remoteOrderIds: List<RemoteId>): List<WCOrderModel> =
+        WellSql.select(WCOrderModel::class.java)
+                .where()
+                .equals(WCOrderModelTable.LOCAL_SITE_ID, site.id)
+                .isIn(WCOrderModelTable.REMOTE_ORDER_ID, remoteOrderIds.map { it.value })
+                .endWhere()
+                .asModel
 
     fun deleteOrdersForSite(site: SiteModel): Int {
         return WellSql.delete(WCOrderModel::class.java)

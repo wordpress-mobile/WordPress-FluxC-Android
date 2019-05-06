@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.example
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
@@ -141,6 +142,13 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener, WCAddOrderSh
                 val payload = FetchOrdersPayload(it, loadMore = false)
                 dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
             } ?: showNoWCSitesToast()
+        }
+
+        fetch_order_list.setOnClickListener {
+            getFirstWCSite()?.let {
+                val intent = Intent(activity, WCOrderListActivity::class.java)
+                startActivity(intent)
+            }
         }
 
         fetch_orders_count.setOnClickListener {
@@ -776,6 +784,13 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener, WCAddOrderSh
         }?.map { it.label }
         prependToLog("Fetched order status options from the api: $orderStatusOptions " +
                 "- updated ${event.rowsAffected} in the db")
+    }
+
+    private fun replaceFragment(fragment: Fragment) {
+        fragmentManager?.beginTransaction()
+                ?.replace(R.id.fragment_container, fragment)
+                ?.addToBackStack(null)
+                ?.commit()
     }
 
     private fun getFirstWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(0)
