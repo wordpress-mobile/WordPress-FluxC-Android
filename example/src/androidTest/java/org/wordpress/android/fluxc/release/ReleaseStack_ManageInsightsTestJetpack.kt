@@ -64,7 +64,7 @@ class ReleaseStack_ManageInsightsTestJetpack : ReleaseStack_Base() {
 
         val emptyStats = runBlocking { statsStore.getAddedInsights(site) }
 
-        // Starts with 4 default blocks
+        // Starts with 5 default blocks
         assertEquals(emptyStats.size, 5)
         if (!emptyStats.contains(InsightType.FOLLOWERS)) {
             runBlocking { statsStore.addType(site, InsightType.FOLLOWERS) }
