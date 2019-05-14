@@ -265,6 +265,78 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
         }
     }
 
+    @Test
+    fun testGetStoreCountryBySite() {
+        // -- Site using CAD
+        val cadSettings = WCSettingsModel(
+                localSiteId = siteModel.id,
+                currencyCode = "CAD",
+                currencyPosition = CurrencyPosition.LEFT,
+                currencyThousandSeparator = ",",
+                currencyDecimalSeparator = ".",
+                currencyDecimalNumber = 2,
+                countryCode = "CA:QC"
+        )
+        WCSettingsSqlUtils.insertOrUpdateSettings(cadSettings)
+
+        with(wooCommerceStore) {
+            assertEquals("Canada", getStoreCountry(siteModel))
+        }
+
+        // -- No site settings stored
+        WellSql.delete(WCSettingsBuilder::class.java).execute()
+        with(wooCommerceStore) {
+            assertNull(getStoreCountry(siteModel))
+        }
+
+        // -- no country code in settings
+        val siteSettings = WCSettingsModel(
+                localSiteId = siteModel.id,
+                currencyCode = "CAD",
+                currencyPosition = CurrencyPosition.LEFT,
+                currencyThousandSeparator = ",",
+                currencyDecimalSeparator = ".",
+                currencyDecimalNumber = 2
+        )
+        WCSettingsSqlUtils.insertOrUpdateSettings(siteSettings)
+
+        with(wooCommerceStore) {
+            assertNull(getStoreCountry(siteModel))
+        }
+
+        // -- Site without city i.e. "US"
+        val usSettings = WCSettingsModel(
+                localSiteId = siteModel.id,
+                currencyCode = "CAD",
+                currencyPosition = CurrencyPosition.LEFT,
+                currencyThousandSeparator = ",",
+                currencyDecimalSeparator = ".",
+                currencyDecimalNumber = 2,
+                countryCode = "US"
+        )
+        WCSettingsSqlUtils.insertOrUpdateSettings(usSettings)
+
+        with(wooCommerceStore) {
+            assertEquals("United States", getStoreCountry(siteModel))
+        }
+
+        // -- Site using IND
+        val indSettings = WCSettingsModel(
+                localSiteId = siteModel.id,
+                currencyCode = "CAD",
+                currencyPosition = CurrencyPosition.LEFT,
+                currencyThousandSeparator = ",",
+                currencyDecimalSeparator = ".",
+                currencyDecimalNumber = 2,
+                countryCode = "IN:TN"
+        )
+        WCSettingsSqlUtils.insertOrUpdateSettings(indSettings)
+
+        with(wooCommerceStore) {
+            assertEquals("India", getStoreCountry(siteModel))
+        }
+    }
+
     @Suppress("unused")
     @Subscribe
     fun onAction(action: Action<*>) {

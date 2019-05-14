@@ -46,7 +46,8 @@ object WCSettingsSqlUtils {
         @Column var currencyPosition: String = "",
         @Column var currencyThousandSeparator: String = "",
         @Column var currencyDecimalSeparator: String = "",
-        @Column var currencyDecimalNumber: Int = 2
+        @Column var currencyDecimalNumber: Int = 2,
+        @Column var countryCode: String = ""
     ) : Identifiable {
         override fun getId() = id
 
@@ -61,7 +62,8 @@ object WCSettingsSqlUtils {
                     currencyPosition = CurrencyPosition.fromString(currencyPosition),
                     currencyThousandSeparator = currencyThousandSeparator,
                     currencyDecimalSeparator = currencyDecimalSeparator,
-                    currencyDecimalNumber = currencyDecimalNumber
+                    currencyDecimalNumber = currencyDecimalNumber,
+                    countryCode = countryCode
             )
         }
     }
@@ -73,7 +75,8 @@ object WCSettingsSqlUtils {
                 currencyPosition = this.currencyPosition.name.toLowerCase(),
                 currencyThousandSeparator = this.currencyThousandSeparator,
                 currencyDecimalSeparator = this.currencyDecimalSeparator,
-                currencyDecimalNumber = this.currencyDecimalNumber
+                currencyDecimalNumber = this.currencyDecimalNumber,
+                countryCode = countryCode
         )
     }
 }
