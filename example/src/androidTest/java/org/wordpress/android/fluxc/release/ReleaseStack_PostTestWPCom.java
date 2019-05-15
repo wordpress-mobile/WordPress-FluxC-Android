@@ -683,6 +683,50 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
+    public void testAutoSaveDoesNotUpdateModifiedDate() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        mPost.setStatus(PostStatus.PUBLISHED.toString());
+
+        uploadPost(mPost);
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        uploadedPost.setContent("post content edited");
+        autoSavePublishedPost(uploadedPost);
+
+        fetchPost(uploadedPost);
+
+        PostModel postAfterAutoSave = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(uploadedPost.getLastModified(), postAfterAutoSave.getLastModified());
+        assertEquals(uploadedPost.getRemoteLastModified(), postAfterAutoSave.getRemoteLastModified());
+    }
+
+    @Test
+    public void testAutoSaveModifiedDateIsDifferentThanPostModifiedDate() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        mPost.setStatus(PostStatus.PUBLISHED.toString());
+
+        uploadPost(mPost);
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        uploadedPost.setContent("post content edited");
+        autoSavePublishedPost(uploadedPost);
+
+        fetchPost(uploadedPost);
+
+        PostModel postAfterAutoSave = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertNotEquals(uploadedPost.getLastModified(), postAfterAutoSave.getAutoSaveModified());
+        assertNotEquals(uploadedPost.getRemoteLastModified(), postAfterAutoSave.getAutoSaveModified());
+    }
+
+    @Test
     public void testAutoSaveLocalPost() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
