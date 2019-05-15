@@ -59,6 +59,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         POST_DELETED,
         POST_REMOVED,
         POST_RESTORED,
+        POST_AUTO_SAVED,
         ERROR_UNKNOWN_POST,
         ERROR_UNKNOWN_POST_TYPE,
         ERROR_GENERIC
@@ -660,6 +661,22 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertNotEquals(PostStatus.TRASHED, PostStatus.fromPost(restoredPost));
     }
 
+    @Test
+    public void testAutoSavePublishedPost() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        mPost.setStatus(PostStatus.PUBLISHED.toString());
+
+        uploadPost(mPost);
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        uploadedPost.setContent("post content edited");
+        autoSavePublishedPost(uploadedPost);
+        // TODO load post from database and verify meta.data.autosave contains updated post content
+    }
+
     // Error handling tests
 
     @Test
@@ -816,6 +833,10 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
             if (mNextEvent.equals(TestEvents.POST_RESTORED)) {
                 mCountDownLatch.countDown();
             }
+        } else if (event.causeOfChange instanceof CauseOfOnPostChanged.AutoSavePublishedPost) {
+            if (mNextEvent.equals(TestEvents.POST_AUTO_SAVED)) {
+                mCountDownLatch.countDown();
+            }
         } else {
             throw new AssertionError("Unexpected cause of change: " + event.causeOfChange.getClass().getSimpleName());
         }
@@ -917,6 +938,15 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newRestorePostAction(new RemotePostPayload(post, sSite)));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void autoSavePublishedPost(PostModel post) throws InterruptedException {
+        mNextEvent = TestEvents.POST_AUTO_SAVED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newAutoSavePublishedPostAction(new RemotePostPayload(post, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
