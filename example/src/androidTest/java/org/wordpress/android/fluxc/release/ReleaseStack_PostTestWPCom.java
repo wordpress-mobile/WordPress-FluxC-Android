@@ -62,6 +62,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         POST_AUTO_SAVED,
         ERROR_UNKNOWN_POST,
         ERROR_UNKNOWN_POST_TYPE,
+        ERROR_UNSUPPORTED_ACTION,
         ERROR_GENERIC
     }
 
@@ -674,7 +675,41 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         uploadedPost.setContent("post content edited");
         autoSavePublishedPost(uploadedPost);
-        // TODO load post from database and verify meta.data.autosave contains updated post content
+
+        PostModel postAfterAutoSave = mPostStore.getPostByLocalPostId(mPost.getId());
+        assertNotNull(postAfterAutoSave.getAutoSaveModified());
+        assertNotNull(postAfterAutoSave.getAutoSavePreviewUrl());
+        assertNotEquals(0, postAfterAutoSave.getAutoSaveRevisionId());
+    }
+
+    @Test
+    public void testAutoSaveLocalPost() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        mPost.setStatus(PostStatus.PUBLISHED.toString());
+
+        mNextEvent = TestEvents.ERROR_UNKNOWN_POST;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newAutoSavePublishedPostAction(new RemotePostPayload(mPost, sSite)));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testAutoSaveDraftPost() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        mPost.setStatus(PostStatus.DRAFT.toString());
+
+        mNextEvent = TestEvents.ERROR_UNSUPPORTED_ACTION;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newAutoSavePublishedPostAction(new RemotePostPayload(mPost, sSite)));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
     // Error handling tests
@@ -790,6 +825,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
                 mCountDownLatch.countDown();
             } else if (mNextEvent.equals(TestEvents.ERROR_GENERIC)) {
                 assertEquals(PostErrorType.GENERIC_ERROR, event.error.type);
+                mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TestEvents.ERROR_UNSUPPORTED_ACTION)) {
+                assertEquals(PostErrorType.UNSUPPORTED_ACTION, event.error.type);
                 mCountDownLatch.countDown();
             } else {
                 throw new AssertionError("Unexpected error with type: " + event.error.type);
