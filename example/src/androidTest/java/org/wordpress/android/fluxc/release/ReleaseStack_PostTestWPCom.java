@@ -663,7 +663,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
-    public void testAutoSavePublishedPost() throws InterruptedException {
+    public void testAutoSavePost() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
 
@@ -674,7 +674,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         uploadedPost.setContent("post content edited");
-        autoSavePublishedPost(uploadedPost);
+        remoteAutoSavePost(uploadedPost);
 
         PostModel postAfterAutoSave = mPostStore.getPostByLocalPostId(mPost.getId());
         assertNotNull(postAfterAutoSave.getAutoSaveModified());
@@ -694,7 +694,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         uploadedPost.setContent("post content edited");
-        autoSavePublishedPost(uploadedPost);
+        remoteAutoSavePost(uploadedPost);
 
         fetchPost(uploadedPost);
 
@@ -716,7 +716,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         uploadedPost.setContent("post content edited");
-        autoSavePublishedPost(uploadedPost);
+        remoteAutoSavePost(uploadedPost);
 
         fetchPost(uploadedPost);
 
@@ -736,7 +736,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ERROR_UNKNOWN_POST;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newAutoSavePublishedPostAction(new RemotePostPayload(mPost, sSite)));
+        mDispatcher.dispatch(PostActionBuilder.newRemoteAutoSavePostAction(new RemotePostPayload(mPost, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -751,7 +751,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ERROR_UNSUPPORTED_ACTION;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newAutoSavePublishedPostAction(new RemotePostPayload(mPost, sSite)));
+        mDispatcher.dispatch(PostActionBuilder.newRemoteAutoSavePostAction(new RemotePostPayload(mPost, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -915,7 +915,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
             if (mNextEvent.equals(TestEvents.POST_RESTORED)) {
                 mCountDownLatch.countDown();
             }
-        } else if (event.causeOfChange instanceof CauseOfOnPostChanged.AutoSavePublishedPost) {
+        } else if (event.causeOfChange instanceof CauseOfOnPostChanged.RemoteAutoSavePost) {
             if (mNextEvent.equals(TestEvents.POST_AUTO_SAVED)) {
                 mCountDownLatch.countDown();
             }
@@ -1024,11 +1024,11 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void autoSavePublishedPost(PostModel post) throws InterruptedException {
+    private void remoteAutoSavePost(PostModel post) throws InterruptedException {
         mNextEvent = TestEvents.POST_AUTO_SAVED;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newAutoSavePublishedPostAction(new RemotePostPayload(post, sSite)));
+        mDispatcher.dispatch(PostActionBuilder.newRemoteAutoSavePostAction(new RemotePostPayload(post, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
