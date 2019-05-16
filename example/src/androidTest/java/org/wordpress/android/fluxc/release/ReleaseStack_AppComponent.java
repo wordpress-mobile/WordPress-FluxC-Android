@@ -62,4 +62,5 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_PlanOffersTest test);
     void inject(ReleaseStack_PostListTestWpCom test);
     void inject(ReleaseStack_PostListTestXMLRPC test);
+    void inject(ReleaseStack_TransactionsTest test);
 }
