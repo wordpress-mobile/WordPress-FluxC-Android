@@ -138,7 +138,7 @@ class WooCommerceStore @Inject constructor(
      * Given a [SiteModel], returns its WooCommerce store country name,
      * or null if no settings are stored for this site OR if country is empty/blank
      */
-    fun getStoreCountry(site: SiteModel): String? {
+    fun getStoreCountryCode(site: SiteModel): String? {
         val siteSettings = WCSettingsSqlUtils.getSettingsForSite(site)
         return siteSettings?.countryCode
     }
