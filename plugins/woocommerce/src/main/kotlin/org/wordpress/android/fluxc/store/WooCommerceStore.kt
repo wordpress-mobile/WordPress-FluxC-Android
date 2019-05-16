@@ -15,7 +15,6 @@ import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.LEFT_SPACE
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT
 import org.wordpress.android.fluxc.model.WCSettingsModel.CurrencyPosition.RIGHT_SPACE
-import org.wordpress.android.fluxc.model.WCSettingsModel.SiteCountry
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WCProductSettingsSqlUtils
@@ -141,7 +140,7 @@ class WooCommerceStore @Inject constructor(
      */
     fun getStoreCountry(site: SiteModel): String? {
         val siteSettings = WCSettingsSqlUtils.getSettingsForSite(site)
-        return SiteCountry.fromCountryCode(siteSettings?.countryCode)
+        return siteSettings?.countryCode
     }
 
     /**

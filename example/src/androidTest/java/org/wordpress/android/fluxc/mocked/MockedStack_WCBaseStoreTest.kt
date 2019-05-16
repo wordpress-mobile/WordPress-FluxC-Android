@@ -280,7 +280,7 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
         WCSettingsSqlUtils.insertOrUpdateSettings(cadSettings)
 
         with(wooCommerceStore) {
-            assertEquals("Canada", getStoreCountry(siteModel))
+            assertEquals("CA:QC", getStoreCountry(siteModel))
         }
 
         // -- No site settings stored
@@ -301,7 +301,7 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
         WCSettingsSqlUtils.insertOrUpdateSettings(siteSettings)
 
         with(wooCommerceStore) {
-            assertNull(getStoreCountry(siteModel))
+            assertEquals("", getStoreCountry(siteModel))
         }
 
         // -- Site without city i.e. "US"
@@ -317,7 +317,7 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
         WCSettingsSqlUtils.insertOrUpdateSettings(usSettings)
 
         with(wooCommerceStore) {
-            assertEquals("United States", getStoreCountry(siteModel))
+            assertEquals("US", getStoreCountry(siteModel))
         }
 
         // -- Site using IND
@@ -333,7 +333,7 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
         WCSettingsSqlUtils.insertOrUpdateSettings(indSettings)
 
         with(wooCommerceStore) {
-            assertEquals("India", getStoreCountry(siteModel))
+            assertEquals("IN:TN", getStoreCountry(siteModel))
         }
     }
 
