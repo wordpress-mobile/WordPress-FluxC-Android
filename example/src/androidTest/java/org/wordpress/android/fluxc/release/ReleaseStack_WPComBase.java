@@ -134,7 +134,8 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
-        assertFalse(event.isError());
+        assertFalse("!!!!! Authentication failed - verify tests.properties contains valid credentials !!!!! ",
+                event.isError());
         assertEquals(TestEvents.AUTHENTICATED, mNextEvent);
         mCountDownLatch.countDown();
     }
@@ -142,8 +143,7 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     @SuppressWarnings("unused")
     @Subscribe
     public void onAccountChanged(OnAccountChanged event) {
-        assertFalse("!!!!! Authentication failed - verify tests.properties contains valid credentials !!!!! ",
-                event.isError());
+        assertFalse(event.isError());
         assertEquals(TestEvents.ACCOUNT_FETCHED, mNextEvent);
         mCountDownLatch.countDown();
     }
