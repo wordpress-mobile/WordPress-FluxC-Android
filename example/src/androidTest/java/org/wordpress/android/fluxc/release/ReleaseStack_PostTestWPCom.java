@@ -676,7 +676,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         uploadedPost.setContent("post content edited");
         remoteAutoSavePost(uploadedPost);
 
-        PostModel postAfterAutoSave = mPostStore.getPostByLocalPostId(mPost.getId());
+        // Assert
+        PostModel postAfterAutoSave = mPostStore.getPostByLocalPostId(post.getId());
         assertNotNull(postAfterAutoSave.getAutoSaveModified());
         assertNotNull(postAfterAutoSave.getAutoSavePreviewUrl());
         assertNotEquals(0, postAfterAutoSave.getAutoSaveRevisionId());
@@ -696,6 +697,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         uploadedPost.setContent("post content edited");
         remoteAutoSavePost(uploadedPost);
 
+        // Assert
         fetchPost(uploadedPost);
 
         PostModel postAfterAutoSave = mPostStore.getPostByLocalPostId(mPost.getId());
@@ -718,6 +720,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         uploadedPost.setContent("post content edited");
         remoteAutoSavePost(uploadedPost);
 
+        // Assert
         fetchPost(uploadedPost);
 
         PostModel postAfterAutoSave = mPostStore.getPostByLocalPostId(mPost.getId());
@@ -751,8 +754,10 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mNextEvent = TestEvents.ERROR_UNSUPPORTED_ACTION;
         mCountDownLatch = new CountDownLatch(1);
 
-        mDispatcher.dispatch(PostActionBuilder.newRemoteAutoSavePostAction(new RemotePostPayload(mPost, sSite)));
+        // Act
+        mDispatcher.dispatch(PostActionBuilder.newRemoteAutoSavePostAction(new RemotePostPayload(post, sSite)));
 
+        // Assert
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -957,7 +962,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mPost.setContent(POST_DEFAULT_DESCRIPTION);
     }
 
-    private PostModel createNewPost() throws InterruptedException {
+    private PostModel createNewPost() {
         PostModel post = mPostStore.instantiatePostModel(sSite, false);
 
         assertTrue(post.isLocalDraft());
