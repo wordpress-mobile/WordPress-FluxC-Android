@@ -130,10 +130,12 @@ class ReleaseStack_TransactionsTest : ReleaseStack_WPComBase() {
 
         assertNotNull(event.cartDetails!!.products)
         assertTrue(event.cartDetails!!.products!!.isNotEmpty())
-        assertEquals(event.cartDetails!!.products!!.size, 2)
 
-        assertEquals(event.cartDetails!!.products!![0].product_id, TEST_DOMAIN_PRODUCT_ID)
-        assertEquals(event.cartDetails!!.products!![0].meta, TEST_DOMAIN_NAME)
+        val domainProductInCart = event.cartDetails!!.products!!.find {
+            it.product_id == TEST_DOMAIN_PRODUCT_ID &&
+                    it.meta == TEST_DOMAIN_NAME
+        }
+        assertNotNull(domainProductInCart)
 
         if (nextEvent == ERROR_REDEEMING_SHOPPING_CART_WRONG_COUNTRY_CODE) {
             val contactModelWithWrongCountryCode = TEST_DOMAIN_CONTACT_MODEL.copy(countryCode = "USB")
