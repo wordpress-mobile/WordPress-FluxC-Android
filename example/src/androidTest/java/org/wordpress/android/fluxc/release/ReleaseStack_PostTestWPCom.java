@@ -727,7 +727,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
-    public void testAutoSaveLocalPost() throws InterruptedException {
+    public void testAutoSaveLocalPostResultsInUnknownPostError() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
 
@@ -742,7 +742,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
-    public void testAutoSaveDraftPost() throws InterruptedException {
+    public void testAutoSaveDraftResultsInUnsupportedActionError() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
 
