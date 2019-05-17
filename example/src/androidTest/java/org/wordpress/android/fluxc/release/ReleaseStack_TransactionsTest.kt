@@ -35,7 +35,7 @@ class ReleaseStack_TransactionsTest : ReleaseStack_WPComBase() {
     companion object {
         private const val TEST_DOMAIN_NAME = "superrandomdomain192849347.blog"
         private const val TEST_DOMAIN_PRODUCT_ID = "76"
-        private var TEST_DOMAIN_CONTACT_MODEL = DomainContactModel(
+        private val TEST_DOMAIN_CONTACT_MODEL = DomainContactModel(
                 "Wapu",
                 "Wordpress",
                 "WordPress",
