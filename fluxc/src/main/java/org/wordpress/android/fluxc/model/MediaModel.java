@@ -40,7 +40,6 @@ public class MediaModel extends Payload<BaseNetworkError> implements Identifiabl
     @Column private long mAuthorId;
     @Column private String mGuid;
 
-    // Upload date, ISO 8601-formatted date in UTC
     @Column private String mUploadDate;
 
     // Remote Url's
@@ -183,10 +182,16 @@ public class MediaModel extends Payload<BaseNetworkError> implements Identifiabl
         return mGuid;
     }
 
+    /**
+     * @param uploadDate Upload date, ISO 8601-formatted date in UTC
+     */
     public void setUploadDate(String uploadDate) {
         mUploadDate = uploadDate;
     }
 
+    /**
+     * @return Upload date, ISO 8601-formatted date in UTC
+     */
     public String getUploadDate() {
         return mUploadDate;
     }

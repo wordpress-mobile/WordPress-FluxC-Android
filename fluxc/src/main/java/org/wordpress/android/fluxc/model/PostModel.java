@@ -31,13 +31,13 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
     @PrimaryKey
     @Column private int mId;
     @Column private int mLocalSiteId;
-    @Column private long mRemoteSiteId; // .COM REST API
+    @Column private long mRemoteSiteId;
     @Column private long mRemotePostId;
     @Column private String mTitle;
     @Column private String mContent;
-    @Column private String mDateCreated; // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
-    @Column private String mLastModified; // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
-    @Column private String mRemoteLastModified; // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+    @Column private String mDateCreated;
+    @Column private String mLastModified;
+    @Column private String mRemoteLastModified;
     @Column private String mCategoryIds;
     @Column private String mCustomFields;
     @Column private String mLink;
@@ -58,15 +58,15 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
 
     // Unpublished revision data
     @Column private long mAutoSaveRevisionId;
-    @Column private String mAutoSaveModified; // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
-    @Column private String mRemoteAutoSaveModified; // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+    @Column private String mAutoSaveModified;
+    @Column private String mRemoteAutoSaveModified;
     @Column private String mAutoSavePreviewUrl;
 
 
     // Local only
     @Column private boolean mIsLocalDraft;
     @Column private boolean mIsLocallyChanged;
-    @Column private String mDateLocallyChanged; // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+    @Column private String mDateLocallyChanged;
 
     // XML-RPC only, needed to work around a bug with the API:
     // https://github.com/wordpress-mobile/WordPress-Android/pull/3425
@@ -98,10 +98,16 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
         mLocalSiteId = localTableSiteId;
     }
 
+    /**
+     * .COM REST API
+     */
     public long getRemoteSiteId() {
         return mRemoteSiteId;
     }
 
+    /**
+     * .COM REST API
+     */
     public void setRemoteSiteId(long siteId) {
         mRemoteSiteId = siteId;
     }
@@ -130,26 +136,44 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
         mContent = content;
     }
 
+    /**
+     * @return ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+     */
     public @NonNull String getDateCreated() {
         return StringUtils.notNullStr(mDateCreated);
     }
 
+    /**
+     * ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+     */
     public void setDateCreated(String dateCreated) {
         mDateCreated = dateCreated;
     }
 
+    /**
+     * @return ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+     */
     public @NonNull String getLastModified() {
         return StringUtils.notNullStr(mLastModified);
     }
 
+    /**
+     * @param lastModified ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+     */
     public void setLastModified(String lastModified) {
         mLastModified = lastModified;
     }
 
+    /**
+     * @return ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+     */
     public @NonNull String getRemoteLastModified() {
         return StringUtils.notNullStr(mRemoteLastModified);
     }
 
+    /**
+     * @param remoteLastModified ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+     */
     public void setRemoteLastModified(String remoteLastModified) {
         mRemoteLastModified = remoteLastModified;
     }
@@ -336,18 +360,30 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
         mAutoSaveRevisionId = autoSaveRevisionId;
     }
 
+    /**
+     * @return ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+     */
     public String getAutoSaveModified() {
         return mAutoSaveModified;
     }
 
+    /**
+     * @param autoSaveModified ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+     */
     public void setAutoSaveModified(String autoSaveModified) {
         mAutoSaveModified = autoSaveModified;
     }
 
+    /**
+     * @return ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+     */
     public String getRemoteAutoSaveModified() {
         return mRemoteAutoSaveModified;
     }
 
+    /**
+     * @param remoteAutoSaveModified  ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+     */
     public void setRemoteAutoSaveModified(String remoteAutoSaveModified) {
         mRemoteAutoSaveModified = remoteAutoSaveModified;
     }
@@ -394,10 +430,16 @@ public class PostModel extends Payload<BaseNetworkError> implements Cloneable, I
         mHasCapabilityDeletePost = hasCapabilityDeletePost;
     }
 
+    /**
+     * @return ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+     */
     public @NonNull String getDateLocallyChanged() {
         return StringUtils.notNullStr(mDateLocallyChanged);
     }
 
+    /**
+     * @param dateLocallyChanged ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+     */
     public void setDateLocallyChanged(String dateLocallyChanged) {
         mDateLocallyChanged = dateLocallyChanged;
     }

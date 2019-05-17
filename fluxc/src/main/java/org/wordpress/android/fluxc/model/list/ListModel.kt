@@ -9,7 +9,10 @@ const val LIST_STATE_TIMEOUT = 60 * 1000 // 1 minute
 
 @Table
 class ListModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
-    @Column var lastModified: String? = null // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+    /**
+     * ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
+     */
+    @Column var lastModified: String? = null
 
     // These fields shouldn't be used directly.
     @Column var descriptorUniqueIdentifierDbValue: Int? = null
