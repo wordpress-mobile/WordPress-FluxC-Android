@@ -59,8 +59,10 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         POST_DELETED,
         POST_REMOVED,
         POST_RESTORED,
+        POST_AUTO_SAVED,
         ERROR_UNKNOWN_POST,
         ERROR_UNKNOWN_POST_TYPE,
+        ERROR_UNSUPPORTED_ACTION,
         ERROR_GENERIC
     }
 
@@ -660,6 +662,100 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertNotEquals(PostStatus.TRASHED, PostStatus.fromPost(restoredPost));
     }
 
+    @Test
+    public void testAutoSavePost() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        mPost.setStatus(PostStatus.PUBLISHED.toString());
+
+        uploadPost(mPost);
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        uploadedPost.setContent("post content edited");
+        remoteAutoSavePost(uploadedPost);
+
+        PostModel postAfterAutoSave = mPostStore.getPostByLocalPostId(mPost.getId());
+        assertNotNull(postAfterAutoSave.getAutoSaveModified());
+        assertNotNull(postAfterAutoSave.getAutoSavePreviewUrl());
+        assertNotEquals(0, postAfterAutoSave.getAutoSaveRevisionId());
+    }
+
+    @Test
+    public void testAutoSaveDoesNotUpdateModifiedDate() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        mPost.setStatus(PostStatus.PUBLISHED.toString());
+
+        uploadPost(mPost);
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        uploadedPost.setContent("post content edited");
+        remoteAutoSavePost(uploadedPost);
+
+        fetchPost(uploadedPost);
+
+        PostModel postAfterAutoSave = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertEquals(uploadedPost.getLastModified(), postAfterAutoSave.getLastModified());
+        assertEquals(uploadedPost.getRemoteLastModified(), postAfterAutoSave.getRemoteLastModified());
+    }
+
+    @Test
+    public void testAutoSaveModifiedDateIsDifferentThanPostModifiedDate() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        mPost.setStatus(PostStatus.PUBLISHED.toString());
+
+        uploadPost(mPost);
+
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        uploadedPost.setContent("post content edited");
+        remoteAutoSavePost(uploadedPost);
+
+        fetchPost(uploadedPost);
+
+        PostModel postAfterAutoSave = mPostStore.getPostByLocalPostId(mPost.getId());
+
+        assertNotEquals(uploadedPost.getLastModified(), postAfterAutoSave.getAutoSaveModified());
+        assertNotEquals(uploadedPost.getRemoteLastModified(), postAfterAutoSave.getAutoSaveModified());
+    }
+
+    @Test
+    public void testAutoSaveLocalPostResultsInUnknownPostError() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        mPost.setStatus(PostStatus.PUBLISHED.toString());
+
+        mNextEvent = TestEvents.ERROR_UNKNOWN_POST;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newRemoteAutoSavePostAction(new RemotePostPayload(mPost, sSite)));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testAutoSaveDraftResultsInUnsupportedActionError() throws InterruptedException {
+        createNewPost();
+        setupPostAttributes();
+
+        mPost.setStatus(PostStatus.DRAFT.toString());
+
+        mNextEvent = TestEvents.ERROR_UNSUPPORTED_ACTION;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newRemoteAutoSavePostAction(new RemotePostPayload(mPost, sSite)));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     // Error handling tests
 
     @Test
@@ -774,6 +870,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
             } else if (mNextEvent.equals(TestEvents.ERROR_GENERIC)) {
                 assertEquals(PostErrorType.GENERIC_ERROR, event.error.type);
                 mCountDownLatch.countDown();
+            } else if (mNextEvent.equals(TestEvents.ERROR_UNSUPPORTED_ACTION)) {
+                assertEquals(PostErrorType.UNSUPPORTED_ACTION, event.error.type);
+                mCountDownLatch.countDown();
             } else {
                 throw new AssertionError("Unexpected error with type: " + event.error.type);
             }
@@ -814,6 +913,10 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
             }
         } else if (event.causeOfChange instanceof CauseOfOnPostChanged.RestorePost) {
             if (mNextEvent.equals(TestEvents.POST_RESTORED)) {
+                mCountDownLatch.countDown();
+            }
+        } else if (event.causeOfChange instanceof CauseOfOnPostChanged.RemoteAutoSavePost) {
+            if (mNextEvent.equals(TestEvents.POST_AUTO_SAVED)) {
                 mCountDownLatch.countDown();
             }
         } else {
@@ -917,6 +1020,15 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
 
         mDispatcher.dispatch(PostActionBuilder.newRestorePostAction(new RemotePostPayload(post, sSite)));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void remoteAutoSavePost(PostModel post) throws InterruptedException {
+        mNextEvent = TestEvents.POST_AUTO_SAVED;
+        mCountDownLatch = new CountDownLatch(1);
+
+        mDispatcher.dispatch(PostActionBuilder.newRemoteAutoSavePostAction(new RemotePostPayload(post, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
