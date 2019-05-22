@@ -662,9 +662,26 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     @Test
     public void testAutoSavePost() throws InterruptedException {
+        boolean testPage = false;
+        //noinspection ConstantConditions
+        testAutoSavePostOrPage(testPage);
+    }
+
+    @Test
+    public void testAutoSavePage() throws InterruptedException {
+        boolean testPage = true;
+        //noinspection ConstantConditions
+        testAutoSavePostOrPage(testPage);
+    }
+
+    private void testAutoSavePostOrPage(boolean testPage) throws InterruptedException {
         // Arrange
         PostModel post = createNewPost();
         setupPostAttributes(post);
+
+        if (testPage) {
+            post.setIsPage(true);
+        }
 
         post.setStatus(PostStatus.PUBLISHED.toString());
 
@@ -673,7 +690,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(post.getId());
 
         // Act
-        uploadedPost.setContent("post content edited");
+        uploadedPost.setContent("content edited");
         remoteAutoSavePost(uploadedPost);
 
         // Assert
