@@ -15,6 +15,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.AccountAction
 import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener
+import org.wordpress.android.fluxc.example.ui.WooCommerceFragment
 import org.wordpress.android.fluxc.generated.AccountActionBuilder
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder
 import org.wordpress.android.fluxc.generated.SiteActionBuilder
