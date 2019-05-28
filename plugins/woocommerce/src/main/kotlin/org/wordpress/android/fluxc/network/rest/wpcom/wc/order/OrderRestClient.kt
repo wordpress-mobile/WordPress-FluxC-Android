@@ -38,7 +38,6 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
-import org.wordpress.android.fluxc.store.WCOrderStore.WCOrderModelId
 import javax.inject.Singleton
 import kotlin.collections.MutableMap.MutableEntry
 
@@ -114,15 +113,16 @@ class OrderRestClient(
                 "search" to listDescriptor.searchQuery.orEmpty())
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, listDescriptor.site.siteId, params, responseType,
                 { response: List<OrderApiResponse>? ->
-                    val orderModelIds = response?.map {
-                        WCOrderModelId(id = orderResponseToOrderModel(it).remoteOrderId)
+                    val remoteOrderIds = response?.map {
+                        RemoteId(value = orderResponseToOrderModel(it).remoteOrderId)
+//                        WCOrderModelId(id = orderResponseToOrderModel(it).remoteOrderId)
                     }.orEmpty()
 
-                    val canLoadMore = orderModelIds.size == networkPageSize
+                    val canLoadMore = remoteOrderIds.size == networkPageSize
 
                     val payload = FetchOrderListResponsePayload(
                             listDescriptor = listDescriptor,
-                            orderIds = orderModelIds,
+                            orderIds = remoteOrderIds,
                             loadedMore = offset > 0,
                             canLoadMore = canLoadMore
                     )

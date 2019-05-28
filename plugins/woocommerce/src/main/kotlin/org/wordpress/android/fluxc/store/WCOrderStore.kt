@@ -69,11 +69,9 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         constructor(error: OrderError, site: SiteModel) : this(site) { this.error = error }
     }
 
-    data class WCOrderModelId(val id: Long)
-
     class FetchOrderListResponsePayload(
         val listDescriptor: WCOrderListDescriptor,
-        var orderIds: List<WCOrderModelId> = emptyList(),
+        var orderIds: List<RemoteId> = emptyList(),
         var loadedMore: Boolean = false,
         var canLoadMore: Boolean = false
     ) : Payload<OrderError>() {
@@ -454,7 +452,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         // - WCOrderShipmentTrackingModel
         mDispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(FetchedListItemsPayload(
                 listDescriptor = payload.listDescriptor,
-                remoteItemIds = payload.orderIds.map { it.id },
+                remoteItemIds = payload.orderIds.map { it.value },
                 loadedMore = payload.loadedMore,
                 canLoadMore = payload.canLoadMore,
                 error = payload.error?.let { fetchError ->
