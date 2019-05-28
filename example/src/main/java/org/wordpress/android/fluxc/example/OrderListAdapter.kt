@@ -36,7 +36,7 @@ class OrderListAdapter : PagedListAdapter<WCOrderListItemUIType, ViewHolder>(Ord
             }
             VIEW_TYPE_SECTION_HEADER -> SectionHeaderViewHolder(R.layout.list_item_section_header, parent)
             else -> {
-                // Fail fast if a new view type is added so the we can handle it
+                // Fail fast if a new view type is added so we can handle it
                 throw IllegalStateException("The view type '$viewType' needs to be handled")
             }
         }

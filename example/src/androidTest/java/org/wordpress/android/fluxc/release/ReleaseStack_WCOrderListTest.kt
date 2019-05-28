@@ -70,7 +70,9 @@ internal class ReleaseStack_WCOrderListTest(
 
     private fun createPagedListWrapper(): PagedListWrapper<TestWCOrderUIItem> {
         val descriptor = WCOrderListDescriptor(
-                site = sSite
+                site = sSite,
+                statusFilter = testCase.statusFilter,
+                searchQuery = testCase.searchQuery
         )
         return listStoreConnectedTestHelper.getList(descriptor, TestWCOrderListDataSource(mDispatcher))
     }
