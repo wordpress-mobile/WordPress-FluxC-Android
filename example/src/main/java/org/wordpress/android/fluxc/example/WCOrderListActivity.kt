@@ -199,7 +199,6 @@ private class WCOrderListItemDataSource(
     ): List<WCOrderListItemIdentifier> {
         val orderSummaries = wcOrderStore.getOrderSummariesByRemoteOrderIds(listDescriptor.site, remoteItemIds)
                 .let { summariesByRemoteId ->
-                    // TODO: The summary of the order should always be in the DB, how can we best relay that in code
                     remoteItemIds.mapNotNull { summariesByRemoteId[it] }
                 }
         return orderSummaries.groupBy { it.timeGroup }.let { orderSummaryMap ->
