@@ -104,7 +104,7 @@ class OrderRestClient(
                 ?: WCOrderStore.DEFAULT_ORDER_STATUS
 
         val url = WOOCOMMERCE.orders.pathV3
-        val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
+        val responseType = object : TypeToken<List<OrderSummaryApiResponse>>() {}.type
         val networkPageSize = listDescriptor.config.networkPageSize
         val params = mapOf(
                 "per_page" to networkPageSize.toString(),
@@ -113,7 +113,7 @@ class OrderRestClient(
                 "_fields" to "id,date_created_gmt",
                 "search" to listDescriptor.searchQuery.orEmpty())
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, listDescriptor.site.siteId, params, responseType,
-                { response: List<OrderApiResponse>? ->
+                { response: List<OrderSummaryApiResponse>? ->
                     val orderSummaries = response?.map {
                         orderResponseToOrderSummaryModel(it).apply { localSiteId = listDescriptor.site.id }
                     }.orEmpty()
@@ -494,11 +494,10 @@ class OrderRestClient(
         add(request)
     }
 
-    // TODO: Create a new class instead of OrderApiResponse
-    private fun orderResponseToOrderSummaryModel(response: OrderApiResponse): WCOrderSummaryModel {
+    private fun orderResponseToOrderSummaryModel(response: OrderSummaryApiResponse): WCOrderSummaryModel {
         return WCOrderSummaryModel().apply {
             remoteOrderId = response.id ?: 0
-            dateCreated = orderDateCreatedFromOrderResponse(response)
+            dateCreated = orderDateCreatedFromOrderSummaryResponse(response)
         }
     }
 
@@ -601,6 +600,9 @@ class OrderRestClient(
     }
 
     private fun orderDateCreatedFromOrderResponse(response: OrderApiResponse): String =
+            response.date_created_gmt?.let { "${it}Z" } ?: "" // Store the date in UTC format
+
+    private fun orderDateCreatedFromOrderSummaryResponse(response: OrderSummaryApiResponse): String =
             response.date_created_gmt?.let { "${it}Z" } ?: "" // Store the date in UTC format
 
     private fun jsonResponseToShipmentProviderList(
