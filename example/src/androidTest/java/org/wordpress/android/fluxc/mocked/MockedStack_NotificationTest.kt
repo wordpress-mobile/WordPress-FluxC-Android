@@ -110,7 +110,7 @@ class MockedStack_NotificationTest : MockedStack_Base() {
     @Test
     fun testRegistrationResponseNull() {
         val errorJson = JsonObject().apply {
-            addProperty("error", DeviceRegistrationErrorType.RESPONSE_NULL.name)
+            addProperty("error", DeviceRegistrationErrorType.INVALID_RESPONSE.name)
             addProperty("message", "Response object is null")
         }
 
@@ -129,7 +129,7 @@ class MockedStack_NotificationTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RegisterDeviceResponsePayload
         assertNotNull(payload.error)
         assertNull(payload.deviceId)
-        assertEquals(DeviceRegistrationErrorType.RESPONSE_NULL, payload.error.type)
+        assertEquals(DeviceRegistrationErrorType.INVALID_RESPONSE, payload.error.type)
     }
 
     @Test
