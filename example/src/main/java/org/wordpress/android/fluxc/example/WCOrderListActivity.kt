@@ -160,7 +160,6 @@ private class WCOrderListItemDataSource(
         listDescriptor: WCOrderListDescriptor,
         itemIdentifiers: List<WCOrderListItemIdentifier>
     ): List<WCOrderListItemUIType> {
-        // TODO: Move fetching to its own method
         val remoteItemIds = itemIdentifiers.mapNotNull { (it as? OrderIdentifier)?.remoteId }
         val ordersMap = wcOrderStore.getOrdersForDescriptor(listDescriptor, remoteItemIds)
         // Fetch missing items
