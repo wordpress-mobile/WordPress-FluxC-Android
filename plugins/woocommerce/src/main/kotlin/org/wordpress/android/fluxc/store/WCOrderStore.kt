@@ -5,11 +5,6 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS
-import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
@@ -227,7 +222,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         GENERIC_ERROR;
 
         companion object {
-            private val reverseMap = OrderErrorType.values().associateBy(OrderErrorType::name)
+            private val reverseMap = values().associateBy(OrderErrorType::name)
             fun fromString(type: String) = reverseMap[type.toUpperCase(Locale.US)] ?: GENERIC_ERROR
         }
     }
@@ -504,7 +499,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             OnOrderChanged(0).also { it.error = payload.error }
         } else {
             with(payload) { OnOrderChanged(count, statusFilter) }
-        }.also { it.causeOfChange = FETCH_ORDERS_COUNT }
+        }.also { it.causeOfChange = WCOrderAction.FETCH_ORDERS_COUNT }
         emitChange(onOrderChanged)
     }
 
@@ -534,7 +529,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 val rowsAffected = if (payload.hasOrders) 1 else 0
                 OnOrderChanged(rowsAffected, statusFilter)
             }
-        }.also { it.causeOfChange = FETCH_HAS_ORDERS }
+        }.also { it.causeOfChange = WCOrderAction.FETCH_HAS_ORDERS }
         emitChange(onOrderChanged)
     }
 
@@ -563,7 +558,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             onOrderChanged = OnOrderChanged(rowsAffected)
         }
 
-        onOrderChanged.causeOfChange = FETCH_ORDER_NOTES
+        onOrderChanged.causeOfChange = WCOrderAction.FETCH_ORDER_NOTES
         emitChange(onOrderChanged)
     }
 
@@ -577,7 +572,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             onOrderChanged = OnOrderChanged(rowsAffected)
         }
 
-        onOrderChanged.causeOfChange = POST_ORDER_NOTE
+        onOrderChanged.causeOfChange = WCOrderAction.POST_ORDER_NOTE
         emitChange(onOrderChanged)
     }
 
@@ -648,7 +643,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             onOrderChanged = OnOrderChanged(rowsAffected)
         }
 
-        onOrderChanged.causeOfChange = FETCH_ORDER_SHIPMENT_TRACKINGS
+        onOrderChanged.causeOfChange = WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS
         emitChange(onOrderChanged)
     }
 
