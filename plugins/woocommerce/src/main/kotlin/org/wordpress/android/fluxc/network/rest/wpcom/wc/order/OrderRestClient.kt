@@ -98,7 +98,21 @@ class OrderRestClient(
         add(request)
     }
 
-    fun fetchOrderList(listDescriptor: WCOrderListDescriptor, offset: Long) {
+    /**
+     * Fetches orders from the API, but only requests `id` and `date_created_gmt` fields be returned. This is
+     * used to determine what orders should be fetched (either existing orders that have since changed or new
+     * orders not yet downloaded).
+     *
+     * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a list of orders for the given WooCommerce [SiteModel].
+     *
+     * Dispatches a [WCOrderAction.FETCHED_ORDER_LIST] action with the resulting list of order summaries.
+     *
+     * @param listDescriptor The [WCOrderListDescriptor] that describes the type of list being fetched and
+     * the optional parameters in effect.
+     * @param offset Used to retrieve older orders
+     */
+    fun fetchOrderListSummaries(listDescriptor: WCOrderListDescriptor, offset: Long) {
         // If null, set the filter to the api default value of "any", which will not apply any order status filters.
         val statusFilter = listDescriptor.statusFilter.takeUnless { it.isNullOrBlank() }
                 ?: WCOrderStore.DEFAULT_ORDER_STATUS
@@ -137,6 +151,15 @@ class OrderRestClient(
         add(request)
     }
 
+    /**
+     * Requests orders from the API that match the provided list of [remoteOrderIds] by making a GET call to
+     * `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]).
+     *
+     * Dispatches a [WCOrderAction.FETCHED_ORDERS_BY_IDS] action with the resulting list of orders.
+     *
+     * @param site The WooCommerce [SiteModel] the orders belong to
+     * @param remoteOrderIds A list of remote order identifiers to fetch from the API
+     */
     fun fetchOrdersByIds(site: SiteModel, remoteOrderIds: List<RemoteId>) {
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type

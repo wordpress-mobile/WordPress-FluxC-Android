@@ -375,7 +375,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun fetchOrderList(payload: FetchOrderListPayload) {
-        wcOrderRestClient.fetchOrderList(payload.listDescriptor, payload.offset)
+        wcOrderRestClient.fetchOrderListSummaries(payload.listDescriptor, payload.offset)
     }
 
     private fun fetchOrdersByIds(payload: FetchOrdersByIdsPayload) {
