@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.BuildConfig;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.Payload;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
+import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.fluxc.store.Store.OnChangedError;
 import org.wordpress.android.fluxc.utils.WPUrlUtils;
 import org.wordpress.android.util.AppLog;
@@ -48,6 +49,16 @@ public class SelfHostedEndpointFinder {
         }
     }
 
+    public static class GetWPAPIEndpointPayload extends Payload<BaseNetworkError> {
+        public String url;
+        public boolean validate;
+
+        public GetWPAPIEndpointPayload(String url, boolean validate) {
+            this.url = url;
+            this.validate = validate;
+        }
+    }
+
     public static class DiscoveryResultPayload extends Payload<DiscoveryError> {
         public String xmlRpcEndpoint;
         public String wpRestEndpoint;
@@ -78,7 +89,7 @@ public class SelfHostedEndpointFinder {
                 try {
                     String wpRestEndpoint = "";
                     if (BuildConfig.ENABLE_WPAPI) {
-                        wpRestEndpoint = discoverWPRESTEndpoint(url);
+                        wpRestEndpoint = discoverWPRESTEndpoint(url, true);
                     }
                     // TODO: Eventually make the XML-RPC discovery only run if WP-API discovery fails
                     String xmlRpcEndpoint = verifyOrDiscoverXMLRPCEndpoint(url);
@@ -97,11 +108,11 @@ public class SelfHostedEndpointFinder {
         }).start();
     }
 
-    public void findWPAPIEndpoint(final String url) {
+    public void findWPAPIBaseEndpoint(final String url, final boolean validate) {
         new Thread(new Runnable() {
             @Override public void run() {
                 try {
-                    String wpRestEndpoint = discoverWPRESTEndpoint(url);
+                    String wpRestEndpoint = discoverWPRESTEndpoint(url, validate);
                     DiscoveryResultPayload payload = new DiscoveryResultPayload("", wpRestEndpoint);
                     mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoveryResultAction(payload));
                 } catch (DiscoveryException e) {
@@ -367,7 +378,7 @@ public class SelfHostedEndpointFinder {
         return false;
     }
 
-    private String discoverWPRESTEndpoint(String url) throws DiscoveryException {
+    private String discoverWPRESTEndpoint(String url, boolean validate) throws DiscoveryException {
         if (TextUtils.isEmpty(url)) {
             throw new DiscoveryException(DiscoveryError.INVALID_URL, url);
         }
@@ -380,7 +391,9 @@ public class SelfHostedEndpointFinder {
 
         final String wpApiBaseUrl = mDiscoveryWPAPIRestClient.discoverWPAPIBaseURL(url);
 
-        if (wpApiBaseUrl != null && !wpApiBaseUrl.isEmpty()) {
+        if (!validate) {
+            return wpApiBaseUrl;
+        } else if (wpApiBaseUrl != null && !wpApiBaseUrl.isEmpty()) {
             AppLog.i(AppLog.T.NUX, "Base WP-API URL found - verifying that the wp/v2 namespace is supported");
             return mDiscoveryWPAPIRestClient.verifyWPAPIV2Support(wpApiBaseUrl);
         }

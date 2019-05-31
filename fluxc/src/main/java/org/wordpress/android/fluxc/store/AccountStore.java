@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryError;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.DiscoveryResultPayload;
+import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder.GetWPAPIEndpointPayload;
 import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient.AccountFetchUsernameSuggestionsResponsePayload;
 import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient.AccountPushSettingsResponsePayload;
@@ -897,7 +898,7 @@ public class AccountStore extends Store {
                 discoverEndPoint((String) payload);
                 break;
             case DISCOVER_WPAPI_ENDPOINT:
-                discoveryWPAPIEndpoint((String) payload);
+                discoverWPAPIEndpoint((GetWPAPIEndpointPayload) payload);
                 break;
             case DISCOVERY_RESULT:
                 discoveryResult((DiscoveryResultPayload) payload);
@@ -921,8 +922,8 @@ public class AccountStore extends Store {
         mSelfHostedEndpointFinder.findEndpoint(payload);
     }
 
-    private void discoveryWPAPIEndpoint(String payload) {
-        mSelfHostedEndpointFinder.findWPAPIEndpoint(payload);
+    private void discoverWPAPIEndpoint(GetWPAPIEndpointPayload payload) {
+        mSelfHostedEndpointFinder.findWPAPIBaseEndpoint(payload.url, payload.validate);
     }
 
     private void discoveryResult(DiscoveryResultPayload payload) {

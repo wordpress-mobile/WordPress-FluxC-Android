@@ -51,5 +51,5 @@
         android:id="@+id/get_wpapi_base"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Get WPAPI Base"/>
+        android:text="Get WPAPI Endpoint"/>
 </LinearLayout>
