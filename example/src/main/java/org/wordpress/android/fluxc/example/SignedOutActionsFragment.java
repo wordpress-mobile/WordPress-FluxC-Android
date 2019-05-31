@@ -26,6 +26,7 @@ import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailPayload;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
+import org.wordpress.android.fluxc.store.AccountStore.OnDiscoveryResponse;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
@@ -96,6 +97,11 @@ public class SignedOutActionsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 showFetchConnectSiteInfoDialog();
+            }
+        });
+        view.findViewById(R.id.get_wpapi_base).setOnClickListener(new OnClickListener() {
+            @Override public void onClick(View v) {
+                showGetWPAPIBaseDialog();
             }
         });
         return view;
@@ -208,6 +214,21 @@ public class SignedOutActionsFragment extends Fragment {
         alert.show();
     }
 
+    private void showGetWPAPIBaseDialog() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+        final EditText editText = new EditText(getActivity());
+        editText.setSingleLine();
+        alert.setMessage("Fetch the WPAPI base for URL:");
+        alert.setView(editText);
+        alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String url = editText.getText().toString();
+                mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoverWpapiEndpointAction(url));
+            }
+        });
+        alert.show();
+    }
+
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNewUserValidated(OnNewUserCreated event) {
@@ -271,6 +292,12 @@ public class SignedOutActionsFragment extends Fragment {
             prependToLog("Fetch WP.com site for URL " + event.checkedUrl + ": success! Site name: "
                     + event.site.getName());
         }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDiscoverySucceeded(OnDiscoveryResponse event) {
+        prependToLog("Fetched base WPAPI for URL " + event.wpRestEndpoint);
     }
 
     private void prependToLog(final String s) {
