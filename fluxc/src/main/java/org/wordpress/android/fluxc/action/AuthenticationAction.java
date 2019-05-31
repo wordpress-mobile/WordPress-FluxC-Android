@@ -18,6 +18,8 @@ public enum AuthenticationAction implements IAction {
     DISCOVER_ENDPOINT,
     @Action(payloadType = AuthEmailPayload.class)
     SEND_AUTH_EMAIL,
+    @Action(payloadType = String.class)
+    DISCOVER_WPAPI_ENDPOINT,
 
     // Remote responses
     @Action(payloadType = AuthenticateErrorPayload.class)

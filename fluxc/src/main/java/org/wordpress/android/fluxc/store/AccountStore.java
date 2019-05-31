@@ -896,6 +896,9 @@ public class AccountStore extends Store {
             case DISCOVER_ENDPOINT:
                 discoverEndPoint((String) payload);
                 break;
+            case DISCOVER_WPAPI_ENDPOINT:
+                discoveryWPAPIEndpoint((String) payload);
+                break;
             case DISCOVERY_RESULT:
                 discoveryResult((DiscoveryResultPayload) payload);
                 break;
@@ -916,6 +919,10 @@ public class AccountStore extends Store {
 
     private void discoverEndPoint(String payload) {
         mSelfHostedEndpointFinder.findEndpoint(payload);
+    }
+
+    private void discoveryWPAPIEndpoint(String payload) {
+        mSelfHostedEndpointFinder.findWPAPIEndpoint(payload);
     }
 
     private void discoveryResult(DiscoveryResultPayload payload) {

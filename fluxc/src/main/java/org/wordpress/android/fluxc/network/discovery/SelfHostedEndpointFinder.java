@@ -97,6 +97,21 @@ public class SelfHostedEndpointFinder {
         }).start();
     }
 
+    public void findWPAPIEndpoint(final String url) {
+        new Thread(new Runnable() {
+            @Override public void run() {
+                try {
+                    String wpRestEndpoint = discoverWPRESTEndpoint(url);
+                    DiscoveryResultPayload payload = new DiscoveryResultPayload("", wpRestEndpoint);
+                    mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoveryResultAction(payload));
+                } catch (DiscoveryException e) {
+                    DiscoveryResultPayload payload = new DiscoveryResultPayload(e.discoveryError, e.failedUrl);
+                    mDispatcher.dispatch(AuthenticationActionBuilder.newDiscoveryResultAction(payload));
+                }
+            }
+        }).start();
+    }
+
     private String verifyOrDiscoverXMLRPCEndpoint(final String siteUrl) throws DiscoveryException {
         if (TextUtils.isEmpty(siteUrl)) {
             throw new DiscoveryException(DiscoveryError.INVALID_URL, siteUrl);
