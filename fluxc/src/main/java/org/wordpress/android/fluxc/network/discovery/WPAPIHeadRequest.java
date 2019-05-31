@@ -25,12 +25,22 @@ public class WPAPIHeadRequest extends BaseRequest<String> {
 
     @Override
     protected void deliverResponse(String response) {
-        mListener.onResponse(extractEndpointFromLinkHeader(mResponseLinkHeader));
+        mListener.onResponse(mResponseLinkHeader);
     }
 
     @Override
     protected Response<String> parseNetworkResponse(NetworkResponse response) {
-        mResponseLinkHeader = response.headers.get("Link");
+        // Note: sometimes there are multiple "link" headers in the response. We don't use response.headers
+        // because it will only populate the last "link" value. Instead, we loop over the link items in the
+        // header response to find the appropriate one.
+        for (int i = 0; i < response.allHeaders.size(); i++) {
+            if (response.allHeaders.get(i).getName().equals("link")) {
+                mResponseLinkHeader = extractEndpointFromLinkHeader(response.allHeaders.get(i).getValue());
+                if (mResponseLinkHeader != null) {
+                    break;
+                }
+            }
+        }
         return Response.success("", HttpHeaderParser.parseCacheHeaders(response));
     }
 
