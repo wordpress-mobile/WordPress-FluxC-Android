@@ -34,6 +34,7 @@ public class DiscoveryWPAPIRestClient extends BaseWPAPIRestClient {
             AppLog.e(AppLog.T.API, "Couldn't get HEAD response from server.");
         } catch (ExecutionException e) {
             // TODO: Add support for HTTP AUTH and self-signed SSL WP-API sites
+            AppLog.e(AppLog.T.API, "Couldn't get HEAD response from server: " + e.getMessage());
 //            if (e.getCause() instanceof AuthFailureError) {
 //                throw new DiscoveryException(DiscoveryError.HTTP_AUTH_REQUIRED, url);
 //            } else if (e.getCause() instanceof NoConnectionError && e.getCause().getCause() != null
@@ -64,6 +65,7 @@ public class DiscoveryWPAPIRestClient extends BaseWPAPIRestClient {
         } catch (InterruptedException | TimeoutException e) {
             AppLog.e(AppLog.T.API, "Couldn't get response from root endpoint.");
         } catch (ExecutionException e) {
+            AppLog.e(AppLog.T.API, "Couldn't get response from root endpoint: " + e.getMessage());
             // TODO: Add support for HTTP AUTH and self-signed SSL WP-API sites
 //            if (e.getCause() instanceof AuthFailureError) {
 //                throw new DiscoveryException(DiscoveryError.HTTP_AUTH_REQUIRED, url);
