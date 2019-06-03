@@ -15,6 +15,7 @@ import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 import org.wordpress.android.util.UrlUtils;
 
+import java.net.URI;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -378,7 +379,7 @@ public class SelfHostedEndpointFinder {
         return false;
     }
 
-    private String discoverWPRESTEndpoint(String url, boolean validate) throws DiscoveryException {
+    private String discoverWPRESTEndpoint(String url, boolean validV2Support) throws DiscoveryException {
         if (TextUtils.isEmpty(url)) {
             throw new DiscoveryException(DiscoveryError.INVALID_URL, url);
         }
@@ -387,16 +388,22 @@ public class SelfHostedEndpointFinder {
             throw new DiscoveryException(DiscoveryError.WORDPRESS_COM_SITE, url);
         }
 
-        // TODO: Implement URL validation in this and its called methods, and http/https neutrality
+        URI uri;
+        try {
+            uri = URI.create(UrlUtils.addUrlSchemeIfNeeded(url, true));
 
-        final String wpApiBaseUrl = mDiscoveryWPAPIRestClient.discoverWPAPIBaseURL(url);
+            final String wpApiBaseUrl = mDiscoveryWPAPIRestClient.discoverWPAPIBaseURL(uri.toString());
 
-        if (!validate) {
-            return wpApiBaseUrl;
-        } else if (wpApiBaseUrl != null && !wpApiBaseUrl.isEmpty()) {
-            AppLog.i(AppLog.T.NUX, "Base WP-API URL found - verifying that the wp/v2 namespace is supported");
-            return mDiscoveryWPAPIRestClient.verifyWPAPIV2Support(wpApiBaseUrl);
+            if (!validV2Support) {
+                return wpApiBaseUrl;
+            } else if (wpApiBaseUrl != null && !wpApiBaseUrl.isEmpty()) {
+                AppLog.i(AppLog.T.NUX, "Base WP-API URL found - verifying that the wp/v2 namespace is supported");
+                return mDiscoveryWPAPIRestClient.verifyWPAPIV2Support(wpApiBaseUrl);
+            }
+        } catch (IllegalArgumentException e) {
+            AppLog.e(AppLog.T.API, "Invalid URL: " + url);
         }
+
         return null;
     }
 }
