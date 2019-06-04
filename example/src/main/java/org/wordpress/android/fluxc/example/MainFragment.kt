@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.example
 
 import android.content.Context
 import android.os.Bundle
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -36,7 +36,7 @@ import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
 
-class MainFragment : Fragment() {
+class MainFragment : androidx.fragment.app.Fragment() {
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var accountStore: AccountStore
     @Inject internal lateinit var dispatcher: Dispatcher
@@ -95,9 +95,9 @@ class MainFragment : Fragment() {
 
     // Private methods
 
-    private fun getOnClickListener(fragment: Fragment) = OnClickListener { replaceFragment(fragment) }
+    private fun getOnClickListener(fragment: androidx.fragment.app.Fragment) = OnClickListener { replaceFragment(fragment) }
 
-    private fun replaceFragment(fragment: Fragment) {
+    private fun replaceFragment(fragment: androidx.fragment.app.Fragment) {
         if (siteStore.sitesCount == 0 && !accountStore.hasAccessToken()) {
             ToastUtils.showToast(activity, "You must be logged in")
             return

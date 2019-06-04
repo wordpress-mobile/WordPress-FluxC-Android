@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.example
 
 import android.content.Context
 import android.os.Bundle
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -26,7 +26,7 @@ import org.wordpress.android.fluxc.store.ThemeStore.OnThemeInstalled
 import org.wordpress.android.fluxc.store.ThemeStore.OnWpComThemesChanged
 import javax.inject.Inject
 
-class ThemeFragment : Fragment() {
+class ThemeFragment : androidx.fragment.app.Fragment() {
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var themeStore: ThemeStore
     @Inject internal lateinit var dispatcher: Dispatcher

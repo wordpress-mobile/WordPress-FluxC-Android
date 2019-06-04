@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.example
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,7 +20,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload
 import javax.inject.Inject
 
-class AccountFragment : Fragment() {
+class AccountFragment : androidx.fragment.app.Fragment() {
     @Inject internal lateinit var accountStore: AccountStore
     @Inject internal lateinit var dispatcher: Dispatcher
 

@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.example
 
 import android.content.Context
 import android.os.Bundle
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,7 +23,7 @@ import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
 import org.wordpress.android.fluxc.store.SiteStore
 import javax.inject.Inject
 
-class PostsFragment : Fragment() {
+class PostsFragment : androidx.fragment.app.Fragment() {
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var postStore: PostStore
     @Inject internal lateinit var dispatcher: Dispatcher

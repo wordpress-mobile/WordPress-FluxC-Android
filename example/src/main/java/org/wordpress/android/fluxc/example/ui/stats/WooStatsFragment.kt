@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.example.ui.stats
 
 import android.content.Context
 import android.os.Bundle
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -32,7 +32,7 @@ import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
-class WooStatsFragment : Fragment(), CustomStatsDialog.Listener {
+class WooStatsFragment : androidx.fragment.app.Fragment(), CustomStatsDialog.Listener {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcStatsStore: WCStatsStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore

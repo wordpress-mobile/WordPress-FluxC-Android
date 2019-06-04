@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.example
 
 import android.content.Context
 import android.os.Bundle
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -32,7 +32,7 @@ import org.wordpress.android.util.DateTimeUtils
 import java.util.Date
 import javax.inject.Inject
 
-class NotificationsFragment : Fragment() {
+class NotificationsFragment : androidx.fragment.app.Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var notificationStore: NotificationStore
     @Inject internal lateinit var siteStore: SiteStore

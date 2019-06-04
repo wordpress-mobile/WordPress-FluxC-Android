@@ -4,7 +4,7 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
+import androidx.fragment.app.DialogFragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,7 +22,7 @@ import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import javax.inject.Inject
 
-class SiteSelectorDialog : DialogFragment() {
+class SiteSelectorDialog : androidx.fragment.app.DialogFragment() {
     companion object {
         @JvmStatic
         fun newInstance(listener: Listener, selectedPos: Int) = SiteSelectorDialog().apply {

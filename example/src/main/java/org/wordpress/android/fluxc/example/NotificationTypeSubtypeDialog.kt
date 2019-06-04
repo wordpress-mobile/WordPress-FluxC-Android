@@ -1,7 +1,7 @@
 package org.wordpress.android.fluxc.example
 
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
+import androidx.fragment.app.DialogFragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +11,7 @@ import kotlinx.android.synthetic.main.dialog_notification_type_subtype.*
 import org.wordpress.android.fluxc.model.notification.NotificationModel.Kind
 import org.wordpress.android.fluxc.model.notification.NotificationModel.Subkind
 
-class NotificationTypeSubtypeDialog : DialogFragment() {
+class NotificationTypeSubtypeDialog : androidx.fragment.app.DialogFragment() {
     companion object {
         @JvmStatic
         fun newInstance(listener: Listener) = NotificationTypeSubtypeDialog().apply { this.listener = listener }

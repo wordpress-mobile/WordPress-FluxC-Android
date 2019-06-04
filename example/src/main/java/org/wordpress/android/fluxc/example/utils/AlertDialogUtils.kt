@@ -1,12 +1,12 @@
 package org.wordpress.android.fluxc.example.utils
 
-import android.support.v4.app.FragmentActivity
-import android.support.v7.app.AlertDialog
+import androidx.fragment.app.FragmentActivity
+import androidx.appcompat.app.AlertDialog
 import android.widget.EditText
 
 typealias AlertTextListener = (EditText) -> Unit
 
-fun showSingleLineDialog(activity: FragmentActivity?, message: String, alertTextListener: AlertTextListener) {
+fun showSingleLineDialog(activity: androidx.fragment.app.FragmentActivity?, message: String, alertTextListener: AlertTextListener) {
     if (activity == null) return
     val alert = AlertDialog.Builder(activity)
     val editText = EditText(activity)

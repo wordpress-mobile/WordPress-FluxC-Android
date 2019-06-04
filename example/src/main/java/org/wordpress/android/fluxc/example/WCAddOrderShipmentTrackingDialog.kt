@@ -3,8 +3,8 @@ package org.wordpress.android.fluxc.example
 import android.R.layout
 import android.app.DatePickerDialog
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
-import android.support.v4.app.Fragment
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,11 +20,11 @@ import org.wordpress.android.fluxc.utils.DateUtils
 import java.util.Calendar
 import java.util.Date
 
-class WCAddOrderShipmentTrackingDialog : DialogFragment() {
+class WCAddOrderShipmentTrackingDialog : androidx.fragment.app.DialogFragment() {
     companion object {
         @JvmStatic
         fun newInstance(
-            fragment: Fragment,
+            fragment: androidx.fragment.app.Fragment,
             site: SiteModel,
             order: WCOrderModel,
             providers: List<String>
