@@ -23,7 +23,7 @@ import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
 import org.wordpress.android.fluxc.store.SiteStore
 import javax.inject.Inject
 
-class PostsFragment : androidx.fragment.app.Fragment() {
+class PostsFragment : Fragment() {
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var postStore: PostStore
     @Inject internal lateinit var dispatcher: Dispatcher

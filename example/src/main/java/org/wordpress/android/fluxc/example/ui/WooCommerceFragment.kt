@@ -28,7 +28,7 @@ import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
 
-class WooCommerceFragment : androidx.fragment.app.Fragment() {
+class WooCommerceFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject lateinit var wooCommerceStore: WooCommerceStore
 

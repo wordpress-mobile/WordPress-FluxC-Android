@@ -20,7 +20,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.PushAccountSettingsPayload
 import javax.inject.Inject
 
-class AccountFragment : androidx.fragment.app.Fragment() {
+class AccountFragment : Fragment() {
     @Inject internal lateinit var accountStore: AccountStore
     @Inject internal lateinit var dispatcher: Dispatcher
 

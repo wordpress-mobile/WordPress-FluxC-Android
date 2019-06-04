@@ -2,12 +2,12 @@ package org.wordpress.android.fluxc.example
 
 import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_themes.*
 import org.greenrobot.eventbus.Subscribe
@@ -26,7 +26,7 @@ import org.wordpress.android.fluxc.store.ThemeStore.OnThemeInstalled
 import org.wordpress.android.fluxc.store.ThemeStore.OnWpComThemesChanged
 import javax.inject.Inject
 
-class ThemeFragment : androidx.fragment.app.Fragment() {
+class ThemeFragment : Fragment() {
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var themeStore: ThemeStore
     @Inject internal lateinit var dispatcher: Dispatcher

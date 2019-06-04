@@ -11,7 +11,7 @@ import kotlinx.android.synthetic.main.dialog_notification_type_subtype.*
 import org.wordpress.android.fluxc.model.notification.NotificationModel.Kind
 import org.wordpress.android.fluxc.model.notification.NotificationModel.Subkind
 
-class NotificationTypeSubtypeDialog : androidx.fragment.app.DialogFragment() {
+class NotificationTypeSubtypeDialog : DialogFragment() {
     companion object {
         @JvmStatic
         fun newInstance(listener: Listener) = NotificationTypeSubtypeDialog().apply { this.listener = listener }

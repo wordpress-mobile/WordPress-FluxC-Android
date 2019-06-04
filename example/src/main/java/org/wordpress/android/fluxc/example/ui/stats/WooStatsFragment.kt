@@ -32,7 +32,7 @@ import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
-class WooStatsFragment : androidx.fragment.app.Fragment(), CustomStatsDialog.Listener {
+class WooStatsFragment : Fragment(), CustomStatsDialog.Listener {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcStatsStore: WCStatsStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore

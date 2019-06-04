@@ -22,7 +22,7 @@ import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import javax.inject.Inject
 
-class SiteSelectorDialog : androidx.fragment.app.DialogFragment() {
+class SiteSelectorDialog : DialogFragment() {
     companion object {
         @JvmStatic
         fun newInstance(listener: Listener, selectedPos: Int) = SiteSelectorDialog().apply {

@@ -24,7 +24,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
-class WooProductsFragment : androidx.fragment.app.Fragment() {
+class WooProductsFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcProductStore: WCProductStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore

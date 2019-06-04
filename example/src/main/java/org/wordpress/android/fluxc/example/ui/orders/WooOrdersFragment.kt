@@ -53,7 +53,7 @@ import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
 
-class WooOrdersFragment : androidx.fragment.app.Fragment(), WCAddOrderShipmentTrackingDialog.Listener {
+class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcOrderStore: WCOrderStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore

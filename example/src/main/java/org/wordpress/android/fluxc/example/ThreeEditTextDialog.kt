@@ -8,7 +8,7 @@ import android.text.TextUtils
 import android.view.View
 import android.widget.EditText
 
-class ThreeEditTextDialog : androidx.fragment.app.DialogFragment() {
+class ThreeEditTextDialog : DialogFragment() {
     private lateinit var editText1: EditText
     private lateinit var editText2: EditText
     private lateinit var editText3: EditText

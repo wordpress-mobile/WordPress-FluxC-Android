@@ -32,7 +32,7 @@ import org.wordpress.android.util.DateTimeUtils
 import java.util.Date
 import javax.inject.Inject
 
-class NotificationsFragment : androidx.fragment.app.Fragment() {
+class NotificationsFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var notificationStore: NotificationStore
     @Inject internal lateinit var siteStore: SiteStore
