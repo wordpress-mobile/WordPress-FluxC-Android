@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.module;
 
 import android.graphics.Bitmap;
+
 import androidx.collection.LruCache;
 
 import com.android.volley.toolbox.ImageLoader.ImageCache;

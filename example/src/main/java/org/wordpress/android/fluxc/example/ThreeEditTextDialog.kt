@@ -2,11 +2,11 @@ package org.wordpress.android.fluxc.example
 
 import android.app.Dialog
 import android.os.Bundle
-import androidx.fragment.app.DialogFragment
-import androidx.appcompat.app.AlertDialog
 import android.text.TextUtils
 import android.view.View
 import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.DialogFragment
 
 class ThreeEditTextDialog : DialogFragment() {
     private lateinit var editText1: EditText

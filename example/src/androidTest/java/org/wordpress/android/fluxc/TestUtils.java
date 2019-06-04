@@ -2,8 +2,9 @@ package org.wordpress.android.fluxc;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import androidx.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import org.wordpress.android.fluxc.example.test.BuildConfig;
 import org.wordpress.android.util.AppLog;

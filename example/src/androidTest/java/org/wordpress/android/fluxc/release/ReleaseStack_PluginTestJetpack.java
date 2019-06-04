@@ -1,7 +1,8 @@
 package org.wordpress.android.fluxc.release;
 
-import androidx.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import junit.framework.Assert;
 

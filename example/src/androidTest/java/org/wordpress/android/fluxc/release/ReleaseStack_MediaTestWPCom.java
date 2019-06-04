@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release;
 
 import android.annotation.SuppressLint;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
