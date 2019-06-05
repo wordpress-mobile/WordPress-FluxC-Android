@@ -6,6 +6,6 @@ import org.wordpress.android.fluxc.network.Response
 class OrderSummaryApiResponse : Response {
     val id: Long? = null
 
-    @SerializedName("dateCreatedGmt")
+    @SerializedName("date_created_gmt")
     val dateCreatedGmt: String? = null
 }
