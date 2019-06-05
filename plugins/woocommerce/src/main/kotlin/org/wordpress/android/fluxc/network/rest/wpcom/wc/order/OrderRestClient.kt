@@ -624,10 +624,10 @@ class OrderRestClient(
     }
 
     private fun orderDateCreatedFromOrderResponse(response: OrderApiResponse): String =
-            response.date_created_gmt?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
+            response.date_created_gmt?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store as UTC format
 
     private fun orderDateCreatedFromOrderSummaryResponse(response: OrderSummaryApiResponse): String =
-            response.dateCreatedGmt?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
+            response.dateCreatedGmt?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store as UTC format
 
     private fun jsonResponseToShipmentProviderList(
         site: SiteModel,

@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.persistence
 
-import android.database.Cursor
 import com.wellsql.generated.WCOrderModelTable
 import com.wellsql.generated.WCOrderNoteModelTable
 import com.wellsql.generated.WCOrderShipmentProviderModelTable
