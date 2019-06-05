@@ -26,29 +26,16 @@ object OrderSqlUtils {
         WellSql.insert(orderSummaries).asSingleTransaction(true).execute()
     }
 
-    // TODO verify and correct localization or figure out why sometimes the time may be off
     fun getOrderSummariesForRemoteIds(site: SiteModel, remoteOrderIds: List<RemoteId>): List<WCOrderSummaryModel> {
         if (remoteOrderIds.isEmpty()) {
             return emptyList()
         }
-        val readableDb = WellSql.giveMeReadableDb()
-        val sql = "SELECT *,\n" +
-                "    CASE \n" +
-                "        WHEN julianday('now') - julianday(date_created) < 1 THEN 'GROUP_TODAY'" +
-                "        WHEN julianday('now') - julianday(date_created) < 2 THEN 'GROUP_YESTERDAY'" +
-                "        WHEN julianday('now') - julianday(date_created) < 7 THEN 'GROUP_OLDER_TWO_DAYS'" +
-                "        WHEN julianday('now') - julianday(date_created) < 30 THEN 'GROUP_OLDER_WEEK'" +
-                "        ELSE 'GROUP_OLDER_MONTH'\n" +
-                "    END TIME_GROUP" +
-                " FROM WCOrderSummaryModel" +
-                " WHERE local_site_id = ${site.id}" +
-                " AND remote_order_id in (${remoteOrderIds.map { it.value }.joinToString()})"
-        val cursor = readableDb.rawQuery(sql, null)
-        val list = generateSequence { if (cursor.moveToNext()) cursor else null }
-                .map { getOrderSummaryModelFromCursor(it) }
-                .toList()
-        cursor.close()
-        return list
+        return WellSql.select(WCOrderSummaryModel::class.java)
+                .where()
+                .equals(WCOrderSummaryModelTable.LOCAL_SITE_ID, site.id)
+                .isIn(WCOrderSummaryModelTable.REMOTE_ORDER_ID, remoteOrderIds.map { it.value })
+                .endWhere()
+                .asModel
     }
 
     fun insertOrUpdateOrder(order: WCOrderModel): Int {
@@ -281,13 +268,4 @@ object OrderSqlUtils {
                     .endWhere()
                     .orderBy(WCOrderShipmentProviderModelTable.COUNTRY, SelectQuery.ORDER_ASCENDING)
                     .asModel
-
-    private fun getOrderSummaryModelFromCursor(cursor: Cursor): WCOrderSummaryModel {
-        return WCOrderSummaryModel().apply {
-            localSiteId = cursor.getInt(cursor.getColumnIndex(WCOrderSummaryModelTable.LOCAL_SITE_ID))
-            remoteOrderId = cursor.getLong(cursor.getColumnIndex(WCOrderSummaryModelTable.REMOTE_ORDER_ID))
-            dateCreated = cursor.getString(cursor.getColumnIndex(WCOrderSummaryModelTable.DATE_CREATED))
-            timeGroup = TimeGroup.valueOf(cursor.getString(cursor.getColumnIndex("TIME_GROUP")))
-        }
-    }
 }

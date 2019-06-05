@@ -5,7 +5,6 @@ import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.RawConstraints
 import com.yarolegovich.wellsql.core.annotation.Table
-import org.wordpress.android.fluxc.model.TimeGroup.GROUP_TODAY
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
@@ -17,7 +16,6 @@ data class WCOrderSummaryModel(@PrimaryKey @Column private var id: Int = 0) : Id
     @Column var localSiteId = 0
     @Column var remoteOrderId = 0L // The unique identifier for this order on the server
     @Column var dateCreated = "" // ISO 8601-formatted date in UTC, e.g. 1955-11-05T14:15:00Z
-    var timeGroup: TimeGroup = GROUP_TODAY
 
     override fun getId() = id
 
