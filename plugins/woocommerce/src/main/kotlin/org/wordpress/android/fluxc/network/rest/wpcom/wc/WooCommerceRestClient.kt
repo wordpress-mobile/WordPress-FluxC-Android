@@ -94,13 +94,19 @@ class WooCommerceRestClient(
                         val currencyThousandSep = getValueForSettingsField(it, "woocommerce_price_thousand_sep")
                         val currencyDecimalSep = getValueForSettingsField(it, "woocommerce_price_decimal_sep")
                         val currencyNumDecimals = getValueForSettingsField(it, "woocommerce_price_num_decimals")
+                        val countryCode = getValueForSettingsField(it, "woocommerce_default_country")
                         val settings = WCSettingsModel(
                                 localSiteId = site.id,
                                 currencyCode = currencyCode ?: "",
                                 currencyPosition = CurrencyPosition.fromString(currencyPosition),
                                 currencyThousandSeparator = currencyThousandSep ?: "",
                                 currencyDecimalSeparator = currencyDecimalSep ?: "",
-                                currencyDecimalNumber = currencyNumDecimals?.toIntOrNull() ?: 2
+                                currencyDecimalNumber = currencyNumDecimals?.toIntOrNull() ?: 2,
+                                /**
+                                 * The default store country is provided in a format like `US:NY`
+                                 * If no country code is available, storing empty value
+                                 * */
+                                countryCode = countryCode ?: ""
                         )
 
                         val payload = FetchWCSiteSettingsResponsePayload(site, settings)

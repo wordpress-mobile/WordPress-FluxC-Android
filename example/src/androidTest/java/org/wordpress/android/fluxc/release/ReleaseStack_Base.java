@@ -17,7 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import static android.support.test.InstrumentationRegistry.getInstrumentation;
+import static androidx.test.InstrumentationRegistry.getInstrumentation;
 
 /**
  * NOTE:

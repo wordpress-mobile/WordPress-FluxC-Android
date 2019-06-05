@@ -1,0 +1,26 @@
+{
+  "data": {
+    "tracking_id": "95bb641d79d7c6974001d6a03fbdabc0",
+    "tracking_provider": "TNT Express (consignment)",
+    "tracking_link": "http:\/\/www.tnt.com\/webtracker\/tracking.do?requestType=GEN&searchType=CON&respLang=en&respCountry=GENERIC&sourceID=1&sourceCountry=ww&cons=123456&navigation=1&g\nenericSiteIdent=",
+    "tracking_number": "123456",
+    "date_shipped": "2019-04-18",
+    "_links": {
+      "self": [
+        {
+          "href": "https:\/\/testwooshop.mystagingwebsite.com\/wp-json\/wc\/v2\/orders\/2707\/shipment-trackings\/95bb641d79d7c6974001d6a03fbdabc0"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https:\/\/testwooshop.mystagingwebsite.com\/wp-json\/wc\/v2\/orders\/2707\/shipment-trackings"
+        }
+      ],
+      "up": [
+        {
+          "href": "https:\/\/testwooshop.mystagingwebsite.com\/wp-json\/wc\/v2\/orders\/2707"
+        }
+      ]
+    }
+  }
+}

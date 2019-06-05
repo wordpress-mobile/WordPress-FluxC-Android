@@ -1,16 +1,17 @@
 package org.wordpress.android.fluxc.example
 
-import android.arch.lifecycle.Lifecycle
-import android.arch.lifecycle.Observer
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.DefaultItemAnimator
-import android.support.v7.widget.DividerItemDecoration
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.ProgressBar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.activity_wc_order_list.*
 import org.wordpress.android.fluxc.Dispatcher
@@ -25,7 +26,6 @@ import org.wordpress.android.fluxc.store.ListStore
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderListPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
-import org.wordpress.android.util.widgets.CustomSwipeRefreshLayout
 import javax.inject.Inject
 
 class WCOrderListActivity : AppCompatActivity() {
@@ -34,7 +34,7 @@ class WCOrderListActivity : AppCompatActivity() {
     @Inject internal lateinit var wcOrderStore: WCOrderStore
     @Inject internal lateinit var listStore: ListStore
 
-    private var swipeRefreshLayout: CustomSwipeRefreshLayout? = null
+    private var swipeRefreshLayout: SwipeRefreshLayout? = null
     private var progressLoadMore: ProgressBar? = null
     private var pagedListWrapper: PagedListWrapper<WCOrderListItemUIType>? = null
     private val orderListAdapter: OrderListAdapter = OrderListAdapter()

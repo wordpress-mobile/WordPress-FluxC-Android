@@ -135,6 +135,15 @@ class WooCommerceStore @Inject constructor(
             WCProductSettingsSqlUtils.getProductSettingsForSite(site)
 
     /**
+     * Given a [SiteModel], returns its WooCommerce store country name,
+     * or null if no settings are stored for this site OR if country is empty/blank
+     */
+    fun getStoreCountryCode(site: SiteModel): String? {
+        val siteSettings = WCSettingsSqlUtils.getSettingsForSite(site)
+        return siteSettings?.countryCode
+    }
+
+    /**
      * Formats currency amounts for display based on the site's settings and the device locale.
      *
      * If there is no [WCSettingsModel] associated with the given [site], the [rawValue] will be returned without

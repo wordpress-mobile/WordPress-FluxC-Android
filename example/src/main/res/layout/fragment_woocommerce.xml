@@ -3,191 +3,59 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.wordpress.android.fluxc.example.WooCommerceFragment">
+    tools:context="org.wordpress.android.fluxc.example.ui.WooCommerceFragment">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <Button
-            android:id="@+id/log_sites"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Log Sites"/>
+            android:orientation="vertical">
 
-        <Button
-            android:id="@+id/log_woo_api_versions"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Log Woo API versions"/>
+                <Button
+                    android:id="@+id/log_sites"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Log Sites"/>
 
-        <Button
-            android:id="@+id/fetch_settings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch WC site settings"/>
+                <Button
+                    android:id="@+id/log_woo_api_versions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Log Woo API versions"/>
 
-        <Button
-            android:id="@+id/fetch_product_settings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch WC product settings"/>
+                <Button
+                    android:id="@+id/fetch_settings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Fetch WC site settings"/>
 
-        <Button
-            android:id="@+id/fetch_orders"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Orders"/>
+                <Button
+                    android:id="@+id/fetch_product_settings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Fetch WC product settings"/>
 
-        <Button
-            android:id="@+id/fetch_order_list"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Order List"/>
+                <ImageView
+                    android:id="@+id/divider1"
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="@color/material_grey_600"/>
 
-        <Button
-            android:id="@+id/fetch_orders_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Orders Count"/>
+                <Button
+                    android:id="@+id/orders"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Orders"/>
 
-        <Button
-            android:id="@+id/fetch_single_order"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Single Order"/>
+                <Button
+                    android:id="@+id/products"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Products"/>
 
-        <Button
-            android:id="@+id/fetch_has_orders"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Has Orders"/>
-
-        <Button
-            android:id="@+id/fetch_orders_by_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Load Orders Filtered By Status (DB)"/>
-
-        <Button
-            android:id="@+id/fetch_orders_by_status_api"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Completed Orders (API)"/>
-
-        <Button
-            android:id="@+id/fetch_order_status_options"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Order Status Options"/>
-
-        <Button
-            android:id="@+id/search_orders"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Search Orders"/>
-
-        <Button
-            android:id="@+id/fetch_order_notes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Order Notes"/>
-
-        <Button
-            android:id="@+id/post_order_note"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Post Order Note"/>
-
-        <Button
-            android:id="@+id/fetch_shipment_trackings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Order Shipment Trackings"/>
-
-        <Button
-            android:id="@+id/fetch_shipment_providers"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Order Shipment Providers"/>
-
-        <Button
-            android:id="@+id/update_latest_order_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Update Latest Order Status"/>
-
-        <Button
-            android:id="@+id/fetch_single_product"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Single Product"/>
-
-        <Button
-            android:id="@+id/fetch_product_variations"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Product Variations"/>
-
-        <Button
-            android:id="@+id/fetch_order_stats"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch 30-day Revenue Stats"/>
-
-        <Button
-            android:id="@+id/fetch_order_stats_forced"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch 30-day Revenue Stats (forced)"/>
-
-        <Button
-            android:id="@+id/fetch_order_stats_custom"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Custom Revenue Stats"/>
-
-        <Button
-            android:id="@+id/fetch_order_stats_custom_forced"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Custom Revenue Stats (forced)"/>
-
-        <Button
-            android:id="@+id/fetch_visitor_stats"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch 30-day Visitor Stats"/>
-
-        <Button
-            android:id="@+id/fetch_visitor_stats_forced"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch 30-day Visitor Stats (forced)"/>
-
-        <Button
-            android:id="@+id/fetch_visitor_stats_custom"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Custom Visitor Stats"/>
-
-        <Button
-            android:id="@+id/fetch_visitor_stats_custom_forced"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch Custom Visitor Stats (forced)"/>
-
-        <Button
-            android:id="@+id/fetch_top_earners_stats"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch 30-day Top Earners Stats"/>
-
-        <Button
-            android:id="@+id/fetch_top_earners_stats_forced"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch 30-day Top Earners Stats (forced)"/>
-    </LinearLayout>
+                <Button
+                    android:id="@+id/stats"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Stats"/>
+        </LinearLayout>
 </ScrollView>
