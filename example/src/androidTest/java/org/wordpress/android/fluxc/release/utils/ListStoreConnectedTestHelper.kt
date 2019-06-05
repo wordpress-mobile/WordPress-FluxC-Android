@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.release.utils
 
-import android.arch.lifecycle.Lifecycle
+import androidx.lifecycle.Lifecycle
 import org.wordpress.android.fluxc.model.list.ListDescriptor
 import org.wordpress.android.fluxc.model.list.PagedListWrapper
 import org.wordpress.android.fluxc.model.list.datasource.ListItemDataSourceInterface

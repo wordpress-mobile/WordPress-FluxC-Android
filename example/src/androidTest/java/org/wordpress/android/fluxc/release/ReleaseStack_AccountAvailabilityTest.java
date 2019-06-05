@@ -18,7 +18,6 @@ import javax.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -30,7 +29,6 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
     private enum TestEvents {
         NONE,
         IS_AVAILABLE_BLOG,
-        IS_AVAILABLE_DOMAIN,
         IS_AVAILABLE_EMAIL,
         IS_AVAILABLE_USERNAME,
         ERROR_INVALID
@@ -80,42 +78,6 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         assertEquals("notavalidname#", mLastEvent.value);
-        assertFalse(mLastEvent.isAvailable);
-    }
-
-    @Test
-    public void testIsAvailableDomain() throws InterruptedException {
-        mNextEvent = TestEvents.IS_AVAILABLE_DOMAIN;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableDomainAction("docbrown.com"));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        assertEquals("docbrown.com", mLastEvent.value);
-        assertFalse(mLastEvent.isAvailable);
-        assertTrue(mLastEvent.suggestions.size() > 0);
-
-        String unavailableDomain = "docbrown" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + ".com";
-        mNextEvent = TestEvents.IS_AVAILABLE_DOMAIN;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableDomainAction(unavailableDomain));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        assertEquals(unavailableDomain, mLastEvent.value);
-        assertTrue(mLastEvent.isAvailable);
-        assertNull(mLastEvent.suggestions);
-    }
-
-    @Test
-    public void testIsAvailableDomainInvalid() throws InterruptedException {
-        mNextEvent = TestEvents.ERROR_INVALID;
-        mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newIsAvailableDomainAction("notavaliddomain#"));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        assertEquals("notavaliddomain#", mLastEvent.value);
         assertFalse(mLastEvent.isAvailable);
     }
 
@@ -203,10 +165,6 @@ public class ReleaseStack_AccountAvailabilityTest extends ReleaseStack_Base {
         switch (event.type) {
             case BLOG:
                 assertEquals(mNextEvent, TestEvents.IS_AVAILABLE_BLOG);
-                mCountDownLatch.countDown();
-                break;
-            case DOMAIN:
-                assertEquals(mNextEvent, TestEvents.IS_AVAILABLE_DOMAIN);
                 mCountDownLatch.countDown();
                 break;
             case EMAIL:

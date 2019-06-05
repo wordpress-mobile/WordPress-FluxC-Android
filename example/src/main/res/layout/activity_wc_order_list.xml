@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -85,7 +85,7 @@
         app:layout_constraintEnd_toEndOf="@+id/ptr_layout"
         app:layout_constraintTop_toTopOf="parent"/>
 
-    <org.wordpress.android.util.widgets.CustomSwipeRefreshLayout
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/ptr_layout"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -96,14 +96,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/order_filter">
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
             android:scrollbars="vertical"/>
 
-    </org.wordpress.android.util.widgets.CustomSwipeRefreshLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <ProgressBar
         android:id="@+id/progress"
@@ -121,4 +121,4 @@
         app:layout_constraintStart_toStartOf="@+id/ptr_layout"
         tools:visibility="visible"/>
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

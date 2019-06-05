@@ -135,6 +135,7 @@ class WCStatsStore @Inject constructor(
     class OrderStatsError(val type: OrderStatsErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
 
     enum class OrderStatsErrorType {
+        RESPONSE_NULL,
         INVALID_PARAM,
         GENERIC_ERROR;
 

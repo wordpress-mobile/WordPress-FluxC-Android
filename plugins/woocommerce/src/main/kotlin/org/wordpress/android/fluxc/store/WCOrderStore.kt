@@ -5,6 +5,13 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
+import org.wordpress.android.fluxc.action.WCOrderAction.ADD_ORDER_SHIPMENT_TRACKING
+import org.wordpress.android.fluxc.action.WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
+import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS
+import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
@@ -199,6 +206,45 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(site, order) { this.error = error }
     }
 
+    class AddOrderShipmentTrackingPayload(
+        val site: SiteModel,
+        val order: WCOrderModel,
+        val tracking: WCOrderShipmentTrackingModel,
+        val isCustomProvider: Boolean
+    ) : Payload<BaseNetworkError>()
+
+    class AddOrderShipmentTrackingResponsePayload(
+        val site: SiteModel,
+        val order: WCOrderModel,
+        val tracking: WCOrderShipmentTrackingModel?
+    ) : Payload<OrderError>() {
+        constructor(
+            error: OrderError,
+            site: SiteModel,
+            order: WCOrderModel,
+            tracking: WCOrderShipmentTrackingModel
+        ) : this(site, order, tracking) { this.error = error }
+    }
+
+    class DeleteOrderShipmentTrackingPayload(
+        val site: SiteModel,
+        val order: WCOrderModel,
+        val tracking: WCOrderShipmentTrackingModel
+    ) : Payload<BaseNetworkError>()
+
+    class DeleteOrderShipmentTrackingResponsePayload(
+        val site: SiteModel,
+        val order: WCOrderModel,
+        val tracking: WCOrderShipmentTrackingModel?
+    ) : Payload<OrderError>() {
+        constructor(
+            error: OrderError,
+            site: SiteModel,
+            order: WCOrderModel,
+            tracking: WCOrderShipmentTrackingModel?
+        ) : this(site, order, tracking) { this.error = error }
+    }
+
     class FetchOrderShipmentProvidersPayload(
         val site: SiteModel,
         val order: WCOrderModel
@@ -336,6 +382,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 fetchOrderStatusOptions(action.payload as FetchOrderStatusOptionsPayload)
             WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS ->
                 fetchOrderShipmentTrackings(action.payload as FetchOrderShipmentTrackingsPayload)
+            WCOrderAction.ADD_ORDER_SHIPMENT_TRACKING ->
+                addOrderShipmentTracking(action.payload as AddOrderShipmentTrackingPayload)
+            WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING ->
+                deleteOrderShipmentTracking(action.payload as DeleteOrderShipmentTrackingPayload)
             WCOrderAction.FETCH_ORDER_SHIPMENT_PROVIDERS ->
                 fetchOrderShipmentProviders(action.payload as FetchOrderShipmentProvidersPayload)
 
@@ -359,6 +409,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 handleFetchOrderStatusOptionsCompleted(action.payload as FetchOrderStatusOptionsResponsePayload)
             WCOrderAction.FETCHED_ORDER_SHIPMENT_TRACKINGS ->
                 handleFetchOrderShipmentTrackingsCompleted(action.payload as FetchOrderShipmentTrackingsResponsePayload)
+            WCOrderAction.ADDED_ORDER_SHIPMENT_TRACKING ->
+                handleAddOrderShipmentTrackingCompleted(action.payload as AddOrderShipmentTrackingResponsePayload)
+            WCOrderAction.DELETED_ORDER_SHIPMENT_TRACKING ->
+                handleDeleteOrderShipmentTrackingCompleted(action.payload as DeleteOrderShipmentTrackingResponsePayload)
             WCOrderAction.FETCHED_ORDER_SHIPMENT_PROVIDERS ->
                 handleFetchOrderShipmentProvidersCompleted(
                         action.payload as FetchOrderShipmentProvidersResponsePayload)
@@ -416,6 +470,14 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     private fun fetchOrderShipmentTrackings(payload: FetchOrderShipmentTrackingsPayload) {
         wcOrderRestClient.fetchOrderShipmentTrackings(payload.site, payload.order)
+    }
+
+    private fun addOrderShipmentTracking(payload: AddOrderShipmentTrackingPayload) {
+        with(payload) { wcOrderRestClient.addOrderShipmentTrackingForOrder(site, order, tracking, isCustomProvider) }
+    }
+
+    private fun deleteOrderShipmentTracking(payload: DeleteOrderShipmentTrackingPayload) {
+        with(payload) { wcOrderRestClient.deleteShipmentTrackingForOrder(site, order, tracking) }
     }
 
     private fun fetchOrderShipmentProviders(payload: FetchOrderShipmentProvidersPayload) {
@@ -644,6 +706,35 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         }
 
         onOrderChanged.causeOfChange = WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS
+        emitChange(onOrderChanged)
+    }
+
+    private fun handleAddOrderShipmentTrackingCompleted(payload: AddOrderShipmentTrackingResponsePayload) {
+        val onOrderChanged: OnOrderChanged
+
+        if (payload.isError) {
+            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
+        } else {
+            val rowsAffected = payload.tracking?.let { OrderSqlUtils.insertOrIgnoreOrderShipmentTracking(it) } ?: 0
+            onOrderChanged = OnOrderChanged(rowsAffected)
+        }
+
+        onOrderChanged.causeOfChange = ADD_ORDER_SHIPMENT_TRACKING
+        emitChange(onOrderChanged)
+    }
+
+    private fun handleDeleteOrderShipmentTrackingCompleted(payload: DeleteOrderShipmentTrackingResponsePayload) {
+        val onOrderChanged: OnOrderChanged
+
+        if (payload.isError) {
+            onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
+        } else {
+            // Remove the record from the database and send response
+            val rowsAffected = payload.tracking?.let { OrderSqlUtils.deleteOrderShipmentTrackingById(it) } ?: 0
+            onOrderChanged = OnOrderChanged(rowsAffected)
+        }
+
+        onOrderChanged.causeOfChange = DELETE_ORDER_SHIPMENT_TRACKING
         emitChange(onOrderChanged)
     }
 
