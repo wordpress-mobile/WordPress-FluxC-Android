@@ -39,6 +39,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
+import org.wordpress.android.fluxc.utils.DateUtils
 import javax.inject.Singleton
 import kotlin.collections.MutableMap.MutableEntry
 
@@ -623,10 +624,10 @@ class OrderRestClient(
     }
 
     private fun orderDateCreatedFromOrderResponse(response: OrderApiResponse): String =
-            response.date_created_gmt?.let { "${it}Z" } ?: "" // Store the date in UTC format
+            response.date_created_gmt?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
 
     private fun orderDateCreatedFromOrderSummaryResponse(response: OrderSummaryApiResponse): String =
-            response.dateCreatedGmt?.let { "${it}Z" } ?: "" // Store the date in UTC format
+            response.dateCreatedGmt?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store the date in UTC format
 
     private fun jsonResponseToShipmentProviderList(
         site: SiteModel,

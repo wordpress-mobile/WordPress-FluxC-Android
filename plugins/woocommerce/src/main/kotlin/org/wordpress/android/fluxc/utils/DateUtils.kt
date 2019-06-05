@@ -246,4 +246,9 @@ object DateUtils {
         val (year, month, day) = value.split("-").map { it.toInt() }
         return Calendar.getInstance().apply { set(year, month - 1, day) }
     }
+
+    /**
+     * Format the date for UTC and return as string
+     */
+    fun formatGmtAsUtcDateString(gmtVal: String): String = "${gmtVal}Z"
 }
