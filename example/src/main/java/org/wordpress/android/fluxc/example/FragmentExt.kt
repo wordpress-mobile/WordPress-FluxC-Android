@@ -1,7 +1,7 @@
 @file:JvmName("FragmentExtensions")
 package org.wordpress.android.fluxc.example
 
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 
 /**
  * Shortcut for appending messages to the log in MainActivity

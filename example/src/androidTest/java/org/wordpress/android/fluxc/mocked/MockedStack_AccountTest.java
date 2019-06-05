@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.mocked;
 
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.runner.AndroidJUnit4;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.After;
