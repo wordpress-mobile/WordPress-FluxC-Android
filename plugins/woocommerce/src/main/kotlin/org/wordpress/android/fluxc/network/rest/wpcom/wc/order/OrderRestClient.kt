@@ -626,7 +626,7 @@ class OrderRestClient(
             response.date_created_gmt?.let { "${it}Z" } ?: "" // Store the date in UTC format
 
     private fun orderDateCreatedFromOrderSummaryResponse(response: OrderSummaryApiResponse): String =
-            response.date_created_gmt?.let { "${it}Z" } ?: "" // Store the date in UTC format
+            response.dateCreatedGmt?.let { "${it}Z" } ?: "" // Store the date in UTC format
 
     private fun jsonResponseToShipmentProviderList(
         site: SiteModel,
