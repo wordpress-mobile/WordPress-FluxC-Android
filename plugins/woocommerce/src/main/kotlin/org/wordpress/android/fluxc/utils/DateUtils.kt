@@ -37,7 +37,7 @@ object DateUtils {
         val now = Calendar.getInstance()
         now.time = currentDate
 
-        val date = getDateFromString(dateString!!)
+        val date = getDateFromString(dateString)
         val calendar = Calendar.getInstance()
         calendar.time = date
         calendar.add(Calendar.HOUR_OF_DAY, now.get(Calendar.HOUR_OF_DAY))

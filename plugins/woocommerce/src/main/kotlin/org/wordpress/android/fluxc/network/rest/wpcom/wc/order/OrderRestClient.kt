@@ -330,7 +330,7 @@ class OrderRestClient(
      * @param [filterByStatus] Nullable. If not null, consider only orders with a matching order status.
      */
     fun fetchHasOrders(site: SiteModel, filterByStatus: String? = null) {
-        val statusFilter = if (filterByStatus.isNullOrBlank()) { "any" } else { filterByStatus!! }
+        val statusFilter = if (filterByStatus.isNullOrBlank()) { "any" } else { filterByStatus }
 
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
@@ -638,7 +638,7 @@ class OrderRestClient(
                 carrierEntry?.let { carrier ->
                     val provider = WCOrderShipmentProviderModel().apply {
                         localSiteId = site.id
-                        this.country = countryEntry.key ?: ""
+                        this.country = countryEntry.key
                         this.carrierName = carrier.key
                         this.carrierLink = carrier.value.asString
                     }
