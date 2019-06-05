@@ -1,9 +1,9 @@
 package org.wordpress.android.fluxc.example
 
-import android.arch.lifecycle.Lifecycle
-import android.arch.lifecycle.LifecycleObserver
-import android.arch.lifecycle.OnLifecycleEvent
 import android.util.Log
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -12,9 +12,11 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersFetchedByIds
+import javax.inject.Inject
+import javax.inject.Singleton
 
-// TODO: Consider injecting this as a singleton
-class WCOrderFetcher constructor(
+@Singleton
+class WCOrderFetcher @Inject constructor(
     private val lifecycle: Lifecycle,
     private val dispatcher: Dispatcher
 ) : LifecycleObserver {

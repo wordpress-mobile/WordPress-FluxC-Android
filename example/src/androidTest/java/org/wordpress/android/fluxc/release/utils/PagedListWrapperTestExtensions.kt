@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.release.utils
 
-import android.arch.lifecycle.Observer
+import androidx.lifecycle.Observer
 import org.junit.Assert.assertTrue
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.model.list.PagedListWrapper

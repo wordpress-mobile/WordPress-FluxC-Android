@@ -1,14 +1,14 @@
 package org.wordpress.android.fluxc.example
 
-import android.arch.paging.PagedListAdapter
-import android.support.annotation.LayoutRes
-import android.support.v7.util.DiffUtil
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.RecyclerView.ViewHolder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.annotation.LayoutRes
+import androidx.paging.PagedListAdapter
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.LoadingItem
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.SectionHeader
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.WCOrderListUIItem
@@ -36,7 +36,7 @@ class OrderListAdapter : PagedListAdapter<WCOrderListItemUIType, ViewHolder>(Ord
             }
             VIEW_TYPE_SECTION_HEADER -> SectionHeaderViewHolder(R.layout.list_item_section_header, parent)
             else -> {
-                // Fail fast if a new view type is added so the we can handle it
+                // Fail fast if a new view type is added so we can handle it
                 throw IllegalStateException("The view type '$viewType' needs to be handled")
             }
         }

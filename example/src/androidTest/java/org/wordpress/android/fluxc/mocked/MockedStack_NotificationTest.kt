@@ -5,6 +5,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.Dispatcher
@@ -16,11 +17,12 @@ import org.wordpress.android.fluxc.model.notification.NoteIdSet
 import org.wordpress.android.fluxc.model.notification.NotificationModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient
+import org.wordpress.android.fluxc.store.NotificationStore.DeviceRegistrationErrorType
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationHashesResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.FetchNotificationsResponsePayload
-import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationsReadResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationSeenResponsePayload
+import org.wordpress.android.fluxc.store.NotificationStore.MarkNotificationsReadResponsePayload
 import org.wordpress.android.fluxc.store.NotificationStore.NotificationAppKey
 import org.wordpress.android.fluxc.store.NotificationStore.RegisterDeviceResponsePayload
 import org.wordpress.android.fluxc.store.SiteStore
@@ -103,6 +105,31 @@ class MockedStack_NotificationTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RegisterDeviceResponsePayload
 
         assertEquals(responseJson.get("ID").asString, payload.deviceId)
+    }
+
+    @Test
+    fun testRegistrationResponseNull() {
+        val errorJson = JsonObject().apply {
+            addProperty("error", DeviceRegistrationErrorType.INVALID_RESPONSE.name)
+            addProperty("message", "Response object is null")
+        }
+
+        interceptor.respondWithError(errorJson)
+
+        val gcmToken = "sample-token"
+        val uuid = "sample-uuid"
+        val site = SiteModel().apply { siteId = 123456 }
+        notificationRestClient.registerDeviceForPushNotifications(gcmToken, NotificationAppKey.WOOCOMMERCE, uuid, site)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(NotificationAction.REGISTERED_DEVICE, lastAction!!.type)
+
+        val payload = lastAction!!.payload as RegisterDeviceResponsePayload
+        assertNotNull(payload.error)
+        assertNull(payload.deviceId)
+        assertEquals(DeviceRegistrationErrorType.INVALID_RESPONSE, payload.error.type)
     }
 
     @Test

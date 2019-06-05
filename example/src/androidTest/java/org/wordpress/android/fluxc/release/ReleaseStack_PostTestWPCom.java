@@ -34,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -44,6 +43,7 @@ import static org.junit.Assert.assertTrue;
 
 public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     @Inject PostStore mPostStore;
+    @Inject PostSqlUtils mPostSqlUtils;
 
     private static final String POST_DEFAULT_TITLE = "PostTestWPCom base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
@@ -94,7 +94,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mDispatcher.dispatch(PostActionBuilder.newRemovePostAction(mPost));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(0, PostSqlUtils.getPostsForSite(sSite, false).size());
+        assertEquals(0, mPostSqlUtils.getPostsForSite(sSite, false).size());
     }
 
     @Test
@@ -617,7 +617,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
-    public void testDeleteRemotePost() throws InterruptedException {
+    public void testTrashRemotePost() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
 
@@ -628,10 +628,10 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         deletePost(uploadedPost);
 
-        // The post should be removed from the db (regardless of whether it was deleted or just trashed on the server)
-        assertNull(mPostStore.getPostByLocalPostId(uploadedPost.getId()));
-        assertEquals(0, WellSqlUtils.getTotalPostsCount());
-        assertEquals(0, mPostStore.getPostsCountForSite(sSite));
+        // The post status should be trashed
+        PostModel trashedPost = mPostStore.getPostByLocalPostId(uploadedPost.getId());
+        assertNotNull(trashedPost);
+        assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
     }
 
     @Test
@@ -646,17 +646,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         deletePost(uploadedPost);
 
-        // Make sure the post is actually removed
-        assertNull(mPostStore.getPostByLocalPostId(uploadedPost.getId()));
-        assertEquals(0, WellSqlUtils.getTotalPostsCount());
-        assertEquals(0, mPostStore.getPostsCountForSite(sSite));
-
-        // fetch trashed post from server
-        fetchPost(uploadedPost);
-        assertEquals(1, mPostStore.getPostsCountForSite(sSite));
-
-        // Get the current copy of the trashed post from the PostStore
-        PostModel trashedPost = mPostStore.getPostByRemotePostId(uploadedPost.getRemotePostId(), sSite);
+        // The post status should be trashed
+        PostModel trashedPost = mPostStore.getPostByLocalPostId(uploadedPost.getId());
         assertNotNull(trashedPost);
         assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
 

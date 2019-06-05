@@ -1,17 +1,19 @@
-package org.wordpress.android.fluxc.example
+package org.wordpress.android.fluxc.example.ui.orders
 
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.fragment_woocommerce.*
+import kotlinx.android.synthetic.main.fragment_woo_orders.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.action.WCOrderAction.ADD_ORDER_SHIPMENT_TRACKING
+import org.wordpress.android.fluxc.action.WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
@@ -20,25 +22,20 @@ import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_SHIPMENT_TRA
 import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_SINGLE_ORDER
 import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.action.WCOrderAction.UPDATE_ORDER_STATUS
-import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
-import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
-import org.wordpress.android.fluxc.action.WCStatsAction
-import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction
-import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_ORDER_STATS
-import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_ORDER_STATS_FORCED
-import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_VISITOR_STATS
-import org.wordpress.android.fluxc.example.CustomStatsDialog.WCOrderStatsAction.FETCH_CUSTOM_VISITOR_STATS_FORCED
+import org.wordpress.android.fluxc.example.R.layout
+import org.wordpress.android.fluxc.example.WCAddOrderShipmentTrackingDialog
+import org.wordpress.android.fluxc.example.WCOrderListActivity
+import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
-import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
-import org.wordpress.android.fluxc.generated.WCProductActionBuilder
-import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.AddOrderShipmentTrackingPayload
+import org.wordpress.android.fluxc.store.WCOrderStore.DeleteOrderShipmentTrackingPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchHasOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderNotesPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderShipmentProvidersPayload
@@ -54,43 +51,24 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersSearched
 import org.wordpress.android.fluxc.store.WCOrderStore.PostOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.UpdateOrderStatusPayload
-import org.wordpress.android.fluxc.store.WCProductStore
-import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
-import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
-import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
-import org.wordpress.android.fluxc.store.WCStatsStore
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsPayload
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsPayload
-import org.wordpress.android.fluxc.store.WCStatsStore.OnWCStatsChanged
-import org.wordpress.android.fluxc.store.WCStatsStore.OnWCTopEarnersChanged
-import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
-import org.wordpress.android.fluxc.store.WooCommerceStore.OnApiVersionFetched
-import org.wordpress.android.fluxc.store.WooCommerceStore.OnWCProductSettingsChanged
-import org.wordpress.android.fluxc.store.WooCommerceStore.OnWCSiteSettingsChanged
-import org.wordpress.android.util.AppLog
-import org.wordpress.android.util.AppLog.T
 import org.wordpress.android.util.ToastUtils
 import javax.inject.Inject
 
-class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
+class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener {
     @Inject internal lateinit var dispatcher: Dispatcher
-    @Inject internal lateinit var wooCommerceStore: WooCommerceStore
     @Inject internal lateinit var wcOrderStore: WCOrderStore
-    @Inject internal lateinit var wcProductStore: WCProductStore
-    @Inject internal lateinit var wcStatsStore: WCStatsStore
+    @Inject internal lateinit var wooCommerceStore: WooCommerceStore
 
     private var pendingNotesOrderModel: WCOrderModel? = null
     private var pendingFetchOrdersFilter: List<String>? = null
     private var pendingFetchCompletedOrders: Boolean = false
     private var pendingFetchSingleOrderRemoteId: Long? = null
-    private var pendingFetchSingleProductRemoteId: Long? = null
     private var pendingShipmentTrackingOrder: WCOrderModel? = null
-
-    private var visitorStatsStartDate: String? = null
-    private var visitorStatsEndDate: String? = null
-    private var visitorStatsGranularity: String? = null
+    private var pendingDeleteShipmentTracking: WCOrderShipmentTrackingModel? = null
+    private var pendingAddShipmentTracking: WCOrderShipmentTrackingModel? = null
+    private var pendingOpenAddShipmentTracking: Boolean = false
+    private var pendingAddShipmentTrackingRemoteOrderID: Long? = null
 
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
@@ -98,41 +76,16 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_woocommerce, container, false)
+            inflater.inflate(layout.fragment_woo_orders, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        log_sites.setOnClickListener {
-            for (site in wooCommerceStore.getWooCommerceSites()) {
-                prependToLog(site.name + ": " + if (site.isWpComStore) "WP.com store" else "Self-hosted store")
-                AppLog.i(T.API, LogUtils.toString(site))
-            }
-        }
-
-        log_woo_api_versions.setOnClickListener {
-            for (site in wooCommerceStore.getWooCommerceSites()) {
-                dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteApiVersionAction(site))
-            }
-        }
-
-        fetch_settings.setOnClickListener {
-            getFirstWCSite()?.let {
-                dispatcher.dispatch(WCCoreActionBuilder.newFetchSiteSettingsAction(it))
-            } ?: showNoWCSitesToast()
-        }
-
-        fetch_product_settings.setOnClickListener {
-            getFirstWCSite()?.let {
-                dispatcher.dispatch(WCCoreActionBuilder.newFetchProductSettingsAction(it))
-            } ?: showNoWCSitesToast()
-        }
 
         fetch_orders.setOnClickListener {
             getFirstWCSite()?.let {
                 val payload = FetchOrdersPayload(it, loadMore = false)
                 dispatcher.dispatch(WCOrderActionBuilder.newFetchOrdersAction(payload))
-            } ?: showNoWCSitesToast()
+            }
         }
 
         fetch_order_list.setOnClickListener {
@@ -176,7 +129,7 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                         dispatcher.dispatch(WCOrderActionBuilder.newSearchOrdersAction(payload))
                     } ?: prependToLog("No search query entered")
                 }
-            } ?: showNoWCSitesToast()
+            }
         }
 
         fetch_single_order.setOnClickListener {
@@ -197,7 +150,7 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
             getFirstWCSite()?.let {
                 val payload = FetchHasOrdersPayload(it)
                 dispatcher.dispatch(WCOrderActionBuilder.newFetchHasOrdersAction(payload))
-            } ?: showNoWCSitesToast()
+            }
         }
 
         fetch_orders_by_status.setOnClickListener {
@@ -275,132 +228,7 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                         dispatcher.dispatch(WCOrderActionBuilder.newUpdateOrderStatusAction(payload))
                     }
                 } ?: showNoOrdersToast(site)
-            } ?: showNoWCSitesToast()
-        }
-
-        fetch_single_product.setOnClickListener {
-            getFirstWCSite()?.let { site ->
-                showSingleLineDialog(activity, "Enter the remoteProductId of product to fetch:") { editText ->
-                    pendingFetchSingleProductRemoteId = editText.text.toString().toLongOrNull()
-                    pendingFetchSingleProductRemoteId?.let { id ->
-                        prependToLog("Submitting request to fetch product by remoteProductID $id")
-                        val payload = FetchSingleProductPayload(site, id)
-                        dispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductAction(payload))
-                    } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
-                }
-            } ?: showNoWCSitesToast()
-        }
-
-        fetch_product_variations.setOnClickListener {
-            getFirstWCSite()?.let { site ->
-                showSingleLineDialog(
-                        activity,
-                        "Enter the remoteProductId of product to fetch variations:"
-                ) { editText ->
-                    val remoteProductId = editText.text.toString().toLongOrNull()
-                    remoteProductId?.let { id ->
-                        prependToLog("Submitting request to fetch product variations by remoteProductID $id")
-                        val payload = FetchProductVariationsPayload(site, id)
-                        dispatcher.dispatch(WCProductActionBuilder.newFetchProductVariationsAction(payload))
-                    } ?: prependToLog("No valid remoteProductId defined...doing nothing")
-                }
-            } ?: showNoWCSitesToast()
-        }
-
-        fetch_order_stats.setOnClickListener {
-            getFirstWCSite()?.let {
-                val payload = FetchOrderStatsPayload(it, StatsGranularity.DAYS)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
-            } ?: showNoWCSitesToast()
-        }
-
-        fetch_order_stats_forced.setOnClickListener {
-            getFirstWCSite()?.let {
-                val payload = FetchOrderStatsPayload(it, StatsGranularity.DAYS, forced = true)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsAction(payload))
-            } ?: showNoWCSitesToast()
-        }
-
-        fetch_order_stats_custom.setOnClickListener {
-            fragmentManager?.let { fm ->
-                val wcOrderStatsModel = getCustomStatsForSite()
-                val dialog = CustomStatsDialog.newInstance(
-                        this,
-                        wcOrderStatsModel?.startDate,
-                        wcOrderStatsModel?.endDate,
-                        wcOrderStatsModel?.unit,
-                        FETCH_CUSTOM_ORDER_STATS
-                )
-                dialog.show(fm, "CustomStatsFragment")
             }
-        }
-
-        fetch_order_stats_custom_forced.setOnClickListener {
-            fragmentManager?.let { fm ->
-                val wcOrderStatsModel = getCustomStatsForSite()
-                val dialog = CustomStatsDialog.newInstance(
-                        this,
-                        wcOrderStatsModel?.startDate,
-                        wcOrderStatsModel?.endDate,
-                        wcOrderStatsModel?.unit,
-                        FETCH_CUSTOM_ORDER_STATS_FORCED
-                )
-                dialog.show(fm, "CustomStatsFragment")
-            }
-        }
-
-        fetch_visitor_stats.setOnClickListener {
-            getFirstWCSite()?.let {
-                val payload = FetchVisitorStatsPayload(it, StatsGranularity.MONTHS, false)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchVisitorStatsAction(payload))
-            } ?: showNoWCSitesToast()
-        }
-
-        fetch_visitor_stats_forced.setOnClickListener {
-            getFirstWCSite()?.let {
-                val payload = FetchVisitorStatsPayload(it, StatsGranularity.MONTHS, true)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchVisitorStatsAction(payload))
-            } ?: showNoWCSitesToast()
-        }
-
-        fetch_visitor_stats_custom.setOnClickListener {
-            fragmentManager?.let { fm ->
-                val dialog = CustomStatsDialog.newInstance(
-                        this,
-                        visitorStatsStartDate,
-                        visitorStatsEndDate,
-                        visitorStatsGranularity,
-                        FETCH_CUSTOM_VISITOR_STATS
-                )
-                dialog.show(fm, "CustomStatsFragment")
-            }
-        }
-
-        fetch_visitor_stats_custom_forced.setOnClickListener {
-            fragmentManager?.let { fm ->
-                val dialog = CustomStatsDialog.newInstance(
-                        this,
-                        visitorStatsStartDate,
-                        visitorStatsEndDate,
-                        visitorStatsGranularity,
-                        FETCH_CUSTOM_VISITOR_STATS_FORCED
-                )
-                dialog.show(fm, "CustomStatsFragment")
-            }
-        }
-
-        fetch_top_earners_stats.setOnClickListener {
-            getFirstWCSite()?.let {
-                val payload = FetchTopEarnersStatsPayload(it, StatsGranularity.DAYS, 10, false)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchTopEarnersStatsAction(payload))
-            } ?: showNoWCSitesToast()
-        }
-
-        fetch_top_earners_stats_forced.setOnClickListener {
-            getFirstWCSite()?.let {
-                val payload = FetchTopEarnersStatsPayload(it, StatsGranularity.DAYS, 10, true)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchTopEarnersStatsAction(payload))
-            } ?: showNoWCSitesToast()
         }
 
         fetch_shipment_trackings.setOnClickListener {
@@ -420,7 +248,49 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                                 "please fetch orders first.")
                     } ?: prependToLog("No valid remoteOrderId submitted for search")
                 }
-            } ?: showNoWCSitesToast()
+            }
+        }
+
+        add_shipment_tracking.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                getFirstWCOrder()?.let { order ->
+                    val providers = wcOrderStore.getShipmentProvidersForSite(site)
+                    if (providers.isNullOrEmpty()) {
+                        // Fetch providers for order
+                        pendingOpenAddShipmentTracking = true
+                        val payload = FetchOrderShipmentProvidersPayload(site, order)
+                        dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentProvidersAction(payload))
+                    } else {
+                        val providerNames = mutableListOf<String>()
+                        providers.forEach { providerNames.add(it.carrierName) }
+                        showAddTrackingDialog(site, order, providerNames)
+                    }
+                }
+            }
+        }
+
+        delete_shipment_tracking.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the remoteOrderId to delete the first shipment tracking for:"
+                ) { editText ->
+                    editText.text.toString().toLongOrNull()?.let { remoteOrderId ->
+                        wcOrderStore.getOrderByIdentifier(OrderIdentifier(site.id, remoteOrderId))?.let { order ->
+                            prependToLog("Submitting request to fetch shipment trackings for " +
+                                    "remoteOrderId: ${order.remoteOrderId}")
+
+                            wcOrderStore.getShipmentTrackingsForOrder(order).firstOrNull()?.let { tracking ->
+                                pendingDeleteShipmentTracking = tracking
+                                val payload = DeleteOrderShipmentTrackingPayload(site, order, tracking)
+                                dispatcher.dispatch(WCOrderActionBuilder.newDeleteOrderShipmentTrackingAction(payload))
+                            } ?: prependToLog("No shipment trackings in the db for remoteOrderId: $remoteOrderId, " +
+                                    "please fetch records first for this order")
+                        } ?: prependToLog("No order found in the db for remoteOrderId: $remoteOrderId, " +
+                                "please fetch orders first.")
+                    }
+                }
+            }
         }
 
         fetch_shipment_providers.setOnClickListener {
@@ -449,60 +319,24 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onApiVersionFetched(event: OnApiVersionFetched) {
-        if (event.isError) {
-            prependToLog("Error in onApiVersionFetched: ${event.error.type} - ${event.error.message}")
-            return
-        }
-
-        with(event) {
-            val formattedVersion = apiVersion.substringAfterLast("/")
-            prependToLog("Max Woo version for ${site.name}: $formattedVersion")
-        }
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onWCSiteSettingsChanged(event: OnWCSiteSettingsChanged) {
-        if (event.isError) {
-            prependToLog("Error in onWCSiteSettingsChanged: ${event.error.type} - ${event.error.message}")
-            return
-        }
-
-        with(event) {
-            prependToLog("Updated site settings for ${site.name}:\n" +
-                    wooCommerceStore.getSiteSettings(site).toString()
-            )
-        }
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onWCProductSettingsChanged(event: OnWCProductSettingsChanged) {
-        if (event.isError) {
-            prependToLog("Error in onWCProductSettingsChanged: ${event.error.type} - ${event.error.message}")
-            return
-        }
-
-        wooCommerceStore.getProductSettings(event.site)?.let { settings ->
-            prependToLog(
-                    "Updated product settings for ${event.site.name}: " +
-                            "weight unit = ${settings.weightUnit}, dimension unit = ${settings.dimensionUnit}"
-            )
-        } ?: prependToLog("Error getting product settings from db")
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
     fun onOrderShipmentProviderChanged(event: OnOrderShipmentProvidersChanged) {
         if (event.isError) {
             prependToLog("Error fetching shipment providers - error: " + event.error.type)
         } else {
             getFirstWCSite()?.let { site ->
-                wcOrderStore.getShipmentProvidersForSite(site).forEach { provider ->
-                    prependToLog(" - ${provider.carrierName}")
+                if (pendingOpenAddShipmentTracking) {
+                    pendingOpenAddShipmentTracking = false
+                    getFirstWCOrder()?.let { order ->
+                        val providers = mutableListOf<String>()
+                        wcOrderStore.getShipmentProvidersForSite(site).forEach { providers.add(it.carrierName) }
+                        showAddTrackingDialog(site, order, providers)
+                    }
+                } else {
+                    wcOrderStore.getShipmentProvidersForSite(site).forEach { provider ->
+                        prependToLog(" - ${provider.carrierName}")
+                    }
+                    prependToLog("[${event.rowsAffected}] shipment providers fetched successfully!")
                 }
-                prependToLog("[${event.rowsAffected}] shipment providers fetched successfully!")
             }
         }
     }
@@ -598,6 +432,25 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                             pendingShipmentTrackingOrder = null
                         }
                     }
+                    ADD_ORDER_SHIPMENT_TRACKING -> {
+                        pendingAddShipmentTracking?.let {
+                            getFirstWCOrder()?.let { order ->
+                                val trackingCount = wcOrderStore.getShipmentTrackingsForOrder(order).size
+                                prependToLog("Shipment tracking added successfully to " +
+                                        "remoteOrderId [$pendingAddShipmentTrackingRemoteOrderID]! " +
+                                        "[$trackingCount] tracking records now exist for this order in the db.")
+                            }
+                            pendingAddShipmentTracking = null
+                            pendingAddShipmentTrackingRemoteOrderID = null
+                        }
+                    }
+                    DELETE_ORDER_SHIPMENT_TRACKING -> {
+                        pendingDeleteShipmentTracking?.let {
+                            prependToLog("Shipment tracking deleted successfully! [${event.rowsAffected}] db rows " +
+                                    "affected.")
+                            pendingDeleteShipmentTracking = null
+                        }
+                    }
                     else -> prependToLog("Order store was updated from a " + event.causeOfChange)
                 }
             }
@@ -616,84 +469,6 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onProductChanged(event: OnProductChanged) {
-        if (event.isError) {
-            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
-            return
-        }
-
-        getFirstWCSite()?.let { site ->
-            when (event.causeOfChange) {
-                FETCH_SINGLE_PRODUCT -> {
-                    pendingFetchSingleProductRemoteId?.let { remoteId ->
-                        pendingFetchSingleProductRemoteId = null
-                        val product = wcProductStore.getProductByRemoteId(site, remoteId)
-                        product?.let {
-                            prependToLog("Single product fetched successfully! ${it.name}")
-                        } ?: prependToLog("WARNING: Fetched product not found in the local database!")
-                    }
-                }
-                FETCH_PRODUCT_VARIATIONS -> {
-                    prependToLog("Fetched ${event.rowsAffected} product variations")
-                }
-                else -> prependToLog("Product store was updated from a " + event.causeOfChange)
-            }
-        }
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onWCStatsChanged(event: OnWCStatsChanged) {
-        if (event.isError) {
-            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
-            return
-        }
-
-        val site = getFirstWCSite()
-        when (event.causeOfChange) {
-            WCStatsAction.FETCH_ORDER_STATS -> {
-                val statsMap = wcStatsStore.getRevenueStats(
-                        site!!,
-                        event.granularity,
-                        event.quantity,
-                        event.date,
-                        event.isCustomField)
-                if (statsMap.isEmpty()) {
-                    prependToLog("No stats were stored for site " + site.name + " =(")
-                } else {
-                    if (event.isCustomField) {
-                        prependToLog("Fetched stats for " + statsMap.size + " " +
-                                event.granularity.toString().toLowerCase() + " from " + site.name +
-                                " with quantity " + event.quantity + " and date " + event.date)
-                    } else {
-                        prependToLog("Fetched stats for " + statsMap.size + " " +
-                                event.granularity.toString().toLowerCase() + " from " + site.name)
-                    }
-                }
-            }
-            WCStatsAction.FETCH_VISITOR_STATS ->
-                prependToLog("Fetched visitor stats from ${site!!.name}")
-            else ->
-                prependToLog("WooCommerce stats were updated from a " + event.causeOfChange)
-        }
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onWCTopEarnersChanged(event: OnWCTopEarnersChanged) {
-        if (event.isError) {
-            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
-            return
-        }
-
-        prependToLog(
-                "Fetched ${event.topEarners.size} top earner stats for ${event.granularity.toString()
-                        .toLowerCase()} from ${getFirstWCSite()?.name}"
-        )
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
     fun onOrderStatusOptionsChanged(event: OnOrderStatusOptionsChanged) {
         if (event.isError) {
             prependToLog("Error fetching order status options from the api: ${event.error.message}")
@@ -707,58 +482,36 @@ class WooCommerceFragment : Fragment(), CustomStatsDialog.Listener {
                 "- updated ${event.rowsAffected} in the db")
     }
 
-    private fun replaceFragment(fragment: Fragment) {
-        fragmentManager?.beginTransaction()
-                ?.replace(R.id.fragment_container, fragment)
-                ?.addToBackStack(null)
-                ?.commit()
-    }
-
-    private fun getFirstWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(0)
-
-    private fun getCustomStatsForSite() = getFirstWCSite()?.let {
-        wcStatsStore.getCustomStatsForSite(it)
-    }
-
     private fun getFirstWCOrder() = getFirstWCSite()?.let {
         wcOrderStore.getOrdersForSite(it).getOrNull(0)
-    }
-
-    private fun prependToLog(s: String) = (activity as MainExampleActivity).prependToLog(s)
-
-    private fun showNoWCSitesToast() {
-        ToastUtils.showToast(activity, "No WooCommerce sites found for this account!")
     }
 
     private fun showNoOrdersToast(site: SiteModel) {
         ToastUtils.showToast(activity, "No orders found for site: " + site.name)
     }
 
-    override fun onSubmitted(
-        startDate: String,
-        endDate: String,
-        granularity: StatsGranularity,
-        wcOrderStatsAction: WCOrderStatsAction?
+    private fun getFirstWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(0)
+
+    private fun showAddTrackingDialog(site: SiteModel, order: WCOrderModel, providers: List<String>) {
+        fragmentManager?.let { fm ->
+            val dialog = WCAddOrderShipmentTrackingDialog.newInstance(
+                    this,
+                    site,
+                    order,
+                    providers)
+            dialog.show(fm, "WCAddOrderShipmentTrackingDialog")
+        }
+    }
+
+    override fun onTrackingSubmitted(
+        site: SiteModel,
+        order: WCOrderModel,
+        tracking: WCOrderShipmentTrackingModel,
+        isCustomProvider: Boolean
     ) {
-        getFirstWCSite()?.let {
-            val action = when (wcOrderStatsAction) {
-                FETCH_CUSTOM_ORDER_STATS -> WCStatsActionBuilder.newFetchOrderStatsAction(
-                        FetchOrderStatsPayload(it, granularity, startDate, endDate)
-                )
-                FETCH_CUSTOM_ORDER_STATS_FORCED -> WCStatsActionBuilder.newFetchOrderStatsAction(
-                        FetchOrderStatsPayload(it, granularity, startDate, endDate, forced = true)
-                )
-                else -> {
-                    val forced = wcOrderStatsAction == FETCH_CUSTOM_VISITOR_STATS_FORCED
-                    visitorStatsStartDate = startDate
-                    visitorStatsEndDate = endDate
-                    visitorStatsGranularity = OrderStatsApiUnit.fromStatsGranularity(granularity).name
-                    WCStatsActionBuilder.newFetchVisitorStatsAction(
-                            FetchVisitorStatsPayload(it, granularity, forced, startDate, endDate)
-                    )
-                }
-            }
-            dispatcher.dispatch(action)
-        } ?: showNoWCSitesToast()
+        pendingAddShipmentTracking = tracking
+        pendingAddShipmentTrackingRemoteOrderID = order.remoteOrderId
+        val payload = AddOrderShipmentTrackingPayload(site, order, tracking, isCustomProvider)
+        dispatcher.dispatch(WCOrderActionBuilder.newAddOrderShipmentTrackingAction(payload))
     }
 }

@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.release;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.Test;
@@ -21,8 +21,7 @@ import javax.inject.Inject;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.wordpress.android.fluxc.network.rest.wpcom.stockmedia.StockMediaRestClient
-        .DEFAULT_NUM_STOCK_MEDIA_PER_FETCH;
+import static org.wordpress.android.fluxc.network.rest.wpcom.stockmedia.StockMediaRestClient.DEFAULT_NUM_STOCK_MEDIA_PER_FETCH;
 
 public class ReleaseStack_StockMediaTest extends ReleaseStack_WPComBase {
     @Inject StockMediaStore mStockMediaStore;

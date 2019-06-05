@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.release
 
-import android.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -70,7 +70,9 @@ internal class ReleaseStack_WCOrderListTest(
 
     private fun createPagedListWrapper(): PagedListWrapper<TestWCOrderUIItem> {
         val descriptor = WCOrderListDescriptor(
-                site = sSite
+                site = sSite,
+                statusFilter = testCase.statusFilter,
+                searchQuery = testCase.searchQuery
         )
         return listStoreConnectedTestHelper.getList(descriptor, TestWCOrderListDataSource(mDispatcher))
     }
