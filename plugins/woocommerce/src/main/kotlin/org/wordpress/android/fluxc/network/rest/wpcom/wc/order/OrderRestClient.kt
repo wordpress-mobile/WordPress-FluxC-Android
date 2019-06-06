@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
+import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -40,6 +41,7 @@ import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
+import org.wordpress.android.fluxc.utils.DateUtils
 import javax.inject.Singleton
 import kotlin.collections.MutableMap.MutableEntry
 
@@ -99,32 +101,45 @@ class OrderRestClient(
         add(request)
     }
 
-    fun fetchOrderList(listDescriptor: WCOrderListDescriptor, offset: Long) {
+    /**
+     * Fetches orders from the API, but only requests `id` and `date_created_gmt` fields be returned. This is
+     * used to determine what orders should be fetched (either existing orders that have since changed or new
+     * orders not yet downloaded).
+     *
+     * Makes a GET call to `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a list of orders for the given WooCommerce [SiteModel].
+     *
+     * Dispatches a [WCOrderAction.FETCHED_ORDER_LIST] action with the resulting list of order summaries.
+     *
+     * @param listDescriptor The [WCOrderListDescriptor] that describes the type of list being fetched and
+     * the optional parameters in effect.
+     * @param offset Used to retrieve older orders
+     */
+    fun fetchOrderListSummaries(listDescriptor: WCOrderListDescriptor, offset: Long) {
         // If null, set the filter to the api default value of "any", which will not apply any order status filters.
         val statusFilter = listDescriptor.statusFilter.takeUnless { it.isNullOrBlank() }
                 ?: WCOrderStore.DEFAULT_ORDER_STATUS
 
         val url = WOOCOMMERCE.orders.pathV3
-        val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
+        val responseType = object : TypeToken<List<OrderSummaryApiResponse>>() {}.type
         val networkPageSize = listDescriptor.config.networkPageSize
         val params = mapOf(
                 "per_page" to networkPageSize.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter,
-                "_fields" to "id",
+                "_fields" to "id,date_created_gmt",
                 "search" to listDescriptor.searchQuery.orEmpty())
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, listDescriptor.site.siteId, params, responseType,
-                { response: List<OrderApiResponse>? ->
-                    val remoteOrderIds = response?.map {
-                        RemoteId(value = orderResponseToOrderModel(it).remoteOrderId)
-//                        WCOrderModelId(id = orderResponseToOrderModel(it).remoteOrderId)
+                { response: List<OrderSummaryApiResponse>? ->
+                    val orderSummaries = response?.map {
+                        orderResponseToOrderSummaryModel(it).apply { localSiteId = listDescriptor.site.id }
                     }.orEmpty()
 
-                    val canLoadMore = remoteOrderIds.size == networkPageSize
+                    val canLoadMore = orderSummaries.size == networkPageSize
 
                     val payload = FetchOrderListResponsePayload(
                             listDescriptor = listDescriptor,
-                            orderIds = remoteOrderIds,
+                            orderSummaries = orderSummaries,
                             loadedMore = offset > 0,
                             canLoadMore = canLoadMore
                     )
@@ -139,6 +154,15 @@ class OrderRestClient(
         add(request)
     }
 
+    /**
+     * Requests orders from the API that match the provided list of [remoteOrderIds] by making a GET call to
+     * `/wc/v3/orders` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]).
+     *
+     * Dispatches a [WCOrderAction.FETCHED_ORDERS_BY_IDS] action with the resulting list of orders.
+     *
+     * @param site The WooCommerce [SiteModel] the orders belong to
+     * @param remoteOrderIds A list of remote order identifiers to fetch from the API
+     */
     fun fetchOrdersByIds(site: SiteModel, remoteOrderIds: List<RemoteId>) {
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
@@ -309,7 +333,7 @@ class OrderRestClient(
      * @param [filterByStatus] Nullable. If not null, consider only orders with a matching order status.
      */
     fun fetchHasOrders(site: SiteModel, filterByStatus: String? = null) {
-        val statusFilter = if (filterByStatus.isNullOrBlank()) { "any" } else { filterByStatus!! }
+        val statusFilter = if (filterByStatus.isNullOrBlank()) { "any" } else { filterByStatus }
 
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
@@ -582,13 +606,20 @@ class OrderRestClient(
         add(request)
     }
 
+    private fun orderResponseToOrderSummaryModel(response: OrderSummaryApiResponse): WCOrderSummaryModel {
+        return WCOrderSummaryModel().apply {
+            remoteOrderId = response.id ?: 0
+            dateCreated = orderDateCreatedFromOrderSummaryResponse(response)
+        }
+    }
+
     private fun orderResponseToOrderModel(response: OrderApiResponse): WCOrderModel {
         return WCOrderModel().apply {
             remoteOrderId = response.id ?: 0
             number = response.number ?: remoteOrderId.toString()
             status = response.status ?: ""
             currency = response.currency ?: ""
-            dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: "" // Store the date in UTC format
+            dateCreated = orderDateCreatedFromOrderResponse(response)
             total = response.total ?: ""
             totalTax = response.total_tax ?: ""
             shippingTotal = response.shipping_total ?: ""
@@ -680,6 +711,12 @@ class OrderRestClient(
         }
     }
 
+    private fun orderDateCreatedFromOrderResponse(response: OrderApiResponse): String =
+            response.date_created_gmt?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store as UTC format
+
+    private fun orderDateCreatedFromOrderSummaryResponse(response: OrderSummaryApiResponse): String =
+            response.dateCreatedGmt?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: "" // Store as UTC format
+
     private fun jsonResponseToShipmentProviderList(
         site: SiteModel,
         response: JsonElement
@@ -690,7 +727,7 @@ class OrderRestClient(
                 carrierEntry?.let { carrier ->
                     val provider = WCOrderShipmentProviderModel().apply {
                         localSiteId = site.id
-                        this.country = countryEntry.key ?: ""
+                        this.country = countryEntry.key
                         this.carrierName = carrier.key
                         this.carrierLink = carrier.value.asString
                     }

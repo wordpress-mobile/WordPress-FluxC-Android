@@ -285,8 +285,8 @@ class WCStatsStore @Inject constructor(
     ): Long {
         if (startDateString.isNullOrEmpty() || endDateString.isNullOrEmpty()) return defaultValue.toLong()
 
-        val startDate = DateUtils.getDateFromString(startDateString!!)
-        val endDate = DateUtils.getDateFromString(endDateString!!)
+        val startDate = DateUtils.getDateFromString(startDateString)
+        val endDate = DateUtils.getDateFromString(endDateString)
 
         val startDateCalendar = DateUtils.getStartDateCalendar(if (startDate.before(endDate)) startDate else endDate)
         val endDateCalendar = DateUtils.getEndDateCalendar(if (startDate.before(endDate)) endDate else startDate)

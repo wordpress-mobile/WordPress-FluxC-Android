@@ -18,7 +18,7 @@ class WCOrderListDescriptor(
     }
 
     override val typeIdentifier: ListDescriptorTypeIdentifier by lazy {
-        WCOrderListDescriptor.calculateTypeIdentifier(site.id)
+        calculateTypeIdentifier(site.id)
     }
 
     companion object {

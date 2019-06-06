@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
+import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.model.order.toIdSet
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
@@ -73,7 +74,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     class FetchOrderListResponsePayload(
         val listDescriptor: WCOrderListDescriptor,
-        var orderIds: List<RemoteId> = emptyList(),
+        var orderSummaries: List<WCOrderSummaryModel> = emptyList(),
         var loadedMore: Boolean = false,
         var canLoadMore: Boolean = false
     ) : Payload<OrderError>() {
@@ -267,7 +268,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         GENERIC_ERROR;
 
         companion object {
-            private val reverseMap = OrderErrorType.values().associateBy(OrderErrorType::name)
+            private val reverseMap = values().associateBy(OrderErrorType::name)
             fun fromString(type: String) = reverseMap[type.toUpperCase(Locale.US)] ?: GENERIC_ERROR
         }
     }
@@ -315,6 +316,14 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     ): Map<RemoteId, WCOrderModel> {
         val orders = OrderSqlUtils.getOrdersForSiteByRemoteIds(orderListDescriptor.site, remoteOrderIds)
         return orders.associateBy { RemoteId(it.remoteOrderId) }
+    }
+
+    fun getOrderSummariesByRemoteOrderIds(
+        site: SiteModel,
+        remoteOrderIds: List<RemoteId>
+    ): Map<RemoteId, WCOrderSummaryModel> {
+        val orderSummaries = OrderSqlUtils.getOrderSummariesForRemoteIds(site, remoteOrderIds)
+        return orderSummaries.associateBy { RemoteId(it.remoteOrderId) }
     }
 
     /**
@@ -420,7 +429,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun fetchOrderList(payload: FetchOrderListPayload) {
-        wcOrderRestClient.fetchOrderList(payload.listDescriptor, payload.offset)
+        wcOrderRestClient.fetchOrderListSummaries(payload.listDescriptor, payload.offset)
     }
 
     private fun fetchOrdersByIds(payload: FetchOrdersByIdsPayload) {
@@ -507,9 +516,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         // - WCOrderModel
         // - WCOrderNoteModel
         // - WCOrderShipmentTrackingModel
+        OrderSqlUtils.insertOrUpdateOrderSummaries(payload.orderSummaries)
         mDispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(FetchedListItemsPayload(
                 listDescriptor = payload.listDescriptor,
-                remoteItemIds = payload.orderIds.map { it.value },
+                remoteItemIds = payload.orderSummaries.map { it.remoteOrderId },
                 loadedMore = payload.loadedMore,
                 canLoadMore = payload.canLoadMore,
                 error = payload.error?.let { fetchError ->
@@ -551,7 +561,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             OnOrderChanged(0).also { it.error = payload.error }
         } else {
             with(payload) { OnOrderChanged(count, statusFilter) }
-        }.also { it.causeOfChange = FETCH_ORDERS_COUNT }
+        }.also { it.causeOfChange = WCOrderAction.FETCH_ORDERS_COUNT }
         emitChange(onOrderChanged)
     }
 
@@ -581,7 +591,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 val rowsAffected = if (payload.hasOrders) 1 else 0
                 OnOrderChanged(rowsAffected, statusFilter)
             }
-        }.also { it.causeOfChange = FETCH_HAS_ORDERS }
+        }.also { it.causeOfChange = WCOrderAction.FETCH_HAS_ORDERS }
         emitChange(onOrderChanged)
     }
 
@@ -610,7 +620,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             onOrderChanged = OnOrderChanged(rowsAffected)
         }
 
-        onOrderChanged.causeOfChange = FETCH_ORDER_NOTES
+        onOrderChanged.causeOfChange = WCOrderAction.FETCH_ORDER_NOTES
         emitChange(onOrderChanged)
     }
 
@@ -624,7 +634,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             onOrderChanged = OnOrderChanged(rowsAffected)
         }
 
-        onOrderChanged.causeOfChange = POST_ORDER_NOTE
+        onOrderChanged.causeOfChange = WCOrderAction.POST_ORDER_NOTE
         emitChange(onOrderChanged)
     }
 
@@ -695,7 +705,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             onOrderChanged = OnOrderChanged(rowsAffected)
         }
 
-        onOrderChanged.causeOfChange = FETCH_ORDER_SHIPMENT_TRACKINGS
+        onOrderChanged.causeOfChange = WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS
         emitChange(onOrderChanged)
     }
 

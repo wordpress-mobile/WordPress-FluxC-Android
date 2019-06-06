@@ -37,7 +37,7 @@ object DateUtils {
         val now = Calendar.getInstance()
         now.time = currentDate
 
-        val date = getDateFromString(dateString!!)
+        val date = getDateFromString(dateString)
         val calendar = Calendar.getInstance()
         calendar.time = date
         calendar.add(Calendar.HOUR_OF_DAY, now.get(Calendar.HOUR_OF_DAY))
@@ -246,4 +246,9 @@ object DateUtils {
         val (year, month, day) = value.split("-").map { it.toInt() }
         return Calendar.getInstance().apply { set(year, month - 1, day) }
     }
+
+    /**
+     * Format the date for UTC and return as string
+     */
+    fun formatGmtAsUtcDateString(gmtVal: String): String = "${gmtVal}Z"
 }

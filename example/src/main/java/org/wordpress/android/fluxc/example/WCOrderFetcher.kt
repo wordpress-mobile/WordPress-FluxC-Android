@@ -12,9 +12,11 @@ import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersByIdsPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OnOrdersFetchedByIds
+import javax.inject.Inject
+import javax.inject.Singleton
 
-// TODO: Consider injecting this as a singleton
-class WCOrderFetcher constructor(
+@Singleton
+class WCOrderFetcher @Inject constructor(
     private val lifecycle: Lifecycle,
     private val dispatcher: Dispatcher
 ) : LifecycleObserver {

@@ -94,6 +94,7 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.0.2'
     implementation "androidx.arch.core:core-common:$arch_core_version"
     implementation "androidx.arch.core:core-runtime:$arch_core_version"
+    implementation 'org.apache.commons:commons-lang3:3.7'
 
     // WordPress libs
     implementation('org.wordpress:utils:1.20.0') {
@@ -120,7 +121,7 @@ dependencies {
     testImplementation "androidx.arch.core:core-testing:$arch_core_version"
 
     androidTestImplementation 'org.mockito:mockito-android:2.6.3'
-    androidTestImplementation 'org.apache.commons:commons-lang3:3.5'
+    androidTestImplementation 'org.apache.commons:commons-lang3:3.7'
     androidTestImplementation "androidx.arch.core:core-testing:$arch_core_version"
     kaptAndroidTest "com.google.dagger:dagger-compiler:$daggerVersion"
     androidTestCompileOnly 'org.glassfish:javax.annotation:10.0-b28'
