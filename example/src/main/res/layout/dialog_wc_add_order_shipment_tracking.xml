@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context="org.wordpress.android.fluxc.example.WCAddOrderShipmentTrackingDialog">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp">
@@ -177,5 +177,5 @@
             android:text="CANCEL"
             app:layout_constraintEnd_toStartOf="@+id/tracking_ok"
             app:layout_constraintTop_toBottomOf="@+id/tracking_dateShipped"/>
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

@@ -3,8 +3,6 @@ package org.wordpress.android.fluxc.example
 import android.R.layout
 import android.app.DatePickerDialog
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
-import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +10,8 @@ import android.view.WindowManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.dialog_wc_add_order_shipment_tracking.*
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel

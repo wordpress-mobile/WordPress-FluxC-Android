@@ -13,7 +13,7 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig;
 
 import javax.inject.Inject;
 
-import static android.support.test.InstrumentationRegistry.getInstrumentation;
+import static androidx.test.InstrumentationRegistry.getInstrumentation;
 
 public class MockedStack_Base {
     Context mAppContext;

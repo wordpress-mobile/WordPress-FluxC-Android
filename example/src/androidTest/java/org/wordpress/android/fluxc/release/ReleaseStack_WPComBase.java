@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import static android.support.test.InstrumentationRegistry.getInstrumentation;
+import static androidx.test.InstrumentationRegistry.getInstrumentation;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -134,7 +134,8 @@ public class ReleaseStack_WPComBase extends ReleaseStack_Base {
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
-        assertFalse(event.isError());
+        assertFalse("!!!!! Authentication failed - verify tests.properties contains valid credentials !!!!! ",
+                event.isError());
         assertEquals(TestEvents.AUTHENTICATED, mNextEvent);
         mCountDownLatch.countDown();
     }
