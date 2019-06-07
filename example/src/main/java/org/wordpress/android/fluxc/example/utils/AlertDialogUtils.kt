@@ -1,8 +1,8 @@
 package org.wordpress.android.fluxc.example.utils
 
-import android.support.v4.app.FragmentActivity
-import android.support.v7.app.AlertDialog
 import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.FragmentActivity
 
 typealias AlertTextListener = (EditText) -> Unit
 

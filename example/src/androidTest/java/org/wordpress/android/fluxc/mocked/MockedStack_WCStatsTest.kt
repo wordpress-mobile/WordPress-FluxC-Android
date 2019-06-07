@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePay
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
+import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.RESPONSE_NULL
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -169,6 +170,28 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         assertEquals(OrderStatsApiUnit.DAY, payload.apiUnit)
         assertNull(payload.stats)
         assertEquals(OrderStatsErrorType.INVALID_PARAM, payload.error.type)
+    }
+
+    @Test
+    fun testStatsFetchResponseNullError() {
+        val errorJson = JsonObject().apply {
+            addProperty("error", OrderStatsErrorType.RESPONSE_NULL.name)
+            addProperty("message", "Response object is null")
+        }
+
+        interceptor.respondWithError(errorJson)
+        orderStatsRestClient.fetchStats(siteModel, OrderStatsApiUnit.DAY, "2019-02-01", 7)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCStatsAction.FETCHED_ORDER_STATS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchOrderStatsResponsePayload
+        assertNotNull(payload.error)
+        assertEquals(siteModel, payload.site)
+        assertEquals(OrderStatsApiUnit.DAY, payload.apiUnit)
+        assertNull(payload.stats)
+        assertEquals(OrderStatsErrorType.RESPONSE_NULL, payload.error.type)
     }
 
     @Test

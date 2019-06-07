@@ -43,6 +43,7 @@ import static org.junit.Assert.assertTrue;
 
 public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     @Inject PostStore mPostStore;
+    @Inject PostSqlUtils mPostSqlUtils;
 
     private static final String POST_DEFAULT_TITLE = "PostTestWPCom base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
@@ -93,7 +94,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mDispatcher.dispatch(PostActionBuilder.newRemovePostAction(post));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        assertEquals(0, PostSqlUtils.getPostsForSite(sSite, false).size());
+        assertEquals(0, mPostSqlUtils.getPostsForSite(sSite, false).size());
     }
 
     @Test
