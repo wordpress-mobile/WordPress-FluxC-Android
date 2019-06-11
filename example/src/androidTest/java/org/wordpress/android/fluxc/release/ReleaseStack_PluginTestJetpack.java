@@ -257,9 +257,9 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         List<ImmutablePluginModel> plugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
         assertTrue(plugins.size() > 0);
 
-        mDispatcher.dispatch(PluginActionBuilder.newRemoveSitePluginsAction(site));
         mNextEvent = TestEvents.REMOVED_SITE_PLUGINS;
         mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PluginActionBuilder.newRemoveSitePluginsAction(site));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Assert site plugins are removed
@@ -530,10 +530,10 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
                                   TestEvents testEvent) throws InterruptedException {
         Assert.assertTrue(!TextUtils.isEmpty(plugin.getName()));
         Assert.assertTrue(!TextUtils.isEmpty(plugin.getSlug()));
-        mDispatcher.dispatch(PluginActionBuilder.newDeleteSitePluginAction(
-                new DeleteSitePluginPayload(site, plugin.getName(), plugin.getSlug())));
         mNextEvent = testEvent;
         mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PluginActionBuilder.newDeleteSitePluginAction(
+                new DeleteSitePluginPayload(site, plugin.getName(), plugin.getSlug())));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -543,10 +543,10 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     private void installSitePlugin(SiteModel site, String pluginSlug,
                                    TestEvents testEvent) throws InterruptedException {
-        mDispatcher.dispatch(PluginActionBuilder.newInstallSitePluginAction(
-                new InstallSitePluginPayload(site, pluginSlug)));
         mNextEvent = testEvent;
         mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PluginActionBuilder.newInstallSitePluginAction(
+                new InstallSitePluginPayload(site, pluginSlug)));
         // Since after install we dispatch an event to activate the plugin, we are giving twice the normal time to
         // ensure there is enough time to complete both events
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS * 2, TimeUnit.MILLISECONDS));
