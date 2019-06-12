@@ -8,4 +8,7 @@ class OrderSummaryApiResponse : Response {
 
     @SerializedName("date_created_gmt")
     val dateCreatedGmt: String? = null
+
+    @SerializedName("date_modified_gmt")
+    val dateModifiedGmt: String? = null
 }
