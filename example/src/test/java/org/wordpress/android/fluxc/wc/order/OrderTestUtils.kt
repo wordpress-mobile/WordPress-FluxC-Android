@@ -4,6 +4,8 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
+import org.wordpress.android.fluxc.UnitTestUtils
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
@@ -15,8 +17,12 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderShipmentTrackingApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatusApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderSummaryApiResponse
+import org.wordpress.android.fluxc.persistence.SiteSqlUtils
+import org.wordpress.android.fluxc.site.SiteUtils
 import org.wordpress.android.fluxc.utils.DateUtils
 import kotlin.collections.MutableMap.MutableEntry
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 object OrderTestUtils {
     fun generateSampleOrder(
@@ -143,5 +149,24 @@ object OrderTestUtils {
                 dateModified = response.dateModifiedGmt?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: ""
             }
         }
+    }
+
+    fun getAndSaveTestSite(): SiteModel {
+        var siteModel = SiteUtils.generateTestSite(556, "", "", false, true).apply {
+            name = "Generic WP site"
+        }
+        SiteSqlUtils.insertOrUpdateSite(siteModel)
+        siteModel = SiteSqlUtils.getSitesByNameOrUrlMatching("Generic").firstOrNull()
+        assertNotNull(siteModel)
+
+        return siteModel
+    }
+
+    fun getTestOrderSummaryList(site: SiteModel): List<WCOrderSummaryModel> {
+        val json = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order-summaries.json")
+        val summaryList = getOrderSummariesFromJsonString(json, site.id)
+        assertEquals(10, summaryList.size)
+
+        return summaryList
     }
 }
