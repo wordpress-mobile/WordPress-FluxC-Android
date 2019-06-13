@@ -514,16 +514,19 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         // - WCOrderNoteModel
         // - WCOrderShipmentTrackingModel
 
-        // Purge all WCOrderSummaryModel records on first fetch
-        if (!payload.loadedMore) {
-            OrderSqlUtils.deleteOrderSummariesForSite(payload.listDescriptor.site)
+        if (!payload.isError) {
+            // Purge all WCOrderSummaryModel records on first fetch
+            if (!payload.loadedMore) {
+                OrderSqlUtils.deleteOrderSummariesForSite(payload.listDescriptor.site)
+            }
+
+            // Save order summaries to the db
+            OrderSqlUtils.insertOrUpdateOrderSummaries(payload.orderSummaries)
+
+            // Fetch missing or outdated orders using the list of order summaries
+            fetchOutdatedOrders(payload.listDescriptor.site, payload.orderSummaries)
         }
 
-        // Save order summaries to the db
-        OrderSqlUtils.insertOrUpdateOrderSummaries(payload.orderSummaries)
-
-        // Fetch missing or outdated orders using the list of order summaries
-        fetchOutdatedOrders(payload.listDescriptor.site, payload.orderSummaries)
         mDispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(FetchedListItemsPayload(
                 listDescriptor = payload.listDescriptor,
                 remoteItemIds = payload.orderSummaries.map { it.remoteOrderId },
