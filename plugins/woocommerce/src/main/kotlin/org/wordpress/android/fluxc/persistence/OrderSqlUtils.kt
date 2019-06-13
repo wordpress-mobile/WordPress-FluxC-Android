@@ -19,7 +19,6 @@ import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.order.OrderIdSet
 
 object OrderSqlUtils {
-    // TODO: Test duplicate items
     fun insertOrUpdateOrderSummaries(orderSummaries: List<WCOrderSummaryModel>) {
         WellSql.insert(orderSummaries).asSingleTransaction(true).execute()
     }
@@ -34,6 +33,14 @@ object OrderSqlUtils {
                 .isIn(WCOrderSummaryModelTable.REMOTE_ORDER_ID, remoteOrderIds.map { it.value })
                 .endWhere()
                 .asModel
+    }
+
+    fun deleteOrderSummariesForSite(site: SiteModel) {
+        WellSql.delete(WCOrderSummaryModel::class.java)
+                .where()
+                .equals(WCOrderSummaryModelTable.LOCAL_SITE_ID, site.id)
+                .endWhere()
+                .execute()
     }
 
     fun insertOrUpdateOrder(order: WCOrderModel): Int {
