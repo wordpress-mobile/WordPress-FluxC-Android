@@ -9,15 +9,19 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.UnitTestUtils
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
+import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
+import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.fluxc.site.SiteUtils
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -36,7 +40,9 @@ class OrderSqlUtilsTest {
                         WCOrderNoteModel::class.java,
                         WCOrderStatusModel::class.java,
                         WCOrderShipmentTrackingModel::class.java,
-                        WCOrderShipmentProviderModel::class.java),
+                        WCOrderShipmentProviderModel::class.java,
+                        WCOrderSummaryModel::class.java,
+                        SiteModel::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE)
         WellSql.init(config)
         config.reset()
@@ -365,5 +371,105 @@ class OrderSqlUtilsTest {
         // Get all shipment providers for a single site
         val providersForSite = OrderSqlUtils.getOrderShipmentProvidersForSite(siteModel)
         assertEquals(55, providersForSite.size)
+    }
+
+    @Test
+    fun testInsertOrUpdateOrderSummaries() {
+        // Create the test site so the foreign key dependency works
+        var siteModel = SiteUtils.generateTestSite(556, "", "", false, true).apply {
+            name = "Generic WP site"
+        }
+        SiteSqlUtils.insertOrUpdateSite(siteModel)
+        siteModel = SiteSqlUtils.getSitesByNameOrUrlMatching("Generic").firstOrNull()
+        assertNotNull(siteModel)
+
+        // Create a list of WCOrderSummaryModels for testing
+        val json = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order-summaries.json")
+        val summaryList = OrderTestUtils.getOrderSummariesFromJsonString(json, siteModel.id)
+        assertEquals(10, summaryList.size)
+
+        // Save first option to the database, retrieve and verify
+        val firstOption = summaryList[0]
+        OrderSqlUtils.insertOrUpdateOrderSummaries(listOf(firstOption))
+
+        var summariesDb = OrderSqlUtils
+                .getOrderSummariesForRemoteIds(siteModel, listOf(RemoteId(firstOption.remoteOrderId)))
+        assertEquals(1, summariesDb.size)
+        assertEquals(firstOption.dateCreated, summariesDb[0].dateCreated)
+        assertEquals(firstOption.remoteOrderId, summariesDb[0].remoteOrderId)
+        assertEquals(firstOption.localSiteId, summariesDb[0].localSiteId)
+
+        // Update first option and re-save. This should just update the record in the db.
+        firstOption.dateCreated = "2019-01-01"
+        OrderSqlUtils.insertOrUpdateOrderSummaries(listOf(firstOption))
+        summariesDb = OrderSqlUtils
+                .getOrderSummariesForRemoteIds(siteModel, listOf(RemoteId(firstOption.remoteOrderId)))
+        assertEquals(1, summariesDb.size)
+        assertEquals(firstOption.dateCreated, summariesDb[0].dateCreated)
+
+        // Insert all records
+        OrderSqlUtils.insertOrUpdateOrderSummaries(summaryList)
+        summariesDb = OrderSqlUtils
+                .getOrderSummariesForRemoteIds(siteModel, summaryList.map { RemoteId(it.remoteOrderId) })
+        assertEquals(10, summariesDb.size)
+    }
+
+    @Test
+    fun testDeleteOrderSummariesForSite() {
+        // Create the test site so the foreign key dependency works
+        var siteModel = SiteUtils.generateTestSite(556, "", "", false, true).apply {
+            name = "Generic WP site"
+        }
+        SiteSqlUtils.insertOrUpdateSite(siteModel)
+        siteModel = SiteSqlUtils.getSitesByNameOrUrlMatching("Generic").firstOrNull()
+        assertNotNull(siteModel)
+
+        // Create a list of WCOrderSummaryModels for testing
+        val json = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order-summaries.json")
+        val summaryList = OrderTestUtils.getOrderSummariesFromJsonString(json, siteModel.id)
+        assertEquals(10, summaryList.size)
+
+        // Save all order summaries to the db
+        OrderSqlUtils.insertOrUpdateOrderSummaries(summaryList)
+        var summariesDb = OrderSqlUtils
+                .getOrderSummariesForRemoteIds(siteModel, summaryList.map { RemoteId(it.remoteOrderId) })
+        assertEquals(10, summariesDb.size)
+
+        // Delete all summaries and verify
+        OrderSqlUtils.deleteOrderSummariesForSite(siteModel)
+        summariesDb = OrderSqlUtils
+                .getOrderSummariesForRemoteIds(siteModel, summaryList.map { RemoteId(it.remoteOrderId) })
+        assertEquals(0, summariesDb.size)
+    }
+
+    /**
+     * Tests the foreign key relationship between SiteModel and WCOrderSummaryModel.
+     */
+    @Test
+    fun testOrderSummarySiteModelForeignKeyOnDeleteCascade() {
+        // Create the test site so the foreign key dependency works
+        var siteModel = SiteUtils.generateTestSite(556, "", "", false, true).apply {
+            name = "Generic WP site"
+        }
+        SiteSqlUtils.insertOrUpdateSite(siteModel)
+        siteModel = SiteSqlUtils.getSitesByNameOrUrlMatching("Generic").firstOrNull()
+        assertNotNull(siteModel)
+
+        // Create a list of WCOrderSummaryModels for testing
+        val json = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order-summaries.json")
+        val summaryList = OrderTestUtils.getOrderSummariesFromJsonString(json, siteModel.id)
+        assertEquals(10, summaryList.size)
+
+        // Save all order summaries to the db
+        OrderSqlUtils.insertOrUpdateOrderSummaries(summaryList)
+        var summariesDb = OrderSqlUtils
+                .getOrderSummariesForRemoteIds(siteModel, summaryList.map { RemoteId(it.remoteOrderId) })
+        assertEquals(10, summariesDb.size)
+
+        // Delete the site -- this should delete all the WCOrderSummaryModel records as well
+        SiteSqlUtils.deleteSite(siteModel)
+        summariesDb = OrderSqlUtils
+                .getOrderSummariesForRemoteIds(siteModel, summaryList.map { RemoteId(it.remoteOrderId) })
+        assertEquals(0, summariesDb.size)
     }
 }

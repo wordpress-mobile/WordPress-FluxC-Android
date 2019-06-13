@@ -9,10 +9,13 @@ import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentProviderModel
 import org.wordpress.android.fluxc.model.WCOrderShipmentTrackingModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
+import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderNoteApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderShipmentTrackingApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderStatusApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderSummaryApiResponse
+import org.wordpress.android.fluxc.utils.DateUtils
 import kotlin.collections.MutableMap.MutableEntry
 
 object OrderTestUtils {
@@ -109,7 +112,7 @@ object OrderTestUtils {
                 carrierEntry?.let { carrier ->
                     val provider = WCOrderShipmentProviderModel().apply {
                         localSiteId = siteId
-                        this.country = countryEntry.key ?: ""
+                        this.country = countryEntry.key
                         this.carrierName = carrier.key
                         this.carrierLink = carrier.value.asString
                     }
@@ -126,6 +129,19 @@ object OrderTestUtils {
             country = "Australia"
             carrierName = "Amanda Test"
             carrierLink = "http://google.com"
+        }
+    }
+
+    fun getOrderSummariesFromJsonString(json: String, siteId: Int): List<WCOrderSummaryModel> {
+        val responseType = object : TypeToken<List<OrderSummaryApiResponse>>() {}.type
+        val converted = Gson().fromJson(json, responseType) as? List<OrderSummaryApiResponse> ?: emptyList()
+        return converted.map { response ->
+            WCOrderSummaryModel().apply {
+                localSiteId = siteId
+                remoteOrderId = response.id ?: 0
+                dateCreated = response.dateCreatedGmt?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: ""
+                dateModified = response.dateModifiedGmt?.let { DateUtils.formatGmtAsUtcDateString(it) } ?: ""
+            }
         }
     }
 }
