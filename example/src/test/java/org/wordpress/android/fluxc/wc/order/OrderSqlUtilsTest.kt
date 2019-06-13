@@ -351,7 +351,6 @@ class OrderSqlUtilsTest {
     @Test
     fun testGetOrderShipmentProvidersForOrder() {
         val siteModel = SiteModel().apply { id = 1 }
-        val orderModel = OrderTestUtils.generateSampleOrder(3, siteId = 1)
         val json = UnitTestUtils
                 .getStringFromResourceFile(this.javaClass, "wc/order-shipment-providers.json")
         val providers = OrderTestUtils
