@@ -7,11 +7,6 @@ import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
 import org.wordpress.android.fluxc.action.WCOrderAction.ADD_ORDER_SHIPMENT_TRACKING
 import org.wordpress.android.fluxc.action.WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_HAS_ORDERS
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDERS_COUNT
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_NOTES
-import org.wordpress.android.fluxc.action.WCOrderAction.FETCH_ORDER_SHIPMENT_TRACKINGS
-import org.wordpress.android.fluxc.action.WCOrderAction.POST_ORDER_NOTE
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
@@ -515,12 +510,23 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     private fun handleFetchOrderListCompleted(payload: FetchOrderListResponsePayload) {
         // TODO: Ideally we would have a separate process that prunes the following
         // tables of defunct records:
-        // - WCOrderSummaryModel
         // - WCOrderModel
         // - WCOrderNoteModel
         // - WCOrderShipmentTrackingModel
-        OrderSqlUtils.insertOrUpdateOrderSummaries(payload.orderSummaries)
-        fetchOutdatedOrders(payload.listDescriptor.site, payload.orderSummaries)
+
+        if (!payload.isError) {
+            // Purge all WCOrderSummaryModel records on first fetch
+            if (!payload.loadedMore) {
+                OrderSqlUtils.deleteOrderSummariesForSite(payload.listDescriptor.site)
+            }
+
+            // Save order summaries to the db
+            OrderSqlUtils.insertOrUpdateOrderSummaries(payload.orderSummaries)
+
+            // Fetch missing or outdated orders using the list of order summaries
+            fetchOutdatedOrders(payload.listDescriptor.site, payload.orderSummaries)
+        }
+
         mDispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(FetchedListItemsPayload(
                 listDescriptor = payload.listDescriptor,
                 remoteItemIds = payload.orderSummaries.map { it.remoteOrderId },
