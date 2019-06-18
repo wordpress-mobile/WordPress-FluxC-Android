@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.persistence.SiteSqlUtils;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.NewSitePayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnNewSiteCreated;
@@ -101,6 +102,16 @@ public class SitesFragment extends Fragment {
                 SiteModel site = mSiteStore.getSites().get(0);
                 // Delete site
                 mDispatcher.dispatch(SiteActionBuilder.newDeleteSiteAction(site));
+            }
+        });
+
+        view.findViewById(R.id.delete_first_site_db).setOnClickListener(new OnClickListener() {
+            @Override public void onClick(View v) {
+                SiteModel site = mSiteStore.getSites().get(0);
+                // Delete site from db
+                SiteSqlUtils.deleteSite(site);
+
+                prependToLog("Site " + site.getName() + "has been deleted from the db");
             }
         });
 
