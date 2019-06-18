@@ -48,6 +48,12 @@
         android:text="⚠️️ Delete First Site ⚠️️" />
 
     <Button
+        android:id="@+id/delete_first_site_db"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Delete First Site (DB Only)"/>
+
+    <Button
         android:id="@+id/fetch_plans"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
