@@ -34,7 +34,7 @@ class ReleaseStack_TransactionsTest : ReleaseStack_WPComBase() {
 
     companion object {
         private const val TEST_DOMAIN_NAME = "superrandomdomain192849347.blog"
-        private const val TEST_DOMAIN_PRODUCT_ID = "76"
+        private const val TEST_DOMAIN_PRODUCT_ID = 76
         private val TEST_DOMAIN_CONTACT_MODEL = DomainContactModel(
                 "Wapu",
                 "Wordpress",
@@ -132,8 +132,7 @@ class ReleaseStack_TransactionsTest : ReleaseStack_WPComBase() {
         assertTrue(event.cartDetails!!.products!!.isNotEmpty())
 
         val domainProductInCart = event.cartDetails!!.products!!.find {
-            it.product_id == TEST_DOMAIN_PRODUCT_ID &&
-                    it.meta == TEST_DOMAIN_NAME
+            it.product_id == TEST_DOMAIN_PRODUCT_ID && it.meta == TEST_DOMAIN_NAME && it.extra.privacy
         }
         assertNotNull(domainProductInCart)
 
