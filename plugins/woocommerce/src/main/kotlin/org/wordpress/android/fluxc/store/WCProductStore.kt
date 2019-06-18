@@ -97,6 +97,14 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     fun getVariationsForProduct(site: SiteModel, remoteProductId: Long): List<WCProductVariationModel> =
             ProductSqlUtils.getVariationsForProduct(site, remoteProductId)
 
+    /**
+     * returns a list of [WCProductModel] for the give [SiteModel] and [remoteProductIds]
+     * if it exists in the database
+     */
+    fun getProductsByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): List<WCProductModel> {
+        return ProductSqlUtils.getProductsByRemoteIds(site, remoteProductIds)
+    }
+
     fun deleteProductsForSite(site: SiteModel) = ProductSqlUtils.deleteProductsForSite(site)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
