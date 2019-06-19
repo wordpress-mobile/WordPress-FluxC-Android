@@ -101,9 +101,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
      * returns a list of [WCProductModel] for the give [SiteModel] and [remoteProductIds]
      * if it exists in the database
      */
-    fun getProductsByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): List<WCProductModel> {
-        return ProductSqlUtils.getProductsByRemoteIds(site, remoteProductIds)
-    }
+    fun getProductsByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): List<WCProductModel> =
+            ProductSqlUtils.getProductsByRemoteIds(site, remoteProductIds)
 
     fun deleteProductsForSite(site: SiteModel) = ProductSqlUtils.deleteProductsForSite(site)
 
