@@ -379,6 +379,7 @@ public class UploadStore extends Store {
                 postUploadModel = new PostUploadModel(payload.post.getId());
             }
             postUploadModel.setUploadState(PostUploadModel.FAILED);
+            postUploadModel.incrementNumberOfUploadErrors();
             postUploadModel.setPostError(payload.error);
             UploadSqlUtils.insertOrUpdatePost(postUploadModel);
             return;
@@ -444,6 +445,7 @@ public class UploadStore extends Store {
         PostUploadModel postUploadModel = UploadSqlUtils.getPostUploadModelForLocalId(localPostId);
         if (postUploadModel != null) {
             postUploadModel.setUploadState(PostUploadModel.CANCELLED);
+            postUploadModel.incrementNumberOfUploadErrors();
             UploadSqlUtils.insertOrUpdatePost(postUploadModel);
         }
     }

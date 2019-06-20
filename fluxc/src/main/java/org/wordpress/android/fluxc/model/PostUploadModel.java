@@ -48,11 +48,13 @@ public class PostUploadModel extends Payload<BaseNetworkError> implements Identi
     // Serialization of a PostError
     @Column private String mErrorType;
     @Column private String mErrorMessage;
+    @Column private int mNumberOfUploadErrors;
 
     public PostUploadModel() {}
 
     public PostUploadModel(int id) {
         mId = id;
+        mNumberOfUploadErrors = 0;
     }
 
     @Override
@@ -156,5 +158,17 @@ public class PostUploadModel extends Payload<BaseNetworkError> implements Identi
         List<Integer> idList = new ArrayList<>(ids);
         Collections.sort(idList);
         return TextUtils.join(",", idList);
+    }
+
+    public int getNumberOfUploadErrors() {
+        return mNumberOfUploadErrors;
+    }
+
+    public void incrementNumberOfUploadErrors() {
+        mNumberOfUploadErrors += 1;
+    }
+
+    public void setNumberOfUploadErrors(int numberOfUploadErrors) {
+        mNumberOfUploadErrors = numberOfUploadErrors;
     }
 }
