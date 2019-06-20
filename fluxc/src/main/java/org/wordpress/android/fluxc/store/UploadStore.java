@@ -205,6 +205,14 @@ public class UploadStore extends Store {
         return postUploadModel != null;
     }
 
+    public int getNumberOfPostUploadErrors(PostModel post) {
+        PostUploadModel postUploadModel = UploadSqlUtils.getPostUploadModelForLocalId(post.getId());
+        if (postUploadModel == null) {
+            return 0;
+        }
+        return postUploadModel.getNumberOfUploadErrors();
+    }
+
     /**
      * If the {@code postModel} has been registered as uploading with the UploadStore, this will return the associated
      * {@link PostError}, if any.
