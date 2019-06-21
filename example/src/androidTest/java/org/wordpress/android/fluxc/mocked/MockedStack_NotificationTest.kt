@@ -153,7 +153,7 @@ class MockedStack_NotificationTest : MockedStack_Base() {
     @Test
     fun testFetchNotificationsSuccess() {
         interceptor.respondWith("fetch-notifications-response-success.json")
-        notificationRestClient.fetchNotifications(siteStore)
+        notificationRestClient.fetchNotifications()
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
