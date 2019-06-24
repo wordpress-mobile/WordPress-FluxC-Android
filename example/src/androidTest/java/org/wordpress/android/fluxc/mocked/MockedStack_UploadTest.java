@@ -327,14 +327,14 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         // Wait for the event to be processed by the UploadStore
         TestUtils.waitFor(50);
 
-        // The cancelled post should be cleared since we've now modified it
-        // There's no pending post either, because we haven't re-registered one yet
-        assertEquals(0, mUploadStore.getCancelledPosts().size());
+        // The cancelled post should not be cleared after a new media has been associated
         assertEquals(0, mUploadStore.getFailedPosts().size());
         assertEquals(0, mUploadStore.getPendingPosts().size());
-        assertEquals(0, mUploadStore.getAllRegisteredPosts().size());
+        assertEquals(1, mUploadStore.getCancelledPosts().size());
+        assertEquals(1, mUploadStore.getAllRegisteredPosts().size());
 
-        assertNull(getPostUploadModelForPostModel(mPost));
+        PostUploadModel postUploadModel = getPostUploadModelForPostModel(mPost);
+        assertEquals(postUploadModel.getUploadState(), PostUploadModel.CANCELLED);
     }
 
     @Test
