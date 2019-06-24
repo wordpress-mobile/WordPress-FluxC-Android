@@ -327,14 +327,60 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         // Wait for the event to be processed by the UploadStore
         TestUtils.waitFor(50);
 
-        // The cancelled post should be cleared since we've now modified it
-        // There's no pending post either, because we haven't re-registered one yet
-        assertEquals(0, mUploadStore.getCancelledPosts().size());
+        // The cancelled post should not be cleared after a new media has been associated
         assertEquals(0, mUploadStore.getFailedPosts().size());
         assertEquals(0, mUploadStore.getPendingPosts().size());
-        assertEquals(0, mUploadStore.getAllRegisteredPosts().size());
+        assertEquals(1, mUploadStore.getCancelledPosts().size());
+        assertEquals(1, mUploadStore.getAllRegisteredPosts().size());
 
-        assertNull(getPostUploadModelForPostModel(mPost));
+        PostUploadModel postUploadModel = getPostUploadModelForPostModel(mPost);
+        assertEquals(postUploadModel.getUploadState(), PostUploadModel.CANCELLED);
+    }
+
+
+    @Test
+    public void testPostErrorAndCancellationCounter() throws InterruptedException {
+        SiteModel site = getTestSite();
+
+        // Instantiate new post
+        createNewPost(site);
+        setupPostAttributes();
+
+        // Start uploading a media
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        testMedia.setLocalPostId(mPost.getId());
+
+        // Register the post with the UploadStore and verify that it exists and has the right state
+        List<MediaModel> mediaModelList = new ArrayList<>();
+        mediaModelList.add(testMedia);
+        mUploadStore.registerPostModel(mPost, mediaModelList);
+        assertTrue(mUploadStore.isRegisteredPostModel(mPost));
+
+        // Check there is no error before starting the media upload
+        assertEquals(0, mUploadStore.getNumberOfPostUploadErrorsOrCancellations(mPost));
+
+        startFailingMediaUpload(testMedia, site);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Check the post has been cancelled and the counter is now 1
+        assertTrue(mUploadStore.isCancelledPost(mPost));
+        assertEquals(1, mUploadStore.getNumberOfPostUploadErrorsOrCancellations(mPost));
+
+        startFailingMediaUpload(testMedia, site);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Check the counter is still 1 since we didn't re-register the post
+        assertTrue(mUploadStore.isCancelledPost(mPost));
+        assertEquals(1, mUploadStore.getNumberOfPostUploadErrorsOrCancellations(mPost));
+
+        // Re-register the post (it should reset the state) and retry to upload a media (with failure)
+        mUploadStore.registerPostModel(mPost, mediaModelList);
+        startFailingMediaUpload(testMedia, site);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // The post should be cancelled and counter incremented
+        assertTrue(mUploadStore.isCancelledPost(mPost));
+        assertEquals(2, mUploadStore.getNumberOfPostUploadErrorsOrCancellations(mPost));
     }
 
     @Test
