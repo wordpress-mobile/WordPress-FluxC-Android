@@ -153,7 +153,7 @@ class MockedStack_NotificationTest : MockedStack_Base() {
     @Test
     fun testFetchNotificationsSuccess() {
         interceptor.respondWith("fetch-notifications-response-success.json")
-        notificationRestClient.fetchNotifications(siteStore)
+        notificationRestClient.fetchNotifications()
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -202,7 +202,7 @@ class MockedStack_NotificationTest : MockedStack_Base() {
         assertNotNull(payload.notification)
         with(payload) {
             assertEquals(notification!!.remoteNoteId, remoteNoteId)
-            assertEquals(notification!!.getRemoteSiteId(), remoteSiteId)
+            assertEquals(notification!!.remoteSiteId, remoteSiteId)
         }
     }
 
@@ -223,13 +223,13 @@ class MockedStack_NotificationTest : MockedStack_Base() {
 
     @Test
     fun testMarkSingleNotificationReadSuccess() {
-        val testNoteIdSet = NoteIdSet(0, 22L, 2)
+        val testNoteIdSet = NoteIdSet(0, 22L, 2L)
 
         interceptor.respondWith("mark-notification-read-response-success.json")
         notificationRestClient.markNotificationRead(
                 listOf(NotificationModel(
                         remoteNoteId = testNoteIdSet.remoteNoteId,
-                        localSiteId = testNoteIdSet.localSiteId)))
+                        remoteSiteId = testNoteIdSet.remoteSiteId)))
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -248,21 +248,21 @@ class MockedStack_NotificationTest : MockedStack_Base() {
 
     @Test
     fun testMarkMultipleNotificationsReadSuccess() {
-        val testNoteIdSet1 = NoteIdSet(0, 22L, 2)
-        val testNoteIdSet2 = NoteIdSet(0, 33L, 3)
-        val testNoteIdSet3 = NoteIdSet(0, 44L, 4)
+        val testNoteIdSet1 = NoteIdSet(0, 22L, 2L)
+        val testNoteIdSet2 = NoteIdSet(0, 33L, 3L)
+        val testNoteIdSet3 = NoteIdSet(0, 44L, 4L)
 
         interceptor.respondWith("mark-notification-read-response-success.json")
         notificationRestClient.markNotificationRead(listOf(
                 NotificationModel(
                         remoteNoteId = testNoteIdSet1.remoteNoteId,
-                        localSiteId = testNoteIdSet1.localSiteId),
+                        remoteSiteId = testNoteIdSet1.remoteSiteId),
                 NotificationModel(
                         remoteNoteId = testNoteIdSet2.remoteNoteId,
-                        localSiteId = testNoteIdSet2.localSiteId),
+                        remoteSiteId = testNoteIdSet2.remoteSiteId),
                 NotificationModel(
                         remoteNoteId = testNoteIdSet3.remoteNoteId,
-                        localSiteId = testNoteIdSet3.localSiteId)))
+                        remoteSiteId = testNoteIdSet3.remoteSiteId)))
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -276,15 +276,15 @@ class MockedStack_NotificationTest : MockedStack_Base() {
         assertEquals(3, payload.notifications!!.size)
         with(payload.notifications!![0]) {
             assertEquals(remoteNoteId, testNoteIdSet1.remoteNoteId)
-            assertEquals(localSiteId, testNoteIdSet1.localSiteId)
+            assertEquals(remoteSiteId, testNoteIdSet1.remoteSiteId)
         }
         with(payload.notifications!![1]) {
             assertEquals(remoteNoteId, testNoteIdSet2.remoteNoteId)
-            assertEquals(localSiteId, testNoteIdSet2.localSiteId)
+            assertEquals(remoteSiteId, testNoteIdSet2.remoteSiteId)
         }
         with(payload.notifications!![2]) {
             assertEquals(remoteNoteId, testNoteIdSet3.remoteNoteId)
-            assertEquals(localSiteId, testNoteIdSet3.localSiteId)
+            assertEquals(remoteSiteId, testNoteIdSet3.remoteSiteId)
         }
     }
 
