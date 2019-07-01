@@ -662,26 +662,38 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
-    public void testAutoSavePost() throws InterruptedException {
-        final boolean testPage = false;
-        testAutoSavePostOrPage(testPage);
+    public void testAutoSavePublishedPost() throws InterruptedException {
+        // Arrange
+        PostModel post = createNewPost();
+        post.setStatus(PostStatus.PUBLISHED.toString());
+
+        testAutoSavePostOrPage(post, false);
     }
 
     @Test
-    public void testAutoSavePage() throws InterruptedException {
-        final boolean testPage = true;
-        testAutoSavePostOrPage(testPage);
-    }
-
-    private void testAutoSavePostOrPage(boolean testPage) throws InterruptedException {
+    public void testAutoSaveScheduledPost() throws InterruptedException {
         // Arrange
         PostModel post = createNewPost();
-        setupPostAttributes(post);
+        post.setStatus(PostStatus.SCHEDULED.toString());
+        post.setDateCreated("2075-10-14T10:51:11+00:00");
 
-        post.setIsPage(testPage);
+        testAutoSavePostOrPage(post, false);
+    }
 
+    @Test
+    public void testAutoSavePublishedPage() throws InterruptedException {
+        // Arrange
+        PostModel post = createNewPost();
         post.setStatus(PostStatus.PUBLISHED.toString());
 
+        testAutoSavePostOrPage(post, true);
+    }
+
+    private void testAutoSavePostOrPage(PostModel post, boolean isPage) throws InterruptedException {
+        // Arrange
+        setupPostAttributes(post);
+
+        post.setIsPage(isPage);
         uploadPost(post);
 
         PostModel uploadedPost = mPostStore.getPostByLocalPostId(post.getId());
