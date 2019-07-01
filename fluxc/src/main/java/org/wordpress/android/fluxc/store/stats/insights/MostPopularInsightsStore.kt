@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store.stats.insights
 
+import androidx.lifecycle.LiveData
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.InsightsMapper
@@ -10,6 +11,7 @@ import org.wordpress.android.fluxc.persistence.InsightsSqlUtils.MostPopularSqlUt
 import org.wordpress.android.fluxc.store.StatsStore.OnStatsFetched
 import org.wordpress.android.fluxc.store.StatsStore.StatsError
 import org.wordpress.android.fluxc.store.StatsStore.StatsErrorType.INVALID_RESPONSE
+import org.wordpress.android.fluxc.utils.map
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -64,5 +66,13 @@ class MostPopularInsightsStore @Inject constructor(
 
     fun getYearsInsights(site: SiteModel): YearsInsightsModel? {
         return sqlUtils.select(site)?.let { insightsMapper.map(it) }
+    }
+
+    fun liveMostPopularInsights(site: SiteModel): LiveData<InsightsMostPopularModel> {
+        return sqlUtils.liveSelect(site).map { insightsMapper.map(it, site) }
+    }
+
+    fun liveYearsInsights(site: SiteModel): LiveData<YearsInsightsModel> {
+        return sqlUtils.liveSelect(site).map { insightsMapper.map(it) }
     }
 }

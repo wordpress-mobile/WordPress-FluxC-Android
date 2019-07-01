@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.persistence
 
+import androidx.lifecycle.LiveData
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.AuthorsRestClient.AuthorsResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.ClicksRestClient.ClicksResponse
@@ -55,6 +56,16 @@ open class TimeStatsSqlUtils<RESPONSE_TYPE>(
 
     fun select(site: SiteModel, granularity: StatsGranularity, date: Date): RESPONSE_TYPE? {
         return statsSqlUtils.select(
+                site,
+                blockType,
+                granularity.toStatsType(),
+                classOfResponse,
+                statsUtils.getFormattedDate(date)
+        )
+    }
+
+    fun liveSelect(site: SiteModel, granularity: StatsGranularity, date: Date): LiveData<RESPONSE_TYPE> {
+        return statsSqlUtils.liveSelect(
                 site,
                 blockType,
                 granularity.toStatsType(),

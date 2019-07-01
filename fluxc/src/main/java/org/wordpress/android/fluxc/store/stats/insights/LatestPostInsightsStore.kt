@@ -1,13 +1,15 @@
 package org.wordpress.android.fluxc.store.stats.insights
 
+import androidx.lifecycle.LiveData
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.InsightsLatestPostModel
 import org.wordpress.android.fluxc.model.stats.InsightsMapper
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.insights.LatestPostInsightsRestClient
-import org.wordpress.android.fluxc.persistence.InsightsSqlUtils.LatestPostDetailSqlUtils
 import org.wordpress.android.fluxc.persistence.InsightsSqlUtils.DetailedPostStatsSqlUtils
+import org.wordpress.android.fluxc.persistence.InsightsSqlUtils.LatestPostDetailSqlUtils
 import org.wordpress.android.fluxc.store.StatsStore.OnStatsFetched
+import org.wordpress.android.fluxc.utils.map
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -49,6 +51,14 @@ class LatestPostInsightsStore @Inject constructor(
 
     fun getLatestPostInsights(site: SiteModel): InsightsLatestPostModel? {
         return latestPostDetailSqlUtils.select(site)?.let { latestPostDetailResponse ->
+            detailedPostStats.select(site, latestPostDetailResponse.id)?.let { latestPostViewsResponse ->
+                insightsMapper.map(latestPostDetailResponse, latestPostViewsResponse, site)
+            }
+        }
+    }
+
+    fun liveLatestPostInsights(site: SiteModel): LiveData<InsightsLatestPostModel> {
+        return latestPostDetailSqlUtils.liveSelect(site).map { latestPostDetailResponse ->
             detailedPostStats.select(site, latestPostDetailResponse.id)?.let { latestPostViewsResponse ->
                 insightsMapper.map(latestPostDetailResponse, latestPostViewsResponse, site)
             }

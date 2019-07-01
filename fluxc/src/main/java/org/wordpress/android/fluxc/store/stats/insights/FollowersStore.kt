@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store.stats.insights
 
+import androidx.lifecycle.LiveData
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.FollowersModel
@@ -18,6 +19,7 @@ import org.wordpress.android.fluxc.persistence.InsightsSqlUtils.WpComFollowersSq
 import org.wordpress.android.fluxc.store.StatsStore.OnStatsFetched
 import org.wordpress.android.fluxc.store.StatsStore.StatsError
 import org.wordpress.android.fluxc.store.StatsStore.StatsErrorType.INVALID_RESPONSE
+import org.wordpress.android.fluxc.utils.map
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -116,5 +118,23 @@ class FollowersStore
     ): FollowersModel? {
         val followerResponses = sqlUtils.selectAll(site)
         return insightsMapper.mapAndMergeFollowersModels(followerResponses, followerType, cacheMode)
+    }
+
+    fun liveWpComFollowers(site: SiteModel, cacheMode: LimitMode): LiveData<FollowersModel> {
+        return liveFollowers(site, WP_COM, cacheMode, wpComFollowersSqlUtils)
+    }
+
+    fun liveEmailFollowers(site: SiteModel, cacheMode: LimitMode): LiveData<FollowersModel> {
+        return liveFollowers(site, EMAIL, cacheMode, emailFollowersSqlUtils)
+    }
+
+    private fun liveFollowers(
+        site: SiteModel,
+        followerType: FollowerType,
+        cacheMode: LimitMode,
+        sqlUtils: InsightsSqlUtils<FollowersResponse>
+    ): LiveData<FollowersModel> {
+        val followerResponses = sqlUtils.liveSelectAll(site)
+        return followerResponses.map { insightsMapper.mapAndMergeFollowersModels(it, followerType, cacheMode) }
     }
 }

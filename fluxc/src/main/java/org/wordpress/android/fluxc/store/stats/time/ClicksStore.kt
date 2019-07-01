@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store.stats.time
 
+import androidx.lifecycle.LiveData
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.LimitMode.Top
@@ -11,6 +12,7 @@ import org.wordpress.android.fluxc.persistence.TimeStatsSqlUtils.ClicksSqlUtils
 import org.wordpress.android.fluxc.store.StatsStore.OnStatsFetched
 import org.wordpress.android.fluxc.store.StatsStore.StatsError
 import org.wordpress.android.fluxc.store.StatsStore.StatsErrorType.INVALID_RESPONSE
+import org.wordpress.android.fluxc.utils.map
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -47,5 +49,9 @@ class ClicksStore
 
     fun getClicks(site: SiteModel, period: StatsGranularity, limitMode: Top, date: Date): ClicksModel? {
         return sqlUtils.select(site, period, date)?.let { timeStatsMapper.map(it, limitMode) }
+    }
+
+    fun liveClicks(site: SiteModel, period: StatsGranularity, limitMode: Top, date: Date): LiveData<ClicksModel> {
+        return sqlUtils.liveSelect(site, period, date).map { timeStatsMapper.map(it, limitMode) }
     }
 }

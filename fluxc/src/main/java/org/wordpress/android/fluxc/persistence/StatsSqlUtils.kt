@@ -1,11 +1,11 @@
 package org.wordpress.android.fluxc.persistence
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.persistence.room.StatsDao
+import org.wordpress.android.fluxc.utils.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,14 +35,16 @@ class StatsSqlUtils
         if (replaceExistingData) {
             statsDao.delete(site.id, blockType, statsType, date, postId)
         }
-        statsDao.insertOrReplace(StatsDao.StatsBlock(
-                localSiteId = site.id,
-                blockType = blockType,
-                statsType = statsType,
-                date = date,
-                postId = postId,
-                json = json
-        ))
+        statsDao.insertOrReplace(
+                StatsDao.StatsBlock(
+                        localSiteId = site.id,
+                        blockType = blockType,
+                        statsType = statsType,
+                        date = date,
+                        postId = postId,
+                        json = json
+                )
+        )
     }
 
     fun <T> selectAll(
@@ -64,8 +66,8 @@ class StatsSqlUtils
         date: String? = null,
         postId: Long? = null
     ): LiveData<List<T>> {
-        val jsons = statsDao.liveSelectAll(site.id, blockType, statsType, date, postId)
-        return Transformations.map(jsons) { it.map { json -> gson.fromJson(json, classOfT) } }
+        return statsDao.liveSelectAll(site.id, blockType, statsType, date, postId)
+                .map { it.map { json -> gson.fromJson(json, classOfT) } }
     }
 
     fun <T> select(
@@ -89,8 +91,8 @@ class StatsSqlUtils
         date: String? = null,
         postId: Long? = null
     ): LiveData<T> {
-        return Transformations.map(statsDao.liveSelect(site.id, blockType, statsType, date, postId)) {
-            gson.fromJson(it, classOfT)
+        return statsDao.liveSelect(site.id, blockType, statsType, date, postId).map {
+            it.let { gson.fromJson(it, classOfT) }
         }
     }
 

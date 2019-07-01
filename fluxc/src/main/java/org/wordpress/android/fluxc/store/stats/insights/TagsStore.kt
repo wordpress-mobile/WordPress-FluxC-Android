@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store.stats.insights
 
+import androidx.lifecycle.LiveData
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.InsightsMapper
@@ -11,6 +12,7 @@ import org.wordpress.android.fluxc.persistence.InsightsSqlUtils.TagsSqlUtils
 import org.wordpress.android.fluxc.store.StatsStore.OnStatsFetched
 import org.wordpress.android.fluxc.store.StatsStore.StatsError
 import org.wordpress.android.fluxc.store.StatsStore.StatsErrorType.INVALID_RESPONSE
+import org.wordpress.android.fluxc.utils.map
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -44,5 +46,9 @@ class TagsStore @Inject constructor(
 
     fun getTags(site: SiteModel, cacheMode: LimitMode): TagsModel? {
         return sqlUtils.select(site)?.let { insightsMapper.map(it, cacheMode) }
+    }
+
+    fun liveTags(site: SiteModel, cacheMode: LimitMode): LiveData<TagsModel> {
+        return sqlUtils.liveSelect(site).map { insightsMapper.map(it, cacheMode) }
     }
 }
