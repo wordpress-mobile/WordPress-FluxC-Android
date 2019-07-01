@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "1fa16135eb5b6d2ba0df1928e0a7f762",
+    "identityHash": "50d15c0e5f3aea2d587b91c791a494d9",
     "entities": [
       {
         "tableName": "StatsBlock",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `localSiteId` INTEGER NOT NULL, `blockType` TEXT NOT NULL, `statsType` TEXT NOT NULL, `date` TEXT, `postId` INTEGER NOT NULL, `json` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `localSiteId` INTEGER NOT NULL, `blockType` TEXT NOT NULL, `statsType` TEXT NOT NULL, `date` TEXT, `postId` INTEGER, `json` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -42,7 +42,7 @@
             "fieldPath": "postId",
             "columnName": "postId",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "json",
@@ -61,9 +61,10 @@
         "foreignKeys": []
       }
     ],
+    "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"1fa16135eb5b6d2ba0df1928e0a7f762\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '50d15c0e5f3aea2d587b91c791a494d9')"
     ]
   }
 }

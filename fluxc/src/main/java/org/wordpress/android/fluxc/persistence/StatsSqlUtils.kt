@@ -2,14 +2,8 @@ package org.wordpress.android.fluxc.persistence
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.wellsql.generated.StatsBlockTable
-import com.yarolegovich.wellsql.SelectQuery
-import com.yarolegovich.wellsql.WellSql
-import com.yarolegovich.wellsql.core.Identifiable
-import com.yarolegovich.wellsql.core.annotation.Column
-import com.yarolegovich.wellsql.core.annotation.PrimaryKey
-import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.persistence.room.StatsDao
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,7 +11,9 @@ const val DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ"
 
 @Singleton
 class StatsSqlUtils
-@Inject constructor() {
+@Inject constructor(
+    private val statsDao: StatsDao
+) {
     private val gson: Gson by lazy {
         val builder = GsonBuilder()
         builder.setDateFormat(DATE_FORMAT)
@@ -35,29 +31,16 @@ class StatsSqlUtils
     ) {
         val json = gson.toJson(item)
         if (replaceExistingData) {
-            var deleteStatement = WellSql.delete(StatsBlockBuilder::class.java)
-                    .where()
-                    .equals(StatsBlockTable.LOCAL_SITE_ID, site.id)
-                    .equals(StatsBlockTable.BLOCK_TYPE, blockType.name)
-                    .equals(StatsBlockTable.STATS_TYPE, statsType.name)
-            if (date != null) {
-                deleteStatement = deleteStatement.equals(StatsBlockTable.DATE, date)
-            }
-            if (postId != null) {
-                deleteStatement = deleteStatement.equals(StatsBlockTable.POST_ID, postId)
-            }
-            deleteStatement.endWhere().execute()
+            statsDao.delete(site.id, blockType, statsType, date, postId)
         }
-        WellSql.insert(
-                StatsBlockBuilder(
-                        localSiteId = site.id,
-                        blockType = blockType.name,
-                        statsType = statsType.name,
-                        date = date,
-                        postId = postId,
-                        json = json
-                )
-        ).execute()
+        statsDao.insertOrReplace(StatsDao.StatsBlock(
+                localSiteId = site.id,
+                blockType = blockType,
+                statsType = statsType,
+                date = date,
+                postId = postId,
+                json = json
+        ))
     }
 
     fun <T> selectAll(
@@ -68,7 +51,7 @@ class StatsSqlUtils
         date: String? = null,
         postId: Long? = null
     ): List<T> {
-        val models = createSelectStatement(site, blockType, statsType, date, postId).asModel
+        val models = statsDao.selectAll(site.id, blockType, statsType, date, postId)
         return models.map { gson.fromJson(it.json, classOfT) }
     }
 
@@ -80,51 +63,11 @@ class StatsSqlUtils
         date: String? = null,
         postId: Long? = null
     ): T? {
-        val model = createSelectStatement(site, blockType, statsType, date, postId).asModel.firstOrNull()
+        val model = statsDao.select(site.id, blockType, statsType, date, postId)
         if (model != null) {
             return gson.fromJson(model.json, classOfT)
         }
         return null
-    }
-
-    private fun createSelectStatement(
-        site: SiteModel,
-        blockType: BlockType,
-        statsType: StatsType,
-        date: String?,
-        postId: Long?
-    ): SelectQuery<StatsBlockBuilder> {
-        var select = WellSql.select(StatsBlockBuilder::class.java)
-                .where()
-                .equals(StatsBlockTable.LOCAL_SITE_ID, site.id)
-                .equals(StatsBlockTable.BLOCK_TYPE, blockType.name)
-                .equals(StatsBlockTable.STATS_TYPE, statsType.name)
-        if (date != null) {
-            select = select.equals(StatsBlockTable.DATE, date)
-        }
-        if (postId != null) {
-            select = select.equals(StatsBlockTable.POST_ID, postId)
-        }
-        return select.endWhere()
-    }
-
-    @Table(name = "StatsBlock")
-    data class StatsBlockBuilder(
-        @PrimaryKey @Column private var mId: Int = -1,
-        @Column var localSiteId: Int,
-        @Column var blockType: String,
-        @Column var statsType: String,
-        @Column var date: String?,
-        @Column var postId: Long?,
-        @Column var json: String
-    ) : Identifiable {
-        constructor() : this(-1, -1, "", "", null, null, "")
-
-        override fun setId(id: Int) {
-            this.mId = id
-        }
-
-        override fun getId() = mId
     }
 
     enum class StatsType {

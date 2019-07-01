@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.persistence
 
-import com.wellsql.generated.StatsBlockTable
 import com.wellsql.generated.StatsRequestTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
@@ -27,11 +26,11 @@ class StatsRequestSqlUtils
     ) {
         var deleteStatement = WellSql.delete(StatsRequestBuilder::class.java)
                 .where()
-                .equals(StatsBlockTable.LOCAL_SITE_ID, site.id)
-                .equals(StatsBlockTable.BLOCK_TYPE, blockType.name)
-                .equals(StatsBlockTable.STATS_TYPE, statsType.name)
+                .equals(StatsRequestTable.LOCAL_SITE_ID, site.id)
+                .equals(StatsRequestTable.BLOCK_TYPE, blockType.name)
+                .equals(StatsRequestTable.STATS_TYPE, statsType.name)
         if (date != null) {
-            deleteStatement = deleteStatement.equals(StatsBlockTable.DATE, date)
+            deleteStatement = deleteStatement.equals(StatsRequestTable.DATE, date)
         }
         deleteStatement.endWhere().execute()
         val timeStamp = System.currentTimeMillis()
