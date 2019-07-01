@@ -7,7 +7,6 @@
 /devices/$deviceId#String/delete/
 
 /is-available/blog/
-/is-available/domain/
 /is-available/email/
 /is-available/username/
 
@@ -21,6 +20,10 @@
 /me/send-verification-email/
 /me/social-login/connect/
 /me/username/
+
+/me/transactions/supported-countries/
+/me/transactions/
+/me/shopping-cart/$site
 
 /notifications/
 /notifications/$note_id
@@ -66,6 +69,8 @@
 /sites/$site/media/new/
 
 /sites/$site/plans/
+
+/sites/$site/domains/primary/
 
 /sites/$site/plugins
 /sites/$site/plugins/$name#String

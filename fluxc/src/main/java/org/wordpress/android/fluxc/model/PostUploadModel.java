@@ -1,9 +1,10 @@
 package org.wordpress.android.fluxc.model;
 
-import android.support.annotation.IntDef;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.yarolegovich.wellsql.core.Identifiable;
 import com.yarolegovich.wellsql.core.annotation.Column;
@@ -47,6 +48,7 @@ public class PostUploadModel extends Payload<BaseNetworkError> implements Identi
     // Serialization of a PostError
     @Column private String mErrorType;
     @Column private String mErrorMessage;
+    @Column private int mNumberOfUploadErrorsOrCancellations;
 
     public PostUploadModel() {}
 
@@ -155,5 +157,17 @@ public class PostUploadModel extends Payload<BaseNetworkError> implements Identi
         List<Integer> idList = new ArrayList<>(ids);
         Collections.sort(idList);
         return TextUtils.join(",", idList);
+    }
+
+    public int getNumberOfUploadErrorsOrCancellations() {
+        return mNumberOfUploadErrorsOrCancellations;
+    }
+
+    public void incNumberOfUploadErrorsOrCancellations() {
+        mNumberOfUploadErrorsOrCancellations += 1;
+    }
+
+    public void setNumberOfUploadErrorsOrCancellations(int numberOfUploadErrorsOrCancellations) {
+        mNumberOfUploadErrorsOrCancellations = numberOfUploadErrorsOrCancellations;
     }
 }

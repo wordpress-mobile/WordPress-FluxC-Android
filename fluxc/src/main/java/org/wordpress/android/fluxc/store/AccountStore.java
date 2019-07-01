@@ -1,8 +1,9 @@
 package org.wordpress.android.fluxc.store;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.android.volley.VolleyError;
 import com.yarolegovich.wellsql.WellSql;
@@ -410,7 +411,6 @@ public class AccountStore extends Store {
         public IsAvailable type;
         public String value;
         public boolean isAvailable;
-        public List<String> suggestions;
 
         public OnAvailabilityChecked(IsAvailable type, String value, boolean isAvailable) {
             this.type = type;
@@ -496,7 +496,8 @@ public class AccountStore extends Store {
 
     public enum AccountErrorType {
         ACCOUNT_FETCH_ERROR,
-        SETTINGS_FETCH_ERROR,
+        SETTINGS_FETCH_GENERIC_ERROR,
+        SETTINGS_FETCH_REAUTHORIZATION_REQUIRED_ERROR,
         SETTINGS_POST_ERROR,
         SEND_VERIFICATION_EMAIL_ERROR,
         GENERIC_ERROR
@@ -847,9 +848,6 @@ public class AccountStore extends Store {
             case IS_AVAILABLE_BLOG:
                 mAccountRestClient.isAvailable((String) payload, IsAvailable.BLOG);
                 break;
-            case IS_AVAILABLE_DOMAIN:
-                mAccountRestClient.isAvailable((String) payload, IsAvailable.DOMAIN);
-                break;
             case IS_AVAILABLE_EMAIL:
                 mAccountRestClient.isAvailable((String) payload, IsAvailable.EMAIL);
                 break;
@@ -949,20 +947,30 @@ public class AccountStore extends Store {
 
     private void handleFetchSettingsCompleted(AccountRestPayload payload) {
         if (!hasAccessToken()) {
-            emitAccountChangeError(AccountErrorType.SETTINGS_FETCH_ERROR);
+            emitAccountChangeError(AccountErrorType.SETTINGS_FETCH_GENERIC_ERROR);
             return;
         }
         if (!checkError(payload, "Error fetching Account Settings via REST API (/me/settings)")) {
             mAccount.copyAccountSettingsAttributes(payload.account);
             updateDefaultAccount(mAccount, AccountAction.FETCH_SETTINGS);
         } else {
-            if (payload.error != null) {
-                OnAccountChanged accountChanged = new OnAccountChanged();
-                accountChanged.error = new AccountError(AccountErrorType.SETTINGS_FETCH_ERROR, payload.error.message);
-                emitChange(accountChanged);
+            OnAccountChanged accountChanged = new OnAccountChanged();
+            accountChanged.causeOfChange = AccountAction.FETCH_SETTINGS;
+
+            AccountErrorType errorType;
+            if (payload.error.apiError.equals("reauthorization_required")) {
+                // This error will always occur for 2FA accounts when using a non-production WordPress.com OAuth client.
+                // Essentially, some APIs around account management are disabled in those cases for security reasons.
+                // The error is a bit generic from the server-side - it essentially means the user isn't privileged to
+                // do the action and needs to reauthorize. For bearer token-based login, there is no escalation of
+                // privileges possible, so the request just fails at that point.
+                errorType = AccountErrorType.SETTINGS_FETCH_REAUTHORIZATION_REQUIRED_ERROR;
             } else {
-                emitAccountChangeError(AccountErrorType.SETTINGS_FETCH_ERROR);
+                errorType = AccountErrorType.SETTINGS_FETCH_GENERIC_ERROR;
             }
+            accountChanged.error = new AccountError(errorType, payload.error.message);
+
+            emitChange(accountChanged);
         }
     }
 
@@ -1055,7 +1063,6 @@ public class AccountStore extends Store {
 
     private void handleCheckedIsAvailable(IsAvailableResponsePayload payload) {
         OnAvailabilityChecked event = new OnAvailabilityChecked(payload.type, payload.value, payload.isAvailable);
-        event.suggestions = payload.suggestions;
 
         if (payload.isError()) {
             event.error = payload.error;

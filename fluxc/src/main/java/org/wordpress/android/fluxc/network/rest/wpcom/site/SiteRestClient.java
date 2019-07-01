@@ -1,8 +1,9 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.site;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.RequestQueue;
@@ -40,6 +41,9 @@ import org.wordpress.android.fluxc.store.SiteStore.AutomatedTransferError;
 import org.wordpress.android.fluxc.store.SiteStore.AutomatedTransferStatusResponsePayload;
 import org.wordpress.android.fluxc.store.SiteStore.ConnectSiteInfoPayload;
 import org.wordpress.android.fluxc.store.SiteStore.DeleteSiteError;
+import org.wordpress.android.fluxc.store.SiteStore.DesignatePrimaryDomainError;
+import org.wordpress.android.fluxc.store.SiteStore.DesignatePrimaryDomainErrorType;
+import org.wordpress.android.fluxc.store.SiteStore.DesignatedPrimaryDomainPayload;
 import org.wordpress.android.fluxc.store.SiteStore.DomainAvailabilityError;
 import org.wordpress.android.fluxc.store.SiteStore.DomainAvailabilityErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.DomainAvailabilityResponsePayload;
@@ -305,7 +309,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                         for (UserRoleWPComRestResponse roleResponse : response.roles) {
                             RoleModel roleModel = new RoleModel();
                             roleModel.setName(roleResponse.name);
-                            roleModel.setDisplayName(roleResponse.display_name);
+                            roleModel.setDisplayName(StringEscapeUtils.unescapeHtml4(roleResponse.display_name));
                             roleArray.add(roleModel);
                         }
                         mDispatcher.dispatch(SiteActionBuilder.newFetchedUserRolesAction(new
@@ -680,6 +684,35 @@ public class SiteRestClient extends BaseWPComRestClient {
                                         new DomainSupportedCountriesResponsePayload(domainSupportedCountriesError);
                                 mDispatcher.dispatch(
                                         SiteActionBuilder.newFetchedDomainSupportedCountriesAction(payload));
+                            }
+                        });
+        add(request);
+    }
+
+    public void designatePrimaryDomain(@NonNull final SiteModel site, String domain) {
+        String url = WPCOMREST.sites.site(site.getSiteId()).domains.primary.getUrlV1_1();
+        Map<String, Object> params = new HashMap<>();
+        params.put("domain", domain);
+        final WPComGsonRequest<DesignatePrimaryDomainResponse> request = WPComGsonRequest
+                .buildPostRequest(url, params, DesignatePrimaryDomainResponse.class,
+                        new Listener<DesignatePrimaryDomainResponse>() {
+                            @Override
+                            public void onResponse(DesignatePrimaryDomainResponse response) {
+                                mDispatcher.dispatch(SiteActionBuilder.newDesignatedPrimaryDomainAction(
+                                        new DesignatedPrimaryDomainPayload(site, response.getSuccess())));
+                            }
+                        },
+                        new WPComErrorListener() {
+                            @Override
+                            public void onErrorResponse(@NonNull WPComGsonNetworkError networkError) {
+                                DesignatePrimaryDomainError error = new DesignatePrimaryDomainError(
+                                        DesignatePrimaryDomainErrorType.GENERIC_ERROR, networkError.message);
+
+                                DesignatedPrimaryDomainPayload payload =
+                                        new DesignatedPrimaryDomainPayload(site, false);
+                                payload.error = error;
+
+                                mDispatcher.dispatch(SiteActionBuilder.newDesignatedPrimaryDomainAction(payload));
                             }
                         });
         add(request);

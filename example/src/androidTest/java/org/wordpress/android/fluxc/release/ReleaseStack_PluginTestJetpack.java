@@ -1,9 +1,8 @@
 package org.wordpress.android.fluxc.release;
 
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import junit.framework.Assert;
+import androidx.annotation.NonNull;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.junit.Test;
@@ -53,6 +52,7 @@ import javax.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -166,7 +166,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
         List<ImmutablePluginModel> updatedPlugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
         for (ImmutablePluginModel immutablePlugin : updatedPlugins) {
-            assertFalse(pluginSlugToInstall.equals(immutablePlugin.getSlug()));
+            assertNotEquals(pluginSlugToInstall, immutablePlugin.getSlug());
         }
 
         signOutWPCom();
@@ -199,7 +199,7 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
             }
         }
 
-        Assert.assertNotNull(activePluginToTest);
+        assertNotNull(activePluginToTest);
 
         // Trying to delete an active plugin should result in DELETE_SITE_PLUGIN_ERROR
         deleteSitePlugin(site, activePluginToTest, TestEvents.DELETE_SITE_PLUGIN_ERROR);
@@ -256,13 +256,13 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         List<ImmutablePluginModel> plugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
         assertTrue(plugins.size() > 0);
 
-        mDispatcher.dispatch(PluginActionBuilder.newRemoveSitePluginsAction(site));
         mNextEvent = TestEvents.REMOVED_SITE_PLUGINS;
         mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PluginActionBuilder.newRemoveSitePluginsAction(site));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
         // Assert site plugins are removed
-        assertTrue(mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE).size() == 0);
+        assertEquals(0, mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE).size());
 
         signOutWPCom();
     }
@@ -367,8 +367,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         } else {
             assertEquals(mNextEvent, TestEvents.SITE_PLUGINS_FETCHED);
             assertEquals(event.type, PluginDirectoryType.SITE);
-            assertEquals(event.loadMore, false); // pagination is not enabled for site plugins
-            assertEquals(event.canLoadMore, false); // pagination is not enabled for site plugins
+            assertFalse(event.loadMore); // pagination is not enabled for site plugins
+            assertFalse(event.canLoadMore); // pagination is not enabled for site plugins
         }
         mCountDownLatch.countDown();
     }
@@ -527,12 +527,12 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     private void deleteSitePlugin(SiteModel site, @NonNull ImmutablePluginModel plugin,
                                   TestEvents testEvent) throws InterruptedException {
-        Assert.assertTrue(!TextUtils.isEmpty(plugin.getName()));
-        Assert.assertTrue(!TextUtils.isEmpty(plugin.getSlug()));
-        mDispatcher.dispatch(PluginActionBuilder.newDeleteSitePluginAction(
-                new DeleteSitePluginPayload(site, plugin.getName(), plugin.getSlug())));
+        assertTrue(!TextUtils.isEmpty(plugin.getName()));
+        assertTrue(!TextUtils.isEmpty(plugin.getSlug()));
         mNextEvent = testEvent;
         mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PluginActionBuilder.newDeleteSitePluginAction(
+                new DeleteSitePluginPayload(site, plugin.getName(), plugin.getSlug())));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -542,10 +542,10 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
 
     private void installSitePlugin(SiteModel site, String pluginSlug,
                                    TestEvents testEvent) throws InterruptedException {
-        mDispatcher.dispatch(PluginActionBuilder.newInstallSitePluginAction(
-                new InstallSitePluginPayload(site, pluginSlug)));
         mNextEvent = testEvent;
         mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PluginActionBuilder.newInstallSitePluginAction(
+                new InstallSitePluginPayload(site, pluginSlug)));
         // Since after install we dispatch an event to activate the plugin, we are giving twice the normal time to
         // ensure there is enough time to complete both events
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS * 2, TimeUnit.MILLISECONDS));

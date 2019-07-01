@@ -42,6 +42,15 @@ object ProductSqlUtils {
                 .asModel.firstOrNull()
     }
 
+    fun getProductsByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): List<WCProductModel> {
+        return WellSql.select(WCProductModel::class.java)
+                .where().beginGroup()
+                .isIn(WCProductModelTable.REMOTE_PRODUCT_ID, remoteProductIds)
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .endGroup().endWhere()
+                .asModel
+    }
+
     fun geProductExistsByRemoteId(site: SiteModel, remoteProductId: Long): Boolean {
         return WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
