@@ -30,7 +30,7 @@ interface StatsDao {
 
     @Query(
             """
-        SELECT * FROM StatsBlock
+        SELECT json FROM StatsBlock
         WHERE localSiteId == :localSiteId
         AND blockType == :blockType
         AND statsType == :statsType
@@ -44,11 +44,11 @@ interface StatsDao {
         statsType: StatsType,
         date: String? = null,
         postId: Long? = null
-    ): LiveData<List<StatsBlock>>
+    ): LiveData<List<String>>
 
     @Query(
             """
-        SELECT * FROM StatsBlock
+        SELECT json FROM StatsBlock
         WHERE localSiteId == :localSiteId
         AND blockType == :blockType
         AND statsType == :statsType
@@ -63,11 +63,11 @@ interface StatsDao {
         statsType: StatsType,
         date: String? = null,
         postId: Long? = null
-    ): LiveData<StatsBlock>
+    ): LiveData<String>
 
     @Query(
             """
-        SELECT * FROM StatsBlock
+        SELECT json FROM StatsBlock
         WHERE localSiteId == :localSiteId
         AND blockType == :blockType
         AND statsType == :statsType
@@ -82,11 +82,11 @@ interface StatsDao {
         statsType: StatsType,
         date: String? = null,
         postId: Long? = null
-    ): StatsBlock?
+    ): String?
 
     @Query(
             """
-        SELECT * FROM StatsBlock
+        SELECT json FROM StatsBlock
         WHERE localSiteId == :localSiteId
         AND blockType == :blockType
         AND statsType == :statsType
@@ -100,7 +100,7 @@ interface StatsDao {
         statsType: StatsType,
         date: String? = null,
         postId: Long? = null
-    ): List<StatsBlock>
+    ): List<String>
 
     @Entity(tableName = "StatsBlock")
     data class StatsBlock(

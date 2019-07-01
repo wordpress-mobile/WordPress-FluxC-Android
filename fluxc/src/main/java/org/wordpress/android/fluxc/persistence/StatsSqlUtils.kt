@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.persistence
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Transformations
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import org.wordpress.android.fluxc.model.SiteModel
@@ -51,8 +53,19 @@ class StatsSqlUtils
         date: String? = null,
         postId: Long? = null
     ): List<T> {
-        val models = statsDao.selectAll(site.id, blockType, statsType, date, postId)
-        return models.map { gson.fromJson(it.json, classOfT) }
+        return statsDao.selectAll(site.id, blockType, statsType, date, postId).map { gson.fromJson(it, classOfT) }
+    }
+
+    fun <T> liveSelectAll(
+        site: SiteModel,
+        blockType: BlockType,
+        statsType: StatsType,
+        classOfT: Class<T>,
+        date: String? = null,
+        postId: Long? = null
+    ): LiveData<List<T>> {
+        val jsons = statsDao.liveSelectAll(site.id, blockType, statsType, date, postId)
+        return Transformations.map(jsons) { it.map { json -> gson.fromJson(json, classOfT) } }
     }
 
     fun <T> select(
@@ -63,11 +76,22 @@ class StatsSqlUtils
         date: String? = null,
         postId: Long? = null
     ): T? {
-        val model = statsDao.select(site.id, blockType, statsType, date, postId)
-        if (model != null) {
-            return gson.fromJson(model.json, classOfT)
+        return statsDao.select(site.id, blockType, statsType, date, postId)?.let {
+            gson.fromJson(it, classOfT)
         }
-        return null
+    }
+
+    fun <T> liveSelect(
+        site: SiteModel,
+        blockType: BlockType,
+        statsType: StatsType,
+        classOfT: Class<T>,
+        date: String? = null,
+        postId: Long? = null
+    ): LiveData<T> {
+        return Transformations.map(statsDao.liveSelect(site.id, blockType, statsType, date, postId)) {
+            gson.fromJson(it, classOfT)
+        }
     }
 
     enum class StatsType {
