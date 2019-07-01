@@ -111,9 +111,9 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
 
     // Room
-    implementation "android.arch.persistence.room:runtime:$roomVersion"
-    kapt "android.arch.persistence.room:compiler:$roomVersion"
-    testImplementation "android.arch.persistence.room:testing:$roomVersion"
+    implementation "androidx.room:room-runtime:$roomVersion"
+    kapt "androidx.room:room-compiler:$roomVersion"
+    testImplementation "androidx.room:room-testing:$roomVersion"
 }
 
 version = android.defaultConfig.versionName

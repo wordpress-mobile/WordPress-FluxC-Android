@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.persistence.room
 
-import android.arch.persistence.room.TypeConverter
+import androidx.room.TypeConverter
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType
 
 class BlockTypeConverter {

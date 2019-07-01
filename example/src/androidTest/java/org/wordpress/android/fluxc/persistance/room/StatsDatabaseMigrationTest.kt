@@ -1,10 +1,10 @@
 package org.wordpress.android.fluxc.persistance.room
 
-import android.arch.persistence.db.SupportSQLiteDatabase
-import android.arch.persistence.room.testing.MigrationTestHelper
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase.CONFLICT_FAIL
-import android.support.test.InstrumentationRegistry
+import androidx.room.testing.MigrationTestHelper
+import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.test.platform.app.InstrumentationRegistry
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Rule
 import org.junit.Test

@@ -1,13 +1,13 @@
 package org.wordpress.android.fluxc.persistence.room
 
-import android.arch.lifecycle.LiveData
-import android.arch.persistence.room.ColumnInfo
-import android.arch.persistence.room.Dao
-import android.arch.persistence.room.Entity
-import android.arch.persistence.room.Insert
-import android.arch.persistence.room.OnConflictStrategy.REPLACE
-import android.arch.persistence.room.PrimaryKey
-import android.arch.persistence.room.Query
+import androidx.lifecycle.LiveData
+import androidx.room.ColumnInfo
+import androidx.room.Dao
+import androidx.room.Entity
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy.REPLACE
+import androidx.room.PrimaryKey
+import androidx.room.Query
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.StatsType
 
