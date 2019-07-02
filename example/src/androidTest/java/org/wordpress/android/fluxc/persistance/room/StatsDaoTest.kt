@@ -5,8 +5,8 @@ import org.junit.Before
 import org.junit.Test
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType.LATEST_POST_DETAIL_INSIGHTS
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.StatsType.INSIGHTS
+import org.wordpress.android.fluxc.persistence.room.StatsBlock
 import org.wordpress.android.fluxc.persistence.room.StatsDao
-import org.wordpress.android.fluxc.persistence.room.StatsDao.StatsBlock
 
 class StatsDaoTest : StatsDatabaseTest() {
     private lateinit var statsDao: StatsDao
@@ -20,10 +20,10 @@ class StatsDaoTest : StatsDatabaseTest() {
         val localSiteId = 1
         val blockType = LATEST_POST_DETAIL_INSIGHTS
         val statsType = INSIGHTS
-        var statsBlock: StatsBlock? = null
-        statsDao.liveSelect(localSiteId, blockType, statsType).observeForever { statsBlock = it }
+        var resultJson: String? = null
+        statsDao.liveSelect(localSiteId, blockType, statsType).observeForever { resultJson = it }
 
-        assertThat(statsBlock).isNull()
+        assertThat(resultJson).isNull()
 
         val postId: Long = 10
         val json = "{test: value}"
@@ -38,20 +38,7 @@ class StatsDaoTest : StatsDatabaseTest() {
         )
         statsDao.insertOrReplace(insertedStatsBlock)
 
-        assertThat(statsBlock).isNotNull()
-        verifyBlock(statsBlock!!, insertedStatsBlock)
-    }
-
-    private fun verifyBlock(
-        updatedBlock: StatsBlock,
-        originalBlock: StatsBlock
-    ) {
-        assertThat(updatedBlock.localSiteId).isEqualTo(originalBlock.localSiteId)
-        assertThat(updatedBlock.blockType).isEqualTo(originalBlock.blockType)
-        assertThat(updatedBlock.statsType).isEqualTo(originalBlock.statsType)
-        assertThat(updatedBlock.json).isEqualTo(originalBlock.json)
-        assertThat(updatedBlock.postId).isEqualTo(originalBlock.postId)
-        assertThat(updatedBlock.date).isEqualTo(originalBlock.date)
-        assertThat(updatedBlock.id).isNotNull()
+        assertThat(resultJson).isNotNull()
+        assertThat(resultJson).isEqualTo(json)
     }
 }

@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.persistence.room.StatsBlock
 import org.wordpress.android.fluxc.persistence.room.StatsDao
 import org.wordpress.android.fluxc.utils.map
 import javax.inject.Inject
@@ -36,7 +37,7 @@ class StatsSqlUtils
             statsDao.delete(site.id, blockType, statsType, date, postId)
         }
         statsDao.insertOrReplace(
-                StatsDao.StatsBlock(
+                StatsBlock(
                         localSiteId = site.id,
                         blockType = blockType,
                         statsType = statsType,
