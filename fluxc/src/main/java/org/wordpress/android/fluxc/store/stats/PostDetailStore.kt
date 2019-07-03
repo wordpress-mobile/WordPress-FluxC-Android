@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store.stats
 
+import androidx.lifecycle.LiveData
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.PostDetailStatsMapper
@@ -9,6 +10,7 @@ import org.wordpress.android.fluxc.persistence.InsightsSqlUtils.DetailedPostStat
 import org.wordpress.android.fluxc.store.StatsStore.OnStatsFetched
 import org.wordpress.android.fluxc.store.StatsStore.StatsError
 import org.wordpress.android.fluxc.store.StatsStore.StatsErrorType.INVALID_RESPONSE
+import org.wordpress.android.fluxc.utils.map
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
@@ -42,5 +44,9 @@ class PostDetailStore
 
     fun getPostDetail(site: SiteModel, postId: Long): PostDetailStatsModel? {
         return sqlUtils.select(site, postId)?.let { mapper.map(it) }
+    }
+
+    fun livePostDetail(site: SiteModel, postId: Long): LiveData<PostDetailStatsModel> {
+        return sqlUtils.liveSelect(site, postId).map { mapper.map(it) }
     }
 }
