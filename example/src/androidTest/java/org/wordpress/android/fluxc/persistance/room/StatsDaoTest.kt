@@ -20,7 +20,7 @@ class StatsDaoTest : StatsDatabaseTest() {
         val localSiteId = 1
         val blockType = LATEST_POST_DETAIL_INSIGHTS
         val statsType = INSIGHTS
-        var statsBlock: StatsBlock? = null
+        var statsBlock: String? = null
         statsDao.liveSelect(localSiteId, blockType, statsType).observeForever { statsBlock = it }
 
         assertThat(statsBlock).isNull()
@@ -39,19 +39,6 @@ class StatsDaoTest : StatsDatabaseTest() {
         statsDao.insertOrReplace(insertedStatsBlock)
 
         assertThat(statsBlock).isNotNull()
-        verifyBlock(statsBlock!!, insertedStatsBlock)
-    }
-
-    private fun verifyBlock(
-        updatedBlock: StatsBlock,
-        originalBlock: StatsBlock
-    ) {
-        assertThat(updatedBlock.localSiteId).isEqualTo(originalBlock.localSiteId)
-        assertThat(updatedBlock.blockType).isEqualTo(originalBlock.blockType)
-        assertThat(updatedBlock.statsType).isEqualTo(originalBlock.statsType)
-        assertThat(updatedBlock.json).isEqualTo(originalBlock.json)
-        assertThat(updatedBlock.postId).isEqualTo(originalBlock.postId)
-        assertThat(updatedBlock.date).isEqualTo(originalBlock.date)
-        assertThat(updatedBlock.id).isNotNull()
+        assertThat(statsBlock!!).isEqualTo(json)
     }
 }

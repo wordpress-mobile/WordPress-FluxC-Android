@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store.stats
 
+import androidx.lifecycle.MutableLiveData
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
@@ -7,9 +8,8 @@ import kotlinx.coroutines.Dispatchers.Unconfined
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
+import org.wordpress.android.fluxc.BaseUnitTest
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.CommentsModel
 import org.wordpress.android.fluxc.model.stats.FollowersModel
@@ -71,8 +71,7 @@ private const val PAGE = 1
 private val LOAD_MODE_INITIAL = PagedMode(PAGE_SIZE, false)
 private val CACHE_MODE_TOP = LimitMode.Top(PAGE_SIZE)
 
-@RunWith(MockitoJUnitRunner::class)
-class InsightsStoreTest {
+class InsightsStoreTest : BaseUnitTest() {
     @Mock lateinit var site: SiteModel
     @Mock lateinit var allTimeInsightsRestClient: AllTimeInsightsRestClient
     @Mock lateinit var commentsRestClient: CommentsRestClient
@@ -236,6 +235,29 @@ class InsightsStoreTest {
     }
 
     @Test
+    fun `returns live latest post insights from db`() {
+        val liveResponse = MutableLiveData<PostResponse>()
+        whenever(latestPostDetailSqlUtils.liveSelect(site)).thenReturn(liveResponse)
+        whenever(detailedPostStatsSqlUtils.select(site, LATEST_POST.id)).thenReturn(POST_STATS_RESPONSE)
+
+        val model = mock<InsightsLatestPostModel>()
+        whenever(mapper.map(
+                LATEST_POST,
+                POST_STATS_RESPONSE, site)).thenReturn(model)
+
+        val liveResult = latestPostStore.liveLatestPostInsights(site)
+
+        var result: InsightsLatestPostModel? = null
+        liveResult.observeForever {
+            result = it
+        }
+
+        liveResponse.value = LATEST_POST
+
+        assertThat(result).isEqualTo(model)
+    }
+
+    @Test
     fun `returns error when latest post insights call fail`() = test {
         val type = API_ERROR
         val message = "message"
@@ -307,6 +329,25 @@ class InsightsStoreTest {
         whenever(mapper.map(VISITS_RESPONSE)).thenReturn(model)
 
         val result = todayStore.getTodayInsights(site)
+
+        assertThat(result).isEqualTo(model)
+    }
+
+    @Test
+    fun `returns live today stats from db`() {
+        val liveResponse = MutableLiveData<VisitResponse>()
+        whenever(todaySqlUtils.liveSelect(site)).thenReturn(liveResponse)
+        val model = mock<VisitsModel>()
+        whenever(mapper.map(VISITS_RESPONSE)).thenReturn(model)
+
+        val liveResult = todayStore.liveTodayInsights(site)
+
+        var result: VisitsModel? = null
+        liveResult.observeForever {
+            result = it
+        }
+
+        liveResponse.value = VISITS_RESPONSE
 
         assertThat(result).isEqualTo(model)
     }
@@ -388,6 +429,26 @@ class InsightsStoreTest {
     }
 
     @Test
+    fun `returns live WPCOM followers from db`() {
+        val liveResponse = MutableLiveData<List<FollowersResponse>>()
+        val model = mock<FollowersModel>()
+        whenever(wpComFollowersSqlUtils.liveSelectAll(site)).thenReturn(liveResponse)
+        whenever(mapper.mapAndMergeFollowersModels(listOf(FOLLOWERS_RESPONSE), WP_COM, LimitMode.Top(PAGE_SIZE)))
+                .thenReturn(model)
+
+        val liveResult = followersStore.liveWpComFollowers(site, CACHE_MODE_TOP)
+
+        var result: FollowersModel? = null
+        liveResult.observeForever {
+            result = it
+        }
+
+        liveResponse.value = listOf(FOLLOWERS_RESPONSE)
+
+        assertThat(result).isEqualTo(model)
+    }
+
+    @Test
     fun `returns email followers from db`() {
         val model = mock<FollowersModel>()
         whenever(emailFollowersSqlUtils.selectAll(site)).thenReturn(listOf(FOLLOWERS_RESPONSE))
@@ -395,6 +456,26 @@ class InsightsStoreTest {
                 .thenReturn(model)
 
         val result = followersStore.getEmailFollowers(site, CACHE_MODE_TOP)
+
+        assertThat(result).isEqualTo(model)
+    }
+
+    @Test
+    fun `returns live email followers from db`() {
+        val liveResponse = MutableLiveData<List<FollowersResponse>>()
+        val model = mock<FollowersModel>()
+        whenever(emailFollowersSqlUtils.liveSelectAll(site)).thenReturn(liveResponse)
+        whenever(mapper.mapAndMergeFollowersModels(listOf(FOLLOWERS_RESPONSE), EMAIL, LimitMode.Top(PAGE_SIZE)))
+                .thenReturn(model)
+
+        val liveResult = followersStore.liveEmailFollowers(site, CACHE_MODE_TOP)
+
+        var result: FollowersModel? = null
+        liveResult.observeForever {
+            result = it
+        }
+
+        liveResponse.value = listOf(FOLLOWERS_RESPONSE)
 
         assertThat(result).isEqualTo(model)
     }
@@ -461,6 +542,25 @@ class InsightsStoreTest {
     }
 
     @Test
+    fun `returns live top comments from db`() {
+        val liveResponse = MutableLiveData<CommentsResponse>()
+        whenever(commentInsightsSqlUtils.liveSelect(site)).thenReturn(liveResponse)
+        val model = mock<CommentsModel>()
+        whenever(mapper.map(TOP_COMMENTS_RESPONSE, LimitMode.Top(PAGE_SIZE))).thenReturn(model)
+
+        val liveResult = commentsStore.liveComments(site, LimitMode.Top(PAGE_SIZE))
+
+        var result: CommentsModel? = null
+        liveResult.observeForever {
+            result = it
+        }
+
+        liveResponse.value = TOP_COMMENTS_RESPONSE
+
+        assertThat(result).isEqualTo(model)
+    }
+
+    @Test
     fun `returns error when top comments call fail`() = test {
         val type = API_ERROR
         val message = "message"
@@ -506,6 +606,25 @@ class InsightsStoreTest {
     }
 
     @Test
+    fun `returns live tags and categories from db`() {
+        val liveResponse = MutableLiveData<TagsResponse>()
+        whenever(tagsSqlUtils.liveSelect(site)).thenReturn(liveResponse)
+        val model = mock<TagsModel>()
+        whenever(mapper.map(TAGS_RESPONSE, LimitMode.Top(PAGE_SIZE))).thenReturn(model)
+
+        val liveResult = tagsStore.liveTags(site, LimitMode.Top(PAGE_SIZE))
+
+        var result: TagsModel? = null
+        liveResult.observeForever {
+            result = it
+        }
+
+        liveResponse.value = TAGS_RESPONSE
+
+        assertThat(result).isEqualTo(model)
+    }
+
+    @Test
     fun `returns error when tags and categories call fail`() = test {
         val type = API_ERROR
         val message = "message"
@@ -546,6 +665,25 @@ class InsightsStoreTest {
         whenever(mapper.map(PUBLICIZE_RESPONSE, LimitMode.Top(PAGE_SIZE))).thenReturn(model)
 
         val result = publicizeStore.getPublicizeData(site, LimitMode.Top(PAGE_SIZE))
+
+        assertThat(result).isEqualTo(model)
+    }
+
+    @Test
+    fun `returns live publicize data from db`() {
+        val liveResponse = MutableLiveData<PublicizeResponse>()
+        whenever(publicizeSqlUtils.liveSelect(site)).thenReturn(liveResponse)
+        val model = mock<PublicizeModel>()
+        whenever(mapper.map(PUBLICIZE_RESPONSE, LimitMode.Top(PAGE_SIZE))).thenReturn(model)
+
+        val liveResult = publicizeStore.livePublicizeData(site, LimitMode.Top(PAGE_SIZE))
+
+        var result: PublicizeModel? = null
+        liveResult.observeForever {
+            result = it
+        }
+
+        liveResponse.value = PUBLICIZE_RESPONSE
 
         assertThat(result).isEqualTo(model)
     }
