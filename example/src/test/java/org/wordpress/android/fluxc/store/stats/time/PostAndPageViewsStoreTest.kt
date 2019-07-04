@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store.stats.time
 
+import androidx.lifecycle.MutableLiveData
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.isNull
 import com.nhaarman.mockitokotlin2.mock
@@ -10,9 +11,8 @@ import kotlinx.coroutines.Dispatchers.Unconfined
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
+import org.wordpress.android.fluxc.BaseUnitTest
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.LimitMode
 import org.wordpress.android.fluxc.model.stats.time.PostAndPageViewsModel
@@ -32,12 +32,12 @@ import kotlin.test.assertNotNull
 private const val ITEMS_TO_LOAD = 8
 private val DATE = Date(0)
 
-@RunWith(MockitoJUnitRunner::class)
-class PostAndPageViewsStoreTest {
+class PostAndPageViewsStoreTest : BaseUnitTest() {
     @Mock lateinit var site: SiteModel
     @Mock lateinit var restClient: PostAndPageViewsRestClient
     @Mock lateinit var sqlUtils: PostsAndPagesSqlUtils
     @Mock lateinit var mapper: TimeStatsMapper
+    private val liveResponse = MutableLiveData<PostAndPageViewsResponse>()
     private lateinit var store: PostAndPageViewsStore
     @Before
     fun setUp() {
@@ -108,6 +108,24 @@ class PostAndPageViewsStoreTest {
 
         val result = store.getPostAndPageViews(site, DAYS, LimitMode.Top(ITEMS_TO_LOAD), DATE)
 
+        assertThat(result).isEqualTo(model)
+    }
+
+    @Test
+    fun `returns live data from db`() {
+        whenever(sqlUtils.liveSelect(site, DAYS, DATE)).thenReturn(liveResponse)
+        val model = mock<PostAndPageViewsModel>()
+        whenever(mapper.map(POST_AND_PAGE_VIEWS_RESPONSE, LimitMode.Top(ITEMS_TO_LOAD))).thenReturn(model)
+
+        val liveData = store.livePostAndPageViews(site, DAYS, LimitMode.Top(ITEMS_TO_LOAD), DATE)
+
+        var result: PostAndPageViewsModel? = null
+        liveData.observeForever {
+            result = it
+        }
+        liveResponse.value = POST_AND_PAGE_VIEWS_RESPONSE
+
+        assertThat(result).isNotNull
         assertThat(result).isEqualTo(model)
     }
 }

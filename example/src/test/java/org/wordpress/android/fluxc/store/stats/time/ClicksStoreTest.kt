@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store.stats.time
 
+import androidx.lifecycle.MutableLiveData
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.isNull
 import com.nhaarman.mockitokotlin2.mock
@@ -10,9 +11,8 @@ import kotlinx.coroutines.Dispatchers.Unconfined
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
+import org.wordpress.android.fluxc.BaseUnitTest
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.LimitMode
 import org.wordpress.android.fluxc.model.stats.time.ClicksModel
@@ -33,12 +33,12 @@ private const val ITEMS_TO_LOAD = 8
 private val DATE = Date(0)
 private val limitMode = LimitMode.Top(ITEMS_TO_LOAD)
 
-@RunWith(MockitoJUnitRunner::class)
-class ClicksStoreTest {
+class ClicksStoreTest : BaseUnitTest() {
     @Mock lateinit var site: SiteModel
     @Mock lateinit var restClient: ClicksRestClient
     @Mock lateinit var sqlUtils: ClicksSqlUtils
     @Mock lateinit var mapper: TimeStatsMapper
+    private val liveResponse = MutableLiveData<ClicksResponse>()
     private lateinit var store: ClicksStore
     @Before
     fun setUp() {
@@ -107,6 +107,24 @@ class ClicksStoreTest {
 
         val result = store.getClicks(site, DAYS, limitMode, DATE)
 
+        assertThat(result).isEqualTo(model)
+    }
+
+    @Test
+    fun `returns live data from db`() {
+        whenever(sqlUtils.liveSelect(site, DAYS, DATE)).thenReturn(liveResponse)
+        val model = mock<ClicksModel>()
+        whenever(mapper.map(CLICKS_RESPONSE, limitMode)).thenReturn(model)
+
+        val liveData = store.liveClicks(site, DAYS, limitMode, DATE)
+
+        var result: ClicksModel? = null
+        liveData.observeForever {
+            result = it
+        }
+        liveResponse.value = CLICKS_RESPONSE
+
+        assertThat(result).isNotNull
         assertThat(result).isEqualTo(model)
     }
 }

@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store.stats.time
 
+import androidx.lifecycle.MutableLiveData
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.isNull
 import com.nhaarman.mockitokotlin2.mock
@@ -10,9 +11,8 @@ import kotlinx.coroutines.Dispatchers.Unconfined
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
+import org.wordpress.android.fluxc.BaseUnitTest
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.LimitMode
 import org.wordpress.android.fluxc.model.stats.time.AuthorsModel
@@ -33,12 +33,12 @@ private const val ITEMS_TO_LOAD = 8
 private val LIMIT_MODE = LimitMode.Top(ITEMS_TO_LOAD)
 private val DATE = Date(0)
 
-@RunWith(MockitoJUnitRunner::class)
-class AuthorsStoreTest {
+class AuthorsStoreTest : BaseUnitTest() {
     @Mock lateinit var site: SiteModel
     @Mock lateinit var restClient: AuthorsRestClient
     @Mock lateinit var sqlUtils: AuthorsSqlUtils
     @Mock lateinit var mapper: TimeStatsMapper
+    private val liveResponse = MutableLiveData<AuthorsResponse>()
     private lateinit var store: AuthorsStore
     @Before
     fun setUp() {
@@ -109,6 +109,24 @@ class AuthorsStoreTest {
 
         val result = store.getAuthors(site, DAYS, LIMIT_MODE, DATE)
 
+        assertThat(result).isEqualTo(model)
+    }
+
+    @Test
+    fun `returns live data from db`() {
+        whenever(sqlUtils.liveSelect(site, DAYS, DATE)).thenReturn(liveResponse)
+        val model = mock<AuthorsModel>()
+        whenever(mapper.map(AUTHORS_RESPONSE, LIMIT_MODE)).thenReturn(model)
+
+        val liveData = store.liveAuthors(site, DAYS, LIMIT_MODE, DATE)
+
+        var result: AuthorsModel? = null
+        liveData.observeForever {
+            result = it
+        }
+        liveResponse.value = AUTHORS_RESPONSE
+
+        assertThat(result).isNotNull
         assertThat(result).isEqualTo(model)
     }
 }

@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store.stats.time
 
+import androidx.lifecycle.MutableLiveData
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.isNull
 import com.nhaarman.mockitokotlin2.mock
@@ -10,9 +11,8 @@ import kotlinx.coroutines.Dispatchers.Unconfined
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
+import org.wordpress.android.fluxc.BaseUnitTest
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.LimitMode
 import org.wordpress.android.fluxc.model.stats.time.CountryViewsModel
@@ -33,12 +33,12 @@ private const val ITEMS_TO_LOAD = 8
 private val LIMIT_MODE = LimitMode.Top(ITEMS_TO_LOAD)
 private val DATE = Date(0)
 
-@RunWith(MockitoJUnitRunner::class)
-class CountryViewsStoreTest {
+class CountryViewsStoreTest : BaseUnitTest() {
     @Mock lateinit var site: SiteModel
     @Mock lateinit var restClient: CountryViewsRestClient
     @Mock lateinit var sqlUtils: CountryViewsSqlUtils
     @Mock lateinit var mapper: TimeStatsMapper
+    private val liveResponse = MutableLiveData<CountryViewsResponse>()
     private lateinit var store: CountryViewsStore
     @Before
     fun setUp() {
@@ -106,6 +106,24 @@ class CountryViewsStoreTest {
 
         val result = store.getCountryViews(site, DAYS, LIMIT_MODE, DATE)
 
+        assertThat(result).isEqualTo(model)
+    }
+
+    @Test
+    fun `returns live data from db`() {
+        whenever(sqlUtils.liveSelect(site, DAYS, DATE)).thenReturn(liveResponse)
+        val model = mock<CountryViewsModel>()
+        whenever(mapper.map(COUNTRY_VIEWS_RESPONSE, LIMIT_MODE)).thenReturn(model)
+
+        val liveData = store.liveCountryViews(site, DAYS, LIMIT_MODE, DATE)
+
+        var result: CountryViewsModel? = null
+        liveData.observeForever {
+            result = it
+        }
+        liveResponse.value = COUNTRY_VIEWS_RESPONSE
+
+        assertThat(result).isNotNull
         assertThat(result).isEqualTo(model)
     }
 }

@@ -1,15 +1,15 @@
 package org.wordpress.android.fluxc.store.stats.insights
 
+import androidx.lifecycle.MutableLiveData
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import kotlinx.coroutines.Dispatchers
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
+import org.wordpress.android.fluxc.BaseUnitTest
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.InsightsMapper
 import org.wordpress.android.fluxc.model.stats.InsightsMostPopularModel
@@ -25,12 +25,12 @@ import org.wordpress.android.fluxc.test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-@RunWith(MockitoJUnitRunner::class)
-class MostPopularInsightsStoreTest {
+class MostPopularInsightsStoreTest : BaseUnitTest() {
     @Mock lateinit var site: SiteModel
     @Mock lateinit var restClient: MostPopularRestClient
     @Mock lateinit var sqlUtils: MostPopularSqlUtils
     @Mock lateinit var mapper: InsightsMapper
+    private val liveMostPopularResponse = MutableLiveData<MostPopularResponse>()
     private lateinit var store: MostPopularInsightsStore
     @Before
     fun setUp() {
@@ -54,7 +54,7 @@ class MostPopularInsightsStoreTest {
 
         val responseModel = store.fetchMostPopularInsights(site, forced)
 
-        Assertions.assertThat(responseModel.model).isEqualTo(model)
+        assertThat(responseModel.model).isEqualTo(model)
         verify(sqlUtils).insert(site, MOST_POPULAR_RESPONSE)
     }
 
@@ -82,7 +82,26 @@ class MostPopularInsightsStoreTest {
 
         val result = store.getMostPopularInsights(site)
 
-        Assertions.assertThat(result).isEqualTo(model)
+        assertThat(result).isEqualTo(model)
+    }
+
+    @Test
+    fun `returns live most popular insights from db`() {
+        whenever(sqlUtils.liveSelect(site)).thenReturn(liveMostPopularResponse)
+
+        val model = mock<InsightsMostPopularModel>()
+        whenever(mapper.map(MOST_POPULAR_RESPONSE, site)).thenReturn(model)
+
+        val liveData = store.liveMostPopularInsights(site)
+
+        var result: InsightsMostPopularModel? = null
+        liveData.observeForever {
+            result = it
+        }
+        liveMostPopularResponse.value = MOST_POPULAR_RESPONSE
+
+        assertThat(result).isNotNull
+        assertThat(result).isEqualTo(model)
     }
 
     @Test
@@ -97,7 +116,7 @@ class MostPopularInsightsStoreTest {
 
         val responseModel = store.fetchYearsInsights(site, forced)
 
-        Assertions.assertThat(responseModel.model).isEqualTo(model)
+        assertThat(responseModel.model).isEqualTo(model)
         verify(sqlUtils).insert(site, MOST_POPULAR_RESPONSE)
     }
 
@@ -109,6 +128,25 @@ class MostPopularInsightsStoreTest {
 
         val result = store.getYearsInsights(site)
 
-        Assertions.assertThat(result).isEqualTo(model)
+        assertThat(result).isEqualTo(model)
+    }
+
+    @Test
+    fun `returns live years insights from db`() {
+        whenever(sqlUtils.liveSelect(site)).thenReturn(liveMostPopularResponse)
+
+        val model = mock<YearsInsightsModel>()
+        whenever(mapper.map(MOST_POPULAR_RESPONSE)).thenReturn(model)
+
+        val liveData = store.liveYearsInsights(site)
+
+        var result: YearsInsightsModel? = null
+        liveData.observeForever {
+            result = it
+        }
+        liveMostPopularResponse.value = MOST_POPULAR_RESPONSE
+
+        assertThat(result).isNotNull
+        assertThat(result).isEqualTo(model)
     }
 }
