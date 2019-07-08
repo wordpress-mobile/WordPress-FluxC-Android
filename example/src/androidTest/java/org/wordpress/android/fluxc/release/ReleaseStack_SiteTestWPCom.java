@@ -51,6 +51,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -272,7 +273,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     @Test
     public void testTldsFilteredSuggestions() throws InterruptedException {
-        String keyword = "awesomesubdomain";
+        String keyword = "awesomedomain";
         List<String> requestedTlds = Arrays.asList("blog", "net");
 
         SuggestDomainsPayload payload = new SuggestDomainsPayload(keyword, 20, requestedTlds);
@@ -517,7 +518,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             for (DomainSuggestionResponse suggestionResponse : event.suggestions) {
                 String domain = suggestionResponse.domain_name;
                 assertTrue("Was expecting the domain to end in " + dotNetSuffix + " or " + dotBlogSuffix,
-                        domain.endsWith(wpcomSuffix) || domain.endsWith(dotNetSuffix));
+                        domain.endsWith(dotBlogSuffix) || domain.endsWith(dotNetSuffix));
             }
         } else {
             throw new AssertionError("Unexpected event type: " + mNextEvent);
