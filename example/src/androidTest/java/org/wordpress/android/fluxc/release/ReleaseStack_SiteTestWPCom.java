@@ -40,6 +40,7 @@ import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -78,7 +79,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         AUTOMATED_TRANSFER_NOT_FOUND,
         CHECK_BLACKLISTED_DOMAIN_AVAILABILITY,
         FETCHED_DOMAIN_SUPPORTED_STATES,
-        FETCHED_DOMAIN_SUPPORTED_COUNTRIES
+        FETCHED_DOMAIN_SUPPORTED_COUNTRIES,
+        FETCHED_TLDS_FILTERED_DOMAINS,
     }
 
     private TestEvents mNextEvent;
@@ -266,6 +268,16 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         String keywords = "awesomesubdomain";
         SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, true, 20, true);
         testSuggestDomains(payload, TestEvents.FETCHED_DOMAIN_SUGGESTIONS);
+    }
+
+    @Test
+    public void testTldsFilteredSuggestions() throws InterruptedException {
+        String keywords = "awesomesubdomain";
+
+        List<String> requestedTlds = Arrays.asList("blog", "net");
+
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, 20, requestedTlds);
+        testSuggestDomains(payload, TestEvents.FETCHED_TLDS_FILTERED_DOMAINS);
     }
 
     @Test
@@ -491,14 +503,25 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             mCountDownLatch.countDown();
             return;
         }
-        assertEquals(TestEvents.FETCHED_DOMAIN_SUGGESTIONS, mNextEvent);
 
         final String wpcomSuffix = ".wordpress.com";
         final String dotBlogSuffix = ".blog";
-        for (DomainSuggestionResponse suggestionResponse : event.suggestions) {
-            String domain = suggestionResponse.domain_name;
-            assertTrue("Was expecting the domain to end in " + wpcomSuffix + " or " + dotBlogSuffix,
-                    domain.endsWith(wpcomSuffix) || domain.endsWith(dotBlogSuffix));
+        final String dotNetSuffix = ".net";
+
+        if (mNextEvent == TestEvents.FETCHED_DOMAIN_SUGGESTIONS) {
+            for (DomainSuggestionResponse suggestionResponse : event.suggestions) {
+                String domain = suggestionResponse.domain_name;
+                assertTrue("Was expecting the domain to end in " + wpcomSuffix + " or " + dotBlogSuffix,
+                        domain.endsWith(wpcomSuffix) || domain.endsWith(dotBlogSuffix));
+            }
+        } else if (mNextEvent == TestEvents.FETCHED_TLDS_FILTERED_DOMAINS) {
+            for (DomainSuggestionResponse suggestionResponse : event.suggestions) {
+                String domain = suggestionResponse.domain_name;
+                assertTrue("Was expecting the domain to end in " + dotNetSuffix + " or " + dotBlogSuffix,
+                        domain.endsWith(wpcomSuffix) || domain.endsWith(dotNetSuffix));
+            }
+        } else {
+            throw new AssertionError("Unexpected event type: " + mNextEvent);
         }
 
         mCountDownLatch.countDown();
