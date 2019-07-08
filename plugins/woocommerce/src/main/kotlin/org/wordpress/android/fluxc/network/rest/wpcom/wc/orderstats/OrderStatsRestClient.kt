@@ -2,12 +2,15 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
+import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMV2
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
+import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.model.WCTopEarnerModel
 import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
@@ -15,7 +18,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsError
@@ -51,6 +56,11 @@ class OrderStatsRestClient(
     }
 
     private final val STATS_FIELDS = "data,fields"
+
+    // The default data count in `v4 revenue api` is 10.
+    // So we are setting the default limit to 31
+    private val STATS_DEFAULT_PER_PAGE = "31"
+    private val STATS_DEFAULT_ORDER = "asc"
 
     /**
      * Makes a GET call to `/wpcom/v2/sites/$site/data/orders/`, retrieving data for the given
@@ -114,6 +124,66 @@ class OrderStatsRestClient(
 
         request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
         if (force) request.setShouldForceUpdate()
+
+        add(request)
+    }
+
+    /**
+     * Makes a GET call to `/wc/v4/reports/revenue/stats`, retrieving data for the given
+     * WooCommerce [SiteModel].
+     *
+     * @param[site] the site to fetch stats data for
+     * @param[interval] one of 'hour', 'day', 'week', 'month', or 'year'
+     * @param[startDate] the start date to include in ISO format (YYYY-MM-dd'T'HH:mm:ss)
+     * @param[endDate] the end date to include in ISO format (YYYY-MM-dd'T'HH:mm:ss)
+     *
+     * Possible non-generic errors:
+     * [OrderStatsErrorType.INVALID_PARAM] if [interval], [startDate], or [endDate] are invalid or incompatible
+     */
+    fun fetchRevenueStats(
+        site: SiteModel,
+        interval: OrderStatsApiUnit,
+        startDate: String,
+        endDate: String,
+        force: Boolean = false
+    ) {
+        val url = WOOCOMMERCE.reports.revenue.stats.pathV4
+        val responseType = object : TypeToken<RevenueStatsApiResponse>() {}.type
+        val params = mapOf(
+                "interval" to interval.toString(),
+                "after" to startDate,
+                "before" to endDate,
+                "per_page" to STATS_DEFAULT_PER_PAGE,
+                "order" to STATS_DEFAULT_ORDER)
+
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: RevenueStatsApiResponse? ->
+                    response?.let {
+                        val model = WCRevenueStatsModel().apply {
+                            this.localSiteId = site.id
+                            this.interval = interval.toString()
+                            this.data = response.intervals.toString()
+                            this.startDate = startDate
+                            this.endDate = endDate
+                        }
+                        val payload = FetchRevenueStatsResponsePayload(site, interval, model)
+                        mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAction(payload))
+                    } ?: run {
+                        AppLog.e(T.API, "Response for url $url with param $params is null: $response")
+                        val orderError = OrderStatsError(OrderStatsErrorType.RESPONSE_NULL, "Response object is null")
+                        val payload = FetchRevenueStatsResponsePayload(orderError, site, interval)
+                        mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAction(payload))
+                    }
+                },
+                WPComGsonRequest.WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
+                    val payload = FetchRevenueStatsResponsePayload(orderError, site, interval)
+                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+
+        request?.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
+        if (force) request?.setShouldForceUpdate()
 
         add(request)
     }

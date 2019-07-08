@@ -18,10 +18,10 @@ import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
-import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.RESPONSE_NULL
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -313,6 +313,155 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
             assertEquals("2018-04-14", dataList.first()[periodIndex])
             assertEquals("2018-04-20", dataList.last()[periodIndex])
         }
+    }
+
+    @Test
+    fun testV4StatsDayFetchSuccess() {
+        interceptor.respondWith("wc-revenue-stats-response-success.json")
+        orderStatsRestClient.fetchRevenueStats(
+                site = siteModel, interval = OrderStatsApiUnit.DAY,
+                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59"
+        )
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCStatsAction.FETCHED_REVENUE_STATS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchRevenueStatsResponsePayload
+        assertNull(payload.error)
+        assertEquals(siteModel, payload.site)
+        assertEquals(OrderStatsApiUnit.DAY, payload.apiInterval)
+        assertNotNull(payload.stats)
+
+        with(payload.stats!!) {
+            assertEquals(siteModel.id, localSiteId)
+            assertEquals(OrderStatsApiUnit.DAY.toString(), interval)
+
+            val intervals = getIntervalList()
+            val startInterval = intervals.first().interval
+            val endInterval = intervals.last().interval
+            assertEquals("2019-07-01", startInterval)
+            assertEquals("2019-07-07", endInterval)
+        }
+    }
+
+    @Test
+    fun testV4StatsFetchCaching() {
+        requestQueue.cache.clear()
+
+        // Make initial stats request
+        interceptor.respondWith("wc-revenue-stats-response-success.json")
+        orderStatsRestClient.fetchRevenueStats(
+                site = siteModel, interval = OrderStatsApiUnit.DAY,
+                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59"
+        )
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        val firstRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
+
+        assertNotNull(firstRequestCacheEntry)
+
+        // Make the same stats request - this should hit the cache
+        interceptor.respondWith("wc-revenue-stats-response-success.json")
+        orderStatsRestClient.fetchRevenueStats(
+                site = siteModel, interval = OrderStatsApiUnit.DAY,
+                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59"
+        )
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        val secondRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
+
+        assertNotNull(secondRequestCacheEntry)
+        // Verify that the cache has not been renewed,
+        // which should mean that we read from it instead of making a network call
+        assertEquals(firstRequestCacheEntry.ttl, secondRequestCacheEntry.ttl)
+
+        // Make the same stats request, but this time pass force=true to force a network request
+        interceptor.respondWith("wc-revenue-stats-response-success.json")
+        orderStatsRestClient.fetchRevenueStats(
+                site = siteModel, interval = OrderStatsApiUnit.DAY,
+                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
+                force = true
+        )
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        val thirdRequestCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
+
+        assertNotNull(thirdRequestCacheEntry)
+        // The cache should have been renewed, since we ignored it and updated it with the results of a forced request
+        assertNotEquals(secondRequestCacheEntry.ttl, thirdRequestCacheEntry.ttl)
+
+        // New day, cache should be ignored
+        interceptor.respondWith("wc-revenue-stats-response-success.json")
+        orderStatsRestClient.fetchRevenueStats(
+                site = siteModel, interval = OrderStatsApiUnit.DAY,
+                startDate = "2019-07-02T00:00:00", endDate = "2019-07-08T23:59:59"
+        )
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        val newDayCacheEntry = requestQueue.cache.get(interceptor.lastRequestUrl)
+
+        assertNotNull(newDayCacheEntry)
+        // This should be a separate cache entry from the previous day's
+        assertNotEquals(thirdRequestCacheEntry.ttl, newDayCacheEntry.ttl)
+    }
+
+    @Test
+    fun testV4StatsFetchInvalidParamError() {
+        val errorJson = JsonObject().apply {
+            addProperty("error", "rest_invalid_param")
+            addProperty("message", "Invalid parameter(s): after")
+        }
+
+        interceptor.respondWithError(errorJson)
+        orderStatsRestClient.fetchRevenueStats(
+                site = siteModel, interval = OrderStatsApiUnit.DAY,
+                startDate = "invalid", endDate = "2019-07-07T23:59:59"
+        )
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCStatsAction.FETCHED_REVENUE_STATS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchRevenueStatsResponsePayload
+        assertNotNull(payload.error)
+        assertEquals(siteModel, payload.site)
+        assertEquals(OrderStatsApiUnit.DAY, payload.apiInterval)
+        assertNull(payload.stats)
+        assertEquals(OrderStatsErrorType.INVALID_PARAM, payload.error.type)
+    }
+
+    @Test
+    fun testV4StatsFetchResponseNullError() {
+        val errorJson = JsonObject().apply {
+            addProperty("error", OrderStatsErrorType.RESPONSE_NULL.name)
+            addProperty("message", "Response object is null")
+        }
+
+        interceptor.respondWithError(errorJson)
+        orderStatsRestClient.fetchRevenueStats(
+                site = siteModel, interval = OrderStatsApiUnit.DAY,
+                startDate = "invalid", endDate = "2019-07-07T23:59:59"
+        )
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCStatsAction.FETCHED_REVENUE_STATS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchRevenueStatsResponsePayload
+        assertNotNull(payload.error)
+        assertEquals(siteModel, payload.site)
+        assertEquals(OrderStatsApiUnit.DAY, payload.apiInterval)
+        assertNull(payload.stats)
+        assertEquals(OrderStatsErrorType.RESPONSE_NULL, payload.error.type)
     }
 
     @Suppress("unused")

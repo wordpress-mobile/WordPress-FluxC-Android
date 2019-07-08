@@ -16,12 +16,6 @@ data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Id
     @Column var endDate = "" // The end date of the data
     @Column var data = "" // JSON - A list of lists; each nested list contains the data for a time period
 
-    // The data JSON deserialized into a list of lists of arbitrary type
-    val dataList by lazy {
-        val responseType = object : TypeToken<List<Any>>() {}.type
-        gson.fromJson(data, responseType) as? List<Any> ?: emptyList()
-    }
-
     companion object {
         private val gson by lazy { Gson() }
     }
@@ -30,5 +24,27 @@ data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Id
 
     override fun setId(id: Int) {
         this.id = id
+    }
+
+    class Interval {
+        val interval: String? = null
+        val date_start: String? = null
+        val date_start_gmt: String? = null
+        val date_end: String? = null
+        val date_end_gmt: String? = null
+        val subtotals: SubTotal? = null
+    }
+
+    class SubTotal {
+        val orders_count: Long? = null
+        val gross_revenue: Double? = null
+    }
+
+    /**
+     * Deserializes the JSON contained in [data] into a list of [Interval] objects.
+     */
+    fun getIntervalList(): List<Interval> {
+        val responseType = object : TypeToken<List<Interval>>() {}.type
+        return gson.fromJson(data, responseType) as? List<Interval> ?: emptyList()
     }
 }
