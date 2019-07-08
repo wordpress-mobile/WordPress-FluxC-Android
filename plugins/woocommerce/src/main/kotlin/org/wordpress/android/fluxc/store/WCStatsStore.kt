@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel.OrderStatsField
+import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.model.WCTopEarnerModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
@@ -86,6 +87,33 @@ class WCStatsStore @Inject constructor(
         val stats: WCOrderStatsModel? = null
     ) : Payload<OrderStatsError>() {
         constructor(error: OrderStatsError, site: SiteModel, apiUnit: OrderStatsApiUnit) : this(site, apiUnit) {
+            this.error = error
+        }
+    }
+
+    /**
+     * Describes the parameters for fetching new stats for [site], up to the current day, month, or year
+     * (depending on the given [granularity], [startDate], [endDate]).
+     *
+     * @param[granularity] the time interval for the requested data
+     * @param[startDate] The start date of the data
+     * @param[endDate] The end date of the data
+     * @param[forced] if true, ignores any cached result and forces a refresh from the server (defaults to false)
+     */
+    class FetchRevenueStatsPayload(
+        val site: SiteModel,
+        val granularity: StatsGranularity,
+        val startDate: String,
+        val endDate: String,
+        val forced: Boolean = false
+    ) : Payload<BaseNetworkError>()
+
+    class FetchRevenueStatsResponsePayload(
+        val site: SiteModel,
+        val apiInterval: OrderStatsApiUnit,
+        val stats: WCRevenueStatsModel? = null
+    ) : Payload<OrderStatsError>() {
+        constructor(error: OrderStatsError, site: SiteModel, apiInterval: OrderStatsApiUnit) : this(site, apiInterval) {
             this.error = error
         }
     }
