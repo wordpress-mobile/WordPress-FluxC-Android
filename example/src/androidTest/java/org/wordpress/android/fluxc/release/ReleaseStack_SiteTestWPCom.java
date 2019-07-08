@@ -71,6 +71,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         FETCHED_CONNECT_SITE_INFO,
         FETCHED_WPCOM_SITE_BY_URL,
         FETCHED_DOMAIN_SUGGESTIONS,
+        FETCHED_TLDS_FILTERED_DOMAINS,
         DOMAIN_SUGGESTION_ERROR_INVALID_QUERY,
         ERROR_INVALID_SITE,
         ERROR_UNKNOWN_SITE,
@@ -80,7 +81,6 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         CHECK_BLACKLISTED_DOMAIN_AVAILABILITY,
         FETCHED_DOMAIN_SUPPORTED_STATES,
         FETCHED_DOMAIN_SUPPORTED_COUNTRIES,
-        FETCHED_TLDS_FILTERED_DOMAINS,
     }
 
     private TestEvents mNextEvent;
@@ -272,11 +272,10 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     @Test
     public void testTldsFilteredSuggestions() throws InterruptedException {
-        String keywords = "awesomesubdomain";
-
+        String keyword = "awesomesubdomain";
         List<String> requestedTlds = Arrays.asList("blog", "net");
 
-        SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, 20, requestedTlds);
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keyword, 20, requestedTlds);
         testSuggestDomains(payload, TestEvents.FETCHED_TLDS_FILTERED_DOMAINS);
     }
 
