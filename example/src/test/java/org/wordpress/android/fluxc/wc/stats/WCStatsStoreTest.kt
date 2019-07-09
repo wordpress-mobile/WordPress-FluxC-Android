@@ -1239,9 +1239,8 @@ class WCStatsStoreTest {
     @Test
     fun testFetchCurrentDayStatsDate() {
         val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
-            val startDate = DateUtils.getStartDateForSite(it, DateUtils.getCurrentDateString())
-            val endDate = DateUtils.getEndDateForSite(it)
-            val payload = FetchRevenueStatsPayload(it, HOUR, startDate, endDate)
+            val startDate = DateUtils.formatDate("yyyy-MM-dd", Date())
+            val payload = FetchRevenueStatsPayload(it, HOUR, startDate)
             wcStatsStore.onAction(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
 
             val timeOnSite = getCurrentDateTimeForSite(it, "yyyy-MM-dd'T'00:00:00")
@@ -1258,9 +1257,8 @@ class WCStatsStoreTest {
         reset(mockOrderStatsRestClient)
 
         val minus12SiteDate = SiteModel().apply { timezone = "-12" }.let {
-            val startDate = DateUtils.getStartDateForSite(it, DateUtils.getCurrentDateString())
-            val endDate = DateUtils.getEndDateForSite(it)
-            val payload = FetchRevenueStatsPayload(it, HOUR, startDate, endDate)
+            val startDate = DateUtils.formatDate("yyyy-MM-dd", Date())
+            val payload = FetchRevenueStatsPayload(it, HOUR, startDate)
             wcStatsStore.onAction(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
 
             val timeOnSite = getCurrentDateTimeForSite(it, "yyyy-MM-dd'T'00:00:00")
