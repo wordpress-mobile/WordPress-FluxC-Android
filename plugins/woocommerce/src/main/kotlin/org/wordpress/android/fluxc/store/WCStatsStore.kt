@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.model.WCTopEarnerModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
+import org.wordpress.android.fluxc.persistence.WCRevenueStatsSqlUtils
 import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.utils.DateUtils
@@ -47,6 +48,7 @@ class WCStatsStore @Inject constructor(
         companion object {
             fun fromOrderStatsApiUnit(apiUnit: OrderStatsApiUnit): StatsGranularity {
                 return when (apiUnit) {
+                    OrderStatsApiUnit.HOUR -> StatsGranularity.DAYS
                     OrderStatsApiUnit.DAY -> StatsGranularity.DAYS
                     OrderStatsApiUnit.WEEK -> StatsGranularity.WEEKS
                     OrderStatsApiUnit.MONTH -> StatsGranularity.MONTHS
@@ -93,16 +95,16 @@ class WCStatsStore @Inject constructor(
 
     /**
      * Describes the parameters for fetching new stats for [site], up to the current day, month, or year
-     * (depending on the given [granularity], [startDate], [endDate]).
+     * (depending on the given [apiInterval], [startDate], [endDate]).
      *
-     * @param[granularity] the time interval for the requested data
+     * @param[apiInterval] the time interval for the requested data
      * @param[startDate] The start date of the data
      * @param[endDate] The end date of the data
      * @param[forced] if true, ignores any cached result and forces a refresh from the server (defaults to false)
      */
     class FetchRevenueStatsPayload(
         val site: SiteModel,
-        val granularity: StatsGranularity,
+        val apiInterval: OrderStatsApiUnit,
         val startDate: String,
         val endDate: String,
         val forced: Boolean = false
@@ -196,10 +198,13 @@ class WCStatsStore @Inject constructor(
         val actionType = action.type as? WCStatsAction ?: return
         when (actionType) {
             WCStatsAction.FETCH_ORDER_STATS -> fetchOrderStats(action.payload as FetchOrderStatsPayload)
+            WCStatsAction.FETCH_REVENUE_STATS -> fetchRevenueStats(action.payload as FetchRevenueStatsPayload)
             WCStatsAction.FETCH_VISITOR_STATS -> fetchVisitorStats(action.payload as FetchVisitorStatsPayload)
             WCStatsAction.FETCH_TOP_EARNERS_STATS -> fetchTopEarnersStats(action.payload as FetchTopEarnersStatsPayload)
             WCStatsAction.FETCHED_ORDER_STATS ->
                 handleFetchOrderStatsCompleted(action.payload as FetchOrderStatsResponsePayload)
+            WCStatsAction.FETCHED_REVENUE_STATS ->
+                handleFetchRevenueStatsCompleted(action.payload as FetchRevenueStatsResponsePayload)
             WCStatsAction.FETCHED_VISITOR_STATS ->
                 handleFetchVisitorStatsCompleted(action.payload as FetchVisitorStatsResponsePayload)
             WCStatsAction.FETCHED_TOP_EARNERS_STATS ->
@@ -454,5 +459,92 @@ class WCStatsStore @Inject constructor(
                 "Missing field: $missingField, returned fields: ${orderStatsModel.fields}"
         )
         mDispatcher.emitChange(unexpectedError)
+    }
+
+    /**
+     * Methods to support v4 api changes
+     */
+    class OnWCRevenueStatsChanged(
+        val rowsAffected: Int,
+        val apiInterval: OrderStatsApiUnit,
+        val startDate: String? = null,
+        val endDate: String? = null
+    ) : OnChanged<OrderStatsError>() {
+        var causeOfChange: WCStatsAction? = null
+    }
+
+    private fun fetchRevenueStats(payload: FetchRevenueStatsPayload) {
+        val startDate = DateUtils.getStartDateForSite(payload.site, payload.startDate)
+        val endDate = DateUtils.getEndDateForSite(payload.site)
+        wcOrderStatsClient.fetchRevenueStats(
+                payload.site,
+                payload.apiInterval,
+                startDate,
+                endDate,
+                payload.forced
+        )
+    }
+
+    private fun handleFetchRevenueStatsCompleted(payload: FetchRevenueStatsResponsePayload) {
+        val onStatsChanged = with(payload) {
+            if (isError || stats == null) {
+                return@with OnWCRevenueStatsChanged(0, apiInterval)
+                        .also { it.error = payload.error }
+            } else {
+                val rowsAffected = WCRevenueStatsSqlUtils.insertOrUpdateStats(stats)
+                return@with OnWCRevenueStatsChanged(rowsAffected, apiInterval, stats.startDate, stats.endDate)
+            }
+        }
+
+        onStatsChanged.causeOfChange = WCStatsAction.FETCH_REVENUE_STATS
+        emitChange(onStatsChanged)
+    }
+
+    /**
+     * Returns the revenue data by date for the given [site], in units of [interval].
+     *
+     * The returned map has the format: "2018-05-01" -> 57.43
+     *
+     * The [startDate] and [endDate] will be passed by the function caller
+     *
+     * The format of the date key in the returned map depends on the [interval]:
+     * [OrderStatsApiUnit.HOUR]: "2018-07-06 23"
+     * [OrderStatsApiUnit.DAY]: "2018-07-06"
+     * [OrderStatsApiUnit.WEEK]: "2018-W16"
+     * [OrderStatsApiUnit.MONTH]: "2018-05"
+     * [OrderStatsApiUnit.YEAR]: "2018"
+     */
+    fun getWCRevenueStats(
+        site: SiteModel,
+        interval: OrderStatsApiUnit,
+        startDate: String,
+        endDate: String
+    ): Map<String, Double> {
+        val rawStats = getRawStats(site, interval, startDate, endDate)
+        return rawStats?.getIntervalList()?.map {
+            it.interval!! to it.subtotals?.gross_revenue!!
+        }?.toMap() ?: mapOf()
+    }
+
+    fun getWCOrderCountStats(
+        site: SiteModel,
+        interval: OrderStatsApiUnit,
+        startDate: String,
+        endDate: String
+    ): Map<String, Long> {
+        val rawStats = getRawStats(site, interval, startDate, endDate)
+        return rawStats?.getIntervalList()?.map {
+            it.interval!! to it.subtotals?.orders_count!!
+        }?.toMap() ?: mapOf()
+    }
+
+    private fun getRawStats(
+        site: SiteModel,
+        interval: OrderStatsApiUnit,
+        startDate: String,
+        endDate: String
+    ): WCRevenueStatsModel? {
+        return WCRevenueStatsSqlUtils.getRawStatsForSiteIntervalAndDate(
+                site, interval, startDate, endDate)
     }
 }

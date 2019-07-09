@@ -39,7 +39,7 @@ class OrderStatsRestClient(
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     enum class OrderStatsApiUnit {
-        DAY, WEEK, MONTH, YEAR;
+        HOUR, DAY, WEEK, MONTH, YEAR;
 
         companion object {
             fun fromStatsGranularity(granularity: StatsGranularity): OrderStatsApiUnit {
