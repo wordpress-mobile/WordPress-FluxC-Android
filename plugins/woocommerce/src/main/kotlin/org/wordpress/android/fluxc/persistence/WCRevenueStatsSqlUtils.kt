@@ -29,7 +29,7 @@ object WCRevenueStatsSqlUtils {
         }
     }
 
-    private fun getRawStatsForSiteIntervalAndDate(
+    fun getRawStatsForSiteIntervalAndDate(
         site: SiteModel,
         interval: OrderStatsApiUnit,
         startDate: String,

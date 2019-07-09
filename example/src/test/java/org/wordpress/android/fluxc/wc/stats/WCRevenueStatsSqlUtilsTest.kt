@@ -8,10 +8,14 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.persistence.WCRevenueStatsSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
@@ -113,5 +117,88 @@ class WCRevenueStatsSqlUtilsTest {
             assertEquals(revenueStatsModel5.startDate, get(3).startDate)
             assertEquals(revenueStatsModel5.endDate, get(3).endDate)
         }
+    }
+
+    @Test
+    fun testGetRawStatsForSiteAndUnit() {
+        // revenue stats model for current day
+        val currentDayStatsModel = WCStatsTestUtils.generateSampleRevenueStatsModel(interval = "hour")
+        val site = SiteModel().apply { id = currentDayStatsModel.localSiteId }
+        WCRevenueStatsSqlUtils.insertOrUpdateStats(currentDayStatsModel)
+
+        // revenue stats model for this week
+        val currentWeekStatsModel =
+                WCStatsTestUtils.generateSampleRevenueStatsModel(
+                        interval = "day", data = "fake-data", startDate = "2019-07-07", endDate = "2019-07-09"
+                )
+        WCRevenueStatsSqlUtils.insertOrUpdateStats(currentWeekStatsModel)
+
+        // revenue stats model for this month
+        val currentMonthStatsModel =
+                WCStatsTestUtils.generateSampleRevenueStatsModel(
+                        interval = "day", data = "fake-data", startDate = "2019-07-01", endDate = "2019-07-09"
+                )
+        WCRevenueStatsSqlUtils.insertOrUpdateStats(currentMonthStatsModel)
+
+        // current day stats for alternate site
+        val site2 = SiteModel().apply { id = 8 }
+        val altSiteOrderStatsModel = WCStatsTestUtils.generateSampleRevenueStatsModel(
+                localSiteId = site2.id, interval = "hour"
+        )
+        WCRevenueStatsSqlUtils.insertOrUpdateStats(altSiteOrderStatsModel)
+
+        val currentDayStats = WCRevenueStatsSqlUtils.getRawStatsForSiteIntervalAndDate(
+                site, OrderStatsApiUnit.HOUR, currentDayStatsModel.startDate, currentDayStatsModel.endDate
+        )
+        assertNotNull(currentDayStats)
+        with(currentDayStats) {
+            assertEquals("hour", interval)
+            assertEquals(currentDayStatsModel.startDate, startDate)
+            assertEquals(currentDayStatsModel.endDate, endDate)
+            assertEquals(currentDayStatsModel.localSiteId, localSiteId)
+        }
+
+        val currentWeekStats = WCRevenueStatsSqlUtils.getRawStatsForSiteIntervalAndDate(
+                site, OrderStatsApiUnit.DAY, currentWeekStatsModel.startDate, currentWeekStatsModel.endDate
+        )
+        assertNotNull(currentWeekStats)
+        with(currentWeekStats) {
+            assertEquals("day", interval)
+            assertEquals(currentWeekStatsModel.startDate, startDate)
+            assertEquals(currentWeekStatsModel.endDate, endDate)
+            assertEquals(currentWeekStatsModel.localSiteId, localSiteId)
+        }
+
+        val currentMonthStats = WCRevenueStatsSqlUtils.getRawStatsForSiteIntervalAndDate(
+                site, OrderStatsApiUnit.DAY, currentMonthStatsModel.startDate, currentMonthStatsModel.endDate
+        )
+        assertNotNull(currentMonthStats)
+        with(currentMonthStats) {
+            assertEquals("day", interval)
+            assertEquals(currentMonthStatsModel.startDate, startDate)
+            assertEquals(currentMonthStatsModel.endDate, endDate)
+            assertEquals(currentMonthStatsModel.localSiteId, localSiteId)
+        }
+
+        val altCurrentDayStats = WCRevenueStatsSqlUtils.getRawStatsForSiteIntervalAndDate(
+                site2, OrderStatsApiUnit.HOUR, altSiteOrderStatsModel.startDate, altSiteOrderStatsModel.endDate
+        )
+        assertNotNull(altCurrentDayStats)
+        with(altCurrentDayStats) {
+            assertEquals("hour", interval)
+            assertEquals(altSiteOrderStatsModel.startDate, startDate)
+            assertEquals(altSiteOrderStatsModel.endDate, endDate)
+            assertEquals(altSiteOrderStatsModel.localSiteId, localSiteId)
+        }
+
+        val nonExistentSite = WCRevenueStatsSqlUtils.getRawStatsForSiteIntervalAndDate(
+                SiteModel().apply { id = 88 },
+                OrderStatsApiUnit.DAY, currentDayStatsModel.startDate, currentDayStatsModel.endDate
+        )
+        assertNull(nonExistentSite)
+
+        val missingData = WCRevenueStatsSqlUtils.getRawStatsForSiteIntervalAndDate(
+                site, OrderStatsApiUnit.YEAR, currentDayStatsModel.startDate, currentDayStatsModel.endDate)
+        assertNull(missingData)
     }
 }
