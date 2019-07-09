@@ -106,7 +106,6 @@ class WCStatsStore @Inject constructor(
         val site: SiteModel,
         val apiInterval: OrderStatsApiUnit,
         val startDate: String,
-        val endDate: String,
         val forced: Boolean = false
     ) : Payload<BaseNetworkError>()
 
