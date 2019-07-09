@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErrorListener
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
@@ -29,6 +30,7 @@ import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 class OrderStatsRestClient(
@@ -58,8 +60,10 @@ class OrderStatsRestClient(
     private final val STATS_FIELDS = "data,fields"
 
     // The default data count in `v4 revenue api` is 10.
-    // So we are setting the default limit to 31
-    private val STATS_DEFAULT_PER_PAGE = "31"
+    // so if we need to get data for an entire month without pagination, the per_page value should be 30 or 31.
+    // But, for some reason, if we keep the per_page value static, the api is not providing refreshed data
+    // when a new order is completed. So for now, keeping the per_page value as random between 1 to 100.
+    private val STATS_DEFAULT_PER_PAGE = 100
     private val STATS_DEFAULT_ORDER = "asc"
 
     /**
@@ -153,7 +157,7 @@ class OrderStatsRestClient(
                 "interval" to interval.toString(),
                 "after" to startDate,
                 "before" to endDate,
-                "per_page" to STATS_DEFAULT_PER_PAGE,
+                "per_page" to Random.nextInt(0, STATS_DEFAULT_PER_PAGE).toString(),
                 "order" to STATS_DEFAULT_ORDER)
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
@@ -175,7 +179,7 @@ class OrderStatsRestClient(
                         mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAction(payload))
                     }
                 },
-                WPComGsonRequest.WPComErrorListener { networkError ->
+                WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
                     val payload = FetchRevenueStatsResponsePayload(orderError, site, interval)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAction(payload))
@@ -282,6 +286,7 @@ class OrderStatsRestClient(
     private fun networkErrorToOrderError(wpComError: WPComGsonNetworkError): OrderStatsError {
         val orderStatsErrorType = when (wpComError.apiError) {
             "rest_invalid_param" -> OrderStatsErrorType.INVALID_PARAM
+            "rest_no_route" -> OrderStatsErrorType.PLUGIN_NOT_ACTIVE
             else -> OrderStatsErrorType.fromString(wpComError.apiError)
         }
         return OrderStatsError(orderStatsErrorType, wpComError.message)

@@ -166,6 +166,7 @@ class WCStatsStore @Inject constructor(
     enum class OrderStatsErrorType {
         RESPONSE_NULL,
         INVALID_PARAM,
+        PLUGIN_NOT_ACTIVE,
         GENERIC_ERROR;
 
         companion object {
