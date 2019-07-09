@@ -9,6 +9,8 @@ import java.util.Locale
 
 object DateUtils {
     private const val DATE_FORMAT_DEFAULT = "yyyy-MM-dd"
+    private const val TIME_FORMAT_START = "T00:00:00"
+    private const val TIME_FORMAT_END = "T23:59:59"
 
     /**
      * Given a [SiteModel] and a [String] compatible with [SimpleDateFormat]
@@ -251,4 +253,25 @@ object DateUtils {
      * Format the date for UTC and return as string
      */
     fun formatGmtAsUtcDateString(gmtVal: String): String = "${gmtVal}Z"
+
+    /**
+     * Given a [SiteModel] and a [dateString] in format yyyy-MM-dd,
+     * returns a formatted date that accounts for the site's timezone setting,
+     * in the format yyy-MM-ddThh:mm:ss with the time always set to the start of the [dateString]
+     */
+    fun getStartDateForSite(site: SiteModel, dateString: String): String {
+        val formattedDateString = getDateTimeForSite(site, DATE_FORMAT_DEFAULT, dateString)
+        return "$formattedDateString$TIME_FORMAT_START"
+    }
+
+    /**
+     * Given a [SiteModel],
+     * returns a formatted date that accounts for the site's timezone setting,
+     * in the format yyy-MM-ddThh:mm:ss with the time always set to the end of the
+     * current date
+     */
+    fun getEndDateForSite(site: SiteModel): String {
+        val formattedDateString = getDateTimeForSite(site, DATE_FORMAT_DEFAULT, null)
+        return "$formattedDateString$TIME_FORMAT_END"
+    }
 }
