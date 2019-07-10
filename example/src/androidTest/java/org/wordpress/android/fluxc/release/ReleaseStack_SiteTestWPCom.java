@@ -40,7 +40,6 @@ import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -273,9 +272,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     @Test
     public void testTldsFilteredSuggestions() throws InterruptedException {
         String keyword = "awesomedomain";
-        List<String> requestedTlds = Arrays.asList("blog", "net");
 
-        SuggestDomainsPayload payload = new SuggestDomainsPayload(keyword, 20, requestedTlds);
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keyword, 20, "blog");
         testSuggestDomains(payload, TestEvents.FETCHED_TLDS_FILTERED_DOMAINS);
     }
 
@@ -516,8 +514,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         } else if (mNextEvent == TestEvents.FETCHED_TLDS_FILTERED_DOMAINS) {
             for (DomainSuggestionResponse suggestionResponse : event.suggestions) {
                 String domain = suggestionResponse.domain_name;
-                assertTrue("Was expecting the domain to end in " + dotNetSuffix + " or " + dotBlogSuffix,
-                        domain.endsWith(dotBlogSuffix) || domain.endsWith(dotNetSuffix));
+                assertTrue("Was expecting the domain to end in " + dotNetSuffix, domain.endsWith(dotBlogSuffix));
             }
         } else {
             throw new AssertionError("Unexpected event type: " + mNextEvent);
