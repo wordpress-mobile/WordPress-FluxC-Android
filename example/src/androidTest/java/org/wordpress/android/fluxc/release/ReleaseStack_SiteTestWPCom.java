@@ -64,6 +64,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         SITE_CHANGED,
         POST_FORMATS_CHANGED,
         USER_ROLES_CHANGED,
+        SITE_EDITORS_CHANGED,
         PLANS_FETCHED,
         PLANS_UNKNOWN_BLOG_ERROR,
         SITE_REMOVED,
@@ -127,6 +128,25 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Test fetched Post Formats
         List<PostFormatModel> postFormats = mSiteStore.getPostFormats(firstSite);
         assertNotSame(0, postFormats.size());
+    }
+
+    @Test
+    public void testFetchSiteEditors() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        // Get the first site
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+
+        // Fetch user roles
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSiteEditorsAction(firstSite));
+        mNextEvent = TestEvents.SITE_EDITORS_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Default editors for a wpcom site
+        assertEquals(firstSite.getMobileEditor(), "aztec");
+        assertEquals(firstSite.getWebEditor(), "gutenberg");
     }
 
     @Test
