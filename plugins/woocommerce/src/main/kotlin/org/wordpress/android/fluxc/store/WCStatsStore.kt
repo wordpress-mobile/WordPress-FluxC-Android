@@ -45,7 +45,9 @@ class WCStatsStore @Inject constructor(
         private const val DATE_FORMAT_MONTH = "yyyy-MM"
         private const val DATE_FORMAT_YEAR = "yyyy"
 
-        private const val STATS_API_V4_PER_PAGE_PARAM = "STATS_V4_API_PER_PAGE_PARAM_PREF_KEY"
+        const val STATS_API_V4_PER_PAGE_PARAM = "STATS_V4_API_PER_PAGE_PARAM_PREF_KEY"
+        const val STATS_API_V4_MIN_PER_PAGE_PARAM = 31
+        const val STATS_API_V4_MAX_PER_PAGE_PARAM = 100
     }
 
     private val preferences by lazy { PreferenceUtils.getFluxCPreferences(context) }
@@ -103,11 +105,10 @@ class WCStatsStore @Inject constructor(
 
     /**
      * Describes the parameters for fetching new stats for [site], up to the current day, month, or year
-     * (depending on the given [apiInterval], [startDate], [endDate]).
+     * (depending on the given [apiInterval], [startDate]).
      *
      * @param[apiInterval] the time interval for the requested data
      * @param[startDate] The start date of the data
-     * @param[endDate] The end date of the data
      * @param[forced] if true, ignores any cached result and forces a refresh from the server (defaults to false)
      */
     class FetchRevenueStatsPayload(
@@ -484,20 +485,7 @@ class WCStatsStore @Inject constructor(
     private fun fetchRevenueStats(payload: FetchRevenueStatsPayload) {
         val startDate = DateUtils.getStartDateForSite(payload.site, payload.startDate)
         val endDate = DateUtils.getEndDateForSite(payload.site)
-
-        // The default data count in `v4 revenue api` is 10.
-        // so if we need to get data for an entire month without pagination, the per_page value should be 30 or 31.
-        // But, due to caching in the api, if the per_page value static, the api is not providing refreshed data
-        // when a new order is completed.
-        // So this logic generates a random value between 31 to 100 only if the force flag is set to true
-        // And storing this value locally to be used when the force flag is set to false.
-        val randomInt = Random.nextInt(31, 100)
-        val perPage = if (!payload.forced) {
-            preferences.getInt(STATS_API_V4_PER_PAGE_PARAM, randomInt)
-        } else {
-            preferences.edit().putInt(STATS_API_V4_PER_PAGE_PARAM, randomInt).apply()
-            randomInt
-        }
+        val perPage = getRandomPageInt(payload.forced)
         wcOrderStatsClient.fetchRevenueStats(
                 payload.site,
                 payload.apiInterval,
@@ -506,6 +494,30 @@ class WCStatsStore @Inject constructor(
                 perPage,
                 payload.forced
         )
+    }
+
+    /**
+     * The default data count in `v4 revenue api` is 10.
+     * so if we need to get data for an entire month without pagination, the per_page value should be 30 or 31.
+     * But, due to caching in the api, if the per_page value static, the api is not providing refreshed data
+     * when a new order is completed.
+     * So this logic generates a random value between 31 to 100 only if the [forced] is set to true
+     * And storing this value locally to be used when the [forced] flag is set to false.
+     * */
+    private fun getRandomPageInt(forced: Boolean): Int {
+        val randomInt = Random.nextInt(STATS_API_V4_MIN_PER_PAGE_PARAM, STATS_API_V4_MAX_PER_PAGE_PARAM)
+        return if (!forced) {
+            val prefsValue = preferences.getInt(STATS_API_V4_PER_PAGE_PARAM, 0)
+            if (prefsValue == 0) {
+                preferences.edit().putInt(STATS_API_V4_PER_PAGE_PARAM, randomInt).apply()
+                randomInt
+            } else {
+                prefsValue
+            }
+        } else {
+            preferences.edit().putInt(STATS_API_V4_PER_PAGE_PARAM, randomInt).apply()
+            randomInt
+        }
     }
 
     private fun handleFetchRevenueStatsCompleted(payload: FetchRevenueStatsResponsePayload) {
