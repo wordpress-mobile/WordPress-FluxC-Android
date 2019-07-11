@@ -259,9 +259,8 @@ object DateUtils {
      * returns a formatted date that accounts for the site's timezone setting,
      * in the format yyy-MM-ddThh:mm:ss with the time always set to the start of the [dateString]
      */
-    fun getStartDateForSite(site: SiteModel, dateString: String): String {
-        return getDateTimeForSite(site, DATE_TIME_FORMAT_START, dateString)
-    }
+    fun getStartDateForSite(site: SiteModel, dateString: String) =
+            getDateTimeForSite(site, DATE_TIME_FORMAT_START, dateString)
 
     /**
      * Given a [SiteModel],
@@ -269,7 +268,5 @@ object DateUtils {
      * in the format yyy-MM-ddThh:mm:ss with the time always set to the end of the
      * current date
      */
-    fun getEndDateForSite(site: SiteModel): String {
-        return getDateTimeForSite(site, DATE_TIME_FORMAT_END, null)
-    }
+    fun getEndDateForSite(site: SiteModel) = getDateTimeForSite(site, DATE_TIME_FORMAT_END, null)
 }
