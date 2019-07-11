@@ -49,12 +49,11 @@ import org.hamcrest.CoreMatchers.`is` as isEqual
 @RunWith(RobolectricTestRunner::class)
 class WCStatsStoreTest {
     private val mockOrderStatsRestClient = mock<OrderStatsRestClient>()
-    private val wcStatsStore = WCStatsStore(Dispatcher(), mockOrderStatsRestClient)
+    private val appContext = RuntimeEnvironment.application.applicationContext
+    private val wcStatsStore = WCStatsStore(Dispatcher(), appContext, mockOrderStatsRestClient)
 
     @Before
     fun setUp() {
-        val appContext = RuntimeEnvironment.application.applicationContext
-
         val config = SingleStoreWellSqlConfigForTests(
                 appContext, listOf(WCOrderStatsModel::class.java, WCRevenueStatsModel::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE
@@ -163,7 +162,7 @@ class WCStatsStoreTest {
 
         val dayOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site, OrderStatsApiUnit.DAY)
         assertNotNull(dayOrderStats)
-        with(dayOrderStats!!) {
+        with(dayOrderStats) {
             assertEquals("day", unit)
             assertEquals(false, isCustomField)
         }
@@ -175,7 +174,7 @@ class WCStatsStoreTest {
                 OrderStatsApiUnit.DAY, dayOrderCustomStatsModel.quantity, dayOrderCustomStatsModel.date,
                 dayOrderCustomStatsModel.isCustomField)
         assertNotNull(dayOrderCustomStats)
-        with(dayOrderCustomStats!!) {
+        with(dayOrderCustomStats) {
             assertEquals("day", unit)
             assertEquals(true, isCustomField)
         }
@@ -186,7 +185,7 @@ class WCStatsStoreTest {
 
         val monthOrderStatus = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site, OrderStatsApiUnit.MONTH)
         assertNotNull(monthOrderStatus)
-        with(monthOrderStatus!!) {
+        with(monthOrderStatus) {
             assertEquals("month", unit)
             assertEquals(false, isCustomField)
         }
@@ -983,7 +982,7 @@ class WCStatsStoreTest {
          * */
         val defaultOrderStats = WCStatsSqlUtils.getRawStatsForSiteUnitQuantityAndDate(site2, OrderStatsApiUnit.MONTH)
         assertNotNull(defaultOrderStats)
-        assertEquals(OrderStatsApiUnit.MONTH.toString(), defaultOrderStats?.unit)
+        assertEquals(OrderStatsApiUnit.MONTH.toString(), defaultOrderStats.unit)
     }
 
     @Test
@@ -1248,7 +1247,7 @@ class WCStatsStoreTest {
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
             verify(mockOrderStatsRestClient).fetchRevenueStats(any(), any(),
-                    dateArgument.capture(), any(), any())
+                    dateArgument.capture(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
@@ -1266,7 +1265,7 @@ class WCStatsStoreTest {
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
             verify(mockOrderStatsRestClient).fetchRevenueStats(any(), any(), dateArgument.capture(), any(),
-                    any())
+                    any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
             return@let siteDate
