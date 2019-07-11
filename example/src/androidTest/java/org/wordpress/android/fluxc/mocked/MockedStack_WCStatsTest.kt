@@ -320,7 +320,8 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         interceptor.respondWith("wc-revenue-stats-response-success.json")
         orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, interval = OrderStatsApiUnit.DAY,
-                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59"
+                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
+                perPage = 35
         )
 
         countDownLatch = CountDownLatch(1)
@@ -353,7 +354,8 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         interceptor.respondWith("wc-revenue-stats-response-success.json")
         orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, interval = OrderStatsApiUnit.DAY,
-                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59"
+                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
+                perPage = 35
         )
 
         countDownLatch = CountDownLatch(1)
@@ -367,7 +369,8 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         interceptor.respondWith("wc-revenue-stats-response-success.json")
         orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, interval = OrderStatsApiUnit.DAY,
-                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59"
+                startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
+                perPage = 35
         )
 
         countDownLatch = CountDownLatch(1)
@@ -378,14 +381,14 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         assertNotNull(secondRequestCacheEntry)
         // Verify that the cache has not been renewed,
         // which should mean that we read from it instead of making a network call
-//        assertEquals(firstRequestCacheEntry.ttl, secondRequestCacheEntry.ttl)
+        assertEquals(firstRequestCacheEntry.ttl, secondRequestCacheEntry.ttl)
 
         // Make the same stats request, but this time pass force=true to force a network request
         interceptor.respondWith("wc-revenue-stats-response-success.json")
         orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, interval = OrderStatsApiUnit.DAY,
                 startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
-                force = true
+                perPage = 35, force = true
         )
 
         countDownLatch = CountDownLatch(1)
@@ -401,7 +404,8 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         interceptor.respondWith("wc-revenue-stats-response-success.json")
         orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, interval = OrderStatsApiUnit.DAY,
-                startDate = "2019-07-02T00:00:00", endDate = "2019-07-08T23:59:59"
+                startDate = "2019-07-02T00:00:00", endDate = "2019-07-08T23:59:59",
+                perPage = 35
         )
 
         countDownLatch = CountDownLatch(1)
@@ -424,7 +428,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         interceptor.respondWithError(errorJson)
         orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, interval = OrderStatsApiUnit.DAY,
-                startDate = "invalid", endDate = "2019-07-07T23:59:59"
+                startDate = "invalid", endDate = "2019-07-07T23:59:59", perPage = 35
         )
 
         countDownLatch = CountDownLatch(1)
@@ -449,7 +453,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         interceptor.respondWithError(errorJson)
         orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, interval = OrderStatsApiUnit.DAY,
-                startDate = "invalid", endDate = "2019-07-07T23:59:59"
+                startDate = "invalid", endDate = "2019-07-07T23:59:59", perPage = 35
         )
 
         countDownLatch = CountDownLatch(1)

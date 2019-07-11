@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store
 
+import android.content.Context
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
@@ -19,16 +20,19 @@ import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.ErrorUtils.OnUnexpectedError
+import org.wordpress.android.fluxc.utils.PreferenceUtils
 import org.wordpress.android.fluxc.utils.SiteUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 class WCStatsStore @Inject constructor(
     dispatcher: Dispatcher,
+    private val context: Context,
     private val wcOrderStatsClient: OrderStatsRestClient
 ) : Store(dispatcher) {
     companion object {
@@ -40,7 +44,11 @@ class WCStatsStore @Inject constructor(
         private const val DATE_FORMAT_WEEK = "yyyy-'W'ww"
         private const val DATE_FORMAT_MONTH = "yyyy-MM"
         private const val DATE_FORMAT_YEAR = "yyyy"
+
+        private const val STATS_API_V4_PER_PAGE_PARAM = "STATS_V4_API_PER_PAGE_PARAM_PREF_KEY"
     }
+
+    private val preferences by lazy { PreferenceUtils.getFluxCPreferences(context) }
 
     enum class StatsGranularity {
         DAYS, WEEKS, MONTHS, YEARS;
@@ -476,11 +484,26 @@ class WCStatsStore @Inject constructor(
     private fun fetchRevenueStats(payload: FetchRevenueStatsPayload) {
         val startDate = DateUtils.getStartDateForSite(payload.site, payload.startDate)
         val endDate = DateUtils.getEndDateForSite(payload.site)
+
+        // The default data count in `v4 revenue api` is 10.
+        // so if we need to get data for an entire month without pagination, the per_page value should be 30 or 31.
+        // But, due to caching in the api, if the per_page value static, the api is not providing refreshed data
+        // when a new order is completed.
+        // So this logic generates a random value between 31 to 100 only if the force flag is set to true
+        // And storing this value locally to be used when the force flag is set to false.
+        val randomInt = Random.nextInt(31, 100)
+        val perPage = if (!payload.forced) {
+            preferences.getInt(STATS_API_V4_PER_PAGE_PARAM, randomInt)
+        } else {
+            preferences.edit().putInt(STATS_API_V4_PER_PAGE_PARAM, randomInt).apply()
+            randomInt
+        }
         wcOrderStatsClient.fetchRevenueStats(
                 payload.site,
                 payload.apiInterval,
                 startDate,
                 endDate,
+                perPage,
                 payload.forced
         )
     }

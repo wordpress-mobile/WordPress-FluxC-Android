@@ -30,7 +30,6 @@ import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import javax.inject.Singleton
-import kotlin.random.Random
 
 @Singleton
 class OrderStatsRestClient(
@@ -58,12 +57,6 @@ class OrderStatsRestClient(
     }
 
     private final val STATS_FIELDS = "data,fields"
-
-    // The default data count in `v4 revenue api` is 10.
-    // so if we need to get data for an entire month without pagination, the per_page value should be 30 or 31.
-    // But, for some reason, if we keep the per_page value static, the api is not providing refreshed data
-    // when a new order is completed. So for now, keeping the per_page value as random between 1 to 100.
-    private val STATS_DEFAULT_PER_PAGE = 100
     private val STATS_DEFAULT_ORDER = "asc"
 
     /**
@@ -149,6 +142,7 @@ class OrderStatsRestClient(
         interval: OrderStatsApiUnit,
         startDate: String,
         endDate: String,
+        perPage: Int,
         force: Boolean = false
     ) {
         val url = WOOCOMMERCE.reports.revenue.stats.pathV4
@@ -157,7 +151,7 @@ class OrderStatsRestClient(
                 "interval" to interval.toString(),
                 "after" to startDate,
                 "before" to endDate,
-                "per_page" to Random.nextInt(0, STATS_DEFAULT_PER_PAGE).toString(),
+                "per_page" to perPage.toString(),
                 "order" to STATS_DEFAULT_ORDER)
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
