@@ -29,6 +29,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnDomainSupportedStatesFetche
 import org.wordpress.android.fluxc.store.SiteStore.OnPlansFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteEditorsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
 import org.wordpress.android.fluxc.store.SiteStore.OnUserRolesChanged;
@@ -64,6 +65,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         SITE_CHANGED,
         POST_FORMATS_CHANGED,
         USER_ROLES_CHANGED,
+        SITE_EDITORS_CHANGED,
         PLANS_FETCHED,
         PLANS_UNKNOWN_BLOG_ERROR,
         SITE_REMOVED,
@@ -127,6 +129,25 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Test fetched Post Formats
         List<PostFormatModel> postFormats = mSiteStore.getPostFormats(firstSite);
         assertNotSame(0, postFormats.size());
+    }
+
+    @Test
+    public void testFetchSiteEditors() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        // Get the first site
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+
+        // Fetch user roles
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSiteEditorsAction(firstSite));
+        mNextEvent = TestEvents.SITE_EDITORS_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        String siteEditor = firstSite.getMobileEditor();
+        // Test mobile editors for a wpcom site
+        assertTrue(siteEditor.equals("aztec") || siteEditor.equals("gutenberg"));
     }
 
     @Test
@@ -433,6 +454,16 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.USER_ROLES_CHANGED, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onSiteEditorsChanged(OnSiteEditorsChanged event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.SITE_EDITORS_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
