@@ -51,6 +51,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -145,9 +146,9 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
-        // Default editors for a wpcom site
-        assertEquals(firstSite.getMobileEditor(), "aztec");
-        assertEquals(firstSite.getWebEditor(), "classic");
+        String siteEditor = firstSite.getMobileEditor();
+        // Test mobile editors for a wpcom site
+        assertTrue(siteEditor.equals("aztec") || siteEditor.equals("gutenberg"));
     }
 
     @Test
