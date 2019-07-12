@@ -70,6 +70,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         FETCHED_CONNECT_SITE_INFO,
         FETCHED_WPCOM_SITE_BY_URL,
         FETCHED_DOMAIN_SUGGESTIONS,
+        FETCHED_TLDS_FILTERED_DOMAINS,
         DOMAIN_SUGGESTION_ERROR_INVALID_QUERY,
         ERROR_INVALID_SITE,
         ERROR_UNKNOWN_SITE,
@@ -266,6 +267,14 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         String keywords = "awesomesubdomain";
         SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, true, 20, true);
         testSuggestDomains(payload, TestEvents.FETCHED_DOMAIN_SUGGESTIONS);
+    }
+
+    @Test
+    public void testTldsFilteredSuggestions() throws InterruptedException {
+        String keyword = "awesomedomain";
+
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keyword, 20, "blog");
+        testSuggestDomains(payload, TestEvents.FETCHED_TLDS_FILTERED_DOMAINS);
     }
 
     @Test
@@ -491,14 +500,24 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             mCountDownLatch.countDown();
             return;
         }
-        assertEquals(TestEvents.FETCHED_DOMAIN_SUGGESTIONS, mNextEvent);
 
         final String wpcomSuffix = ".wordpress.com";
         final String dotBlogSuffix = ".blog";
-        for (DomainSuggestionResponse suggestionResponse : event.suggestions) {
-            String domain = suggestionResponse.domain_name;
-            assertTrue("Was expecting the domain to end in " + wpcomSuffix + " or " + dotBlogSuffix,
-                    domain.endsWith(wpcomSuffix) || domain.endsWith(dotBlogSuffix));
+        final String dotNetSuffix = ".net";
+
+        if (mNextEvent == TestEvents.FETCHED_DOMAIN_SUGGESTIONS) {
+            for (DomainSuggestionResponse suggestionResponse : event.suggestions) {
+                String domain = suggestionResponse.domain_name;
+                assertTrue("Was expecting the domain to end in " + wpcomSuffix + " or " + dotBlogSuffix,
+                        domain.endsWith(wpcomSuffix) || domain.endsWith(dotBlogSuffix));
+            }
+        } else if (mNextEvent == TestEvents.FETCHED_TLDS_FILTERED_DOMAINS) {
+            for (DomainSuggestionResponse suggestionResponse : event.suggestions) {
+                String domain = suggestionResponse.domain_name;
+                assertTrue("Was expecting the domain to end in " + dotNetSuffix, domain.endsWith(dotBlogSuffix));
+            }
+        } else {
+            throw new AssertionError("Unexpected event type: " + mNextEvent);
         }
 
         mCountDownLatch.countDown();
