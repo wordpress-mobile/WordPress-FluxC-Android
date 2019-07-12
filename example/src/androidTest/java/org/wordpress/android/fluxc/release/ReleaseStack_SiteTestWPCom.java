@@ -29,6 +29,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnDomainSupportedStatesFetche
 import org.wordpress.android.fluxc.store.SiteStore.OnPlansFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteEditorsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
 import org.wordpress.android.fluxc.store.SiteStore.OnUserRolesChanged;
@@ -146,7 +147,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
         // Default editors for a wpcom site
         assertEquals(firstSite.getMobileEditor(), "aztec");
-        assertEquals(firstSite.getWebEditor(), "gutenberg");
+        assertEquals(firstSite.getWebEditor(), "classic");
     }
 
     @Test
@@ -453,6 +454,16 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.USER_ROLES_CHANGED, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onSiteEditorsChanged(OnSiteEditorsChanged event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.SITE_EDITORS_CHANGED, mNextEvent);
         mCountDownLatch.countDown();
     }
 
