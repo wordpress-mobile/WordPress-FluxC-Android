@@ -51,6 +51,22 @@ class OrderStatsRestClient(
                     StatsGranularity.YEARS -> YEAR
                 }
             }
+
+            /**
+             * Based on the design changes, when:
+             *  `Today` tab is selected: [OrderStatsApiUnit] field passed to the API should be [HOUR]
+             *  `This week` tab is selected: [OrderStatsApiUnit] field passed to the API should be [DAY]
+             *  `This month` tab is selected: [OrderStatsApiUnit] field passed to the API should be [DAY]
+             *  `This year` tab is selected: [OrderStatsApiUnit] field passed to the API should be [MONTH]
+             */
+            fun fromStatsGranularityV4(granularity: StatsGranularity): OrderStatsApiUnit {
+                return when (granularity) {
+                    StatsGranularity.DAYS -> HOUR
+                    StatsGranularity.WEEKS -> DAY
+                    StatsGranularity.MONTHS -> DAY
+                    StatsGranularity.YEARS -> MONTH
+                }
+            }
         }
 
         override fun toString() = name.toLowerCase()
@@ -130,16 +146,16 @@ class OrderStatsRestClient(
      * WooCommerce [SiteModel].
      *
      * @param[site] the site to fetch stats data for
-     * @param[interval] one of 'hour', 'day', 'week', 'month', or 'year'
+     * @param[granularity] one of 'hour', 'day', 'week', 'month', or 'year'
      * @param[startDate] the start date to include in ISO format (YYYY-MM-dd'T'HH:mm:ss)
      * @param[endDate] the end date to include in ISO format (YYYY-MM-dd'T'HH:mm:ss)
      *
      * Possible non-generic errors:
-     * [OrderStatsErrorType.INVALID_PARAM] if [interval], [startDate], or [endDate] are invalid or incompatible
+     * [OrderStatsErrorType.INVALID_PARAM] if [granularity], [startDate], or [endDate] are invalid or incompatible
      */
     fun fetchStatsV4(
         site: SiteModel,
-        interval: OrderStatsApiUnit,
+        granularity: StatsGranularity,
         startDate: String,
         endDate: String,
         perPage: Int,
@@ -148,7 +164,7 @@ class OrderStatsRestClient(
         val url = WOOCOMMERCE.reports.revenue.stats.pathV4
         val responseType = object : TypeToken<RevenueStatsApiResponse>() {}.type
         val params = mapOf(
-                "interval" to interval.toString(),
+                "interval" to OrderStatsApiUnit.fromStatsGranularityV4(granularity).toString(),
                 "after" to startDate,
                 "before" to endDate,
                 "per_page" to perPage.toString(),
@@ -159,23 +175,23 @@ class OrderStatsRestClient(
                     response?.let {
                         val model = WCOrderStatsV4Model().apply {
                             this.localSiteId = site.id
-                            this.interval = interval.toString()
+                            this.interval = granularity.toString()
                             this.data = response.intervals.toString()
                             this.startDate = startDate
                             this.endDate = endDate
                         }
-                        val payload = FetchOrderStatsV4ResponsePayload(site, interval, model)
+                        val payload = FetchOrderStatsV4ResponsePayload(site, granularity, model)
                         mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsV4Action(payload))
                     } ?: run {
                         AppLog.e(T.API, "Response for url $url with param $params is null: $response")
                         val orderError = OrderStatsError(OrderStatsErrorType.RESPONSE_NULL, "Response object is null")
-                        val payload = FetchOrderStatsV4ResponsePayload(orderError, site, interval)
+                        val payload = FetchOrderStatsV4ResponsePayload(orderError, site, granularity)
                         mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsV4Action(payload))
                     }
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
-                    val payload = FetchOrderStatsV4ResponsePayload(orderError, site, interval)
+                    val payload = FetchOrderStatsV4ResponsePayload(orderError, site, granularity)
                     mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsV4Action(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })

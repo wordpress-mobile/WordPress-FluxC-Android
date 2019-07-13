@@ -4,6 +4,7 @@ import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.model.WCOrderStatsV4Model
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -42,7 +43,7 @@ object WCStatsTestUtils {
      */
     fun generateSampleRevenueStatsModel(
         localSiteId: Int = 6,
-        interval: String = OrderStatsApiUnit.DAY.toString(),
+        interval: String = StatsGranularity.DAYS.toString(),
         startDate: String = dateTimeFormatter.format(LocalDate.now().atStartOfDay()),
         endDate: String = dateTimeFormatter.format(LocalDate.now().atTime(23, 59, 59)),
         data: String = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/v4-stats-data.json")

@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsV4ResponseP
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -319,7 +320,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     fun testV4StatsDayFetchSuccess() {
         interceptor.respondWith("wc-revenue-stats-response-success.json")
         orderStatsRestClient.fetchStatsV4(
-                site = siteModel, interval = OrderStatsApiUnit.DAY,
+                site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
                 perPage = 35
         )
@@ -331,12 +332,12 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as FetchOrderStatsV4ResponsePayload
         assertNull(payload.error)
         assertEquals(siteModel, payload.site)
-        assertEquals(OrderStatsApiUnit.DAY, payload.apiInterval)
+        assertEquals(StatsGranularity.DAYS, payload.granularity)
         assertNotNull(payload.stats)
 
         with(payload.stats!!) {
             assertEquals(siteModel.id, localSiteId)
-            assertEquals(OrderStatsApiUnit.DAY.toString(), interval)
+            assertEquals(StatsGranularity.DAYS.toString(), interval)
 
             val intervals = getIntervalList()
             val startInterval = intervals.first().interval
@@ -353,7 +354,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         // Make initial stats request
         interceptor.respondWith("wc-revenue-stats-response-success.json")
         orderStatsRestClient.fetchStatsV4(
-                site = siteModel, interval = OrderStatsApiUnit.DAY,
+                site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
                 perPage = 35
         )
@@ -368,7 +369,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         // Make the same stats request - this should hit the cache
         interceptor.respondWith("wc-revenue-stats-response-success.json")
         orderStatsRestClient.fetchStatsV4(
-                site = siteModel, interval = OrderStatsApiUnit.DAY,
+                site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
                 perPage = 35
         )
@@ -386,7 +387,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         // Make the same stats request, but this time pass force=true to force a network request
         interceptor.respondWith("wc-revenue-stats-response-success.json")
         orderStatsRestClient.fetchStatsV4(
-                site = siteModel, interval = OrderStatsApiUnit.DAY,
+                site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
                 perPage = 35, force = true
         )
@@ -403,7 +404,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         // New day, cache should be ignored
         interceptor.respondWith("wc-revenue-stats-response-success.json")
         orderStatsRestClient.fetchStatsV4(
-                site = siteModel, interval = OrderStatsApiUnit.DAY,
+                site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "2019-07-02T00:00:00", endDate = "2019-07-08T23:59:59",
                 perPage = 35
         )
@@ -427,7 +428,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
 
         interceptor.respondWithError(errorJson)
         orderStatsRestClient.fetchStatsV4(
-                site = siteModel, interval = OrderStatsApiUnit.DAY,
+                site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "invalid", endDate = "2019-07-07T23:59:59", perPage = 35
         )
 
@@ -438,7 +439,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as FetchOrderStatsV4ResponsePayload
         assertNotNull(payload.error)
         assertEquals(siteModel, payload.site)
-        assertEquals(OrderStatsApiUnit.DAY, payload.apiInterval)
+        assertEquals(StatsGranularity.DAYS, payload.granularity)
         assertNull(payload.stats)
         assertEquals(OrderStatsErrorType.INVALID_PARAM, payload.error.type)
     }
@@ -452,7 +453,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
 
         interceptor.respondWithError(errorJson)
         orderStatsRestClient.fetchStatsV4(
-                site = siteModel, interval = OrderStatsApiUnit.DAY,
+                site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "invalid", endDate = "2019-07-07T23:59:59", perPage = 35
         )
 
@@ -463,7 +464,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as FetchOrderStatsV4ResponsePayload
         assertNotNull(payload.error)
         assertEquals(siteModel, payload.site)
-        assertEquals(OrderStatsApiUnit.DAY, payload.apiInterval)
+        assertEquals(StatsGranularity.DAYS, payload.granularity)
         assertNull(payload.stats)
         assertEquals(OrderStatsErrorType.RESPONSE_NULL, payload.error.type)
     }

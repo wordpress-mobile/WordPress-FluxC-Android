@@ -105,25 +105,25 @@ class WCStatsStore @Inject constructor(
 
     /**
      * Describes the parameters for fetching new stats for [site], up to the current day, month, or year
-     * (depending on the given [apiInterval], [startDate]).
+     * (depending on the given [granularity], [startDate]).
      *
-     * @param[apiInterval] the time interval for the requested data
+     * @param[granularity] the time interval for the requested data (days, weeks, months, years)
      * @param[startDate] The start date of the data
      * @param[forced] if true, ignores any cached result and forces a refresh from the server (defaults to false)
      */
     class FetchOrderStatsV4Payload(
         val site: SiteModel,
-        val apiInterval: OrderStatsApiUnit,
+        val granularity: StatsGranularity,
         val startDate: String,
         val forced: Boolean = false
     ) : Payload<BaseNetworkError>()
 
     class FetchOrderStatsV4ResponsePayload(
         val site: SiteModel,
-        val apiInterval: OrderStatsApiUnit,
+        val granularity: StatsGranularity,
         val stats: WCOrderStatsV4Model? = null
     ) : Payload<OrderStatsError>() {
-        constructor(error: OrderStatsError, site: SiteModel, apiInterval: OrderStatsApiUnit) : this(site, apiInterval) {
+        constructor(error: OrderStatsError, site: SiteModel, granularity: StatsGranularity) : this(site, granularity) {
             this.error = error
         }
     }
@@ -473,9 +473,9 @@ class WCStatsStore @Inject constructor(
     /**
      * Methods to support v4 api changes
      */
-    class OnOrderStatsV4Changed(
+    class OnWCStatsV4Changed(
         val rowsAffected: Int,
-        val apiInterval: OrderStatsApiUnit,
+        val granularity: StatsGranularity,
         val startDate: String? = null,
         val endDate: String? = null
     ) : OnChanged<OrderStatsError>() {
@@ -488,7 +488,7 @@ class WCStatsStore @Inject constructor(
         val perPage = getRandomPageInt(payload.forced)
         wcOrderStatsClient.fetchStatsV4(
                 payload.site,
-                payload.apiInterval,
+                payload.granularity,
                 startDate,
                 endDate,
                 perPage,
@@ -523,11 +523,11 @@ class WCStatsStore @Inject constructor(
     private fun handleFetchRevenueStatsCompleted(payload: FetchOrderStatsV4ResponsePayload) {
         val onStatsChanged = with(payload) {
             if (isError || stats == null) {
-                return@with OnOrderStatsV4Changed(0, apiInterval)
+                return@with OnWCStatsV4Changed(0, granularity)
                         .also { it.error = payload.error }
             } else {
                 val rowsAffected = WCStatsV4SqlUtils.insertOrUpdateStats(stats)
-                return@with OnOrderStatsV4Changed(rowsAffected, apiInterval, stats.startDate, stats.endDate)
+                return@with OnWCStatsV4Changed(rowsAffected, granularity, stats.startDate, stats.endDate)
             }
         }
 
@@ -535,27 +535,13 @@ class WCStatsStore @Inject constructor(
         emitChange(onStatsChanged)
     }
 
-    /**
-     * Returns the revenue data by date for the given [site], in units of [interval].
-     *
-     * The returned map has the format: "2018-05-01" -> 57.43
-     *
-     * The [startDate] and [endDate] will be passed by the function caller
-     *
-     * The format of the date key in the returned map depends on the [interval]:
-     * [OrderStatsApiUnit.HOUR]: "2018-07-06 23"
-     * [OrderStatsApiUnit.DAY]: "2018-07-06"
-     * [OrderStatsApiUnit.WEEK]: "2018-W16"
-     * [OrderStatsApiUnit.MONTH]: "2018-05"
-     * [OrderStatsApiUnit.YEAR]: "2018"
-     */
     fun getRevenueStatsV4(
         site: SiteModel,
-        interval: OrderStatsApiUnit,
+        granularity: StatsGranularity,
         startDate: String,
         endDate: String
     ): Map<String, Double> {
-        val rawStats = getRawStats(site, interval, startDate, endDate)
+        val rawStats = getRawStats(site, granularity, startDate, endDate)
         return rawStats?.getIntervalList()?.map {
             it.interval!! to it.subtotals?.grossRevenue!!
         }?.toMap() ?: mapOf()
@@ -563,11 +549,11 @@ class WCStatsStore @Inject constructor(
 
     fun getOrderStatsV4(
         site: SiteModel,
-        interval: OrderStatsApiUnit,
+        granularity: StatsGranularity,
         startDate: String,
         endDate: String
     ): Map<String, Long> {
-        val rawStats = getRawStats(site, interval, startDate, endDate)
+        val rawStats = getRawStats(site, granularity, startDate, endDate)
         return rawStats?.getIntervalList()?.map {
             it.interval!! to it.subtotals?.ordersCount!!
         }?.toMap() ?: mapOf()
@@ -575,11 +561,11 @@ class WCStatsStore @Inject constructor(
 
     private fun getRawStats(
         site: SiteModel,
-        interval: OrderStatsApiUnit,
+        granularity: StatsGranularity,
         startDate: String,
         endDate: String
     ): WCOrderStatsV4Model? {
         return WCStatsV4SqlUtils.getRawStatsForSiteIntervalAndDate(
-                site, interval, startDate, endDate)
+                site, granularity, startDate, endDate)
     }
 }
