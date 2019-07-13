@@ -25,8 +25,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRe
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit.HOUR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit.MONTH
 import org.wordpress.android.fluxc.store.WCStatsStore
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsPayload
-import org.wordpress.android.fluxc.store.WCStatsStore.OnWCRevenueStatsChanged
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsV4Payload
+import org.wordpress.android.fluxc.store.WCStatsStore.OnOrderStatsV4Changed
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
@@ -62,57 +62,57 @@ class WooV4StatsFragment : Fragment() {
 
         fetch_current_day_revenue_stats.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchRevenueStatsPayload(it, HOUR, getStartOfCurrentDay())
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
+                val payload = FetchOrderStatsV4Payload(it, HOUR, getStartOfCurrentDay())
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_day_revenue_stats_forced.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchRevenueStatsPayload(it, HOUR, getStartOfCurrentDay(), forced = true)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
+                val payload = FetchOrderStatsV4Payload(it, HOUR, getStartOfCurrentDay(), forced = true)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_week_revenue_stats.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchRevenueStatsPayload(it, DAY, getFirstDayOfCurrentWeek())
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
+                val payload = FetchOrderStatsV4Payload(it, DAY, getFirstDayOfCurrentWeek())
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_week_revenue_stats_forced.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchRevenueStatsPayload(it, DAY, getFirstDayOfCurrentWeek(), forced = true)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
+                val payload = FetchOrderStatsV4Payload(it, DAY, getFirstDayOfCurrentWeek(), forced = true)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_month_revenue_stats.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchRevenueStatsPayload(it, DAY, getFirstDayOfCurrentMonth())
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
+                val payload = FetchOrderStatsV4Payload(it, DAY, getFirstDayOfCurrentMonth())
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_month_revenue_stats_forced.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchRevenueStatsPayload(it, DAY, getFirstDayOfCurrentMonth(), forced = true)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
+                val payload = FetchOrderStatsV4Payload(it, DAY, getFirstDayOfCurrentMonth(), forced = true)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_year_revenue_stats.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchRevenueStatsPayload(it, MONTH, getFirstDayOfCurrentYear())
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
+                val payload = FetchOrderStatsV4Payload(it, MONTH, getFirstDayOfCurrentYear())
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_year_revenue_stats_forced.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchRevenueStatsPayload(it, MONTH, getFirstDayOfCurrentYear(), forced = true)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
+                val payload = FetchOrderStatsV4Payload(it, MONTH, getFirstDayOfCurrentYear(), forced = true)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
             } ?: prependToLog("No site selected!")
         }
     }
@@ -129,7 +129,7 @@ class WooV4StatsFragment : Fragment() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onWCRevenueStatsChanged(event: OnWCRevenueStatsChanged) {
+    fun onWCRevenueStatsChanged(event: OnOrderStatsV4Changed) {
         if (event.isError) {
             prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
             return
@@ -137,8 +137,8 @@ class WooV4StatsFragment : Fragment() {
 
         val site = selectedSite
         when (event.causeOfChange) {
-            WCStatsAction.FETCH_REVENUE_STATS -> {
-                val statsMap = wcStatsStore.getWCRevenueStats(
+            WCStatsAction.FETCH_ORDER_STATS_V4 -> {
+                val statsMap = wcStatsStore.getRevenueStatsV4(
                         site!!,
                         event.apiInterval,
                         event.startDate!!,

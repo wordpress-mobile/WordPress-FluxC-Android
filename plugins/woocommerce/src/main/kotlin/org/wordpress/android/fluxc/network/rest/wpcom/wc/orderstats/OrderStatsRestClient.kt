@@ -10,7 +10,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMV2
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
-import org.wordpress.android.fluxc.model.WCRevenueStatsModel
+import org.wordpress.android.fluxc.model.WCOrderStatsV4Model
 import org.wordpress.android.fluxc.model.WCTopEarnerModel
 import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
@@ -21,7 +21,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsV4ResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsError
@@ -137,7 +137,7 @@ class OrderStatsRestClient(
      * Possible non-generic errors:
      * [OrderStatsErrorType.INVALID_PARAM] if [interval], [startDate], or [endDate] are invalid or incompatible
      */
-    fun fetchRevenueStats(
+    fun fetchStatsV4(
         site: SiteModel,
         interval: OrderStatsApiUnit,
         startDate: String,
@@ -157,26 +157,26 @@ class OrderStatsRestClient(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: RevenueStatsApiResponse? ->
                     response?.let {
-                        val model = WCRevenueStatsModel().apply {
+                        val model = WCOrderStatsV4Model().apply {
                             this.localSiteId = site.id
                             this.interval = interval.toString()
                             this.data = response.intervals.toString()
                             this.startDate = startDate
                             this.endDate = endDate
                         }
-                        val payload = FetchRevenueStatsResponsePayload(site, interval, model)
-                        mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAction(payload))
+                        val payload = FetchOrderStatsV4ResponsePayload(site, interval, model)
+                        mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsV4Action(payload))
                     } ?: run {
                         AppLog.e(T.API, "Response for url $url with param $params is null: $response")
                         val orderError = OrderStatsError(OrderStatsErrorType.RESPONSE_NULL, "Response object is null")
-                        val payload = FetchRevenueStatsResponsePayload(orderError, site, interval)
-                        mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAction(payload))
+                        val payload = FetchOrderStatsV4ResponsePayload(orderError, site, interval)
+                        mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsV4Action(payload))
                     }
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
-                    val payload = FetchRevenueStatsResponsePayload(orderError, site, interval)
-                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAction(payload))
+                    val payload = FetchOrderStatsV4ResponsePayload(orderError, site, interval)
+                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsV4Action(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
 

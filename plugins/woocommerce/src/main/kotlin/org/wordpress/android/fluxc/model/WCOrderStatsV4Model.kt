@@ -7,9 +7,10 @@ import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import com.google.gson.annotations.SerializedName
 
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
-data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
+data class WCOrderStatsV4Model(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
     @Column var localSiteId = 0
     @Column var interval = "" // The unit ("hour", "day", "week", "month", "year")
     @Column var startDate = "" // The start date of the data
@@ -28,16 +29,14 @@ data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Id
 
     class Interval {
         val interval: String? = null
-        val date_start: String? = null
-        val date_start_gmt: String? = null
-        val date_end: String? = null
-        val date_end_gmt: String? = null
         val subtotals: SubTotal? = null
     }
 
     class SubTotal {
-        val orders_count: Long? = null
-        val gross_revenue: Double? = null
+        @SerializedName("orders_count")
+        val ordersCount: Long? = null
+        @SerializedName("gross_revenue")
+        val grossRevenue: Double? = null
     }
 
     /**

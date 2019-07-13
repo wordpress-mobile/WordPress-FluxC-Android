@@ -21,7 +21,7 @@ import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
-import org.wordpress.android.fluxc.model.WCRevenueStatsModel
+import org.wordpress.android.fluxc.model.WCOrderStatsV4Model
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit.HOUR
@@ -31,8 +31,8 @@ import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsPayload
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsV4Payload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsV4ResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.WEEKS
 import org.wordpress.android.fluxc.utils.DateUtils
@@ -55,7 +55,7 @@ class WCStatsStoreTest {
     @Before
     fun setUp() {
         val config = SingleStoreWellSqlConfigForTests(
-                appContext, listOf(WCOrderStatsModel::class.java, WCRevenueStatsModel::class.java),
+                appContext, listOf(WCOrderStatsModel::class.java, WCOrderStatsV4Model::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)
@@ -1239,14 +1239,14 @@ class WCStatsStoreTest {
     fun testFetchCurrentDayStatsDate() {
         val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
             val startDate = DateUtils.formatDate("yyyy-MM-dd", Date())
-            val payload = FetchRevenueStatsPayload(it, HOUR, startDate)
-            wcStatsStore.onAction(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
+            val payload = FetchOrderStatsV4Payload(it, HOUR, startDate)
+            wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
 
             val timeOnSite = getCurrentDateTimeForSite(it, "yyyy-MM-dd'T'00:00:00")
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchRevenueStats(any(), any(),
+            verify(mockOrderStatsRestClient).fetchStatsV4(any(), any(),
                     dateArgument.capture(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
@@ -1257,14 +1257,14 @@ class WCStatsStoreTest {
 
         val minus12SiteDate = SiteModel().apply { timezone = "-12" }.let {
             val startDate = DateUtils.formatDate("yyyy-MM-dd", Date())
-            val payload = FetchRevenueStatsPayload(it, HOUR, startDate)
-            wcStatsStore.onAction(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
+            val payload = FetchOrderStatsV4Payload(it, HOUR, startDate)
+            wcStatsStore.onAction(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
 
             val timeOnSite = getCurrentDateTimeForSite(it, "yyyy-MM-dd'T'00:00:00")
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchRevenueStats(any(), any(), dateArgument.capture(), any(),
+            verify(mockOrderStatsRestClient).fetchStatsV4(any(), any(), dateArgument.capture(), any(),
                     any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
@@ -1283,17 +1283,17 @@ class WCStatsStoreTest {
         // revenue stats model for current day
         val currentDayStatsModel = WCStatsTestUtils.generateSampleRevenueStatsModel(interval = "hour")
         val site = SiteModel().apply { id = currentDayStatsModel.localSiteId }
-        val currentDayPayload = FetchRevenueStatsResponsePayload(
+        val currentDayPayload = FetchOrderStatsV4ResponsePayload(
                 site, valueOf(currentDayStatsModel.interval.toUpperCase()), currentDayStatsModel
         )
-        wcStatsStore.onAction(WCStatsActionBuilder.newFetchedRevenueStatsAction(currentDayPayload))
+        wcStatsStore.onAction(WCStatsActionBuilder.newFetchedOrderStatsV4Action(currentDayPayload))
 
         // verify that the revenue stats & order count is not empty
-        val currentDayRevenueStats = wcStatsStore.getWCRevenueStats(
+        val currentDayRevenueStats = wcStatsStore.getRevenueStatsV4(
                 site, valueOf(currentDayStatsModel.interval.toUpperCase()),
                 currentDayStatsModel.startDate, currentDayStatsModel.endDate
         )
-        val currentDayOrderStats = wcStatsStore.getWCOrderCountStats(
+        val currentDayOrderStats = wcStatsStore.getOrderStatsV4(
                 site, valueOf(currentDayStatsModel.interval.toUpperCase()),
                 currentDayStatsModel.startDate, currentDayStatsModel.endDate
         )
@@ -1306,17 +1306,17 @@ class WCStatsStoreTest {
                 WCStatsTestUtils.generateSampleRevenueStatsModel(
                         interval = "day", startDate = "2019-07-07", endDate = "2019-07-09"
                 )
-        val currentWeekPayload = FetchRevenueStatsResponsePayload(
+        val currentWeekPayload = FetchOrderStatsV4ResponsePayload(
                 site, valueOf(currentWeekStatsModel.interval.toUpperCase()), currentWeekStatsModel
         )
-        wcStatsStore.onAction(WCStatsActionBuilder.newFetchedRevenueStatsAction(currentWeekPayload))
+        wcStatsStore.onAction(WCStatsActionBuilder.newFetchedOrderStatsV4Action(currentWeekPayload))
 
         // verify that the revenue stats & order count is not empty
-        val currentWeekRevenueStats = wcStatsStore.getWCRevenueStats(
+        val currentWeekRevenueStats = wcStatsStore.getRevenueStatsV4(
                 site, valueOf(currentWeekStatsModel.interval.toUpperCase()),
                 currentWeekStatsModel.startDate, currentWeekStatsModel.endDate
         )
-        val currentWeekOrderStats = wcStatsStore.getWCOrderCountStats(
+        val currentWeekOrderStats = wcStatsStore.getOrderStatsV4(
                 site, valueOf(currentWeekStatsModel.interval.toUpperCase()),
                 currentWeekStatsModel.startDate, currentWeekStatsModel.endDate
         )
@@ -1329,17 +1329,17 @@ class WCStatsStoreTest {
                 WCStatsTestUtils.generateSampleRevenueStatsModel(
                         interval = "day", startDate = "2019-07-01", endDate = "2019-07-09"
                 )
-        val currentMonthPayload = FetchRevenueStatsResponsePayload(
+        val currentMonthPayload = FetchOrderStatsV4ResponsePayload(
                 site, valueOf(currentMonthStatsModel.interval.toUpperCase()), currentMonthStatsModel
         )
-        wcStatsStore.onAction(WCStatsActionBuilder.newFetchedRevenueStatsAction(currentMonthPayload))
+        wcStatsStore.onAction(WCStatsActionBuilder.newFetchedOrderStatsV4Action(currentMonthPayload))
 
         // verify that the revenue stats & order count is not empty
-        val currentMonthRevenueStats = wcStatsStore.getWCRevenueStats(
+        val currentMonthRevenueStats = wcStatsStore.getRevenueStatsV4(
                 site, valueOf(currentMonthStatsModel.interval.toUpperCase()),
                 currentMonthStatsModel.startDate, currentMonthStatsModel.endDate
         )
-        val currentMonthOrderStats = wcStatsStore.getWCOrderCountStats(
+        val currentMonthOrderStats = wcStatsStore.getOrderStatsV4(
                 site, valueOf(currentMonthStatsModel.interval.toUpperCase()),
                 currentMonthStatsModel.startDate, currentMonthStatsModel.endDate
         )
@@ -1352,17 +1352,17 @@ class WCStatsStoreTest {
         val altSiteOrderStatsModel = WCStatsTestUtils.generateSampleRevenueStatsModel(
                 localSiteId = site2.id, interval = "hour"
         )
-        val altSiteCurrentDayPayload = FetchRevenueStatsResponsePayload(
+        val altSiteCurrentDayPayload = FetchOrderStatsV4ResponsePayload(
                 site, valueOf(altSiteOrderStatsModel.interval.toUpperCase()), altSiteOrderStatsModel
         )
-        wcStatsStore.onAction(WCStatsActionBuilder.newFetchedRevenueStatsAction(altSiteCurrentDayPayload))
+        wcStatsStore.onAction(WCStatsActionBuilder.newFetchedOrderStatsV4Action(altSiteCurrentDayPayload))
 
         // verify that the revenue stats & order count is not empty
-        val altSiteCurrentDayRevenueStats = wcStatsStore.getWCRevenueStats(
+        val altSiteCurrentDayRevenueStats = wcStatsStore.getRevenueStatsV4(
                 site, valueOf(altSiteOrderStatsModel.interval.toUpperCase()),
                 altSiteOrderStatsModel.startDate, altSiteOrderStatsModel.endDate
         )
-        val altSiteCurrentDayOrderStats = wcStatsStore.getWCOrderCountStats(
+        val altSiteCurrentDayOrderStats = wcStatsStore.getOrderStatsV4(
                 site, valueOf(altSiteOrderStatsModel.interval.toUpperCase()),
                 altSiteOrderStatsModel.startDate, altSiteOrderStatsModel.endDate
         )
@@ -1372,17 +1372,17 @@ class WCStatsStoreTest {
 
         // non existentSite
         val nonExistentSite = SiteModel().apply { id = 88 }
-        val nonExistentPayload = FetchRevenueStatsResponsePayload(
+        val nonExistentPayload = FetchOrderStatsV4ResponsePayload(
                 nonExistentSite, valueOf(altSiteOrderStatsModel.interval.toUpperCase()), altSiteOrderStatsModel
         )
-        wcStatsStore.onAction(WCStatsActionBuilder.newFetchedRevenueStatsAction(nonExistentPayload))
+        wcStatsStore.onAction(WCStatsActionBuilder.newFetchedOrderStatsV4Action(nonExistentPayload))
 
         // verify that the revenue stats & order count is empty
-        val nonExistentRevenueStats = wcStatsStore.getWCRevenueStats(
+        val nonExistentRevenueStats = wcStatsStore.getRevenueStatsV4(
                 nonExistentSite, valueOf(altSiteOrderStatsModel.interval.toUpperCase()),
                 altSiteOrderStatsModel.startDate, altSiteOrderStatsModel.endDate
         )
-        val nonExistentOrderStats = wcStatsStore.getWCOrderCountStats(
+        val nonExistentOrderStats = wcStatsStore.getOrderStatsV4(
                 nonExistentSite, valueOf(altSiteOrderStatsModel.interval.toUpperCase()),
                 altSiteOrderStatsModel.startDate, altSiteOrderStatsModel.endDate
         )
@@ -1391,14 +1391,14 @@ class WCStatsStoreTest {
         assertTrue(nonExistentOrderStats.isEmpty())
 
         // missing data
-        val missingDataPayload = FetchRevenueStatsResponsePayload(site, YEAR, null)
-        wcStatsStore.onAction(WCStatsActionBuilder.newFetchedRevenueStatsAction(missingDataPayload))
+        val missingDataPayload = FetchOrderStatsV4ResponsePayload(site, YEAR, null)
+        wcStatsStore.onAction(WCStatsActionBuilder.newFetchedOrderStatsV4Action(missingDataPayload))
 
         // verify that the revenue stats & order count is empty
-        val missingRevenueStats = wcStatsStore.getWCRevenueStats(
+        val missingRevenueStats = wcStatsStore.getRevenueStatsV4(
                 site, YEAR, "2019-01-01", "2019-01-07"
         )
-        val missingOrderStats = wcStatsStore.getWCOrderCountStats(
+        val missingOrderStats = wcStatsStore.getOrderStatsV4(
                 site, YEAR, "2019-01-01", "2019-01-07"
         )
         assertTrue(missingRevenueStats.isEmpty())
