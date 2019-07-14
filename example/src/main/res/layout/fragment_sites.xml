@@ -58,4 +58,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Fetch First Site Plans" />
+
+    <Button
+        android:id="@+id/fetch_editors"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch First Site Editors" />
 </LinearLayout>
