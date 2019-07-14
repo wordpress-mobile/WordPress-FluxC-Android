@@ -123,7 +123,7 @@ class WooV4StatsFragment : Fragment() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onWCRevenueStatsChanged(event: OnWCStatsV4Changed) {
+    fun onWCStatsV4Changed(event: OnWCStatsV4Changed) {
         if (event.isError) {
             prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
             return
