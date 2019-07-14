@@ -269,4 +269,27 @@ object DateUtils {
      * current date
      */
     fun getEndDateForSite(site: SiteModel) = getDateTimeForSite(site, DATE_TIME_FORMAT_END, null)
+
+    fun getStartOfCurrentDay(): String {
+        val cal = Calendar.getInstance()
+        return formatDate(DATE_FORMAT_DEFAULT, cal.time)
+    }
+
+    fun getFirstDayOfCurrentWeek(): String {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.DAY_OF_WEEK, cal.getActualMinimum(Calendar.DAY_OF_WEEK))
+        return formatDate(DATE_FORMAT_DEFAULT, cal.time)
+    }
+
+    fun getFirstDayOfCurrentMonth(): String {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMinimum(Calendar.DAY_OF_MONTH))
+        return formatDate(DATE_FORMAT_DEFAULT, cal.time)
+    }
+
+    fun getFirstDayOfCurrentYear(): String {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.DAY_OF_YEAR, cal.getActualMinimum(Calendar.DAY_OF_YEAR))
+        return formatDate(DATE_FORMAT_DEFAULT, cal.time)
+    }
 }

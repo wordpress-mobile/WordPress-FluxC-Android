@@ -114,7 +114,8 @@ class WCStatsStore @Inject constructor(
     class FetchOrderStatsV4Payload(
         val site: SiteModel,
         val granularity: StatsGranularity,
-        val startDate: String,
+        val startDate: String? = null,
+        val endDate: String? = null,
         val forced: Boolean = false
     ) : Payload<BaseNetworkError>()
 
@@ -483,7 +484,7 @@ class WCStatsStore @Inject constructor(
     }
 
     private fun fetchRevenueStats(payload: FetchOrderStatsV4Payload) {
-        val startDate = DateUtils.getStartDateForSite(payload.site, payload.startDate)
+        val startDate = getFormattedStartDate(payload.site, payload.granularity, payload.startDate)
         val endDate = DateUtils.getEndDateForSite(payload.site)
         val perPage = getRandomPageInt(payload.forced)
         wcOrderStatsClient.fetchStatsV4(
@@ -494,6 +495,24 @@ class WCStatsStore @Inject constructor(
                 perPage,
                 payload.forced
         )
+    }
+
+    /**
+     * Given a [startDate], formats the date based on the site's timezone in format yyyy-MM-dd'T'hh:mm:ss
+     * If the start date is empty, fetches the date based on the [granularity]
+     */
+    private fun getFormattedStartDate(site: SiteModel, granularity: StatsGranularity, startDate: String?): String {
+        val date = if (startDate.isNullOrEmpty()) {
+            when (granularity) {
+                StatsGranularity.DAYS -> DateUtils.getStartOfCurrentDay()
+                StatsGranularity.WEEKS -> DateUtils.getFirstDayOfCurrentWeek()
+                StatsGranularity.MONTHS -> DateUtils.getFirstDayOfCurrentMonth()
+                StatsGranularity.YEARS -> DateUtils.getFirstDayOfCurrentYear()
+            }
+        } else {
+            startDate
+        }
+        return DateUtils.getStartDateForSite(site, date)
     }
 
     /**
