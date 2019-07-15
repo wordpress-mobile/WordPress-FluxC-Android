@@ -29,6 +29,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnDomainSupportedStatesFetche
 import org.wordpress.android.fluxc.store.SiteStore.OnPlansFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteEditorsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
 import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
 import org.wordpress.android.fluxc.store.SiteStore.OnUserRolesChanged;
@@ -64,12 +65,14 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         SITE_CHANGED,
         POST_FORMATS_CHANGED,
         USER_ROLES_CHANGED,
+        SITE_EDITORS_CHANGED,
         PLANS_FETCHED,
         PLANS_UNKNOWN_BLOG_ERROR,
         SITE_REMOVED,
         FETCHED_CONNECT_SITE_INFO,
         FETCHED_WPCOM_SITE_BY_URL,
         FETCHED_DOMAIN_SUGGESTIONS,
+        FETCHED_TLDS_FILTERED_DOMAINS,
         DOMAIN_SUGGESTION_ERROR_INVALID_QUERY,
         ERROR_INVALID_SITE,
         ERROR_UNKNOWN_SITE,
@@ -126,6 +129,25 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Test fetched Post Formats
         List<PostFormatModel> postFormats = mSiteStore.getPostFormats(firstSite);
         assertNotSame(0, postFormats.size());
+    }
+
+    @Test
+    public void testFetchSiteEditors() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        // Get the first site
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+
+        // Fetch user roles
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSiteEditorsAction(firstSite));
+        mNextEvent = TestEvents.SITE_EDITORS_CHANGED;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        String siteEditor = firstSite.getMobileEditor();
+        // Test mobile editors for a wpcom site
+        assertTrue(siteEditor.equals("aztec") || siteEditor.equals("gutenberg"));
     }
 
     @Test
@@ -266,6 +288,14 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         String keywords = "awesomesubdomain";
         SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, true, 20, true);
         testSuggestDomains(payload, TestEvents.FETCHED_DOMAIN_SUGGESTIONS);
+    }
+
+    @Test
+    public void testTldsFilteredSuggestions() throws InterruptedException {
+        String keyword = "awesomedomain";
+
+        SuggestDomainsPayload payload = new SuggestDomainsPayload(keyword, 20, "blog");
+        testSuggestDomains(payload, TestEvents.FETCHED_TLDS_FILTERED_DOMAINS);
     }
 
     @Test
@@ -429,6 +459,16 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
     @SuppressWarnings("unused")
     @Subscribe
+    public void onSiteEditorsChanged(OnSiteEditorsChanged event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(TestEvents.SITE_EDITORS_CHANGED, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
     public void onPlansFetched(OnPlansFetched event) {
         if (event.isError()) {
             AppLog.i(T.API, "onPlansFetched has error: " + event.error.type + " - " + event.error.message);
@@ -491,14 +531,24 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             mCountDownLatch.countDown();
             return;
         }
-        assertEquals(TestEvents.FETCHED_DOMAIN_SUGGESTIONS, mNextEvent);
 
         final String wpcomSuffix = ".wordpress.com";
         final String dotBlogSuffix = ".blog";
-        for (DomainSuggestionResponse suggestionResponse : event.suggestions) {
-            String domain = suggestionResponse.domain_name;
-            assertTrue("Was expecting the domain to end in " + wpcomSuffix + " or " + dotBlogSuffix,
-                    domain.endsWith(wpcomSuffix) || domain.endsWith(dotBlogSuffix));
+        final String dotNetSuffix = ".net";
+
+        if (mNextEvent == TestEvents.FETCHED_DOMAIN_SUGGESTIONS) {
+            for (DomainSuggestionResponse suggestionResponse : event.suggestions) {
+                String domain = suggestionResponse.domain_name;
+                assertTrue("Was expecting the domain to end in " + wpcomSuffix + " or " + dotBlogSuffix,
+                        domain.endsWith(wpcomSuffix) || domain.endsWith(dotBlogSuffix));
+            }
+        } else if (mNextEvent == TestEvents.FETCHED_TLDS_FILTERED_DOMAINS) {
+            for (DomainSuggestionResponse suggestionResponse : event.suggestions) {
+                String domain = suggestionResponse.domain_name;
+                assertTrue("Was expecting the domain to end in " + dotNetSuffix, domain.endsWith(dotBlogSuffix));
+            }
+        } else {
+            throw new AssertionError("Unexpected event type: " + mNextEvent);
         }
 
         mCountDownLatch.countDown();
