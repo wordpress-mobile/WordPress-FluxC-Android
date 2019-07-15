@@ -44,7 +44,7 @@ public class WellSqlConfig extends DefaultWellConfig {
 
     @Override
     public int getDbVersion() {
-        return 74;
+        return 75;
     }
 
     @Override
@@ -553,6 +553,13 @@ public class WellSqlConfig extends DefaultWellConfig {
                            + "SUBTYPE TEXT,READ INTEGER,ICON TEXT,NOTICON TEXT,TIMESTAMP TEXT,URL TEXT,"
                            + "TITLE TEXT,FORMATTABLE_BODY TEXT,FORMATTABLE_SUBJECT TEXT,FORMATTABLE_META TEXT)");
                 oldVersion++;
+            case 74:
+                AppLog.d(T.DB, "Migrating to version " + (oldVersion + 1));
+                db.execSQL("ALTER TABLE PostModel ADD AUTO_SAVE_REVISION_ID INTEGER");
+                db.execSQL("ALTER TABLE PostModel ADD AUTO_SAVE_MODIFIED TEXT");
+                db.execSQL("ALTER TABLE PostModel ADD AUTO_SAVE_REMOTE_MODIFIED TEXT");
+                db.execSQL("ALTER TABLE PostModel ADD AUTO_SAVE_PREVIEW_URL TEXT");
+                oldVersion++;
         }
         db.setTransactionSuccessful();
         db.endTransaction();
@@ -600,6 +607,7 @@ public class WellSqlConfig extends DefaultWellConfig {
     }
 
 
+    @SuppressWarnings({"MethodLength"})
     private void migrateAddOn(@AddOn String addOnName, SQLiteDatabase db, int oldDbVersion) {
         if (mActiveAddOns.contains(addOnName)) {
             switch (oldDbVersion) {
