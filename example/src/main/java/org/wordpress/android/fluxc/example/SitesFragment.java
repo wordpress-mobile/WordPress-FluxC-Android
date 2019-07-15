@@ -133,6 +133,15 @@ public class SitesFragment extends Fragment {
             }
         });
 
+        view.findViewById(R.id.fetch_editors).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SiteModel site = mSiteStore.getSites().get(0);
+                // Fetch site editors
+                mDispatcher.dispatch(SiteActionBuilder.newFetchSiteEditorsAction(site));
+            }
+        });
+
         return view;
     }
 
