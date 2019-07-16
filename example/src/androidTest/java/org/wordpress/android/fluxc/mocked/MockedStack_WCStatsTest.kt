@@ -18,7 +18,7 @@ import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsV4ResponsePayload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
@@ -328,8 +328,8 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
-        assertEquals(WCStatsAction.FETCHED_ORDER_STATS_V4, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchOrderStatsV4ResponsePayload
+        assertEquals(WCStatsAction.FETCHED_REVENUE_STATS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchRevenueStatsResponsePayload
         assertNull(payload.error)
         assertEquals(siteModel, payload.site)
         assertEquals(StatsGranularity.DAYS, payload.granularity)
@@ -435,8 +435,8 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
-        assertEquals(WCStatsAction.FETCHED_ORDER_STATS_V4, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchOrderStatsV4ResponsePayload
+        assertEquals(WCStatsAction.FETCHED_REVENUE_STATS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchRevenueStatsResponsePayload
         assertNotNull(payload.error)
         assertEquals(siteModel, payload.site)
         assertEquals(StatsGranularity.DAYS, payload.granularity)
@@ -460,8 +460,8 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
 
-        assertEquals(WCStatsAction.FETCHED_ORDER_STATS_V4, lastAction!!.type)
-        val payload = lastAction!!.payload as FetchOrderStatsV4ResponsePayload
+        assertEquals(WCStatsAction.FETCHED_REVENUE_STATS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchRevenueStatsResponsePayload
         assertNotNull(payload.error)
         assertEquals(siteModel, payload.site)
         assertEquals(StatsGranularity.DAYS, payload.granularity)

@@ -18,7 +18,7 @@ import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.WCStatsStore
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsV4Payload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OnWCStatsV4Changed
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
@@ -56,57 +56,57 @@ class WooV4StatsFragment : Fragment() {
 
         fetch_current_day_revenue_stats.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchOrderStatsV4Payload(it, StatsGranularity.DAYS)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
+                val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_day_revenue_stats_forced.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchOrderStatsV4Payload(it, StatsGranularity.DAYS, forced = true)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
+                val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, forced = true)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_week_revenue_stats.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchOrderStatsV4Payload(it, StatsGranularity.WEEKS)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
+                val payload = FetchRevenueStatsPayload(it, StatsGranularity.WEEKS)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_week_revenue_stats_forced.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchOrderStatsV4Payload(site = it, granularity = StatsGranularity.WEEKS, forced = true)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
+                val payload = FetchRevenueStatsPayload(site = it, granularity = StatsGranularity.WEEKS, forced = true)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_month_revenue_stats.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchOrderStatsV4Payload(it, StatsGranularity.MONTHS)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
+                val payload = FetchRevenueStatsPayload(it, StatsGranularity.MONTHS)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_month_revenue_stats_forced.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchOrderStatsV4Payload(site = it, granularity = StatsGranularity.MONTHS, forced = true)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
+                val payload = FetchRevenueStatsPayload(site = it, granularity = StatsGranularity.MONTHS, forced = true)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_year_revenue_stats.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchOrderStatsV4Payload(it, StatsGranularity.YEARS)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
+                val payload = FetchRevenueStatsPayload(it, StatsGranularity.YEARS)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
             } ?: prependToLog("No site selected!")
         }
 
         fetch_current_year_revenue_stats_forced.setOnClickListener {
             selectedSite?.let {
-                val payload = FetchOrderStatsV4Payload(site = it, granularity = StatsGranularity.YEARS, forced = true)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchOrderStatsV4Action(payload))
+                val payload = FetchRevenueStatsPayload(site = it, granularity = StatsGranularity.YEARS, forced = true)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAction(payload))
             } ?: prependToLog("No site selected!")
         }
     }
@@ -131,7 +131,7 @@ class WooV4StatsFragment : Fragment() {
 
         val site = selectedSite
         when (event.causeOfChange) {
-            WCStatsAction.FETCH_ORDER_STATS_V4 -> {
+            WCStatsAction.FETCH_REVENUE_STATS -> {
                 val statsMap = wcStatsStore.getGrossRevenueStats(
                         site!!,
                         event.granularity,

@@ -110,7 +110,7 @@ class WCStatsStore @Inject constructor(
      * @param[startDate] The start date of the data
      * @param[forced] if true, ignores any cached result and forces a refresh from the server (defaults to false)
      */
-    class FetchOrderStatsV4Payload(
+    class FetchRevenueStatsPayload(
         val site: SiteModel,
         val granularity: StatsGranularity,
         val startDate: String? = null,
@@ -118,7 +118,7 @@ class WCStatsStore @Inject constructor(
         val forced: Boolean = false
     ) : Payload<BaseNetworkError>()
 
-    class FetchOrderStatsV4ResponsePayload(
+    class FetchRevenueStatsResponsePayload(
         val site: SiteModel,
         val granularity: StatsGranularity,
         val stats: WCOrderStatsV4Model? = null
@@ -207,13 +207,13 @@ class WCStatsStore @Inject constructor(
         val actionType = action.type as? WCStatsAction ?: return
         when (actionType) {
             WCStatsAction.FETCH_ORDER_STATS -> fetchOrderStats(action.payload as FetchOrderStatsPayload)
-            WCStatsAction.FETCH_ORDER_STATS_V4 -> fetchRevenueStats(action.payload as FetchOrderStatsV4Payload)
+            WCStatsAction.FETCH_REVENUE_STATS -> fetchRevenueStats(action.payload as FetchRevenueStatsPayload)
             WCStatsAction.FETCH_VISITOR_STATS -> fetchVisitorStats(action.payload as FetchVisitorStatsPayload)
             WCStatsAction.FETCH_TOP_EARNERS_STATS -> fetchTopEarnersStats(action.payload as FetchTopEarnersStatsPayload)
             WCStatsAction.FETCHED_ORDER_STATS ->
                 handleFetchOrderStatsCompleted(action.payload as FetchOrderStatsResponsePayload)
-            WCStatsAction.FETCHED_ORDER_STATS_V4 ->
-                handleFetchRevenueStatsCompleted(action.payload as FetchOrderStatsV4ResponsePayload)
+            WCStatsAction.FETCHED_REVENUE_STATS ->
+                handleFetchRevenueStatsCompleted(action.payload as FetchRevenueStatsResponsePayload)
             WCStatsAction.FETCHED_VISITOR_STATS ->
                 handleFetchVisitorStatsCompleted(action.payload as FetchVisitorStatsResponsePayload)
             WCStatsAction.FETCHED_TOP_EARNERS_STATS ->
@@ -482,7 +482,7 @@ class WCStatsStore @Inject constructor(
         var causeOfChange: WCStatsAction? = null
     }
 
-    private fun fetchRevenueStats(payload: FetchOrderStatsV4Payload) {
+    private fun fetchRevenueStats(payload: FetchRevenueStatsPayload) {
         val startDate = getStartDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.startDate)
         val endDate = DateUtils.getEndDateForSite(payload.site)
         val perPage = getRandomPageIntForRevenueStats(payload.forced)
@@ -543,7 +543,7 @@ class WCStatsStore @Inject constructor(
         }
     }
 
-    private fun handleFetchRevenueStatsCompleted(payload: FetchOrderStatsV4ResponsePayload) {
+    private fun handleFetchRevenueStatsCompleted(payload: FetchRevenueStatsResponsePayload) {
         val onStatsChanged = with(payload) {
             if (isError || stats == null) {
                 return@with OnWCStatsV4Changed(0, granularity)
@@ -554,7 +554,7 @@ class WCStatsStore @Inject constructor(
             }
         }
 
-        onStatsChanged.causeOfChange = WCStatsAction.FETCH_ORDER_STATS_V4
+        onStatsChanged.causeOfChange = WCStatsAction.FETCH_REVENUE_STATS
         emitChange(onStatsChanged)
     }
 

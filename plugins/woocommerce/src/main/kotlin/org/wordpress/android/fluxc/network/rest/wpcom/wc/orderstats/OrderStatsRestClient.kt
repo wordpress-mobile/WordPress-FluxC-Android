@@ -21,7 +21,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsV4ResponsePayload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsError
@@ -180,19 +180,19 @@ class OrderStatsRestClient(
                             this.startDate = startDate
                             this.endDate = endDate
                         }
-                        val payload = FetchOrderStatsV4ResponsePayload(site, granularity, model)
-                        mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsV4Action(payload))
+                        val payload = FetchRevenueStatsResponsePayload(site, granularity, model)
+                        mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAction(payload))
                     } ?: run {
                         AppLog.e(T.API, "Response for url $url with param $params is null: $response")
                         val orderError = OrderStatsError(OrderStatsErrorType.RESPONSE_NULL, "Response object is null")
-                        val payload = FetchOrderStatsV4ResponsePayload(orderError, site, granularity)
-                        mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsV4Action(payload))
+                        val payload = FetchRevenueStatsResponsePayload(orderError, site, granularity)
+                        mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAction(payload))
                     }
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
-                    val payload = FetchOrderStatsV4ResponsePayload(orderError, site, granularity)
-                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedOrderStatsV4Action(payload))
+                    val payload = FetchRevenueStatsResponsePayload(orderError, site, granularity)
+                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
 
