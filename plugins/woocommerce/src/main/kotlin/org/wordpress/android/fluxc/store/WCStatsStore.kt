@@ -523,7 +523,8 @@ class WCStatsStore @Inject constructor(
      * so if we need to get data for an entire month without pagination, the per_page value should be 30 or 31.
      * But, due to caching in the api, if the per_page value static, the api is not providing refreshed data
      * when a new order is completed.
-     * So this logic generates a random value between 31 to 100 only if the [forced] is set to true
+     * So this logic is added as a workaround and generates a random value between 31 to 100
+     * only if the [forced] is set to true.
      * And storing this value locally to be used when the [forced] flag is set to false.
      * */
     private fun getRandomPageIntForRevenueStats(forced: Boolean): Int {
