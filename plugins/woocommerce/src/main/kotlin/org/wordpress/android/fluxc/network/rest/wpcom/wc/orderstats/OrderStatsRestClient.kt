@@ -59,7 +59,7 @@ class OrderStatsRestClient(
              *  `This month` tab is selected: [OrderStatsApiUnit] field passed to the API should be [DAY]
              *  `This year` tab is selected: [OrderStatsApiUnit] field passed to the API should be [MONTH]
              */
-            fun fromStatsGranularityV4(granularity: StatsGranularity): OrderStatsApiUnit {
+            fun convertToRevenueStatsInterval(granularity: StatsGranularity): OrderStatsApiUnit {
                 return when (granularity) {
                     StatsGranularity.DAYS -> HOUR
                     StatsGranularity.WEEKS -> DAY
@@ -164,7 +164,7 @@ class OrderStatsRestClient(
         val url = WOOCOMMERCE.reports.revenue.stats.pathV4
         val responseType = object : TypeToken<RevenueStatsApiResponse>() {}.type
         val params = mapOf(
-                "interval" to OrderStatsApiUnit.fromStatsGranularityV4(granularity).toString(),
+                "interval" to OrderStatsApiUnit.convertToRevenueStatsInterval(granularity).toString(),
                 "after" to startDate,
                 "before" to endDate,
                 "per_page" to perPage.toString(),
