@@ -1286,11 +1286,11 @@ class WCStatsStoreTest {
         wcStatsStore.onAction(WCStatsActionBuilder.newFetchedOrderStatsV4Action(currentDayPayload))
 
         // verify that the revenue stats & order count is not empty
-        val currentDayRevenueStats = wcStatsStore.getRevenueStatsV4(
+        val currentDayRevenueStats = wcStatsStore.getGrossRevenueStats(
                 site, StatsGranularity.valueOf(currentDayStatsModel.interval.toUpperCase()),
                 currentDayStatsModel.startDate, currentDayStatsModel.endDate
         )
-        val currentDayOrderStats = wcStatsStore.getOrderStatsV4(
+        val currentDayOrderStats = wcStatsStore.getOrderCountStats(
                 site, StatsGranularity.valueOf(currentDayStatsModel.interval.toUpperCase()),
                 currentDayStatsModel.startDate, currentDayStatsModel.endDate
         )
@@ -1309,11 +1309,11 @@ class WCStatsStoreTest {
         wcStatsStore.onAction(WCStatsActionBuilder.newFetchedOrderStatsV4Action(currentWeekPayload))
 
         // verify that the revenue stats & order count is not empty
-        val currentWeekRevenueStats = wcStatsStore.getRevenueStatsV4(
+        val currentWeekRevenueStats = wcStatsStore.getGrossRevenueStats(
                 site, StatsGranularity.valueOf(currentWeekStatsModel.interval.toUpperCase()),
                 currentWeekStatsModel.startDate, currentWeekStatsModel.endDate
         )
-        val currentWeekOrderStats = wcStatsStore.getOrderStatsV4(
+        val currentWeekOrderStats = wcStatsStore.getOrderCountStats(
                 site, StatsGranularity.valueOf(currentWeekStatsModel.interval.toUpperCase()),
                 currentWeekStatsModel.startDate, currentWeekStatsModel.endDate
         )
@@ -1332,11 +1332,11 @@ class WCStatsStoreTest {
         wcStatsStore.onAction(WCStatsActionBuilder.newFetchedOrderStatsV4Action(currentMonthPayload))
 
         // verify that the revenue stats & order count is not empty
-        val currentMonthRevenueStats = wcStatsStore.getRevenueStatsV4(
+        val currentMonthRevenueStats = wcStatsStore.getGrossRevenueStats(
                 site, StatsGranularity.valueOf(currentMonthStatsModel.interval.toUpperCase()),
                 currentMonthStatsModel.startDate, currentMonthStatsModel.endDate
         )
-        val currentMonthOrderStats = wcStatsStore.getOrderStatsV4(
+        val currentMonthOrderStats = wcStatsStore.getOrderCountStats(
                 site, StatsGranularity.valueOf(currentMonthStatsModel.interval.toUpperCase()),
                 currentMonthStatsModel.startDate, currentMonthStatsModel.endDate
         )
@@ -1355,11 +1355,11 @@ class WCStatsStoreTest {
         wcStatsStore.onAction(WCStatsActionBuilder.newFetchedOrderStatsV4Action(altSiteCurrentDayPayload))
 
         // verify that the revenue stats & order count is not empty
-        val altSiteCurrentDayRevenueStats = wcStatsStore.getRevenueStatsV4(
+        val altSiteCurrentDayRevenueStats = wcStatsStore.getGrossRevenueStats(
                 site, StatsGranularity.valueOf(altSiteOrderStatsModel.interval.toUpperCase()),
                 altSiteOrderStatsModel.startDate, altSiteOrderStatsModel.endDate
         )
-        val altSiteCurrentDayOrderStats = wcStatsStore.getOrderStatsV4(
+        val altSiteCurrentDayOrderStats = wcStatsStore.getOrderCountStats(
                 site, StatsGranularity.valueOf(altSiteOrderStatsModel.interval.toUpperCase()),
                 altSiteOrderStatsModel.startDate, altSiteOrderStatsModel.endDate
         )
@@ -1375,11 +1375,11 @@ class WCStatsStoreTest {
         wcStatsStore.onAction(WCStatsActionBuilder.newFetchedOrderStatsV4Action(nonExistentPayload))
 
         // verify that the revenue stats & order count is empty
-        val nonExistentRevenueStats = wcStatsStore.getRevenueStatsV4(
+        val nonExistentRevenueStats = wcStatsStore.getGrossRevenueStats(
                 nonExistentSite, StatsGranularity.valueOf(altSiteOrderStatsModel.interval.toUpperCase()),
                 altSiteOrderStatsModel.startDate, altSiteOrderStatsModel.endDate
         )
-        val nonExistentOrderStats = wcStatsStore.getOrderStatsV4(
+        val nonExistentOrderStats = wcStatsStore.getOrderCountStats(
                 nonExistentSite, StatsGranularity.valueOf(altSiteOrderStatsModel.interval.toUpperCase()),
                 altSiteOrderStatsModel.startDate, altSiteOrderStatsModel.endDate
         )
@@ -1392,10 +1392,10 @@ class WCStatsStoreTest {
         wcStatsStore.onAction(WCStatsActionBuilder.newFetchedOrderStatsV4Action(missingDataPayload))
 
         // verify that the revenue stats & order count is empty
-        val missingRevenueStats = wcStatsStore.getRevenueStatsV4(
+        val missingRevenueStats = wcStatsStore.getGrossRevenueStats(
                 site, StatsGranularity.YEARS, "2019-01-01", "2019-01-07"
         )
-        val missingOrderStats = wcStatsStore.getOrderStatsV4(
+        val missingOrderStats = wcStatsStore.getOrderCountStats(
                 site, StatsGranularity.YEARS, "2019-01-01", "2019-01-07"
         )
         assertTrue(missingRevenueStats.isEmpty())

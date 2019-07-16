@@ -483,9 +483,9 @@ class WCStatsStore @Inject constructor(
     }
 
     private fun fetchRevenueStats(payload: FetchOrderStatsV4Payload) {
-        val startDate = getFormattedStartDate(payload.site, payload.granularity, payload.startDate)
+        val startDate = getStartDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.startDate)
         val endDate = DateUtils.getEndDateForSite(payload.site)
-        val perPage = getRandomPageInt(payload.forced)
+        val perPage = getRandomPageIntForRevenueStats(payload.forced)
         wcOrderStatsClient.fetchStatsV4(
                 payload.site,
                 payload.granularity,
@@ -500,7 +500,11 @@ class WCStatsStore @Inject constructor(
      * Given a [startDate], formats the date based on the site's timezone in format yyyy-MM-dd'T'hh:mm:ss
      * If the start date is empty, fetches the date based on the [granularity]
      */
-    private fun getFormattedStartDate(site: SiteModel, granularity: StatsGranularity, startDate: String?): String {
+    private fun getStartDateForRevenueStatsGranularity(
+        site: SiteModel,
+        granularity: StatsGranularity,
+        startDate: String?
+    ): String {
         val date = if (startDate.isNullOrEmpty()) {
             when (granularity) {
                 StatsGranularity.DAYS -> DateUtils.getStartOfCurrentDay()
@@ -522,9 +526,12 @@ class WCStatsStore @Inject constructor(
      * So this logic generates a random value between 31 to 100 only if the [forced] is set to true
      * And storing this value locally to be used when the [forced] flag is set to false.
      * */
-    private fun getRandomPageInt(forced: Boolean): Int {
+    private fun getRandomPageIntForRevenueStats(forced: Boolean): Int {
         val randomInt = Random.nextInt(STATS_API_V4_MIN_PER_PAGE_PARAM, STATS_API_V4_MAX_PER_PAGE_PARAM)
-        return if (!forced) {
+        return if (forced) {
+            preferences.edit().putInt(STATS_API_V4_PER_PAGE_PARAM, randomInt).apply()
+            randomInt
+        } else {
             val prefsValue = preferences.getInt(STATS_API_V4_PER_PAGE_PARAM, 0)
             if (prefsValue == 0) {
                 preferences.edit().putInt(STATS_API_V4_PER_PAGE_PARAM, randomInt).apply()
@@ -532,9 +539,6 @@ class WCStatsStore @Inject constructor(
             } else {
                 prefsValue
             }
-        } else {
-            preferences.edit().putInt(STATS_API_V4_PER_PAGE_PARAM, randomInt).apply()
-            randomInt
         }
     }
 
@@ -553,7 +557,7 @@ class WCStatsStore @Inject constructor(
         emitChange(onStatsChanged)
     }
 
-    fun getRevenueStatsV4(
+    fun getGrossRevenueStats(
         site: SiteModel,
         granularity: StatsGranularity,
         startDate: String,
@@ -565,7 +569,7 @@ class WCStatsStore @Inject constructor(
         }?.toMap() ?: mapOf()
     }
 
-    fun getOrderStatsV4(
+    fun getOrderCountStats(
         site: SiteModel,
         granularity: StatsGranularity,
         startDate: String,

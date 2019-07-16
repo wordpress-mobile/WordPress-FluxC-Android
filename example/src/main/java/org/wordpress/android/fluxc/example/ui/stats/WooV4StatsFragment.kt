@@ -132,7 +132,7 @@ class WooV4StatsFragment : Fragment() {
         val site = selectedSite
         when (event.causeOfChange) {
             WCStatsAction.FETCH_ORDER_STATS_V4 -> {
-                val statsMap = wcStatsStore.getRevenueStatsV4(
+                val statsMap = wcStatsStore.getGrossRevenueStats(
                         site!!,
                         event.granularity,
                         event.startDate!!,
