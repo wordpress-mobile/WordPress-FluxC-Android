@@ -16,7 +16,6 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
-import org.wordpress.android.fluxc.persistence.WCStatsV4SqlUtils
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.ErrorUtils.OnUnexpectedError
@@ -545,7 +544,7 @@ class WCStatsStore @Inject constructor(
                 return@with OnWCStatsV4Changed(0, granularity)
                         .also { it.error = payload.error }
             } else {
-                val rowsAffected = WCStatsV4SqlUtils.insertOrUpdateStats(stats)
+                val rowsAffected = WCStatsSqlUtils.insertOrUpdateRevenueStats(stats)
                 return@with OnWCStatsV4Changed(rowsAffected, granularity, stats.startDate, stats.endDate)
             }
         }
@@ -584,7 +583,7 @@ class WCStatsStore @Inject constructor(
         startDate: String,
         endDate: String
     ): WCOrderStatsV4Model? {
-        return WCStatsV4SqlUtils.getRawStatsForSiteIntervalAndDate(
+        return WCStatsSqlUtils.getRevenueStatsForSiteIntervalAndDate(
                 site, granularity, startDate, endDate)
     }
 }

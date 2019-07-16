@@ -10,7 +10,7 @@ import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsV4Model
-import org.wordpress.android.fluxc.persistence.WCStatsV4SqlUtils
+import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import kotlin.test.assertEquals
@@ -19,7 +19,7 @@ import kotlin.test.assertNull
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
-class WCStatsV4SqlUtilsTest {
+class WCStatsSqlUtilsTest {
     @Before
     fun setUp() {
         val appContext = RuntimeEnvironment.application.applicationContext
@@ -35,7 +35,7 @@ class WCStatsV4SqlUtilsTest {
     fun testSimpleInsertionAndRetrieval() {
         // insert a first stats entry and verify that it is stored correctly
         val revenueStatsModel = WCStatsTestUtils.generateSampleRevenueStatsModel()
-        WCStatsV4SqlUtils.insertOrUpdateStats(revenueStatsModel)
+        WCStatsSqlUtils.insertOrUpdateRevenueStats(revenueStatsModel)
 
         with(WellSql.select(WCOrderStatsV4Model::class.java).asModel) {
             assertEquals(1, size)
@@ -49,7 +49,7 @@ class WCStatsV4SqlUtilsTest {
                 WCStatsTestUtils.generateSampleRevenueStatsModel(
                         interval = StatsGranularity.MONTHS.toString(), data = "fake-data"
                 )
-        WCStatsV4SqlUtils.insertOrUpdateStats(revenueStatsModel2)
+        WCStatsSqlUtils.insertOrUpdateRevenueStats(revenueStatsModel2)
 
         with(WellSql.select(WCOrderStatsV4Model::class.java).asModel) {
             assertEquals(2, size)
@@ -66,7 +66,7 @@ class WCStatsV4SqlUtilsTest {
                 WCStatsTestUtils.generateSampleRevenueStatsModel(
                         data = "fake-data2", startDate = "2019-07-07 00:00:00", endDate = "2019-07-13 23:59:59"
                 )
-        WCStatsV4SqlUtils.insertOrUpdateStats(revenueStatsModel3)
+        WCStatsSqlUtils.insertOrUpdateRevenueStats(revenueStatsModel3)
 
         with(WellSql.select(WCOrderStatsV4Model::class.java).asModel) {
             assertEquals(3, size)
@@ -83,7 +83,7 @@ class WCStatsV4SqlUtilsTest {
 
         // Overwrite an existing entry and verify that update is happening correctly
         val revenueStatsModel4 = WCStatsTestUtils.generateSampleRevenueStatsModel()
-        WCStatsV4SqlUtils.insertOrUpdateStats(revenueStatsModel4)
+        WCStatsSqlUtils.insertOrUpdateRevenueStats(revenueStatsModel4)
 
         with(WellSql.select(WCOrderStatsV4Model::class.java).asModel) {
             assertEquals(3, size)
@@ -100,7 +100,7 @@ class WCStatsV4SqlUtilsTest {
 
         // Add another "day" entry, but for another site
         val revenueStatsModel5 = WCStatsTestUtils.generateSampleRevenueStatsModel(localSiteId = 8)
-        WCStatsV4SqlUtils.insertOrUpdateStats(revenueStatsModel5)
+        WCStatsSqlUtils.insertOrUpdateRevenueStats(revenueStatsModel5)
 
         with(WellSql.select(WCOrderStatsV4Model::class.java).asModel) {
             assertEquals(4, size)
@@ -125,7 +125,7 @@ class WCStatsV4SqlUtilsTest {
         // revenue stats model for current day
         val currentDayStatsModel = WCStatsTestUtils.generateSampleRevenueStatsModel()
         val site = SiteModel().apply { id = currentDayStatsModel.localSiteId }
-        WCStatsV4SqlUtils.insertOrUpdateStats(currentDayStatsModel)
+        WCStatsSqlUtils.insertOrUpdateRevenueStats(currentDayStatsModel)
 
         // revenue stats model for this week
         val currentWeekStatsModel =
@@ -133,7 +133,7 @@ class WCStatsV4SqlUtilsTest {
                         interval = StatsGranularity.WEEKS.toString(),
                         data = "fake-data", startDate = "2019-07-07", endDate = "2019-07-09"
                 )
-        WCStatsV4SqlUtils.insertOrUpdateStats(currentWeekStatsModel)
+        WCStatsSqlUtils.insertOrUpdateRevenueStats(currentWeekStatsModel)
 
         // revenue stats model for this month
         val currentMonthStatsModel =
@@ -141,16 +141,16 @@ class WCStatsV4SqlUtilsTest {
                         interval = StatsGranularity.MONTHS.toString(),
                         data = "fake-data", startDate = "2019-07-01", endDate = "2019-07-09"
                 )
-        WCStatsV4SqlUtils.insertOrUpdateStats(currentMonthStatsModel)
+        WCStatsSqlUtils.insertOrUpdateRevenueStats(currentMonthStatsModel)
 
         // current day stats for alternate site
         val site2 = SiteModel().apply { id = 8 }
         val altSiteOrderStatsModel = WCStatsTestUtils.generateSampleRevenueStatsModel(
                 localSiteId = site2.id
         )
-        WCStatsV4SqlUtils.insertOrUpdateStats(altSiteOrderStatsModel)
+        WCStatsSqlUtils.insertOrUpdateRevenueStats(altSiteOrderStatsModel)
 
-        val currentDayStats = WCStatsV4SqlUtils.getRawStatsForSiteIntervalAndDate(
+        val currentDayStats = WCStatsSqlUtils.getRevenueStatsForSiteIntervalAndDate(
                 site, StatsGranularity.DAYS, currentDayStatsModel.startDate, currentDayStatsModel.endDate
         )
         assertNotNull(currentDayStats)
@@ -161,7 +161,7 @@ class WCStatsV4SqlUtilsTest {
             assertEquals(currentDayStatsModel.localSiteId, localSiteId)
         }
 
-        val currentWeekStats = WCStatsV4SqlUtils.getRawStatsForSiteIntervalAndDate(
+        val currentWeekStats = WCStatsSqlUtils.getRevenueStatsForSiteIntervalAndDate(
                 site, StatsGranularity.WEEKS, currentWeekStatsModel.startDate, currentWeekStatsModel.endDate
         )
         assertNotNull(currentWeekStats)
@@ -172,7 +172,7 @@ class WCStatsV4SqlUtilsTest {
             assertEquals(currentWeekStatsModel.localSiteId, localSiteId)
         }
 
-        val currentMonthStats = WCStatsV4SqlUtils.getRawStatsForSiteIntervalAndDate(
+        val currentMonthStats = WCStatsSqlUtils.getRevenueStatsForSiteIntervalAndDate(
                 site, StatsGranularity.MONTHS, currentMonthStatsModel.startDate, currentMonthStatsModel.endDate
         )
         assertNotNull(currentMonthStats)
@@ -183,7 +183,7 @@ class WCStatsV4SqlUtilsTest {
             assertEquals(currentMonthStatsModel.localSiteId, localSiteId)
         }
 
-        val altCurrentDayStats = WCStatsV4SqlUtils.getRawStatsForSiteIntervalAndDate(
+        val altCurrentDayStats = WCStatsSqlUtils.getRevenueStatsForSiteIntervalAndDate(
                 site2, StatsGranularity.DAYS, altSiteOrderStatsModel.startDate, altSiteOrderStatsModel.endDate
         )
         assertNotNull(altCurrentDayStats)
@@ -194,13 +194,13 @@ class WCStatsV4SqlUtilsTest {
             assertEquals(altSiteOrderStatsModel.localSiteId, localSiteId)
         }
 
-        val nonExistentSite = WCStatsV4SqlUtils.getRawStatsForSiteIntervalAndDate(
+        val nonExistentSite = WCStatsSqlUtils.getRevenueStatsForSiteIntervalAndDate(
                 SiteModel().apply { id = 88 },
                 StatsGranularity.DAYS, currentDayStatsModel.startDate, currentDayStatsModel.endDate
         )
         assertNull(nonExistentSite)
 
-        val missingData = WCStatsV4SqlUtils.getRawStatsForSiteIntervalAndDate(
+        val missingData = WCStatsSqlUtils.getRevenueStatsForSiteIntervalAndDate(
                 site, StatsGranularity.YEARS, currentDayStatsModel.startDate, currentDayStatsModel.endDate)
         assertNull(missingData)
     }
