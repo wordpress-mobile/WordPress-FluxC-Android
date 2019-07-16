@@ -1,11 +1,11 @@
 package org.wordpress.android.fluxc.persistence
 
 import com.wellsql.generated.WCOrderStatsModelTable
-import com.wellsql.generated.WCOrderStatsV4ModelTable
+import com.wellsql.generated.WCRevenueStatsModelTable
 import com.yarolegovich.wellsql.WellSql
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
-import org.wordpress.android.fluxc.model.WCOrderStatsV4Model
+import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 
@@ -117,13 +117,13 @@ object WCStatsSqlUtils {
     /**
      * Methods to support the new v4 stats api
      */
-    fun insertOrUpdateRevenueStats(stats: WCOrderStatsV4Model): Int {
-        val statsResult = WellSql.select(WCOrderStatsV4Model::class.java)
+    fun insertOrUpdateRevenueStats(stats: WCRevenueStatsModel): Int {
+        val statsResult = WellSql.select(WCRevenueStatsModel::class.java)
                 .where().beginGroup()
-                .equals(WCOrderStatsV4ModelTable.LOCAL_SITE_ID, stats.localSiteId)
-                .equals(WCOrderStatsV4ModelTable.INTERVAL, stats.interval)
-                .equals(WCOrderStatsV4ModelTable.START_DATE, stats.startDate)
-                .equals(WCOrderStatsV4ModelTable.END_DATE, stats.endDate)
+                .equals(WCRevenueStatsModelTable.LOCAL_SITE_ID, stats.localSiteId)
+                .equals(WCRevenueStatsModelTable.INTERVAL, stats.interval)
+                .equals(WCRevenueStatsModelTable.START_DATE, stats.startDate)
+                .equals(WCRevenueStatsModelTable.END_DATE, stats.endDate)
                 .endGroup().endWhere()
                 .asModel
 
@@ -134,8 +134,8 @@ object WCStatsSqlUtils {
         } else {
             // Update
             val oldId = statsResult[0].id
-            WellSql.update(WCOrderStatsV4Model::class.java).whereId(oldId)
-                    .put(stats, UpdateAllExceptId(WCOrderStatsV4Model::class.java)).execute()
+            WellSql.update(WCRevenueStatsModel::class.java).whereId(oldId)
+                    .put(stats, UpdateAllExceptId(WCRevenueStatsModel::class.java)).execute()
         }
     }
 
@@ -144,14 +144,14 @@ object WCStatsSqlUtils {
         granularity: StatsGranularity,
         startDate: String,
         endDate: String
-    ): WCOrderStatsV4Model? {
-        return WellSql.select(WCOrderStatsV4Model::class.java)
+    ): WCRevenueStatsModel? {
+        return WellSql.select(WCRevenueStatsModel::class.java)
                 .where()
                 .beginGroup()
-                .equals(WCOrderStatsV4ModelTable.LOCAL_SITE_ID, site.id)
-                .equals(WCOrderStatsV4ModelTable.INTERVAL, granularity)
-                .equals(WCOrderStatsV4ModelTable.START_DATE, startDate)
-                .equals(WCOrderStatsV4ModelTable.END_DATE, endDate)
+                .equals(WCRevenueStatsModelTable.LOCAL_SITE_ID, site.id)
+                .equals(WCRevenueStatsModelTable.INTERVAL, granularity)
+                .equals(WCRevenueStatsModelTable.START_DATE, startDate)
+                .equals(WCRevenueStatsModelTable.END_DATE, endDate)
                 .endGroup().endWhere()
                 .asModel.firstOrNull()
     }

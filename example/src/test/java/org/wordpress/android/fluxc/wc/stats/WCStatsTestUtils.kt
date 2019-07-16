@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.wc.stats
 
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
-import org.wordpress.android.fluxc.model.WCOrderStatsV4Model
+import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import java.time.LocalDate
@@ -39,7 +39,7 @@ object WCStatsTestUtils {
     }
 
     /**
-     * Generates a sample [WCOrderStatsV4Model]
+     * Generates a sample [WCRevenueStatsModel]
      */
     fun generateSampleRevenueStatsModel(
         localSiteId: Int = 6,
@@ -47,8 +47,8 @@ object WCStatsTestUtils {
         startDate: String = dateTimeFormatter.format(LocalDate.now().atStartOfDay()),
         endDate: String = dateTimeFormatter.format(LocalDate.now().atTime(23, 59, 59)),
         data: String = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/v4-stats-data.json")
-    ): WCOrderStatsV4Model {
-        return WCOrderStatsV4Model().apply {
+    ): WCRevenueStatsModel {
+        return WCRevenueStatsModel().apply {
             this.localSiteId = localSiteId
             this.interval = interval
             this.endDate = endDate

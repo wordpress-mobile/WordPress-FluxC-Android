@@ -10,7 +10,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMV2
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
-import org.wordpress.android.fluxc.model.WCOrderStatsV4Model
+import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.model.WCTopEarnerModel
 import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
@@ -173,7 +173,7 @@ class OrderStatsRestClient(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: RevenueStatsApiResponse? ->
                     response?.let {
-                        val model = WCOrderStatsV4Model().apply {
+                        val model = WCRevenueStatsModel().apply {
                             this.localSiteId = site.id
                             this.interval = granularity.toString()
                             this.data = response.intervals.toString()

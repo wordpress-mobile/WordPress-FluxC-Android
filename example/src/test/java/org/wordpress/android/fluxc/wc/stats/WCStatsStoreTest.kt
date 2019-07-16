@@ -21,7 +21,7 @@ import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
-import org.wordpress.android.fluxc.model.WCOrderStatsV4Model
+import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
@@ -52,7 +52,7 @@ class WCStatsStoreTest {
     @Before
     fun setUp() {
         val config = SingleStoreWellSqlConfigForTests(
-                appContext, listOf(WCOrderStatsModel::class.java, WCOrderStatsV4Model::class.java),
+                appContext, listOf(WCOrderStatsModel::class.java, WCRevenueStatsModel::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)

@@ -10,7 +10,7 @@ import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel.OrderStatsField
-import org.wordpress.android.fluxc.model.WCOrderStatsV4Model
+import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.model.WCTopEarnerModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
@@ -121,7 +121,7 @@ class WCStatsStore @Inject constructor(
     class FetchRevenueStatsResponsePayload(
         val site: SiteModel,
         val granularity: StatsGranularity,
-        val stats: WCOrderStatsV4Model? = null
+        val stats: WCRevenueStatsModel? = null
     ) : Payload<OrderStatsError>() {
         constructor(error: OrderStatsError, site: SiteModel, granularity: StatsGranularity) : this(site, granularity) {
             this.error = error
@@ -587,7 +587,7 @@ class WCStatsStore @Inject constructor(
         granularity: StatsGranularity,
         startDate: String,
         endDate: String
-    ): WCOrderStatsV4Model? {
+    ): WCRevenueStatsModel? {
         return WCStatsSqlUtils.getRevenueStatsForSiteIntervalAndDate(
                 site, granularity, startDate, endDate)
     }

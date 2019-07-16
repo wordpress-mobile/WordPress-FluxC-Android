@@ -10,7 +10,7 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import com.google.gson.annotations.SerializedName
 
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
-data class WCOrderStatsV4Model(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
+data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
     @Column var localSiteId = 0
     @Column var interval = "" // The unit ("hour", "day", "week", "month", "year")
     @Column var startDate = "" // The start date of the data

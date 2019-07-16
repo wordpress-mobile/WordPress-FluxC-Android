@@ -9,7 +9,7 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderStatsV4Model
+import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
@@ -25,7 +25,7 @@ class WCStatsSqlUtilsTest {
         val appContext = RuntimeEnvironment.application.applicationContext
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
-                listOf(WCOrderStatsV4Model::class.java),
+                listOf(WCRevenueStatsModel::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE)
         WellSql.init(config)
         config.reset()
@@ -37,7 +37,7 @@ class WCStatsSqlUtilsTest {
         val revenueStatsModel = WCStatsTestUtils.generateSampleRevenueStatsModel()
         WCStatsSqlUtils.insertOrUpdateRevenueStats(revenueStatsModel)
 
-        with(WellSql.select(WCOrderStatsV4Model::class.java).asModel) {
+        with(WellSql.select(WCRevenueStatsModel::class.java).asModel) {
             assertEquals(1, size)
             assertEquals(revenueStatsModel.interval, first().interval)
             assertEquals(revenueStatsModel.startDate, first().startDate)
@@ -51,7 +51,7 @@ class WCStatsSqlUtilsTest {
                 )
         WCStatsSqlUtils.insertOrUpdateRevenueStats(revenueStatsModel2)
 
-        with(WellSql.select(WCOrderStatsV4Model::class.java).asModel) {
+        with(WellSql.select(WCRevenueStatsModel::class.java).asModel) {
             assertEquals(2, size)
             assertEquals(revenueStatsModel.interval, first().interval)
             assertEquals(revenueStatsModel.startDate, first().startDate)
@@ -68,7 +68,7 @@ class WCStatsSqlUtilsTest {
                 )
         WCStatsSqlUtils.insertOrUpdateRevenueStats(revenueStatsModel3)
 
-        with(WellSql.select(WCOrderStatsV4Model::class.java).asModel) {
+        with(WellSql.select(WCRevenueStatsModel::class.java).asModel) {
             assertEquals(3, size)
             assertEquals(revenueStatsModel.interval, first().interval)
             assertEquals(revenueStatsModel.startDate, first().startDate)
@@ -85,7 +85,7 @@ class WCStatsSqlUtilsTest {
         val revenueStatsModel4 = WCStatsTestUtils.generateSampleRevenueStatsModel()
         WCStatsSqlUtils.insertOrUpdateRevenueStats(revenueStatsModel4)
 
-        with(WellSql.select(WCOrderStatsV4Model::class.java).asModel) {
+        with(WellSql.select(WCRevenueStatsModel::class.java).asModel) {
             assertEquals(3, size)
             assertEquals(revenueStatsModel.interval, first().interval)
             assertEquals(revenueStatsModel.startDate, first().startDate)
@@ -102,7 +102,7 @@ class WCStatsSqlUtilsTest {
         val revenueStatsModel5 = WCStatsTestUtils.generateSampleRevenueStatsModel(localSiteId = 8)
         WCStatsSqlUtils.insertOrUpdateRevenueStats(revenueStatsModel5)
 
-        with(WellSql.select(WCOrderStatsV4Model::class.java).asModel) {
+        with(WellSql.select(WCRevenueStatsModel::class.java).asModel) {
             assertEquals(4, size)
             assertEquals(revenueStatsModel.interval, first().interval)
             assertEquals(revenueStatsModel.startDate, first().startDate)
