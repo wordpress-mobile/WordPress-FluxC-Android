@@ -559,7 +559,7 @@ class WCStatsStore @Inject constructor(
         startDate: String,
         endDate: String
     ): Map<String, Double> {
-        val rawStats = getRawStats(site, granularity, startDate, endDate)
+        val rawStats = getRawRevenueStats(site, granularity, startDate, endDate)
         return rawStats?.getIntervalList()?.map {
             it.interval!! to it.subtotals?.grossRevenue!!
         }?.toMap() ?: mapOf()
@@ -571,13 +571,13 @@ class WCStatsStore @Inject constructor(
         startDate: String,
         endDate: String
     ): Map<String, Long> {
-        val rawStats = getRawStats(site, granularity, startDate, endDate)
+        val rawStats = getRawRevenueStats(site, granularity, startDate, endDate)
         return rawStats?.getIntervalList()?.map {
             it.interval!! to it.subtotals?.ordersCount!!
         }?.toMap() ?: mapOf()
     }
 
-    private fun getRawStats(
+    private fun getRawRevenueStats(
         site: SiteModel,
         granularity: StatsGranularity,
         startDate: String,
