@@ -177,6 +177,7 @@ class OrderStatsRestClient(
                             this.localSiteId = site.id
                             this.interval = granularity.toString()
                             this.data = response.intervals.toString()
+                            this.total = response.totals.toString()
                             this.startDate = startDate
                             this.endDate = endDate
                         }

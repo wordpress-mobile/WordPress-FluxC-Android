@@ -16,6 +16,7 @@ data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Id
     @Column var startDate = "" // The start date of the data
     @Column var endDate = "" // The end date of the data
     @Column var data = "" // JSON - A list of lists; each nested list contains the data for a time period
+    @Column var total = "" // JSON - A map of total stats for a given time period
 
     companion object {
         private val gson by lazy { Gson() }
@@ -45,5 +46,20 @@ data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Id
     fun getIntervalList(): List<Interval> {
         val responseType = object : TypeToken<List<Interval>>() {}.type
         return gson.fromJson(data, responseType) as? List<Interval> ?: emptyList()
+    }
+
+    class Total {
+        @SerializedName("orders_count")
+        val ordersCount: Int? = null
+        @SerializedName("gross_revenue")
+        val grossRevenue: Double? = null
+    }
+
+    /**
+     * Deserializes the JSON contained in [data] into a Total object.
+     */
+    fun getTotal(): Total? {
+        val responseType = object : TypeToken<Total>() {}.type
+        return gson.fromJson(total, responseType) as? Total
     }
 }

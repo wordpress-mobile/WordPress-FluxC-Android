@@ -4,5 +4,6 @@ import com.google.gson.JsonElement
 import org.wordpress.android.fluxc.network.Response
 
 class RevenueStatsApiResponse : Response {
+    val totals: JsonElement? = null
     val intervals: JsonElement? = null
 }

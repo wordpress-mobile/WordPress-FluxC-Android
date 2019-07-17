@@ -582,7 +582,7 @@ class WCStatsStore @Inject constructor(
         }?.toMap() ?: mapOf()
     }
 
-    private fun getRawRevenueStats(
+    fun getRawRevenueStats(
         site: SiteModel,
         granularity: StatsGranularity,
         startDate: String,

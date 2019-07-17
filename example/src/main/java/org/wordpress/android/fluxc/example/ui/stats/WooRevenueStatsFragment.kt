@@ -132,19 +132,17 @@ class WooRevenueStatsFragment : Fragment() {
         val site = selectedSite
         when (event.causeOfChange) {
             WCStatsAction.FETCH_REVENUE_STATS -> {
-                val statsMap = wcStatsStore.getGrossRevenueStats(
+                val wcRevenueStatsModel = wcStatsStore.getRawRevenueStats(
                         site!!,
                         event.granularity,
                         event.startDate!!,
                         event.endDate!!)
-                if (statsMap.isEmpty()) {
-                    prependToLog("No stats were stored for site " + site.name + " =(")
-                } else {
-                    val revenueSum = statsMap.values.sum()
+                wcRevenueStatsModel?.let {
+                    val revenueSum = it.getTotal()?.grossRevenue
                     prependToLog("Fetched stats with total " + revenueSum + " for granularity " +
                             event.granularity.toString().toLowerCase() + " from " + site.name +
                             " between " + event.startDate + " and " + event.endDate)
-                }
+                } ?: prependToLog("No stats were stored for site " + site.name + " =(")
             }
         }
     }
