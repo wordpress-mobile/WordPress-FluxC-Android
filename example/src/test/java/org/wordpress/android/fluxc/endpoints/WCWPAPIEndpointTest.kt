@@ -21,7 +21,7 @@ class WCWPAPIEndpointTest {
     }
 
     @Test
-    fun testV4StatsUrl() {
+    fun testRevenueStatsUrl() {
         assertEquals("/wc/v4/reports/revenue/stats/", WOOCOMMERCE.reports.revenue.stats.pathV4)
     }
 }

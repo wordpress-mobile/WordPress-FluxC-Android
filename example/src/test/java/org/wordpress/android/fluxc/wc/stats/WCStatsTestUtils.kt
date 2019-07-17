@@ -46,7 +46,7 @@ object WCStatsTestUtils {
         interval: String = StatsGranularity.DAYS.toString(),
         startDate: String = dateTimeFormatter.format(LocalDate.now().atStartOfDay()),
         endDate: String = dateTimeFormatter.format(LocalDate.now().atTime(23, 59, 59)),
-        data: String = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/v4-stats-data.json")
+        data: String = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/revenue-stats-data.json")
     ): WCRevenueStatsModel {
         return WCRevenueStatsModel().apply {
             this.localSiteId = localSiteId

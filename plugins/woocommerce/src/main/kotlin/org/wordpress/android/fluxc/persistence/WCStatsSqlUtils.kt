@@ -115,7 +115,7 @@ object WCStatsSqlUtils {
     }
 
     /**
-     * Methods to support the new v4 stats api
+     * Methods to support the new v4 revenue stats api
      */
     fun insertOrUpdateRevenueStats(stats: WCRevenueStatsModel): Int {
         val statsResult = WellSql.select(WCRevenueStatsModel::class.java)

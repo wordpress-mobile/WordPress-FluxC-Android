@@ -471,7 +471,7 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
-     * Methods to support v4 api changes
+     * Methods to support v4 revenue api changes
      */
     class OnWCRevenueStatsChanged(
         val rowsAffected: Int,
