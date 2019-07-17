@@ -336,32 +336,6 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
-    public void testRemotePostStatusIsBeingSet() throws InterruptedException {
-        mNextEvent = TestEvents.POSTS_FETCHED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, false)));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        mNextEvent = TestEvents.POSTS_FETCHED;
-        mCountDownLatch = new CountDownLatch(1);
-
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostsAction(new FetchPostsPayload(sSite, true)));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        boolean statusMatches = true;
-        for (PostModel post : mPostStore.getPostsForSite(sSite)) {
-            if (!post.getStatus().equals(post.getRemoteStatus())) {
-                statusMatches = false;
-                break;
-            }
-        }
-        assertTrue(statusMatches);
-    }
-
-    @Test
     public void testFullFeaturedPostUpload() throws InterruptedException {
         createNewPost();
 
