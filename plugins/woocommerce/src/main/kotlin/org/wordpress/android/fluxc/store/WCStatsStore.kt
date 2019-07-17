@@ -44,9 +44,9 @@ class WCStatsStore @Inject constructor(
         private const val DATE_FORMAT_MONTH = "yyyy-MM"
         private const val DATE_FORMAT_YEAR = "yyyy"
 
-        const val STATS_API_V4_PER_PAGE_PARAM = "STATS_V4_API_PER_PAGE_PARAM_PREF_KEY"
-        const val STATS_API_V4_MIN_PER_PAGE_PARAM = 31
-        const val STATS_API_V4_MAX_PER_PAGE_PARAM = 100
+        const val STATS_REVENUE_API_PER_PAGE_PARAM = "STATS_REVENUE_API_PER_PAGE_PARAM_PREF_KEY"
+        const val STATS_REVENUE_API_MIN_PER_PAGE_PARAM = 31
+        const val STATS_REVENUE_API_MAX_PER_PAGE_PARAM = 100
     }
 
     private val preferences by lazy { PreferenceUtils.getFluxCPreferences(context) }
@@ -473,7 +473,7 @@ class WCStatsStore @Inject constructor(
     /**
      * Methods to support v4 api changes
      */
-    class OnWCStatsV4Changed(
+    class OnWCRevenueStatsChanged(
         val rowsAffected: Int,
         val granularity: StatsGranularity,
         val startDate: String? = null,
@@ -519,7 +519,7 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
-     * The default data count in `v4 revenue api` is 10.
+     * The default data count in `v4 revenue stats api` is 10.
      * so if we need to get data for an entire month without pagination, the per_page value should be 30 or 31.
      * But, due to caching in the api, if the per_page value static, the api is not providing refreshed data
      * when a new order is completed.
@@ -528,14 +528,14 @@ class WCStatsStore @Inject constructor(
      * And storing this value locally to be used when the [forced] flag is set to false.
      * */
     private fun getRandomPageIntForRevenueStats(forced: Boolean): Int {
-        val randomInt = Random.nextInt(STATS_API_V4_MIN_PER_PAGE_PARAM, STATS_API_V4_MAX_PER_PAGE_PARAM)
+        val randomInt = Random.nextInt(STATS_REVENUE_API_MIN_PER_PAGE_PARAM, STATS_REVENUE_API_MAX_PER_PAGE_PARAM)
         return if (forced) {
-            preferences.edit().putInt(STATS_API_V4_PER_PAGE_PARAM, randomInt).apply()
+            preferences.edit().putInt(STATS_REVENUE_API_PER_PAGE_PARAM, randomInt).apply()
             randomInt
         } else {
-            val prefsValue = preferences.getInt(STATS_API_V4_PER_PAGE_PARAM, 0)
+            val prefsValue = preferences.getInt(STATS_REVENUE_API_PER_PAGE_PARAM, 0)
             if (prefsValue == 0) {
-                preferences.edit().putInt(STATS_API_V4_PER_PAGE_PARAM, randomInt).apply()
+                preferences.edit().putInt(STATS_REVENUE_API_PER_PAGE_PARAM, randomInt).apply()
                 randomInt
             } else {
                 prefsValue
@@ -546,11 +546,11 @@ class WCStatsStore @Inject constructor(
     private fun handleFetchRevenueStatsCompleted(payload: FetchRevenueStatsResponsePayload) {
         val onStatsChanged = with(payload) {
             if (isError || stats == null) {
-                return@with OnWCStatsV4Changed(0, granularity)
+                return@with OnWCRevenueStatsChanged(0, granularity)
                         .also { it.error = payload.error }
             } else {
                 val rowsAffected = WCStatsSqlUtils.insertOrUpdateRevenueStats(stats)
-                return@with OnWCStatsV4Changed(rowsAffected, granularity, stats.startDate, stats.endDate)
+                return@with OnWCRevenueStatsChanged(rowsAffected, granularity, stats.startDate, stats.endDate)
             }
         }
 

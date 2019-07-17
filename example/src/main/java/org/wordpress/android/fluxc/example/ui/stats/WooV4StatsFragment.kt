@@ -19,7 +19,7 @@ import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsPayload
-import org.wordpress.android.fluxc.store.WCStatsStore.OnWCStatsV4Changed
+import org.wordpress.android.fluxc.store.WCStatsStore.OnWCRevenueStatsChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
@@ -123,7 +123,7 @@ class WooV4StatsFragment : Fragment() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onWCStatsV4Changed(event: OnWCStatsV4Changed) {
+    fun onWCRevenueStatsChanged(event: OnWCRevenueStatsChanged) {
         if (event.isError) {
             prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
             return
