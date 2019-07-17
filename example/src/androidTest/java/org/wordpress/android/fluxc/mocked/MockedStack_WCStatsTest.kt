@@ -317,9 +317,9 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testV4StatsDayFetchSuccess() {
+    fun testRevenueStatsDayFetchSuccess() {
         interceptor.respondWith("wc-revenue-stats-response-success.json")
-        orderStatsRestClient.fetchStatsV4(
+        orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
                 perPage = 35
@@ -348,12 +348,12 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testV4StatsFetchCaching() {
+    fun testRevenueStatsFetchCaching() {
         requestQueue.cache.clear()
 
         // Make initial stats request
         interceptor.respondWith("wc-revenue-stats-response-success.json")
-        orderStatsRestClient.fetchStatsV4(
+        orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
                 perPage = 35
@@ -368,7 +368,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
 
         // Make the same stats request - this should hit the cache
         interceptor.respondWith("wc-revenue-stats-response-success.json")
-        orderStatsRestClient.fetchStatsV4(
+        orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
                 perPage = 35
@@ -386,7 +386,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
 
         // Make the same stats request, but this time pass force=true to force a network request
         interceptor.respondWith("wc-revenue-stats-response-success.json")
-        orderStatsRestClient.fetchStatsV4(
+        orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "2019-07-01T00:00:00", endDate = "2019-07-07T23:59:59",
                 perPage = 35, force = true
@@ -403,7 +403,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
 
         // New day, cache should be ignored
         interceptor.respondWith("wc-revenue-stats-response-success.json")
-        orderStatsRestClient.fetchStatsV4(
+        orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "2019-07-02T00:00:00", endDate = "2019-07-08T23:59:59",
                 perPage = 35
@@ -420,14 +420,14 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testV4StatsFetchInvalidParamError() {
+    fun testRevenueStatsFetchInvalidParamError() {
         val errorJson = JsonObject().apply {
             addProperty("error", "rest_invalid_param")
             addProperty("message", "Invalid parameter(s): after")
         }
 
         interceptor.respondWithError(errorJson)
-        orderStatsRestClient.fetchStatsV4(
+        orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "invalid", endDate = "2019-07-07T23:59:59", perPage = 35
         )
@@ -445,14 +445,14 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     }
 
     @Test
-    fun testV4StatsFetchResponseNullError() {
+    fun testRevenueStatsFetchResponseNullError() {
         val errorJson = JsonObject().apply {
             addProperty("error", OrderStatsErrorType.RESPONSE_NULL.name)
             addProperty("message", "Response object is null")
         }
 
         interceptor.respondWithError(errorJson)
-        orderStatsRestClient.fetchStatsV4(
+        orderStatsRestClient.fetchRevenueStats(
                 site = siteModel, granularity = StatsGranularity.DAYS,
                 startDate = "invalid", endDate = "2019-07-07T23:59:59", perPage = 35
         )

@@ -1243,7 +1243,7 @@ class WCStatsStoreTest {
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchStatsV4(any(), any(),
+            verify(mockOrderStatsRestClient).fetchRevenueStats(any(), any(),
                     dateArgument.capture(), any(), any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
@@ -1261,7 +1261,7 @@ class WCStatsStoreTest {
 
             // The date value passed to the network client should match the current date on the site
             val dateArgument = argumentCaptor<String>()
-            verify(mockOrderStatsRestClient).fetchStatsV4(any(), any(), dateArgument.capture(), any(),
+            verify(mockOrderStatsRestClient).fetchRevenueStats(any(), any(), dateArgument.capture(), any(),
                     any(), any())
             val siteDate = dateArgument.firstValue
             assertEquals(timeOnSite, siteDate)
@@ -1276,7 +1276,7 @@ class WCStatsStoreTest {
     }
 
     @Test
-    fun testGetRevenueAndOrderV4StatsForSite() {
+    fun testGetRevenueAndOrderStatsForSite() {
         // revenue stats model for current day
         val currentDayStatsModel = WCStatsTestUtils.generateSampleRevenueStatsModel()
         val site = SiteModel().apply { id = currentDayStatsModel.localSiteId }

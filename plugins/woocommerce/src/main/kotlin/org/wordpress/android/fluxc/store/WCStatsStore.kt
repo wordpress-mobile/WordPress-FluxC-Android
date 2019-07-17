@@ -486,7 +486,7 @@ class WCStatsStore @Inject constructor(
         val startDate = getStartDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.startDate)
         val endDate = DateUtils.getEndDateForSite(payload.site)
         val perPage = getRandomPageIntForRevenueStats(payload.forced)
-        wcOrderStatsClient.fetchStatsV4(
+        wcOrderStatsClient.fetchRevenueStats(
                 payload.site,
                 payload.granularity,
                 startDate,
