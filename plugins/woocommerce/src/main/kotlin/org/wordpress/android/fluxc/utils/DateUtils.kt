@@ -9,6 +9,8 @@ import java.util.Locale
 
 object DateUtils {
     private const val DATE_FORMAT_DEFAULT = "yyyy-MM-dd"
+    private const val DATE_TIME_FORMAT_START = "yyyy-MM-dd'T'00:00:00"
+    private const val DATE_TIME_FORMAT_END = "yyyy-MM-dd'T'23:59:59"
 
     /**
      * Given a [SiteModel] and a [String] compatible with [SimpleDateFormat]
@@ -251,4 +253,43 @@ object DateUtils {
      * Format the date for UTC and return as string
      */
     fun formatGmtAsUtcDateString(gmtVal: String): String = "${gmtVal}Z"
+
+    /**
+     * Given a [SiteModel] and a [dateString] in format yyyy-MM-dd,
+     * returns a formatted date that accounts for the site's timezone setting,
+     * in the format yyy-MM-ddThh:mm:ss with the time always set to the start of the [dateString]
+     */
+    fun getStartDateForSite(site: SiteModel, dateString: String) =
+            getDateTimeForSite(site, DATE_TIME_FORMAT_START, dateString)
+
+    /**
+     * Given a [SiteModel],
+     * returns a formatted date that accounts for the site's timezone setting,
+     * in the format yyy-MM-ddThh:mm:ss with the time always set to the end of the
+     * current date
+     */
+    fun getEndDateForSite(site: SiteModel) = getDateTimeForSite(site, DATE_TIME_FORMAT_END, null)
+
+    fun getStartOfCurrentDay(): String {
+        val cal = Calendar.getInstance()
+        return formatDate(DATE_FORMAT_DEFAULT, cal.time)
+    }
+
+    fun getFirstDayOfCurrentWeek(): String {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.DAY_OF_WEEK, cal.getActualMinimum(Calendar.DAY_OF_WEEK))
+        return formatDate(DATE_FORMAT_DEFAULT, cal.time)
+    }
+
+    fun getFirstDayOfCurrentMonth(): String {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMinimum(Calendar.DAY_OF_MONTH))
+        return formatDate(DATE_FORMAT_DEFAULT, cal.time)
+    }
+
+    fun getFirstDayOfCurrentYear(): String {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.DAY_OF_YEAR, cal.getActualMinimum(Calendar.DAY_OF_YEAR))
+        return formatDate(DATE_FORMAT_DEFAULT, cal.time)
+    }
 }
