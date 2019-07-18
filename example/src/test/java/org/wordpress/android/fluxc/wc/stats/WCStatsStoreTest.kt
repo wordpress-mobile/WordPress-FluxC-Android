@@ -1233,7 +1233,7 @@ class WCStatsStoreTest {
     }
 
     @Test
-    fun testFetchCurrentDayStatsDate() {
+    fun testFetchCurrentDayRevenueStatsDate() {
         val plus12SiteDate = SiteModel().apply { timezone = "12" }.let {
             val startDate = DateUtils.formatDate("yyyy-MM-dd", Date())
             val payload = FetchRevenueStatsPayload(it, StatsGranularity.DAYS, startDate)
