@@ -21,7 +21,6 @@ import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePay
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
-import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.RESPONSE_NULL
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -250,7 +249,9 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
             assertNull(error)
             assertEquals(siteModel, site)
             assertEquals(OrderStatsApiUnit.MONTH, apiUnit)
-            assertEquals(visits, 12)
+            assertNotNull(stats)
+            assertNotNull(stats?.data)
+            assertEquals(stats?.dataList?.size, 12)
         }
     }
 
@@ -273,7 +274,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
             assertNotNull(error)
             assertEquals(siteModel, site)
             assertEquals(OrderStatsApiUnit.MONTH, apiUnit)
-            assertEquals(visits, 0)
+            assertNull(stats)
             assertEquals(OrderStatsErrorType.INVALID_PARAM, error.type)
         }
     }
@@ -312,6 +313,41 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
             val periodIndex = fieldsList.indexOf("period")
             assertEquals("2018-04-14", dataList.first()[periodIndex])
             assertEquals("2018-04-20", dataList.last()[periodIndex])
+        }
+    }
+
+    @Test
+    fun testCustomVisitorStatsFetchSuccess() {
+        interceptor.respondWith("wc-visitor-stats-response-success.json")
+        orderStatsRestClient.fetchVisitorStats(
+                siteModel, OrderStatsApiUnit.DAY, "2019-01-01", 12, true,
+                startDate = "2019-01-01",
+                endDate = "2019-01-12"
+        )
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCStatsAction.FETCHED_VISITOR_STATS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchVisitorStatsResponsePayload
+        assertNull(payload.error)
+        assertEquals(siteModel, payload.site)
+        assertEquals(OrderStatsApiUnit.DAY, payload.apiUnit)
+        assertNotNull(payload.stats)
+        assertEquals(OrderStatsApiUnit.DAY.name.toLowerCase(), payload.stats?.unit)
+        assertEquals("2019-01-01", payload.stats?.startDate)
+        assertEquals("2019-01-12", payload.stats?.endDate)
+        assertEquals(true, payload.stats?.isCustomField)
+
+        with(payload.stats!!) {
+            assertEquals(siteModel.id, localSiteId)
+            assertEquals(OrderStatsApiUnit.DAY.toString(), unit)
+            assertEquals(2, fieldsList.size)
+            assertEquals(12, dataList.size)
+            assertEquals(1.0, dataList[0][1])
+
+            val visitorIndex = fieldsList.indexOf("visitors")
+            assertEquals(12, dataList.map { (it[visitorIndex] as Number).toInt() }.sum())
         }
     }
 
