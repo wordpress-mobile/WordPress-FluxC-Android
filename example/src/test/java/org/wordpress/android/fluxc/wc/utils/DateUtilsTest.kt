@@ -179,7 +179,38 @@ class DateUtilsTest {
             assertEquals(testDateString, DateUtils.getFormattedDateString(testCalendar.get(Calendar.YEAR),
                     testCalendar.get(Calendar.MONTH), testCalendar.get(Calendar.DATE)))
             start.add(Calendar.DATE, 1)
-            date = start.getTime()
+            date = start.time
+        }
+    }
+
+    @Test
+    fun testGetStartDateForSiteFromString() {
+        val site = SiteModel().apply { id = 1 }
+
+        // test get start date for current day
+        for (i in -15..15) {
+            site.timezone = i.toString()
+            // format the current date to string
+            // get the formatted date string for the site in the format yyyy-MM-ddThh:mm:ss
+            // get the expected start date string for the site in the format yyyy-MM-ddThh:mm:ss
+            val dateString1 = DateUtils.formatDate(DATE_FORMAT_DAY, Date())
+            val expectedDate1 = "${SiteUtils.getDateTimeForSite(site, "yyyy-MM-dd", Date())}T00:00:00"
+            val actualDate1 = DateUtils.getStartDateForSite(site, dateString1)
+            assertEquals(expectedDate1, actualDate1)
+        }
+    }
+
+    @Test
+    fun testGetEndDateForSiteFromString() {
+        val site = SiteModel().apply { id = 1 }
+        for (i in -15..15) {
+            site.timezone = i.toString()
+            // format the current date to string
+            // get the formatted date string for the site in the format yyyy-MM-ddThh:mm:ss
+            // get the expected start date string for the site in the format yyyy-MM-ddThh:mm:ss
+            val expectedDate1 = "${SiteUtils.getCurrentDateTimeForSite(site, "yyyy-MM-dd")}T23:59:59"
+            val actualDate1 = DateUtils.getEndDateForSite(site)
+            assertEquals(expectedDate1, actualDate1)
         }
     }
 }
