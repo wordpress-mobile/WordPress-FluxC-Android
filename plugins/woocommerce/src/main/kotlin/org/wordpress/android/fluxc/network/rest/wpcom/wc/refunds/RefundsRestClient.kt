@@ -60,6 +60,10 @@ constructor(
     }
 
     data class RefundResponse(
+        @SerializedName("id") val refundId: Long?,
+        @SerializedName("date_created") val dateCreated: String?,
+        @SerializedName("amount") val amount: String?,
+        @SerializedName("reason") val reason: String?,
         @SerializedName("refunded_payment") val refundedPayment: Boolean?
     )
 }
