@@ -3,12 +3,12 @@ package org.wordpress.android.fluxc.store
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.refunds.RefundsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundsRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundsRestClient.RefundResponse
 import org.wordpress.android.fluxc.store.RefundsStore.RefundsError
 import org.wordpress.android.fluxc.store.Store.OnChangedError
 import javax.inject.Inject
@@ -31,15 +31,15 @@ class RefundsStore @Inject constructor(
                 val response = restClient.createRefund(site, orderId, amount.toString())
                 return@withContext when {
                     response.isError -> {
-                        OnRefundCreated(response.error)
+                        RefundResult(response.error)
                     }
-                    response.response != null -> {
+                    response.result != null -> {
 //                        sqlUtils.insert(siteModel, response.response, requestedItems = limitMode.limit)
-                        OnRefundCreated(
-                                refundsMapper.map(response.response)
+                        RefundResult(
+                                refundsMapper.map(response.result)
                         )
                     }
-                    else -> OnRefundCreated(RefundsError(GENERIC_ERROR, UNKNOWN))
+                    else -> RefundResult(RefundsError(GENERIC_ERROR, UNKNOWN))
                 }
             }
 
@@ -47,15 +47,55 @@ class RefundsStore @Inject constructor(
 //        return sqlUtils.select(site)?.let { insightsMapper.map(it, cacheMode) }
 //    }
 
+    suspend fun fetchRefund(site: SiteModel, orderId: Long, refundId: Long) =
+        withContext(coroutineContext) {
+            //                if (!forced && sqlUtils.hasFreshRequest(siteModel, limitMode.limit)) {
+//                    return@withContext OnStatsFetched(getTags(siteModel, limitMode), cached = true)
+//                }
+            val response = restClient.fetchRefund(site, orderId, refundId)
+            return@withContext when {
+                response.isError -> {
+                    RefundResult(response.error)
+                }
+                response.result != null -> {
+//                        sqlUtils.insert(siteModel, response.response, requestedItems = limitMode.limit)
+                    RefundResult(
+                            refundsMapper.map(response.result)
+                    )
+                }
+                else -> RefundResult(RefundsError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+
+    suspend fun fetchAllRefund(site: SiteModel, orderId: Long) =
+            withContext(coroutineContext) {
+                //                if (!forced && sqlUtils.hasFreshRequest(siteModel, limitMode.limit)) {
+//                    return@withContext OnStatsFetched(getTags(siteModel, limitMode), cached = true)
+//                }
+                val response = restClient.fetchAllRefunds(site, orderId)
+                return@withContext when {
+                    response.isError -> {
+                        RefundResult(response.error)
+                    }
+                    response.result != null -> {
+//                        sqlUtils.insert(siteModel, response.response, requestedItems = limitMode.limit)
+                        RefundResult(
+                                response.result.map { refundsMapper.map(it) }
+                        )
+                    }
+                    else -> RefundResult(RefundsError(GENERIC_ERROR, UNKNOWN))
+                }
+            }
+
     data class RefundsPayload<T>(
-        val response: T? = null
+        val result: T? = null
     ) : Payload<RefundsError>() {
         constructor(error: RefundsError) : this() {
             this.error = error
         }
     }
 
-    data class OnRefundCreated<T>(val model: T? = null, val cached: Boolean = false) : Store.OnChanged<RefundsError>() {
+    data class RefundResult<T>(val model: T? = null, val cached: Boolean = false) : Store.OnChanged<RefundsError>() {
         constructor(error: RefundsError) : this() {
             this.error = error
         }
