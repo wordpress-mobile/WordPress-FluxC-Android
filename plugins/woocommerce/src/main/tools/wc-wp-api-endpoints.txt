@@ -13,4 +13,5 @@
 /settings/general/
 /settings/products/
 
-/orders/<id>/refund
+/orders/<id>/refunds
+/orders/<id>/refunds/<refund_id>

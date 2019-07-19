@@ -32,10 +32,10 @@ constructor(
         orderId: Long,
         amount: String,
         reason: String = "",
-        automaticRefund: Boolean = true,
+        automaticRefund: Boolean = false,
         partialRefundLineItems: List<LineItem> = emptyList()
     ): RefundsPayload<RefundResponse> {
-        val url = WOOCOMMERCE.orders.id(orderId).refund.pathV3
+        val url = WOOCOMMERCE.orders.id(orderId).refunds.pathV3
 
         val params = mapOf(
             "amount" to amount,
