@@ -2,9 +2,11 @@ package org.wordpress.android.fluxc.store
 
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.Payload
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.refunds.RefundsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundsRestClient
 import org.wordpress.android.fluxc.store.RefundsStore.RefundsError
@@ -13,6 +15,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
 import org.wordpress.android.fluxc.store.RefundsStore.RefundsErrorType.GENERIC_ERROR
+import java.math.BigDecimal
 
 @Singleton
 class RefundsStore @Inject constructor(
@@ -20,12 +23,12 @@ class RefundsStore @Inject constructor(
     private val coroutineContext: CoroutineContext,
     private val refundsMapper: RefundsMapper
 ) {
-    suspend fun createFullRefund(order: WCOrderModel) =
+    suspend fun createRefund(site: SiteModel, orderId: Long, amount: BigDecimal) =
             withContext(coroutineContext) {
 //                if (!forced && sqlUtils.hasFreshRequest(siteModel, limitMode.limit)) {
 //                    return@withContext OnStatsFetched(getTags(siteModel, limitMode), cached = true)
 //                }
-                val response = restClient.createRefund(order)
+                val response = restClient.createRefund(site, orderId, amount.toString())
                 return@withContext when {
                     response.isError -> {
                         OnRefundCreated(response.error)
@@ -36,7 +39,7 @@ class RefundsStore @Inject constructor(
                                 refundsMapper.map(response.response)
                         )
                     }
-                    else -> OnRefundCreated(RefundsError(GENERIC_ERROR))
+                    else -> OnRefundCreated(RefundsError(GENERIC_ERROR, UNKNOWN))
                 }
             }
 
@@ -58,7 +61,7 @@ class RefundsStore @Inject constructor(
         }
     }
 
-    class RefundsError(var type: RefundsErrorType, var message: String? = null) : OnChangedError
+    class RefundsError(var type: RefundsErrorType, var original: GenericErrorType, var message: String? = null) : OnChangedError
 
     enum class RefundsErrorType {
         INVALID_PARAM,
@@ -86,5 +89,5 @@ fun WPComGsonNetworkError.toRefundsError(): RefundsError {
         GenericErrorType.SERVER_ERROR,
         null -> GENERIC_ERROR
     }
-    return RefundsError(type, message)
+    return RefundsError(type, this.type, message)
 }
