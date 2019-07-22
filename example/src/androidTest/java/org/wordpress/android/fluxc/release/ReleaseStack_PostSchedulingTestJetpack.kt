@@ -84,7 +84,7 @@ class ReleaseStack_PostSchedulingTestJetpack : ReleaseStack_Base() {
 
         val deletedPeriod = postSchedulingNotificationStore.getSchedulingReminderPeriod(postId)
 
-        assertEquals(startPeriod, Period.OFF)
+        assertEquals(deletedPeriod, Period.OFF)
     }
 
 
