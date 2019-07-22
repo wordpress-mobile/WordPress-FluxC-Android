@@ -87,7 +87,6 @@ class ReleaseStack_PostSchedulingTestJetpack : ReleaseStack_Base() {
         assertEquals(deletedPeriod, Period.OFF)
     }
 
-
     private fun authenticate(): SiteModel {
         authenticateWPComAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
                 BuildConfig.TEST_WPCOM_PASSWORD_SINGLE_JETPACK_ONLY)
