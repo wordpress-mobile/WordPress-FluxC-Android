@@ -13,8 +13,10 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderCountApiResponse
 import org.wordpress.android.fluxc.store.RefundsStore.RefundsPayload
 import org.wordpress.android.fluxc.store.toRefundsError
+import java.util.Date
 import javax.inject.Singleton
 
 @Singleton
@@ -54,6 +56,54 @@ constructor(
             is JetpackSuccess -> {
                 RefundsPayload(response.data)
             }
+            is JetpackError -> {
+                RefundsPayload(response.error.toRefundsError())
+            }
+        }
+    }
+
+    suspend fun fetchRefund(
+        site: SiteModel,
+        orderId: Long,
+        refundId: Long
+    ): RefundsPayload<RefundResponse> {
+        val url = WOOCOMMERCE.orders.id(orderId).refunds.refund(refundId).pathV3
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                emptyMap(),
+                RefundResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                RefundsPayload(response.data)
+            }
+            is JetpackError -> {
+                RefundsPayload(response.error.toRefundsError())
+            }
+        }
+    }
+
+    suspend fun fetchAllRefunds(
+        site: SiteModel,
+        orderId: Long
+    ): RefundsPayload<Array<RefundResponse>> {
+        val url = WOOCOMMERCE.orders.id(orderId).refunds.pathV3
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                emptyMap(),
+                Array<RefundResponse>::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                RefundsPayload(response.data)
+            }
+            is JetpackError -> {
                 RefundsPayload(response.error.toRefundsError())
             }
         }
