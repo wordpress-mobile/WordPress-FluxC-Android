@@ -1611,4 +1611,3 @@ class WCStatsStoreTest {
         assertTrue(customMonthVisitorStats.isNotEmpty())
     }
 }
-
