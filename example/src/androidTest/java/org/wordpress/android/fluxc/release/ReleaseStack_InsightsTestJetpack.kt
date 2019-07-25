@@ -92,7 +92,7 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
 
         assertEquals(fetchedInsights.model, insightsFromDb)
 
-        runBlocking { statsStore.deleteAllData() }
+        statsStore.deleteAllData()
 
         assertNull(allTimeStore.getAllTimeInsights(site))
     }
@@ -110,7 +110,7 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
 
         assertEquals(fetchedInsights.model, insightsFromDb)
 
-        runBlocking { statsStore.deleteSiteData(site) }
+        statsStore.deleteSiteData(site)
 
         assertNull(latestPostStore.getLatestPostInsights(site))
     }
