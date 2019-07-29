@@ -1,10 +1,13 @@
 package org.wordpress.android.fluxc.persistence
 
 import com.wellsql.generated.WCOrderStatsModelTable
+import com.wellsql.generated.WCRevenueStatsModelTable
 import com.yarolegovich.wellsql.WellSql
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
+import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 
 object WCStatsSqlUtils {
     fun insertOrUpdateStats(stats: WCOrderStatsModel): Int {
@@ -109,5 +112,47 @@ object WCStatsSqlUtils {
                 .equals(WCOrderStatsModelTable.IS_CUSTOM_FIELD, true)
                 .endWhere()
                 .execute()
+    }
+
+    /**
+     * Methods to support the new v4 revenue stats api
+     */
+    fun insertOrUpdateRevenueStats(stats: WCRevenueStatsModel): Int {
+        val statsResult = WellSql.select(WCRevenueStatsModel::class.java)
+                .where().beginGroup()
+                .equals(WCRevenueStatsModelTable.LOCAL_SITE_ID, stats.localSiteId)
+                .equals(WCRevenueStatsModelTable.INTERVAL, stats.interval)
+                .equals(WCRevenueStatsModelTable.START_DATE, stats.startDate)
+                .equals(WCRevenueStatsModelTable.END_DATE, stats.endDate)
+                .endGroup().endWhere()
+                .asModel
+
+        return if (statsResult.isEmpty()) {
+            // insert
+            WellSql.insert(stats).asSingleTransaction(true).execute()
+            1
+        } else {
+            // Update
+            val oldId = statsResult[0].id
+            WellSql.update(WCRevenueStatsModel::class.java).whereId(oldId)
+                    .put(stats, UpdateAllExceptId(WCRevenueStatsModel::class.java)).execute()
+        }
+    }
+
+    fun getRevenueStatsForSiteIntervalAndDate(
+        site: SiteModel,
+        granularity: StatsGranularity,
+        startDate: String,
+        endDate: String
+    ): WCRevenueStatsModel? {
+        return WellSql.select(WCRevenueStatsModel::class.java)
+                .where()
+                .beginGroup()
+                .equals(WCRevenueStatsModelTable.LOCAL_SITE_ID, site.id)
+                .equals(WCRevenueStatsModelTable.INTERVAL, granularity)
+                .equals(WCRevenueStatsModelTable.START_DATE, startDate)
+                .equals(WCRevenueStatsModelTable.END_DATE, endDate)
+                .endGroup().endWhere()
+                .asModel.firstOrNull()
     }
 }
