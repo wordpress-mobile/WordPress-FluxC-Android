@@ -147,7 +147,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
 
         String siteEditor = firstSite.getMobileEditor();
         // Test mobile editors for a wpcom site
-        assertTrue(siteEditor.equals("aztec") || siteEditor.equals("gutenberg"));
+        assertTrue(siteEditor.equals("")
+                || siteEditor.equals("aztec") || siteEditor.equals("gutenberg"));
     }
 
     @Test
