@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
@@ -200,6 +201,41 @@ class OrderStatsRestClient(
         request?.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
         if (force) request?.setShouldForceUpdate()
 
+        add(request)
+    }
+
+    /**
+     * Makes a GET call to `/wc/v4/reports/revenue/stats`, to check if the site supports the v4 stats api.
+     * If v4 stats is not available for the site, returns [OrderStatsErrorType.PLUGIN_NOT_ACTIVE]
+     *
+     * @param[site] the site to fetch stats data for
+     * @param[startDate] the current date to include in ISO format (YYYY-MM-dd'T'HH:mm:ss)
+     *
+     * Since only the response code is needed to verify if the v4 stats is supported or not,
+     * this method has been optimised:
+     * The interval param is set to [OrderStatsApiUnit.YEAR] by default
+     * The after param is set to the current date by default
+     * The _fields param is added to retrieve only the `Totals` field from the api
+     */
+    fun fetchRevenueStatsAvailability(site: SiteModel, startDate: String) {
+        val url = WOOCOMMERCE.reports.revenue.stats.pathV4
+        val responseType = object : TypeToken<RevenueStatsApiResponse>() {}.type
+        val params = mapOf(
+                "interval" to OrderStatsApiUnit.YEAR.toString(),
+                "after" to startDate,
+                "_fields" to "totals")
+
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: RevenueStatsApiResponse? ->
+                    val payload = FetchRevenueStatsAvailabilityResponsePayload(site, true)
+                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAvailabilityAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
+                    val payload = FetchRevenueStatsAvailabilityResponsePayload(orderError, site, false)
+                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAvailabilityAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
         add(request)
     }
 
