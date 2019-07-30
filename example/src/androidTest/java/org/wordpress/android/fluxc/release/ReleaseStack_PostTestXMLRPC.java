@@ -171,7 +171,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         // Wait one sec
         Thread.sleep(1000);
-        Date testStartDate = DateTimeUtils.localDateToUTC(new Date());
+        Date testStartDate = new Date();
 
         // Check local change date is set and before "right now"
         assertNotNull(mPost.getDateLocallyChanged());
