@@ -4,6 +4,7 @@ import com.android.volley.RequestQueue
 import com.google.gson.JsonObject
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -18,6 +19,7 @@ import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
@@ -472,6 +474,45 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
         assertEquals(StatsGranularity.DAYS, payload.granularity)
         assertNull(payload.stats)
         assertEquals(OrderStatsErrorType.RESPONSE_NULL, payload.error.type)
+    }
+
+    @Test
+    fun testFetchRevenueStatsAvailabilitySuccess() {
+        interceptor.respondWith("wc-revenue-stats-response-success.json")
+        orderStatsRestClient.fetchRevenueStatsAvailability(siteModel, "2019-07-30T00:00:00")
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCStatsAction.FETCHED_REVENUE_STATS_AVAILABILITY, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchRevenueStatsAvailabilityResponsePayload
+        with(payload) {
+            assertNull(error)
+            assertEquals(siteModel, site)
+            assertTrue(available)
+        }
+    }
+
+    @Test
+    fun testFetchRevenueStatsAvailabilityError() {
+        val errorJson = JsonObject().apply {
+            addProperty("error", "rest_no_route")
+            addProperty("message", "No route was found matching the URL and request method")
+        }
+
+        interceptor.respondWithError(errorJson)
+        orderStatsRestClient.fetchRevenueStatsAvailability(siteModel, "2019-07-30T00:00:00")
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCStatsAction.FETCHED_REVENUE_STATS_AVAILABILITY, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchRevenueStatsAvailabilityResponsePayload
+        with(payload) {
+            assertNotNull(error)
+            assertEquals(siteModel, site)
+            assertFalse(available)
+        }
     }
 
     @Suppress("unused")
