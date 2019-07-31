@@ -22,15 +22,18 @@ import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
+import org.wordpress.android.fluxc.model.WCVisitorStatsModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
+import org.wordpress.android.fluxc.persistence.WCVisitorStatsSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.MONTHS
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.WEEKS
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.SiteUtils.getCurrentDateTimeForSite
@@ -52,7 +55,9 @@ class WCStatsStoreTest {
     @Before
     fun setUp() {
         val config = SingleStoreWellSqlConfigForTests(
-                appContext, listOf(WCOrderStatsModel::class.java, WCRevenueStatsModel::class.java),
+                appContext, listOf(WCOrderStatsModel::class.java,
+                WCRevenueStatsModel::class.java,
+                WCVisitorStatsModel::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)
@@ -1400,5 +1405,212 @@ class WCStatsStoreTest {
         )
         assertTrue(missingRevenueStats.isEmpty())
         assertTrue(missingOrderStats.isEmpty())
+    }
+
+    @Test
+    fun testGetVisitorStatsForDaysGranularity() {
+        // Test Scenario - 1: Generate default visitor stats i.e. isCustomField - false
+        // Get visitor Stats of the same site and granularity and assert not null
+        val defaultDayVisitorStatsModel = WCStatsTestUtils.generateSampleVisitorStatsModel()
+        val site = SiteModel().apply { id = defaultDayVisitorStatsModel.localSiteId }
+        WCVisitorStatsSqlUtils.insertOrUpdateVisitorStats(defaultDayVisitorStatsModel)
+
+        val defaultDayVisitorStats = wcStatsStore.getVisitorStats(site, StatsGranularity.DAYS)
+        assertTrue(defaultDayVisitorStats.isNotEmpty())
+
+        // Test Scenario - 2: Generate default visitor stats with a different date
+        // Get visitor of the same site and granularity and assert not null
+        val defaultDayVisitorStatsModel2 = WCStatsTestUtils.generateSampleVisitorStatsModel(
+                endDate = "2019-03-20"
+        )
+        WCVisitorStatsSqlUtils.insertOrUpdateVisitorStats(defaultDayVisitorStatsModel2)
+        val defaultDayVisitorStats2 = wcStatsStore.getVisitorStats(site, StatsGranularity.DAYS)
+        assertTrue(defaultDayVisitorStats2.isNotEmpty())
+
+        // Test Scenario - 3: Generate custom stats for same site i.e. isCustomField - true
+        // Get visitor Stats of the same site and granularity and assert not null
+        val customDayVisitorStatsModel = WCStatsTestUtils.generateSampleVisitorStatsModel(
+                quantity = "1", endDate = "2019-01-01", startDate = "2019-01-01"
+        )
+        WCVisitorStatsSqlUtils.insertOrUpdateVisitorStats(customDayVisitorStatsModel)
+
+        val customDayVisitorStats = wcStatsStore.getVisitorStats(
+                site, StatsGranularity.DAYS, customDayVisitorStatsModel.quantity,
+                customDayVisitorStatsModel.endDate, customDayVisitorStatsModel.isCustomField
+        )
+        assertTrue(customDayVisitorStats.isNotEmpty())
+
+        // Test Scenario - 4: Query for custom visitor stats that is not present in local cache:
+        // for same site, same quantity, different date
+        // Get visitor Stats of the same site and granularity and assert null
+        val customDayVisitorStatsModel2 = WCStatsTestUtils.generateSampleVisitorStatsModel(
+                quantity = "1", endDate = "2018-12-01", startDate = "2018-12-01"
+        )
+        val customDayVisitorStats2 = wcStatsStore.getVisitorStats(
+                site, StatsGranularity.DAYS, customDayVisitorStatsModel2.quantity,
+                customDayVisitorStatsModel2.endDate, customDayVisitorStatsModel2.isCustomField
+        )
+        assertTrue(customDayVisitorStats2.isEmpty())
+
+        // Test Scenario - 5: Query for custom visitor stats that is not present in local cache:
+        // for same site, different quantity, different date
+        // Get visitor Stats of the same site and granularity and assert null
+        val customDayVisitorStatsModel3 = WCStatsTestUtils.generateSampleVisitorStatsModel(
+                quantity = "1", endDate = "2018-12-01", startDate = "2018-12-01"
+        )
+
+        val customDayVisitorStats3 = wcStatsStore.getVisitorStats(
+                site, StatsGranularity.DAYS, customDayVisitorStatsModel3.quantity,
+                customDayVisitorStatsModel3.endDate, customDayVisitorStatsModel3.isCustomField
+        )
+        assertTrue(customDayVisitorStats3.isEmpty())
+
+        // Test Scenario - 6: Generate custom visitor stats for same site with different granularity (WEEKS),
+        // same date(2019-01-01), same quantity (1) i.e. isCustomField - true
+        // Get visitor Stats and assert Not Null
+        // Now if another query ran for granularity - DAYS, with same date and same quantity: assert null
+        val customWeekVisitorStatsModel = WCStatsTestUtils.generateSampleVisitorStatsModel(quantity = "1",
+                endDate = "2019-01-01", startDate = "2019-01-01",
+                unit = OrderStatsApiUnit.fromStatsGranularity(WEEKS).toString())
+
+        WCVisitorStatsSqlUtils.insertOrUpdateVisitorStats(customWeekVisitorStatsModel)
+
+        val customWeekVisitorStats = wcStatsStore.getVisitorStats(
+                site, StatsGranularity.WEEKS, customWeekVisitorStatsModel.quantity,
+                customWeekVisitorStatsModel.endDate, customWeekVisitorStatsModel.isCustomField
+        )
+        assertTrue(customWeekVisitorStats.isNotEmpty())
+
+        val customDayVisitorStats4 = wcStatsStore.getVisitorStats(
+                site, StatsGranularity.DAYS, customDayVisitorStatsModel.quantity,
+                customDayVisitorStatsModel.endDate, customDayVisitorStatsModel.isCustomField
+        )
+        assertTrue(customDayVisitorStats4.isEmpty())
+
+        // Test Scenario - 7: Generate custom stats for different site(8) with same granularity(WEEKS),
+        // same date(2019-01-01), same quantity(1) i.e. isCustomField - true
+        // Get visitor Stats and assert Not Null
+        // Now if scenario 4 is run again it should assert NOT NULL, since the stats is for different sites
+        val customWeekVisitorStatsModel2 = WCStatsTestUtils.generateSampleVisitorStatsModel(
+                localSiteId = 8, unit = OrderStatsApiUnit.fromStatsGranularity(WEEKS).toString(),
+                quantity = "1", endDate = "2019-01-01", startDate = "2019-01-01"
+        )
+
+        WCVisitorStatsSqlUtils.insertOrUpdateVisitorStats(customWeekVisitorStatsModel2)
+
+        val customWeekVisitorStats2 = wcStatsStore.getVisitorStats(
+                site, StatsGranularity.WEEKS, customWeekVisitorStatsModel2.quantity,
+                customWeekVisitorStatsModel2.endDate, customWeekVisitorStatsModel2.isCustomField
+        )
+        assertTrue(customWeekVisitorStats2.isNotEmpty())
+        assertTrue(customWeekVisitorStats.isNotEmpty())
+    }
+
+    @Test
+    fun testGetVisitorStatsForWeeksGranularity() {
+        // Test Scenario - 1: Generate default visitor stats i.e. isCustomField - false
+        // Get visitor Stats of the same site and granularity and assert not null
+        val defaultWeekVisitorStatsModel = WCStatsTestUtils.generateSampleVisitorStatsModel(
+                unit = OrderStatsApiUnit.WEEK.toString()
+        )
+        val site = SiteModel().apply { id = defaultWeekVisitorStatsModel.localSiteId }
+        WCVisitorStatsSqlUtils.insertOrUpdateVisitorStats(defaultWeekVisitorStatsModel)
+
+        val defaultWeekVisitorStats = wcStatsStore.getVisitorStats(site, StatsGranularity.WEEKS)
+        assertTrue(defaultWeekVisitorStats.isNotEmpty())
+
+        // query for days granularity. the visitor stats should be empty
+        val defaultDayVisitorStats = wcStatsStore.getVisitorStats(site, StatsGranularity.DAYS)
+        assertTrue(defaultDayVisitorStats.isEmpty())
+
+        // Test Scenario - 2: Generate default visitor stats with a different date
+        // Get visitor of the same site and granularity and assert not null
+        val defaultWeekVisitorStatsModel2 = WCStatsTestUtils.generateSampleVisitorStatsModel(
+                unit = OrderStatsApiUnit.WEEK.toString(), endDate = "2019-03-20"
+        )
+        WCVisitorStatsSqlUtils.insertOrUpdateVisitorStats(defaultWeekVisitorStatsModel2)
+        val defaultWeekVisitorStats2 = wcStatsStore.getVisitorStats(site, StatsGranularity.WEEKS)
+        assertTrue(defaultWeekVisitorStats2.isNotEmpty())
+
+        // Test Scenario - 3: Generate custom stats for same site i.e. isCustomField - true
+        // Get visitor Stats of the same site and granularity and assert not null
+        val customWeekVisitorStatsModel = WCStatsTestUtils.generateSampleVisitorStatsModel(
+                unit = OrderStatsApiUnit.WEEK.toString(), quantity = "1",
+                endDate = "2019-01-01", startDate = "2019-01-01"
+        )
+        WCVisitorStatsSqlUtils.insertOrUpdateVisitorStats(customWeekVisitorStatsModel)
+
+        val customWeekVisitorStats = wcStatsStore.getVisitorStats(
+                site, StatsGranularity.WEEKS, customWeekVisitorStatsModel.quantity,
+                customWeekVisitorStatsModel.endDate, customWeekVisitorStatsModel.isCustomField
+        )
+        assertTrue(customWeekVisitorStats.isNotEmpty())
+
+        // Test Scenario - 4: Query for custom visitor stats that is not present in local cache:
+        // for same site, same quantity, different date
+        // Get visitor Stats of the same site and granularity and assert null
+        val customWeekVisitorStatsModel2 = WCStatsTestUtils.generateSampleVisitorStatsModel(
+                unit = OrderStatsApiUnit.WEEK.toString(), quantity = "1",
+                endDate = "2018-12-01", startDate = "2018-12-01"
+        )
+        val customWeekVisitorStats2 = wcStatsStore.getVisitorStats(
+                site, StatsGranularity.WEEKS, customWeekVisitorStatsModel2.quantity,
+                customWeekVisitorStatsModel2.endDate, customWeekVisitorStatsModel2.isCustomField
+        )
+        assertTrue(customWeekVisitorStats2.isEmpty())
+
+        // Test Scenario - 5: Query for custom visitor stats that is not present in local cache:
+        // for same site, different quantity, different date
+        // Get visitor Stats of the same site and granularity and assert null
+        val customWeekVisitorStatsModel3 = WCStatsTestUtils.generateSampleVisitorStatsModel(
+                unit = OrderStatsApiUnit.WEEK.toString(), quantity = "1",
+                endDate = "2018-12-01", startDate = "2018-12-01"
+        )
+
+        val customWeekVisitorStats3 = wcStatsStore.getVisitorStats(
+                site, StatsGranularity.WEEKS, customWeekVisitorStatsModel3.quantity,
+                customWeekVisitorStatsModel3.endDate, customWeekVisitorStatsModel3.isCustomField
+        )
+        assertTrue(customWeekVisitorStats3.isEmpty())
+
+        // Test Scenario - 6: Generate custom visitor stats for same site with different granularity (MONTHS),
+        // same date(2019-01-01), same quantity (1) i.e. isCustomField - true
+        // Get visitor Stats and assert Not Null
+        // Now if another query ran for granularity - WEEKS, with same date and same quantity: assert null
+        val customMonthVisitorStatsModel = WCStatsTestUtils.generateSampleVisitorStatsModel(
+                quantity = "1", endDate = "2019-01-01", startDate = "2019-01-01",
+                unit = OrderStatsApiUnit.fromStatsGranularity(MONTHS).toString())
+
+        WCVisitorStatsSqlUtils.insertOrUpdateVisitorStats(customMonthVisitorStatsModel)
+
+        val customMonthVisitorStats = wcStatsStore.getVisitorStats(
+                site, StatsGranularity.MONTHS, customMonthVisitorStatsModel.quantity,
+                customMonthVisitorStatsModel.endDate, customMonthVisitorStatsModel.isCustomField
+        )
+        assertTrue(customMonthVisitorStats.isNotEmpty())
+
+        val customWeekVisitorStats4 = wcStatsStore.getVisitorStats(
+                site, StatsGranularity.WEEKS, customWeekVisitorStatsModel.quantity,
+                customWeekVisitorStatsModel.endDate, customWeekVisitorStatsModel.isCustomField
+        )
+        assertTrue(customWeekVisitorStats4.isEmpty())
+
+        // Test Scenario - 7: Generate custom stats for different site(8) with same granularity(MONTHS),
+        // same date(2019-01-01), same quantity(1) i.e. isCustomField - true
+        // Get visitor Stats and assert Not Null
+        // Now if scenario 4 is run again it should assert NOT NULL, since the stats is for different sites
+        val customMonthVisitorStatsModel2 = WCStatsTestUtils.generateSampleVisitorStatsModel(
+                localSiteId = 8, unit = OrderStatsApiUnit.fromStatsGranularity(MONTHS).toString(),
+                quantity = "1", endDate = "2019-01-01", startDate = "2019-01-01"
+        )
+
+        WCVisitorStatsSqlUtils.insertOrUpdateVisitorStats(customMonthVisitorStatsModel2)
+
+        val customMonthVisitorStats2 = wcStatsStore.getVisitorStats(
+                site, StatsGranularity.MONTHS, customMonthVisitorStatsModel2.quantity,
+                customMonthVisitorStatsModel2.endDate, customMonthVisitorStatsModel2.isCustomField
+        )
+        assertTrue(customMonthVisitorStats2.isNotEmpty())
+        assertTrue(customMonthVisitorStats.isNotEmpty())
     }
 }

@@ -12,10 +12,13 @@ import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel.OrderStatsField
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.model.WCTopEarnerModel
+import org.wordpress.android.fluxc.model.WCVisitorStatsModel
+import org.wordpress.android.fluxc.model.WCVisitorStatsModel.VisitorStatsField
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.persistence.WCStatsSqlUtils
+import org.wordpress.android.fluxc.persistence.WCVisitorStatsSqlUtils
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.ErrorUtils.OnUnexpectedError
@@ -162,7 +165,7 @@ class WCStatsStore @Inject constructor(
     class FetchVisitorStatsResponsePayload(
         val site: SiteModel,
         val apiUnit: OrderStatsApiUnit,
-        val visits: Int = 0
+        val stats: WCVisitorStatsModel? = null
     ) : Payload<OrderStatsError>() {
         constructor(error: OrderStatsError, site: SiteModel, apiUnit: OrderStatsApiUnit) : this(site, apiUnit) {
             this.error = error
@@ -296,6 +299,34 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
+     * Returns the visitor data by date for the given [site], in units of [granularity].
+     * The returned map has the format: "2018-05-01" -> 15
+     */
+    fun getVisitorStats(
+        site: SiteModel,
+        granularity: StatsGranularity,
+        quantity: String? = null,
+        date: String? = null,
+        isCustomField: Boolean = false
+    ): Map<String, Int> {
+        val apiUnit = OrderStatsApiUnit.fromStatsGranularity(granularity)
+        val rawStats = WCVisitorStatsSqlUtils.getRawVisitorStatsForSiteUnitQuantityAndDate(
+                site, apiUnit, quantity, date, isCustomField)
+        rawStats?.let { visitorStatsModel ->
+            val periodIndex = visitorStatsModel.getIndexForField(VisitorStatsField.PERIOD)
+            val fieldIndex = visitorStatsModel.getIndexForField(VisitorStatsField.VISITORS)
+            if (periodIndex == -1 || fieldIndex == -1) {
+                return mapOf()
+            }
+
+            // Years are returned as numbers by the API, and Gson interprets them as floats - clean up the decimal
+            return visitorStatsModel.dataList.map {
+                it[periodIndex].toString().removeSuffix(".0") to (it[fieldIndex] as Number).toInt()
+            }.toMap()
+        } ?: return mapOf()
+    }
+
+    /**
      * Returns the currency code associated with stored stats for the [site], as an ISO 4217 currency code (eg. USD).
      */
     fun getStatsCurrencyForSite(site: SiteModel): String? {
@@ -375,14 +406,15 @@ class WCStatsStore @Inject constructor(
     }
 
     private fun fetchVisitorStats(payload: FetchVisitorStatsPayload) {
-        val quantity = getQuantityForGranularity(payload.site,
-                payload.granularity, payload.startDate, payload.endDate)
+        val quantity = getQuantityForGranularity(payload.site, payload.granularity, payload.startDate, payload.endDate)
         wcOrderStatsClient.fetchVisitorStats(
                 payload.site,
                 OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
                 getFormattedDate(payload.site, payload.granularity, payload.endDate),
                 quantity,
-                payload.forced
+                payload.forced,
+                payload.startDate,
+                payload.endDate
         )
     }
 
@@ -412,11 +444,16 @@ class WCStatsStore @Inject constructor(
     }
 
     private fun handleFetchVisitorStatsCompleted(payload: FetchVisitorStatsResponsePayload) {
-        val granularity = StatsGranularity.fromOrderStatsApiUnit(payload.apiUnit)
-        val onStatsChanged = OnWCStatsChanged(payload.visits, granularity)
-        if (payload.isError) {
-            onStatsChanged.error = payload.error
+        val onStatsChanged = with(payload) {
+            val granularity = StatsGranularity.fromOrderStatsApiUnit(apiUnit)
+            if (isError || stats == null) {
+                return@with OnWCStatsChanged(0, granularity).also { it.error = payload.error }
+            } else {
+                val rowsAffected = WCVisitorStatsSqlUtils.insertOrUpdateVisitorStats(stats)
+                return@with OnWCStatsChanged(rowsAffected, granularity, stats.quantity, stats.date, stats.isCustomField)
+            }
         }
+
         onStatsChanged.causeOfChange = WCStatsAction.FETCH_VISITOR_STATS
         emitChange(onStatsChanged)
     }

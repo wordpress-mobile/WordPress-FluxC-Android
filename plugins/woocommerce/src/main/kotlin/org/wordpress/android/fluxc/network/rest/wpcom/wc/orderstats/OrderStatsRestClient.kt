@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.model.WCTopEarnerModel
+import org.wordpress.android.fluxc.model.WCVisitorStatsModel
 import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -244,7 +245,9 @@ class OrderStatsRestClient(
         unit: OrderStatsApiUnit,
         date: String,
         quantity: Int,
-        force: Boolean = false
+        force: Boolean = false,
+        startDate: String? = null,
+        endDate: String? = null
     ) {
         val url = WPCOMREST.sites.site(site.siteId).stats.visits.urlV1_1
         val params = mapOf(
@@ -255,12 +258,20 @@ class OrderStatsRestClient(
         val request = WPComGsonRequest
                 .buildGetRequest(url, params, VisitorStatsApiResponse::class.java,
                         { response ->
-                            val visits = getVisitorsFromResponse(response)
-                            val payload = FetchVisitorStatsResponsePayload(
-                                    site = site,
-                                    apiUnit = unit,
-                                    visits = visits
-                            )
+                            val model = WCVisitorStatsModel().apply {
+                                this.localSiteId = site.id
+                                this.unit = unit.toString()
+                                this.fields = response.fields.toString()
+                                this.data = response.data.toString()
+                                this.quantity = quantity.toString()
+                                this.date = date
+                                endDate?.let { this.endDate = it }
+                                startDate?.let {
+                                    this.startDate = startDate
+                                    this.isCustomField = true
+                                }
+                            }
+                            val payload = FetchVisitorStatsResponsePayload(site, unit, model)
                             mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
                         },
                         { networkError ->
@@ -273,19 +284,6 @@ class OrderStatsRestClient(
         if (force) request.setShouldForceUpdate()
 
         add(request)
-    }
-
-    /**
-     * Returns the number of visitors from the VisitorStatsApiResponse data, which is an array of items for
-     * each period, the first element of which contains the date and the second contains the visitor count
-     */
-    private fun getVisitorsFromResponse(response: VisitorStatsApiResponse): Int {
-        return try {
-            response.data?.asJsonArray?.map { it.asJsonArray?.get(1)?.asInt ?: 0 }?.sum() ?: 0
-        } catch (e: Exception) {
-            AppLog.e(T.API, "${e.javaClass.simpleName} parsing visitor stats", e)
-            0
-        }
     }
 
     fun fetchTopEarnersStats(
