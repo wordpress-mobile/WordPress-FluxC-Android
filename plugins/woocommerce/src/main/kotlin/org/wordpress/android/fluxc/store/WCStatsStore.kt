@@ -129,6 +129,22 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
+     * Describes the parameters for fetching checking if the v4 stats for [site] is supported
+     */
+    class FetchRevenueStatsAvailabilityPayload(
+        val site: SiteModel
+    ) : Payload<BaseNetworkError>()
+
+    class FetchRevenueStatsAvailabilityResponsePayload(
+        val site: SiteModel,
+        val available: Boolean = false
+    ) : Payload<OrderStatsError>() {
+        constructor(error: OrderStatsError, site: SiteModel, available: Boolean) : this(site, available) {
+            this.error = error
+        }
+    }
+
+    /**
      * Describes the parameters for fetching visitor stats for [site], up to the current day, month, or year
      * (depending on the given [granularity]).
      *
@@ -208,12 +224,17 @@ class WCStatsStore @Inject constructor(
         when (actionType) {
             WCStatsAction.FETCH_ORDER_STATS -> fetchOrderStats(action.payload as FetchOrderStatsPayload)
             WCStatsAction.FETCH_REVENUE_STATS -> fetchRevenueStats(action.payload as FetchRevenueStatsPayload)
+            WCStatsAction.FETCH_REVENUE_STATS_AVAILABILITY ->
+                fetchRevenueStatsAvailability(action.payload as FetchRevenueStatsAvailabilityPayload)
             WCStatsAction.FETCH_VISITOR_STATS -> fetchVisitorStats(action.payload as FetchVisitorStatsPayload)
             WCStatsAction.FETCH_TOP_EARNERS_STATS -> fetchTopEarnersStats(action.payload as FetchTopEarnersStatsPayload)
             WCStatsAction.FETCHED_ORDER_STATS ->
                 handleFetchOrderStatsCompleted(action.payload as FetchOrderStatsResponsePayload)
             WCStatsAction.FETCHED_REVENUE_STATS ->
                 handleFetchRevenueStatsCompleted(action.payload as FetchRevenueStatsResponsePayload)
+            WCStatsAction.FETCHED_REVENUE_STATS_AVAILABILITY -> handleFetchRevenueStatsAvailabilityCompleted(
+                    action.payload as FetchRevenueStatsAvailabilityResponsePayload
+            )
             WCStatsAction.FETCHED_VISITOR_STATS ->
                 handleFetchVisitorStatsCompleted(action.payload as FetchVisitorStatsResponsePayload)
             WCStatsAction.FETCHED_TOP_EARNERS_STATS ->
@@ -477,7 +498,8 @@ class WCStatsStore @Inject constructor(
         val rowsAffected: Int,
         val granularity: StatsGranularity,
         val startDate: String? = null,
-        val endDate: String? = null
+        val endDate: String? = null,
+        val availability: Boolean = false
     ) : OnChanged<OrderStatsError>() {
         var causeOfChange: WCStatsAction? = null
     }
@@ -555,6 +577,35 @@ class WCStatsStore @Inject constructor(
         }
 
         onStatsChanged.causeOfChange = WCStatsAction.FETCH_REVENUE_STATS
+        emitChange(onStatsChanged)
+    }
+
+    /**
+     * Method to check if the v4 revenue stats api is available for this site.
+     * The startDate passed to the api is the current date
+     */
+    private fun fetchRevenueStatsAvailability(payload: FetchRevenueStatsAvailabilityPayload) {
+        val startDate = DateUtils.getStartDateForSite(payload.site, DateUtils.getStartOfCurrentDay())
+        wcOrderStatsClient.fetchRevenueStatsAvailability(payload.site, startDate)
+    }
+
+    /**
+     * Method returns a [payload] with the [Boolean] flag to indicate if the v4 revenue stats api
+     * is available for this site.
+     */
+    private fun handleFetchRevenueStatsAvailabilityCompleted(payload: FetchRevenueStatsAvailabilityResponsePayload) {
+        val onStatsChanged = with(payload) {
+            if (isError) {
+                return@with OnWCRevenueStatsChanged(
+                        0, granularity = StatsGranularity.YEARS, availability = payload.available
+                ).also { it.error = payload.error }
+            } else {
+                return@with OnWCRevenueStatsChanged(
+                        0, granularity = StatsGranularity.YEARS, availability = payload.available
+                )
+            }
+        }
+        onStatsChanged.causeOfChange = WCStatsAction.FETCH_REVENUE_STATS_AVAILABILITY
         emitChange(onStatsChanged)
     }
 
