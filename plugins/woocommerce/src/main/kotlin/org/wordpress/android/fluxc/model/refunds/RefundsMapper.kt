@@ -20,14 +20,12 @@ class RefundsMapper
                 response.refundedPayment ?: false,
                 response.items.map {
                     RefundItem(
-                            it.itemId ?: -1,
+                            it.id ?: -1,
                             it.name ?: "",
                             it.productId ?: -1,
                             it.variationId ?: -1,
-                            it.quantity ?: 0,
-                            it.taxClass ?: -1,
+                            it.quantity ?: 0f,
                             it.subtotal?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
-                            it.subtotalTax?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
                             it.total?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
                             it.totalTax?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
                             it.sku ?: "",

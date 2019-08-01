@@ -115,21 +115,6 @@ constructor(
         @SerializedName("amount") val amount: String?,
         @SerializedName("reason") val reason: String?,
         @SerializedName("refunded_payment") val refundedPayment: Boolean?,
-        @SerializedName("line_items") val items: List<RefundItem>
-    ) {
-        data class RefundItem(
-            @SerializedName("id") val itemId: Int?,
-            @SerializedName("name") val name: String?,
-            @SerializedName("product_id") val productId: Int?,
-            @SerializedName("variation_id") val variationId: Int?,
-            @SerializedName("quantity") val quantity: Int?,
-            @SerializedName("tax_class") val taxClass: Int?,
-            @SerializedName("subtotal") val subtotal: String?,
-            @SerializedName("subtotal_tax") val subtotalTax: String?,
-            @SerializedName("total") val total: String?,
-            @SerializedName("total_tax") val totalTax: String?,
-            @SerializedName("sku") val sku: String?,
-            @SerializedName("price") val price: String?
-        )
-    }
+        @SerializedName("line_items") val items: List<LineItem>
+    )
 }
