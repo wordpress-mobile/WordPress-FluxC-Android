@@ -9,6 +9,7 @@
 /products/<id>/variations/
 
 /reports/orders/totals/
+/reports/revenue/stats/
 
 /settings/general/
 /settings/products/

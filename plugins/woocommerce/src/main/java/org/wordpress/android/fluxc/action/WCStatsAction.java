@@ -5,6 +5,10 @@ import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload;
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload;
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityPayload;
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload;
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsPayload;
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload;
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsPayload;
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload;
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsPayload;
@@ -16,6 +20,12 @@ public enum WCStatsAction implements IAction {
     @Action(payloadType = FetchOrderStatsPayload.class)
     FETCH_ORDER_STATS,
 
+    @Action(payloadType = FetchRevenueStatsPayload.class)
+    FETCH_REVENUE_STATS,
+
+    @Action(payloadType = FetchRevenueStatsAvailabilityPayload.class)
+    FETCH_REVENUE_STATS_AVAILABILITY,
+
     @Action(payloadType = FetchVisitorStatsPayload.class)
     FETCH_VISITOR_STATS,
 
@@ -25,6 +35,12 @@ public enum WCStatsAction implements IAction {
     // Remote responses
     @Action(payloadType = FetchOrderStatsResponsePayload.class)
     FETCHED_ORDER_STATS,
+
+    @Action(payloadType = FetchRevenueStatsResponsePayload.class)
+    FETCHED_REVENUE_STATS,
+
+    @Action(payloadType = FetchRevenueStatsAvailabilityResponsePayload.class)
+    FETCHED_REVENUE_STATS_AVAILABILITY,
 
     @Action(payloadType = FetchVisitorStatsResponsePayload.class)
     FETCHED_VISITOR_STATS,
