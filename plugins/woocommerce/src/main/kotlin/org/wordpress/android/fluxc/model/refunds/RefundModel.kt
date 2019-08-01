@@ -4,7 +4,7 @@ import java.math.BigDecimal
 import java.util.Date
 
 data class RefundModel(
-    val id: Int,
+    val id: Long,
     val dateCreated: Date,
     val amount: BigDecimal,
     val reason: String?,
