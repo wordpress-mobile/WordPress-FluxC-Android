@@ -240,7 +240,8 @@ public class PostRestClient extends BaseWPComRestClient {
     }
 
     public void remoteAutoSavePost(final @NonNull PostModel post, final @NonNull SiteModel site) {
-        if (PostStatus.fromPost(post) != PostStatus.PUBLISHED && PostStatus.fromPost(post) != PostStatus.SCHEDULED) {
+        PostStatus status = PostStatus.fromPost(post);
+        if (status == PostStatus.UNKNOWN || status == PostStatus.TRASHED) {
             // We could use /rest/v1.2 for other post statuses as Calypso does, but we decided to use pushPost(..)
             // instead as the RemoteAutoSave /rest/v1.2 doesn't create a new revision.
             PostError postError = new PostError(PostErrorType.UNSUPPORTED_ACTION,
