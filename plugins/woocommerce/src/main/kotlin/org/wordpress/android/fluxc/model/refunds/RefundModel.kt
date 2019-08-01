@@ -12,14 +12,12 @@ data class RefundModel(
     val items: List<RefundItem>
 ) {
     data class RefundItem(
-        val itemId: Int,
+        val itemId: Long,
         val name: String,
-        val productId: Int,
-        val variationId: Int,
-        val quantity: Int,
-        val taxClass: Int,
+        val productId: Long,
+        val variationId: Long,
+        val quantity: Float,
         val subtotal: BigDecimal,
-        val subtotalTax: BigDecimal,
         val total: BigDecimal,
         val totalTax: BigDecimal,
         val sku: String,
