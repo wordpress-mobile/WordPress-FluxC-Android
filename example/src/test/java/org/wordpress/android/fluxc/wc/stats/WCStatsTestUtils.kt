@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.wc.stats
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
+import org.wordpress.android.fluxc.model.WCVisitorStatsModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import java.time.LocalDate
@@ -54,6 +55,33 @@ object WCStatsTestUtils {
             this.endDate = endDate
             this.data = data
             this.startDate = startDate
+        }
+    }
+
+    /**
+     * Generates a sample [WCVisitorStatsModel]
+     */
+    fun generateSampleVisitorStatsModel(
+        localSiteId: Int = 6,
+        unit: String = OrderStatsApiUnit.DAY.toString(),
+        quantity: String = "30",
+        startDate: String? = null,
+        endDate: String = DateTimeFormatter.ofPattern("YYYY-MM-dd").format(LocalDateTime.now()),
+        fields: String = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/visitor-stats-fields.json"),
+        data: String = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/visitor-stats-data.json")
+    ): WCVisitorStatsModel {
+        return WCVisitorStatsModel().apply {
+            this.localSiteId = localSiteId
+            this.unit = unit
+            this.quantity = quantity
+            this.endDate = endDate
+            this.fields = fields
+            this.data = data
+            this.date = endDate
+            startDate?.let {
+                this.startDate = it
+                this.isCustomField = true
+            }
         }
     }
 }
