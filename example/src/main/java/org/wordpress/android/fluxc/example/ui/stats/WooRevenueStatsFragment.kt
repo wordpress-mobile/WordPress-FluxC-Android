@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.WCStatsStore
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OnWCRevenueStatsChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
@@ -52,6 +53,13 @@ class WooRevenueStatsFragment : Fragment() {
                     stats_select_site.text = site.name ?: site.displayName
                 }
             })
+        }
+
+        fetch_revenue_stats_availability.setOnClickListener {
+            selectedSite?.let {
+                val payload = FetchRevenueStatsAvailabilityPayload(it)
+                dispatcher.dispatch(WCStatsActionBuilder.newFetchRevenueStatsAvailabilityAction(payload))
+            } ?: prependToLog("No site selected!")
         }
 
         fetch_current_day_revenue_stats.setOnClickListener {
@@ -124,14 +132,14 @@ class WooRevenueStatsFragment : Fragment() {
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onWCRevenueStatsChanged(event: OnWCRevenueStatsChanged) {
-        if (event.isError) {
-            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
-            return
-        }
-
         val site = selectedSite
         when (event.causeOfChange) {
             WCStatsAction.FETCH_REVENUE_STATS -> {
+                if (event.isError) {
+                    prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
+                    return
+                }
+
                 val wcRevenueStatsModel = wcStatsStore.getRawRevenueStats(
                         site!!,
                         event.granularity,
@@ -144,6 +152,10 @@ class WooRevenueStatsFragment : Fragment() {
                             " between " + event.startDate + " and " + event.endDate)
                 } ?: prependToLog("No stats were stored for site " + site.name + " =(")
             }
+
+            WCStatsAction.FETCH_REVENUE_STATS_AVAILABILITY -> {
+                prependToLog("Revenue stats available for site ${site?.name}: ${event.availability}")
+            }
         }
     }
 
@@ -155,6 +167,7 @@ class WooRevenueStatsFragment : Fragment() {
     }
 
     private fun toggleSiteDependentButtons(enabled: Boolean) {
+        fetch_revenue_stats_availability.isEnabled = enabled
         fetch_current_day_revenue_stats.isEnabled = enabled
         fetch_current_day_revenue_stats_forced.isEnabled = enabled
         fetch_current_week_revenue_stats.isEnabled = enabled
