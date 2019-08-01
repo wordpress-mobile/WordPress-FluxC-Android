@@ -3,12 +3,13 @@ package org.wordpress.android.fluxc.store
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.refunds.RefundModel
 import org.wordpress.android.fluxc.model.refunds.RefundsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundsRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundsRestClient.RefundResponse
+import org.wordpress.android.fluxc.persistence.RefundsSqlUtils
 import org.wordpress.android.fluxc.store.RefundsStore.RefundsError
 import org.wordpress.android.fluxc.store.Store.OnChangedError
 import javax.inject.Inject
@@ -21,67 +22,50 @@ import java.math.BigDecimal
 class RefundsStore @Inject constructor(
     private val restClient: RefundsRestClient,
     private val coroutineContext: CoroutineContext,
-    private val refundsMapper: RefundsMapper
+    private val refundsMapper: RefundsMapper,
+    private val sqlUtils: RefundsSqlUtils
 ) {
     suspend fun createRefund(site: SiteModel, orderId: Long, amount: BigDecimal) =
             withContext(coroutineContext) {
-//                if (!forced && sqlUtils.hasFreshRequest(siteModel, limitMode.limit)) {
-//                    return@withContext OnStatsFetched(getTags(siteModel, limitMode), cached = true)
-//                }
                 val response = restClient.createRefund(site, orderId, amount.toString())
                 return@withContext when {
-                    response.isError -> {
-                        RefundResult(response.error)
-                    }
-                    response.result != null -> {
-//                        sqlUtils.insert(siteModel, response.response, requestedItems = limitMode.limit)
-                        RefundResult(
-                                refundsMapper.map(response.result)
-                        )
-                    }
+                    response.isError -> RefundResult(response.error)
+                    response.result != null -> RefundResult(refundsMapper.map(response.result))
                     else -> RefundResult(RefundsError(GENERIC_ERROR, UNKNOWN))
                 }
             }
 
-//    fun getTags(site: SiteModel, cacheMode: LimitMode): TagsModel? {
-//        return sqlUtils.select(site)?.let { insightsMapper.map(it, cacheMode) }
-//    }
+    fun getRefund(site: SiteModel, refundId: Long): RefundModel? {
+        return sqlUtils.selectRefund(site, refundId)?.let { refundsMapper.map(it) }
+    }
 
     suspend fun fetchRefund(site: SiteModel, orderId: Long, refundId: Long) =
         withContext(coroutineContext) {
-            //                if (!forced && sqlUtils.hasFreshRequest(siteModel, limitMode.limit)) {
-//                    return@withContext OnStatsFetched(getTags(siteModel, limitMode), cached = true)
-//                }
             val response = restClient.fetchRefund(site, orderId, refundId)
             return@withContext when {
-                response.isError -> {
-                    RefundResult(response.error)
-                }
+                response.isError -> RefundResult(response.error)
                 response.result != null -> {
-//                        sqlUtils.insert(siteModel, response.response, requestedItems = limitMode.limit)
-                    RefundResult(
-                            refundsMapper.map(response.result)
-                    )
+                    sqlUtils.insert(site, orderId, response.result)
+                    RefundResult(refundsMapper.map(response.result))
                 }
                 else -> RefundResult(RefundsError(GENERIC_ERROR, UNKNOWN))
             }
         }
 
+    fun getAllRefund(site: SiteModel, orderId: Long): List<RefundModel> {
+        return sqlUtils.selectAllRefunds(site, orderId).map { refundsMapper.map(it) }
+    }
+
     suspend fun fetchAllRefund(site: SiteModel, orderId: Long) =
             withContext(coroutineContext) {
-                //                if (!forced && sqlUtils.hasFreshRequest(siteModel, limitMode.limit)) {
-//                    return@withContext OnStatsFetched(getTags(siteModel, limitMode), cached = true)
-//                }
                 val response = restClient.fetchAllRefunds(site, orderId)
                 return@withContext when {
                     response.isError -> {
                         RefundResult(response.error)
                     }
                     response.result != null -> {
-//                        sqlUtils.insert(siteModel, response.response, requestedItems = limitMode.limit)
-                        RefundResult(
-                                response.result.map { refundsMapper.map(it) }
-                        )
+                        sqlUtils.insert(site, orderId, response.result.toList())
+                        RefundResult(response.result.map { refundsMapper.map(it) })
                     }
                     else -> RefundResult(RefundsError(GENERIC_ERROR, UNKNOWN))
                 }
