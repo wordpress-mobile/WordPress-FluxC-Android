@@ -167,6 +167,7 @@ class OrderRestClient(
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
         val params = mapOf(
+                "per_page" to remoteOrderIds.size.toString(),
                 "include" to remoteOrderIds.map { it.value }.joinToString()
         )
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
