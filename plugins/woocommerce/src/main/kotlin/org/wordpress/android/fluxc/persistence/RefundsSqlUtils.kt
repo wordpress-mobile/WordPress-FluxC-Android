@@ -10,9 +10,8 @@ import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundsRestClient.RefundResponse
-import javax.inject.Inject
 
-open class RefundsSqlUtils @Inject constructor() {
+object RefundsSqlUtils {
     private val gson: Gson by lazy {
         val builder = GsonBuilder()
         builder.create()

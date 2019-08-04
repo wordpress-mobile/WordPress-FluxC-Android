@@ -22,8 +22,7 @@ import java.math.BigDecimal
 class RefundsStore @Inject constructor(
     private val restClient: RefundsRestClient,
     private val coroutineContext: CoroutineContext,
-    private val refundsMapper: RefundsMapper,
-    private val sqlUtils: RefundsSqlUtils
+    private val refundsMapper: RefundsMapper
 ) {
     suspend fun createRefund(site: SiteModel, orderId: Long, amount: BigDecimal) =
             withContext(coroutineContext) {
@@ -36,7 +35,7 @@ class RefundsStore @Inject constructor(
             }
 
     fun getRefund(site: SiteModel, refundId: Long): RefundModel? {
-        return sqlUtils.selectRefund(site, refundId)?.let { refundsMapper.map(it) }
+        return RefundsSqlUtils.selectRefund(site, refundId)?.let { refundsMapper.map(it) }
     }
 
     suspend fun fetchRefund(site: SiteModel, orderId: Long, refundId: Long) =
@@ -45,7 +44,7 @@ class RefundsStore @Inject constructor(
             return@withContext when {
                 response.isError -> RefundResult(response.error)
                 response.result != null -> {
-                    sqlUtils.insert(site, orderId, response.result)
+                    RefundsSqlUtils.insert(site, orderId, response.result)
                     RefundResult(refundsMapper.map(response.result))
                 }
                 else -> RefundResult(RefundsError(GENERIC_ERROR, UNKNOWN))
@@ -53,10 +52,10 @@ class RefundsStore @Inject constructor(
         }
 
     fun getAllRefund(site: SiteModel, orderId: Long): List<RefundModel> {
-        return sqlUtils.selectAllRefunds(site, orderId).map { refundsMapper.map(it) }
+        return RefundsSqlUtils.selectAllRefunds(site, orderId).map { refundsMapper.map(it) }
     }
 
-    suspend fun fetchAllRefund(site: SiteModel, orderId: Long) =
+    suspend fun fetchAllRefunds(site: SiteModel, orderId: Long) =
             withContext(coroutineContext) {
                 val response = restClient.fetchAllRefunds(site, orderId)
                 return@withContext when {
@@ -64,7 +63,7 @@ class RefundsStore @Inject constructor(
                         RefundResult(response.error)
                     }
                     response.result != null -> {
-                        sqlUtils.insert(site, orderId, response.result.toList())
+                        RefundsSqlUtils.insert(site, orderId, response.result.toList())
                         RefundResult(response.result.map { refundsMapper.map(it) })
                     }
                     else -> RefundResult(RefundsError(GENERIC_ERROR, UNKNOWN))
@@ -85,7 +84,11 @@ class RefundsStore @Inject constructor(
         }
     }
 
-    class RefundsError(var type: RefundsErrorType, var original: GenericErrorType, var message: String? = null) : OnChangedError
+    class RefundsError(
+        var type: RefundsErrorType,
+        var original: GenericErrorType,
+        var message: String? = null
+    ) : OnChangedError
 
     enum class RefundsErrorType {
         INVALID_PARAM,
