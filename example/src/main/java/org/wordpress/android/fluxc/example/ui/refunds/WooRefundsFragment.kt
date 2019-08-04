@@ -76,7 +76,7 @@ class WooRefundsFragment : Fragment() {
         fetch_all_refunds.setOnClickListener {
             getFirstWCSite()?.let { site ->
                 GlobalScope.launch {
-                    val response = refundsStore.fetchAllRefund(
+                    val response = refundsStore.fetchAllRefunds(
                             site,
                             order_number.text.toString().toLong()
                     )
