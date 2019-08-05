@@ -42,6 +42,8 @@ import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import org.wordpress.android.fluxc.utils.DateUtils
+import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T
 import javax.inject.Singleton
 import kotlin.collections.MutableMap.MutableEntry
 
@@ -721,18 +723,25 @@ class OrderRestClient(
         response: JsonElement
     ): List<WCOrderShipmentProviderModel> {
         val providers = mutableListOf<WCOrderShipmentProviderModel>()
-        response.asJsonObject.entrySet().forEach { countryEntry: MutableEntry<String, JsonElement> ->
-            countryEntry.value.asJsonObject.entrySet().map { carrierEntry ->
-                carrierEntry?.let { carrier ->
-                    val provider = WCOrderShipmentProviderModel().apply {
-                        localSiteId = site.id
-                        this.country = countryEntry.key
-                        this.carrierName = carrier.key
-                        this.carrierLink = carrier.value.asString
+        try {
+            response.asJsonObject.entrySet()
+                    .forEach { countryEntry: MutableEntry<String, JsonElement> ->
+                        countryEntry.value.asJsonObject.entrySet().map { carrierEntry ->
+                            carrierEntry?.let { carrier ->
+                                val provider = WCOrderShipmentProviderModel().apply {
+                                    localSiteId = site.id
+                                    this.country = countryEntry.key
+                                    this.carrierName = carrier.key
+                                    this.carrierLink = carrier.value.asString
+                                }
+                                providers.add(provider)
+                            }
+                        }
                     }
-                    providers.add(provider)
-                }
-            }
+        } catch (e: IllegalStateException) {
+            // we have at least once instance of the response being invalid json so we catch the exception
+            // https://github.com/wordpress-mobile/WordPress-FluxC-Android/issues/1331
+            AppLog.e(T.UTILS, "IllegalStateException parsing shipment provider list, response = $response")
         }
         return providers
     }
