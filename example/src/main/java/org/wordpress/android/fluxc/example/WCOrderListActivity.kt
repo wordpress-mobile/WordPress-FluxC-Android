@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.activity_wc_order_list.*
@@ -50,6 +51,7 @@ class WCOrderListActivity : AppCompatActivity() {
     private var progressLoadMore: ProgressBar? = null
     private var pagedListWrapper: PagedListWrapper<WCOrderListItemUIType>? = null
     private val orderListAdapter: OrderListAdapter = OrderListAdapter()
+    private var orderList: RecyclerView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -59,7 +61,17 @@ class WCOrderListActivity : AppCompatActivity() {
         swipeRefreshLayout = findViewById(R.id.ptr_layout)
         progressLoadMore = findViewById(R.id.progress)
 
-        findViewById<RecyclerView>(R.id.recycler_view)?.apply {
+        orderList = findViewById(R.id.recycler_view)
+        orderListAdapter.registerAdapterDataObserver(object : AdapterDataObserver() {
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                println("AMANDA-TEST > WCOrderListActivity.onItemRangeInserted > positionStart = $positionStart, itemCount = $itemCount")
+                if (positionStart == 0) {
+                    orderList?.smoothScrollToPosition(0)
+                }
+            }
+        })
+
+        orderList?.apply {
             adapter = orderListAdapter
             layoutManager = LinearLayoutManager(context)
             itemAnimator = DefaultItemAnimator()

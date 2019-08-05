@@ -27,6 +27,7 @@ import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.store.ListStore.FetchedListItemsPayload
 import org.wordpress.android.fluxc.store.ListStore.ListError
 import org.wordpress.android.fluxc.store.ListStore.ListErrorType
+import org.wordpress.android.fluxc.store.ListStore.ListItemsChangedPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.GENERIC_ERROR
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
@@ -560,7 +561,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(
                 localSiteId = payload.site.id
         )
-        mDispatcher.dispatch(ListActionBuilder.newListDataInvalidatedAction(listTypeIdentifier))
+//        mDispatcher.dispatch(ListActionBuilder.newListDataInvalidatedAction(listTypeIdentifier))
+        mDispatcher.dispatch(ListActionBuilder.newListItemsChangedAction(ListItemsChangedPayload(listTypeIdentifier)))
     }
 
     private fun handleSearchOrdersCompleted(payload: SearchOrdersResponsePayload) {
