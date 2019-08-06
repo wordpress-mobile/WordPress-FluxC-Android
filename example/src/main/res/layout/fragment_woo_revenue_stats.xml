@@ -100,5 +100,33 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Fetch current year Revenue Stats (Forced)"/>
+
+        <Button
+            android:id="@+id/fetch_current_day_visitor_stats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch current day Visitor Stats"/>
+
+        <Button
+            android:id="@+id/fetch_current_week_visitor_stats_forced"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch current week Visitor Stats (Forced)"/>
+
+        <Button
+            android:id="@+id/fetch_current_month_visitor_stats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch current month Visitor Stats" />
+
+        <Button
+            android:id="@+id/fetch_current_year_visitor_stats_forced"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch current year Visitor Stats (Forced)"/>
     </LinearLayout>
 </ScrollView>
