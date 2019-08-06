@@ -602,10 +602,9 @@ class OrderRestClient(
                         } catch (e: IllegalStateException) {
                             // we have at least once instance of the response being invalid json so we catch the exception
                             // https://github.com/wordpress-mobile/WordPress-FluxC-Android/issues/1331
-                            AppLog.e(T.UTILS, "IllegalStateException parsing shipment provider list, response = $response")
-                            val error = OrderError(INVALID_RESPONSE, it.toString())
+                            AppLog.e(T.UTILS, "IllegalStateException parsing shipment provider list, response = $it")
                             val payload = FetchOrderShipmentProvidersResponsePayload(
-                                    error,
+                                    OrderError(INVALID_RESPONSE, it.toString()),
                                     site,
                                     order
                             )

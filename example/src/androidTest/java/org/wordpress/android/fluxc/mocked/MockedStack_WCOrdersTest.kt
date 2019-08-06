@@ -558,7 +558,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     /**
      * We had a user with a site that returned simply "failed" without an error when requesting the
      * shipment provider list, resulting in a crash when parsing the response. This tests that
-     * situation and ensures we return an empty list in this situation
+     * situation and ensures we dispatch an error
      */
     @Test
     fun testOrderShipmentProvidersFetchFailed() {
@@ -571,8 +571,8 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
 
         assertEquals(WCOrderAction.FETCHED_ORDER_SHIPMENT_PROVIDERS, lastAction!!.type)
         val payload = lastAction!!.payload as FetchOrderShipmentProvidersResponsePayload
-        assertNull(payload.error)
-        assertEquals(0, payload.providers.size)
+        assertNotNull(payload.error)
+        assertEquals(payload.error.type, OrderErrorType.INVALID_RESPONSE)
     }
 
     @Suppress("unused")
