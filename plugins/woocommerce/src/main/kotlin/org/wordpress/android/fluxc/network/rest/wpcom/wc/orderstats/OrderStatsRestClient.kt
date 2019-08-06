@@ -74,10 +74,10 @@ class OrderStatsRestClient(
 
             /**
              * Based on the design changes, when:
-             *  `Today` tab is selected: [OrderStatsApiUnit] field passed to the API should be [HOUR]
-             *  `This week` tab is selected: [OrderStatsApiUnit] field passed to the API should be [DAY]
-             *  `This month` tab is selected: [OrderStatsApiUnit] field passed to the API should be [DAY]
-             *  `This year` tab is selected: [OrderStatsApiUnit] field passed to the API should be [MONTH]
+             *  `Today` tab is selected: [OrderStatsApiUnit] field passed to the visitor stats API should be [DAY]
+             *  `This week` tab is selected: [OrderStatsApiUnit] field passed to the visitor stats API should be [DAY]
+             *  `This month` tab is selected: [OrderStatsApiUnit] field passed to the visitor stats API should be [DAY]
+             *  `This year` tab is selected: [OrderStatsApiUnit] field passed to the visitor stats API should be [MONTH]
              */
             fun convertToVisitorsStatsApiUnit(granularity: StatsGranularity): OrderStatsApiUnit {
                 return when (granularity) {
