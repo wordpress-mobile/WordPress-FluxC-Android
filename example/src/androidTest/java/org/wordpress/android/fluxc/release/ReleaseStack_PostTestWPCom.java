@@ -776,24 +776,6 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    @Test
-    public void testAutoSaveDraftResultsInUnsupportedActionError() throws InterruptedException {
-        // Arrange
-        PostModel post = createNewPost();
-        setupPostAttributes(post);
-
-        post.setStatus(PostStatus.DRAFT.toString());
-
-        mNextEvent = TestEvents.ERROR_UNSUPPORTED_ACTION;
-        mCountDownLatch = new CountDownLatch(1);
-
-        // Act
-        mDispatcher.dispatch(PostActionBuilder.newRemoteAutoSavePostAction(new RemotePostPayload(post, sSite)));
-
-        // Assert
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
     // Error handling tests
 
     @Test
