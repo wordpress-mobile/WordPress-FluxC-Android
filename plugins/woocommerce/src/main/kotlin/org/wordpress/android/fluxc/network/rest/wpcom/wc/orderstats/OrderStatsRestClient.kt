@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMV2
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCNewVisitorStatsModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.model.WCTopEarnerModel
@@ -21,6 +22,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErro
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchNewVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
@@ -64,6 +66,22 @@ class OrderStatsRestClient(
             fun convertToRevenueStatsInterval(granularity: StatsGranularity): OrderStatsApiUnit {
                 return when (granularity) {
                     StatsGranularity.DAYS -> HOUR
+                    StatsGranularity.WEEKS -> DAY
+                    StatsGranularity.MONTHS -> DAY
+                    StatsGranularity.YEARS -> MONTH
+                }
+            }
+
+            /**
+             * Based on the design changes, when:
+             *  `Today` tab is selected: [OrderStatsApiUnit] field passed to the API should be [HOUR]
+             *  `This week` tab is selected: [OrderStatsApiUnit] field passed to the API should be [DAY]
+             *  `This month` tab is selected: [OrderStatsApiUnit] field passed to the API should be [DAY]
+             *  `This year` tab is selected: [OrderStatsApiUnit] field passed to the API should be [MONTH]
+             */
+            fun convertToVisitorsStatsApiUnit(granularity: StatsGranularity): OrderStatsApiUnit {
+                return when (granularity) {
+                    StatsGranularity.DAYS -> DAY
                     StatsGranularity.WEEKS -> DAY
                     StatsGranularity.MONTHS -> DAY
                     StatsGranularity.YEARS -> MONTH
@@ -278,6 +296,53 @@ class OrderStatsRestClient(
                             val orderError = networkErrorToOrderError(networkError)
                             val payload = FetchVisitorStatsResponsePayload(orderError, site, unit)
                             mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
+                        })
+
+        request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
+        if (force) request.setShouldForceUpdate()
+
+        add(request)
+    }
+
+    fun fetchNewVisitorStats(
+        site: SiteModel,
+        unit: OrderStatsApiUnit,
+        granularity: StatsGranularity,
+        date: String,
+        quantity: Int,
+        force: Boolean = false,
+        startDate: String? = null,
+        endDate: String? = null
+    ) {
+        val url = WPCOMREST.sites.site(site.siteId).stats.visits.urlV1_1
+        val params = mapOf(
+                "unit" to unit.toString(),
+                "date" to date,
+                "quantity" to quantity.toString(),
+                "stat_fields" to "visitors")
+        val request = WPComGsonRequest
+                .buildGetRequest(url, params, VisitorStatsApiResponse::class.java,
+                        { response ->
+                            val model = WCNewVisitorStatsModel().apply {
+                                this.localSiteId = site.id
+                                this.granularity = granularity.toString()
+                                this.fields = response.fields.toString()
+                                this.data = response.data.toString()
+                                this.quantity = quantity.toString()
+                                this.date = date
+                                endDate?.let { this.endDate = it }
+                                startDate?.let {
+                                    this.startDate = startDate
+                                    this.isCustomField = true
+                                }
+                            }
+                            val payload = FetchNewVisitorStatsResponsePayload(site, granularity, model)
+                            mDispatcher.dispatch(WCStatsActionBuilder.newFetchedNewVisitorStatsAction(payload))
+                        },
+                        { networkError ->
+                            val orderError = networkErrorToOrderError(networkError)
+                            val payload = FetchNewVisitorStatsResponsePayload(orderError, site, granularity)
+                            mDispatcher.dispatch(WCStatsActionBuilder.newFetchedNewVisitorStatsAction(payload))
                         })
 
         request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
