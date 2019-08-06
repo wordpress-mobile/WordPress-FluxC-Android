@@ -555,6 +555,26 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
     }
 
+    /**
+     * We had a user with a site that returned simply "failed" without an error when requesting the
+     * shipment provider list, resulting in a crash when parsing the response. This tests that
+     * situation and ensures we dispatch an error
+     */
+    @Test
+    fun testOrderShipmentProvidersFetchFailed() {
+        val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
+        interceptor.respondWith("wc-order-shipment-providers-failed.json")
+        orderRestClient.fetchOrderShipmentProviders(siteModel, orderModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCOrderAction.FETCHED_ORDER_SHIPMENT_PROVIDERS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchOrderShipmentProvidersResponsePayload
+        assertNotNull(payload.error)
+        assertEquals(payload.error.type, OrderErrorType.INVALID_RESPONSE)
+    }
+
     @Suppress("unused")
     @Subscribe
     fun onAction(action: Action<*>) {
