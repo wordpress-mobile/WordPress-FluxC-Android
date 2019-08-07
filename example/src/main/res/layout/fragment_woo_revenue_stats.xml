@@ -6,6 +6,7 @@
     tools:context="org.wordpress.android.fluxc.example.ui.stats.WooRevenueStatsFragment">
 
     <LinearLayout
+        android:id="@+id/buttonContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">

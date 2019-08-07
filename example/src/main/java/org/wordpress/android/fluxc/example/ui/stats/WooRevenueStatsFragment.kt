@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_revenue_stats.*
@@ -235,18 +236,11 @@ class WooRevenueStatsFragment : Fragment() {
     }
 
     private fun toggleSiteDependentButtons(enabled: Boolean) {
-        fetch_revenue_stats_availability.isEnabled = enabled
-        fetch_current_day_revenue_stats.isEnabled = enabled
-        fetch_current_day_revenue_stats_forced.isEnabled = enabled
-        fetch_current_week_revenue_stats.isEnabled = enabled
-        fetch_current_week_revenue_stats_forced.isEnabled = enabled
-        fetch_current_month_revenue_stats.isEnabled = enabled
-        fetch_current_month_revenue_stats_forced.isEnabled = enabled
-        fetch_current_year_revenue_stats.isEnabled = enabled
-        fetch_current_year_revenue_stats_forced.isEnabled = enabled
-        fetch_current_day_visitor_stats.isEnabled = enabled
-        fetch_current_week_visitor_stats_forced.isEnabled = enabled
-        fetch_current_month_visitor_stats.isEnabled = enabled
-        fetch_current_year_visitor_stats_forced.isEnabled = enabled
+        for (i in 0 until buttonContainer.childCount) {
+            val child = buttonContainer.getChildAt(i)
+            if (child is Button) {
+                child.isEnabled = enabled
+            }
+        }
     }
 }
