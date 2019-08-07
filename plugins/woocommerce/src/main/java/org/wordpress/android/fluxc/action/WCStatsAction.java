@@ -3,6 +3,8 @@ package org.wordpress.android.fluxc.action;
 import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchNewVisitorStatsPayload;
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchNewVisitorStatsResponsePayload;
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload;
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload;
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityPayload;
@@ -29,6 +31,9 @@ public enum WCStatsAction implements IAction {
     @Action(payloadType = FetchVisitorStatsPayload.class)
     FETCH_VISITOR_STATS,
 
+    @Action(payloadType = FetchNewVisitorStatsPayload.class)
+    FETCH_NEW_VISITOR_STATS,
+
     @Action(payloadType = FetchTopEarnersStatsPayload.class)
     FETCH_TOP_EARNERS_STATS,
 
@@ -44,6 +49,9 @@ public enum WCStatsAction implements IAction {
 
     @Action(payloadType = FetchVisitorStatsResponsePayload.class)
     FETCHED_VISITOR_STATS,
+
+    @Action(payloadType = FetchNewVisitorStatsResponsePayload.class)
+    FETCHED_NEW_VISITOR_STATS,
 
     @Action(payloadType = FetchTopEarnersStatsResponsePayload.class)
     FETCHED_TOP_EARNERS_STATS
