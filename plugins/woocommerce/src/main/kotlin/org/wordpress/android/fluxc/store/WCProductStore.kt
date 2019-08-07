@@ -258,14 +258,48 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun handleFetchProductReviews(payload: FetchProductReviewsResponsePayload) {
-        // TODO
+        val onProductReviewChanged: OnProductReviewChanged
+
+        if (payload.isError) {
+            onProductReviewChanged = OnProductReviewChanged(0).also { it.error = payload.error }
+        } else {
+            val rowsAffected = ProductSqlUtils.insertOrUpdateProductReviews(payload.reviews)
+            onProductReviewChanged = OnProductReviewChanged(rowsAffected)
+        }
+
+        onProductReviewChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_REVIEWS
+        emitChange(onProductReviewChanged)
     }
 
     private fun handleFetchSingleProductReview(payload: RemoteProductReviewPayload) {
-        // TODO
+        val onProductReviewChanged: OnProductReviewChanged
+
+        if (payload.isError) {
+            onProductReviewChanged = OnProductReviewChanged(0).also { it.error = payload.error }
+        } else {
+            val rowsAffected = payload.productReview?.let {
+                ProductSqlUtils.insertOrUpdateProductReview(it)
+            } ?: 0
+            onProductReviewChanged = OnProductReviewChanged(rowsAffected)
+        }
+
+        onProductReviewChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT
+        emitChange(onProductReviewChanged)
     }
 
     private fun handleUpdateProductReviewStatus(payload: RemoteProductReviewPayload) {
-        // TODO
+        val onProductReviewChanged: OnProductReviewChanged
+
+        if (payload.isError) {
+            onProductReviewChanged = OnProductReviewChanged(0).also { it.error = payload.error }
+        } else {
+            val rowsAffected = payload.productReview?.let {
+                ProductSqlUtils.insertOrUpdateProductReview(it)
+            } ?: 0
+            onProductReviewChanged = OnProductReviewChanged(rowsAffected)
+        }
+
+        onProductReviewChanged.causeOfChange = WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
+        emitChange(onProductReviewChanged)
     }
 }
