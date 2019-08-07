@@ -8,9 +8,7 @@ import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.RawConstraints
 import com.yarolegovich.wellsql.core.annotation.Table
-import org.wordpress.android.fluxc.model.WCProductReviewModel.AvatarSize.Companion
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
-import kotlin.collections.MutableMap.MutableEntry
 
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 @RawConstraints(
@@ -23,21 +21,64 @@ data class WCProductReviewModel(@PrimaryKey @Column private var id: Int = 0) : I
     }
 
     @Column var localSiteId = 0
+
+    /**
+     * Remote unique identifier for this product review
+     */
     @Column var remoteProductReviewId = 0L // The unique ID for this product review on the server
+
+    /**
+     * Unique identifier for the product this review belongs to
+     */
     @Column var remoteProductId = 0L
+
+    /**
+     * The date the review was created, in the site's timezone
+     */
     @Column var dateCreated = ""
+
+    /**
+     * Status of the review. Options: approved, hold, spam, unspam, trash, and untrash.
+     */
     @Column var status = ""
 
+    /**
+     * Name of the reviewer
+     */
     @SerializedName("reviewer")
     @Column var reviewerName = ""
+
+    /**
+     * Reviewer email address
+     */
     @Column var reviewerEmail = ""
+
+    /**
+     * The content of the review
+     */
     @Column var review = ""
+
+    /**
+     * Review rating (0 to 5)
+     */
     @Column var rating = 0
+
+    /**
+     * True if the reviewer purchased the product being reviewed, else false
+     */
     @Column var verified = false
 
     @SerializedName("reviewer_avatar_urls")
     @Column var reviewerAvatarsJson = ""
 
+    /**
+     * A mapping of reviewer avatar URL's by their size:
+     * <ul>
+     *     <li>SMALL = 24</li>
+     *     <li>MEDIUM = 48</li>
+     *     <li>LARGE = 95</li>
+     * </ul>
+     */
     val reviewerAvatarUrlBySize: Map<AvatarSize, String> by lazy {
         val result = mutableMapOf<AvatarSize, String>()
         if (reviewerAvatarsJson.isNotEmpty()) {
