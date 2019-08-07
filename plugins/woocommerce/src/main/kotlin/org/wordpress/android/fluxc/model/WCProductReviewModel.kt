@@ -8,6 +8,7 @@ import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.RawConstraints
 import com.yarolegovich.wellsql.core.annotation.Table
+import org.wordpress.android.fluxc.model.WCProductReviewModel.AvatarSize.Companion
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import kotlin.collections.MutableMap.MutableEntry
 
@@ -16,7 +17,7 @@ import kotlin.collections.MutableMap.MutableEntry
         "FOREIGN KEY(LOCAL_SITE_ID) REFERENCES SiteModel(_id) ON DELETE CASCADE",
         "UNIQUE (REMOTE_PRODUCT_REVIEW_ID, LOCAL_SITE_ID) ON CONFLICT REPLACE"
 )
-data class WCProductReviewModel(@PrimaryKey @Column private var _id: Int = 0) : Identifiable {
+data class WCProductReviewModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
     companion object {
         private val json by lazy { Gson() }
     }
@@ -30,37 +31,41 @@ data class WCProductReviewModel(@PrimaryKey @Column private var _id: Int = 0) : 
     @SerializedName("reviewer")
     @Column var reviewerName = ""
     @Column var reviewerEmail = ""
+    @Column var review = ""
     @Column var rating = 0
     @Column var verified = false
 
     @SerializedName("reviewer_avatar_urls")
     @Column var reviewerAvatarsJson = ""
 
-    override fun setId(id: Int) {
-        _id = id
+    val reviewerAvatarUrlBySize: Map<AvatarSize, String> by lazy {
+        val result = mutableMapOf<AvatarSize, String>()
+        if (reviewerAvatarsJson.isNotEmpty()) {
+            json.fromJson(reviewerAvatarsJson, JsonElement::class.java).asJsonObject.entrySet().forEach {
+                result[AvatarSize.getAvatarSizeForValue(it.key.toInt())] = it.value.asString
+            }
+        }
+        result
     }
 
-    override fun getId() = _id
+    override fun setId(id: Int) {
+        this.id = id
+    }
 
-    fun getReviewerAvatars(): List<ReviewerAvatar> {
-        return if (reviewerAvatarsJson.isNotEmpty()) {
-            val urls = mutableListOf<ReviewerAvatar>()
-            val avatarsGson = json.fromJson(reviewerAvatarsJson, JsonElement::class.java)
-            avatarsGson.asJsonObject.entrySet()
-                    .forEach { mutableEntry: MutableEntry<String, JsonElement>? ->
-                        mutableEntry?.let { avatarOption ->
-                            val avatar = ReviewerAvatar(
-                                    avatarOption.key.toInt(),
-                                    avatarOption.value.toString()
-                            )
-                            urls.add(avatar)
-                        }
-                    }
-            return urls
-        } else {
-            emptyList()
+    override fun getId() = this.id
+
+    enum class AvatarSize(val size: Int) {
+        SMALL(24), MEDIUM(48), LARGE(96);
+
+        companion object {
+            fun getAvatarSizeForValue(size: Int): AvatarSize {
+                return when(size) {
+                    24 -> SMALL
+                    48 -> MEDIUM
+                    96 -> LARGE
+                    else -> MEDIUM
+                }
+            }
         }
     }
-
-    data class ReviewerAvatar(val size: Int, val url: String)
 }
