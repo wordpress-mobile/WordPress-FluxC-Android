@@ -5,6 +5,8 @@ import com.wellsql.generated.WCProductReviewModelTable
 import com.wellsql.generated.WCProductVariationModelTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
@@ -165,11 +167,52 @@ object ProductSqlUtils {
         }
     }
 
+    fun getProductReviewByRemoteId(
+        localSiteId: LocalId,
+        remoteProductId: RemoteId,
+        remoteReviewId: RemoteId
+    ): WCProductReviewModel? {
+        return WellSql.select(WCProductReviewModel::class.java)
+                .where()
+                .beginGroup()
+                .equals(WCProductReviewModelTable.LOCAL_SITE_ID, localSiteId.value)
+                .equals(WCProductReviewModelTable.REMOTE_PRODUCT_ID, remoteProductId.value)
+                .equals(WCProductReviewModelTable.REMOTE_PRODUCT_REVIEW_ID, remoteReviewId.value)
+                .endGroup()
+                .endWhere()
+                .asModel.firstOrNull()
+    }
+
     fun getProductReviewsForSite(site: SiteModel): List<WCProductReviewModel> {
         return WellSql.select(WCProductReviewModel::class.java)
                 .where()
                 .equals(WCProductReviewModelTable.LOCAL_SITE_ID, site.id)
                 .endWhere()
                 .asModel
+    }
+
+    fun getProductReviewsForProductAndSiteId(
+        localSiteId: LocalId,
+        remoteProductId: RemoteId
+    ): List<WCProductReviewModel> {
+        return WellSql.select(WCProductReviewModel::class.java)
+                .where().beginGroup()
+                .equals(WCProductReviewModelTable.REMOTE_PRODUCT_ID, remoteProductId.value)
+                .equals(WCProductReviewModelTable.LOCAL_SITE_ID, localSiteId.value)
+                .endGroup().endWhere()
+                .asModel
+    }
+
+    fun deleteAllProductReviewsForSite(site: SiteModel): Int {
+        return WellSql.delete(WCProductReviewModel::class.java)
+                .where()
+                .equals(WCProductReviewModelTable.LOCAL_SITE_ID, site.id)
+                .or()
+                .equals(WCProductReviewModelTable.LOCAL_SITE_ID, 0) // Should never happen, but sanity cleanup
+                .endWhere().execute()
+    }
+
+    fun deleteAllProductReviews(): Int {
+        return WellSql.delete(WCProductReviewModel::class.java).execute()
     }
 }
