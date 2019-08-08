@@ -13,7 +13,7 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 @RawConstraints(
         "FOREIGN KEY(LOCAL_SITE_ID) REFERENCES SiteModel(_id) ON DELETE CASCADE",
-        "UNIQUE (REMOTE_PRODUCT_REVIEW_ID, LOCAL_SITE_ID) ON CONFLICT REPLACE"
+        "UNIQUE (REMOTE_PRODUCT_REVIEW_ID, REMOTE_PRODUCT_ID, LOCAL_SITE_ID) ON CONFLICT REPLACE"
 )
 data class WCProductReviewModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
     companion object {
