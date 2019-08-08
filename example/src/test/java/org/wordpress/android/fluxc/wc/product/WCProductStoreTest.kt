@@ -12,7 +12,9 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
+import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
 import kotlin.test.assertEquals
@@ -21,24 +23,34 @@ import kotlin.test.assertEquals
 @RunWith(RobolectricTestRunner::class)
 class WCProductStoreTest {
     private val productStore = WCProductStore(Dispatcher(), mock())
+    val site = SiteModel().apply {
+        email = "test@example.org"
+        name = "Test Site"
+        siteId = 24
+    }
 
     @Before
     fun setUp() {
         val appContext = RuntimeEnvironment.application.applicationContext
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
-                listOf(WCProductModel::class.java),
+                listOf(
+                        WCProductModel::class.java,
+                        WCProductReviewModel::class.java,
+                        SiteModel::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)
         config.reset()
+
+        // Insert the site into the db so it's available later for product
+        // reviews
+        SiteSqlUtils.insertOrUpdateSite(site)
     }
 
     @Test
     fun testSimpleInsertionAndRetrieval() {
-        val productModel = ProductTestUtils.generateSampleProduct(42)
-        val site = SiteModel().apply { id = productModel.localSiteId }
-
+        val productModel = ProductTestUtils.generateSampleProduct(42, siteId = site.id)
         ProductSqlUtils.insertOrUpdateProduct(productModel)
 
         val storedProduct = productStore.getProductByRemoteId(site, productModel.remoteProductId)
@@ -50,15 +62,14 @@ class WCProductStoreTest {
     fun testGetProductsBySiteAndProductIds() {
         val productIds = listOf<Long>(30, 31, 2)
 
-        val product1 = ProductTestUtils.generateSampleProduct(30)
-        val product2 = ProductTestUtils.generateSampleProduct(31)
-        val product3 = ProductTestUtils.generateSampleProduct(42)
+        val product1 = ProductTestUtils.generateSampleProduct(30, siteId = site.id)
+        val product2 = ProductTestUtils.generateSampleProduct(31, siteId = site.id)
+        val product3 = ProductTestUtils.generateSampleProduct(42, siteId = site.id)
 
         ProductSqlUtils.insertOrUpdateProduct(product1)
         ProductSqlUtils.insertOrUpdateProduct(product2)
         ProductSqlUtils.insertOrUpdateProduct(product3)
 
-        val site = SiteModel().apply { id = product1.localSiteId }
         val products = productStore.getProductsByRemoteIds(site, productIds)
         assertEquals(2, products.size)
 
