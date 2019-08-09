@@ -6,6 +6,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
 import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
@@ -58,6 +59,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     enum class ProductErrorType {
         INVALID_PARAM,
+        INVALID_REVIEW_ID,
         GENERIC_ERROR;
 
         companion object {
@@ -67,22 +69,6 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     class ProductError(val type: ProductErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
-
-    enum class ProductReviewErrorType {
-        INVALID_PARAM,
-        INVALID_ID,
-        GENERIC_ERROR;
-
-        companion object {
-            private val reverseMap = values().associateBy(ProductReviewErrorType::name)
-            fun fromString(type: String) = reverseMap[type.toUpperCase(Locale.US)] ?: GENERIC_ERROR
-        }
-    }
-
-    class ProductReviewError(
-        val type: ProductReviewErrorType = ProductReviewErrorType.GENERIC_ERROR,
-        val message: String = ""
-    ) : OnChangedError
 
     class RemoteProductPayload(
         val product: WCProductModel,
@@ -114,9 +100,9 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     class RemoteProductReviewPayload(
         val site: SiteModel,
         val productReview: WCProductReviewModel? = null
-    ) : Payload<ProductReviewError>() {
+    ) : Payload<ProductError>() {
         constructor(
-            error: ProductReviewError,
+            error: ProductError,
             site: SiteModel,
             productReview: WCProductReviewModel
         ) : this(site, productReview) {
@@ -131,8 +117,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         val filterByStatus: List<String>? = null,
         val loadedMore: Boolean = false,
         val canLoadMore: Boolean = false
-    ) : Payload<ProductReviewError>() {
-        constructor(error: ProductReviewError, site: SiteModel) : this(site) { this.error = error }
+    ) : Payload<ProductError>() {
+        constructor(error: ProductError, site: SiteModel) : this(site) { this.error = error }
     }
 
     // OnChanged events
@@ -140,13 +126,6 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var rowsAffected: Int,
         var canLoadMore: Boolean = false
     ) : OnChanged<ProductError>() {
-        var causeOfChange: WCProductAction? = null
-    }
-
-    class OnProductReviewChanged(
-        var rowsAffected: Int,
-        var canLoadMore: Boolean = false
-    ) : OnChanged<ProductReviewError>() {
         var causeOfChange: WCProductAction? = null
     }
 
@@ -176,6 +155,23 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             ProductSqlUtils.getProductsByRemoteIds(site, remoteProductIds)
 
     fun deleteProductsForSite(site: SiteModel) = ProductSqlUtils.deleteProductsForSite(site)
+
+    fun getProductReviewsForSite(site: SiteModel): List<WCProductReviewModel> =
+            ProductSqlUtils.getProductReviewsForSite(site)
+
+    fun getProductReviewsForProductAndSiteId(localSiteId: Int, remoteProductId: Long): List<WCProductReviewModel> =
+            ProductSqlUtils.getProductReviewsForProductAndSiteId(LocalId(localSiteId), RemoteId(remoteProductId))
+
+    fun getProductReviewByRemoteId(
+        localSiteId: Int,
+        remoteProductId: Long,
+        remoteReviewId: Long
+    ): WCProductReviewModel? = ProductSqlUtils
+            .getProductReviewByRemoteId(LocalId(localSiteId), RemoteId(remoteProductId), RemoteId(remoteReviewId))
+
+    fun deleteProductReviewsForSite(site: SiteModel) = ProductSqlUtils.deleteAllProductReviewsForSite(site)
+
+    fun deleteAllProductReviews() = ProductSqlUtils.deleteAllProductReviews()
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
@@ -258,13 +254,13 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun handleFetchProductReviews(payload: FetchProductReviewsResponsePayload) {
-        val onProductReviewChanged: OnProductReviewChanged
+        val onProductReviewChanged: OnProductChanged
 
         if (payload.isError) {
-            onProductReviewChanged = OnProductReviewChanged(0).also { it.error = payload.error }
+            onProductReviewChanged = OnProductChanged(0).also { it.error = payload.error }
         } else {
             val rowsAffected = ProductSqlUtils.insertOrUpdateProductReviews(payload.reviews)
-            onProductReviewChanged = OnProductReviewChanged(rowsAffected)
+            onProductReviewChanged = OnProductChanged(rowsAffected)
         }
 
         onProductReviewChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_REVIEWS
@@ -272,15 +268,15 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun handleFetchSingleProductReview(payload: RemoteProductReviewPayload) {
-        val onProductReviewChanged: OnProductReviewChanged
+        val onProductReviewChanged: OnProductChanged
 
         if (payload.isError) {
-            onProductReviewChanged = OnProductReviewChanged(0).also { it.error = payload.error }
+            onProductReviewChanged = OnProductChanged(0).also { it.error = payload.error }
         } else {
             val rowsAffected = payload.productReview?.let {
                 ProductSqlUtils.insertOrUpdateProductReview(it)
             } ?: 0
-            onProductReviewChanged = OnProductReviewChanged(rowsAffected)
+            onProductReviewChanged = OnProductChanged(rowsAffected)
         }
 
         onProductReviewChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT
@@ -288,15 +284,15 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun handleUpdateProductReviewStatus(payload: RemoteProductReviewPayload) {
-        val onProductReviewChanged: OnProductReviewChanged
+        val onProductReviewChanged: OnProductChanged
 
         if (payload.isError) {
-            onProductReviewChanged = OnProductReviewChanged(0).also { it.error = payload.error }
+            onProductReviewChanged = OnProductChanged(0).also { it.error = payload.error }
         } else {
             val rowsAffected = payload.productReview?.let {
                 ProductSqlUtils.insertOrUpdateProductReview(it)
             } ?: 0
-            onProductReviewChanged = OnProductReviewChanged(rowsAffected)
+            onProductReviewChanged = OnProductChanged(rowsAffected)
         }
 
         onProductReviewChanged.causeOfChange = WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS

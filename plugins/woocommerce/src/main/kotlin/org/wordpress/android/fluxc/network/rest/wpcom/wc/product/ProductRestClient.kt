@@ -24,8 +24,6 @@ import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductError
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
-import org.wordpress.android.fluxc.store.WCProductStore.ProductReviewError
-import org.wordpress.android.fluxc.store.WCProductStore.ProductReviewErrorType
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
@@ -143,17 +141,19 @@ class ProductRestClient(
         }
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductReviewApiResponse>? ->
-                    val reviews = response?.map {
-                        productReviewResponseToProductReviewModel(it).apply { localSiteId = site.id }
-                    }.orEmpty()
-                    val canLoadMore = reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
-                    val loadedMore = offset > 0
-                    val payload = FetchProductReviewsResponsePayload(
-                            site, reviews, productIds, filterByStatus, loadedMore, canLoadMore)
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductReviewsAction(payload))
+                    response?.let {
+                        val reviews = it.map { review ->
+                            productReviewResponseToProductReviewModel(review).apply { localSiteId = site.id }
+                        }
+                        val canLoadMore = reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
+                        val loadedMore = offset > 0
+                        val payload = FetchProductReviewsResponsePayload(
+                                site, reviews, productIds, filterByStatus, loadedMore, canLoadMore)
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchedProductReviewsAction(payload))
+                    }
                 },
                 WPComErrorListener { networkError ->
-                    val productReviewError = networkErrorToProductReviewError(networkError)
+                    val productReviewError = networkErrorToProductError(networkError)
                     val payload = FetchProductReviewsResponsePayload(productReviewError, site)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductReviewsAction(payload))
                 },
@@ -185,7 +185,7 @@ class ProductRestClient(
                     }
                 },
                 WPComErrorListener { networkError ->
-                    val productReviewError = networkErrorToProductReviewError(networkError)
+                    val productReviewError = networkErrorToProductError(networkError)
                     val payload = RemoteProductReviewPayload(
                             error = productReviewError,
                             site = site,
@@ -222,7 +222,7 @@ class ProductRestClient(
                     }
                 },
                 WPComErrorListener { networkError ->
-                    val productReviewError = networkErrorToProductReviewError(networkError)
+                    val productReviewError = networkErrorToProductError(networkError)
                     val payload = RemoteProductReviewPayload(productReviewError, site, productReview)
                     dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductReviewStatusAction(payload))
                 })
@@ -367,17 +367,9 @@ class ProductRestClient(
     private fun networkErrorToProductError(wpComError: WPComGsonNetworkError): ProductError {
         val productErrorType = when (wpComError.apiError) {
             "rest_invalid_param" -> ProductErrorType.INVALID_PARAM
+            "woocommerce_rest_review_invalid_id" -> ProductErrorType.INVALID_REVIEW_ID
             else -> ProductErrorType.fromString(wpComError.apiError)
         }
         return ProductError(productErrorType, wpComError.message)
-    }
-
-    private fun networkErrorToProductReviewError(wpComError: WPComGsonNetworkError): ProductReviewError {
-        val productReviewErrorType = when (wpComError.apiError) {
-            "rest_invalid_param" -> ProductReviewErrorType.INVALID_PARAM
-            "woocommerce_rest_review_invalid_id" -> ProductReviewErrorType.INVALID_ID
-            else -> ProductReviewErrorType.fromString(wpComError.apiError)
-        }
-        return ProductReviewError(productReviewErrorType, wpComError.message)
     }
 }
