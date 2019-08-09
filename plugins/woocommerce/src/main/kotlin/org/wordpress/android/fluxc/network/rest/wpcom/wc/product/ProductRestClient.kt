@@ -157,7 +157,7 @@ class ProductRestClient(
                     val payload = FetchProductReviewsResponsePayload(productReviewError, site)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductReviewsAction(payload))
                 },
-                { request:WPComGsonRequest<*> -> add(request) })
+                { request: WPComGsonRequest<*> -> add(request) })
         add(request)
     }
 
@@ -193,7 +193,7 @@ class ProductRestClient(
                                     .apply { remoteProductReviewId = remoteReviewId.value })
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductReviewAction(payload))
                 },
-                { request:WPComGsonRequest<*> -> add(request) })
+                { request: WPComGsonRequest<*> -> add(request) })
         add(request)
     }
 

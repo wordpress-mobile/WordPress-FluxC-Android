@@ -9,15 +9,18 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
-import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
+import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
@@ -26,7 +29,10 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     internal enum class TestEvent {
         NONE,
         FETCHED_SINGLE_PRODUCT,
-        FETCHED_PRODUCT_VARIATIONS
+        FETCHED_PRODUCT_VARIATIONS,
+        FETCHED_PRODUCT_REVIEWS,
+        FETCHED_SINGLE_PRODUCT_REVIEW,
+        UPDATED_PRODUCT_REVIEW_STATUS
     }
 
     @Inject internal lateinit var productStore: WCProductStore
@@ -40,6 +46,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         remoteProductId = BuildConfig.TEST_WC_PRODUCT_WITH_VARIATIONS_ID.toLong()
         dateCreated = "2018-04-20T15:45:14Z"
     }
+    private val remoteProductWithReviewsId = BuildConfig.TEST_WC_PRODUCT_WITH_REVIEWS_ID.toLong()
+    private val remoteProductReviewId = BuildConfig.TEST_WC_PRODUCT_REVIEW_ID.toLong()
+
     private var lastEvent: OnProductChanged? = null
 
     @Throws(Exception::class)
@@ -99,6 +108,64 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertNotEquals(fetchedVariations.size, 0)
     }
 
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchProductReviews() {
+        // Remove all product reviews from the database
+        productStore.deleteProductReviewsForSite(sSite)
+        assertEquals(0, ProductSqlUtils.getProductReviewsForSite(sSite).size)
+
+        nextEvent = TestEvent.FETCHED_PRODUCT_REVIEWS
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newFetchProductReviewsAction(FetchProductReviewsPayload(sSite, offset = 0)))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify results
+        val fetchedReviews = productStore.getProductReviewsForSite(sSite)
+        assertTrue(fetchedReviews.isNotEmpty())
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchSingleProductAndUpdateReview() {
+        // Remove all product reviews from the database
+        productStore.deleteProductReviewsForSite(sSite)
+        assertEquals(0, ProductSqlUtils.getProductReviewsForSite(sSite).size)
+
+        nextEvent = TestEvent.FETCHED_SINGLE_PRODUCT_REVIEW
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newFetchSingleProductReviewAction(
+                        FetchSingleProductReviewPayload(sSite, RemoteId(remoteProductReviewId))))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify results
+        val review = productStore
+                .getProductReviewByRemoteId(sSite.id, remoteProductWithReviewsId, remoteProductReviewId)
+        assertNotNull(review)
+
+        // Update review status
+        review?.let {
+            val newStatus = when (it.status) {
+                "hold", "approved", "unapproved", "trash", "unspam", "untrash" -> "spam"
+                else -> "approved"
+            }
+            nextEvent = TestEvent.UPDATED_PRODUCT_REVIEW_STATUS
+            mCountDownLatch = CountDownLatch(1)
+            mDispatcher.dispatch(
+                    WCProductActionBuilder.newUpdateProductReviewStatusAction(
+                            UpdateProductReviewStatusPayload(sSite, review, newStatus)))
+            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+            // Verify results
+            val savedReview = productStore
+                    .getProductReviewByRemoteId(sSite.id, remoteProductWithReviewsId, remoteProductReviewId)
+            assertNotNull(savedReview)
+            assertEquals(newStatus, savedReview!!.status)
+        }
+    }
+
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProductChanged(event: OnProductChanged) {
@@ -113,8 +180,20 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
                 assertEquals(TestEvent.FETCHED_SINGLE_PRODUCT, nextEvent)
                 mCountDownLatch.countDown()
             }
-            FETCH_PRODUCT_VARIATIONS -> {
+            WCProductAction.FETCH_PRODUCT_VARIATIONS -> {
                 assertEquals(TestEvent.FETCHED_PRODUCT_VARIATIONS, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            WCProductAction.FETCH_SINGLE_PRODUCT_REVIEW -> {
+                assertEquals(TestEvent.FETCHED_SINGLE_PRODUCT_REVIEW, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            WCProductAction.FETCH_PRODUCT_REVIEWS -> {
+                assertEquals(TestEvent.FETCHED_PRODUCT_REVIEWS, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS -> {
+                assertEquals(TestEvent.UPDATED_PRODUCT_REVIEW_STATUS, nextEvent)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)

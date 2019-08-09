@@ -279,7 +279,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             onProductReviewChanged = OnProductChanged(rowsAffected)
         }
 
-        onProductReviewChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT
+        onProductReviewChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT_REVIEW
         emitChange(onProductReviewChanged)
     }
 
