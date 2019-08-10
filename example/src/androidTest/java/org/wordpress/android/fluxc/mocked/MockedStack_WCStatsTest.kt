@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchNewVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
@@ -278,6 +279,54 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
             assertNotNull(error)
             assertEquals(siteModel, site)
             assertEquals(OrderStatsApiUnit.MONTH, apiUnit)
+            assertNull(stats)
+            assertEquals(OrderStatsErrorType.INVALID_PARAM, error.type)
+        }
+    }
+
+    @Test
+    fun testNewVisitorStatsSuccess() {
+        interceptor.respondWith("wc-visitor-stats-response-success.json")
+        orderStatsRestClient.fetchNewVisitorStats(
+                siteModel, OrderStatsApiUnit.MONTH, StatsGranularity.YEARS, "2019-08-06", 8, true
+        )
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCStatsAction.FETCHED_NEW_VISITOR_STATS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchNewVisitorStatsResponsePayload
+        with(payload) {
+            assertNull(error)
+            assertEquals(siteModel, site)
+            assertEquals(StatsGranularity.YEARS, granularity)
+            assertNotNull(stats)
+            assertNotNull(stats?.data)
+            assertEquals(stats?.dataList?.size, 12)
+        }
+    }
+
+    @Test
+    fun testNewVisitorStatsError() {
+        val errorJson = JsonObject().apply {
+            addProperty("error", "rest_invalid_param")
+            addProperty("message", "Invalid parameter(s): date")
+        }
+
+        interceptor.respondWithError(errorJson)
+        orderStatsRestClient.fetchNewVisitorStats(
+                siteModel, OrderStatsApiUnit.MONTH, StatsGranularity.YEARS, "2019-08-06", 8, true
+        )
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCStatsAction.FETCHED_NEW_VISITOR_STATS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchNewVisitorStatsResponsePayload
+        with(payload) {
+            assertNotNull(error)
+            assertEquals(siteModel, site)
+            assertEquals(StatsGranularity.YEARS, granularity)
             assertNull(stats)
             assertEquals(OrderStatsErrorType.INVALID_PARAM, error.type)
         }
