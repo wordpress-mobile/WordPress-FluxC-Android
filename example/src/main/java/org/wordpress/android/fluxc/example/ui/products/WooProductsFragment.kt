@@ -11,15 +11,20 @@ import kotlinx.android.synthetic.main.fragment_woo_products.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_REVIEWS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
+import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_REVIEW
+import org.wordpress.android.fluxc.action.WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
@@ -70,6 +75,46 @@ class WooProductsFragment : Fragment() {
                 }
             }
         }
+
+        fetch_reviews_for_product.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the remoteProductId of product to fetch reviews:"
+                ) { editText ->
+                    val remoteProductId = editText.text.toString().toLongOrNull()
+                    remoteProductId?.let { id ->
+                        prependToLog("Submitting request to fetch product reviews for remoteProductID $id")
+                        val payload = FetchProductReviewsPayload(site, productIds = listOf(remoteProductId))
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchProductReviewsAction(payload))
+                    } ?: prependToLog("No valid remoteProductId defined...doing nothing")
+                }
+            }
+        }
+
+        fetch_all_reviews.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                prependToLog("Submitting request to fetch product reviews for site ${site.id}")
+                val payload = FetchProductReviewsPayload(site)
+                dispatcher.dispatch(WCProductActionBuilder.newFetchProductReviewsAction(payload))
+            }
+        }
+
+        fetch_review_by_id.setOnClickListener {
+            getFirstWCSite()?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the remoteReviewId of the review to fetch:"
+                ) { editText ->
+                    val reviewId = editText.text.toString().toLongOrNull()
+                    reviewId?.let { id ->
+                        prependToLog("Submitting request to fetch product review for ID $id")
+                        val payload = FetchSingleProductReviewPayload(site, id)
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductReviewAction(payload))
+                    } ?: prependToLog("No valid remoteReviewId defined...doing nothing")
+                }
+            }
+        }
     }
 
     override fun onStart() {
@@ -103,6 +148,15 @@ class WooProductsFragment : Fragment() {
                 }
                 FETCH_PRODUCT_VARIATIONS -> {
                     prependToLog("Fetched ${event.rowsAffected} product variations")
+                }
+                FETCH_PRODUCT_REVIEWS -> {
+                    prependToLog("Fetched ${event.rowsAffected} product reviews")
+                }
+                FETCH_SINGLE_PRODUCT_REVIEW -> {
+                    prependToLog("Fetched ${event.rowsAffected} single product review")
+                }
+                UPDATE_PRODUCT_REVIEW_STATUS -> {
+                    prependToLog("${event.rowsAffected} product reviews updated")
                 }
                 else -> prependToLog("Product store was updated from a " + event.causeOfChange)
             }
