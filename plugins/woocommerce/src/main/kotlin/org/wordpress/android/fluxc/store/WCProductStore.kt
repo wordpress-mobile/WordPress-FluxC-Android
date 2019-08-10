@@ -6,8 +6,6 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
@@ -41,14 +39,14 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     class FetchProductReviewsPayload(
         var site: SiteModel,
-        var offset: Int,
-        var productIds: List<RemoteId>? = null,
+        var offset: Int = 0,
+        var productIds: List<Long>? = null,
         var filterByStatus: List<String>? = null
     ) : Payload<BaseNetworkError>()
 
     class FetchSingleProductReviewPayload(
         var site: SiteModel,
-        var remoteReviewId: RemoteId
+        var remoteReviewId: Long
     ) : Payload<BaseNetworkError>()
 
     class UpdateProductReviewStatusPayload(
@@ -113,7 +111,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     class FetchProductReviewsResponsePayload(
         val site: SiteModel,
         val reviews: List<WCProductReviewModel> = emptyList(),
-        val filterProductIds: List<RemoteId>? = null,
+        val filterProductIds: List<Long>? = null,
         val filterByStatus: List<String>? = null,
         val loadedMore: Boolean = false,
         val canLoadMore: Boolean = false
@@ -160,14 +158,13 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             ProductSqlUtils.getProductReviewsForSite(site)
 
     fun getProductReviewsForProductAndSiteId(localSiteId: Int, remoteProductId: Long): List<WCProductReviewModel> =
-            ProductSqlUtils.getProductReviewsForProductAndSiteId(LocalId(localSiteId), RemoteId(remoteProductId))
+            ProductSqlUtils.getProductReviewsForProductAndSiteId(localSiteId, remoteProductId)
 
     fun getProductReviewByRemoteId(
         localSiteId: Int,
-        remoteProductId: Long,
         remoteReviewId: Long
     ): WCProductReviewModel? = ProductSqlUtils
-            .getProductReviewByRemoteId(LocalId(localSiteId), RemoteId(remoteProductId), RemoteId(remoteReviewId))
+            .getProductReviewByRemoteId(localSiteId, remoteReviewId)
 
     fun deleteProductReviewsForSite(site: SiteModel) = ProductSqlUtils.deleteAllProductReviewsForSite(site)
 

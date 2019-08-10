@@ -7,7 +7,6 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
@@ -125,7 +124,7 @@ class ProductRestClient(
     fun fetchProductReviews(
         site: SiteModel,
         offset: Int,
-        productIds: List<RemoteId>? = null,
+        productIds: List<Long>? = null,
         filterByStatus: List<String>? = null
     ) {
         val statusFilter = filterByStatus?.joinToString { it } ?: "all"
@@ -137,7 +136,7 @@ class ProductRestClient(
                 "offset" to offset.toString(),
                 "status" to statusFilter)
         productIds?.let { ids ->
-            params.put("product", ids.map { it.value }.joinToString())
+            params.put("product", ids.map { it }.joinToString())
         }
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductReviewApiResponse>? ->
@@ -170,8 +169,8 @@ class ProductRestClient(
      * @param [site] The site to fetch product reviews for
      * @param [remoteReviewId] The remote id of the review to fetch
      */
-    fun fetchProductReviewById(site: SiteModel, remoteReviewId: RemoteId) {
-        val url = WOOCOMMERCE.products.reviews.id(remoteReviewId.value).pathV3
+    fun fetchProductReviewById(site: SiteModel, remoteReviewId: Long) {
+        val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
         val responseType = object : TypeToken<ProductReviewApiResponse>() {}.type
         val params = emptyMap<String, String>()
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
@@ -190,7 +189,7 @@ class ProductRestClient(
                             error = productReviewError,
                             site = site,
                             productReview = WCProductReviewModel()
-                                    .apply { remoteProductReviewId = remoteReviewId.value })
+                                    .apply { remoteProductReviewId = remoteReviewId })
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductReviewAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })

@@ -11,8 +11,6 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
@@ -205,7 +203,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(25, ProductSqlUtils.insertOrUpdateProductReviews(payload.reviews))
         assertEquals(
                 5,
-                ProductSqlUtils.getProductReviewsForProductAndSiteId(LocalId(siteModel.id), RemoteId(22)).size)
+                ProductSqlUtils.getProductReviewsForProductAndSiteId(siteModel.id, 22).size)
     }
 
     @Test
@@ -225,7 +223,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     @Test
     fun testFetchProductReviewByReviewIdSuccess() {
         interceptor.respondWith("wc-fetch-product-review-response-success.json")
-        productRestClient.fetchProductReviewById(siteModel, RemoteId(5499))
+        productRestClient.fetchProductReviewById(siteModel, 5499)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -255,7 +253,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     @Test
     fun testFetchProductReviewByReviewIdFailed() {
         interceptor.respondWithError("wc-product-review-response-failure-invalid-id.json")
-        productRestClient.fetchProductReviewById(siteModel, RemoteId(5499))
+        productRestClient.fetchProductReviewById(siteModel, 5499)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))

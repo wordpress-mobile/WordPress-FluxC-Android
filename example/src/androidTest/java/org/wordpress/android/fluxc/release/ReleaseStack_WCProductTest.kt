@@ -11,7 +11,6 @@ import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore
@@ -112,7 +111,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     @Test
     fun testFetchProductReviews() {
         // Remove all product reviews from the database
-        productStore.deleteProductReviewsForSite(sSite)
+        productStore.deleteAllProductReviews()
         assertEquals(0, ProductSqlUtils.getProductReviewsForSite(sSite).size)
 
         nextEvent = TestEvent.FETCHED_PRODUCT_REVIEWS
@@ -130,19 +129,19 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     @Test
     fun testFetchSingleProductAndUpdateReview() {
         // Remove all product reviews from the database
-        productStore.deleteProductReviewsForSite(sSite)
+        productStore.deleteAllProductReviews()
         assertEquals(0, ProductSqlUtils.getProductReviewsForSite(sSite).size)
 
         nextEvent = TestEvent.FETCHED_SINGLE_PRODUCT_REVIEW
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
                 WCProductActionBuilder.newFetchSingleProductReviewAction(
-                        FetchSingleProductReviewPayload(sSite, RemoteId(remoteProductReviewId))))
+                        FetchSingleProductReviewPayload(sSite, remoteProductReviewId)))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
         val review = productStore
-                .getProductReviewByRemoteId(sSite.id, remoteProductWithReviewsId, remoteProductReviewId)
+                .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
         assertNotNull(review)
 
         // Update review status
@@ -160,7 +159,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
             // Verify results
             val savedReview = productStore
-                    .getProductReviewByRemoteId(sSite.id, remoteProductWithReviewsId, remoteProductReviewId)
+                    .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
             assertNotNull(savedReview)
             assertEquals(newStatus, savedReview!!.status)
         }

@@ -9,8 +9,6 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.UnitTestUtils
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
@@ -157,9 +155,8 @@ class ProductSqlUtilsTest {
         var rowsAffected = ProductSqlUtils.insertOrUpdateProductReview(review)
         assertEquals(1, rowsAffected)
         var savedReview = ProductSqlUtils.getProductReviewByRemoteId(
-                LocalId(site.id),
-                RemoteId(review.remoteProductId),
-                RemoteId(review.remoteProductReviewId))
+                site.id,
+                review.remoteProductReviewId)
         assertNotNull(savedReview)
         assertEquals(review.remoteProductReviewId, savedReview.remoteProductReviewId)
         assertEquals(review.verified, savedReview.verified)
@@ -179,9 +176,8 @@ class ProductSqlUtilsTest {
         rowsAffected = ProductSqlUtils.insertOrUpdateProductReview(review)
         assertEquals(1, rowsAffected)
         savedReview = ProductSqlUtils.getProductReviewByRemoteId(
-                LocalId(site.id),
-                RemoteId(review.remoteProductId),
-                RemoteId(review.remoteProductReviewId))
+                site.id,
+                review.remoteProductReviewId)
         assertNotNull(savedReview)
         assertEquals(review.verified, savedReview.verified)
     }
@@ -224,12 +220,12 @@ class ProductSqlUtilsTest {
 
         // Get all reviews for existing product
         val savedReviewsForProductExisting = ProductSqlUtils
-                .getProductReviewsForProductAndSiteId(LocalId(site.id), RemoteId(productId))
+                .getProductReviewsForProductAndSiteId(site.id, productId)
         assertEquals(3, savedReviewsForProductExisting.size)
 
         // Get all reviews for non-existing product
         val savedReviewsForProduct = ProductSqlUtils
-                .getProductReviewsForProductAndSiteId(LocalId(site.id), RemoteId(400))
+                .getProductReviewsForProductAndSiteId(site.id, 400)
         assertEquals(0, savedReviewsForProduct.size)
     }
 

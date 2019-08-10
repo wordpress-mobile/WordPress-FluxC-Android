@@ -5,8 +5,6 @@ import com.wellsql.generated.WCProductReviewModelTable
 import com.wellsql.generated.WCProductVariationModelTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.LocalId
-import org.wordpress.android.fluxc.model.LocalOrRemoteId.RemoteId
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
@@ -168,16 +166,14 @@ object ProductSqlUtils {
     }
 
     fun getProductReviewByRemoteId(
-        localSiteId: LocalId,
-        remoteProductId: RemoteId,
-        remoteReviewId: RemoteId
+        localSiteId: Int,
+        remoteReviewId: Long
     ): WCProductReviewModel? {
         return WellSql.select(WCProductReviewModel::class.java)
                 .where()
                 .beginGroup()
-                .equals(WCProductReviewModelTable.LOCAL_SITE_ID, localSiteId.value)
-                .equals(WCProductReviewModelTable.REMOTE_PRODUCT_ID, remoteProductId.value)
-                .equals(WCProductReviewModelTable.REMOTE_PRODUCT_REVIEW_ID, remoteReviewId.value)
+                .equals(WCProductReviewModelTable.LOCAL_SITE_ID, localSiteId)
+                .equals(WCProductReviewModelTable.REMOTE_PRODUCT_REVIEW_ID, remoteReviewId)
                 .endGroup()
                 .endWhere()
                 .asModel.firstOrNull()
@@ -192,13 +188,13 @@ object ProductSqlUtils {
     }
 
     fun getProductReviewsForProductAndSiteId(
-        localSiteId: LocalId,
-        remoteProductId: RemoteId
+        localSiteId: Int,
+        remoteProductId: Long
     ): List<WCProductReviewModel> {
         return WellSql.select(WCProductReviewModel::class.java)
                 .where().beginGroup()
-                .equals(WCProductReviewModelTable.REMOTE_PRODUCT_ID, remoteProductId.value)
-                .equals(WCProductReviewModelTable.LOCAL_SITE_ID, localSiteId.value)
+                .equals(WCProductReviewModelTable.REMOTE_PRODUCT_ID, remoteProductId)
+                .equals(WCProductReviewModelTable.LOCAL_SITE_ID, localSiteId)
                 .endGroup().endWhere()
                 .asModel
     }
@@ -212,7 +208,5 @@ object ProductSqlUtils {
                 .endWhere().execute()
     }
 
-    fun deleteAllProductReviews(): Int {
-        return WellSql.delete(WCProductReviewModel::class.java).execute()
-    }
+    fun deleteAllProductReviews() = WellSql.delete(WCProductReviewModel::class.java).execute()
 }
