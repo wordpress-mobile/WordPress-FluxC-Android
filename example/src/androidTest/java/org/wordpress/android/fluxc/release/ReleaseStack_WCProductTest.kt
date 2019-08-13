@@ -52,7 +52,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(Exception::class)
     override fun setUp() {
-        super.setUp()
+        super.setUp(false)
         mReleaseStackAppComponent.inject(this)
         init()
         nextEvent = TestEvent.NONE
