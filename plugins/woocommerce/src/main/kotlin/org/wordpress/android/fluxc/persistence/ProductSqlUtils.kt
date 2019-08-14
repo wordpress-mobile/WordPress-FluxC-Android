@@ -147,6 +147,7 @@ object ProductSqlUtils {
                 .equals(WCProductReviewModelTable.ID, productReview.id)
                 .or()
                 .beginGroup()
+                .equals(WCProductReviewModelTable.REMOTE_PRODUCT_ID, productReview.remoteProductId)
                 .equals(WCProductReviewModelTable.REMOTE_PRODUCT_REVIEW_ID, productReview.remoteProductReviewId)
                 .equals(WCProductReviewModelTable.LOCAL_SITE_ID, productReview.localSiteId)
                 .endGroup()
@@ -167,12 +168,14 @@ object ProductSqlUtils {
 
     fun getProductReviewByRemoteId(
         localSiteId: Int,
-        remoteReviewId: Long
+        remoteReviewId: Long,
+        remoteProductId: Long
     ): WCProductReviewModel? {
         return WellSql.select(WCProductReviewModel::class.java)
                 .where()
                 .beginGroup()
                 .equals(WCProductReviewModelTable.LOCAL_SITE_ID, localSiteId)
+                .equals(WCProductReviewModelTable.REMOTE_PRODUCT_ID, remoteProductId)
                 .equals(WCProductReviewModelTable.REMOTE_PRODUCT_REVIEW_ID, remoteReviewId)
                 .endGroup()
                 .endWhere()
