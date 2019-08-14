@@ -155,7 +155,7 @@ class ProductSqlUtilsTest {
         var rowsAffected = ProductSqlUtils.insertOrUpdateProductReview(review)
         assertEquals(1, rowsAffected)
         var savedReview = ProductSqlUtils.getProductReviewByRemoteId(
-                site.id, review.remoteProductReviewId, review.remoteProductId
+                site.id, review.remoteProductId, review.remoteProductReviewId
         )
         assertNotNull(savedReview)
         assertEquals(review.remoteProductReviewId, savedReview.remoteProductReviewId)
@@ -176,7 +176,7 @@ class ProductSqlUtilsTest {
         rowsAffected = ProductSqlUtils.insertOrUpdateProductReview(review)
         assertEquals(1, rowsAffected)
         savedReview = ProductSqlUtils.getProductReviewByRemoteId(
-                site.id, review.remoteProductReviewId, review.remoteProductId
+                site.id, review.remoteProductId, review.remoteProductReviewId
         )
         assertNotNull(savedReview)
         assertEquals(review.verified, savedReview.verified)

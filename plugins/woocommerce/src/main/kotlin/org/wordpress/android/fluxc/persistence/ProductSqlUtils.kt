@@ -168,8 +168,8 @@ object ProductSqlUtils {
 
     fun getProductReviewByRemoteId(
         localSiteId: Int,
-        remoteReviewId: Long,
-        remoteProductId: Long
+        remoteProductId: Long,
+        remoteReviewId: Long
     ): WCProductReviewModel? {
         return WellSql.select(WCProductReviewModel::class.java)
                 .where()

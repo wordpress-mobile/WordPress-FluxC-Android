@@ -162,10 +162,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     fun getProductReviewByRemoteId(
         localSiteId: Int,
-        remoteReviewId: Long,
-        remoteProductId: Long
+        remoteProductId: Long,
+        remoteReviewId: Long
     ): WCProductReviewModel? = ProductSqlUtils
-            .getProductReviewByRemoteId(localSiteId, remoteReviewId, remoteProductId)
+            .getProductReviewByRemoteId(localSiteId, remoteProductId, remoteReviewId)
 
     fun deleteProductReviewsForSite(site: SiteModel) = ProductSqlUtils.deleteAllProductReviewsForSite(site)
 

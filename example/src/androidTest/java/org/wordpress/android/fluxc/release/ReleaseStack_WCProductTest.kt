@@ -141,7 +141,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         // Verify results
         val review = productStore
-                .getProductReviewByRemoteId(sSite.id, remoteProductReviewId, remoteProductWithReviewsId)
+                .getProductReviewByRemoteId(sSite.id, remoteProductWithReviewsId, remoteProductReviewId)
         assertNotNull(review)
 
         // Update review status
@@ -159,7 +159,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
             // Verify results
             val savedReview = productStore
-                    .getProductReviewByRemoteId(sSite.id, remoteProductReviewId, remoteProductWithReviewsId)
+                    .getProductReviewByRemoteId(sSite.id, remoteProductWithReviewsId, remoteProductReviewId)
             assertNotNull(savedReview)
             assertEquals(newStatus, savedReview!!.status)
         }
