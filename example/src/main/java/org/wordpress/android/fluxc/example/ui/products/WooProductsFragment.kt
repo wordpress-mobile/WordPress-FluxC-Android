@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_products.*
@@ -18,8 +19,10 @@ import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_R
 import org.wordpress.android.fluxc.action.WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
@@ -34,6 +37,8 @@ class WooProductsFragment : Fragment() {
     @Inject internal lateinit var wcProductStore: WCProductStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
 
+    private var selectedPos: Int = -1
+    private var selectedSite: SiteModel? = null
     private var pendingFetchSingleProductRemoteId: Long? = null
 
     override fun onAttach(context: Context?) {
@@ -47,8 +52,19 @@ class WooProductsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        stats_select_site.setOnClickListener {
+            showSiteSelectorDialog(selectedPos, object : StoreSelectorDialog.Listener {
+                override fun onSiteSelected(site: SiteModel, pos: Int) {
+                    selectedSite = site
+                    selectedPos = pos
+                    toggleSiteDependentButtons(true)
+                    stats_select_site.text = site.name ?: site.displayName
+                }
+            })
+        }
+
         fetch_single_product.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 showSingleLineDialog(activity, "Enter the remoteProductId of product to fetch:") { editText ->
                     pendingFetchSingleProductRemoteId = editText.text.toString().toLongOrNull()
                     pendingFetchSingleProductRemoteId?.let { id ->
@@ -61,7 +77,7 @@ class WooProductsFragment : Fragment() {
         }
 
         fetch_product_variations.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 showSingleLineDialog(
                         activity,
                         "Enter the remoteProductId of product to fetch variations:"
@@ -77,7 +93,7 @@ class WooProductsFragment : Fragment() {
         }
 
         fetch_reviews_for_product.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 showSingleLineDialog(
                         activity,
                         "Enter the remoteProductId of product to fetch reviews:"
@@ -93,7 +109,7 @@ class WooProductsFragment : Fragment() {
         }
 
         fetch_all_reviews.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 prependToLog("Submitting request to fetch product reviews for site ${site.id}")
                 val payload = FetchProductReviewsPayload(site)
                 dispatcher.dispatch(WCProductActionBuilder.newFetchProductReviewsAction(payload))
@@ -101,7 +117,7 @@ class WooProductsFragment : Fragment() {
         }
 
         fetch_review_by_id.setOnClickListener {
-            getFirstWCSite()?.let { site ->
+            selectedSite?.let { site ->
                 showSingleLineDialog(
                         activity,
                         "Enter the remoteReviewId of the review to fetch:"
@@ -135,7 +151,7 @@ class WooProductsFragment : Fragment() {
             return
         }
 
-        getFirstWCSite()?.let { site ->
+        selectedSite?.let { site ->
             when (event.causeOfChange) {
                 FETCH_SINGLE_PRODUCT -> {
                     pendingFetchSingleProductRemoteId?.let { remoteId ->
@@ -163,5 +179,19 @@ class WooProductsFragment : Fragment() {
         }
     }
 
-    private fun getFirstWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(0)
+    private fun showSiteSelectorDialog(selectedPos: Int, listener: StoreSelectorDialog.Listener) {
+        fragmentManager?.let { fm ->
+            val dialog = StoreSelectorDialog.newInstance(listener, selectedPos)
+            dialog.show(fm, "StoreSelectorDialog")
+        }
+    }
+
+    private fun toggleSiteDependentButtons(enabled: Boolean) {
+        for (i in 0 until buttonContainer.childCount) {
+            val child = buttonContainer.getChildAt(i)
+            if (child is Button) {
+                child.isEnabled = enabled
+            }
+        }
+    }
 }
