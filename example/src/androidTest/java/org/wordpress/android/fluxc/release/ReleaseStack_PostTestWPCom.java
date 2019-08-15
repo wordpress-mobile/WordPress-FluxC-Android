@@ -181,7 +181,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         // Wait one sec
         Thread.sleep(1000);
-        Date testStartDate = DateTimeUtils.localDateToUTC(new Date());
+        Date testStartDate = new Date();
 
         // Check local change date is set and before "right now"
         assertNotNull(mPost.getDateLocallyChanged());

@@ -4,10 +4,12 @@ import android.content.Context
 import com.android.volley.RequestQueue
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -17,9 +19,12 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGson
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.utils.getString
+import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductError
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import javax.inject.Singleton
 
@@ -99,6 +104,127 @@ class ProductRestClient(
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVariationsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Makes a GET call to `/wc/v3/products/reviews` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a list of product reviews for a given WooCommerce [SiteModel].
+     *
+     * The number of reviews to fetch is defined in [WCProductStore.NUM_REVIEWS_PER_FETCH], and retrieving older
+     * reviews is done by passing an [offset].
+     *
+     * Dispatches a [WCProductAction.FETCHED_PRODUCT_REVIEWS]
+     *
+     * @param [site] The site to fetch product reviews for
+     * @param [offset] The offset to use for the fetch
+     * @param [productIds] Optional. A list of remote product ID's to fetch product reviews for.
+     * @param [filterByStatus] Optional. A list of product review statuses to fetch
+     */
+    fun fetchProductReviews(
+        site: SiteModel,
+        offset: Int,
+        productIds: List<Long>? = null,
+        filterByStatus: List<String>? = null
+    ) {
+        val statusFilter = filterByStatus?.joinToString { it } ?: "all"
+
+        val url = WOOCOMMERCE.products.reviews.pathV3
+        val responseType = object : TypeToken<List<ProductReviewApiResponse>>() {}.type
+        val params = mutableMapOf(
+                "per_page" to WCProductStore.NUM_REVIEWS_PER_FETCH.toString(),
+                "offset" to offset.toString(),
+                "status" to statusFilter)
+        productIds?.let { ids ->
+            params.put("product", ids.map { it }.joinToString())
+        }
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<ProductReviewApiResponse>? ->
+                    response?.let {
+                        val reviews = it.map { review ->
+                            productReviewResponseToProductReviewModel(review).apply { localSiteId = site.id }
+                        }
+                        val canLoadMore = reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
+                        val loadedMore = offset > 0
+                        val payload = FetchProductReviewsResponsePayload(
+                                site, reviews, productIds, filterByStatus, loadedMore, canLoadMore)
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchedProductReviewsAction(payload))
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val productReviewError = networkErrorToProductError(networkError)
+                    val payload = FetchProductReviewsResponsePayload(productReviewError, site)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductReviewsAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Makes a GET call to `/wc/v3/products/reviews/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a product review by it's remote ID for a given WooCommerce [SiteModel].
+     *
+     * Dispatches a [WCProductAction.FETCHED_SINGLE_PRODUCT_REVIEW]
+     *
+     * @param [site] The site to fetch product reviews for
+     * @param [remoteReviewId] The remote id of the review to fetch
+     */
+    fun fetchProductReviewById(site: SiteModel, remoteReviewId: Long) {
+        val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
+        val responseType = object : TypeToken<ProductReviewApiResponse>() {}.type
+        val params = emptyMap<String, String>()
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: ProductReviewApiResponse? ->
+                    response?.let {
+                        val review = productReviewResponseToProductReviewModel(response).apply {
+                            localSiteId = site.id
+                        }
+                        val payload = RemoteProductReviewPayload(site, review)
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductReviewAction(payload))
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val productReviewError = networkErrorToProductError(networkError)
+                    val payload = RemoteProductReviewPayload(
+                            error = productReviewError,
+                            site = site,
+                            productReview = WCProductReviewModel()
+                                    .apply { remoteProductReviewId = remoteReviewId })
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductReviewAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Makes a PUT call to `/wc/v3/products/reviews/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * updating the status for the given [productReview] to [newStatus].
+     *
+     * Dispatches a [WCProductAction.UPDATED_PRODUCT_REVIEW_STATUS]
+     *
+     * @param [site] The site to fetch product reviews for
+     * @param [productReview] The [WCProductReviewModel] to be updated
+     * @param [newStatus] The new status to update the product review to
+     */
+    fun updateProductReviewStatus(site: SiteModel, productReview: WCProductReviewModel, newStatus: String) {
+        val url = WOOCOMMERCE.products.reviews.id(productReview.remoteProductReviewId).pathV3
+        val responseType = object : TypeToken<ProductReviewApiResponse>() {}.type
+        val params = mapOf("status" to newStatus)
+        val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, params, responseType,
+                { response: ProductReviewApiResponse? ->
+                    response?.let {
+                        val review = productReviewResponseToProductReviewModel(response).apply {
+                            localSiteId = site.id
+                        }
+                        val payload = RemoteProductReviewPayload(site, review)
+                        dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductReviewStatusAction(payload))
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val productReviewError = networkErrorToProductError(networkError)
+                    val payload = RemoteProductReviewPayload(productReviewError, site, productReview)
+                    dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductReviewStatusAction(payload))
+                })
         add(request)
     }
 
@@ -222,9 +348,25 @@ class ProductRestClient(
         }
     }
 
+    private fun productReviewResponseToProductReviewModel(response: ProductReviewApiResponse): WCProductReviewModel {
+        return WCProductReviewModel().apply {
+            remoteProductReviewId = response.id
+            remoteProductId = response.product_id
+            dateCreated = response.date_created ?: ""
+            status = response.status ?: ""
+            reviewerName = response.reviewer ?: ""
+            reviewerEmail = response.reviewer_email ?: ""
+            review = response.review ?: ""
+            rating = response.rating
+            verified = response.verified
+            reviewerAvatarsJson = response.reviewer_avatar_urls?.toString() ?: ""
+        }
+    }
+
     private fun networkErrorToProductError(wpComError: WPComGsonNetworkError): ProductError {
         val productErrorType = when (wpComError.apiError) {
             "rest_invalid_param" -> ProductErrorType.INVALID_PARAM
+            "woocommerce_rest_review_invalid_id" -> ProductErrorType.INVALID_REVIEW_ID
             else -> ProductErrorType.fromString(wpComError.apiError)
         }
         return ProductError(productErrorType, wpComError.message)
