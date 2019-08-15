@@ -27,6 +27,7 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     @Column var shippingTotal = "" // The total shipping cost (excluding tax)
     @Column var paymentMethod = "" // Payment method code, e.g. 'cod', 'stripe'
     @Column var paymentMethodTitle = "" // Displayable payment method, e.g. 'Cash on delivery', 'Credit Card (Stripe)'
+    @Column var datePaid = ""
     @Column var pricesIncludeTax = false
 
     @Column var customerNote = "" // Note left by the customer during order submission
