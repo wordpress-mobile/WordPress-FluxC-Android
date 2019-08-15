@@ -50,6 +50,7 @@ class OrderApiResponse : Response {
     val shipping_total: String? = null
     val payment_method: String? = null
     val payment_method_title: String? = null
+    val date_paid_gmt: String? = null
     val prices_include_tax: Boolean = false
 
     val customer_note: String? = null
