@@ -116,6 +116,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         // The site should automatically assign the post the default category
         assertFalse(uploadedPost.getCategoryIdList().isEmpty());
+
+        // Clean up
+        permanentlyDeletePost(uploadedPost);
     }
 
     @Test
@@ -148,6 +151,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         // The date created should not have been altered by the edits
         assertFalse(finalPost.getDateCreated().isEmpty());
         assertEquals(dateCreated, finalPost.getDateCreated());
+
+        // Clean up
+        permanentlyDeletePost(uploadedPost);
     }
 
     @Test
@@ -173,6 +179,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         assertEquals(POST_DEFAULT_TITLE, latestPost.getTitle());
         assertFalse(latestPost.isLocallyChanged());
+
+        // Clean up
+        permanentlyDeletePost(latestPost);
     }
 
     @Test
@@ -268,6 +277,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(5, mPost.getFeaturedImageId());
         assertTrue(mPost.isLocallyChanged());
         assertFalse(mPost.isLocalDraft());
+
+        // Clean up
+        permanentlyDeletePost(mPost);
     }
 
     @Test
@@ -295,7 +307,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(futureDate, finalPost.getDateCreated());
         assertEquals(PostStatus.SCHEDULED, PostStatus.fromPost(finalPost));
 
-        deletePost(finalPost);
+        // Clean up
+        permanentlyDeletePost(finalPost);
     }
 
     @Test
@@ -387,6 +400,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
                    && newPost.getTagNameList().containsAll(tags));
 
         assertEquals(featuredImageId, newPost.getFeaturedImageId());
+
+        // Clean up
+        permanentlyDeletePost(newPost);
     }
 
     @Test
@@ -414,6 +430,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         // We should still have one page and no post
         assertEquals(1, mPostStore.getPagesCountForSite(sSite));
         assertEquals(0, mPostStore.getPostsCountForSite(sSite));
+
+        // Clean up
+        permanentlyDeletePost(newPage);
     }
 
     @Test
@@ -454,6 +473,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(date, newPage.getDateCreated());
 
         assertEquals(0, newPage.getFeaturedImageId()); // The page should upload, but have the featured image stripped
+
+        // Clean up
+        permanentlyDeletePost(newPage);
     }
 
     @Test
@@ -488,6 +510,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel finalPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         assertTrue(finalPost.getTagNameList().isEmpty());
+
+        // Clean up
+        permanentlyDeletePost(finalPost);
     }
 
     @Test
@@ -522,6 +547,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(1, mPostStore.getPostsCountForSite(sSite));
 
         assertFalse(finalPost.hasFeaturedImage());
+
+        // Clean up
+        permanentlyDeletePost(finalPost);
     }
 
     @Test
@@ -559,6 +587,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mPost.hasLocation());
         assertEquals(EXAMPLE_LATITUDE, mPost.getLocation().getLatitude(), 0.1);
         assertEquals(EXAMPLE_LONGITUDE, mPost.getLocation().getLongitude(), 0.1);
+
+        // Clean up
+        permanentlyDeletePost(mPost);
     }
 
     @Test
@@ -614,6 +645,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         // The post should not have a location anymore
         assertFalse(mPost.hasLocation());
+
+        // Clean up
+        permanentlyDeletePost(mPost);
     }
 
     @Test
@@ -632,6 +666,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel trashedPost = mPostStore.getPostByLocalPostId(uploadedPost.getId());
         assertNotNull(trashedPost);
         assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
+
+        // Clean up - the post is already trashed so if we call delete post again, it'll be permanently deleted
+        deletePost(trashedPost);
     }
 
     @Test
@@ -659,6 +696,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel restoredPost = mPostStore.getPostByRemotePostId(uploadedPost.getRemotePostId(), sSite);
         assertNotNull(restoredPost);
         assertNotEquals(PostStatus.TRASHED, PostStatus.fromPost(restoredPost));
+
+        // Clean up
+        permanentlyDeletePost(restoredPost);
     }
 
     // Error handling tests
@@ -693,6 +733,8 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         savePost(uploadedPost);
 
+        long originalRemotePostId = uploadedPost.getRemotePostId();
+
         uploadedPost.setRemotePostId(289385);
 
         mNextEvent = TestEvents.ERROR_UNKNOWN_POST;
@@ -716,6 +758,10 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         // The date created should not have been altered by the edit
         assertFalse(persistedPost.getDateCreated().isEmpty());
         assertEquals(dateCreated, persistedPost.getDateCreated());
+
+        // Clean up - needs to be called twice as first delete just trashes the post
+        uploadedPost.setRemotePostId(originalRemotePostId);
+        permanentlyDeletePost(uploadedPost);
     }
 
     @Test
@@ -902,6 +948,11 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(post, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void permanentlyDeletePost(PostModel post) throws InterruptedException {
+        deletePost(post);
+        deletePost(post);
     }
 
     private void removeAllPosts() throws InterruptedException {

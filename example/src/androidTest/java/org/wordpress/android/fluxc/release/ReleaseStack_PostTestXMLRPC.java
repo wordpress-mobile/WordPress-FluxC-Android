@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.model.CauseOfOnPostChanged;
 import org.wordpress.android.fluxc.model.CauseOfOnPostChanged.DeletePost;
+import org.wordpress.android.fluxc.model.CauseOfOnPostChanged.RemovePost;
 import org.wordpress.android.fluxc.model.CauseOfOnPostChanged.UpdatePost;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
@@ -58,6 +59,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         POSTS_FETCHED,
         PAGES_FETCHED,
         POST_DELETED,
+        POST_REMOVED,
         POST_RESTORED,
         ERROR_UNKNOWN_POST,
         ERROR_UNKNOWN_POST_TYPE,
@@ -106,6 +108,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         // The site should automatically assign the post the default category
         assertFalse(uploadedPost.getCategoryIdList().isEmpty());
+
+        // Clean up
+        permanentlyDelete(uploadedPost);
     }
 
     @Test
@@ -138,6 +143,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // The date created should not have been altered by the edits
         assertFalse(finalPost.getDateCreated().isEmpty());
         assertEquals(dateCreated, finalPost.getDateCreated());
+
+        // Clean up
+        permanentlyDelete(uploadedPost);
     }
 
     @Test
@@ -163,6 +171,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         assertEquals(POST_DEFAULT_TITLE, latestPost.getTitle());
         assertFalse(latestPost.isLocallyChanged());
+
+        // Clean up
+        permanentlyDelete(uploadedPost);
     }
 
     @Test
@@ -258,6 +269,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(5, mPost.getFeaturedImageId());
         assertTrue(mPost.isLocallyChanged());
         assertFalse(mPost.isLocalDraft());
+
+        // Clean up
+        permanentlyDelete(mPost);
     }
 
     @Test
@@ -285,7 +299,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(futureDate, finalPost.getDateCreated());
         assertEquals(PostStatus.SCHEDULED, PostStatus.fromPost(finalPost));
 
-        deletePost(finalPost);
+        // Clean up
+        permanentlyDelete(finalPost);
     }
 
     @Test
@@ -376,6 +391,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
                    && newPost.getTagNameList().containsAll(tags));
 
         assertEquals(featuredImageId, newPost.getFeaturedImageId());
+
+        // Clean up
+        permanentlyDelete(newPost);
     }
 
     @Test
@@ -403,6 +421,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // We should still have one page and no post
         assertEquals(1, mPostStore.getPagesCountForSite(sSite));
         assertEquals(0, mPostStore.getPostsCountForSite(sSite));
+
+        // Clean up
+        permanentlyDelete(newPage);
     }
 
     @Test
@@ -438,6 +459,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals("A fully featured page", newPage.getTitle());
         assertEquals("Some content here! <strong>Bold text</strong>.", newPage.getContent());
         assertEquals(date, newPage.getDateCreated());
+
+        // Clean up
+        permanentlyDelete(newPage);
     }
 
     @Test
@@ -472,6 +496,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         PostModel finalPost = mPostStore.getPostByLocalPostId(mPost.getId());
 
         assertTrue(finalPost.getTagNameList().isEmpty());
+
+        // Clean up
+        permanentlyDelete(newPost);
     }
 
     @Test
@@ -506,6 +533,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(1, mPostStore.getPostsCountForSite(sSite));
 
         assertFalse(finalPost.hasFeaturedImage());
+
+        // Clean up
+        permanentlyDelete(newPost);
     }
 
     @Test
@@ -543,6 +573,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(mPost.hasLocation());
         assertEquals(EXAMPLE_LATITUDE, mPost.getLocation().getLatitude(), 0.1);
         assertEquals(EXAMPLE_LONGITUDE, mPost.getLocation().getLongitude(), 0.1);
+
+        // Clean up
+        permanentlyDelete(mPost);
     }
 
     @Test
@@ -598,6 +631,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         // The post should not have a location anymore
         assertFalse(mPost.hasLocation());
+
+        // Clean up
+        permanentlyDelete(mPost);
     }
 
     @Test
@@ -616,6 +652,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         PostModel trashedPost = mPostStore.getPostByLocalPostId(uploadedPost.getId());
         assertNotNull(trashedPost);
         assertEquals(PostStatus.TRASHED, PostStatus.fromPost(trashedPost));
+
+        // Clean up - the post is already trashed so if we call delete post again, it'll be permanently deleted
+        deletePost(trashedPost);
     }
 
     @Test
@@ -643,6 +682,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         PostModel restoredPost = mPostStore.getPostByRemotePostId(uploadedPost.getRemotePostId(), sSite);
         assertNotNull(restoredPost);
         assertNotEquals(PostStatus.fromPost(restoredPost), PostStatus.TRASHED);
+
+        // Clean up
+        permanentlyDelete(restoredPost);
     }
 
     // Error handling tests
@@ -680,6 +722,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         savePost(uploadedPost);
 
+        long originalRemotePostId = uploadedPost.getRemotePostId();
+
         uploadedPost.setRemotePostId(289385);
 
         mNextEvent = TestEvents.ERROR_GENERIC;
@@ -707,6 +751,10 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_POST error instead
         // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
         assertEquals("Invalid post ID.", mLastPostError.message);
+
+        // Clean up
+        persistedPost.setRemotePostId(originalRemotePostId);
+        permanentlyDelete(persistedPost);
     }
 
     @Test
@@ -807,6 +855,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_TERM error instead
         // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
         assertEquals("Invalid term ID.", mLastPostError.message);
+
+        // Clean up
+        permanentlyDelete(persistedPost);
     }
 
     @Test
@@ -873,6 +924,9 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         // TODO: This will fail for non-English sites - we should be checking for an UNKNOWN_ATTACHMENT error instead
         // (once we make the fixes needed for PostXMLRPCClient to correctly identify post errors)
         assertEquals("Invalid attachment ID.", mLastPostError.message);
+
+        // Clean up
+        permanentlyDelete(persistedPost);
     }
 
     @Test
@@ -1028,6 +1082,11 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
                     mCountDownLatch.countDown();
                 }
             }
+        } else if (event.causeOfChange instanceof CauseOfOnPostChanged.RemovePost) {
+            if (mNextEvent.equals(TestEvents.POST_REMOVED)) {
+                assertNotEquals(0, ((RemovePost) event.causeOfChange).getLocalPostId());
+                mCountDownLatch.countDown();
+            }
         } else if (event.causeOfChange instanceof CauseOfOnPostChanged.RemoveAllPosts) {
             if (mNextEvent.equals(TestEvents.ALL_POST_REMOVED)) {
                 mCountDownLatch.countDown();
@@ -1132,6 +1191,11 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mDispatcher.dispatch(PostActionBuilder.newDeletePostAction(new RemotePostPayload(post, sSite)));
 
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void permanentlyDelete(PostModel post) throws InterruptedException {
+        deletePost(post);
+        deletePost(post);
     }
 
     private void removeAllPosts() throws InterruptedException {
