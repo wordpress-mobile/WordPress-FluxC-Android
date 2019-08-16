@@ -88,6 +88,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals("0.00", totalTax)
             assertEquals("4.00", shippingTotal)
             assertEquals("stripe", paymentMethod)
+            assertEquals("2018-04-11T18:58:54Z", datePaid)
             assertEquals("Credit Card (Stripe)", paymentMethodTitle)
             assertFalse(pricesIncludeTax)
             assertEquals(2, getLineItemList().size)

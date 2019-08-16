@@ -643,6 +643,7 @@ class OrderRestClient(
             shippingTotal = response.shipping_total ?: ""
             paymentMethod = response.payment_method ?: ""
             paymentMethodTitle = response.payment_method_title ?: ""
+            datePaid = response.date_paid_gmt?.let { "${it}Z" } ?: ""
             pricesIncludeTax = response.prices_include_tax
 
             customerNote = response.customer_note ?: ""
