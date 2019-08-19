@@ -163,7 +163,6 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
                         site,
                         granularity,
                         LIMIT_MODE,
-                        SELECTED_DATE,
                         true
                 )
             }
