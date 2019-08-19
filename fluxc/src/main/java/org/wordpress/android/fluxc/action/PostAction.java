@@ -36,6 +36,8 @@ public enum PostAction implements IAction {
     FETCH_REVISIONS,
     @Action(payloadType = RemotePostPayload.class)
     REMOTE_AUTO_SAVE_POST,
+    @Action(payloadType = RemotePostPayload.class)
+    RESTORE_TO_AUTO_SAVE_REVISION,
 
     // Remote responses
     @Action(payloadType = FetchPostListResponsePayload.class)

@@ -67,7 +67,7 @@ public class PostRestClient extends BaseWPComRestClient {
         super(appContext, dispatcher, requestQueue, accessToken, userAgent);
     }
 
-    public void fetchPost(final PostModel post, final SiteModel site) {
+    public void fetchPost(final PostModel post, final SiteModel site, final boolean restoreToAutoSave) {
         String url = WPCOMREST.sites.site(site.getSiteId()).posts.post(post.getRemotePostId()).getUrlV1_1();
 
         Map<String, String> params = new HashMap<>();
@@ -81,6 +81,9 @@ public class PostRestClient extends BaseWPComRestClient {
                     @Override
                     public void onResponse(PostWPComRestResponse response) {
                         PostModel fetchedPost = postResponseToPostModel(response);
+                        if (restoreToAutoSave) {
+                            restoreTitleContentExcerptToAutosave(fetchedPost, response);
+                        }
                         fetchedPost.setId(post.getId());
                         fetchedPost.setLocalSiteId(site.getId());
 
@@ -366,6 +369,15 @@ public class PostRestClient extends BaseWPComRestClient {
                 }
         );
         add(request);
+    }
+
+    private PostModel restoreTitleContentExcerptToAutosave(PostModel post, PostWPComRestResponse from) {
+        if (post.hasUnpublishedRevision()) {
+            post.setTitle(post.getAutoSaveTitle());
+            post.setContent(post.getAutoSaveContent());
+            post.setExcerpt(post.getAutoSaveExcerpt());
+        }
+        return post;
     }
 
     private PostModel postResponseToPostModel(PostWPComRestResponse from) {

@@ -633,6 +633,9 @@ public class PostStore extends Store {
             case REMOTE_AUTO_SAVED_POST:
                 handleRemoteAutoSavedPost((RemoteAutoSavePostPayload) action.getPayload());
                 break;
+            case RESTORE_TO_AUTO_SAVE_REVISION:
+                restoreToAutoSaveRevision((RemotePostPayload) action.getPayload());
+                break;
             case FETCH_REVISIONS:
                 fetchRevisions((FetchRevisionsPayload) action.getPayload());
                 break;
@@ -668,7 +671,7 @@ public class PostStore extends Store {
 
     private void fetchPost(RemotePostPayload payload) {
         if (payload.site.isUsingWpComRestApi()) {
-            mPostRestClient.fetchPost(payload.post, payload.site);
+            mPostRestClient.fetchPost(payload.post, payload.site, false);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
             mPostXMLRPCClient.fetchPost(payload.post, payload.site);
@@ -989,6 +992,14 @@ public class PostStore extends Store {
             );
             RemoteAutoSavePostPayload response = new RemoteAutoSavePostPayload(payload.post.getId(), postError);
             mDispatcher.dispatch(UploadActionBuilder.newRemoteAutoSavedPostAction(response));
+        }
+    }
+
+    private void restoreToAutoSaveRevision(RemotePostPayload payload) {
+        if (payload.site.isUsingWpComRestApi()) {
+            mPostRestClient.fetchPost(payload.post, payload.site, true);
+        } else {
+            // TODO: error
         }
     }
 
