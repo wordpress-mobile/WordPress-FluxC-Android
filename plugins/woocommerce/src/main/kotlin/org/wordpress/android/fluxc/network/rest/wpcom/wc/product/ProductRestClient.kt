@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductError
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
@@ -65,6 +66,42 @@ class ProductRestClient(
                             site
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a list of products for the given WooCommerce [SiteModel].
+     *
+     * The number of products fetched is defined in [WCProductStore.NUM_PRODUCTS_PER_FETCH], and retrieving
+     * older products is done by passing an [offset].
+     *
+     * Dispatches a [WCProductAction.FETCHED_PRODUCTS] action with the resulting list of products.
+     */
+    fun fetchProducts(site: SiteModel, offset: Int) {
+        val url = WOOCOMMERCE.products.pathV3
+        val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
+        val params = mapOf(
+                "per_page" to WCProductStore.NUM_PRODUCTS_PER_FETCH.toString(),
+                "offset" to offset.toString())
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<ProductApiResponse>? ->
+                    val productModels = response?.map {
+                        productResponseToProductModel(it).apply { localSiteId = site.id }
+                    }.orEmpty()
+
+                    val loadedMore = offset > 0
+                    val canLoadMore = productModels.size == WCProductStore.NUM_PRODUCTS_PER_FETCH
+
+                    val payload = RemoteProductListPayload(site, productModels, loadedMore, canLoadMore)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val productError = networkErrorToProductError(networkError)
+                    val payload = RemoteProductListPayload(productError, site)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)

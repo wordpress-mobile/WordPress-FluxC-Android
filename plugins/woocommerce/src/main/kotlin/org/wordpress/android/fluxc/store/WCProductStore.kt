@@ -24,10 +24,16 @@ import javax.inject.Singleton
 class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcProductRestClient: ProductRestClient) :
         Store(dispatcher) {
     companion object {
+        const val NUM_PRODUCTS_PER_FETCH = 25
         const val NUM_REVIEWS_PER_FETCH = 25
     }
 
     class FetchSingleProductPayload(
+        var site: SiteModel,
+        var remoteProductId: Long
+    ) : Payload<BaseNetworkError>()
+
+    class FetchProductsPayload(
         var site: SiteModel,
         var remoteProductId: Long
     ) : Payload<BaseNetworkError>()
@@ -77,6 +83,20 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             product: WCProductModel,
             site: SiteModel
         ) : this(product, site) {
+            this.error = error
+        }
+    }
+
+    class RemoteProductListPayload(
+        val site: SiteModel,
+        val products: List<WCProductModel> = emptyList(),
+        var loadedMore: Boolean = false,
+        var canLoadMore: Boolean = false
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            site: SiteModel
+        ) : this(site) {
             this.error = error
         }
     }
