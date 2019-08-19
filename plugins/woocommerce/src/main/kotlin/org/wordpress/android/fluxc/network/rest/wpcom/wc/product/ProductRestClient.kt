@@ -80,7 +80,7 @@ class ProductRestClient(
      *
      * Dispatches a [WCProductAction.FETCHED_PRODUCTS] action with the resulting list of products.
      */
-    fun fetchProducts(site: SiteModel, offset: Int) {
+    fun fetchProducts(site: SiteModel, offset: Int = 0) {
         val url = WOOCOMMERCE.products.pathV3
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
         val params = mapOf(

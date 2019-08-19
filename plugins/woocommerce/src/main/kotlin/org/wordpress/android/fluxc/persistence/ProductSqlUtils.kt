@@ -70,6 +70,15 @@ object ProductSqlUtils {
                 .exists()
     }
 
+    fun getProductsForSite(site: SiteModel): List<WCProductModel> {
+        return WellSql.select(WCProductModel::class.java)
+                .where()
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .endWhere()
+                .orderBy(WCProductModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
+                .asModel
+    }
+
     fun deleteProductsForSite(site: SiteModel): Int {
         return WellSql.delete(WCProductModel::class.java)
                 .where().beginGroup()
