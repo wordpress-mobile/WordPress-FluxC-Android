@@ -35,6 +35,14 @@ object ProductSqlUtils {
         }
     }
 
+    fun insertOrUpdateProducts(products: List<WCProductModel>): Int {
+        var rowsAffected = 0
+        products.forEach {
+            rowsAffected += insertOrUpdateProduct(it)
+        }
+        return rowsAffected
+    }
+
     fun getProductByRemoteId(site: SiteModel, remoteProductId: Long): WCProductModel? {
         return WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()

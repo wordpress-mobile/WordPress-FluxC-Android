@@ -35,7 +35,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     class FetchProductsPayload(
         var site: SiteModel,
-        var remoteProductId: Long
+        var offset: Int
     ) : Payload<BaseNetworkError>()
 
     class FetchProductVariationsPayload(
@@ -198,6 +198,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             // remote actions
             WCProductAction.FETCH_SINGLE_PRODUCT ->
                 fetchSingleProduct(action.payload as FetchSingleProductPayload)
+            WCProductAction.FETCH_PRODUCTS ->
+                fetchProducts(action.payload as FetchProductsPayload)
             WCProductAction.FETCH_PRODUCT_VARIATIONS ->
                 fetchProductVariations(action.payload as FetchProductVariationsPayload)
             WCProductAction.FETCH_PRODUCT_REVIEWS ->
@@ -210,6 +212,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             // remote responses
             WCProductAction.FETCHED_SINGLE_PRODUCT ->
                 handleFetchSingleProductCompleted(action.payload as RemoteProductPayload)
+            WCProductAction.FETCHED_PRODUCTS ->
+                handleFetchProductsCompleted(action.payload as RemoteProductListPayload)
             WCProductAction.FETCHED_PRODUCT_VARIATIONS ->
                 handleFetchProductVariationsCompleted(action.payload as RemoteProductVariationsPayload)
             WCProductAction.FETCHED_PRODUCT_REVIEWS ->
@@ -225,6 +229,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     private fun fetchSingleProduct(payload: FetchSingleProductPayload) {
         with(payload) { wcProductRestClient.fetchSingleProduct(site, remoteProductId) }
+    }
+
+    private fun fetchProducts(payload: FetchProductsPayload) {
+        with(payload) { wcProductRestClient.fetchProducts(site, offset)}
     }
 
     private fun fetchProductVariations(payload: FetchProductVariationsPayload) {
@@ -254,6 +262,20 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         }
 
         onProductChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT
+        emitChange(onProductChanged)
+    }
+
+    private fun handleFetchProductsCompleted(payload: RemoteProductListPayload) {
+        val onProductChanged: OnProductChanged
+
+        if (payload.isError) {
+            onProductChanged = OnProductChanged(0).also { it.error = payload.error }
+        } else {
+            val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)
+            onProductChanged = OnProductChanged(rowsAffected)
+        }
+
+        onProductChanged.causeOfChange = WCProductAction.FETCH_PRODUCTS
         emitChange(onProductChanged)
     }
 
