@@ -76,6 +76,23 @@ class ProductSqlUtilsTest {
     }
 
     @Test
+    fun testInsertOrUpdateProducts() {
+        val site = SiteModel().apply { id = 2 }
+        val products = ArrayList<WCProductModel>().apply {
+            this.add(ProductTestUtils.generateSampleProduct(40, siteId = site.id))
+            this.add(ProductTestUtils.generateSampleProduct(41, siteId = site.id))
+            this.add(ProductTestUtils.generateSampleProduct(42, siteId = site.id))
+        }
+
+        // Delete all products for this site, then test inserting the above products
+        ProductSqlUtils.deleteProductsForSite(site)
+        val insertedProductCount = ProductSqlUtils.insertOrUpdateProducts(products)
+        assertEquals(3, insertedProductCount)
+        val storedProductsCount = ProductSqlUtils.getProductCountForSite(site)
+        assertEquals(3, storedProductsCount)
+    }
+
+    @Test
     fun testGetProductsForSite() {
         // insert products for one site
         val site1 = SiteModel().apply { id = 2 }
