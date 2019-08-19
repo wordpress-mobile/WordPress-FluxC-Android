@@ -12,6 +12,7 @@ import kotlinx.android.synthetic.main.fragment_woo_products.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCTS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_REVIEWS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
@@ -26,6 +27,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
@@ -73,6 +75,13 @@ class WooProductsFragment : Fragment() {
                         dispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductAction(payload))
                     } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
                 }
+            }
+        }
+
+        fetch_products.setOnClickListener {
+            selectedSite?.let { site ->
+                val payload = FetchProductsPayload(site)
+                dispatcher.dispatch(WCProductActionBuilder.newFetchProductsAction(payload))
             }
         }
 
@@ -161,6 +170,9 @@ class WooProductsFragment : Fragment() {
                             prependToLog("Single product fetched successfully! ${it.name}")
                         } ?: prependToLog("WARNING: Fetched product not found in the local database!")
                     }
+                }
+                FETCH_PRODUCTS -> {
+                    prependToLog("Fetched ${event.rowsAffected} products")
                 }
                 FETCH_PRODUCT_VARIATIONS -> {
                     prependToLog("Fetched ${event.rowsAffected} product variations")

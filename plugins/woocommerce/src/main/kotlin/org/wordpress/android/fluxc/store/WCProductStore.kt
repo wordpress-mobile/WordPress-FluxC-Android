@@ -35,7 +35,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     class FetchProductsPayload(
         var site: SiteModel,
-        var offset: Int
+        var offset: Int = 0
     ) : Payload<BaseNetworkError>()
 
     class FetchProductVariationsPayload(
@@ -232,7 +232,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun fetchProducts(payload: FetchProductsPayload) {
-        with(payload) { wcProductRestClient.fetchProducts(site, offset)}
+        with(payload) { wcProductRestClient.fetchProducts(site, offset) }
     }
 
     private fun fetchProductVariations(payload: FetchProductVariationsPayload) {
