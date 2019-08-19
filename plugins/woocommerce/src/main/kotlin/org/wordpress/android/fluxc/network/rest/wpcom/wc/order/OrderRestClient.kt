@@ -38,10 +38,13 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePa
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import org.wordpress.android.fluxc.utils.DateUtils
+import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T
 import javax.inject.Singleton
 import kotlin.collections.MutableMap.MutableEntry
 
@@ -167,6 +170,7 @@ class OrderRestClient(
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
         val params = mapOf(
+                "per_page" to remoteOrderIds.size.toString(),
                 "include" to remoteOrderIds.map { it.value }.joinToString()
         )
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
@@ -592,9 +596,21 @@ class OrderRestClient(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, JsonElement::class.java,
                 { response: JsonElement? ->
                     response?.let {
-                        val providers = jsonResponseToShipmentProviderList(site, it)
-                        val payload = FetchOrderShipmentProvidersResponsePayload(site, order, providers)
-                        dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentProvidersAction(payload))
+                        try {
+                            val providers = jsonResponseToShipmentProviderList(site, it)
+                            val payload = FetchOrderShipmentProvidersResponsePayload(site, order, providers)
+                            dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentProvidersAction(payload))
+                        } catch (e: IllegalStateException) {
+                            // we have at least once instance of the response being invalid json so we catch the exception
+                            // https://github.com/wordpress-mobile/WordPress-FluxC-Android/issues/1331
+                            AppLog.e(T.UTILS, "IllegalStateException parsing shipment provider list, response = $it")
+                            val payload = FetchOrderShipmentProvidersResponsePayload(
+                                    OrderError(INVALID_RESPONSE, it.toString()),
+                                    site,
+                                    order
+                            )
+                            dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentProvidersAction(payload))
+                        }
                     }
                 },
                 WPComErrorListener { networkError ->
@@ -627,6 +643,7 @@ class OrderRestClient(
             shippingTotal = response.shipping_total ?: ""
             paymentMethod = response.payment_method ?: ""
             paymentMethodTitle = response.payment_method_title ?: ""
+            datePaid = response.date_paid_gmt?.let { "${it}Z" } ?: ""
             pricesIncludeTax = response.prices_include_tax
 
             customerNote = response.customer_note ?: ""
@@ -721,19 +738,21 @@ class OrderRestClient(
         response: JsonElement
     ): List<WCOrderShipmentProviderModel> {
         val providers = mutableListOf<WCOrderShipmentProviderModel>()
-        response.asJsonObject.entrySet().forEach { countryEntry: MutableEntry<String, JsonElement> ->
-            countryEntry.value.asJsonObject.entrySet().map { carrierEntry ->
-                carrierEntry?.let { carrier ->
-                    val provider = WCOrderShipmentProviderModel().apply {
-                        localSiteId = site.id
-                        this.country = countryEntry.key
-                        this.carrierName = carrier.key
-                        this.carrierLink = carrier.value.asString
+        response.asJsonObject.entrySet()
+                .forEach { countryEntry: MutableEntry<String, JsonElement> ->
+                    countryEntry.value.asJsonObject.entrySet().map { carrierEntry ->
+                        carrierEntry?.let { carrier ->
+                            val provider = WCOrderShipmentProviderModel().apply {
+                                localSiteId = site.id
+                                this.country = countryEntry.key
+                                this.carrierName = carrier.key
+                                this.carrierLink = carrier.value.asString
+                            }
+                            providers.add(provider)
+                        }
                     }
-                    providers.add(provider)
                 }
-            }
-        }
+
         return providers
     }
 }

@@ -8,7 +8,11 @@
 /products/<id>/
 /products/<id>/variations/
 
+/products/reviews/
+/products/reviews/<id>/
+
 /reports/orders/totals/
+/reports/revenue/stats/
 
 /settings/general/
 /settings/products/

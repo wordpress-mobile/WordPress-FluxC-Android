@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
@@ -24,6 +25,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
+import org.wordpress.android.fluxc.store.StatsStore
 import org.wordpress.android.fluxc.store.stats.insights.AllTimeInsightsStore
 import org.wordpress.android.fluxc.store.stats.insights.CommentsStore
 import org.wordpress.android.fluxc.store.stats.insights.FollowersStore
@@ -54,6 +56,7 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     @Inject lateinit var todayStore: TodayInsightsStore
     @Inject lateinit var postingActivityStore: PostingActivityStore
     @Inject internal lateinit var siteStore: SiteStore
+    @Inject internal lateinit var statsStore: StatsStore
     @Inject internal lateinit var accountStore: AccountStore
 
     private var nextEvent: TestEvents? = null
@@ -77,7 +80,7 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
     }
 
     @Test
-    fun testFetchAllTimeInsights() {
+    fun testFetchAllTimeInsightsAndDeletesAfterwards() {
         val site = authenticate()
 
         val fetchedInsights = runBlocking { allTimeStore.fetchAllTimeInsights(site) }
@@ -88,10 +91,14 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val insightsFromDb = allTimeStore.getAllTimeInsights(site)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
+
+        statsStore.deleteAllData()
+
+        assertNull(allTimeStore.getAllTimeInsights(site))
     }
 
     @Test
-    fun testFetchLatestPostInsights() {
+    fun testFetchLatestPostInsightsAndDeletesBySiteAfter() {
         val site = authenticate()
 
         val fetchedInsights = runBlocking { latestPostStore.fetchLatestPostInsights(site) }
@@ -102,6 +109,10 @@ class ReleaseStack_InsightsTestJetpack : ReleaseStack_Base() {
         val insightsFromDb = latestPostStore.getLatestPostInsights(site)
 
         assertEquals(fetchedInsights.model, insightsFromDb)
+
+        statsStore.deleteSiteData(site)
+
+        assertNull(latestPostStore.getLatestPostInsights(site))
     }
 
     @Test

@@ -1,0 +1,133 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="org.wordpress.android.fluxc.example.ui.stats.WooRevenueStatsFragment">
+
+    <LinearLayout
+        android:id="@+id/buttonContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:text="Perform actions on a selected site:"
+            android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/stats_select_site"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Select Site"/>
+
+            <TextView
+                android:id="@+id/stats_selected_site"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dp"
+                android:paddingStart="10dp"
+                android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
+                android:textColor="@android:color/holo_blue_bright"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/fetch_revenue_stats_availability"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Revenue Stats availability"/>
+
+        <Button
+            android:id="@+id/fetch_current_day_revenue_stats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch current day Revenue Stats"/>
+
+        <Button
+            android:id="@+id/fetch_current_day_revenue_stats_forced"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch current day Revenue Stats (Forced)"/>
+
+        <Button
+            android:id="@+id/fetch_current_week_revenue_stats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch current week Revenue Stats"/>
+
+        <Button
+            android:id="@+id/fetch_current_week_revenue_stats_forced"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch current week Revenue Stats (Forced)"/>
+
+        <Button
+            android:id="@+id/fetch_current_month_revenue_stats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch current month Revenue Stats"/>
+
+        <Button
+            android:id="@+id/fetch_current_month_revenue_stats_forced"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch current month Revenue Stats (Forced)"/>
+
+        <Button
+            android:id="@+id/fetch_current_year_revenue_stats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch current year Revenue Stats"/>
+
+        <Button
+            android:id="@+id/fetch_current_year_revenue_stats_forced"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch current year Revenue Stats (Forced)"/>
+
+        <Button
+            android:id="@+id/fetch_current_day_visitor_stats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch current day Visitor Stats"/>
+
+        <Button
+            android:id="@+id/fetch_current_week_visitor_stats_forced"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch current week Visitor Stats (Forced)"/>
+
+        <Button
+            android:id="@+id/fetch_current_month_visitor_stats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch current month Visitor Stats" />
+
+        <Button
+            android:id="@+id/fetch_current_year_visitor_stats_forced"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch current year Visitor Stats (Forced)"/>
+    </LinearLayout>
+</ScrollView>

@@ -88,6 +88,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals("0.00", totalTax)
             assertEquals("4.00", shippingTotal)
             assertEquals("stripe", paymentMethod)
+            assertEquals("2018-04-11T18:58:54Z", datePaid)
             assertEquals("Credit Card (Stripe)", paymentMethodTitle)
             assertFalse(pricesIncludeTax)
             assertEquals(2, getLineItemList().size)
@@ -553,6 +554,26 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             assertEquals("Australia Post", carrierName)
             assertEquals("http://auspost.com.au/track/track.html?id=%1\$s", carrierLink)
         }
+    }
+
+    /**
+     * We had a user with a site that returned simply "failed" without an error when requesting the
+     * shipment provider list, resulting in a crash when parsing the response. This tests that
+     * situation and ensures we dispatch an error
+     */
+    @Test
+    fun testOrderShipmentProvidersFetchFailed() {
+        val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
+        interceptor.respondWith("wc-order-shipment-providers-failed.json")
+        orderRestClient.fetchOrderShipmentProviders(siteModel, orderModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        assertEquals(WCOrderAction.FETCHED_ORDER_SHIPMENT_PROVIDERS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchOrderShipmentProvidersResponsePayload
+        assertNotNull(payload.error)
+        assertEquals(payload.error.type, OrderErrorType.INVALID_RESPONSE)
     }
 
     @Suppress("unused")
