@@ -715,7 +715,7 @@ public class PostStore extends Store {
                 boolean isPostChanged =
                         !post.getLastModified().equals(item.lastModified)
                         || !post.getStatus().equals(item.status)
-                        || item.autoSaveRevisionId > 0;
+                        || post.getAutoSaveRevisionId() != item.autoSaveRevisionId;
 
                 /*
                  * This is a hacky workaround. When `/autosave` endpoint is invoked on a draft, the server
