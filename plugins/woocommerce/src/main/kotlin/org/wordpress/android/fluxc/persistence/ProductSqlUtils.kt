@@ -35,6 +35,14 @@ object ProductSqlUtils {
         }
     }
 
+    fun insertOrUpdateProducts(products: List<WCProductModel>): Int {
+        var rowsAffected = 0
+        products.forEach {
+            rowsAffected += insertOrUpdateProduct(it)
+        }
+        return rowsAffected
+    }
+
     fun getProductByRemoteId(site: SiteModel, remoteProductId: Long): WCProductModel? {
         return WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
@@ -60,6 +68,15 @@ object ProductSqlUtils {
                 .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
                 .endGroup().endWhere()
                 .exists()
+    }
+
+    fun getProductsForSite(site: SiteModel): List<WCProductModel> {
+        return WellSql.select(WCProductModel::class.java)
+                .where()
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .endWhere()
+                .orderBy(WCProductModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
+                .asModel
     }
 
     fun deleteProductsForSite(site: SiteModel): Int {

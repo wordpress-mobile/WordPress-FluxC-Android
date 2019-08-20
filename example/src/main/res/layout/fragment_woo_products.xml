@@ -47,6 +47,13 @@
             android:text="Fetch Single Product"/>
 
         <Button
+            android:id="@+id/fetch_products"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Products"/>
+
+        <Button
             android:id="@+id/fetch_product_variations"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

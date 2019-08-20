@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
@@ -28,6 +29,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     internal enum class TestEvent {
         NONE,
         FETCHED_SINGLE_PRODUCT,
+        FETCHED_PRODUCTS,
         FETCHED_PRODUCT_VARIATIONS,
         FETCHED_PRODUCT_REVIEWS,
         FETCHED_SINGLE_PRODUCT_REVIEW,
@@ -80,6 +82,26 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         // Verify there's only one product for this site
         assertEquals(ProductSqlUtils.getProductCountForSite(sSite), 1)
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchProducts() {
+        // remove all products for this site and verify there are none
+        ProductSqlUtils.deleteProductsForSite(sSite)
+        assertEquals(ProductSqlUtils.getProductCountForSite(sSite), 0)
+
+        nextEvent = TestEvent.FETCHED_PRODUCTS
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder
+                        .newFetchProductsAction(FetchProductsPayload(sSite))
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify results
+        val fetchedProducts = productStore.getProductsForSite(sSite)
+        assertNotEquals(fetchedProducts.size, 0)
     }
 
     @Throws(InterruptedException::class)
@@ -177,6 +199,10 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         when (event.causeOfChange) {
             WCProductAction.FETCH_SINGLE_PRODUCT -> {
                 assertEquals(TestEvent.FETCHED_SINGLE_PRODUCT, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            WCProductAction.FETCH_PRODUCTS -> {
+                assertEquals(TestEvent.FETCHED_PRODUCTS, nextEvent)
                 mCountDownLatch.countDown()
             }
             WCProductAction.FETCH_PRODUCT_VARIATIONS -> {
