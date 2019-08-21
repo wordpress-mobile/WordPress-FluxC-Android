@@ -9,6 +9,13 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.NAME_ASC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.NAME_DESC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.STOCK_ASC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.STOCK_DESC
 
 object ProductSqlUtils {
     fun insertOrUpdateProduct(product: WCProductModel): Int {
@@ -70,12 +77,21 @@ object ProductSqlUtils {
                 .exists()
     }
 
-    fun getProductsForSite(site: SiteModel): List<WCProductModel> {
+    fun getProductsForSite(site: SiteModel, sortType: ProductSorting): List<WCProductModel> {
+        val sortOrder = when (sortType) {
+            NAME_ASC, STOCK_ASC, DATE_ASC -> SelectQuery.ORDER_ASCENDING
+            else -> SelectQuery.ORDER_DESCENDING
+        }
+        val sortField = when (sortType) {
+            NAME_ASC, NAME_DESC -> WCProductModelTable.NAME
+            STOCK_ASC, STOCK_DESC -> WCProductModelTable.STOCK_QUANTITY
+            DATE_ASC, DATE_DESC -> WCProductModelTable.DATE_CREATED
+        }
         return WellSql.select(WCProductModel::class.java)
                 .where()
                 .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
                 .endWhere()
-                .orderBy(WCProductModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
+                .orderBy(sortField, sortOrder)
                 .asModel
     }
 

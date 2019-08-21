@@ -74,6 +74,15 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     class ProductError(val type: ProductErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
 
+    enum class ProductSorting {
+        NAME_ASC,
+        NAME_DESC,
+        STOCK_ASC,
+        STOCK_DESC,
+        DATE_ASC,
+        DATE_DESC
+    }
+
     class RemoteProductPayload(
         val product: WCProductModel,
         val site: SiteModel
@@ -172,7 +181,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     fun getProductsByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): List<WCProductModel> =
             ProductSqlUtils.getProductsByRemoteIds(site, remoteProductIds)
 
-    fun getProductsForSite(site: SiteModel) = ProductSqlUtils.getProductsForSite(site)
+    fun getProductsForSite(site: SiteModel, sortType: ProductSorting) = ProductSqlUtils.getProductsForSite(site, sortType)
 
     fun deleteProductsForSite(site: SiteModel) = ProductSqlUtils.deleteProductsForSite(site)
 
