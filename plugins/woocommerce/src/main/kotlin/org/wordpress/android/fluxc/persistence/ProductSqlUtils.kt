@@ -82,7 +82,7 @@ object ProductSqlUtils {
     ): List<WCProductModel> {
         val sortOrder = when (sortType) {
             TITLE_ASC, DATE_ASC -> SelectQuery.ORDER_ASCENDING
-            else -> SelectQuery.ORDER_DESCENDING
+            TITLE_DESC, DATE_DESC -> SelectQuery.ORDER_DESCENDING
         }
         val sortField = when (sortType) {
             TITLE_ASC, TITLE_DESC -> WCProductModelTable.NAME
