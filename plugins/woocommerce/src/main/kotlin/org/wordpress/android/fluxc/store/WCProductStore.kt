@@ -181,7 +181,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     fun getProductsByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): List<WCProductModel> =
             ProductSqlUtils.getProductsByRemoteIds(site, remoteProductIds)
 
-    fun getProductsForSite(site: SiteModel, sortType: ProductSorting) = ProductSqlUtils.getProductsForSite(site, sortType)
+    fun getProductsForSite(site: SiteModel, sortType: ProductSorting = DEFAULT_PRODUCT_SORTING) =
+            ProductSqlUtils.getProductsForSite(site, sortType)
 
     fun deleteProductsForSite(site: SiteModel) = ProductSqlUtils.deleteProductsForSite(site)
 
