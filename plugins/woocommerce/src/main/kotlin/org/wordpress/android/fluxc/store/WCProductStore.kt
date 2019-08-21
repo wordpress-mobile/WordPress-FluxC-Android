@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Locale
@@ -26,6 +27,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     companion object {
         const val NUM_PRODUCTS_PER_FETCH = 25
         const val NUM_REVIEWS_PER_FETCH = 25
+        val DEFAULT_PRODUCT_SORTING = DATE_DESC
     }
 
     class FetchSingleProductPayload(
@@ -75,10 +77,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     class ProductError(val type: ProductErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
 
     enum class ProductSorting {
-        NAME_ASC,
-        NAME_DESC,
-        STOCK_ASC,
-        STOCK_DESC,
+        TITLE_ASC,
+        TITLE_DESC,
         DATE_ASC,
         DATE_DESC
     }

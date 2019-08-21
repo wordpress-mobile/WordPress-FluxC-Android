@@ -9,13 +9,12 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
-import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.NAME_ASC
-import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.NAME_DESC
-import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.STOCK_ASC
-import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.STOCK_DESC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
 
 object ProductSqlUtils {
     fun insertOrUpdateProduct(product: WCProductModel): Int {
@@ -77,14 +76,16 @@ object ProductSqlUtils {
                 .exists()
     }
 
-    fun getProductsForSite(site: SiteModel, sortType: ProductSorting): List<WCProductModel> {
+    fun getProductsForSite(
+        site: SiteModel,
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
+    ): List<WCProductModel> {
         val sortOrder = when (sortType) {
-            NAME_ASC, STOCK_ASC, DATE_ASC -> SelectQuery.ORDER_ASCENDING
+            TITLE_ASC, DATE_ASC -> SelectQuery.ORDER_ASCENDING
             else -> SelectQuery.ORDER_DESCENDING
         }
         val sortField = when (sortType) {
-            NAME_ASC, NAME_DESC -> WCProductModelTable.NAME
-            STOCK_ASC, STOCK_DESC -> WCProductModelTable.STOCK_QUANTITY
+            TITLE_ASC, TITLE_DESC -> WCProductModelTable.NAME
             DATE_ASC, DATE_DESC -> WCProductModelTable.DATE_CREATED
         }
         return WellSql.select(WCProductModel::class.java)
