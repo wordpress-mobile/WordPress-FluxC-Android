@@ -20,9 +20,15 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductError
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
@@ -80,11 +86,27 @@ class ProductRestClient(
      *
      * Dispatches a [WCProductAction.FETCHED_PRODUCTS] action with the resulting list of products.
      */
-    fun fetchProducts(site: SiteModel, offset: Int = 0) {
+    fun fetchProducts(
+        site: SiteModel,
+        offset: Int = 0,
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
+    ) {
+        // orderby (string) Options: date, id, include, title and slug. Default is date.
+        val orderBy = when (sortType) {
+            TITLE_ASC, TITLE_DESC -> "title"
+            DATE_ASC, DATE_DESC -> "date"
+        }
+        val sortOrder = when (sortType) {
+            TITLE_ASC, DATE_ASC -> "asc"
+            TITLE_DESC, DATE_DESC -> "desc"
+        }
+
         val url = WOOCOMMERCE.products.pathV3
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
         val params = mapOf(
                 "per_page" to WCProductStore.NUM_PRODUCTS_PER_FETCH.toString(),
+                "orderBy" to orderBy,
+                "order" to sortOrder,
                 "offset" to offset.toString())
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductApiResponse>? ->

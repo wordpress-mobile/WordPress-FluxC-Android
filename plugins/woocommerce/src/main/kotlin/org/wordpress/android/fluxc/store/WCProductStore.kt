@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Locale
@@ -26,6 +27,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     companion object {
         const val NUM_PRODUCTS_PER_FETCH = 25
         const val NUM_REVIEWS_PER_FETCH = 25
+        val DEFAULT_PRODUCT_SORTING = DATE_DESC
     }
 
     class FetchSingleProductPayload(
@@ -35,7 +37,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     class FetchProductsPayload(
         var site: SiteModel,
-        var offset: Int = 0
+        var offset: Int = 0,
+        var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING
     ) : Payload<BaseNetworkError>()
 
     class FetchProductVariationsPayload(
@@ -73,6 +76,13 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     class ProductError(val type: ProductErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
+
+    enum class ProductSorting {
+        TITLE_ASC,
+        TITLE_DESC,
+        DATE_ASC,
+        DATE_DESC
+    }
 
     class RemoteProductPayload(
         val product: WCProductModel,
@@ -172,7 +182,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     fun getProductsByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): List<WCProductModel> =
             ProductSqlUtils.getProductsByRemoteIds(site, remoteProductIds)
 
-    fun getProductsForSite(site: SiteModel) = ProductSqlUtils.getProductsForSite(site)
+    fun getProductsForSite(site: SiteModel, sortType: ProductSorting = DEFAULT_PRODUCT_SORTING) =
+            ProductSqlUtils.getProductsForSite(site, sortType)
 
     fun deleteProductsForSite(site: SiteModel) = ProductSqlUtils.deleteProductsForSite(site)
 
@@ -234,7 +245,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun fetchProducts(payload: FetchProductsPayload) {
-        with(payload) { wcProductRestClient.fetchProducts(site, offset) }
+        with(payload) { wcProductRestClient.fetchProducts(site, offset, sorting) }
     }
 
     private fun fetchProductVariations(payload: FetchProductVariationsPayload) {
