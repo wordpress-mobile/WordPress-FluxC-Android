@@ -47,7 +47,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         remoteProductId = BuildConfig.TEST_WC_PRODUCT_WITH_VARIATIONS_ID.toLong()
         dateCreated = "2018-04-20T15:45:14Z"
     }
-    private val remoteProductWithReviewsId = BuildConfig.TEST_WC_PRODUCT_WITH_REVIEWS_ID.toLong()
     private val remoteProductReviewId = BuildConfig.TEST_WC_PRODUCT_REVIEW_ID.toLong()
 
     private var lastEvent: OnProductChanged? = null
@@ -163,7 +162,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         // Verify results
         val review = productStore
-                .getProductReviewByRemoteId(sSite.id, remoteProductWithReviewsId, remoteProductReviewId)
+                .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
         assertNotNull(review)
 
         // Update review status
@@ -181,7 +180,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
             // Verify results
             val savedReview = productStore
-                    .getProductReviewByRemoteId(sSite.id, remoteProductWithReviewsId, remoteProductReviewId)
+                    .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
             assertNotNull(savedReview)
             assertEquals(newStatus, savedReview!!.status)
         }
