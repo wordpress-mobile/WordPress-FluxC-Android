@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
@@ -136,6 +137,45 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         val payloadParent = lastAction!!.payload as RemoteProductPayload
         assertTrue(payloadParent.product.manageStock)
+    }
+
+    @Test
+    fun testFetchProductsSuccess() {
+        interceptor.respondWith("wc-fetch-products-response-success.json")
+        productRestClient.fetchProducts(siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_PRODUCTS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductListPayload
+        with(payload) {
+            assertNull(error)
+            assertNotNull(products)
+            assertEquals(products.size, 3)
+        }
+
+        // delete all products then insert these into the store
+        ProductSqlUtils.deleteProductsForSite(siteModel)
+        assertEquals(ProductSqlUtils.insertOrUpdateProducts(payload.products), 3)
+
+        // now verify the db stored the products correctly
+        val productsFromDb = ProductSqlUtils.getProductsForSite(siteModel)
+        assertNotNull(productsFromDb)
+        assertEquals(productsFromDb.size, 3)
+    }
+
+    @Test
+    fun testFetchProductsError() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        productRestClient.fetchProducts(siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_PRODUCTS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductListPayload
+        assertNotNull(payload.error)
     }
 
     @Test
