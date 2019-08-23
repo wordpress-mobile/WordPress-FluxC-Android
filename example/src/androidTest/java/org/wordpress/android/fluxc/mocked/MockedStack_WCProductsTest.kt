@@ -77,6 +77,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getAttributes().size, 2)
             assertEquals(product.getAttributes().get(0).options.size, 3)
             assertEquals(product.getAttributes().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
+            assertEquals(product.getNumVariations(), 2)
         }
 
         // save the product to the db
@@ -94,6 +95,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getAttributes().size, 2)
             assertEquals(product.getAttributes().get(0).options.size, 3)
             assertEquals(product.getAttributes().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
+            assertEquals(product.getNumVariations(), 2)
         }
     }
 
