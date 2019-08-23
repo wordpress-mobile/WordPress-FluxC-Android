@@ -26,6 +26,7 @@ import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
 import org.wordpress.android.fluxc.store.stats.time.AuthorsStore
 import org.wordpress.android.fluxc.store.stats.time.ClicksStore
 import org.wordpress.android.fluxc.store.stats.time.CountryViewsStore
+import org.wordpress.android.fluxc.store.stats.time.FileDownloadsStore
 import org.wordpress.android.fluxc.store.stats.time.PostAndPageViewsStore
 import org.wordpress.android.fluxc.store.stats.time.ReferrersStore
 import org.wordpress.android.fluxc.store.stats.time.SearchTermsStore
@@ -55,6 +56,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
     @Inject lateinit var authorsStore: AuthorsStore
     @Inject lateinit var searchTermsStore: SearchTermsStore
     @Inject lateinit var videoPlaysStore: VideoPlaysStore
+    @Inject lateinit var fileDownloadsStore: FileDownloadsStore
     @Inject internal lateinit var siteStore: SiteStore
     @Inject internal lateinit var accountStore: AccountStore
 
@@ -260,6 +262,30 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             assertNotNull(fetchedInsights.model)
 
             val insightsFromDb = videoPlaysStore.getVideoPlays(site, granularity, LIMIT_MODE, SELECTED_DATE)
+
+            assertEquals(fetchedInsights.model, insightsFromDb)
+        }
+    }
+
+    @Test
+    fun testFetchFileDownloads() {
+        val site = authenticate()
+
+        for (granularity in StatsGranularity.values()) {
+            val fetchedInsights = runBlocking {
+                fileDownloadsStore.fetchFileDownloads(
+                        site,
+                        granularity,
+                        LIMIT_MODE,
+                        SELECTED_DATE,
+                        true
+                )
+            }
+
+            assertNotNull(fetchedInsights)
+            assertNotNull(fetchedInsights.model)
+
+            val insightsFromDb = fileDownloadsStore.getFileDownloads(site, granularity, LIMIT_MODE, SELECTED_DATE)
 
             assertEquals(fetchedInsights.model, insightsFromDb)
         }
