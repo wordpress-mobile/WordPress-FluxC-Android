@@ -56,11 +56,13 @@ object RefundsSqlUtils {
 
     fun selectRefund(
         site: SiteModel,
+        orderId: Long,
         refundId: Long
     ): RefundResponse? {
         val model = WellSql.select(RefundsBuilder::class.java)
                 .where()
                 .equals(RefundsTable.LOCAL_SITE_ID, site.id)
+                .equals(RefundsTable.ORDER_ID, orderId)
                 .equals(RefundsTable.REFUND_ID, refundId)
                 .endWhere()
                 .asModel

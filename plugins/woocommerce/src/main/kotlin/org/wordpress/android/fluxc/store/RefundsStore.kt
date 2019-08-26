@@ -34,8 +34,8 @@ class RefundsStore @Inject constructor(
                 }
             }
 
-    fun getRefund(site: SiteModel, refundId: Long): RefundModel? {
-        return RefundsSqlUtils.selectRefund(site, refundId)?.let { refundsMapper.map(it) }
+    fun getRefund(site: SiteModel, orderId: Long, refundId: Long): RefundModel? {
+        return RefundsSqlUtils.selectRefund(site, orderId, refundId)?.let { refundsMapper.map(it) }
     }
 
     suspend fun fetchRefund(site: SiteModel, orderId: Long, refundId: Long) =
