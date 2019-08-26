@@ -51,7 +51,7 @@ class RefundsStore @Inject constructor(
             }
         }
 
-    fun getAllRefund(site: SiteModel, orderId: Long): List<RefundModel> {
+    fun getAllRefunds(site: SiteModel, orderId: Long): List<RefundModel> {
         return RefundsSqlUtils.selectAllRefunds(site, orderId).map { refundsMapper.map(it) }
     }
 
