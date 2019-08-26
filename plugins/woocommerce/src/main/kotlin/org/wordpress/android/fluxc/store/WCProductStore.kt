@@ -285,7 +285,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             onProductChanged = OnProductChanged(0).also { it.error = payload.error }
         } else {
             val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)
-            onProductChanged = OnProductChanged(rowsAffected)
+            onProductChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
         }
 
         onProductChanged.causeOfChange = WCProductAction.FETCH_PRODUCTS
