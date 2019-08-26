@@ -78,7 +78,7 @@ class RefundsStore @Inject constructor(
         }
     }
 
-    data class RefundResult<T>(val model: T? = null, val cached: Boolean = false) : Store.OnChanged<RefundsError>() {
+    data class RefundResult<T>(val model: T? = null) : Store.OnChanged<RefundsError>() {
         constructor(error: RefundsError) : this() {
             this.error = error
         }
