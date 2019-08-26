@@ -261,6 +261,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         INVALID_ID,
         ORDER_STATUS_NOT_FOUND,
         PLUGIN_NOT_ACTIVE,
+        INVALID_RESPONSE,
         GENERIC_ERROR;
 
         companion object {

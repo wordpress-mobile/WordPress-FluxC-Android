@@ -7,6 +7,10 @@
 
 /products/<id>/
 /products/<id>/variations/
+/products/
+
+/products/reviews/
+/products/reviews/<id>/
 
 /reports/orders/totals/
 /reports/revenue/stats/
