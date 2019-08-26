@@ -212,6 +212,15 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return fileList
     }
 
+    fun getNumVariations(): Int {
+        try {
+            return Gson().fromJson<JsonElement>(variations, JsonElement::class.java).asJsonArray.size()
+        } catch (e: JsonParseException) {
+            AppLog.e(T.API, e)
+            return 0
+        }
+    }
+
     fun getCategories() = getTriplets(categories)
 
     fun getCommaSeparatedCategoryNames() = getCommaSeparatedTripletNames(getCategories())

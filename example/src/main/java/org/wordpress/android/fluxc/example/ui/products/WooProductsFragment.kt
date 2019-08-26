@@ -167,7 +167,12 @@ class WooProductsFragment : Fragment() {
                         pendingFetchSingleProductRemoteId = null
                         val product = wcProductStore.getProductByRemoteId(site, remoteId)
                         product?.let {
-                            prependToLog("Single product fetched successfully! ${it.name}")
+                            val numVariations = it.getNumVariations()
+                            if (numVariations > 0) {
+                                prependToLog("Single product with $numVariations variations fetched! ${it.name}")
+                            } else {
+                                prependToLog("Single product fetched! ${it.name}")
+                            }
                         } ?: prependToLog("WARNING: Fetched product not found in the local database!")
                     }
                 }
