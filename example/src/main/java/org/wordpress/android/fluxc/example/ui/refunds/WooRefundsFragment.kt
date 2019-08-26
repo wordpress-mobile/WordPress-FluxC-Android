@@ -17,7 +17,7 @@ import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.model.refunds.RefundModel
 import org.wordpress.android.fluxc.store.RefundsStore
-import org.wordpress.android.fluxc.store.RefundsStore.RefundResult
+import org.wordpress.android.fluxc.store.RefundsStore.RefundsResult
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
@@ -93,7 +93,7 @@ class WooRefundsFragment : Fragment() {
         }
     }
 
-    private suspend fun printRefund(response: RefundResult<RefundModel>) {
+    private suspend fun printRefund(response: RefundsResult<RefundModel>) {
         withContext(Dispatchers.Main) {
             response.error?.original?.let {
                 prependToLog(it.name)

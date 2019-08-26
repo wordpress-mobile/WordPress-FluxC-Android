@@ -28,9 +28,9 @@ class RefundsStore @Inject constructor(
             withContext(coroutineContext) {
                 val response = restClient.createRefund(site, orderId, amount.toString())
                 return@withContext when {
-                    response.isError -> RefundResult(response.error)
-                    response.result != null -> RefundResult(refundsMapper.map(response.result))
-                    else -> RefundResult(RefundsError(GENERIC_ERROR, UNKNOWN))
+                    response.isError -> RefundsResult(response.error)
+                    response.result != null -> RefundsResult(refundsMapper.map(response.result))
+                    else -> RefundsResult(RefundsError(GENERIC_ERROR, UNKNOWN))
                 }
             }
 
@@ -42,12 +42,12 @@ class RefundsStore @Inject constructor(
         withContext(coroutineContext) {
             val response = restClient.fetchRefund(site, orderId, refundId)
             return@withContext when {
-                response.isError -> RefundResult(response.error)
+                response.isError -> RefundsResult(response.error)
                 response.result != null -> {
                     RefundsSqlUtils.insert(site, orderId, response.result)
-                    RefundResult(refundsMapper.map(response.result))
+                    RefundsResult(refundsMapper.map(response.result))
                 }
-                else -> RefundResult(RefundsError(GENERIC_ERROR, UNKNOWN))
+                else -> RefundsResult(RefundsError(GENERIC_ERROR, UNKNOWN))
             }
         }
 
@@ -60,13 +60,13 @@ class RefundsStore @Inject constructor(
                 val response = restClient.fetchAllRefunds(site, orderId)
                 return@withContext when {
                     response.isError -> {
-                        RefundResult(response.error)
+                        RefundsResult(response.error)
                     }
                     response.result != null -> {
                         RefundsSqlUtils.insert(site, orderId, response.result.toList())
-                        RefundResult(response.result.map { refundsMapper.map(it) })
+                        RefundsResult(response.result.map { refundsMapper.map(it) })
                     }
-                    else -> RefundResult(RefundsError(GENERIC_ERROR, UNKNOWN))
+                    else -> RefundsResult(RefundsError(GENERIC_ERROR, UNKNOWN))
                 }
             }
 
@@ -78,7 +78,7 @@ class RefundsStore @Inject constructor(
         }
     }
 
-    data class RefundResult<T>(val model: T? = null) : Store.OnChanged<RefundsError>() {
+    data class RefundsResult<T>(val model: T? = null) : Store.OnChanged<RefundsError>() {
         constructor(error: RefundsError) : this() {
             this.error = error
         }
