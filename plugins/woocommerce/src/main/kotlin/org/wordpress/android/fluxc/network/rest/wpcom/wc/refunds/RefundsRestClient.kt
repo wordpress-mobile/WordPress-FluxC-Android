@@ -13,10 +13,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderCountApiResponse
 import org.wordpress.android.fluxc.store.RefundsStore.RefundsPayload
 import org.wordpress.android.fluxc.store.toRefundsError
-import java.util.Date
 import javax.inject.Singleton
 
 @Singleton

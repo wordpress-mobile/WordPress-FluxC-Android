@@ -72,7 +72,6 @@ class WooRefundsFragment : Fragment() {
             }
         }
 
-
         fetch_all_refunds.setOnClickListener {
             getFirstWCSite()?.let { site ->
                 GlobalScope.launch {
