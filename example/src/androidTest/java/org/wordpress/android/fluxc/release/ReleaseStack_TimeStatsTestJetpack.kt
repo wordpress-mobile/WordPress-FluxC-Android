@@ -267,30 +267,6 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
         }
     }
 
-    @Test
-    fun testFetchFileDownloads() {
-        val site = authenticate()
-
-        for (granularity in StatsGranularity.values()) {
-            val fetchedInsights = runBlocking {
-                fileDownloadsStore.fetchFileDownloads(
-                        site,
-                        granularity,
-                        LIMIT_MODE,
-                        SELECTED_DATE,
-                        true
-                )
-            }
-
-            assertNotNull(fetchedInsights)
-            assertNotNull(fetchedInsights.model)
-
-            val insightsFromDb = fileDownloadsStore.getFileDownloads(site, granularity, LIMIT_MODE, SELECTED_DATE)
-
-            assertEquals(fetchedInsights.model, insightsFromDb)
-        }
-    }
-
     private fun authenticate(): SiteModel {
         authenticateWPComAndFetchSites(
                 BuildConfig.TEST_WPCOM_USERNAME_SINGLE_JETPACK_ONLY,
