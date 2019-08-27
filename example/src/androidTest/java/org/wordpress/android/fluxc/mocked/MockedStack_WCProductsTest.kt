@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -38,6 +39,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     private var countDownLatch: CountDownLatch by notNull()
 
     private val remoteProductId = 1537L
+    private val searchQuery = "test"
 
     private val siteModel = SiteModel().apply {
         email = "test@example.org"
@@ -178,6 +180,34 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(WCProductAction.FETCHED_PRODUCTS, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteProductListPayload
         assertNotNull(payload.error)
+    }
+
+    @Test
+    fun testSearchProductsSuccess() {
+        interceptor.respondWith("wc-fetch-products-response-success.json")
+        productRestClient.searchProducts(siteModel, searchQuery)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.SEARCHED_PRODUCTS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteSearchProductsPayload
+        assertNull(payload.error)
+        assertEquals(payload.searchQuery, searchQuery)
+    }
+
+    @Test
+    fun testSearchOrdersError() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        productRestClient.searchProducts(siteModel, searchQuery)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.SEARCHED_PRODUCTS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteSearchProductsPayload
+        assertNotNull(payload.error)
+        assertEquals(payload.searchQuery, searchQuery)
     }
 
     @Test
