@@ -411,7 +411,7 @@ class ProductRestClient(
         return WCProductReviewModel().apply {
             remoteProductReviewId = response.id
             remoteProductId = response.product_id
-            dateCreated = response.date_created ?: ""
+            dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: ""
             status = response.status ?: ""
             reviewerName = response.reviewer ?: ""
             reviewerEmail = response.reviewer_email ?: ""
