@@ -25,8 +25,8 @@ import javax.inject.Singleton
 class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcProductRestClient: ProductRestClient) :
         Store(dispatcher) {
     companion object {
-        const val NUM_PRODUCTS_PER_FETCH = 25
         const val NUM_REVIEWS_PER_FETCH = 25
+        const val DEFAULT_PRODUCT_PAGE_SIZE = 25
         val DEFAULT_PRODUCT_SORTING = DATE_DESC
     }
 
@@ -37,6 +37,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     class FetchProductsPayload(
         var site: SiteModel,
+        var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         var offset: Int = 0,
         var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING
     ) : Payload<BaseNetworkError>()
@@ -244,7 +245,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun fetchProducts(payload: FetchProductsPayload) {
-        with(payload) { wcProductRestClient.fetchProducts(site, offset, sorting) }
+        with(payload) { wcProductRestClient.fetchProducts(site, pageSize, offset, sorting) }
     }
 
     private fun fetchProductVariations(payload: FetchProductVariationsPayload) {
@@ -284,7 +285,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             onProductChanged = OnProductChanged(0).also { it.error = payload.error }
         } else {
             val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)
-            onProductChanged = OnProductChanged(rowsAffected)
+            onProductChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
         }
 
         onProductChanged.causeOfChange = WCProductAction.FETCH_PRODUCTS
