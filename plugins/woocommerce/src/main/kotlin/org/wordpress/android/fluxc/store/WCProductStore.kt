@@ -313,7 +313,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             onProductReviewChanged = OnProductChanged(0).also { it.error = payload.error }
         } else {
             val rowsAffected = ProductSqlUtils.insertOrUpdateProductReviews(payload.reviews)
-            onProductReviewChanged = OnProductChanged(rowsAffected)
+            onProductReviewChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
         }
 
         onProductReviewChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_REVIEWS
