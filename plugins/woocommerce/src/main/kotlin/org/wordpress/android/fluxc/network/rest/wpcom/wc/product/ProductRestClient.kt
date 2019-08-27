@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductError
@@ -33,6 +34,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import javax.inject.Singleton
 
 @Singleton
@@ -85,9 +87,10 @@ class ProductRestClient(
      */
     fun fetchProducts(
         site: SiteModel,
-        pageSize: Int = WCProductStore.DEFAULT_PRODUCT_PAGE_SIZE,
+        pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
-        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        searchQuery: String = ""
     ) {
         // orderby (string) Options: date, id, include, title and slug. Default is date.
         val orderBy = when (sortType) {
@@ -105,7 +108,8 @@ class ProductRestClient(
                 "per_page" to pageSize.toString(),
                 "orderBy" to orderBy,
                 "order" to sortOrder,
-                "offset" to offset.toString())
+                "offset" to offset.toString(),
+                "search" to searchQuery)
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductApiResponse>? ->
                     val productModels = response?.map {
@@ -114,16 +118,47 @@ class ProductRestClient(
 
                     val loadedMore = offset > 0
                     val canLoadMore = productModels.size == pageSize
-                    val payload = RemoteProductListPayload(site, productModels, loadedMore, canLoadMore)
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
+                    if (searchQuery.isEmpty()) {
+                        val payload = RemoteProductListPayload(
+                                site,
+                                productModels,
+                                loadedMore,
+                                canLoadMore
+                        )
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
+                    } else {
+                        val payload = RemoteSearchProductsPayload(
+                                site,
+                                searchQuery,
+                                productModels,
+                                loadedMore,
+                                canLoadMore
+                        )
+                        dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
+                    }
                 },
                 WPComErrorListener { networkError ->
                     val productError = networkErrorToProductError(networkError)
-                    val payload = RemoteProductListPayload(productError, site)
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
+                    if (searchQuery.isEmpty()) {
+                        val payload = RemoteProductListPayload(productError, site)
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
+                    } else {
+                        val payload = RemoteSearchProductsPayload(productError, site, searchQuery)
+                        dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
+                    }
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
+    }
+
+    fun searchProducts(
+        site: SiteModel,
+        searchQuery: String,
+        pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
+        offset: Int = 0,
+        sorting: ProductSorting = DEFAULT_PRODUCT_SORTING
+    ) {
+        fetchProducts(site, pageSize, offset, sorting, searchQuery)
     }
 
     /**

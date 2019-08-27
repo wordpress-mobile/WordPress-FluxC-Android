@@ -42,6 +42,14 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING
     ) : Payload<BaseNetworkError>()
 
+    class SearchProductsPayload(
+        var site: SiteModel,
+        var searchQuery: String,
+        var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
+        var offset: Int = 0,
+        var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING
+    ) : Payload<BaseNetworkError>()
+
     class FetchProductVariationsPayload(
         var site: SiteModel,
         var remoteProductId: Long
@@ -112,6 +120,18 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         }
     }
 
+    class RemoteSearchProductsPayload(
+        var site: SiteModel,
+        var searchQuery: String,
+        var products: List<WCProductModel> = emptyList(),
+        var loadedMore: Boolean = false,
+        var canLoadMore: Boolean = false
+    ) : Payload<ProductError>() {
+        constructor(error: ProductError, site: SiteModel, query: String) : this(site, query) {
+            this.error = error
+        }
+    }
+
     class RemoteProductVariationsPayload(
         val site: SiteModel,
         val remoteProductId: Long,
@@ -157,6 +177,13 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     ) : OnChanged<ProductError>() {
         var causeOfChange: WCProductAction? = null
     }
+
+
+    class OnProductsSearched(
+        var searchQuery: String = "",
+        var searchResults: List<WCProductModel> = emptyList(),
+        var canLoadMore: Boolean = false
+    ) : OnChanged<ProductError>()
 
     /**
      * returns the corresponding product from the database as a [WCProductModel].
@@ -213,6 +240,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 fetchSingleProduct(action.payload as FetchSingleProductPayload)
             WCProductAction.FETCH_PRODUCTS ->
                 fetchProducts(action.payload as FetchProductsPayload)
+            WCProductAction.SEARCH_PRODUCTS ->
+                searchProducts(action.payload as SearchProductsPayload)
             WCProductAction.FETCH_PRODUCT_VARIATIONS ->
                 fetchProductVariations(action.payload as FetchProductVariationsPayload)
             WCProductAction.FETCH_PRODUCT_REVIEWS ->
@@ -227,6 +256,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 handleFetchSingleProductCompleted(action.payload as RemoteProductPayload)
             WCProductAction.FETCHED_PRODUCTS ->
                 handleFetchProductsCompleted(action.payload as RemoteProductListPayload)
+            WCProductAction.SEARCHED_PRODUCTS ->
+                handleSearchProductsCompleted(action.payload as RemoteSearchProductsPayload)
             WCProductAction.FETCHED_PRODUCT_VARIATIONS ->
                 handleFetchProductVariationsCompleted(action.payload as RemoteProductVariationsPayload)
             WCProductAction.FETCHED_PRODUCT_REVIEWS ->
@@ -246,6 +277,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     private fun fetchProducts(payload: FetchProductsPayload) {
         with(payload) { wcProductRestClient.fetchProducts(site, pageSize, offset, sorting) }
+    }
+
+    private fun searchProducts(payload: SearchProductsPayload) {
+        with(payload) { wcProductRestClient.searchProducts(site, searchQuery, pageSize, offset, sorting) }
     }
 
     private fun fetchProductVariations(payload: FetchProductVariationsPayload) {
@@ -290,6 +325,15 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
         onProductChanged.causeOfChange = WCProductAction.FETCH_PRODUCTS
         emitChange(onProductChanged)
+    }
+
+    private fun handleSearchProductsCompleted(payload: RemoteSearchProductsPayload) {
+        val onProductsSearched = if (payload.isError) {
+            OnProductsSearched(payload.searchQuery)
+        } else {
+            OnProductsSearched(payload.searchQuery, payload.products, payload.canLoadMore)
+        }
+        emitChange(onProductsSearched)
     }
 
     private fun handleFetchProductVariationsCompleted(payload: RemoteProductVariationsPayload) {
