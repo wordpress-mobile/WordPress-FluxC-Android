@@ -81,13 +81,11 @@ class ProductRestClient(
      * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of products for the given WooCommerce [SiteModel].
      *
-     * The number of products fetched is defined in [WCProductStore.NUM_PRODUCTS_PER_FETCH], and retrieving
-     * older products is done by passing an [offset].
-     *
      * Dispatches a [WCProductAction.FETCHED_PRODUCTS] action with the resulting list of products.
      */
     fun fetchProducts(
         site: SiteModel,
+        pageSize: Int = WCProductStore.DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
     ) {
@@ -104,7 +102,7 @@ class ProductRestClient(
         val url = WOOCOMMERCE.products.pathV3
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
         val params = mapOf(
-                "per_page" to WCProductStore.NUM_PRODUCTS_PER_FETCH.toString(),
+                "per_page" to pageSize.toString(),
                 "orderBy" to orderBy,
                 "order" to sortOrder,
                 "offset" to offset.toString())
@@ -115,8 +113,7 @@ class ProductRestClient(
                     }.orEmpty()
 
                     val loadedMore = offset > 0
-                    val canLoadMore = productModels.size == WCProductStore.NUM_PRODUCTS_PER_FETCH
-
+                    val canLoadMore = productModels.size == pageSize
                     val payload = RemoteProductListPayload(site, productModels, loadedMore, canLoadMore)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
                 },
