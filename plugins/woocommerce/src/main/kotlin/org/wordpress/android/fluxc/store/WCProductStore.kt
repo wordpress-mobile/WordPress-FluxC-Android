@@ -311,6 +311,12 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         if (payload.isError) {
             onProductReviewChanged = OnProductChanged(0).also { it.error = payload.error }
         } else {
+            // Clear existing product reviews if this is a fresh fetch (loadMore = false).
+            // This is the simplest way to keep our local reviews in sync with remote reviews
+            // in case of deletions.
+            if (!payload.loadedMore) {
+                ProductSqlUtils.deleteAllProductReviewsForSite(payload.site)
+            }
             val rowsAffected = ProductSqlUtils.insertOrUpdateProductReviews(payload.reviews)
             onProductReviewChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
         }
