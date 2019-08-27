@@ -90,7 +90,7 @@ class ProductRestClient(
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        searchQuery: String = ""
+        searchQuery: String? = null
     ) {
         // orderby (string) Options: date, id, include, title and slug. Default is date.
         val orderBy = when (sortType) {
@@ -109,7 +109,7 @@ class ProductRestClient(
                 "orderBy" to orderBy,
                 "order" to sortOrder,
                 "offset" to offset.toString(),
-                "search" to searchQuery)
+                "search" to (searchQuery ?: ""))
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductApiResponse>? ->
                     val productModels = response?.map {
@@ -118,7 +118,7 @@ class ProductRestClient(
 
                     val loadedMore = offset > 0
                     val canLoadMore = productModels.size == pageSize
-                    if (searchQuery.isEmpty()) {
+                    if (searchQuery == null) {
                         val payload = RemoteProductListPayload(
                                 site,
                                 productModels,
@@ -139,7 +139,7 @@ class ProductRestClient(
                 },
                 WPComErrorListener { networkError ->
                     val productError = networkErrorToProductError(networkError)
-                    if (searchQuery.isEmpty()) {
+                    if (searchQuery == null) {
                         val payload = RemoteProductListPayload(productError, site)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
                     } else {

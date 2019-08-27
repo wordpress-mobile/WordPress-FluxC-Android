@@ -178,7 +178,6 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var causeOfChange: WCProductAction? = null
     }
 
-
     class OnProductsSearched(
         var searchQuery: String = "",
         var searchResults: List<WCProductModel> = emptyList(),
