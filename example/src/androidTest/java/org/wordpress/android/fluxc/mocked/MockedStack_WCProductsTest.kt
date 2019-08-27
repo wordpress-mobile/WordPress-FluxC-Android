@@ -279,7 +279,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         payload.productReview?.let {
             with(it) {
                 assertEquals(5499, remoteProductReviewId)
-                assertEquals("2019-07-09T09:48:07", dateCreated)
+                assertEquals("2019-07-09T15:48:07Z", dateCreated)
                 assertEquals(18, remoteProductId)
                 assertEquals("approved", status)
                 assertEquals("Johnny", reviewerName)
@@ -323,7 +323,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         payload.productReview?.let {
             with(it) {
                 assertEquals(5499, remoteProductReviewId)
-                assertEquals("2019-07-09T09:48:07", dateCreated)
+                assertEquals("2019-07-09T15:48:07Z", dateCreated)
                 assertEquals(18, remoteProductId)
                 assertEquals("spam", status)
                 assertEquals("Johnny", reviewerName)

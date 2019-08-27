@@ -31,7 +31,7 @@ object ProductTestUtils {
                 localSiteId = siteId
                 remoteProductReviewId = it.id ?: 0L
                 remoteProductId = it.product_id ?: 0L
-                dateCreated = it.date_created_gmt ?: ""
+                dateCreated = it.date_created_gmt?.let { "${it}Z" } ?: ""
                 status = it.status ?: ""
                 reviewerName = it.reviewer ?: ""
                 reviewerEmail = it.reviewer_email ?: ""
