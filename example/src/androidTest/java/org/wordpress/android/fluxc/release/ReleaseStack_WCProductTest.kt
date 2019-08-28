@@ -51,7 +51,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     private val remoteProductReviewId = BuildConfig.TEST_WC_PRODUCT_REVIEW_ID.toLong()
 
     private var lastEvent: OnProductChanged? = null
-    private var lastReviewEvent:OnProductReviewChanged? = null
+    private var lastReviewEvent: OnProductReviewChanged? = null
 
     @Throws(Exception::class)
     override fun setUp() {
