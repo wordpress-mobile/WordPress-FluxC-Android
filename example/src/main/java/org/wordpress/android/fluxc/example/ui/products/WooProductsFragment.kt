@@ -31,6 +31,8 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductsSearched
+import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
@@ -82,6 +84,18 @@ class WooProductsFragment : Fragment() {
             selectedSite?.let { site ->
                 val payload = FetchProductsPayload(site)
                 dispatcher.dispatch(WCProductActionBuilder.newFetchProductsAction(payload))
+            }
+        }
+
+        search_products.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter a search query:"
+                ) { editText ->
+                    val payload = SearchProductsPayload(site, editText.text.toString())
+                    dispatcher.dispatch(WCProductActionBuilder.newSearchProductsAction(payload))
+                }
             }
         }
 
@@ -193,6 +207,16 @@ class WooProductsFragment : Fragment() {
                 }
                 else -> prependToLog("Product store was updated from a " + event.causeOfChange)
             }
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductsSearched(event: OnProductsSearched) {
+        if (event.isError) {
+            prependToLog("Error searching products - error: " + event.error.type)
+        } else {
+            prependToLog("Found ${event.searchResults.size} products matching ${event.searchQuery}")
         }
     }
 
