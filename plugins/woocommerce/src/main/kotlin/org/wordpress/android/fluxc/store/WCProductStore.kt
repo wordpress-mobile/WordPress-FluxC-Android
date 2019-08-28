@@ -50,6 +50,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     class FetchProductReviewsPayload(
         var site: SiteModel,
         var offset: Int = 0,
+        var reviewIds: List<Long>? = null,
         var productIds: List<Long>? = null,
         var filterByStatus: List<String>? = null
     ) : Payload<BaseNetworkError>()
@@ -253,7 +254,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun fetchProductReviews(payload: FetchProductReviewsPayload) {
-        with(payload) { wcProductRestClient.fetchProductReviews(site, offset, productIds, filterByStatus) }
+        with(payload) { wcProductRestClient.fetchProductReviews(site, offset, reviewIds, productIds, filterByStatus) }
     }
 
     private fun fetchSingleProductReview(payload: FetchSingleProductReviewPayload) {

@@ -182,12 +182,14 @@ class ProductRestClient(
      *
      * @param [site] The site to fetch product reviews for
      * @param [offset] The offset to use for the fetch
-     * @param [productIds] Optional. A list of remote product ID's to fetch product reviews for.
+     * @param [reviewIds] Optional. A list of remote product review ID's to fetch
+     * @param [productIds] Optional. A list of remote product ID's to fetch product reviews for
      * @param [filterByStatus] Optional. A list of product review statuses to fetch
      */
     fun fetchProductReviews(
         site: SiteModel,
         offset: Int,
+        reviewIds: List<Long>? = null,
         productIds: List<Long>? = null,
         filterByStatus: List<String>? = null
     ) {
@@ -199,6 +201,9 @@ class ProductRestClient(
                 "per_page" to WCProductStore.NUM_REVIEWS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter)
+        reviewIds?.let { ids ->
+            params.put("include", ids.map { it }.joinToString())
+        }
         productIds?.let { ids ->
             params.put("product", ids.map { it }.joinToString())
         }
