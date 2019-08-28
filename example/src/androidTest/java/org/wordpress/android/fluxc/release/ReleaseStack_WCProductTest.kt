@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductReviewChanged
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -50,6 +51,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     private val remoteProductReviewId = BuildConfig.TEST_WC_PRODUCT_REVIEW_ID.toLong()
 
     private var lastEvent: OnProductChanged? = null
+    private var lastReviewEvent:OnProductReviewChanged? = null
 
     @Throws(Exception::class)
     override fun setUp() {
@@ -167,7 +169,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         // Verify results
         val fetchReviewsId = productStore.getProductReviewsForSite(sSite)
-        assertEquals(3, fetchReviewsId.size)
+        assertEquals(idsToFetch.size, fetchReviewsId.size)
 
         /*
          * TEST 3: Fetch product reviews for a list of product
@@ -257,6 +259,20 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
                 assertEquals(TestEvent.FETCHED_PRODUCT_VARIATIONS, nextEvent)
                 mCountDownLatch.countDown()
             }
+            else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductReviewChanged(event: OnProductReviewChanged) {
+        event.error?.let {
+            throw AssertionError("OnProductReviewChanged has unexpected error: " + it.type)
+        }
+
+        lastReviewEvent = event
+
+        when (event.causeOfChange) {
             WCProductAction.FETCH_SINGLE_PRODUCT_REVIEW -> {
                 assertEquals(TestEvent.FETCHED_SINGLE_PRODUCT_REVIEW, nextEvent)
                 mCountDownLatch.countDown()
