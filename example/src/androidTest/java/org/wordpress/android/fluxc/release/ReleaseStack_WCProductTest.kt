@@ -131,6 +131,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchProductReviews() {
+        /*
+         * TEST 1: Fetch product reviews for site
+         */
         // Remove all product reviews from the database
         productStore.deleteAllProductReviews()
         assertEquals(0, ProductSqlUtils.getProductReviewsForSite(sSite).size)
@@ -142,8 +145,54 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
-        val fetchedReviews = productStore.getProductReviewsForSite(sSite)
-        assertTrue(fetchedReviews.isNotEmpty())
+        val fetchedReviewsAll = productStore.getProductReviewsForSite(sSite)
+        assertTrue(fetchedReviewsAll.isNotEmpty())
+
+        /*
+         * TEST 2: Fetch product reviews matching a list of review ID's
+         */
+        // Store a couple of the IDs from the previous test
+        val idsToFetch = fetchedReviewsAll.take(3).map { it.remoteProductReviewId }
+
+        // Remove all product reviews from the database
+        productStore.deleteAllProductReviews()
+        assertEquals(0, ProductSqlUtils.getProductReviewsForSite(sSite).size)
+
+        nextEvent = TestEvent.FETCHED_PRODUCT_REVIEWS
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newFetchProductReviewsAction(
+                        FetchProductReviewsPayload(sSite, reviewIds = idsToFetch, offset = 0)))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify results
+        val fetchReviewsId = productStore.getProductReviewsForSite(sSite)
+        assertEquals(3, fetchReviewsId.size)
+
+        /*
+         * TEST 3: Fetch product reviews for a list of product
+         */
+        // Store a couple of the IDs from the previous test
+        val productIdsToFetch = fetchedReviewsAll.take(3).map { it.remoteProductId }
+
+        // Check to see how many reviews currently exist for these product IDs before deleting
+        // from the database
+        val reviewsByProduct = productIdsToFetch.map { productStore.getProductReviewsForProductAndSiteId(sSite.id, it) }
+
+        // Remove all product reviews from the database
+        productStore.deleteAllProductReviews()
+        assertEquals(0, ProductSqlUtils.getProductReviewsForSite(sSite).size)
+
+        nextEvent = TestEvent.FETCHED_PRODUCT_REVIEWS
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newFetchProductReviewsAction(
+                        FetchProductReviewsPayload(sSite, productIds = productIdsToFetch, offset = 0)))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify results
+        val fetchedReviewsForProduct = productStore.getProductReviewsForSite(sSite)
+        assertEquals(reviewsByProduct.size, fetchedReviewsForProduct.size)
     }
 
     @Throws(InterruptedException::class)
