@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
 import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductError
@@ -33,6 +34,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import javax.inject.Singleton
 
 @Singleton
@@ -81,15 +83,14 @@ class ProductRestClient(
      * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of products for the given WooCommerce [SiteModel].
      *
-     * The number of products fetched is defined in [WCProductStore.NUM_PRODUCTS_PER_FETCH], and retrieving
-     * older products is done by passing an [offset].
-     *
      * Dispatches a [WCProductAction.FETCHED_PRODUCTS] action with the resulting list of products.
      */
     fun fetchProducts(
         site: SiteModel,
+        pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        searchQuery: String? = null,
         remoteProductIds: List<Long>? = null
     ) {
         // orderby (string) Options: date, id, include, title and slug. Default is date.
@@ -105,10 +106,11 @@ class ProductRestClient(
         val url = WOOCOMMERCE.products.pathV3
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
         val params = mutableMapOf(
-                "per_page" to WCProductStore.NUM_PRODUCTS_PER_FETCH.toString(),
+                "per_page" to pageSize.toString(),
                 "orderBy" to orderBy,
                 "order" to sortOrder,
-                "offset" to offset.toString())
+                "offset" to offset.toString(),
+                "search" to (searchQuery ?: ""))
         remoteProductIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
         }
@@ -120,18 +122,48 @@ class ProductRestClient(
                     }.orEmpty()
 
                     val loadedMore = offset > 0
-                    val canLoadMore = productModels.size == WCProductStore.NUM_PRODUCTS_PER_FETCH
-
-                    val payload = RemoteProductListPayload(site, productModels, loadedMore, canLoadMore)
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
+                    val canLoadMore = productModels.size == pageSize
+                    if (searchQuery == null) {
+                        val payload = RemoteProductListPayload(
+                                site,
+                                productModels,
+                                loadedMore,
+                                canLoadMore
+                        )
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
+                    } else {
+                        val payload = RemoteSearchProductsPayload(
+                                site,
+                                searchQuery,
+                                productModels,
+                                loadedMore,
+                                canLoadMore
+                        )
+                        dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
+                    }
                 },
                 WPComErrorListener { networkError ->
                     val productError = networkErrorToProductError(networkError)
-                    val payload = RemoteProductListPayload(productError, site)
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
+                    if (searchQuery == null) {
+                        val payload = RemoteProductListPayload(productError, site)
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
+                    } else {
+                        val payload = RemoteSearchProductsPayload(productError, site, searchQuery)
+                        dispatcher.dispatch(WCProductActionBuilder.newSearchedProductsAction(payload))
+                    }
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
+    }
+
+    fun searchProducts(
+        site: SiteModel,
+        searchQuery: String,
+        pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
+        offset: Int = 0,
+        sorting: ProductSorting = DEFAULT_PRODUCT_SORTING
+    ) {
+        fetchProducts(site, pageSize, offset, sorting, searchQuery)
     }
 
     /**
