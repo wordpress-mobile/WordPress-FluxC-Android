@@ -89,7 +89,8 @@ class ProductRestClient(
     fun fetchProducts(
         site: SiteModel,
         offset: Int = 0,
-        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        remoteProductIds: List<Long>? = null
     ) {
         // orderby (string) Options: date, id, include, title and slug. Default is date.
         val orderBy = when (sortType) {
@@ -103,11 +104,15 @@ class ProductRestClient(
 
         val url = WOOCOMMERCE.products.pathV3
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
-        val params = mapOf(
+        val params = mutableMapOf(
                 "per_page" to WCProductStore.NUM_PRODUCTS_PER_FETCH.toString(),
                 "orderBy" to orderBy,
                 "order" to sortOrder,
                 "offset" to offset.toString())
+        remoteProductIds?.let { ids ->
+            params.put("include", ids.map { it }.joinToString())
+        }
+
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductApiResponse>? ->
                     val productModels = response?.map {
