@@ -39,7 +39,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var site: SiteModel,
         var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         var offset: Int = 0,
-        var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING
+        var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        var remoteProductIds: List<Long>? = null
     ) : Payload<BaseNetworkError>()
 
     class SearchProductsPayload(
@@ -58,6 +59,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     class FetchProductReviewsPayload(
         var site: SiteModel,
         var offset: Int = 0,
+        var reviewIds: List<Long>? = null,
         var productIds: List<Long>? = null,
         var filterByStatus: List<String>? = null
     ) : Payload<BaseNetworkError>()
@@ -184,6 +186,13 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var canLoadMore: Boolean = false
     ) : OnChanged<ProductError>()
 
+    class OnProductReviewChanged(
+        var rowsAffected: Int,
+        var canLoadMore: Boolean = false
+    ) : OnChanged<ProductError>() {
+        var causeOfChange: WCProductAction? = null
+    }
+
     /**
      * returns the corresponding product from the database as a [WCProductModel].
      */
@@ -275,7 +284,9 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun fetchProducts(payload: FetchProductsPayload) {
-        with(payload) { wcProductRestClient.fetchProducts(site, pageSize, offset, sorting) }
+        with(payload) {
+            wcProductRestClient.fetchProducts(site, pageSize, offset, sorting, remoteProductIds = remoteProductIds)
+        }
     }
 
     private fun searchProducts(payload: SearchProductsPayload) {
@@ -287,7 +298,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun fetchProductReviews(payload: FetchProductReviewsPayload) {
-        with(payload) { wcProductRestClient.fetchProductReviews(site, offset, productIds, filterByStatus) }
+        with(payload) { wcProductRestClient.fetchProductReviews(site, offset, reviewIds, productIds, filterByStatus) }
     }
 
     private fun fetchSingleProductReview(payload: FetchSingleProductReviewPayload) {
@@ -350,10 +361,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun handleFetchProductReviews(payload: FetchProductReviewsResponsePayload) {
-        val onProductReviewChanged: OnProductChanged
+        val onProductReviewChanged: OnProductReviewChanged
 
         if (payload.isError) {
-            onProductReviewChanged = OnProductChanged(0).also { it.error = payload.error }
+            onProductReviewChanged = OnProductReviewChanged(0).also { it.error = payload.error }
         } else {
             // Clear existing product reviews if this is a fresh fetch (loadMore = false).
             // This is the simplest way to keep our local reviews in sync with remote reviews
@@ -362,7 +373,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 ProductSqlUtils.deleteAllProductReviewsForSite(payload.site)
             }
             val rowsAffected = ProductSqlUtils.insertOrUpdateProductReviews(payload.reviews)
-            onProductReviewChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
+            onProductReviewChanged = OnProductReviewChanged(rowsAffected, canLoadMore = payload.canLoadMore)
         }
 
         onProductReviewChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_REVIEWS
@@ -370,15 +381,15 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun handleFetchSingleProductReview(payload: RemoteProductReviewPayload) {
-        val onProductReviewChanged: OnProductChanged
+        val onProductReviewChanged: OnProductReviewChanged
 
         if (payload.isError) {
-            onProductReviewChanged = OnProductChanged(0).also { it.error = payload.error }
+            onProductReviewChanged = OnProductReviewChanged(0).also { it.error = payload.error }
         } else {
             val rowsAffected = payload.productReview?.let {
                 ProductSqlUtils.insertOrUpdateProductReview(it)
             } ?: 0
-            onProductReviewChanged = OnProductChanged(rowsAffected)
+            onProductReviewChanged = OnProductReviewChanged(rowsAffected)
         }
 
         onProductReviewChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT_REVIEW
@@ -386,15 +397,15 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun handleUpdateProductReviewStatus(payload: RemoteProductReviewPayload) {
-        val onProductReviewChanged: OnProductChanged
+        val onProductReviewChanged: OnProductReviewChanged
 
         if (payload.isError) {
-            onProductReviewChanged = OnProductChanged(0).also { it.error = payload.error }
+            onProductReviewChanged = OnProductReviewChanged(0).also { it.error = payload.error }
         } else {
             val rowsAffected = payload.productReview?.let {
                 ProductSqlUtils.insertOrUpdateProductReview(it)
             } ?: 0
-            onProductReviewChanged = OnProductChanged(rowsAffected)
+            onProductReviewChanged = OnProductReviewChanged(rowsAffected)
         }
 
         onProductReviewChanged.causeOfChange = WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS

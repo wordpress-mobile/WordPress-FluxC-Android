@@ -90,7 +90,8 @@ class ProductRestClient(
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        searchQuery: String? = null
+        searchQuery: String? = null,
+        remoteProductIds: List<Long>? = null
     ) {
         // orderby (string) Options: date, id, include, title and slug. Default is date.
         val orderBy = when (sortType) {
@@ -104,12 +105,16 @@ class ProductRestClient(
 
         val url = WOOCOMMERCE.products.pathV3
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
-        val params = mapOf(
+        val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
                 "orderBy" to orderBy,
                 "order" to sortOrder,
                 "offset" to offset.toString(),
                 "search" to (searchQuery ?: ""))
+        remoteProductIds?.let { ids ->
+            params.put("include", ids.map { it }.joinToString())
+        }
+
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductApiResponse>? ->
                     val productModels = response?.map {
@@ -209,12 +214,14 @@ class ProductRestClient(
      *
      * @param [site] The site to fetch product reviews for
      * @param [offset] The offset to use for the fetch
-     * @param [productIds] Optional. A list of remote product ID's to fetch product reviews for.
+     * @param [reviewIds] Optional. A list of remote product review ID's to fetch
+     * @param [productIds] Optional. A list of remote product ID's to fetch product reviews for
      * @param [filterByStatus] Optional. A list of product review statuses to fetch
      */
     fun fetchProductReviews(
         site: SiteModel,
         offset: Int,
+        reviewIds: List<Long>? = null,
         productIds: List<Long>? = null,
         filterByStatus: List<String>? = null
     ) {
@@ -226,6 +233,9 @@ class ProductRestClient(
                 "per_page" to WCProductStore.NUM_REVIEWS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter)
+        reviewIds?.let { ids ->
+            params.put("include", ids.map { it }.joinToString())
+        }
         productIds?.let { ids ->
             params.put("product", ids.map { it }.joinToString())
         }
