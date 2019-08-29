@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -38,6 +39,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     private var countDownLatch: CountDownLatch by notNull()
 
     private val remoteProductId = 1537L
+    private val searchQuery = "test"
 
     private val siteModel = SiteModel().apply {
         email = "test@example.org"
@@ -181,6 +183,34 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
+    fun testSearchProductsSuccess() {
+        interceptor.respondWith("wc-fetch-products-response-success.json")
+        productRestClient.searchProducts(siteModel, searchQuery)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.SEARCHED_PRODUCTS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteSearchProductsPayload
+        assertNull(payload.error)
+        assertEquals(payload.searchQuery, searchQuery)
+    }
+
+    @Test
+    fun testSearchOrdersError() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        productRestClient.searchProducts(siteModel, searchQuery)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.SEARCHED_PRODUCTS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteSearchProductsPayload
+        assertNotNull(payload.error)
+        assertEquals(payload.searchQuery, searchQuery)
+    }
+
+    @Test
     fun testFetchProductVariationsSuccess() {
         interceptor.respondWith("wc-fetch-product-variations-response-success.json")
         productRestClient.fetchProductVariations(siteModel, remoteProductId)
@@ -279,7 +309,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         payload.productReview?.let {
             with(it) {
                 assertEquals(5499, remoteProductReviewId)
-                assertEquals("2019-07-09T09:48:07", dateCreated)
+                assertEquals("2019-07-09T15:48:07Z", dateCreated)
                 assertEquals(18, remoteProductId)
                 assertEquals("approved", status)
                 assertEquals("Johnny", reviewerName)
@@ -323,7 +353,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         payload.productReview?.let {
             with(it) {
                 assertEquals(5499, remoteProductReviewId)
-                assertEquals("2019-07-09T09:48:07", dateCreated)
+                assertEquals("2019-07-09T15:48:07Z", dateCreated)
                 assertEquals(18, remoteProductId)
                 assertEquals("spam", status)
                 assertEquals("Johnny", reviewerName)

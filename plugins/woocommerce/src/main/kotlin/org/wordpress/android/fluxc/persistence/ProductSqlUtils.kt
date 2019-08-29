@@ -218,6 +218,7 @@ object ProductSqlUtils {
                 .where()
                 .equals(WCProductReviewModelTable.LOCAL_SITE_ID, site.id)
                 .endWhere()
+                .orderBy(WCProductReviewModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
                 .asModel
     }
 
@@ -230,6 +231,7 @@ object ProductSqlUtils {
                 .equals(WCProductReviewModelTable.REMOTE_PRODUCT_ID, remoteProductId)
                 .equals(WCProductReviewModelTable.LOCAL_SITE_ID, localSiteId)
                 .endGroup().endWhere()
+                .orderBy(WCProductReviewModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
                 .asModel
     }
 

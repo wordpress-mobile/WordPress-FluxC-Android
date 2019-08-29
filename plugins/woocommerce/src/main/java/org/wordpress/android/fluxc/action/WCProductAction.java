@@ -13,6 +13,8 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload;
 
 @ActionEnum
@@ -22,6 +24,8 @@ public enum WCProductAction implements IAction {
     FETCH_SINGLE_PRODUCT,
     @Action(payloadType = FetchProductsPayload.class)
     FETCH_PRODUCTS,
+    @Action(payloadType = SearchProductsPayload.class)
+    SEARCH_PRODUCTS,
     @Action(payloadType = FetchProductVariationsPayload.class)
     FETCH_PRODUCT_VARIATIONS,
     @Action(payloadType = FetchProductReviewsPayload.class)
@@ -36,6 +40,8 @@ public enum WCProductAction implements IAction {
     FETCHED_SINGLE_PRODUCT,
     @Action(payloadType = RemoteProductListPayload.class)
     FETCHED_PRODUCTS,
+    @Action(payloadType = RemoteSearchProductsPayload.class)
+    SEARCHED_PRODUCTS,
     @Action(payloadType = RemoteProductVariationsPayload.class)
     FETCHED_PRODUCT_VARIATIONS,
     @Action(payloadType = FetchProductReviewsResponsePayload.class)
