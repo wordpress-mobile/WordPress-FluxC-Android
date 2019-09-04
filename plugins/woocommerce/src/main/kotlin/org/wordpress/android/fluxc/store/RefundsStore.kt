@@ -24,9 +24,14 @@ class RefundsStore @Inject constructor(
     private val coroutineContext: CoroutineContext,
     private val refundsMapper: RefundsMapper
 ) {
-    suspend fun createRefund(site: SiteModel, orderId: Long, amount: BigDecimal) =
+    suspend fun createRefund(
+        site: SiteModel,
+        orderId: Long,
+        amount: BigDecimal,
+        reason: String = "",
+        autoRefund: Boolean = false) =
             withContext(coroutineContext) {
-                val response = restClient.createRefund(site, orderId, amount.toString())
+                val response = restClient.createRefund(site, orderId, amount.toString(), reason, autoRefund)
                 return@withContext when {
                     response.isError -> RefundsResult(response.error)
                     response.result != null -> RefundsResult(refundsMapper.map(response.result))

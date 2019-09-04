@@ -31,8 +31,8 @@ constructor(
         site: SiteModel,
         orderId: Long,
         amount: String,
-        reason: String = "",
-        automaticRefund: Boolean = false,
+        reason: String,
+        automaticRefund: Boolean,
         partialRefundLineItems: List<LineItem> = emptyList()
     ): RefundsPayload<RefundResponse> {
         val url = WOOCOMMERCE.orders.id(orderId).refunds.pathV3
