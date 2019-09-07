@@ -662,17 +662,16 @@ class WCStatsStore @Inject constructor(
         granularity: StatsGranularity,
         startDate: String?
     ): String {
-        val date = if (startDate.isNullOrEmpty()) {
+        return if (startDate.isNullOrEmpty()) {
             when (granularity) {
-                StatsGranularity.DAYS -> DateUtils.getStartOfCurrentDay()
-                StatsGranularity.WEEKS -> DateUtils.getFirstDayOfCurrentWeek()
-                StatsGranularity.MONTHS -> DateUtils.getFirstDayOfCurrentMonth()
-                StatsGranularity.YEARS -> DateUtils.getFirstDayOfCurrentYear()
+                StatsGranularity.DAYS -> DateUtils.getStartDateForSite(site, DateUtils.getStartOfCurrentDay())
+                StatsGranularity.WEEKS -> DateUtils.getFirstDayOfCurrentWeekBySite(site)
+                StatsGranularity.MONTHS -> DateUtils.getFirstDayOfCurrentMonthBySite(site)
+                StatsGranularity.YEARS -> DateUtils.getFirstDayOfCurrentYearBySite(site)
             }
         } else {
-            startDate
+            DateUtils.getStartDateForSite(site, startDate)
         }
-        return DateUtils.getStartDateForSite(site, date)
     }
 
     /**
