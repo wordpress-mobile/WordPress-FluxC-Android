@@ -42,7 +42,8 @@ class RefundsStore @Inject constructor(
         orderId: Long,
         amount: BigDecimal,
         reason: String = "",
-        autoRefund: Boolean = false) =
+        autoRefund: Boolean = false
+    ) =
             withContext(coroutineContext) {
                 val response = restClient.createRefund(site, orderId, amount.toString(), reason, autoRefund)
                 return@withContext when {
