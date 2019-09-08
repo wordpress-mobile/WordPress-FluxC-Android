@@ -7,10 +7,23 @@ import org.wordpress.android.fluxc.model.refunds.RefundModel
 import org.wordpress.android.fluxc.model.refunds.RefundsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.AUTHORIZATION_REQUIRED
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.CENSORED
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.HTTP_AUTH_ERROR
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.INVALID_RESPONSE
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.INVALID_SSL_CERTIFICATE
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NOT_AUTHENTICATED
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NOT_FOUND
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NO_CONNECTION
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.PARSE_ERROR
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.SERVER_ERROR
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.TIMEOUT
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundsRestClient
 import org.wordpress.android.fluxc.persistence.RefundsSqlUtils
 import org.wordpress.android.fluxc.store.RefundsStore.RefundsError
+import org.wordpress.android.fluxc.store.RefundsStore.RefundsErrorType
 import org.wordpress.android.fluxc.store.Store.OnChangedError
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -96,29 +109,30 @@ class RefundsStore @Inject constructor(
     ) : OnChangedError
 
     enum class RefundsErrorType {
-        INVALID_PARAM,
+        TIMEOUT,
+        API_ERROR,
         INVALID_ID,
-        ORDER_STATUS_NOT_FOUND,
-        PLUGIN_NOT_ACTIVE,
-        GENERIC_ERROR
+        GENERIC_ERROR,
+        INVALID_RESPONSE,
+        AUTHORIZATION_REQUIRED
     }
 }
 
 fun WPComGsonNetworkError.toRefundsError(): RefundsError {
     val type = when (type) {
-        GenericErrorType.TIMEOUT,
-        GenericErrorType.NO_CONNECTION,
-        GenericErrorType.INVALID_SSL_CERTIFICATE,
-        GenericErrorType.NETWORK_ERROR,
-        GenericErrorType.PARSE_ERROR,
-        GenericErrorType.NOT_FOUND,
-        GenericErrorType.CENSORED,
-        GenericErrorType.INVALID_RESPONSE,
-        GenericErrorType.HTTP_AUTH_ERROR,
-        GenericErrorType.AUTHORIZATION_REQUIRED,
-        GenericErrorType.NOT_AUTHENTICATED,
-        GenericErrorType.UNKNOWN,
-        GenericErrorType.SERVER_ERROR,
+        TIMEOUT -> RefundsErrorType.TIMEOUT
+        NO_CONNECTION,
+        SERVER_ERROR,
+        INVALID_SSL_CERTIFICATE,
+        NETWORK_ERROR -> RefundsErrorType.API_ERROR
+        PARSE_ERROR,
+        CENSORED,
+        INVALID_RESPONSE -> RefundsErrorType.INVALID_RESPONSE
+        HTTP_AUTH_ERROR,
+        AUTHORIZATION_REQUIRED,
+        NOT_AUTHENTICATED -> RefundsErrorType.AUTHORIZATION_REQUIRED
+        NOT_FOUND -> RefundsErrorType.INVALID_ID
+        UNKNOWN,
         null -> GENERIC_ERROR
     }
     return RefundsError(type, this.type, message)
