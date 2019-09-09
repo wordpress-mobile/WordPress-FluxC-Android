@@ -33,7 +33,7 @@ data class WCProductReviewModel(@PrimaryKey @Column private var id: Int = 0) : I
     @Column var remoteProductId = 0L
 
     /**
-     * The date the review was created, in the site's timezone
+     * The date the review was created, in UTC, ISO8601 formatted
      */
     @Column var dateCreated = ""
 

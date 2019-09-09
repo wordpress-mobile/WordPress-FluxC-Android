@@ -715,6 +715,7 @@ class OrderRestClient(
             localSiteId = site.id
             statusKey = response.slug ?: ""
             label = response.name ?: ""
+            statusCount = response.total
         }
     }
 
