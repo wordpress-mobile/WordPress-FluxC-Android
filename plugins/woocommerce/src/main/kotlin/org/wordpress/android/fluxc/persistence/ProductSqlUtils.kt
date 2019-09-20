@@ -200,7 +200,10 @@ object ProductSqlUtils {
     }
 
     fun deleteProductReview(productReview: WCProductReviewModel) =
-            WellSql.delete(WCProductReviewModel::class.java).whereId(productReview)
+            WellSql.delete(WCProductReviewModel::class.java)
+                    .where()
+                    .equals(WCProductReviewModelTable.REMOTE_PRODUCT_REVIEW_ID, productReview.remoteProductReviewId)
+                    .endWhere().execute()
 
     fun getProductReviewByRemoteId(
         localSiteId: Int,
