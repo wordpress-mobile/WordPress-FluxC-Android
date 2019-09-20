@@ -286,11 +286,7 @@ class ProductRestClient(
                 },
                 WPComErrorListener { networkError ->
                     val productReviewError = networkErrorToProductError(networkError)
-                    val payload = RemoteProductReviewPayload(
-                            error = productReviewError,
-                            site = site,
-                            productReview = WCProductReviewModel()
-                                    .apply { remoteProductReviewId = remoteReviewId })
+                    val payload = RemoteProductReviewPayload(error = productReviewError, site = site)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductReviewAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
@@ -299,16 +295,16 @@ class ProductRestClient(
 
     /**
      * Makes a PUT call to `/wc/v3/products/reviews/<id>` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
-     * updating the status for the given [productReview] to [newStatus].
+     * updating the status for the given product review to [newStatus].
      *
      * Dispatches a [WCProductAction.UPDATED_PRODUCT_REVIEW_STATUS]
      *
      * @param [site] The site to fetch product reviews for
-     * @param [productReview] The [WCProductReviewModel] to be updated
+     * @param [remoteReviewId] The remote ID of the product review to be updated
      * @param [newStatus] The new status to update the product review to
      */
-    fun updateProductReviewStatus(site: SiteModel, productReview: WCProductReviewModel, newStatus: String) {
-        val url = WOOCOMMERCE.products.reviews.id(productReview.remoteProductReviewId).pathV3
+    fun updateProductReviewStatus(site: SiteModel, remoteReviewId: Long, newStatus: String) {
+        val url = WOOCOMMERCE.products.reviews.id(remoteReviewId).pathV3
         val responseType = object : TypeToken<ProductReviewApiResponse>() {}.type
         val params = mapOf("status" to newStatus)
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, params, responseType,
@@ -323,7 +319,7 @@ class ProductRestClient(
                 },
                 WPComErrorListener { networkError ->
                     val productReviewError = networkErrorToProductError(networkError)
-                    val payload = RemoteProductReviewPayload(productReviewError, site, productReview)
+                    val payload = RemoteProductReviewPayload(productReviewError, site)
                     dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductReviewStatusAction(payload))
                 })
         add(request)

@@ -71,7 +71,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     class UpdateProductReviewStatusPayload(
         var site: SiteModel,
-        var productReview: WCProductReviewModel,
+        var remoteReviewId: Long,
         var newStatus: String
     ) : Payload<BaseNetworkError>()
 
@@ -154,9 +154,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     ) : Payload<ProductError>() {
         constructor(
             error: ProductError,
-            site: SiteModel,
-            productReview: WCProductReviewModel
-        ) : this(site, productReview) {
+            site: SiteModel
+        ) : this(site) {
             this.error = error
         }
     }
@@ -306,7 +305,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun updateProductReviewStatus(payload: UpdateProductReviewStatusPayload) {
-        with(payload) { wcProductRestClient.updateProductReviewStatus(site, productReview, newStatus) }
+        with(payload) { wcProductRestClient.updateProductReviewStatus(site, remoteReviewId, newStatus) }
     }
 
     private fun handleFetchSingleProductCompleted(payload: RemoteProductPayload) {
