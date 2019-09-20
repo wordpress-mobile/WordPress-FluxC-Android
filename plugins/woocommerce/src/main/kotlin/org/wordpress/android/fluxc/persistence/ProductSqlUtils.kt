@@ -199,6 +199,9 @@ object ProductSqlUtils {
         }
     }
 
+    fun deleteProductReview(productReview: WCProductReviewModel) =
+            WellSql.delete(WCProductReviewModel::class.java).whereId(productReview)
+
     fun getProductReviewByRemoteId(
         localSiteId: Int,
         remoteReviewId: Long

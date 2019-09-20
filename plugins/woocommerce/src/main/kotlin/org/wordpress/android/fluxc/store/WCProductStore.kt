@@ -401,8 +401,14 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         if (payload.isError) {
             onProductReviewChanged = OnProductReviewChanged(0).also { it.error = payload.error }
         } else {
-            val rowsAffected = payload.productReview?.let {
-                ProductSqlUtils.insertOrUpdateProductReview(it)
+            val rowsAffected = payload.productReview?.let { review ->
+                if (review.status == "spam" || review.status == "trash") {
+                    // Delete this review from the database
+                    ProductSqlUtils.deleteProductReview(review)
+                } else {
+                    // Insert or update in the database
+                    ProductSqlUtils.insertOrUpdateProductReview(review)
+                }
             } ?: 0
             onProductReviewChanged = OnProductReviewChanged(rowsAffected)
         }
