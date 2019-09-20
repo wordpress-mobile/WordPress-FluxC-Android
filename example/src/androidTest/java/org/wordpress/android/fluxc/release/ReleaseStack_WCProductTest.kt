@@ -226,7 +226,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             mCountDownLatch = CountDownLatch(1)
             mDispatcher.dispatch(
                     WCProductActionBuilder.newUpdateProductReviewStatusAction(
-                            UpdateProductReviewStatusPayload(sSite, review, newStatus)))
+                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)))
             assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
             // Verify results
