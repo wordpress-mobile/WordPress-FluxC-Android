@@ -5,6 +5,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
@@ -216,12 +217,58 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
                 .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
         assertNotNull(review)
 
-        // Update review status
+        // Update review status to spam - should get deleted from db
         review?.let {
-            val newStatus = when (it.status) {
-                "hold", "approved", "unapproved", "trash", "unspam", "untrash" -> "spam"
-                else -> "approved"
-            }
+            val newStatus = "spam"
+            nextEvent = TestEvent.UPDATED_PRODUCT_REVIEW_STATUS
+            mCountDownLatch = CountDownLatch(1)
+            mDispatcher.dispatch(
+                    WCProductActionBuilder.newUpdateProductReviewStatusAction(
+                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)))
+            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+            // Verify results - review should be deleted from db
+            val savedReview = productStore
+                    .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
+            assertNull(savedReview)
+        }
+
+        // Update review status to approved - should get added to db
+        review?.let {
+            val newStatus = "approved"
+            nextEvent = TestEvent.UPDATED_PRODUCT_REVIEW_STATUS
+            mCountDownLatch = CountDownLatch(1)
+            mDispatcher.dispatch(
+                    WCProductActionBuilder.newUpdateProductReviewStatusAction(
+                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)))
+            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+            // Verify results
+            val savedReview = productStore
+                    .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
+            assertNotNull(savedReview)
+            assertEquals(newStatus, savedReview!!.status)
+        }
+
+        // Update review status to trash - should get deleted from db
+        review?.let {
+            val newStatus = "trash"
+            nextEvent = TestEvent.UPDATED_PRODUCT_REVIEW_STATUS
+            mCountDownLatch = CountDownLatch(1)
+            mDispatcher.dispatch(
+                    WCProductActionBuilder.newUpdateProductReviewStatusAction(
+                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)))
+            assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+            // Verify results - review should be deleted from db
+            val savedReview = productStore
+                    .getProductReviewByRemoteId(sSite.id, remoteProductReviewId)
+            assertNull(savedReview)
+        }
+
+        // Update review status to hold - should get added to db
+        review?.let {
+            val newStatus = "hold"
             nextEvent = TestEvent.UPDATED_PRODUCT_REVIEW_STATUS
             mCountDownLatch = CountDownLatch(1)
             mDispatcher.dispatch(
