@@ -271,44 +271,44 @@ object DateUtils {
     fun getEndDateForSite(site: SiteModel) = getDateTimeForSite(site, DATE_TIME_FORMAT_END, null)
 
     fun getStartOfCurrentDay(): String {
-        val cal = Calendar.getInstance()
+        val cal = Calendar.getInstance(Locale.ROOT)
         return formatDate(DATE_FORMAT_DEFAULT, cal.time)
     }
 
     fun getFirstDayOfCurrentWeek(): String {
-        val cal = Calendar.getInstance()
+        val cal = Calendar.getInstance(Locale.ROOT)
         cal.set(Calendar.DAY_OF_WEEK, cal.getActualMinimum(Calendar.DAY_OF_WEEK))
         return formatDate(DATE_FORMAT_DEFAULT, cal.time)
     }
 
     fun getFirstDayOfCurrentMonth(): String {
-        val cal = Calendar.getInstance()
+        val cal = Calendar.getInstance(Locale.ROOT)
         cal.set(Calendar.DAY_OF_MONTH, cal.getActualMinimum(Calendar.DAY_OF_MONTH))
         return formatDate(DATE_FORMAT_DEFAULT, cal.time)
     }
 
     fun getFirstDayOfCurrentYear(): String {
-        val cal = Calendar.getInstance()
+        val cal = Calendar.getInstance(Locale.ROOT)
         cal.set(Calendar.DAY_OF_YEAR, cal.getActualMinimum(Calendar.DAY_OF_YEAR))
         return formatDate(DATE_FORMAT_DEFAULT, cal.time)
     }
 
     fun getFirstDayOfCurrentWeekBySite(site: SiteModel): String {
-        val cal = Calendar.getInstance()
+        val cal = Calendar.getInstance(Locale.ROOT)
         cal.time = getCurrentDateFromSite(site)
         cal.set(Calendar.DAY_OF_WEEK, cal.getActualMinimum(Calendar.DAY_OF_WEEK))
         return formatDate(DATE_TIME_FORMAT_START, cal.time)
     }
 
     fun getFirstDayOfCurrentMonthBySite(site: SiteModel): String {
-        val cal = Calendar.getInstance()
+        val cal = Calendar.getInstance(Locale.ROOT)
         cal.time = getCurrentDateFromSite(site)
         cal.set(Calendar.DAY_OF_MONTH, cal.getActualMinimum(Calendar.DAY_OF_MONTH))
         return formatDate(DATE_TIME_FORMAT_START, cal.time)
     }
 
     fun getFirstDayOfCurrentYearBySite(site: SiteModel): String {
-        val cal = Calendar.getInstance()
+        val cal = Calendar.getInstance(Locale.ROOT)
         cal.time = getCurrentDateFromSite(site)
         cal.set(Calendar.DAY_OF_YEAR, cal.getActualMinimum(Calendar.DAY_OF_YEAR))
         return formatDate(DATE_TIME_FORMAT_START, cal.time)
