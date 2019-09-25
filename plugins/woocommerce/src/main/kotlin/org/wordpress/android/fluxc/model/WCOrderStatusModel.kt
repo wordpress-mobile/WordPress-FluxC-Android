@@ -11,6 +11,7 @@ data class WCOrderStatusModel(@PrimaryKey @Column private var id: Int = 0) : Ide
     @Column var localSiteId = 0
     @Column var statusKey = ""
     @Column var label = ""
+    @Column var statusCount = 0
 
     override fun setId(id: Int) {
         this.id = id

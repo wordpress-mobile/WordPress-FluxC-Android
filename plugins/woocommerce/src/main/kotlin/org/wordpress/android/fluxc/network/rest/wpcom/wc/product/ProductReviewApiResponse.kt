@@ -6,7 +6,7 @@ import org.wordpress.android.fluxc.network.Response
 @Suppress("PropertyName")
 class ProductReviewApiResponse : Response {
     val id: Long = 0L
-    val date_created: String? = null
+    val date_created_gmt: String? = null
     val product_id: Long = 0L
     val status: String? = null
     val reviewer: String? = null

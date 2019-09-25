@@ -477,7 +477,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
 
         val orderStatusOptions = getFirstWCSite()?.let {
             wcOrderStore.getOrderStatusOptionsForSite(it)
-        }?.map { it.label }
+        }?.map { it.label to it.statusCount }?.toMap()
         prependToLog("Fetched order status options from the api: $orderStatusOptions " +
                 "- updated ${event.rowsAffected} in the db")
     }

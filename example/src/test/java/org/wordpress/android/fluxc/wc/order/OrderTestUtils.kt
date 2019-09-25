@@ -75,6 +75,7 @@ object OrderTestUtils {
                 localSiteId = siteId
                 statusKey = it.slug ?: ""
                 label = it.name ?: ""
+                statusCount = it.total
             }
         }
     }

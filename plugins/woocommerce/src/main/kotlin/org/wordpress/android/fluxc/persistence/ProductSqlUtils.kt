@@ -199,6 +199,12 @@ object ProductSqlUtils {
         }
     }
 
+    fun deleteProductReview(productReview: WCProductReviewModel) =
+            WellSql.delete(WCProductReviewModel::class.java)
+                    .where()
+                    .equals(WCProductReviewModelTable.REMOTE_PRODUCT_REVIEW_ID, productReview.remoteProductReviewId)
+                    .endWhere().execute()
+
     fun getProductReviewByRemoteId(
         localSiteId: Int,
         remoteReviewId: Long
@@ -218,6 +224,7 @@ object ProductSqlUtils {
                 .where()
                 .equals(WCProductReviewModelTable.LOCAL_SITE_ID, site.id)
                 .endWhere()
+                .orderBy(WCProductReviewModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
                 .asModel
     }
 
@@ -230,6 +237,7 @@ object ProductSqlUtils {
                 .equals(WCProductReviewModelTable.REMOTE_PRODUCT_ID, remoteProductId)
                 .equals(WCProductReviewModelTable.LOCAL_SITE_ID, localSiteId)
                 .endGroup().endWhere()
+                .orderBy(WCProductReviewModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
                 .asModel
     }
 

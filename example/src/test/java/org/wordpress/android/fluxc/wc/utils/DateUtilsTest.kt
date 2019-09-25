@@ -5,6 +5,9 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.SiteUtils
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.temporal.WeekFields
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -13,6 +16,7 @@ import kotlin.test.assertEquals
 class DateUtilsTest {
     companion object {
         private const val DATE_FORMAT_DAY = "yyyy-MM-dd"
+        private const val DATE_TIME_FORMAT_START = "yyyy-MM-dd'T'00:00:00"
     }
 
     @Test
@@ -211,6 +215,69 @@ class DateUtilsTest {
             val expectedDate1 = "${SiteUtils.getCurrentDateTimeForSite(site, "yyyy-MM-dd")}T23:59:59"
             val actualDate1 = DateUtils.getEndDateForSite(site)
             assertEquals(expectedDate1, actualDate1)
+        }
+    }
+
+    @Test
+    fun testGetStartDayOfCurrentWeekForSite() {
+        val site = SiteModel().apply { id = 1 }
+
+        val fieldISO = WeekFields.of(Locale.ROOT).dayOfWeek()
+        val expectedDate = LocalDate.now()
+                .with(fieldISO, 1)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+        val expectedDateString = DateUtils.formatDate(DATE_TIME_FORMAT_START, Date.from(expectedDate))
+
+        // test get start date for current day
+        for (i in -20..20) {
+            site.timezone = i.toString()
+            // format the current date to string
+            // get the formatted date string for the site in the format yyyy-MM-ddThh:mm:ss
+            // get the expected start date string for the site in the format yyyy-MM-ddThh:mm:ss
+            val dateString1 = DateUtils.getFirstDayOfCurrentWeekBySite(site)
+            assertEquals(expectedDateString, dateString1)
+        }
+    }
+
+    @Test
+    fun testGetStartDayOfCurrentMonthForSite() {
+        val site = SiteModel().apply { id = 1 }
+
+        val expectedDate = LocalDate.now()
+                .withDayOfMonth(1)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+        val expectedDateString = DateUtils.formatDate(DATE_TIME_FORMAT_START, Date.from(expectedDate))
+
+        // test get start date for current day
+        for (i in -20..20) {
+            site.timezone = i.toString()
+            // format the current date to string
+            // get the formatted date string for the site in the format yyyy-MM-ddThh:mm:ss
+            // get the expected start date string for the site in the format yyyy-MM-ddThh:mm:ss
+            val dateString1 = DateUtils.getFirstDayOfCurrentMonthBySite(site)
+            assertEquals(expectedDateString, dateString1)
+        }
+    }
+
+    @Test
+    fun testGetStartDayOfCurrentYearForSite() {
+        val site = SiteModel().apply { id = 1 }
+        val expectedDate = LocalDate.now()
+                .withDayOfYear(1)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+        val expectedDateString = DateUtils.formatDate(DATE_TIME_FORMAT_START, Date.from(expectedDate))
+
+        // test get start date for current day
+        for (i in -20..20) {
+            site.timezone = i.toString()
+            // format the current date to string
+            // get the formatted date string for the site in the format yyyy-MM-ddThh:mm:ss
+            // get the expected start date string for the site in the format yyyy-MM-ddThh:mm:ss
+            val dateString1 = DateUtils.getFirstDayOfCurrentYearBySite(site)
+            assertEquals(expectedDateString, dateString1)
         }
     }
 }
