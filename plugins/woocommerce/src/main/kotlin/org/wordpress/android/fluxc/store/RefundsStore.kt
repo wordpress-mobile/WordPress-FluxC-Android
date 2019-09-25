@@ -43,7 +43,7 @@ class RefundsStore @Inject constructor(
         amount: BigDecimal,
         reason: String = "",
         autoRefund: Boolean = false
-    ) =
+    ): RefundsResult<RefundModel> =
             withContext(coroutineContext) {
                 val response = restClient.createRefund(site, orderId, amount.toString(), reason, autoRefund)
                 return@withContext when {
@@ -57,24 +57,24 @@ class RefundsStore @Inject constructor(
         return RefundsSqlUtils.selectRefund(site, orderId, refundId)?.let { refundsMapper.map(it) }
     }
 
-    suspend fun fetchRefund(site: SiteModel, orderId: Long, refundId: Long) =
-        withContext(coroutineContext) {
-            val response = restClient.fetchRefund(site, orderId, refundId)
-            return@withContext when {
-                response.isError -> RefundsResult(response.error)
-                response.result != null -> {
-                    RefundsSqlUtils.insert(site, orderId, response.result)
-                    RefundsResult(refundsMapper.map(response.result))
+    suspend fun fetchRefund(site: SiteModel, orderId: Long, refundId: Long): RefundsResult<RefundModel> =
+            withContext(coroutineContext) {
+                val response = restClient.fetchRefund(site, orderId, refundId)
+                return@withContext when {
+                    response.isError -> RefundsResult(response.error)
+                    response.result != null -> {
+                        RefundsSqlUtils.insert(site, orderId, response.result)
+                        RefundsResult(refundsMapper.map(response.result))
+                    }
+                    else -> RefundsResult(RefundsError(GENERIC_ERROR, UNKNOWN))
                 }
-                else -> RefundsResult(RefundsError(GENERIC_ERROR, UNKNOWN))
             }
-        }
 
     fun getAllRefunds(site: SiteModel, orderId: Long): List<RefundModel> {
         return RefundsSqlUtils.selectAllRefunds(site, orderId).map { refundsMapper.map(it) }
     }
 
-    suspend fun fetchAllRefunds(site: SiteModel, orderId: Long) =
+    suspend fun fetchAllRefunds(site: SiteModel, orderId: Long): RefundsResult<List<RefundModel>> =
             withContext(coroutineContext) {
                 val response = restClient.fetchAllRefunds(site, orderId)
                 return@withContext when {
