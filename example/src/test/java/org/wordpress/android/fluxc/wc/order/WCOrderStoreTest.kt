@@ -15,11 +15,13 @@ import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
+import org.wordpress.android.fluxc.model.WCOrderStatusModel
 import org.wordpress.android.fluxc.model.order.OrderIdentifier
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.CoreOrderStatus
 import org.wordpress.android.fluxc.persistence.OrderSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCOrderStore
+import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrderStatusOptionsResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import kotlin.test.assertEquals
@@ -36,7 +38,7 @@ class WCOrderStoreTest {
         val appContext = RuntimeEnvironment.application.applicationContext
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
-                listOf(WCOrderModel::class.java, WCOrderNoteModel::class.java),
+                listOf(WCOrderModel::class.java, WCOrderNoteModel::class.java, WCOrderStatusModel::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)
@@ -125,6 +127,34 @@ class WCOrderStoreTest {
             assertEquals(CoreOrderStatus.REFUNDED.value, status)
             // Other fields should not be altered by the update
             assertEquals(orderModel.currency, currency)
+        }
+    }
+
+    @Test
+    fun testGetOrderStatusOptions() {
+        val site = SiteModel().apply { id = 8 }
+        val optionsJson = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order_status_options.json")
+        val orderStatusOptions = OrderTestUtils.getOrderStatusOptionsFromJson(optionsJson, site.id)
+        orderStatusOptions.sumBy { OrderSqlUtils.insertOrUpdateOrderStatusOption(it) }
+
+        // verify that the order status options are stored correctly
+        val storedOrderStatusOptions = OrderSqlUtils.getOrderStatusOptionsForSite(site)
+        assertEquals(orderStatusOptions.size, storedOrderStatusOptions.size)
+
+        val firstOrderStatusOption = storedOrderStatusOptions[0]
+        assertEquals(firstOrderStatusOption.label, orderStatusOptions[0].label)
+        assertEquals(firstOrderStatusOption.statusCount, orderStatusOptions[0].statusCount)
+        firstOrderStatusOption.apply { statusCount = 100 }
+
+        // Simulate incoming action with updated order status model list
+        val payload = FetchOrderStatusOptionsResponsePayload(site, storedOrderStatusOptions)
+        orderStore.onAction(WCOrderActionBuilder.newFetchedOrderStatusOptionsAction(payload))
+
+        with(OrderSqlUtils.getOrderStatusOptionsForSite(site)[0]) {
+            // The status count of the first order status model in the database should have updated
+            assertEquals(firstOrderStatusOption.statusCount, statusCount)
+            // Other fields should not be altered by the update
+            assertEquals(firstOrderStatusOption.label, label)
         }
     }
 

@@ -12,7 +12,6 @@ import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
@@ -339,7 +338,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     @Test
     fun testUpdateProductReviewStatusSuccess() {
         interceptor.respondWith("wc-update-product-review-response-success.json")
-        productRestClient.updateProductReviewStatus(siteModel, WCProductReviewModel(), "spam")
+        productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -369,7 +368,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     @Test
     fun testUpdateProductReviewStatusFailed() {
         interceptor.respondWithError("wc-response-failure-invalid-param.json")
-        productRestClient.updateProductReviewStatus(siteModel, WCProductReviewModel(), "spam")
+        productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
