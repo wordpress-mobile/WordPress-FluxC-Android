@@ -3,15 +3,15 @@ package org.wordpress.android.fluxc.model.refunds
 import java.math.BigDecimal
 import java.util.Date
 
-data class RefundModel(
+data class WCRefundModel(
     val id: Long,
     val dateCreated: Date,
     val amount: BigDecimal,
     val reason: String?,
     val automaticGatewayRefund: Boolean,
-    val items: List<RefundItem>
+    val items: List<WCRefundItem>
 ) {
-    data class RefundItem(
+    data class WCRefundItem(
         val itemId: Long,
         val name: String,
         val productId: Long,

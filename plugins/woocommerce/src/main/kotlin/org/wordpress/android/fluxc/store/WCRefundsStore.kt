@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.store
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.refunds.RefundModel
+import org.wordpress.android.fluxc.model.refunds.WCRefundModel
 import org.wordpress.android.fluxc.model.refunds.RefundsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
@@ -21,18 +21,18 @@ import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.SERVER_E
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.TIMEOUT
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundsRestClient
-import org.wordpress.android.fluxc.persistence.RefundsSqlUtils
-import org.wordpress.android.fluxc.store.RefundsStore.RefundsError
-import org.wordpress.android.fluxc.store.RefundsStore.RefundsErrorType
+import org.wordpress.android.fluxc.persistence.WCRefundsSqlUtils
+import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsError
+import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsErrorType
 import org.wordpress.android.fluxc.store.Store.OnChangedError
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
-import org.wordpress.android.fluxc.store.RefundsStore.RefundsErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsErrorType.GENERIC_ERROR
 import java.math.BigDecimal
 
 @Singleton
-class RefundsStore @Inject constructor(
+class WCRefundsStore @Inject constructor(
     private val restClient: RefundsRestClient,
     private val coroutineContext: CoroutineContext,
     private val refundsMapper: RefundsMapper
@@ -43,7 +43,7 @@ class RefundsStore @Inject constructor(
         amount: BigDecimal,
         reason: String = "",
         autoRefund: Boolean = false
-    ): RefundsResult<RefundModel> =
+    ): RefundsResult<WCRefundModel> =
             withContext(coroutineContext) {
                 val response = restClient.createRefund(site, orderId, amount.toString(), reason, autoRefund)
                 return@withContext when {
@@ -53,28 +53,28 @@ class RefundsStore @Inject constructor(
                 }
             }
 
-    fun getRefund(site: SiteModel, orderId: Long, refundId: Long): RefundModel? {
-        return RefundsSqlUtils.selectRefund(site, orderId, refundId)?.let { refundsMapper.map(it) }
+    fun getRefund(site: SiteModel, orderId: Long, refundId: Long): WCRefundModel? {
+        return WCRefundsSqlUtils.selectRefund(site, orderId, refundId)?.let { refundsMapper.map(it) }
     }
 
-    suspend fun fetchRefund(site: SiteModel, orderId: Long, refundId: Long): RefundsResult<RefundModel> =
+    suspend fun fetchRefund(site: SiteModel, orderId: Long, refundId: Long): RefundsResult<WCRefundModel> =
             withContext(coroutineContext) {
                 val response = restClient.fetchRefund(site, orderId, refundId)
                 return@withContext when {
                     response.isError -> RefundsResult(response.error)
                     response.result != null -> {
-                        RefundsSqlUtils.insert(site, orderId, response.result)
+                        WCRefundsSqlUtils.insert(site, orderId, response.result)
                         RefundsResult(refundsMapper.map(response.result))
                     }
                     else -> RefundsResult(RefundsError(GENERIC_ERROR, UNKNOWN))
                 }
             }
 
-    fun getAllRefunds(site: SiteModel, orderId: Long): List<RefundModel> {
-        return RefundsSqlUtils.selectAllRefunds(site, orderId).map { refundsMapper.map(it) }
+    fun getAllRefunds(site: SiteModel, orderId: Long): List<WCRefundModel> {
+        return WCRefundsSqlUtils.selectAllRefunds(site, orderId).map { refundsMapper.map(it) }
     }
 
-    suspend fun fetchAllRefunds(site: SiteModel, orderId: Long): RefundsResult<List<RefundModel>> =
+    suspend fun fetchAllRefunds(site: SiteModel, orderId: Long): RefundsResult<List<WCRefundModel>> =
             withContext(coroutineContext) {
                 val response = restClient.fetchAllRefunds(site, orderId)
                 return@withContext when {
@@ -82,7 +82,7 @@ class RefundsStore @Inject constructor(
                         RefundsResult(response.error)
                     }
                     response.result != null -> {
-                        RefundsSqlUtils.insert(site, orderId, response.result.toList())
+                        WCRefundsSqlUtils.insert(site, orderId, response.result.toList())
                         RefundsResult(response.result.map { refundsMapper.map(it) })
                     }
                     else -> RefundsResult(RefundsError(GENERIC_ERROR, UNKNOWN))

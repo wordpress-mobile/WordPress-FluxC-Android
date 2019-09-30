@@ -15,16 +15,16 @@ import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
-import org.wordpress.android.fluxc.model.refunds.RefundModel
-import org.wordpress.android.fluxc.store.RefundsStore
-import org.wordpress.android.fluxc.store.RefundsStore.RefundsResult
+import org.wordpress.android.fluxc.model.refunds.WCRefundModel
+import org.wordpress.android.fluxc.store.WCRefundsStore
+import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsResult
 import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
 class WooRefundsFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
-    @Inject internal lateinit var refundsStore: RefundsStore
+    @Inject internal lateinit var refundsStore: WCRefundsStore
     @Inject internal lateinit var ordersStore: WCOrderStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
 
@@ -92,7 +92,7 @@ class WooRefundsFragment : Fragment() {
         }
     }
 
-    private suspend fun printRefund(response: RefundsResult<RefundModel>) {
+    private suspend fun printRefund(response: RefundsResult<WCRefundModel>) {
         withContext(Dispatchers.Main) {
             response.error?.original?.let {
                 prependToLog(it.name)
