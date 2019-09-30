@@ -54,7 +54,6 @@ class WCRefundsSqlUtilsTest {
         assertEquals(newAmount, updatedRefund.amount)
     }
 
-
     @Test
     fun `test select`() {
         val inserted = listOf(REFUND_RESPONSE, REFUND_RESPONSE.copy(refundId = 2, amount = "20"))
@@ -66,7 +65,6 @@ class WCRefundsSqlUtilsTest {
         val refund = WCRefundsSqlUtils.selectRefund(site, orderId, 2)
         assertEquals(refunds[1], refund)
     }
-
 
     @Test
     fun `test select empty result`() {
