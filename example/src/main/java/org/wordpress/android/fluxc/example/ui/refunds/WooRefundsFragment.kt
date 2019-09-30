@@ -104,8 +104,8 @@ class WooRefundsFragment : Fragment() {
                                             orderEditText.text.toString().toLong()
                                     )
                                 }
-                                response.error?.original?.let {
-                                    prependToLog(it.name)
+                                response.error?.let {
+                                    prependToLog("${it.type}: ${it.message}")
                                 }
                                 response.model?.let {
                                     prependToLog("Order ${orderEditText.text} has ${it.size} refunds")
@@ -124,8 +124,8 @@ class WooRefundsFragment : Fragment() {
     }
 
     private fun printRefund(response: RefundsResult<WCRefundModel>) {
-        response.error?.original?.let {
-            prependToLog(it.name)
+        response.error?.let {
+            prependToLog("${it.type}: ${it.message}")
         }
         response.model?.let { refund ->
             prependToLog("Refund: $refund")

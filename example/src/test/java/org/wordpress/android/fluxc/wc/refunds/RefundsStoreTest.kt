@@ -22,7 +22,7 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCRefundsStore
 import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsResult
 import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsError
-import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsErrorType.INVALID_ID
+import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsErrorType.INVALID_REFUND_ID
 import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsPayload
 import org.wordpress.android.fluxc.test
 
@@ -36,7 +36,7 @@ class RefundsStoreTest {
 
     private val orderId = 1L
     private val refundId = REFUND_RESPONSE.refundId
-    private val error = RefundsError(INVALID_ID, NOT_FOUND, "Invalid order ID")
+    private val error = RefundsError(INVALID_REFUND_ID, NOT_FOUND, "Invalid order ID")
 
     @Before
     fun setUp() {

@@ -112,7 +112,7 @@ class WCRefundsStore @Inject constructor(
     enum class RefundsErrorType {
         TIMEOUT,
         API_ERROR,
-        INVALID_ID,
+        INVALID_REFUND_ID,
         GENERIC_ERROR,
         INVALID_RESPONSE,
         AUTHORIZATION_REQUIRED
@@ -132,7 +132,7 @@ fun WPComGsonNetworkError.toRefundsError(): RefundsError {
         HTTP_AUTH_ERROR,
         AUTHORIZATION_REQUIRED,
         NOT_AUTHENTICATED -> RefundsErrorType.AUTHORIZATION_REQUIRED
-        NOT_FOUND -> RefundsErrorType.INVALID_ID
+        NOT_FOUND -> RefundsErrorType.INVALID_REFUND_ID
         UNKNOWN,
         null -> GENERIC_ERROR
     }
