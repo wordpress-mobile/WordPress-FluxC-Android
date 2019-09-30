@@ -86,7 +86,9 @@ constructor(
 
     suspend fun fetchAllRefunds(
         site: SiteModel,
-        orderId: Long
+        orderId: Long,
+        page: Int,
+        pageSize: Int
     ): RefundsPayload<Array<RefundResponse>> {
         val url = WOOCOMMERCE.orders.id(orderId).refunds.pathV3
 
@@ -94,7 +96,10 @@ constructor(
                 this,
                 site,
                 url,
-                emptyMap(),
+                mapOf(
+                        "page" to page.toString(),
+                        "per_page" to pageSize.toString()
+                ),
                 Array<RefundResponse>::class.java
         )
         return when (response) {

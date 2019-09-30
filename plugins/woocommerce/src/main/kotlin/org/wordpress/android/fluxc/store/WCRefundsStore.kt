@@ -37,6 +37,11 @@ class WCRefundsStore @Inject constructor(
     private val coroutineContext: CoroutineContext,
     private val refundsMapper: RefundsMapper
 ) {
+    companion object {
+        // Just get everything
+        const val DEFAULT_PAGE_SIZE = 100
+        const val PAGE = 1
+    }
     suspend fun createRefund(
         site: SiteModel,
         orderId: Long,
@@ -76,7 +81,7 @@ class WCRefundsStore @Inject constructor(
 
     suspend fun fetchAllRefunds(site: SiteModel, orderId: Long): RefundsResult<List<WCRefundModel>> =
             withContext(coroutineContext) {
-                val response = restClient.fetchAllRefunds(site, orderId)
+                val response = restClient.fetchAllRefunds(site, orderId, PAGE, DEFAULT_PAGE_SIZE)
                 return@withContext when {
                     response.isError -> {
                         RefundsResult(response.error)
