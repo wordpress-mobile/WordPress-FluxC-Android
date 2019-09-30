@@ -63,7 +63,7 @@ class WCRefundsStore @Inject constructor(
                 return@withContext when {
                     response.isError -> RefundsResult(response.error)
                     response.result != null -> {
-                        WCRefundsSqlUtils.insert(site, orderId, response.result)
+                        WCRefundsSqlUtils.insertOrUpdate(site, orderId, response.result)
                         RefundsResult(refundsMapper.map(response.result))
                     }
                     else -> RefundsResult(RefundsError(GENERIC_ERROR, UNKNOWN))
@@ -82,7 +82,7 @@ class WCRefundsStore @Inject constructor(
                         RefundsResult(response.error)
                     }
                     response.result != null -> {
-                        WCRefundsSqlUtils.insert(site, orderId, response.result.toList())
+                        WCRefundsSqlUtils.insertOrUpdate(site, orderId, response.result.toList())
                         RefundsResult(response.result.map { refundsMapper.map(it) })
                     }
                     else -> RefundsResult(RefundsError(GENERIC_ERROR, UNKNOWN))
