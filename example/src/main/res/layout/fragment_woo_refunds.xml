@@ -10,50 +10,17 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/order_number"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:hint="Order number" />
-
-        <EditText
-            android:id="@+id/refund_amount"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="numberDecimal"
-            android:hint="Refund amount" />
-
         <Button
             android:id="@+id/create_full_refund"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Create full refund"/>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_margin="20dp"
-            android:background="@android:color/darker_gray" />
-
-        <EditText
-            android:id="@+id/refund_number"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:hint="Refund number" />
-
         <Button
             android:id="@+id/fetch_refund"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Fetch refund"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_margin="20dp"
-            android:background="@android:color/darker_gray" />
 
         <Button
             android:id="@+id/fetch_all_refunds"

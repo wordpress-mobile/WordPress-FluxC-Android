@@ -11,14 +11,16 @@ import kotlinx.android.synthetic.main.fragment_woo_refunds.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel
+import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WCRefundsStore
 import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsResult
-import org.wordpress.android.fluxc.store.WCOrderStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
@@ -41,18 +43,24 @@ class WooRefundsFragment : Fragment() {
 
         create_full_refund.setOnClickListener {
             getFirstWCSite()?.let { site ->
-                GlobalScope.launch {
-                    val response = refundsStore.createRefund(
-                            site,
-                            order_number.text.toString().toLong(),
-                            refund_amount.text.toString().toBigDecimal()
-                    )
-                    withContext(Dispatchers.Main) {
-                        response.error?.original?.let {
-                            prependToLog(it.name)
-                        }
-                        response.model?.let { refund ->
-                            prependToLog("Refund: $refund")
+                showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
+                    showSingleLineDialog(activity, "Enter the refund amount:") { amountEditText ->
+                        showSingleLineDialog(activity, "Enter refund reason:") { reasonEditText ->
+                            GlobalScope.launch(Dispatchers.Main) {
+                                try {
+                                    val response = withContext(Dispatchers.Default) {
+                                        refundsStore.createRefund(
+                                                site,
+                                                orderEditText.text.toString().toLong(),
+                                                amountEditText.text.toString().toBigDecimal(),
+                                                reasonEditText.text.toString()
+                                        )
+                                    }
+                                    printRefund(response)
+                                } catch (e: Exception) {
+                                    prependToLog("Error: ${e.message}")
+                                }
+                            }
                         }
                     }
                 }
@@ -61,30 +69,53 @@ class WooRefundsFragment : Fragment() {
 
         fetch_refund.setOnClickListener {
             getFirstWCSite()?.let { site ->
-                GlobalScope.launch {
-                    val response = refundsStore.fetchRefund(
-                            site,
-                            order_number.text.toString().toLong(),
-                            refund_number.text.toString().toLong()
-                    )
-                    printRefund(response)
+                showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
+                    showSingleLineDialog(activity, "Enter the refund ID:") { refundEditText ->
+                        GlobalScope.launch(Dispatchers.Main) {
+                            supervisorScope {
+                                try {
+                                    val response = withContext(Dispatchers.Default) {
+                                        refundsStore.fetchRefund(
+                                                site,
+                                                orderEditText.text.toString().toLong(),
+                                                refundEditText.text.toString().toLong()
+                                        )
+                                    }
+                                    printRefund(response)
+                                } catch (e: Exception) {
+                                    prependToLog("Error: ${e.message}")
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
 
         fetch_all_refunds.setOnClickListener {
             getFirstWCSite()?.let { site ->
-                GlobalScope.launch {
-                    val response = refundsStore.fetchAllRefunds(
-                            site,
-                            order_number.text.toString().toLong()
-                    )
-                    withContext(Dispatchers.Main) {
-                        response.error?.original?.let {
-                            prependToLog(it.name)
-                        }
-                        response.model?.forEach { refund ->
-                            prependToLog("Refund: $refund")
+                showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
+                    GlobalScope.launch(Dispatchers.Main) {
+                        supervisorScope {
+                            try {
+                                val response = withContext(Dispatchers.Default) {
+                                    refundsStore.fetchAllRefunds(
+                                            site,
+                                            orderEditText.text.toString().toLong()
+                                    )
+                                }
+                                response.error?.original?.let {
+                                    prependToLog(it.name)
+                                }
+                                response.model?.let {
+                                    prependToLog("Order ${orderEditText.text} has ${it.size} refunds")
+                                    it.forEach { refund ->
+                                        prependToLog("Refund: $refund")
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                prependToLog("Error: ${e.message}")
+                            }
                         }
                     }
                 }
@@ -92,14 +123,12 @@ class WooRefundsFragment : Fragment() {
         }
     }
 
-    private suspend fun printRefund(response: RefundsResult<WCRefundModel>) {
-        withContext(Dispatchers.Main) {
-            response.error?.original?.let {
-                prependToLog(it.name)
-            }
-            response.model?.let { refund ->
-                prependToLog("Refund: $refund")
-            }
+    private fun printRefund(response: RefundsResult<WCRefundModel>) {
+        response.error?.original?.let {
+            prependToLog(it.name)
+        }
+        response.model?.let { refund ->
+            prependToLog("Refund: $refund")
         }
     }
 
