@@ -40,8 +40,9 @@ class WCRefundsStore @Inject constructor(
     companion object {
         // Just get everything
         const val DEFAULT_PAGE_SIZE = 100
-        const val PAGE = 1
+        const val DEFAULT_PAGE = 1
     }
+
     suspend fun createRefund(
         site: SiteModel,
         orderId: Long,
@@ -50,7 +51,13 @@ class WCRefundsStore @Inject constructor(
         autoRefund: Boolean = false
     ): RefundsResult<WCRefundModel> =
             withContext(coroutineContext) {
-                val response = restClient.createRefund(site, orderId, amount.toString(), reason, autoRefund)
+                val response = restClient.createRefund(
+                        site,
+                        orderId,
+                        amount.toString(),
+                        reason,
+                        autoRefund
+                )
                 return@withContext when {
                     response.isError -> RefundsResult(response.error)
                     response.result != null -> RefundsResult(refundsMapper.map(response.result))
@@ -59,10 +66,15 @@ class WCRefundsStore @Inject constructor(
             }
 
     fun getRefund(site: SiteModel, orderId: Long, refundId: Long): WCRefundModel? {
-        return WCRefundsSqlUtils.selectRefund(site, orderId, refundId)?.let { refundsMapper.map(it) }
+        return WCRefundsSqlUtils.selectRefund(site, orderId, refundId)
+                ?.let { refundsMapper.map(it) }
     }
 
-    suspend fun fetchRefund(site: SiteModel, orderId: Long, refundId: Long): RefundsResult<WCRefundModel> =
+    suspend fun fetchRefund(
+        site: SiteModel,
+        orderId: Long,
+        refundId: Long
+    ): RefundsResult<WCRefundModel> =
             withContext(coroutineContext) {
                 val response = restClient.fetchRefund(site, orderId, refundId)
                 return@withContext when {
@@ -79,9 +91,19 @@ class WCRefundsStore @Inject constructor(
         return WCRefundsSqlUtils.selectAllRefunds(site, orderId).map { refundsMapper.map(it) }
     }
 
-    suspend fun fetchAllRefunds(site: SiteModel, orderId: Long): RefundsResult<List<WCRefundModel>> =
+    suspend fun fetchAllRefunds(
+        site: SiteModel,
+        orderId: Long,
+        page: Int = DEFAULT_PAGE,
+        pageSize: Int = DEFAULT_PAGE_SIZE
+    ): RefundsResult<List<WCRefundModel>> =
             withContext(coroutineContext) {
-                val response = restClient.fetchAllRefunds(site, orderId, PAGE, DEFAULT_PAGE_SIZE)
+                val response = restClient.fetchAllRefunds(
+                        site,
+                        orderId,
+                        page,
+                        pageSize
+                )
                 return@withContext when {
                     response.isError -> {
                         RefundsResult(response.error)

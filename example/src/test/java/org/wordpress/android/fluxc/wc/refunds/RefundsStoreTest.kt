@@ -120,7 +120,7 @@ class RefundsStoreTest {
                 restClient.fetchAllRefunds(
                         site,
                         orderId,
-                        WCRefundsStore.PAGE,
+                        WCRefundsStore.DEFAULT_PAGE,
                         WCRefundsStore.DEFAULT_PAGE_SIZE
                 )
         ).thenReturn(
@@ -130,7 +130,7 @@ class RefundsStoreTest {
                 restClient.fetchAllRefunds(
                         site,
                         2,
-                        WCRefundsStore.PAGE,
+                        WCRefundsStore.DEFAULT_PAGE,
                         WCRefundsStore.DEFAULT_PAGE_SIZE
                 )
         ).thenReturn(
