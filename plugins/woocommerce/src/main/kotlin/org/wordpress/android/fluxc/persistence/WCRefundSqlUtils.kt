@@ -9,9 +9,9 @@ import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundsRestClient.RefundResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundRestClient.RefundResponse
 
-object WCRefundsSqlUtils {
+object WCRefundSqlUtils {
     private val gson: Gson by lazy {
         val builder = GsonBuilder()
         builder.create()
@@ -23,7 +23,7 @@ object WCRefundsSqlUtils {
     fun insertOrUpdate(site: SiteModel, orderId: Long, data: List<RefundResponse>) {
         data.forEach { item ->
             val json = gson.toJson(item)
-            WellSql.delete(RefundsBuilder::class.java)
+            WellSql.delete(RefundBuilder::class.java)
                 .where()
                 .equals(WCRefundsTable.LOCAL_SITE_ID, site.id)
                 .equals(WCRefundsTable.ORDER_ID, orderId)
@@ -31,7 +31,7 @@ object WCRefundsSqlUtils {
                 .endWhere()
                 .execute()
             WellSql.insert(
-                    RefundsBuilder(
+                    RefundBuilder(
                             localSiteId = site.id,
                             orderId = orderId,
                             refundId = item.refundId,
@@ -45,7 +45,7 @@ object WCRefundsSqlUtils {
         site: SiteModel,
         orderId: Long
     ): List<RefundResponse> {
-        val models = WellSql.select(RefundsBuilder::class.java)
+        val models = WellSql.select(RefundBuilder::class.java)
                 .where()
                 .equals(WCRefundsTable.LOCAL_SITE_ID, site.id)
                 .equals(WCRefundsTable.ORDER_ID, orderId)
@@ -59,7 +59,7 @@ object WCRefundsSqlUtils {
         orderId: Long,
         refundId: Long
     ): RefundResponse? {
-        val model = WellSql.select(RefundsBuilder::class.java)
+        val model = WellSql.select(RefundBuilder::class.java)
                 .where()
                 .equals(WCRefundsTable.LOCAL_SITE_ID, site.id)
                 .equals(WCRefundsTable.ORDER_ID, orderId)
@@ -71,7 +71,7 @@ object WCRefundsSqlUtils {
     }
 
     @Table(name = "WCRefunds")
-    data class RefundsBuilder(
+    data class RefundBuilder(
         @PrimaryKey @Column private var mId: Int = -1,
         @Column var localSiteId: Int,
         @Column var orderId: Long,

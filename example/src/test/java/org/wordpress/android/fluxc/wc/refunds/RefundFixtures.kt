@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.wc.refunds
 
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundsRestClient.RefundResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundRestClient.RefundResponse
 
 val REFUND_RESPONSE = RefundResponse(
         1L,
