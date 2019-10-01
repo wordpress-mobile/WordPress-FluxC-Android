@@ -5,7 +5,7 @@ import com.android.volley.RequestQueue
 import dagger.Module
 import dagger.Provides
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.model.refunds.RefundsMapper
+import org.wordpress.android.fluxc.model.refunds.RefundMapper
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
@@ -13,7 +13,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundsRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundRestClient
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -68,7 +68,7 @@ class ReleaseWCNetworkModule {
         @Named("regular") requestQueue: RequestQueue,
         token: AccessToken,
         userAgent: UserAgent
-    ) = RefundsRestClient(dispatcher, requestBuilder, appContext, requestQueue, token, userAgent)
+    ) = RefundRestClient(dispatcher, requestBuilder, appContext, requestQueue, token, userAgent)
 
     @Singleton
     @Provides
@@ -78,7 +78,7 @@ class ReleaseWCNetworkModule {
 
     @Singleton
     @Provides
-    fun provideRefundsMapper(): RefundsMapper {
-        return RefundsMapper()
+    fun provideRefundsMapper(): RefundMapper {
+        return RefundMapper()
     }
 }

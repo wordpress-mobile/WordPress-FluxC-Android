@@ -2,14 +2,14 @@ package org.wordpress.android.fluxc.model.refunds
 
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel.WCRefundItem
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.DATE_FORMAT_DAY
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundsRestClient.RefundResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundRestClient.RefundResponse
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
-class RefundsMapper
+class RefundMapper
 @Inject constructor() {
     fun map(response: RefundResponse): WCRefundModel {
         return WCRefundModel(

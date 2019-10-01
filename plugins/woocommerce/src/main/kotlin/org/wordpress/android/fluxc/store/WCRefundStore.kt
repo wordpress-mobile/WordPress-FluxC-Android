@@ -4,7 +4,7 @@ import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel
-import org.wordpress.android.fluxc.model.refunds.RefundsMapper
+import org.wordpress.android.fluxc.model.refunds.RefundMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.AUTHORIZATION_REQUIRED
@@ -20,22 +20,22 @@ import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.PARSE_ER
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.SERVER_ERROR
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.TIMEOUT
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundsRestClient
-import org.wordpress.android.fluxc.persistence.WCRefundsSqlUtils
-import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsError
-import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsErrorType
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundRestClient
+import org.wordpress.android.fluxc.persistence.WCRefundSqlUtils
+import org.wordpress.android.fluxc.store.WCRefundStore.RefundError
+import org.wordpress.android.fluxc.store.WCRefundStore.RefundErrorType
 import org.wordpress.android.fluxc.store.Store.OnChangedError
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
-import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.store.WCRefundStore.RefundErrorType.GENERIC_ERROR
 import java.math.BigDecimal
 
 @Singleton
-class WCRefundsStore @Inject constructor(
-    private val restClient: RefundsRestClient,
+class WCRefundStore @Inject constructor(
+    private val restClient: RefundRestClient,
     private val coroutineContext: CoroutineContext,
-    private val refundsMapper: RefundsMapper
+    private val refundsMapper: RefundMapper
 ) {
     companion object {
         // Just get everything
@@ -49,7 +49,7 @@ class WCRefundsStore @Inject constructor(
         amount: BigDecimal,
         reason: String = "",
         autoRefund: Boolean = false
-    ): RefundsResult<WCRefundModel> =
+    ): RefundResult<WCRefundModel> =
             withContext(coroutineContext) {
                 val response = restClient.createRefund(
                         site,
@@ -59,14 +59,14 @@ class WCRefundsStore @Inject constructor(
                         autoRefund
                 )
                 return@withContext when {
-                    response.isError -> RefundsResult(response.error)
-                    response.result != null -> RefundsResult(refundsMapper.map(response.result))
-                    else -> RefundsResult(RefundsError(GENERIC_ERROR, UNKNOWN))
+                    response.isError -> RefundResult(response.error)
+                    response.result != null -> RefundResult(refundsMapper.map(response.result))
+                    else -> RefundResult(RefundError(GENERIC_ERROR, UNKNOWN))
                 }
             }
 
     fun getRefund(site: SiteModel, orderId: Long, refundId: Long): WCRefundModel? {
-        return WCRefundsSqlUtils.selectRefund(site, orderId, refundId)
+        return WCRefundSqlUtils.selectRefund(site, orderId, refundId)
                 ?.let { refundsMapper.map(it) }
     }
 
@@ -74,21 +74,21 @@ class WCRefundsStore @Inject constructor(
         site: SiteModel,
         orderId: Long,
         refundId: Long
-    ): RefundsResult<WCRefundModel> =
+    ): RefundResult<WCRefundModel> =
             withContext(coroutineContext) {
                 val response = restClient.fetchRefund(site, orderId, refundId)
                 return@withContext when {
-                    response.isError -> RefundsResult(response.error)
+                    response.isError -> RefundResult(response.error)
                     response.result != null -> {
-                        WCRefundsSqlUtils.insertOrUpdate(site, orderId, response.result)
-                        RefundsResult(refundsMapper.map(response.result))
+                        WCRefundSqlUtils.insertOrUpdate(site, orderId, response.result)
+                        RefundResult(refundsMapper.map(response.result))
                     }
-                    else -> RefundsResult(RefundsError(GENERIC_ERROR, UNKNOWN))
+                    else -> RefundResult(RefundError(GENERIC_ERROR, UNKNOWN))
                 }
             }
 
     fun getAllRefunds(site: SiteModel, orderId: Long): List<WCRefundModel> {
-        return WCRefundsSqlUtils.selectAllRefunds(site, orderId).map { refundsMapper.map(it) }
+        return WCRefundSqlUtils.selectAllRefunds(site, orderId).map { refundsMapper.map(it) }
     }
 
     suspend fun fetchAllRefunds(
@@ -96,7 +96,7 @@ class WCRefundsStore @Inject constructor(
         orderId: Long,
         page: Int = DEFAULT_PAGE,
         pageSize: Int = DEFAULT_PAGE_SIZE
-    ): RefundsResult<List<WCRefundModel>> =
+    ): RefundResult<List<WCRefundModel>> =
             withContext(coroutineContext) {
                 val response = restClient.fetchAllRefunds(
                         site,
@@ -106,37 +106,37 @@ class WCRefundsStore @Inject constructor(
                 )
                 return@withContext when {
                     response.isError -> {
-                        RefundsResult(response.error)
+                        RefundResult(response.error)
                     }
                     response.result != null -> {
-                        WCRefundsSqlUtils.insertOrUpdate(site, orderId, response.result.toList())
-                        RefundsResult(response.result.map { refundsMapper.map(it) })
+                        WCRefundSqlUtils.insertOrUpdate(site, orderId, response.result.toList())
+                        RefundResult(response.result.map { refundsMapper.map(it) })
                     }
-                    else -> RefundsResult(RefundsError(GENERIC_ERROR, UNKNOWN))
+                    else -> RefundResult(RefundError(GENERIC_ERROR, UNKNOWN))
                 }
             }
 
-    data class RefundsPayload<T>(
+    data class RefundPayload<T>(
         val result: T? = null
-    ) : Payload<RefundsError>() {
-        constructor(error: RefundsError) : this() {
+    ) : Payload<RefundError>() {
+        constructor(error: RefundError) : this() {
             this.error = error
         }
     }
 
-    data class RefundsResult<T>(val model: T? = null) : Store.OnChanged<RefundsError>() {
-        constructor(error: RefundsError) : this() {
+    data class RefundResult<T>(val model: T? = null) : Store.OnChanged<RefundError>() {
+        constructor(error: RefundError) : this() {
             this.error = error
         }
     }
 
-    class RefundsError(
-        var type: RefundsErrorType,
+    class RefundError(
+        var type: RefundErrorType,
         var original: GenericErrorType,
         var message: String? = null
     ) : OnChangedError
 
-    enum class RefundsErrorType {
+    enum class RefundErrorType {
         TIMEOUT,
         API_ERROR,
         INVALID_REFUND_ID,
@@ -146,22 +146,22 @@ class WCRefundsStore @Inject constructor(
     }
 }
 
-fun WPComGsonNetworkError.toRefundsError(): RefundsError {
+fun WPComGsonNetworkError.toRefundError(): RefundError {
     val type = when (type) {
-        TIMEOUT -> RefundsErrorType.TIMEOUT
+        TIMEOUT -> RefundErrorType.TIMEOUT
         NO_CONNECTION,
         SERVER_ERROR,
         INVALID_SSL_CERTIFICATE,
-        NETWORK_ERROR -> RefundsErrorType.API_ERROR
+        NETWORK_ERROR -> RefundErrorType.API_ERROR
         PARSE_ERROR,
         CENSORED,
-        INVALID_RESPONSE -> RefundsErrorType.INVALID_RESPONSE
+        INVALID_RESPONSE -> RefundErrorType.INVALID_RESPONSE
         HTTP_AUTH_ERROR,
         AUTHORIZATION_REQUIRED,
-        NOT_AUTHENTICATED -> RefundsErrorType.AUTHORIZATION_REQUIRED
-        NOT_FOUND -> RefundsErrorType.INVALID_REFUND_ID
+        NOT_AUTHENTICATED -> RefundErrorType.AUTHORIZATION_REQUIRED
+        NOT_FOUND -> RefundErrorType.INVALID_REFUND_ID
         UNKNOWN,
         null -> GENERIC_ERROR
     }
-    return RefundsError(type, this.type, message)
+    return RefundError(type, this.type, message)
 }
