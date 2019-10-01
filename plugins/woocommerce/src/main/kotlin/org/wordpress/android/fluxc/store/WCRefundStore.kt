@@ -22,17 +22,17 @@ import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.TIMEOUT
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundRestClient
 import org.wordpress.android.fluxc.persistence.WCRefundSqlUtils
-import org.wordpress.android.fluxc.store.WCRefundsStore.RefundError
-import org.wordpress.android.fluxc.store.WCRefundsStore.RefundErrorType
+import org.wordpress.android.fluxc.store.WCRefundStore.RefundError
+import org.wordpress.android.fluxc.store.WCRefundStore.RefundErrorType
 import org.wordpress.android.fluxc.store.Store.OnChangedError
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.CoroutineContext
-import org.wordpress.android.fluxc.store.WCRefundsStore.RefundErrorType.GENERIC_ERROR
+import org.wordpress.android.fluxc.store.WCRefundStore.RefundErrorType.GENERIC_ERROR
 import java.math.BigDecimal
 
 @Singleton
-class WCRefundsStore @Inject constructor(
+class WCRefundStore @Inject constructor(
     private val restClient: RefundRestClient,
     private val coroutineContext: CoroutineContext,
     private val refundsMapper: RefundMapper

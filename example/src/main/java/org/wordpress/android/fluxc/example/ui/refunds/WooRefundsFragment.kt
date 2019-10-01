@@ -19,14 +19,14 @@ import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel
 import org.wordpress.android.fluxc.store.WCOrderStore
-import org.wordpress.android.fluxc.store.WCRefundsStore
-import org.wordpress.android.fluxc.store.WCRefundsStore.RefundResult
+import org.wordpress.android.fluxc.store.WCRefundStore
+import org.wordpress.android.fluxc.store.WCRefundStore.RefundResult
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
 class WooRefundsFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
-    @Inject internal lateinit var refundsStore: WCRefundsStore
+    @Inject internal lateinit var refundsStore: WCRefundStore
     @Inject internal lateinit var ordersStore: WCOrderStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
 

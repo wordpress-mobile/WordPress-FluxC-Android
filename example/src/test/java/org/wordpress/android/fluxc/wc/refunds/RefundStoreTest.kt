@@ -19,11 +19,11 @@ import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NOT_FOUN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundRestClient
 import org.wordpress.android.fluxc.persistence.WCRefundSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
-import org.wordpress.android.fluxc.store.WCRefundsStore
-import org.wordpress.android.fluxc.store.WCRefundsStore.RefundResult
-import org.wordpress.android.fluxc.store.WCRefundsStore.RefundError
-import org.wordpress.android.fluxc.store.WCRefundsStore.RefundErrorType.INVALID_REFUND_ID
-import org.wordpress.android.fluxc.store.WCRefundsStore.RefundPayload
+import org.wordpress.android.fluxc.store.WCRefundStore
+import org.wordpress.android.fluxc.store.WCRefundStore.RefundResult
+import org.wordpress.android.fluxc.store.WCRefundStore.RefundError
+import org.wordpress.android.fluxc.store.WCRefundStore.RefundErrorType.INVALID_REFUND_ID
+import org.wordpress.android.fluxc.store.WCRefundStore.RefundPayload
 import org.wordpress.android.fluxc.test
 
 @Config(manifest = Config.NONE)
@@ -32,7 +32,7 @@ class RefundStoreTest {
     private val restClient = mock<RefundRestClient>()
     private val site = mock<SiteModel>()
     private val mapper = RefundMapper()
-    private lateinit var store: WCRefundsStore
+    private lateinit var store: WCRefundStore
 
     private val orderId = 1L
     private val refundId = REFUND_RESPONSE.refundId
@@ -49,7 +49,7 @@ class RefundStoreTest {
         WellSql.init(config)
         config.reset()
 
-        store = WCRefundsStore(
+        store = WCRefundStore(
                 restClient,
                 Unconfined,
                 mapper
@@ -120,8 +120,8 @@ class RefundStoreTest {
                 restClient.fetchAllRefunds(
                         site,
                         orderId,
-                        WCRefundsStore.DEFAULT_PAGE,
-                        WCRefundsStore.DEFAULT_PAGE_SIZE
+                        WCRefundStore.DEFAULT_PAGE,
+                        WCRefundStore.DEFAULT_PAGE_SIZE
                 )
         ).thenReturn(
                 fetchRefundsPayload
@@ -130,8 +130,8 @@ class RefundStoreTest {
                 restClient.fetchAllRefunds(
                         site,
                         2,
-                        WCRefundsStore.DEFAULT_PAGE,
-                        WCRefundsStore.DEFAULT_PAGE_SIZE
+                        WCRefundStore.DEFAULT_PAGE,
+                        WCRefundStore.DEFAULT_PAGE_SIZE
                 )
         ).thenReturn(
                 RefundPayload(error)
