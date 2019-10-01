@@ -13,7 +13,7 @@ class RefundsMapper
 @Inject constructor() {
     fun map(response: RefundResponse): WCRefundModel {
         return WCRefundModel(
-                response.refundId ?: -1,
+                response.refundId,
                 response.dateCreated?.let { fromFormattedDate(it) } ?: Date(),
                 response.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
                 response.reason,

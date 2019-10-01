@@ -116,10 +116,24 @@ class RefundsStoreTest {
         val fetchRefundsPayload = RefundsPayload(
                 data
         )
-        whenever(restClient.fetchAllRefunds(site, orderId, WCRefundsStore.PAGE, WCRefundsStore.DEFAULT_PAGE_SIZE)).thenReturn(
+        whenever(
+                restClient.fetchAllRefunds(
+                        site,
+                        orderId,
+                        WCRefundsStore.PAGE,
+                        WCRefundsStore.DEFAULT_PAGE_SIZE
+                )
+        ).thenReturn(
                 fetchRefundsPayload
         )
-        whenever(restClient.fetchAllRefunds(site, 2, WCRefundsStore.PAGE, WCRefundsStore.DEFAULT_PAGE_SIZE)).thenReturn(
+        whenever(
+                restClient.fetchAllRefunds(
+                        site,
+                        2,
+                        WCRefundsStore.PAGE,
+                        WCRefundsStore.DEFAULT_PAGE_SIZE
+                )
+        ).thenReturn(
                 RefundsPayload(error)
         )
         return store.fetchAllRefunds(site, orderId)
