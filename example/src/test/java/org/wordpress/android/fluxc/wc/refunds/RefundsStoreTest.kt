@@ -13,17 +13,17 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.refunds.RefundModel
+import org.wordpress.android.fluxc.model.refunds.WCRefundModel
 import org.wordpress.android.fluxc.model.refunds.RefundsMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NOT_FOUND
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundsRestClient
-import org.wordpress.android.fluxc.persistence.RefundsSqlUtils
+import org.wordpress.android.fluxc.persistence.WCRefundsSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
-import org.wordpress.android.fluxc.store.RefundsStore
-import org.wordpress.android.fluxc.store.RefundsStore.RefundsResult
-import org.wordpress.android.fluxc.store.RefundsStore.RefundsError
-import org.wordpress.android.fluxc.store.RefundsStore.RefundsErrorType.INVALID_ID
-import org.wordpress.android.fluxc.store.RefundsStore.RefundsPayload
+import org.wordpress.android.fluxc.store.WCRefundsStore
+import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsResult
+import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsError
+import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsErrorType.INVALID_REFUND_ID
+import org.wordpress.android.fluxc.store.WCRefundsStore.RefundsPayload
 import org.wordpress.android.fluxc.test
 
 @Config(manifest = Config.NONE)
@@ -32,24 +32,24 @@ class RefundsStoreTest {
     private val restClient = mock<RefundsRestClient>()
     private val site = mock<SiteModel>()
     private val mapper = RefundsMapper()
-    private lateinit var store: RefundsStore
+    private lateinit var store: WCRefundsStore
 
     private val orderId = 1L
     private val refundId = REFUND_RESPONSE.refundId
-    private val error = RefundsError(INVALID_ID, NOT_FOUND, "Invalid order ID")
+    private val error = RefundsError(INVALID_REFUND_ID, NOT_FOUND, "Invalid order ID")
 
     @Before
     fun setUp() {
         val appContext = RuntimeEnvironment.application.applicationContext
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
-                listOf(RefundsSqlUtils.RefundsBuilder::class.java),
+                listOf(WCRefundsSqlUtils.RefundsBuilder::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)
         config.reset()
 
-        store = RefundsStore(
+        store = WCRefundsStore(
                 restClient,
                 Unconfined,
                 mapper
@@ -97,7 +97,7 @@ class RefundsStoreTest {
         assertThat(refund).isEqualTo(mapper.map(REFUND_RESPONSE))
     }
 
-    private suspend fun fetchSpecificTestRefund(): RefundsResult<RefundModel> {
+    private suspend fun fetchSpecificTestRefund(): RefundsResult<WCRefundModel> {
         val fetchRefundsPayload = RefundsPayload(
                 REFUND_RESPONSE
         )
@@ -111,15 +111,15 @@ class RefundsStoreTest {
         return store.fetchRefund(site, orderId, refundId)
     }
 
-    private suspend fun fetchAllTestRefunds(): RefundsResult<List<RefundModel>> {
+    private suspend fun fetchAllTestRefunds(): RefundsResult<List<WCRefundModel>> {
         val data = arrayOf(REFUND_RESPONSE, REFUND_RESPONSE)
         val fetchRefundsPayload = RefundsPayload(
                 data
         )
-        whenever(restClient.fetchAllRefunds(site, orderId)).thenReturn(
+        whenever(restClient.fetchAllRefunds(site, orderId, WCRefundsStore.PAGE, WCRefundsStore.DEFAULT_PAGE_SIZE)).thenReturn(
                 fetchRefundsPayload
         )
-        whenever(restClient.fetchAllRefunds(site, 2)).thenReturn(
+        whenever(restClient.fetchAllRefunds(site, 2, WCRefundsStore.PAGE, WCRefundsStore.DEFAULT_PAGE_SIZE)).thenReturn(
                 RefundsPayload(error)
         )
         return store.fetchAllRefunds(site, orderId)

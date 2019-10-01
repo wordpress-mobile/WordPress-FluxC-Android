@@ -13,6 +13,6 @@ fun showSingleLineDialog(activity: FragmentActivity?, message: String, alertText
     editText.setSingleLine()
     alert.setMessage(message)
     alert.setView(editText)
-    alert.setPositiveButton(android.R.string.ok, { _, _ -> alertTextListener(editText) })
+    alert.setPositiveButton(android.R.string.ok) { _, _ -> alertTextListener(editText) }
     alert.show()
 }

@@ -1,6 +1,6 @@
 package org.wordpress.android.fluxc.model.refunds
 
-import org.wordpress.android.fluxc.model.refunds.RefundModel.RefundItem
+import org.wordpress.android.fluxc.model.refunds.WCRefundModel.WCRefundItem
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.DATE_FORMAT_DAY
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundsRestClient.RefundResponse
 import java.math.BigDecimal
@@ -11,15 +11,15 @@ import javax.inject.Inject
 
 class RefundsMapper
 @Inject constructor() {
-    fun map(response: RefundResponse): RefundModel {
-        return RefundModel(
+    fun map(response: RefundResponse): WCRefundModel {
+        return WCRefundModel(
                 response.refundId ?: -1,
                 response.dateCreated?.let { fromFormattedDate(it) } ?: Date(),
                 response.amount?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
                 response.reason,
                 response.refundedPayment ?: false,
                 response.items.map {
-                    RefundItem(
+                    WCRefundItem(
                             it.id ?: -1,
                             it.name ?: "",
                             it.productId ?: -1,

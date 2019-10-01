@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.persistence
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.wellsql.generated.RefundsTable
+import com.wellsql.generated.WCRefundsTable
 import com.yarolegovich.wellsql.WellSql
 import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
@@ -11,23 +11,23 @@ import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundsRestClient.RefundResponse
 
-object RefundsSqlUtils {
+object WCRefundsSqlUtils {
     private val gson: Gson by lazy {
         val builder = GsonBuilder()
         builder.create()
     }
 
-    fun insert(site: SiteModel, orderId: Long, data: RefundResponse) =
-            insert(site, orderId, listOf(data))
+    fun insertOrUpdate(site: SiteModel, orderId: Long, data: RefundResponse) =
+            insertOrUpdate(site, orderId, listOf(data))
 
-    fun insert(site: SiteModel, orderId: Long, data: List<RefundResponse>) {
+    fun insertOrUpdate(site: SiteModel, orderId: Long, data: List<RefundResponse>) {
         data.forEach { item ->
             val json = gson.toJson(item)
             WellSql.delete(RefundsBuilder::class.java)
                 .where()
-                .equals(RefundsTable.LOCAL_SITE_ID, site.id)
-                .equals(RefundsTable.ORDER_ID, orderId)
-                .equals(RefundsTable.REFUND_ID, item.refundId)
+                .equals(WCRefundsTable.LOCAL_SITE_ID, site.id)
+                .equals(WCRefundsTable.ORDER_ID, orderId)
+                .equals(WCRefundsTable.REFUND_ID, item.refundId)
                 .endWhere()
                 .execute()
             WellSql.insert(
@@ -47,8 +47,8 @@ object RefundsSqlUtils {
     ): List<RefundResponse> {
         val models = WellSql.select(RefundsBuilder::class.java)
                 .where()
-                .equals(RefundsTable.LOCAL_SITE_ID, site.id)
-                .equals(RefundsTable.ORDER_ID, orderId)
+                .equals(WCRefundsTable.LOCAL_SITE_ID, site.id)
+                .equals(WCRefundsTable.ORDER_ID, orderId)
                 .endWhere()
                 .asModel
         return models.map { gson.fromJson(it.data, RefundResponse::class.java) }
@@ -61,16 +61,16 @@ object RefundsSqlUtils {
     ): RefundResponse? {
         val model = WellSql.select(RefundsBuilder::class.java)
                 .where()
-                .equals(RefundsTable.LOCAL_SITE_ID, site.id)
-                .equals(RefundsTable.ORDER_ID, orderId)
-                .equals(RefundsTable.REFUND_ID, refundId)
+                .equals(WCRefundsTable.LOCAL_SITE_ID, site.id)
+                .equals(WCRefundsTable.ORDER_ID, orderId)
+                .equals(WCRefundsTable.REFUND_ID, refundId)
                 .endWhere()
                 .asModel
                 .firstOrNull()
         return model?.let { gson.fromJson(it.data, RefundResponse::class.java) }
     }
 
-    @Table(name = "Refunds")
+    @Table(name = "WCRefunds")
     data class RefundsBuilder(
         @PrimaryKey @Column private var mId: Int = -1,
         @Column var localSiteId: Int,
