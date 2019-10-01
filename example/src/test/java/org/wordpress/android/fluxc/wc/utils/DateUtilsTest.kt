@@ -244,18 +244,18 @@ class DateUtilsTest {
     fun testGetStartDayOfCurrentMonthForSite() {
         val site = SiteModel().apply { id = 1 }
 
-        val expectedDate = LocalDate.now()
-                .withDayOfMonth(1)
-                .atStartOfDay(ZoneId.systemDefault())
-                .toInstant()
-        val expectedDateString = DateUtils.formatDate(DATE_TIME_FORMAT_START, Date.from(expectedDate))
-
         // test get start date for current day
-        for (i in -20..20) {
+        for (i in -15..15) {
             site.timezone = i.toString()
             // format the current date to string
             // get the formatted date string for the site in the format yyyy-MM-ddThh:mm:ss
             // get the expected start date string for the site in the format yyyy-MM-ddThh:mm:ss
+            val expectedDate = LocalDate.now(SiteUtils.getNormalizedTimezone(site.timezone).toZoneId())
+                    .withDayOfMonth(1)
+                    .atStartOfDay(ZoneId.systemDefault())
+                    .toInstant()
+            val expectedDateString = DateUtils.formatDate(DATE_TIME_FORMAT_START, Date.from(expectedDate))
+
             val dateString1 = DateUtils.getFirstDayOfCurrentMonthBySite(site)
             assertEquals(expectedDateString, dateString1)
         }

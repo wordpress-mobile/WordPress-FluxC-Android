@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.orders.WooOrdersFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductsFragment
+import org.wordpress.android.fluxc.example.ui.refunds.WooRefundsFragment
 import org.wordpress.android.fluxc.example.ui.stats.WooStatsFragment
 import org.wordpress.android.fluxc.example.ui.stats.WooRevenueStatsFragment
 import org.wordpress.android.fluxc.generated.WCCoreActionBuilder
@@ -90,6 +91,12 @@ class WooCommerceFragment : Fragment() {
         stats_revenue.setOnClickListener {
             getFirstWCSite()?.let {
                 replaceFragment(WooRevenueStatsFragment())
+            } ?: showNoWCSitesToast()
+        }
+
+        refunds.setOnClickListener {
+            getFirstWCSite()?.let {
+                replaceFragment(WooRefundsFragment())
             } ?: showNoWCSitesToast()
         }
     }

@@ -1,6 +1,6 @@
 buildscript {
     ext.kotlinVersion = '1.3.21'
-    ext.kotlinCoroutinesVersion = '1.1.0'
+    ext.kotlinCoroutinesVersion = '1.2.2'
 
     repositories {
         google()
