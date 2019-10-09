@@ -16,7 +16,7 @@ sealed class LocalOrRemoteId {
     }
 
     override fun hashCode(): Int {
-        return when(this) {
+        return when (this) {
             is LocalId -> this.hashCode()
             is RemoteId -> this.hashCode()
         }
