@@ -17,12 +17,12 @@ apply plugin: 'com.neenbedankt.android-apt'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.0"
+    buildToolsVersion "24.0.3"
 
     defaultConfig {
         applicationId "org.wordpress.android.fluxc.example"
         minSdkVersion 15
-        targetSdkVersion 23
+        targetSdkVersion 22
         versionCode 1
         versionName "1.0"
     }
