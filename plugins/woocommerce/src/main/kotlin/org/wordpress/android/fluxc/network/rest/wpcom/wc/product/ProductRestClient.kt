@@ -39,6 +39,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
 import java.util.HashMap
 import javax.inject.Singleton
 
@@ -241,20 +242,19 @@ class ProductRestClient(
                         val newModel = productResponseToProductModel(it).apply {
                             localSiteId = site.id
                         }
-                        val payload = RemoteProductPayload(newModel, site)
-                        dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductAction(payload))
+                        val payload = RemoteUpdateProductImagesPayload(site, newModel)
+                        dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductImagesAction(payload))
                     }
                 },
                 WPComErrorListener { networkError ->
                     val productError = networkErrorToProductError(networkError)
-                    val payload = RemoteProductPayload(
+                    val payload = RemoteUpdateProductImagesPayload(
                             productError,
-                            WCProductModel().apply { this.remoteProductId = remoteProductId },
-                            site
+                            site,
+                            WCProductModel().apply { this.remoteProductId = remoteProductId }
                     )
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductAction(payload))
-                },
-                { request: WPComGsonRequest<*> -> add(request) })
+                    dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductImagesAction(payload))
+                })
         add(request)
     }
 
