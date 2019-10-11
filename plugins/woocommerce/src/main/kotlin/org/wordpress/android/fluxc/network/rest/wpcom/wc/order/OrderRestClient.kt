@@ -693,6 +693,7 @@ class OrderRestClient(
             dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: ""
             note = response.note ?: ""
             isSystemNote = response.author == "system" || response.author == "WooCommerce"
+            author = response.author ?: ""
             isCustomerNote = response.customer_note
         }
     }
