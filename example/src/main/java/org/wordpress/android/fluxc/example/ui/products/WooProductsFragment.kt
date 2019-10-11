@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
+import org.wordpress.android.fluxc.model.MediaModel
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
@@ -153,7 +154,23 @@ class WooProductsFragment : Fragment() {
                     } ?: prependToLog("No valid remoteReviewId defined...doing nothing")
                 }
             }
+
+            update_product_images.setOnClickListener {
+                showSingleLineDialog(
+                        activity,
+                        "Enter the remoteProductId of product to update images:"
+                ) { editText ->
+                    editText.text.toString().toLongOrNull()?.let { remoteProductId ->
+                        updateProductImages(remoteProductId)
+                    }
+                }
+            }
         }
+    }
+
+    private fun updateProductImages(remoteProductId: Long) {
+        val mediaList = ArrayList<MediaModel>()
+        // TODO
     }
 
     override fun onStart() {

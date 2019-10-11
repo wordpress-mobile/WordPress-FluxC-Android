@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
+import org.wordpress.android.fluxc.model.MediaModel
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
@@ -23,6 +24,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -377,6 +379,34 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RemoteProductReviewPayload
         assertTrue(payload.isError)
         assertEquals(ProductErrorType.INVALID_PARAM, payload.error.type)
+    }
+
+    @Test
+    fun testUpdateProductImagesSuccess() {
+        interceptor.respondWith("wc-fetch-product-response-success.json")
+
+        val mediaList = ArrayList<MediaModel>()
+        with(MediaModel()) {
+            id = 1
+            mediaList.add(this)
+        }
+        with(MediaModel()) {
+            id = 2
+            mediaList.add(this)
+        }
+
+        productRestClient.updateProductImages(siteModel, remoteProductId, mediaList)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.UPDATED_PRODUCT_IMAGES, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteUpdateProductImagesPayload
+        with(payload) {
+            assertNull(error)
+            assertEquals(remoteProductId, product.remoteProductId)
+            assertEquals(product.getImages().size, 2)
+        }
     }
 
     @Suppress("unused")
