@@ -381,10 +381,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(ProductErrorType.INVALID_PARAM, payload.error.type)
     }
 
-    @Test
-    fun testUpdateProductImagesSuccess() {
-        interceptor.respondWith("wc-fetch-product-response-success.json")
-
+    private fun generateTestMediaList(): List<MediaModel> {
         val mediaList = ArrayList<MediaModel>()
         with(MediaModel()) {
             id = 1
@@ -394,8 +391,14 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             id = 2
             mediaList.add(this)
         }
+        return mediaList
+    }
 
-        productRestClient.updateProductImages(siteModel, remoteProductId, mediaList)
+    @Test
+    fun testUpdateProductImagesSuccess() {
+        interceptor.respondWith("wc-fetch-product-response-success.json")
+
+        productRestClient.updateProductImages(siteModel, remoteProductId, generateTestMediaList())
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -407,6 +410,19 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(remoteProductId, product.remoteProductId)
             assertEquals(product.getImages().size, 2)
         }
+    }
+
+    @Test
+    fun testUpdateProductImagesFailed() {
+        interceptor.respondWithError("wc-response-failure-invalid-param.json")
+        productRestClient.updateProductImages(siteModel, remoteProductId, generateTestMediaList())
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.UPDATED_PRODUCT_IMAGES, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteUpdateProductImagesPayload
+        assertTrue(payload.isError)
     }
 
     @Suppress("unused")
