@@ -2,12 +2,16 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
+import org.wordpress.android.fluxc.model.MediaModel
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
@@ -35,6 +39,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
+import java.util.HashMap
 import javax.inject.Singleton
 
 @Singleton
@@ -198,6 +203,56 @@ class ProductRestClient(
                             productId
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVariationsAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Makes a PUT request to `/wp-json/wc/v3/products/[remoteProductId]` to update a product's images
+     *
+     * Dispatches a WCProductAction.FETCHED_SINGLE_PRODUCT action with the result
+     *
+     * @param [site] The site to fetch product reviews for
+     * @param [remoteProductId] Unique server id of the product to fetch
+     * @param [mediaList] list of media to assign to the product
+     */
+    fun updateProductImages(site: SiteModel, remoteProductId: Long, mediaList: List<MediaModel>) {
+        val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
+        val responseType = object : TypeToken<ProductApiResponse>() {}.type
+
+        // build json list of images
+        val jsonBody = JsonArray()
+        for (media in mediaList) {
+            val image = WCProductImageModel.fromMediaModel(media)
+            val jsonImage = JsonObject()
+            jsonImage.addProperty("id", image.id)
+            jsonImage.addProperty("date_created", image.dateCreated)
+            jsonImage.addProperty("src", image.src)
+            jsonImage.addProperty("alt", image.alt)
+            jsonBody.add(jsonImage.toString())
+        }
+        val body = HashMap<String, Any>()
+        body["images"] = jsonBody
+
+        val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
+                { response: ProductApiResponse? ->
+                    response?.let {
+                        val newModel = productResponseToProductModel(it).apply {
+                            localSiteId = site.id
+                        }
+                        val payload = RemoteProductPayload(newModel, site)
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductAction(payload))
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val productError = networkErrorToProductError(networkError)
+                    val payload = RemoteProductPayload(
+                            productError,
+                            WCProductModel().apply { this.remoteProductId = remoteProductId },
+                            site
+                    )
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)

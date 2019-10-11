@@ -6,6 +6,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
+import org.wordpress.android.fluxc.model.MediaModel
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
@@ -75,6 +76,12 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var newStatus: String
     ) : Payload<BaseNetworkError>()
 
+    class UpdateProductImagesPayload(
+        var site: SiteModel,
+        var remoteProductId: Long,
+        mediaList: List<MediaModel>
+    ) : Payload<BaseNetworkError>()
+
     enum class ProductErrorType {
         INVALID_PARAM,
         INVALID_REVIEW_ID,
@@ -130,6 +137,21 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var canLoadMore: Boolean = false
     ) : Payload<ProductError>() {
         constructor(error: ProductError, site: SiteModel, query: String) : this(site, query) {
+            this.error = error
+        }
+    }
+
+    class RemoteUpdateProductImagesPayload(
+        var site: SiteModel,
+        val remoteProductId: Long,
+        val mediaList: List<MediaModel> = emptyList()
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            site: SiteModel,
+            remoteProductId: Long,
+            mediaList: List<MediaModel>
+        ) : this(site, remoteProductId, mediaList) {
             this.error = error
         }
     }

@@ -13,8 +13,10 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload;
-import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload;
 
 @ActionEnum
@@ -34,6 +36,8 @@ public enum WCProductAction implements IAction {
     FETCH_SINGLE_PRODUCT_REVIEW,
     @Action(payloadType = UpdateProductReviewStatusPayload.class)
     UPDATE_PRODUCT_REVIEW_STATUS,
+    @Action(payloadType = UpdateProductImagesPayload.class)
+    UPDATE_PRODUCT_IMAGES,
 
     // Remote responses
     @Action(payloadType = RemoteProductPayload.class)
@@ -49,5 +53,7 @@ public enum WCProductAction implements IAction {
     @Action(payloadType = RemoteProductReviewPayload.class)
     FETCHED_SINGLE_PRODUCT_REVIEW,
     @Action(payloadType = RemoteProductReviewPayload.class)
-    UPDATED_PRODUCT_REVIEW_STATUS
+    UPDATED_PRODUCT_REVIEW_STATUS,
+    @Action(payloadType = RemoteUpdateProductImagesPayload.class)
+    UPDATED_PRODUCT_IMAGES
 }
