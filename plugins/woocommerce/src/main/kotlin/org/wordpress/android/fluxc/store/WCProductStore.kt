@@ -85,6 +85,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     enum class ProductErrorType {
         INVALID_PARAM,
         INVALID_REVIEW_ID,
+        INVALID_IMAGE_ID,
         GENERIC_ERROR;
 
         companion object {

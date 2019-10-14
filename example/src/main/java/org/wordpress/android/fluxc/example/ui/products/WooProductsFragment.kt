@@ -179,6 +179,11 @@ class WooProductsFragment : Fragment() {
         }
     }
 
+    /**
+     * Note that this will replace all this product's images with a single image, as defined by mediaId. Also note
+     * that the media must already be cached for this to work (ie: you may need to go to the first screen in the
+     * example app, tap Media, then ensure the media is fetched)
+     */
     private fun updateProductImages(productId: Long, mediaId: Long) {
         selectedSite?.let { site ->
             mediaStore.getSiteMediaWithId(site, mediaId)?.let { media ->

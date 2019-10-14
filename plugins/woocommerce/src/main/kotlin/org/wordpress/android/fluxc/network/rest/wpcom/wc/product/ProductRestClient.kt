@@ -210,7 +210,8 @@ class ProductRestClient(
     }
 
     /**
-     * Makes a PUT request to `/wp-json/wc/v3/products/[remoteProductId]` to update a product's images
+     * Makes a PUT request to `/wp-json/wc/v3/products/[remoteProductId]` to update a product's images,
+     * replacing any existing images with the passed list of media
      *
      * Dispatches a WCProductAction.FETCHED_SINGLE_PRODUCT action with the result
      *
@@ -519,6 +520,7 @@ class ProductRestClient(
         val productErrorType = when (wpComError.apiError) {
             "rest_invalid_param" -> ProductErrorType.INVALID_PARAM
             "woocommerce_rest_review_invalid_id" -> ProductErrorType.INVALID_REVIEW_ID
+            "woocommerce_product_invalid_image_id" -> ProductErrorType.INVALID_IMAGE_ID
             else -> ProductErrorType.fromString(wpComError.apiError)
         }
         return ProductError(productErrorType, wpComError.message)
