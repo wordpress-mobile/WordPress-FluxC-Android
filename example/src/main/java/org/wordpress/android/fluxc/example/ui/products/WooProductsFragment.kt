@@ -158,20 +158,20 @@ class WooProductsFragment : Fragment() {
                     } ?: prependToLog("No valid remoteReviewId defined...doing nothing")
                 }
             }
+        }
 
-            update_product_images.setOnClickListener {
-                showSingleLineDialog(
-                        activity,
-                        "Enter the remoteProductId of the product to update images:"
-                ) { editTextProduct ->
-                    editTextProduct.text.toString().toLongOrNull()?.let { productId ->
-                        showSingleLineDialog(
-                                activity,
-                                "Enter the mediaId of the image to assign to the product:"
-                        ) { editTextMedia ->
-                            editTextMedia.text.toString().toLongOrNull()?.let { mediaId ->
-                                updateProductImages(productId, mediaId)
-                            }
+        update_product_images.setOnClickListener {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the remoteProductId of the product to update images:"
+            ) { editTextProduct ->
+                editTextProduct.text.toString().toLongOrNull()?.let { productId ->
+                    showSingleLineDialog(
+                            activity,
+                            "Enter the mediaId of the image to assign to the product:"
+                    ) { editTextMedia ->
+                        editTextMedia.text.toString().toLongOrNull()?.let { mediaId ->
+                            updateProductImages(productId, mediaId)
                         }
                     }
                 }
@@ -265,7 +265,7 @@ class WooProductsFragment : Fragment() {
         if (event.isError) {
             prependToLog("Error updating product images - error: " + event.error.type)
         } else {
-            prependToLog("Product images updated")
+            prependToLog("Product images updated - {${event.product?.images}")
         }
     }
 
