@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.model
 
+import org.wordpress.android.fluxc.utils.DateUtils
+
 class WCProductImageModel(val id: Long) {
     var dateCreated: String = ""
     var src: String = ""
@@ -8,9 +10,9 @@ class WCProductImageModel(val id: Long) {
     companion object {
         fun fromMediaModel(media: MediaModel): WCProductImageModel {
             with(WCProductImageModel(media.mediaId)) {
-                dateCreated = media.uploadDate
-                src = media.url
-                alt = media.alt
+                dateCreated = media.uploadDate ?: DateUtils.getCurrentDateString()
+                src = media.url ?: ""
+                alt = media.alt ?: ""
                 return this
             }
         }

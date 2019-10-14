@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
+import org.wordpress.android.fluxc.utils.DateUtils
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -385,10 +386,12 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val mediaList = ArrayList<MediaModel>()
         with(MediaModel()) {
             id = 1
+            uploadDate = DateUtils.getCurrentDateString()
             mediaList.add(this)
         }
         with(MediaModel()) {
             id = 2
+            uploadDate = DateUtils.getCurrentDateString()
             mediaList.add(this)
         }
         return mediaList
