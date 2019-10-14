@@ -210,10 +210,10 @@ class ProductRestClient(
     }
 
     /**
-     * Makes a PUT request to `/wp-json/wc/v3/products/[remoteProductId]` to update a product's images,
-     * replacing any existing images with the passed list of media
+     * Makes a PUT request to `/wp-json/wc/v3/products/[remoteProductId]` to replace a product's images
+     * with the passed list of media
      *
-     * Dispatches a WCProductAction.FETCHED_SINGLE_PRODUCT action with the result
+     * Dispatches a WCProductAction.UPDATED_PRODUCT_IMAGES action with the result
      *
      * @param [site] The site to fetch product reviews for
      * @param [remoteProductId] Unique server id of the product to fetch
@@ -227,14 +227,16 @@ class ProductRestClient(
         val jsonBody = JsonArray()
         for (media in mediaList) {
             val image = WCProductImageModel.fromMediaModel(media)
-            val jsonImage = JsonObject()
-            jsonImage.addProperty("id", image.id)
-            jsonImage.addProperty("date_created", image.dateCreated)
-            jsonImage.addProperty("src", image.src)
-            jsonImage.addProperty("alt", image.alt)
-            jsonBody.add(jsonImage.toString())
+            with(JsonObject()) {
+                addProperty("id", image.id)
+                addProperty("date_created", image.dateCreated)
+                addProperty("src", image.src)
+                addProperty("alt", image.alt)
+                jsonBody.add(this)
+            }
         }
         val body = HashMap<String, Any>()
+        body["id"] = remoteProductId
         body["images"] = jsonBody
 
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
