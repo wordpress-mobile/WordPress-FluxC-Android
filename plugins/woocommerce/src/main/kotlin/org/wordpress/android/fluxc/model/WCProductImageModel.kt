@@ -7,7 +7,7 @@ class WCProductImageModel(val id: Long) {
 
     companion object {
         fun fromMediaModel(media: MediaModel): WCProductImageModel {
-            with (WCProductImageModel(media.mediaId)) {
+            with(WCProductImageModel(media.mediaId)) {
                 dateCreated = media.uploadDate
                 src = media.url
                 alt = media.alt

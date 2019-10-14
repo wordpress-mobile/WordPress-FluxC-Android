@@ -341,7 +341,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun updateProductImages(payload: UpdateProductImagesPayload) {
-        with(payload) { wcProductRestClient.updateProductImages(site, remoteProductId, mediaList)}
+        with(payload) { wcProductRestClient.updateProductImages(site, remoteProductId, mediaList) }
     }
 
     private fun handleFetchSingleProductCompleted(payload: RemoteProductPayload) {
