@@ -11,11 +11,14 @@ import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.example.BuildConfig
+import org.wordpress.android.fluxc.generated.MediaActionBuilder
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.MediaModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.persistence.MediaSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
+import org.wordpress.android.fluxc.store.MediaStore
+import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
@@ -53,11 +56,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     private val productModelWithVariations = WCProductModel(8).apply {
         remoteProductId = BuildConfig.TEST_WC_PRODUCT_WITH_VARIATIONS_ID.toLong()
         dateCreated = "2018-04-20T15:45:14Z"
-    }
-    private val remoteProductMediaModelId = BuildConfig.TEST_WC_PRODUCT_MEDIA_ID.toLong()
-    private val mediaModelForProduct = MediaModel().apply {
-        mediaId = remoteProductMediaModelId
-        url = BuildConfig.TEST_WC_PRODUCT_MEDIA_SRC
     }
     private val remoteProductReviewId = BuildConfig.TEST_WC_PRODUCT_REVIEW_ID.toLong()
 
@@ -297,11 +295,16 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testUpdateProductImages() {
-        // first make sure this media exists in the db
-        val rowsAffected = MediaSqlUtils.insertOrUpdateMedia(mediaModelForProduct)
-        assertEquals(rowsAffected, 1)
+        // first get the list of this site's media, and if it's empty fetch a single media model
+        var siteMedia = MediaSqlUtils.getAllSiteMedia(sSite)
+        if (siteMedia.isEmpty()) {
+            fetchFirstMedia()
+            siteMedia = MediaSqlUtils.getAllSiteMedia(sSite)
+            assertTrue(siteMedia.isNotEmpty())
+        }
 
-        // then dispatch the request to use this as the product image
+        val mediaModelForProduct = siteMedia[0]
+
         nextEvent = TestEvent.UPDATED_PRODUCT_IMAGES
         mCountDownLatch = CountDownLatch(1)
         val mediaList = ArrayList<MediaModel>().also { it.add(mediaModelForProduct) }
@@ -320,7 +323,18 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertEquals(updatedImageList.size, 1)
 
         val updatedImage = updatedImageList[0]
-        assertEquals(updatedImage.id, remoteProductMediaModelId)
+        assertEquals(updatedImage.id, mediaModelForProduct.mediaId)
+    }
+
+    /**
+     * Used by the update images test to fetch a single media model for this site
+     */
+    @Throws(InterruptedException::class)
+    private fun fetchFirstMedia() {
+        mCountDownLatch = CountDownLatch(1)
+        val payload = MediaStore.FetchMediaListPayload(sSite, 1, false)
+        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(payload))
+        mCountDownLatch.await()
     }
 
     @Suppress("unused")
@@ -373,6 +387,15 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
         }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMediaListFetched(event: OnMediaListFetched) {
+        event.error?.let {
+            throw AssertionError("WCProductTest.onMediaListFetched has unexpected error: ${it.type}, ${it.message}")
+        }
+        mCountDownLatch.countDown()
     }
 
     @Suppress("unused")
