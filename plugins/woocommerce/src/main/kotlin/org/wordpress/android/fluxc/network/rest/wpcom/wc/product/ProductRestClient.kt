@@ -232,6 +232,7 @@ class ProductRestClient(
                 addProperty("date_created", image.dateCreated)
                 addProperty("src", image.src)
                 addProperty("alt", image.alt)
+                addProperty("name", image.name)
                 jsonBody.add(this)
             }
         }
