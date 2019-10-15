@@ -6,6 +6,7 @@ class WCProductImageModel(val id: Long) {
     var dateCreated: String = ""
     var src: String = ""
     var alt: String = ""
+    var name: String = ""
 
     companion object {
         fun fromMediaModel(media: MediaModel): WCProductImageModel {
@@ -13,6 +14,7 @@ class WCProductImageModel(val id: Long) {
                 dateCreated = media.uploadDate ?: DateUtils.getCurrentDateString()
                 src = media.url ?: ""
                 alt = media.alt ?: ""
+                name = media.fileName ?: ""
                 return this
             }
         }

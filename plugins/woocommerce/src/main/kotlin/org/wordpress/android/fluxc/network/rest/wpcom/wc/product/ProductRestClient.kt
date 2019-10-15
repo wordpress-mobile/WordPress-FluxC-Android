@@ -211,12 +211,12 @@ class ProductRestClient(
 
     /**
      * Makes a PUT request to `/wp-json/wc/v3/products/[remoteProductId]` to replace a product's images
-     * with the passed list of media
+     * with the passed media list
      *
      * Dispatches a WCProductAction.UPDATED_PRODUCT_IMAGES action with the result
      *
      * @param [site] The site to fetch product reviews for
-     * @param [remoteProductId] Unique server id of the product to fetch
+     * @param [remoteProductId] Unique server id of the product to update
      * @param [mediaList] list of media to assign to the product
      */
     fun updateProductImages(site: SiteModel, remoteProductId: Long, mediaList: List<MediaModel>) {

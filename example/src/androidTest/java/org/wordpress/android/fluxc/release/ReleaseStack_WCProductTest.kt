@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
+import org.wordpress.android.fluxc.model.MediaModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore
@@ -21,7 +22,9 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductReviewChanged
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -35,7 +38,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         FETCHED_PRODUCT_VARIATIONS,
         FETCHED_PRODUCT_REVIEWS,
         FETCHED_SINGLE_PRODUCT_REVIEW,
-        UPDATED_PRODUCT_REVIEW_STATUS
+        UPDATED_PRODUCT_REVIEW_STATUS,
+        UPDATED_PRODUCT_IMAGES
     }
 
     @Inject internal lateinit var productStore: WCProductStore
@@ -48,6 +52,10 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     private val productModelWithVariations = WCProductModel(8).apply {
         remoteProductId = BuildConfig.TEST_WC_PRODUCT_WITH_VARIATIONS_ID.toLong()
         dateCreated = "2018-04-20T15:45:14Z"
+    }
+    private val mediaModelForProduct = MediaModel().apply {
+        mediaId = BuildConfig.TEST_WC_PRODUCT_MEDIA_ID.toLong()
+        url = BuildConfig.TEST_WC_PRODUCT_MEDIA_SRC
     }
     private val remoteProductReviewId = BuildConfig.TEST_WC_PRODUCT_REVIEW_ID.toLong()
 
@@ -284,6 +292,31 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         }
     }
 
+    @Throws(InterruptedException::class)
+    @Test
+    fun testUpdateProductImages() {
+        nextEvent = TestEvent.UPDATED_PRODUCT_IMAGES
+        mCountDownLatch = CountDownLatch(1)
+        val mediaList = ArrayList<MediaModel>().also { it.add(mediaModelForProduct) }
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newUpdateProductImagesAction(
+                        UpdateProductImagesPayload(sSite, remoteProductReviewId, mediaList)
+                )
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        val updatedProduct = productStore.getProductByRemoteId(sSite, BuildConfig.TEST_WC_PRODUCT_ID.toLong())
+        assertNotNull(updatedProduct)
+
+        val updatedImages = updatedProduct!!.getImages()
+        assertNotNull(updatedImages)
+        assertEquals(updatedImages.size, 1)
+
+        val updatedImage = updatedImages[0]
+        assertEquals(updatedImage.id, BuildConfig.TEST_WC_PRODUCT_ID.toLong())
+        assertEquals(updatedImage.src, BuildConfig.TEST_WC_PRODUCT_MEDIA_SRC)
+    }
+
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProductChanged(event: OnProductChanged) {
@@ -334,5 +367,16 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
         }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductImagesChanged(event: OnProductImagesChanged) {
+        event.error?.let {
+            throw AssertionError("OnProductImagesChanged has unexpected error: " + it.type)
+        }
+
+        assertEquals(TestEvent.UPDATED_PRODUCT_IMAGES, nextEvent)
+        mCountDownLatch.countDown()
     }
 }
