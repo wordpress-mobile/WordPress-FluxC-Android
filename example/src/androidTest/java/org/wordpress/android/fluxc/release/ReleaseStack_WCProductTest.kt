@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.MediaModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.persistence.MediaSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
@@ -53,8 +54,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         remoteProductId = BuildConfig.TEST_WC_PRODUCT_WITH_VARIATIONS_ID.toLong()
         dateCreated = "2018-04-20T15:45:14Z"
     }
+    private val remoteProductMediaModelId = BuildConfig.TEST_WC_PRODUCT_MEDIA_ID.toLong()
     private val mediaModelForProduct = MediaModel().apply {
-        mediaId = BuildConfig.TEST_WC_PRODUCT_MEDIA_ID.toLong()
+        mediaId = remoteProductMediaModelId
         url = BuildConfig.TEST_WC_PRODUCT_MEDIA_SRC
     }
     private val remoteProductReviewId = BuildConfig.TEST_WC_PRODUCT_REVIEW_ID.toLong()
@@ -295,26 +297,30 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testUpdateProductImages() {
+        // first make sure this media exists in the db
+        val rowsAffected = MediaSqlUtils.insertOrUpdateMedia(mediaModelForProduct)
+        assertEquals(rowsAffected, 1)
+
+        // then dispatch the request to use this as the product image
         nextEvent = TestEvent.UPDATED_PRODUCT_IMAGES
         mCountDownLatch = CountDownLatch(1)
         val mediaList = ArrayList<MediaModel>().also { it.add(mediaModelForProduct) }
         mDispatcher.dispatch(
                 WCProductActionBuilder.newUpdateProductImagesAction(
-                        UpdateProductImagesPayload(sSite, remoteProductReviewId, mediaList)
+                        UpdateProductImagesPayload(sSite, productModel.remoteProductId, mediaList)
                 )
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        val updatedProduct = productStore.getProductByRemoteId(sSite, BuildConfig.TEST_WC_PRODUCT_ID.toLong())
+        val updatedProduct = productStore.getProductByRemoteId(sSite, productModel.remoteProductId)
         assertNotNull(updatedProduct)
 
-        val updatedImages = updatedProduct!!.getImages()
-        assertNotNull(updatedImages)
-        assertEquals(updatedImages.size, 1)
+        val updatedImageList = updatedProduct!!.getImages()
+        assertNotNull(updatedImageList)
+        assertEquals(updatedImageList.size, 1)
 
-        val updatedImage = updatedImages[0]
-        assertEquals(updatedImage.id, BuildConfig.TEST_WC_PRODUCT_ID.toLong())
-        assertEquals(updatedImage.src, BuildConfig.TEST_WC_PRODUCT_MEDIA_SRC)
+        val updatedImage = updatedImageList[0]
+        assertEquals(updatedImage.id, remoteProductMediaModelId)
     }
 
     @Suppress("unused")
@@ -373,7 +379,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProductImagesChanged(event: OnProductImagesChanged) {
         event.error?.let {
-            throw AssertionError("OnProductImagesChanged has unexpected error: " + it.type)
+            throw AssertionError("OnProductImagesChanged has unexpected error: ${it.type}, ${it.message}")
         }
 
         assertEquals(TestEvent.UPDATED_PRODUCT_IMAGES, nextEvent)
