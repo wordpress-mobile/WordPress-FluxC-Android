@@ -714,7 +714,7 @@ public class SiteRestClient extends BaseWPComRestClient {
                                 DomainAvailabilityError domainAvailabilityError = new DomainAvailabilityError(
                                         DomainAvailabilityErrorType.GENERIC_ERROR, error.message);
                                 DomainAvailabilityResponsePayload payload =
-                                        new DomainAvailabilityResponsePayload(domainAvailabilityError);
+                                        new DomainAvailabilityResponsePayload(domainName, domainAvailabilityError);
                                 mDispatcher.dispatch(SiteActionBuilder.newCheckedDomainAvailabilityAction(payload));
                             }
                         });
@@ -1064,9 +1064,10 @@ public class SiteRestClient extends BaseWPComRestClient {
     }
 
     private DomainAvailabilityResponsePayload responseToDomainAvailabilityPayload(DomainAvailabilityResponse response) {
+        String domainName = response.getDomain_name();
         DomainAvailabilityStatus status = DomainAvailabilityStatus.fromString(response.getStatus());
         DomainMappabilityStatus mappable = DomainMappabilityStatus.fromString(response.getMappable());
         boolean supportsPrivacy = response.getSupports_privacy();
-        return new DomainAvailabilityResponsePayload(status, mappable, supportsPrivacy);
+        return new DomainAvailabilityResponsePayload(domainName, status, mappable, supportsPrivacy);
     }
 }

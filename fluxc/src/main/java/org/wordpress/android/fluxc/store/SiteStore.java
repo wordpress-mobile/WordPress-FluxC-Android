@@ -321,19 +321,24 @@ public class SiteStore extends Store {
     }
 
     public static class DomainAvailabilityResponsePayload extends Payload<DomainAvailabilityError> {
+        public @Nullable String domainName;
         public @Nullable DomainAvailabilityStatus status;
         public @Nullable DomainMappabilityStatus mappable;
         public boolean supportsPrivacy;
 
-        public DomainAvailabilityResponsePayload(@Nullable DomainAvailabilityStatus status,
+        public DomainAvailabilityResponsePayload(@Nullable String domainName,
+                                                 @Nullable DomainAvailabilityStatus status,
                                                  @Nullable DomainMappabilityStatus mappable,
                                                  @Nullable boolean supportsPrivacy) {
+            this.domainName = domainName;
             this.status = status;
             this.mappable = mappable;
             this.supportsPrivacy = supportsPrivacy;
         }
 
-        public DomainAvailabilityResponsePayload(@NonNull DomainAvailabilityError error) {
+        public DomainAvailabilityResponsePayload(@Nullable String domainName,
+                                                 @NonNull DomainAvailabilityError error) {
+            this.domainName = domainName;
             this.error = error;
         }
     }
@@ -662,14 +667,17 @@ public class SiteStore extends Store {
     }
 
     public static class OnDomainAvailabilityChecked extends OnChanged<DomainAvailabilityError> {
+        public @Nullable String domainName;
         public @Nullable DomainAvailabilityStatus status;
         public @Nullable DomainMappabilityStatus mappable;
         public boolean supportsPrivacy;
 
-        public OnDomainAvailabilityChecked(@Nullable DomainAvailabilityStatus status,
+        public OnDomainAvailabilityChecked(@Nullable String domainName,
+                                           @Nullable DomainAvailabilityStatus status,
                                            @Nullable DomainMappabilityStatus mappable,
                                            boolean supportsPrivacy,
                                            @Nullable DomainAvailabilityError error) {
+            this.domainName = domainName;
             this.status = status;
             this.mappable = mappable;
             this.supportsPrivacy = supportsPrivacy;
@@ -1912,7 +1920,7 @@ public class SiteStore extends Store {
         if (TextUtils.isEmpty(domainName)) {
             DomainAvailabilityError error =
                     new DomainAvailabilityError(DomainAvailabilityErrorType.INVALID_DOMAIN_NAME);
-            handleCheckedDomainAvailability(new DomainAvailabilityResponsePayload(error));
+            handleCheckedDomainAvailability(new DomainAvailabilityResponsePayload(domainName, error));
         } else {
             mSiteRestClient.checkDomainAvailability(domainName);
         }
@@ -1921,6 +1929,7 @@ public class SiteStore extends Store {
     private void handleCheckedDomainAvailability(DomainAvailabilityResponsePayload payload) {
         emitChange(
                 new OnDomainAvailabilityChecked(
+                        payload.domainName,
                         payload.status,
                         payload.mappable,
                         payload.supportsPrivacy,
