@@ -53,7 +53,7 @@ class WCGatewayStore @Inject constructor(
         }
     }
 
-    fun getAllGateways(site: SiteModel, orderId: Long): List<WCGatewayModel> =
+    fun getAllGateways(site: SiteModel): List<WCGatewayModel> =
             WCGatewaySqlUtils.selectAllGateways(site).map { mapper.map(it) }
 
     suspend fun fetchAllGateways(site: SiteModel): GatewayResult<List<WCGatewayModel>> {
