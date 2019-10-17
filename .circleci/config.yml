@@ -1,7 +1,8 @@
 version: 2.1
 
 orbs:
-  android: wordpress-mobile/android@0.0.23
+  # Using 1.0 of our Orbs means it will use the latest 1.0.x version from https://github.com/wordpress-mobile/circleci-orbs
+  android: wordpress-mobile/android@1.0
   slack: circleci/slack@2.5.0
 
 commands:
