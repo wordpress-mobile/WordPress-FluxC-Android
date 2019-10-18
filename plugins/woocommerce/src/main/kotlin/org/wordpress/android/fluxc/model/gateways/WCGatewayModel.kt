@@ -5,7 +5,7 @@ data class WCGatewayModel(
     val title: String,
     val description: String,
     val order: Int,
-    val enabled: Boolean,
+    val isEnabled: Boolean,
     val methodTitle: String,
     val methodDescription: String,
     val features: List<String>
