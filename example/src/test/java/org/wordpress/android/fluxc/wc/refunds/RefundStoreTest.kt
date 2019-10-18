@@ -16,14 +16,14 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel
 import org.wordpress.android.fluxc.model.refunds.RefundMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NOT_FOUND
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_ID
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundRestClient
 import org.wordpress.android.fluxc.persistence.WCRefundSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCRefundStore
-import org.wordpress.android.fluxc.store.WCRefundStore.RefundResult
-import org.wordpress.android.fluxc.store.WCRefundStore.RefundError
-import org.wordpress.android.fluxc.store.WCRefundStore.RefundErrorType.INVALID_REFUND_ID
-import org.wordpress.android.fluxc.store.WCRefundStore.RefundPayload
 import org.wordpress.android.fluxc.test
 
 @Config(manifest = Config.NONE)
@@ -36,7 +36,7 @@ class RefundStoreTest {
 
     private val orderId = 1L
     private val refundId = REFUND_RESPONSE.refundId
-    private val error = RefundError(INVALID_REFUND_ID, NOT_FOUND, "Invalid order ID")
+    private val error = WooError(INVALID_ID, NOT_FOUND, "Invalid order ID")
 
     @Before
     fun setUp() {
@@ -97,8 +97,8 @@ class RefundStoreTest {
         assertThat(refund).isEqualTo(mapper.map(REFUND_RESPONSE))
     }
 
-    private suspend fun fetchSpecificTestRefund(): RefundResult<WCRefundModel> {
-        val fetchRefundsPayload = RefundPayload(
+    private suspend fun fetchSpecificTestRefund(): WooResult<WCRefundModel> {
+        val fetchRefundsPayload = WooPayload(
                 REFUND_RESPONSE
         )
         whenever(restClient.fetchRefund(site, orderId, refundId)).thenReturn(
@@ -106,14 +106,14 @@ class RefundStoreTest {
         )
 
         whenever(restClient.fetchRefund(site, 2, refundId)).thenReturn(
-                RefundPayload(error)
+                WooPayload(error)
         )
         return store.fetchRefund(site, orderId, refundId)
     }
 
-    private suspend fun fetchAllTestRefunds(): RefundResult<List<WCRefundModel>> {
+    private suspend fun fetchAllTestRefunds(): WooResult<List<WCRefundModel>> {
         val data = arrayOf(REFUND_RESPONSE, REFUND_RESPONSE)
-        val fetchRefundsPayload = RefundPayload(
+        val fetchRefundsPayload = WooPayload(
                 data
         )
         whenever(
@@ -134,7 +134,7 @@ class RefundStoreTest {
                         WCRefundStore.DEFAULT_PAGE_SIZE
                 )
         ).thenReturn(
-                RefundPayload(error)
+                WooPayload(error)
         )
         return store.fetchAllRefunds(site, orderId)
     }

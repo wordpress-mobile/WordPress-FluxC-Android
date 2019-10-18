@@ -18,8 +18,8 @@ import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.model.gateways.WCGatewayModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.store.WCGatewayStore
-import org.wordpress.android.fluxc.store.WCGatewayStore.GatewayResult
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
@@ -84,7 +84,7 @@ class WooGatewaysFragment : Fragment() {
         }
     }
 
-    private fun printGateway(response: GatewayResult<WCGatewayModel>) {
+    private fun printGateway(response: WooResult<WCGatewayModel>) {
         response.error?.let {
             prependToLog("${it.type}: ${it.message}")
         }

@@ -12,8 +12,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
-import org.wordpress.android.fluxc.store.WCGatewayStore.GatewayPayload
-import org.wordpress.android.fluxc.store.toGatewayError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import javax.inject.Singleton
 
 @Singleton
@@ -29,7 +29,7 @@ constructor(
     suspend fun fetchGateway(
         site: SiteModel,
         gatewayId: String
-    ): GatewayPayload<GatewayResponse> {
+    ): WooPayload<GatewayResponse> {
         val url = WOOCOMMERCE.payment_gateways.gateway(gatewayId).pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -41,17 +41,17 @@ constructor(
         )
         return when (response) {
             is JetpackSuccess -> {
-                GatewayPayload(response.data)
+                WooPayload(response.data)
             }
             is JetpackError -> {
-                GatewayPayload(response.error.toGatewayError())
+                WooPayload(response.error.toWooError())
             }
         }
     }
 
     suspend fun fetchAllGateways(
         site: SiteModel
-    ): GatewayPayload<Array<GatewayResponse>> {
+    ): WooPayload<Array<GatewayResponse>> {
         val url = WOOCOMMERCE.payment_gateways.pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -63,10 +63,10 @@ constructor(
         )
         return when (response) {
             is JetpackSuccess -> {
-                GatewayPayload(response.data)
+                WooPayload(response.data)
             }
             is JetpackError -> {
-                GatewayPayload(response.error.toGatewayError())
+                WooPayload(response.error.toWooError())
             }
         }
     }
