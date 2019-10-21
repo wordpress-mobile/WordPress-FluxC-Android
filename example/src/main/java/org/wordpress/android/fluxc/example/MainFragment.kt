@@ -129,7 +129,7 @@ class MainFragment : Fragment() {
             override fun onClick(username: String, password: String, url: String) {
                 signInAction(username, password, url)
             }
-        }, "Username", "Password", "XMLRPC Url")
+        }, "Username", "Password", "XMLRPC Url (Leave blank for WP.COM!)")
         newFragment.show(ft, "dialog")
     }
 
