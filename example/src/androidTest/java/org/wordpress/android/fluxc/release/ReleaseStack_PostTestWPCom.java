@@ -883,7 +883,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertFalse(persistedPost.getDateCreated().isEmpty());
         assertEquals(dateCreated, persistedPost.getDateCreated());
 
-        // Clean up - needs to be called twice as first delete just trashes the post
+        // Clean up
         uploadedPost.setRemotePostId(originalRemotePostId);
         permanentlyDeletePost(uploadedPost);
     }
@@ -1081,6 +1081,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
     }
 
     private void permanentlyDeletePost(PostModel post) throws InterruptedException {
+        // needs to be called twice as first delete just trashes the post
         deletePost(post);
         deletePost(post);
     }
