@@ -12,16 +12,17 @@ import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -37,6 +38,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     private var countDownLatch: CountDownLatch by notNull()
 
     private val remoteProductId = 1537L
+    private val searchQuery = "test"
 
     private val siteModel = SiteModel().apply {
         email = "test@example.org"
@@ -76,6 +78,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getAttributes().size, 2)
             assertEquals(product.getAttributes().get(0).options.size, 3)
             assertEquals(product.getAttributes().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
+            assertEquals(product.getNumVariations(), 2)
         }
 
         // save the product to the db
@@ -93,6 +96,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getAttributes().size, 2)
             assertEquals(product.getAttributes().get(0).options.size, 3)
             assertEquals(product.getAttributes().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
+            assertEquals(product.getNumVariations(), 2)
         }
     }
 
@@ -136,6 +140,73 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
         val payloadParent = lastAction!!.payload as RemoteProductPayload
         assertTrue(payloadParent.product.manageStock)
+    }
+
+    @Test
+    fun testFetchProductsSuccess() {
+        interceptor.respondWith("wc-fetch-products-response-success.json")
+        productRestClient.fetchProducts(siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_PRODUCTS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductListPayload
+        with(payload) {
+            assertNull(error)
+            assertNotNull(products)
+            assertEquals(products.size, 3)
+        }
+
+        // delete all products then insert these into the store
+        ProductSqlUtils.deleteProductsForSite(siteModel)
+        assertEquals(ProductSqlUtils.insertOrUpdateProducts(payload.products), 3)
+
+        // now verify the db stored the products correctly
+        val productsFromDb = ProductSqlUtils.getProductsForSite(siteModel)
+        assertNotNull(productsFromDb)
+        assertEquals(productsFromDb.size, 3)
+    }
+
+    @Test
+    fun testFetchProductsError() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        productRestClient.fetchProducts(siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_PRODUCTS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductListPayload
+        assertNotNull(payload.error)
+    }
+
+    @Test
+    fun testSearchProductsSuccess() {
+        interceptor.respondWith("wc-fetch-products-response-success.json")
+        productRestClient.searchProducts(siteModel, searchQuery)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.SEARCHED_PRODUCTS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteSearchProductsPayload
+        assertNull(payload.error)
+        assertEquals(payload.searchQuery, searchQuery)
+    }
+
+    @Test
+    fun testSearchOrdersError() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        productRestClient.searchProducts(siteModel, searchQuery)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.SEARCHED_PRODUCTS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteSearchProductsPayload
+        assertNotNull(payload.error)
+        assertEquals(payload.searchQuery, searchQuery)
     }
 
     @Test
@@ -237,7 +308,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         payload.productReview?.let {
             with(it) {
                 assertEquals(5499, remoteProductReviewId)
-                assertEquals("2019-07-09T09:48:07", dateCreated)
+                assertEquals("2019-07-09T15:48:07Z", dateCreated)
                 assertEquals(18, remoteProductId)
                 assertEquals("approved", status)
                 assertEquals("Johnny", reviewerName)
@@ -267,7 +338,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     @Test
     fun testUpdateProductReviewStatusSuccess() {
         interceptor.respondWith("wc-update-product-review-response-success.json")
-        productRestClient.updateProductReviewStatus(siteModel, WCProductReviewModel(), "spam")
+        productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -281,7 +352,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         payload.productReview?.let {
             with(it) {
                 assertEquals(5499, remoteProductReviewId)
-                assertEquals("2019-07-09T09:48:07", dateCreated)
+                assertEquals("2019-07-09T15:48:07Z", dateCreated)
                 assertEquals(18, remoteProductId)
                 assertEquals("spam", status)
                 assertEquals("Johnny", reviewerName)
@@ -297,7 +368,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     @Test
     fun testUpdateProductReviewStatusFailed() {
         interceptor.respondWithError("wc-response-failure-invalid-param.json")
-        productRestClient.updateProductReviewStatus(siteModel, WCProductReviewModel(), "spam")
+        productRestClient.updateProductReviewStatus(siteModel, 0, "spam")
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))

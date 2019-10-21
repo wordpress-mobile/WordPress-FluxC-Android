@@ -12,6 +12,7 @@ import kotlinx.android.synthetic.main.fragment_woo_products.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCTS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_REVIEWS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
@@ -26,9 +27,12 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductsSearched
+import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
@@ -72,6 +76,25 @@ class WooProductsFragment : Fragment() {
                         val payload = FetchSingleProductPayload(site, id)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductAction(payload))
                     } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
+                }
+            }
+        }
+
+        fetch_products.setOnClickListener {
+            selectedSite?.let { site ->
+                val payload = FetchProductsPayload(site)
+                dispatcher.dispatch(WCProductActionBuilder.newFetchProductsAction(payload))
+            }
+        }
+
+        search_products.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter a search query:"
+                ) { editText ->
+                    val payload = SearchProductsPayload(site, editText.text.toString())
+                    dispatcher.dispatch(WCProductActionBuilder.newSearchProductsAction(payload))
                 }
             }
         }
@@ -158,9 +181,17 @@ class WooProductsFragment : Fragment() {
                         pendingFetchSingleProductRemoteId = null
                         val product = wcProductStore.getProductByRemoteId(site, remoteId)
                         product?.let {
-                            prependToLog("Single product fetched successfully! ${it.name}")
+                            val numVariations = it.getNumVariations()
+                            if (numVariations > 0) {
+                                prependToLog("Single product with $numVariations variations fetched! ${it.name}")
+                            } else {
+                                prependToLog("Single product fetched! ${it.name}")
+                            }
                         } ?: prependToLog("WARNING: Fetched product not found in the local database!")
                     }
+                }
+                FETCH_PRODUCTS -> {
+                    prependToLog("Fetched ${event.rowsAffected} products")
                 }
                 FETCH_PRODUCT_VARIATIONS -> {
                     prependToLog("Fetched ${event.rowsAffected} product variations")
@@ -176,6 +207,16 @@ class WooProductsFragment : Fragment() {
                 }
                 else -> prependToLog("Product store was updated from a " + event.causeOfChange)
             }
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductsSearched(event: OnProductsSearched) {
+        if (event.isError) {
+            prependToLog("Error searching products - error: " + event.error.type)
+        } else {
+            prependToLog("Found ${event.searchResults.size} products matching ${event.searchQuery}")
         }
     }
 

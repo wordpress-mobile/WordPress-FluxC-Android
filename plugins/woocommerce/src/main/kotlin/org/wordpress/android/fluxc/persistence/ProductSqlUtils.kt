@@ -9,6 +9,12 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SORTING
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
 
 object ProductSqlUtils {
     fun insertOrUpdateProduct(product: WCProductModel): Int {
@@ -33,6 +39,14 @@ object ProductSqlUtils {
             WellSql.update(WCProductModel::class.java).whereId(oldId)
                     .put(product, UpdateAllExceptId(WCProductModel::class.java)).execute()
         }
+    }
+
+    fun insertOrUpdateProducts(products: List<WCProductModel>): Int {
+        var rowsAffected = 0
+        products.forEach {
+            rowsAffected += insertOrUpdateProduct(it)
+        }
+        return rowsAffected
     }
 
     fun getProductByRemoteId(site: SiteModel, remoteProductId: Long): WCProductModel? {
@@ -60,6 +74,26 @@ object ProductSqlUtils {
                 .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
                 .endGroup().endWhere()
                 .exists()
+    }
+
+    fun getProductsForSite(
+        site: SiteModel,
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
+    ): List<WCProductModel> {
+        val sortOrder = when (sortType) {
+            TITLE_ASC, DATE_ASC -> SelectQuery.ORDER_ASCENDING
+            TITLE_DESC, DATE_DESC -> SelectQuery.ORDER_DESCENDING
+        }
+        val sortField = when (sortType) {
+            TITLE_ASC, TITLE_DESC -> WCProductModelTable.NAME
+            DATE_ASC, DATE_DESC -> WCProductModelTable.DATE_CREATED
+        }
+        return WellSql.select(WCProductModel::class.java)
+                .where()
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .endWhere()
+                .orderBy(sortField, sortOrder)
+                .asModel
     }
 
     fun deleteProductsForSite(site: SiteModel): Int {
@@ -147,7 +181,6 @@ object ProductSqlUtils {
                 .equals(WCProductReviewModelTable.ID, productReview.id)
                 .or()
                 .beginGroup()
-                .equals(WCProductReviewModelTable.REMOTE_PRODUCT_ID, productReview.remoteProductId)
                 .equals(WCProductReviewModelTable.REMOTE_PRODUCT_REVIEW_ID, productReview.remoteProductReviewId)
                 .equals(WCProductReviewModelTable.LOCAL_SITE_ID, productReview.localSiteId)
                 .endGroup()
@@ -166,16 +199,20 @@ object ProductSqlUtils {
         }
     }
 
+    fun deleteProductReview(productReview: WCProductReviewModel) =
+            WellSql.delete(WCProductReviewModel::class.java)
+                    .where()
+                    .equals(WCProductReviewModelTable.REMOTE_PRODUCT_REVIEW_ID, productReview.remoteProductReviewId)
+                    .endWhere().execute()
+
     fun getProductReviewByRemoteId(
         localSiteId: Int,
-        remoteProductId: Long,
         remoteReviewId: Long
     ): WCProductReviewModel? {
         return WellSql.select(WCProductReviewModel::class.java)
                 .where()
                 .beginGroup()
                 .equals(WCProductReviewModelTable.LOCAL_SITE_ID, localSiteId)
-                .equals(WCProductReviewModelTable.REMOTE_PRODUCT_ID, remoteProductId)
                 .equals(WCProductReviewModelTable.REMOTE_PRODUCT_REVIEW_ID, remoteReviewId)
                 .endGroup()
                 .endWhere()
@@ -187,6 +224,7 @@ object ProductSqlUtils {
                 .where()
                 .equals(WCProductReviewModelTable.LOCAL_SITE_ID, site.id)
                 .endWhere()
+                .orderBy(WCProductReviewModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
                 .asModel
     }
 
@@ -199,6 +237,7 @@ object ProductSqlUtils {
                 .equals(WCProductReviewModelTable.REMOTE_PRODUCT_ID, remoteProductId)
                 .equals(WCProductReviewModelTable.LOCAL_SITE_ID, localSiteId)
                 .endGroup().endWhere()
+                .orderBy(WCProductReviewModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
                 .asModel
     }
 

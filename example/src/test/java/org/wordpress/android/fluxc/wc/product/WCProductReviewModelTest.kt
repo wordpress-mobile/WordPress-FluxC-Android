@@ -21,7 +21,7 @@ class WCProductReviewModelTest {
 
         val review = reviews[0]
         assertEquals(0, review.id)
-        assertEquals("2019-07-09T09:48:07", review.dateCreated)
+        assertEquals("2019-07-09T15:48:07Z", review.dateCreated)
         assertEquals(18, review.remoteProductId)
         assertEquals("Johnny", review.reviewerName)
         assertEquals("johnny@gmail.com", review.reviewerEmail)

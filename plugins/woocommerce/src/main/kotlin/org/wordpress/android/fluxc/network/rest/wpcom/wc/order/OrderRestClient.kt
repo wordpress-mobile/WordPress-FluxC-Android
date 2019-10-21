@@ -58,7 +58,7 @@ class OrderRestClient(
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     private val ORDER_FIELDS = "id,number,status,currency,date_created_gmt,total,total_tax,shipping_total," +
             "payment_method,payment_method_title,prices_include_tax,customer_note,discount_total," +
-            "coupon_lines,refunds,billing,shipping,line_items"
+            "coupon_lines,refunds,billing,shipping,line_items,date_paid_gmt"
     private val TRACKING_FIELDS = "tracking_id,tracking_number,tracking_link,tracking_provider,date_shipped"
 
     /**
@@ -692,7 +692,8 @@ class OrderRestClient(
             remoteNoteId = response.id ?: 0
             dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: ""
             note = response.note ?: ""
-            isSystemNote = response.author == "system"
+            isSystemNote = response.author == "system" || response.author == "WooCommerce"
+            author = response.author ?: ""
             isCustomerNote = response.customer_note
         }
     }
@@ -715,6 +716,7 @@ class OrderRestClient(
             localSiteId = site.id
             statusKey = response.slug ?: ""
             label = response.name ?: ""
+            statusCount = response.total
         }
     }
 

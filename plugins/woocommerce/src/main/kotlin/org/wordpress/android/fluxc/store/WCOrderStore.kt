@@ -683,7 +683,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 existingOptions.iterator().forEach eoi@{ existingOption ->
                     if (newOption.statusKey == existingOption.statusKey) {
                         exists = true
-                        if (newOption.label != existingOption.label) {
+                        if (newOption.label != existingOption.label ||
+                                newOption.statusCount != existingOption.statusCount) {
                             addOrUpdateOptions.add(newOption)
                         }
                         return@eoi

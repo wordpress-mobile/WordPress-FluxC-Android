@@ -218,8 +218,7 @@
     "type": "simple",
     "upsell_ids": [
     ],
-    "variations": [
-    ],
+    "variations": [192, 193],
     "virtual": false,
     "weight": ""
   }

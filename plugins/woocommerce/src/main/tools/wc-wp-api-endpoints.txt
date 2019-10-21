@@ -7,6 +7,7 @@
 
 /products/<id>/
 /products/<id>/variations/
+/products/
 
 /products/reviews/
 /products/reviews/<id>/
@@ -16,3 +17,6 @@
 
 /settings/general/
 /settings/products/
+
+/orders/<id>/refunds
+/orders/<id>/refunds/<refund_id>
