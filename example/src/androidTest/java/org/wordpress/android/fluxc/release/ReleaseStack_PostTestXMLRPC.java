@@ -1194,6 +1194,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     private void permanentlyDelete(PostModel post) throws InterruptedException {
+        // needs to be called twice as first delete just trashes the post
         deletePost(post);
         deletePost(post);
     }
