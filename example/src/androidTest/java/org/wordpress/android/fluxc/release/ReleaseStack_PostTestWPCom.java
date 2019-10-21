@@ -747,6 +747,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertNotNull(postAfterAutoSave.getAutoSaveModified());
         assertNotNull(postAfterAutoSave.getAutoSavePreviewUrl());
         assertNotEquals(0, postAfterAutoSave.getAutoSaveRevisionId());
+
+        // Clean up
+        permanentlyDeletePost(uploadedPost);
     }
 
     @Test
@@ -772,6 +775,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         assertEquals(uploadedPost.getLastModified(), postAfterAutoSave.getLastModified());
         assertEquals(uploadedPost.getRemoteLastModified(), postAfterAutoSave.getRemoteLastModified());
+
+        // Clean up
+        permanentlyDeletePost(uploadedPost);
     }
 
     @Test
@@ -797,6 +803,9 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         assertNotEquals(uploadedPost.getLastModified(), postAfterAutoSave.getAutoSaveModified());
         assertNotEquals(uploadedPost.getRemoteLastModified(), postAfterAutoSave.getAutoSaveModified());
+
+        // Clean up
+        permanentlyDeletePost(uploadedPost);
     }
 
     @Test
