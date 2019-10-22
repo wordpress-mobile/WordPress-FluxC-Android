@@ -69,5 +69,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Refunds"/>
+
+                <Button
+                    android:id="@+id/gateways"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gateways"/>
         </LinearLayout>
 </ScrollView>

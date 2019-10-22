@@ -13,8 +13,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
-import org.wordpress.android.fluxc.store.WCRefundStore.RefundPayload
-import org.wordpress.android.fluxc.store.toRefundError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import javax.inject.Singleton
 
 @Singleton
@@ -34,7 +34,7 @@ constructor(
         reason: String,
         automaticRefund: Boolean,
         partialRefundLineItems: List<LineItem> = emptyList()
-    ): RefundPayload<RefundResponse> {
+    ): WooPayload<RefundResponse> {
         val url = WOOCOMMERCE.orders.id(orderId).refunds.pathV3
 
         val params = mapOf(
@@ -52,10 +52,10 @@ constructor(
         )
         return when (response) {
             is JetpackSuccess -> {
-                RefundPayload(response.data)
+                WooPayload(response.data)
             }
             is JetpackError -> {
-                RefundPayload(response.error.toRefundError())
+                WooPayload(response.error.toWooError())
             }
         }
     }
@@ -64,7 +64,7 @@ constructor(
         site: SiteModel,
         orderId: Long,
         refundId: Long
-    ): RefundPayload<RefundResponse> {
+    ): WooPayload<RefundResponse> {
         val url = WOOCOMMERCE.orders.id(orderId).refunds.refund(refundId).pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -76,10 +76,10 @@ constructor(
         )
         return when (response) {
             is JetpackSuccess -> {
-                RefundPayload(response.data)
+                WooPayload(response.data)
             }
             is JetpackError -> {
-                RefundPayload(response.error.toRefundError())
+                WooPayload(response.error.toWooError())
             }
         }
     }
@@ -89,7 +89,7 @@ constructor(
         orderId: Long,
         page: Int,
         pageSize: Int
-    ): RefundPayload<Array<RefundResponse>> {
+    ): WooPayload<Array<RefundResponse>> {
         val url = WOOCOMMERCE.orders.id(orderId).refunds.pathV3
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -104,10 +104,10 @@ constructor(
         )
         return when (response) {
             is JetpackSuccess -> {
-                RefundPayload(response.data)
+                WooPayload(response.data)
             }
             is JetpackError -> {
-                RefundPayload(response.error.toRefundError())
+                WooPayload(response.error.toWooError())
             }
         }
     }

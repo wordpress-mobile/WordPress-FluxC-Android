@@ -20,3 +20,6 @@
 
 /orders/<id>/refunds
 /orders/<id>/refunds/<refund_id>
+
+/payment_gateways
+/payment_gateways/<gateway_id>#String

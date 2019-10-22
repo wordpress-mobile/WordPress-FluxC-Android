@@ -1,0 +1,26 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="org.wordpress.android.fluxc.example.ui.gateways.WooGatewaysFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/fetch_gateway"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch gateway"/>
+
+        <Button
+            android:id="@+id/fetch_all_gateways"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch all gateways"/>
+
+    </LinearLayout>
+</ScrollView>

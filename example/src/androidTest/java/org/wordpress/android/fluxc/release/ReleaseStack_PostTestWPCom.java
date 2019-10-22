@@ -667,7 +667,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel post = createNewPost();
         post.setStatus(PostStatus.PUBLISHED.toString());
 
-        testAutoSavePostOrPage(post, false);
+        testAutoSavePostOrPage(post, false, false);
     }
 
     @Test
@@ -677,7 +677,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         post.setStatus(PostStatus.SCHEDULED.toString());
         post.setDateCreated("2075-10-14T10:51:11+00:00");
 
-        testAutoSavePostOrPage(post, false);
+        testAutoSavePostOrPage(post, false, true);
     }
 
     @Test
@@ -686,10 +686,10 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         PostModel post = createNewPost();
         post.setStatus(PostStatus.PUBLISHED.toString());
 
-        testAutoSavePostOrPage(post, true);
+        testAutoSavePostOrPage(post, true, false);
     }
 
-    private void testAutoSavePostOrPage(PostModel post, boolean isPage) throws InterruptedException {
+    private void testAutoSavePostOrPage(PostModel post, boolean isPage, boolean cleanUp) throws InterruptedException {
         // Arrange
         setupPostAttributes(post);
 
@@ -707,6 +707,13 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertNotNull(postAfterAutoSave.getAutoSaveModified());
         assertNotNull(postAfterAutoSave.getAutoSavePreviewUrl());
         assertNotEquals(0, postAfterAutoSave.getAutoSaveRevisionId());
+
+        // We don't want to perform the clean up unless necessary to keep the tests as quick as
+        // possible. However, creating for example scheduled posts during a test may affect other
+        // tests and hence they need to be trashed.
+        if (cleanUp) {
+            deletePost(uploadedPost);
+        }
     }
 
     @Test
