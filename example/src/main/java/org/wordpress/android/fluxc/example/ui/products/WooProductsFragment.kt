@@ -267,7 +267,7 @@ class WooProductsFragment : Fragment() {
         if (event.isError) {
             prependToLog("Error updating product images - error: " + event.error.type)
         } else {
-            prependToLog("Product images updated - {${event.product?.images}")
+            prependToLog("Product images updated")
         }
     }
 

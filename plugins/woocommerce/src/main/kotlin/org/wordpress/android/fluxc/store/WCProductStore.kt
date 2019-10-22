@@ -215,7 +215,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     class OnProductImagesChanged(
         var rowsAffected: Int,
-        var product: WCProductModel?
+        var remoteProductId: Long
     ) : OnChanged<ProductError>() {
         var causeOfChange: WCProductAction? = null
     }
@@ -457,10 +457,12 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         val onProductImagesChanged: OnProductImagesChanged
 
         if (payload.isError) {
-            onProductImagesChanged = OnProductImagesChanged(0, null).also { it.error = payload.error }
+            onProductImagesChanged = OnProductImagesChanged(0, payload.product.remoteProductId).also {
+                it.error = payload.error
+            }
         } else {
             val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
-            onProductImagesChanged = OnProductImagesChanged(rowsAffected, payload.product)
+            onProductImagesChanged = OnProductImagesChanged(rowsAffected, payload.product.remoteProductId)
         }
 
         onProductImagesChanged.causeOfChange = WCProductAction.UPDATED_PRODUCT_IMAGES
