@@ -9,6 +9,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
+import org.wordpress.android.fluxc.action.MediaAction
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.MediaActionBuilder
@@ -18,6 +19,7 @@ import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.persistence.MediaSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.MediaStore
+import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
@@ -297,11 +299,11 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     fun testUpdateProductImages() {
         // first get the list of this site's media, and if it's empty fetch a single media model
         var siteMedia = MediaSqlUtils.getAllSiteMedia(sSite)
-        if (siteMedia.isEmpty()) {
+        // if (siteMedia.isEmpty()) {
             fetchFirstMedia()
             siteMedia = MediaSqlUtils.getAllSiteMedia(sSite)
             assertTrue(siteMedia.isNotEmpty())
-        }
+        // }
 
         val mediaModelForProduct = siteMedia[0]
 
@@ -336,7 +338,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
         val payload = MediaStore.FetchMediaListPayload(sSite, 1, false)
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(payload))
-        mCountDownLatch.await()
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
     }
 
     @Suppress("unused")
@@ -397,6 +399,11 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         event.error?.let {
             throw AssertionError("WCProductTest.onMediaListFetched has unexpected error: ${it.type}, ${it.message}")
         }
+        mCountDownLatch.countDown()
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMediaChanged(event: OnMediaChanged) {
         mCountDownLatch.countDown()
     }
 
