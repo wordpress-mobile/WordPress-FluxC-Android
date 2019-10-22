@@ -2,12 +2,15 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
@@ -35,6 +38,8 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
+import java.util.HashMap
 import javax.inject.Singleton
 
 @Singleton
@@ -200,6 +205,58 @@ class ProductRestClient(
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVariationsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Makes a PUT request to `/wp-json/wc/v3/products/[remoteProductId]` to replace a product's images
+     * with the passed media list
+     *
+     * Dispatches a WCProductAction.UPDATED_PRODUCT_IMAGES action with the result
+     *
+     * @param [site] The site to fetch product reviews for
+     * @param [remoteProductId] Unique server id of the product to update
+     * @param [imageList] list of product images to assign to the product
+     */
+    fun updateProductImages(site: SiteModel, remoteProductId: Long, imageList: List<WCProductImageModel>) {
+        val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
+        val responseType = object : TypeToken<ProductApiResponse>() {}.type
+
+        // build json list of images
+        val jsonBody = JsonArray()
+        for (image in imageList) {
+            with(JsonObject()) {
+                addProperty("id", image.id)
+                addProperty("date_created", image.dateCreated)
+                addProperty("src", image.src)
+                addProperty("alt", image.alt)
+                addProperty("name", image.name)
+                jsonBody.add(this)
+            }
+        }
+        val body = HashMap<String, Any>()
+        body["id"] = remoteProductId
+        body["images"] = jsonBody
+
+        val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
+                { response: ProductApiResponse? ->
+                    response?.let {
+                        val newModel = productResponseToProductModel(it).apply {
+                            localSiteId = site.id
+                        }
+                        val payload = RemoteUpdateProductImagesPayload(site, newModel)
+                        dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductImagesAction(payload))
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val productError = networkErrorToProductError(networkError)
+                    val payload = RemoteUpdateProductImagesPayload(
+                            productError,
+                            site,
+                            WCProductModel().apply { this.remoteProductId = remoteProductId }
+                    )
+                    dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductImagesAction(payload))
+                })
         add(request)
     }
 
@@ -464,6 +521,7 @@ class ProductRestClient(
         val productErrorType = when (wpComError.apiError) {
             "rest_invalid_param" -> ProductErrorType.INVALID_PARAM
             "woocommerce_rest_review_invalid_id" -> ProductErrorType.INVALID_REVIEW_ID
+            "woocommerce_product_invalid_image_id" -> ProductErrorType.INVALID_IMAGE_ID
             else -> ProductErrorType.fromString(wpComError.apiError)
         }
         return ProductError(productErrorType, wpComError.message)

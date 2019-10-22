@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
@@ -23,6 +24,8 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
+import org.wordpress.android.fluxc.utils.DateUtils
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -377,6 +380,50 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RemoteProductReviewPayload
         assertTrue(payload.isError)
         assertEquals(ProductErrorType.INVALID_PARAM, payload.error.type)
+    }
+
+    private fun generateTestImageList(): List<WCProductImageModel> {
+        val imageList = ArrayList<WCProductImageModel>()
+        with(WCProductImageModel(1)) {
+            dateCreated = DateUtils.getCurrentDateString()
+            imageList.add(this)
+        }
+        with(WCProductImageModel(2)) {
+            dateCreated = DateUtils.getCurrentDateString()
+            imageList.add(this)
+        }
+        return imageList
+    }
+
+    @Test
+    fun testUpdateProductImagesSuccess() {
+        interceptor.respondWith("wc-fetch-product-response-success.json")
+
+        productRestClient.updateProductImages(siteModel, remoteProductId, generateTestImageList())
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.UPDATED_PRODUCT_IMAGES, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteUpdateProductImagesPayload
+        with(payload) {
+            assertNull(error)
+            assertEquals(remoteProductId, product.remoteProductId)
+            assertEquals(product.getImages().size, 2)
+        }
+    }
+
+    @Test
+    fun testUpdateProductImagesFailed() {
+        interceptor.respondWithError("wc-response-failure-invalid-param.json")
+        productRestClient.updateProductImages(siteModel, remoteProductId, generateTestImageList())
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.UPDATED_PRODUCT_IMAGES, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteUpdateProductImagesPayload
+        assertTrue(payload.isError)
     }
 
     @Suppress("unused")

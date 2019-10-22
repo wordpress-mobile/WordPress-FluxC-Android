@@ -24,6 +24,8 @@ import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductImageModel
+import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
@@ -31,8 +33,10 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductsSearched
 import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
@@ -40,6 +44,7 @@ class WooProductsFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcProductStore: WCProductStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
+    @Inject internal lateinit var mediaStore: MediaStore
 
     private var selectedPos: Int = -1
     private var selectedSite: SiteModel? = null
@@ -154,6 +159,42 @@ class WooProductsFragment : Fragment() {
                 }
             }
         }
+
+        update_product_images.setOnClickListener {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the remoteProductId of the product to update images:"
+            ) { editTextProduct ->
+                editTextProduct.text.toString().toLongOrNull()?.let { productId ->
+                    showSingleLineDialog(
+                            activity,
+                            "Enter the mediaId of the image to assign to the product:"
+                    ) { editTextMedia ->
+                        editTextMedia.text.toString().toLongOrNull()?.let { mediaId ->
+                            updateProductImages(productId, mediaId)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Note that this will replace all this product's images with a single image, as defined by mediaId. Also note
+     * that the media must already be cached for this to work (ie: you may need to go to the first screen in the
+     * example app, tap Media, then ensure the media is fetched)
+     */
+    private fun updateProductImages(productId: Long, mediaId: Long) {
+        selectedSite?.let { site ->
+            mediaStore.getSiteMediaWithId(site, mediaId)?.let { media ->
+                prependToLog("Submitting request to update product images")
+                val imageList = ArrayList<WCProductImageModel>().also {
+                    it.add(WCProductImageModel.fromMediaModel(media))
+                }
+                val payload = UpdateProductImagesPayload(site, productId, imageList)
+                dispatcher.dispatch(WCProductActionBuilder.newUpdateProductImagesAction(payload))
+            } ?: prependToLog(("Not a valid media id"))
+        } ?: prependToLog(("No site selected"))
     }
 
     override fun onStart() {
@@ -217,6 +258,16 @@ class WooProductsFragment : Fragment() {
             prependToLog("Error searching products - error: " + event.error.type)
         } else {
             prependToLog("Found ${event.searchResults.size} products matching ${event.searchQuery}")
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductImagesChanged(event: OnProductImagesChanged) {
+        if (event.isError) {
+            prependToLog("Error updating product images - error: " + event.error.type)
+        } else {
+            prependToLog("Product images updated")
         }
     }
 

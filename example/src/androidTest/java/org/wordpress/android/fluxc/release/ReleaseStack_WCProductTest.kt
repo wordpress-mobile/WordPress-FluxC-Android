@@ -11,9 +11,14 @@ import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.example.BuildConfig
+import org.wordpress.android.fluxc.generated.MediaActionBuilder
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
+import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.persistence.MediaSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
+import org.wordpress.android.fluxc.store.MediaStore
+import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
@@ -21,7 +26,9 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductReviewChanged
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -35,10 +42,12 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         FETCHED_PRODUCT_VARIATIONS,
         FETCHED_PRODUCT_REVIEWS,
         FETCHED_SINGLE_PRODUCT_REVIEW,
-        UPDATED_PRODUCT_REVIEW_STATUS
+        UPDATED_PRODUCT_REVIEW_STATUS,
+        UPDATED_PRODUCT_IMAGES
     }
 
     @Inject internal lateinit var productStore: WCProductStore
+    @Inject internal lateinit var mediaStore: MediaStore // must be injected for onMediaListFetched()
 
     private var nextEvent: TestEvent = TestEvent.NONE
     private val productModel = WCProductModel(8).apply {
@@ -284,6 +293,53 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         }
     }
 
+    @Throws(InterruptedException::class)
+    @Test
+    fun testUpdateProductImages() {
+        // first get the list of this site's media, and if it's empty fetch a single media model
+        var siteMedia = MediaSqlUtils.getAllSiteMedia(sSite)
+        if (siteMedia.isEmpty()) {
+            fetchFirstMedia()
+            siteMedia = MediaSqlUtils.getAllSiteMedia(sSite)
+            assertTrue(siteMedia.isNotEmpty())
+        }
+
+        val mediaModelForProduct = siteMedia[0]
+
+        nextEvent = TestEvent.UPDATED_PRODUCT_IMAGES
+        mCountDownLatch = CountDownLatch(1)
+        val imageList = ArrayList<WCProductImageModel>().also {
+            it.add(WCProductImageModel.fromMediaModel(mediaModelForProduct))
+        }
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newUpdateProductImagesAction(
+                        UpdateProductImagesPayload(sSite, productModel.remoteProductId, imageList)
+                )
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        val updatedProduct = productStore.getProductByRemoteId(sSite, productModel.remoteProductId)
+        assertNotNull(updatedProduct)
+
+        val updatedImageList = updatedProduct!!.getImages()
+        assertNotNull(updatedImageList)
+        assertEquals(updatedImageList.size, 1)
+
+        val updatedImage = updatedImageList[0]
+        assertEquals(updatedImage.id, mediaModelForProduct.mediaId)
+    }
+
+    /**
+     * Used by the update images test to fetch a single media model for this site
+     */
+    @Throws(InterruptedException::class)
+    private fun fetchFirstMedia() {
+        mCountDownLatch = CountDownLatch(1)
+        val payload = MediaStore.FetchMediaListPayload(sSite, 1, false)
+        mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(payload))
+        mCountDownLatch.await()
+    }
+
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProductChanged(event: OnProductChanged) {
@@ -334,5 +390,25 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
         }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onMediaListFetched(event: OnMediaListFetched) {
+        event.error?.let {
+            throw AssertionError("WCProductTest.onMediaListFetched has unexpected error: ${it.type}, ${it.message}")
+        }
+        mCountDownLatch.countDown()
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductImagesChanged(event: OnProductImagesChanged) {
+        event.error?.let {
+            throw AssertionError("OnProductImagesChanged has unexpected error: ${it.type}, ${it.message}")
+        }
+
+        assertEquals(TestEvent.UPDATED_PRODUCT_IMAGES, nextEvent)
+        mCountDownLatch.countDown()
     }
 }
