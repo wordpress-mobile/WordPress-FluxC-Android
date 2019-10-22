@@ -6,8 +6,8 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
-import org.wordpress.android.fluxc.model.MediaModel
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
@@ -79,7 +79,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     class UpdateProductImagesPayload(
         var site: SiteModel,
         var remoteProductId: Long,
-        var mediaList: List<MediaModel>
+        var imageList: List<WCProductImageModel>
     ) : Payload<BaseNetworkError>()
 
     enum class ProductErrorType {
@@ -341,7 +341,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun updateProductImages(payload: UpdateProductImagesPayload) {
-        with(payload) { wcProductRestClient.updateProductImages(site, remoteProductId, mediaList) }
+        with(payload) { wcProductRestClient.updateProductImages(site, remoteProductId, imageList) }
     }
 
     private fun handleFetchSingleProductCompleted(payload: RemoteProductPayload) {

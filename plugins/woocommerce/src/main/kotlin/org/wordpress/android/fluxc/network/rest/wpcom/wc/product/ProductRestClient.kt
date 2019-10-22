@@ -217,16 +217,15 @@ class ProductRestClient(
      *
      * @param [site] The site to fetch product reviews for
      * @param [remoteProductId] Unique server id of the product to update
-     * @param [mediaList] list of media to assign to the product
+     * @param [imageList] list of product images to assign to the product
      */
-    fun updateProductImages(site: SiteModel, remoteProductId: Long, mediaList: List<MediaModel>) {
+    fun updateProductImages(site: SiteModel, remoteProductId: Long, imageList: List<WCProductImageModel>) {
         val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
         val responseType = object : TypeToken<ProductApiResponse>() {}.type
 
         // build json list of images
         val jsonBody = JsonArray()
-        for (media in mediaList) {
-            val image = WCProductImageModel.fromMediaModel(media)
+        for (image in imageList) {
             with(JsonObject()) {
                 addProperty("id", image.id)
                 addProperty("date_created", image.dateCreated)

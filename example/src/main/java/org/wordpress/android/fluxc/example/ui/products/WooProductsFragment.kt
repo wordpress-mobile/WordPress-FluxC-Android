@@ -23,8 +23,8 @@ import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
-import org.wordpress.android.fluxc.model.MediaModel
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
@@ -188,8 +188,10 @@ class WooProductsFragment : Fragment() {
         selectedSite?.let { site ->
             mediaStore.getSiteMediaWithId(site, mediaId)?.let { media ->
                 prependToLog("Submitting request to update product images")
-                val mediaList = ArrayList<MediaModel>().also { it.add(media) }
-                val payload = UpdateProductImagesPayload(site, productId, mediaList)
+                val imageList = ArrayList<WCProductImageModel>().also {
+                    it.add(WCProductImageModel.fromMediaModel(media))
+                }
+                val payload = UpdateProductImagesPayload(site, productId, imageList)
                 dispatcher.dispatch(WCProductActionBuilder.newUpdateProductImagesAction(payload))
             } ?: prependToLog(("Not a valid media id"))
         } ?: prependToLog(("No site selected"))

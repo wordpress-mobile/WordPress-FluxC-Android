@@ -13,7 +13,7 @@ import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.MediaActionBuilder
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
-import org.wordpress.android.fluxc.model.MediaModel
+import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.persistence.MediaSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
@@ -307,10 +307,12 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         nextEvent = TestEvent.UPDATED_PRODUCT_IMAGES
         mCountDownLatch = CountDownLatch(1)
-        val mediaList = ArrayList<MediaModel>().also { it.add(mediaModelForProduct) }
+        val imageList = ArrayList<WCProductImageModel>().also {
+            it.add(WCProductImageModel.fromMediaModel(mediaModelForProduct))
+        }
         mDispatcher.dispatch(
                 WCProductActionBuilder.newUpdateProductImagesAction(
-                        UpdateProductImagesPayload(sSite, productModel.remoteProductId, mediaList)
+                        UpdateProductImagesPayload(sSite, productModel.remoteProductId, imageList)
                 )
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))

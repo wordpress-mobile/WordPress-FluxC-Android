@@ -11,8 +11,8 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
-import org.wordpress.android.fluxc.model.MediaModel
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
@@ -382,26 +382,24 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(ProductErrorType.INVALID_PARAM, payload.error.type)
     }
 
-    private fun generateTestMediaList(): List<MediaModel> {
-        val mediaList = ArrayList<MediaModel>()
-        with(MediaModel()) {
-            id = 1
-            uploadDate = DateUtils.getCurrentDateString()
-            mediaList.add(this)
+    private fun generateTestImageList(): List<WCProductImageModel> {
+        val imageList = ArrayList<WCProductImageModel>()
+        with(WCProductImageModel(1)) {
+            dateCreated = DateUtils.getCurrentDateString()
+            imageList.add(this)
         }
-        with(MediaModel()) {
-            id = 2
-            uploadDate = DateUtils.getCurrentDateString()
-            mediaList.add(this)
+        with(WCProductImageModel(2)) {
+            dateCreated = DateUtils.getCurrentDateString()
+            imageList.add(this)
         }
-        return mediaList
+        return imageList
     }
 
     @Test
     fun testUpdateProductImagesSuccess() {
         interceptor.respondWith("wc-fetch-product-response-success.json")
 
-        productRestClient.updateProductImages(siteModel, remoteProductId, generateTestMediaList())
+        productRestClient.updateProductImages(siteModel, remoteProductId, generateTestImageList())
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -418,7 +416,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     @Test
     fun testUpdateProductImagesFailed() {
         interceptor.respondWithError("wc-response-failure-invalid-param.json")
-        productRestClient.updateProductImages(siteModel, remoteProductId, generateTestMediaList())
+        productRestClient.updateProductImages(siteModel, remoteProductId, generateTestImageList())
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
