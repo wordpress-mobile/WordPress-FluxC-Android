@@ -16,6 +16,7 @@ import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.activity_wc_order_list.*
 import org.apache.commons.lang3.time.DateUtils
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.example.TimeGroup.GROUP_FUTURE
 import org.wordpress.android.fluxc.example.TimeGroup.GROUP_OLDER_MONTH
 import org.wordpress.android.fluxc.example.TimeGroup.GROUP_OLDER_TWO_DAYS
 import org.wordpress.android.fluxc.example.TimeGroup.GROUP_OLDER_WEEK
@@ -187,6 +188,7 @@ sealed class WCOrderListItemUIType {
 }
 
 enum class TimeGroup {
+    GROUP_FUTURE,
     GROUP_TODAY,
     GROUP_YESTERDAY,
     GROUP_OLDER_TWO_DAYS,
@@ -197,6 +199,7 @@ enum class TimeGroup {
         fun getTimeGroupForDate(date: Date): TimeGroup {
             val dateToday = Date()
             return when {
+                date.after(DateTimeUtils.nowUTC()) -> GROUP_FUTURE
                 date < DateUtils.addMonths(dateToday, -1) -> GROUP_OLDER_MONTH
                 date < DateUtils.addWeeks(dateToday, -1) -> GROUP_OLDER_WEEK
                 date < DateUtils.addDays(dateToday, -2) -> GROUP_OLDER_TWO_DAYS
@@ -260,11 +263,12 @@ private class WCOrderListItemDataSource(
                     remoteItemIds.mapNotNull { summariesByRemoteId[it] }
                 }
 
-        val listToday = ArrayList<OrderIdentifier>()
-        val listYesterday = ArrayList<OrderIdentifier>()
-        val listTwoDays = ArrayList<OrderIdentifier>()
-        val listWeek = ArrayList<OrderIdentifier>()
-        val listMonth = ArrayList<OrderIdentifier>()
+        val listFuture = mutableListOf<OrderIdentifier>()
+        val listToday = mutableListOf<OrderIdentifier>()
+        val listYesterday = mutableListOf<OrderIdentifier>()
+        val listTwoDays = mutableListOf<OrderIdentifier>()
+        val listWeek = mutableListOf<OrderIdentifier>()
+        val listMonth = mutableListOf<OrderIdentifier>()
         val mapToRemoteOrderIdentifier = { summary: WCOrderSummaryModel ->
             OrderIdentifier(RemoteId(summary.remoteOrderId))
         }
@@ -282,6 +286,7 @@ private class WCOrderListItemDataSource(
             }
 
             when (TimeGroup.getTimeGroupForDate(date)) {
+                GROUP_FUTURE -> listFuture.add(mapToRemoteOrderIdentifier(it))
                 GROUP_TODAY -> listToday.add(mapToRemoteOrderIdentifier(it))
                 GROUP_YESTERDAY -> listYesterday.add(mapToRemoteOrderIdentifier(it))
                 GROUP_OLDER_TWO_DAYS -> listTwoDays.add(mapToRemoteOrderIdentifier(it))
@@ -291,6 +296,10 @@ private class WCOrderListItemDataSource(
         }
 
         val allItems = mutableListOf<WCOrderListItemIdentifier>()
+        if (listFuture.isNotEmpty()) {
+            allItems += listOf(SectionHeaderIdentifier(GROUP_FUTURE)) + listFuture
+        }
+
         if (listToday.isNotEmpty()) {
             allItems += listOf(SectionHeaderIdentifier(GROUP_TODAY)) + listToday
         }
