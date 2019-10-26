@@ -92,7 +92,8 @@ class WCOrderListActivity : AppCompatActivity() {
             val descriptor = WCOrderListDescriptor(
                     site = wooCommerceStore.getWooCommerceSites()[0], // crash if site is not there
                     statusFilter = order_filter.text.toString(),
-                    searchQuery = order_search_query.text.toString()
+                    searchQuery = order_search_query.text.toString(),
+                    excludeFutureOrders = exclude_future_orders.isChecked
             )
             loadList(descriptor)
         }
@@ -100,8 +101,11 @@ class WCOrderListActivity : AppCompatActivity() {
         order_search_clear.setOnClickListener {
             order_search_query.text.clear()
             order_filter.text.clear()
+            exclude_future_orders.isChecked = false
+
             val descriptor = WCOrderListDescriptor(
-                    site = wooCommerceStore.getWooCommerceSites()[0] // crash if site is not there
+                    site = wooCommerceStore.getWooCommerceSites()[0], // crash if site is not there
+                    excludeFutureOrders = exclude_future_orders.isChecked
             )
             loadList(descriptor)
         }
@@ -153,8 +157,33 @@ sealed class WCOrderListItemUIType {
         val orderNumber: String,
         val status: String,
         val orderName: String,
-        val orderTotal: String
+        val orderTotal: String,
+        val dateCreated: String
     ) : WCOrderListItemUIType()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+
+        return if (this is SectionHeader && other is SectionHeader) {
+            this.title == other.title
+        } else if (this is LoadingItem && other is LoadingItem) {
+            this.remoteId == other.remoteId
+        } else if (this is WCOrderListUIItem && other is WCOrderListUIItem) {
+            this.remoteOrderId == other.remoteOrderId &&
+                    this.status == other.status &&
+                    this.dateCreated == other.dateCreated &&
+                    this.orderNumber == other.orderNumber &&
+                    this.orderTotal == other.orderTotal &&
+                    this.orderName == other.orderName
+        } else {
+            false
+        }
+    }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }
 }
 
 enum class TimeGroup {
@@ -208,8 +237,8 @@ private class WCOrderListItemDataSource(
                             orderNumber = order.number,
                             status = order.status,
                             orderName = "${order.billingFirstName} ${order.billingLastName}",
-                            orderTotal = order.total
-                    )
+                            orderTotal = order.total,
+                            dateCreated = order.dateCreated)
                 }
             }
         }
@@ -241,7 +270,17 @@ private class WCOrderListItemDataSource(
         }
         orderSummaries.forEach {
             // Default to today if the date cannot be parsed
-            val date: Date = DateTimeUtils.dateUTCFromIso8601(it.dateCreated) ?: Date()
+            val date: Date = DateTimeUtils.dateUTCFromIso8601(it.dateCreated) ?: DateTimeUtils.nowUTC()
+
+            // Check if future-dated orders should be excluded from the results list.
+            if (listDescriptor.excludeFutureOrders) {
+                val currentUtcDate = DateTimeUtils.nowUTC()
+                if (date.after(currentUtcDate)) {
+                    // This order is dated for the future so skip adding it to the list
+                    return@forEach
+                }
+            }
+
             when (TimeGroup.getTimeGroupForDate(date)) {
                 GROUP_TODAY -> listToday.add(mapToRemoteOrderIdentifier(it))
                 GROUP_YESTERDAY -> listYesterday.add(mapToRemoteOrderIdentifier(it))
