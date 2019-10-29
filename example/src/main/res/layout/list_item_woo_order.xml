@@ -1,40 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:minHeight="50dp"
-              android:layout_margin="10dp"
-              android:gravity="center_vertical"
-              android:orientation="horizontal">
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="50dp"
+    android:layout_margin="10dp">
 
     <TextView
         android:id="@+id/woo_order_number"
-        android:layout_width="wrap_content"
+        android:layout_width="60dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="0dp"
         android:padding="5dp"
-        tools:text="2700"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="2700" />
 
     <TextView
         android:id="@+id/woo_order_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
         android:padding="5dp"
-        tools:text="Marlin Bryant"/>
+        app:layout_constraintEnd_toStartOf="@+id/woo_order_total"
+        app:layout_constraintStart_toEndOf="@+id/woo_order_number"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Marlin Bryant" />
 
     <TextView
         android:id="@+id/woo_order_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:padding="5dp"
-        tools:text="processing"/>
+        app:layout_constraintStart_toStartOf="@+id/woo_order_name"
+        app:layout_constraintTop_toBottomOf="@+id/woo_order_name"
+        tools:text="processing" />
 
     <TextView
         android:id="@+id/woo_order_total"
         android:layout_width="80dp"
         android:layout_height="wrap_content"
-        android:gravity="right"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="0dp"
+        android:gravity="end"
         android:padding="5dp"
-        tools:text="366.00"/>
-</LinearLayout>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="366.00" />
+
+    <TextView
+        android:id="@+id/woo_order_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:padding="5dp"
+        app:layout_constraintStart_toStartOf="@+id/woo_order_status"
+        app:layout_constraintTop_toBottomOf="@+id/woo_order_status"
+        tools:text="5/16/19 07:00:12" />
+</androidx.constraintlayout.widget.ConstraintLayout>
