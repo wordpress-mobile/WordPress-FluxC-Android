@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="50dp"
-    android:layout_margin="10dp">
+    android:padding="10dp">
 
     <TextView
         android:id="@+id/woo_order_number"
@@ -35,7 +35,6 @@
         android:id="@+id/woo_order_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:padding="5dp"
         app:layout_constraintStart_toStartOf="@+id/woo_order_name"
         app:layout_constraintTop_toBottomOf="@+id/woo_order_name"
@@ -57,7 +56,6 @@
         android:id="@+id/woo_order_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:padding="5dp"
         app:layout_constraintStart_toStartOf="@+id/woo_order_status"
         app:layout_constraintTop_toBottomOf="@+id/woo_order_status"
