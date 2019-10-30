@@ -81,9 +81,14 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     class FetchOrdersByIdsResponsePayload(
         val site: SiteModel,
-        var orders: List<WCOrderModel> = emptyList()
+        var remoteOrderIds: List<RemoteId>,
+        var fetchedOrders: List<WCOrderModel> = emptyList()
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel) : this(site = site) {
+        constructor(
+            error: OrderError,
+            site: SiteModel,
+            remoteOrderIds: List<RemoteId>
+        ) : this(site = site, remoteOrderIds = remoteOrderIds) {
             this.error = error
         }
     }
@@ -551,17 +556,22 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun handleFetchOrderByIdsCompleted(payload: FetchOrdersByIdsResponsePayload) {
-        val onOrdersFetchedByIds = OnOrdersFetchedByIds(payload.site, payload.orders.map { RemoteId(it.remoteOrderId) })
-        if (payload.isError) {
-            onOrdersFetchedByIds.error = payload.error
+        val onOrdersFetchedByIds = if (payload.isError) {
+            OnOrdersFetchedByIds(payload.site, payload.remoteOrderIds).apply { error = payload.error }
         } else {
-            payload.orders.forEach { OrderSqlUtils.insertOrUpdateOrder(it) }
+            OnOrdersFetchedByIds(payload.site, payload.fetchedOrders.map { RemoteId(it.remoteOrderId) })
         }
+
+        if (!payload.isError) {
+            // Save the list of orders to the database
+            payload.fetchedOrders.forEach { OrderSqlUtils.insertOrUpdateOrder(it) }
+
+            // Notify listeners that the list of orders has changed (only call this if there is no error)
+            val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(localSiteId = payload.site.id)
+            mDispatcher.dispatch(ListActionBuilder.newListDataInvalidatedAction(listTypeIdentifier))
+        }
+
         emitChange(onOrdersFetchedByIds)
-        val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(
-                localSiteId = payload.site.id
-        )
-        mDispatcher.dispatch(ListActionBuilder.newListDataInvalidatedAction(listTypeIdentifier))
     }
 
     private fun handleSearchOrdersCompleted(payload: SearchOrdersResponsePayload) {

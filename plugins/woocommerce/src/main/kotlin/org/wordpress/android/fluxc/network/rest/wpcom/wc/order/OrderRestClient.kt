@@ -181,13 +181,15 @@ class OrderRestClient(
 
                     val payload = FetchOrdersByIdsResponsePayload(
                             site = site,
-                            orders = orderModels
+                            remoteOrderIds = remoteOrderIds,
+                            fetchedOrders = orderModels
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
-                    val payload = FetchOrdersByIdsResponsePayload(error = orderError, site = site)
+                    val payload = FetchOrdersByIdsResponsePayload(
+                            error = orderError, site = site, remoteOrderIds = remoteOrderIds)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
