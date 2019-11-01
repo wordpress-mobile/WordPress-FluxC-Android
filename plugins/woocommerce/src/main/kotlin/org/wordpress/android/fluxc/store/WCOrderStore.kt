@@ -365,6 +365,11 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     fun getShipmentProvidersForSite(site: SiteModel): List<WCOrderShipmentProviderModel> =
             OrderSqlUtils.getOrderShipmentProvidersForSite(site)
 
+    /**
+     * @return Returns true if orders for the provided site exist in the DB, else false.
+     */
+    fun hasCachedOrdersForSite(site: SiteModel) = OrderSqlUtils.getOrdersForSite(site).isNotEmpty()
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCOrderAction ?: return
