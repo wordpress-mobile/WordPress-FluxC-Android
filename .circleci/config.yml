@@ -81,6 +81,8 @@ jobs:
         type: string
       timeout:
         type: string
+      num-flaky-test-attempts:
+        type: integer
       post-slack-status:
         type: boolean
       device:
@@ -110,6 +112,7 @@ jobs:
           device: << parameters.device >>
           project: api-project-108380595987
           timeout: << parameters.timeout >>
+          num-flaky-test-attempts: << parameters.num-flaky-test-attempts >>
           no-record-video: true
       - android/save-gradle-cache:
           cache-prefix: connected-tests
@@ -145,6 +148,7 @@ workflows:
           package: org.wordpress.android.fluxc.mocked
           device: model=Nexus5X,version=26,locale=en,orientation=portrait
           timeout: 10m
+          num-flaky-test-attempts: 0
           post-slack-status: false
   nightly:
     triggers:
@@ -161,4 +165,5 @@ workflows:
           package: org.wordpress.android.fluxc
           device: model=Nexus5X,version=26,locale=en,orientation=portrait
           timeout: 30m
+          num-flaky-test-attempts: 1
           post-slack-status: true
