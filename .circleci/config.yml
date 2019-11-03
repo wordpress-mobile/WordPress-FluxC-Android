@@ -1,4 +1,4 @@
-version: 2.1
+version: 2.0
 
 orbs:
   # Using 1.0 of our Orbs means it will use the latest 1.0.x version from https://github.com/wordpress-mobile/circleci-orbs
@@ -43,7 +43,7 @@ commands:
 
 jobs:
   Lint:
-    executor: 
+    executor:
       name: android/default
       api-version: "27"
     steps:
@@ -61,7 +61,7 @@ jobs:
       - android/save-gradle-cache
       - android/save-lint-results
   Unit Tests:
-    executor: 
+    executor:
       name: android/default
       api-version: "27"
     steps:
@@ -87,7 +87,7 @@ jobs:
         type: boolean
       device:
         type: string
-    executor: 
+    executor:
       name: android/default
       api-version: "27"
     steps:
