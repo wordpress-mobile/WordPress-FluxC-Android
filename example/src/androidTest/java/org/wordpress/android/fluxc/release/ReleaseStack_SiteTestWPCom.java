@@ -254,30 +254,6 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     }
 
     @Test
-    public void testWPComSiteFetchAndLogoutCollision() throws InterruptedException {
-        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
-                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
-
-        // Fetch sites again and immediately logout and clear WP.com sites
-        mCountDownLatch = new CountDownLatch(3); // Wait for OnAuthenticationChanged, OnAccountChanged and OnSiteRemoved
-        mNextEvent = TestEvents.SITE_REMOVED;
-        mExpectedRowsAffected = mSiteStore.getSitesCount();
-        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
-        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
-        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
-
-        // Wait for OnAuthenticationChanged, OnAccountChanged and OnSiteRemoved from logout/site removal
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        // Wait for OnSiteChanged event from fetch
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.SITE_CHANGED;
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        assertEquals(0, mSiteStore.getSitesCount());
-    }
-
-    @Test
     public void testWpcomSubdomainSuggestions() throws InterruptedException {
         String keywords = "awesomesubdomain";
         SuggestDomainsPayload payload = new SuggestDomainsPayload(keywords, true, true, false, 20, false);
