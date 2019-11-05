@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.store;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -60,6 +61,18 @@ public class MediaStore extends Store {
         public MediaPayload(SiteModel site, MediaModel media, MediaError error) {
             this.site = site;
             this.media = media;
+            this.error = error;
+        }
+    }
+
+    // FIXME shouldn't be MediaError here
+    public static class SitePayload extends Payload<MediaError> {
+        public SiteModel site;
+        public SitePayload(SiteModel site) {
+            this(site, null);
+        }
+        public SitePayload(SiteModel site, MediaError error) {
+            this.site = site;
             this.error = error;
         }
     }
@@ -441,6 +454,10 @@ public class MediaStore extends Store {
         }
 
         switch ((MediaAction) actionType) {
+            case RETRIEVE_MEDIA:
+                Log.e("TEST123", "mediastore onAction retrieve_media");
+                performRetrieveMedia((SitePayload) action.getPayload());
+                break;
             case PUSH_MEDIA:
                 performPushMedia((MediaPayload) action.getPayload());
                 break;
@@ -493,6 +510,23 @@ public class MediaStore extends Store {
                 handleStockMediaUploaded(((UploadedStockMediaPayload) action.getPayload()));
                 break;
         }
+    }
+
+    private void performRetrieveMedia(SitePayload payload) {
+        final SiteModel site = payload.site;
+        if (site == null) {
+//            notifyMediaError(MediaErrorType.NULL_MEDIA_ARG, MediaAction.FETCH_MEDIA, payload.media);
+            Log.e("TESTING123", "uh-oh, we had an error because site was null");
+            return;
+        }
+
+        mMediaRestClient.doIt(site);
+
+//        if (payload.site.isUsingWpComRestApi()) {
+//            mMediaRestClient.fetchMedia(payload.site, payload.media);
+//        } else {
+//            mMediaXmlrpcClient.fetchMedia(payload.site, payload.media);
+//        }
     }
 
     @Override

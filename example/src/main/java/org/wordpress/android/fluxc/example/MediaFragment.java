@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.action.MediaAction;
+import org.wordpress.android.fluxc.annotations.action.Action;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
@@ -30,13 +32,17 @@ import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
+import org.wordpress.android.fluxc.store.MediaStore.SitePayload;
 import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -58,6 +64,15 @@ public class MediaFragment extends Fragment {
     private MediaModel mCurrentUpload;
 
     private List<MediaModel> mMedia = new ArrayList<>();
+
+    @Override public void onResume() {
+        super.onResume();
+
+        SitePayload sitePayload = new SitePayload(mSite);
+        Action action = MediaActionBuilder.newRetrieveMediaAction(sitePayload);
+        mDispatcher.dispatch(action);
+        Log.e("TESTING123", "on resume");
+    }
 
     @Override
     public void onAttach(Context context) {

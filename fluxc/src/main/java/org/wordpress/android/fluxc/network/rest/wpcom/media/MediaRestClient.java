@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.media;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -19,6 +20,7 @@ import org.json.JSONObject;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.UploadActionBuilder;
+import org.wordpress.android.fluxc.generated.endpoint.WPAPI;
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.MediaModel.MediaUploadState;
@@ -324,6 +326,32 @@ public class MediaRestClient extends BaseWPComRestClient implements ProgressList
                 }
             ));
     }
+
+    /**
+     * Retrieves a media item.
+     */
+    public void doIt(final SiteModel site) {
+        // FIXME don't hardcode mediaId
+        customMediaRequest(site, 12);
+    }
+
+    private void customMediaRequest(final SiteModel site, int mediaId) {
+        // FIXME .org sites
+
+        String url = WPAPI.media.id(mediaId).getWpComUrlV2(site.getSiteId());
+        Log.e("TEST123", "resulting url: " + url);
+        add(WPComGsonRequest.buildGetRequest(url, null, JsonObject.class,
+                new Listener<JsonObject>() {
+                    @Override public void onResponse(JsonObject response) {
+                        Log.e("TESTING123", "Response: " + response.toString());
+                    }
+                }, new WPComErrorListener() {
+                    @Override public void onErrorResponse(@NonNull WPComGsonNetworkError error) {
+                        Log.e("TESTING123", "Error: " + error.toString());
+                    }
+                }));
+    }
+
 
     /**
      * Deletes media from a WP.com site whose media ID is in the provided list.

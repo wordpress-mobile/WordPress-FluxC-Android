@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListPayload;
 import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListResponsePayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.ProgressPayload;
+import org.wordpress.android.fluxc.store.MediaStore.SitePayload;
 import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.UploadStockMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.UploadedStockMediaPayload;
@@ -30,6 +31,16 @@ public enum MediaAction implements IAction {
     CANCEL_MEDIA_UPLOAD,
     @Action(payloadType = UploadStockMediaPayload.class)
     UPLOAD_STOCK_MEDIA,
+
+
+
+
+    // FIXME fix name
+    @Action(payloadType = SitePayload.class)
+    RETRIEVE_MEDIA,
+
+
+
 
     // Remote responses
     @Action(payloadType = MediaPayload.class)
