@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,11 +19,17 @@ import androidx.fragment.app.Fragment;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.jetbrains.annotations.NotNull;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
 import org.wordpress.android.fluxc.model.SiteModel;
+import org.wordpress.android.fluxc.store.Continuation;
+import org.wordpress.android.fluxc.store.ReactNativeFetchResponse;
+import org.wordpress.android.fluxc.store.ReactNativeFetchResponse.Error;
+import org.wordpress.android.fluxc.store.ReactNativeFetchResponse.Success;
+import org.wordpress.android.fluxc.store.ReactNativeStore;
 import org.wordpress.android.fluxc.store.MediaStore;
 import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListPayload;
@@ -36,11 +43,15 @@ import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.utils.MediaUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
 import dagger.android.support.AndroidSupportInjection;
+import kotlin.coroutines.CoroutineContext;
+import kotlin.coroutines.EmptyCoroutineContext;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -51,6 +62,8 @@ public class MediaFragment extends Fragment {
     @Inject MediaStore mMediaStore;
     @Inject Dispatcher mDispatcher;
 
+    @Inject ReactNativeStore mReactNativeStore;
+
     private SiteModel mSite;
     private Spinner mMediaList;
     private View mCancelButton;
@@ -58,6 +71,64 @@ public class MediaFragment extends Fragment {
     private MediaModel mCurrentUpload;
 
     private List<MediaModel> mMedia = new ArrayList<>();
+
+    @Override public void onResume() {
+        super.onResume();
+        wpComCall();
+        wpApiCall();
+    }
+
+    private void wpComCall() {
+        Map<String, String> params = new HashMap<>();
+        params.put("context", "edit");
+        String path = "https://public-api.wordpress.com/wp/v2/sites/163730393/media/12";
+
+        mReactNativeStore.performWPComRequest(path, params, new Continuation<ReactNativeFetchResponse>() {
+            @NotNull @Override public CoroutineContext getContext() {
+                return EmptyCoroutineContext.INSTANCE;
+            }
+
+            @Override public void resumeWithException(@NotNull Throwable exception) {
+                Log.e("TEST123", "exception thrown: " + exception.getMessage());
+            }
+
+            @Override public void resume(ReactNativeFetchResponse value) {
+                if (value instanceof ReactNativeFetchResponse.Success) {
+                    Log.e("TEST123", "result: " + ((Success) value).getResult());
+                } else if (value instanceof ReactNativeFetchResponse.Error) {
+                    Log.e("TEST123", "error: " + ((Error) value).getError());
+                } else {
+                    Log.e("TEST123", "wat??");
+                }
+            }
+        });
+    }
+
+    private void wpApiCall() {
+        Map<String, String> params = new HashMap<>();
+        params.put("context", "view");
+        String path = "https://damp-ducks.jurassic.ninja/wp-json/wp/v2/media/21";
+
+        mReactNativeStore.performWPAPIRequest(path, params, new Continuation<ReactNativeFetchResponse>() {
+            @NotNull @Override public CoroutineContext getContext() {
+                return EmptyCoroutineContext.INSTANCE;
+            }
+
+            @Override public void resumeWithException(@NotNull Throwable exception) {
+                Log.e("TEST123", "exception thrown: " + exception.getMessage());
+            }
+
+            @Override public void resume(ReactNativeFetchResponse value) {
+                if (value instanceof ReactNativeFetchResponse.Success) {
+                    Log.e("TEST123", "result: " + ((Success) value).getResult());
+                } else if (value instanceof ReactNativeFetchResponse.Error) {
+                    Log.e("TEST123", "error: " + ((Error) value).getError());
+                } else {
+                    Log.e("TEST123", "wat??");
+                }
+            }
+        });
+    }
 
     @Override
     public void onAttach(Context context) {
