@@ -33,7 +33,8 @@ constructor(
         amount: String,
         reason: String,
         automaticRefund: Boolean,
-        partialRefundLineItems: List<LineItem> = emptyList()
+        items: List<LineItem>,
+        restockItems: Boolean
     ): WooPayload<RefundResponse> {
         val url = WOOCOMMERCE.orders.id(orderId).refunds.pathV3
 
@@ -41,7 +42,8 @@ constructor(
             "amount" to amount,
             "reason" to reason,
             "api_refund" to automaticRefund.toString(),
-            "line_items" to partialRefundLineItems.toString()
+            "line_items" to items.toString(),
+            "restock_items" to restockItems
         )
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
                 this,
