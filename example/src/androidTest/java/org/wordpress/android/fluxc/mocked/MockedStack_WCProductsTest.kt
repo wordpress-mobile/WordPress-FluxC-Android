@@ -225,6 +225,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertNull(payload.error)
         assertEquals(payload.remoteProductId, remoteProductId)
         assertEquals(payload.variations.size, 3)
+        assertEquals(payload.variations[0].imageUrl, "")
+        assertNotNull(payload.variations[1].imageUrl)
 
         // save the variation to the db
         assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(payload.variations), 3)
