@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.store
 
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel
 import org.wordpress.android.fluxc.model.refunds.RefundMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
@@ -27,12 +28,36 @@ class WCRefundStore @Inject constructor(
         const val DEFAULT_PAGE = 1
     }
 
-    suspend fun createRefund(
+    suspend fun createAmountRefund(
         site: SiteModel,
         orderId: Long,
         amount: BigDecimal,
         reason: String = "",
         autoRefund: Boolean = false
+    ): WooResult<WCRefundModel> {
+        return createRefund(site, orderId, amount, reason, false, autoRefund, emptyList())
+    }
+
+    suspend fun createItemsRefund(
+        site: SiteModel,
+        orderId: Long,
+        amount: BigDecimal,
+        reason: String = "",
+        restockItems: Boolean = true,
+        autoRefund: Boolean = false,
+        items: List<WCOrderModel.LineItem>
+    ): WooResult<WCRefundModel> {
+        return createRefund(site, orderId, amount, reason, restockItems, autoRefund, items)
+    }
+
+    private suspend fun createRefund(
+        site: SiteModel,
+        orderId: Long,
+        amount: BigDecimal,
+        reason: String = "",
+        restockItems: Boolean,
+        autoRefund: Boolean = false,
+        items: List<WCOrderModel.LineItem>
     ): WooResult<WCRefundModel> {
         return withContext(coroutineContext) {
             val response = restClient.createRefund(
@@ -40,7 +65,9 @@ class WCRefundStore @Inject constructor(
                     orderId,
                     amount.toString(),
                     reason,
-                    autoRefund
+                    autoRefund,
+                    items,
+                    restockItems
             )
             return@withContext when {
                 response.isError -> WooResult(response.error)
