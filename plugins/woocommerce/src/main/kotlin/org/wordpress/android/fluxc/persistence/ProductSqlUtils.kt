@@ -270,7 +270,7 @@ object ProductSqlUtils {
         return insertOrUpdateProduct(product)
     }
 
-    fun removeProductImage(site: SiteModel, remoteProductId: Long, remoteMediaId: Long): Boolean {
+    fun deleteProductImage(site: SiteModel, remoteProductId: Long, remoteMediaId: Long): Boolean {
         val product = getProductByRemoteId(site, remoteProductId) ?: return false
 
         // build a new image list containing all the product images except the passed one
