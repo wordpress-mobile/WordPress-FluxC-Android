@@ -1,11 +1,14 @@
 package org.wordpress.android.fluxc.persistence
 
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import com.wellsql.generated.WCProductModelTable
 import com.wellsql.generated.WCProductReviewModelTable
 import com.wellsql.generated.WCProductVariationModelTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
@@ -251,4 +254,36 @@ object ProductSqlUtils {
     }
 
     fun deleteAllProductReviews() = WellSql.delete(WCProductReviewModel::class.java).execute()
+
+    fun updateProductImages(site: SiteModel, product: WCProductModel, imageList: List<WCProductImageModel>): Int {
+        val jsonImageList = JsonArray()
+        imageList.forEach { image ->
+            JsonObject().also { jsonImage ->
+                jsonImage.addProperty("id", image.id)
+                jsonImage.addProperty("name", image.name)
+                jsonImage.addProperty("src", image.src)
+                jsonImage.addProperty("alt", image.alt)
+                jsonImageList.add(jsonImage)
+            }
+        }
+        product.images = jsonImageList.asString
+        return insertOrUpdateProduct(product)
+    }
+
+    fun removeProductImage(site: SiteModel, remoteProductId: Long, remoteMediaId: Long): Boolean {
+        val product = getProductByRemoteId(site, remoteProductId) ?: return false
+
+        // build a new image list containing all the product images except the passed one
+        val imageList = ArrayList<WCProductImageModel>()
+        product.getImages().forEach { image ->
+            if (image.id != remoteMediaId) {
+                imageList.add(image)
+            }
+        }
+        if (imageList.size == product.getImages().size) {
+            return false
+        }
+
+        return updateProductImages(site, product, imageList) > 0
+    }
 }
