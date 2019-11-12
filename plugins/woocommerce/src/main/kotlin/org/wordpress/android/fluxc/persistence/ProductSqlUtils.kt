@@ -266,7 +266,7 @@ object ProductSqlUtils {
                 jsonImageList.add(jsonImage)
             }
         }
-        // TODO: verify this change
+
         product.images = jsonImageList.toString()
         return insertOrUpdateProduct(product)
     }
