@@ -255,7 +255,7 @@ object ProductSqlUtils {
 
     fun deleteAllProductReviews() = WellSql.delete(WCProductReviewModel::class.java).execute()
 
-    fun updateProductImages(site: SiteModel, product: WCProductModel, imageList: List<WCProductImageModel>): Int {
+    fun updateProductImages(product: WCProductModel, imageList: List<WCProductImageModel>): Int {
         val jsonImageList = JsonArray()
         imageList.forEach { image ->
             JsonObject().also { jsonImage ->
@@ -285,6 +285,6 @@ object ProductSqlUtils {
             return false
         }
 
-        return updateProductImages(site, product, imageList) > 0
+        return updateProductImages(product, imageList) > 0
     }
 }

@@ -450,7 +450,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(rowsAffected, 1)
 
         // update the product's images with our test list
-        rowsAffected = ProductSqlUtils.updateProductImages(siteModel, productTest, generateTestImageList())
+        rowsAffected = ProductSqlUtils.updateProductImages(productTest, generateTestImageList())
         assertEquals(rowsAffected, 1)
 
         // make sure two images are attached to the product
