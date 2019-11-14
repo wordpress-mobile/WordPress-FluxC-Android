@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.example
 
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -47,34 +48,24 @@ class ReactNativeFragment : Fragment() {
         urlField: EditText,
         callType: String
     ) {
-        try {
-            val fullPath = urlField.text.toString()
-            val (path, paramMap) = if (fullPath.contains("?")) {
-                val (pathWithoutParams, rawParams) = fullPath.split("?")
-                val params = rawParams.split("&").map {
-                    val (key, value) = it.split("=")
-                    key to value
-                }.toMap()
-                Pair(pathWithoutParams, params)
-            } else {
-                Pair(fullPath, emptyMap())
+        val uri = Uri.parse(urlField.text.toString())
+        val fullPath = "${uri.scheme}://${uri.authority}${uri.path}"
+        val paramMap = uri.queryParameterNames.map { name ->
+            name to uri.getQueryParameter(name)
+        }.toMap()
+
+        GlobalScope.launch(Dispatchers.Main) {
+            val response = withContext(Dispatchers.IO) {
+                callFunction(fullPath, paramMap)
             }
 
-            GlobalScope.launch(Dispatchers.Main) {
-                val response = withContext(Dispatchers.IO) {
-                    callFunction(path, paramMap)
+            when (response) {
+                is Success -> {
+                    prependToLog("$callType call succeeded")
+                    AppLog.i(AppLog.T.API, "$callType call result: ${response.result}")
                 }
-
-                when (response) {
-                    is Success -> {
-                        prependToLog("$callType call succeeded")
-                        AppLog.i(AppLog.T.API, "$callType call result: ${response.result}")
-                    }
-                    is Error -> prependToLog("$callType call failed: ${response.error}")
-                }
+                is Error -> prependToLog("$callType call failed: ${response.error}")
             }
-        } catch (e: IndexOutOfBoundsException) {
-            prependToLog("Error parsing url")
         }
     }
 }
