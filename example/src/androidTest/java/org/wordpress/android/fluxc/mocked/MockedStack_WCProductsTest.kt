@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
+import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
@@ -388,13 +389,26 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val imageList = ArrayList<WCProductImageModel>()
         with(WCProductImageModel(1)) {
             dateCreated = DateUtils.getCurrentDateString()
+            alt = ""
+            src = ""
+            name = ""
             imageList.add(this)
         }
         with(WCProductImageModel(2)) {
             dateCreated = DateUtils.getCurrentDateString()
+            alt = ""
+            src = ""
+            name = ""
             imageList.add(this)
         }
         return imageList
+    }
+
+    private fun generateTestProduct(): WCProductModel {
+        return WCProductModel(1).also {
+            it.localSiteId = siteModel.id
+            it.remoteProductId = remoteProductId
+        }
     }
 
     @Test
@@ -426,6 +440,32 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(WCProductAction.UPDATED_PRODUCT_IMAGES, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteUpdateProductImagesPayload
         assertTrue(payload.isError)
+    }
+
+    @Test
+    fun testDeleteProductImageFromDb() {
+        // add our test product to the db
+        val productTest = generateTestProduct()
+        var rowsAffected = ProductSqlUtils.insertOrUpdateProduct(productTest)
+        assertEquals(rowsAffected, 1)
+
+        // update the product's images with our test list
+        rowsAffected = ProductSqlUtils.updateProductImages(productTest, generateTestImageList())
+        assertEquals(rowsAffected, 1)
+
+        // make sure two images are attached to the product
+        val productBefore = ProductSqlUtils.getProductByRemoteId(siteModel, remoteProductId)
+        assertNotNull(productBefore)
+        assertEquals(productBefore!!.getImages().size, 2)
+
+        // remove one of the images
+        val didDelete = ProductSqlUtils.deleteProductImage(siteModel, remoteProductId, 1)
+        assertTrue(didDelete)
+
+        // now make sure only one image is attached to the product
+        val productAfter = ProductSqlUtils.getProductByRemoteId(siteModel, remoteProductId)
+        assertNotNull(productAfter)
+        assertEquals(productAfter!!.getImages().size, 1)
     }
 
     @Suppress("unused")
