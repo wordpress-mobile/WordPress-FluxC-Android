@@ -19,7 +19,7 @@ class ReleaseStack_ReactNativeWPComRequestTest : ReleaseStack_WPComBase() {
 
     @Test
     fun testWpComCall() {
-        val url = "https://public-api.wordpress.com/wp/v2/media"
+        val url = "https://public-api.wordpress.com/wp/v2/sites/${siteFromDb.siteId}/media"
         val params = mapOf("context" to "edit")
         val response = runBlocking { reactNativeStore.performWPComRequest(url, params) }
 
