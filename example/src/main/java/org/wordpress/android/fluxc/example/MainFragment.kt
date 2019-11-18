@@ -99,7 +99,7 @@ class MainFragment : Fragment() {
     private fun getOnClickListener(fragment: Fragment) = OnClickListener { replaceFragment(fragment) }
 
     private fun replaceFragment(fragment: Fragment) {
-        if (siteStore.sitesCount == 0L && !accountStore.hasAccessToken()) {
+        if (siteStore.sitesCount == 0 && !accountStore.hasAccessToken()) {
             ToastUtils.showToast(activity, "You must be logged in")
             return
         }
