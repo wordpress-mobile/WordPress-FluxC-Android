@@ -39,6 +39,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
 import java.util.HashMap
 import javax.inject.Singleton
 
@@ -205,6 +206,48 @@ class ProductRestClient(
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVariationsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Makes a PUT request to `/wp-json/wc/v3/products/remoteProductId` to update a product
+     *
+     * Dispatches a WCProductAction.UPDATED_PRODUCT action with the result
+     *
+     * @param [site] The site to fetch product reviews for
+     * @param [updatedProductModel] the product model that contains the update
+     */
+    fun updateProduct(site: SiteModel, updatedProductModel: WCProductModel) {
+        val remoteProductId = updatedProductModel.remoteProductId
+        val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
+        val responseType = object : TypeToken<ProductApiResponse>() {}.type
+
+        // build json body of items to be updated to the backend
+        val body = HashMap<String, Any>()
+        body["id"] = remoteProductId
+        body["sku"] = updatedProductModel.sku
+        body["name"] = updatedProductModel.name
+        body["description"] = updatedProductModel.description
+
+        val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
+                { response: ProductApiResponse? ->
+                    response?.let {
+                        val newModel = productResponseToProductModel(it).apply {
+                            localSiteId = site.id
+                        }
+                        val payload = RemoteUpdateProductPayload(site, newModel)
+                        dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductAction(payload))
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val productError = networkErrorToProductError(networkError)
+                    val payload = RemoteUpdateProductPayload(
+                            productError,
+                            site,
+                            WCProductModel().apply { this.remoteProductId = remoteProductId }
+                    )
+                    dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductAction(payload))
+                })
         add(request)
     }
 
