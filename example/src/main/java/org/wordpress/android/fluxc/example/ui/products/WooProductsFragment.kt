@@ -177,6 +177,10 @@ class WooProductsFragment : Fragment() {
                 }
             }
         }
+
+        update_product.setOnClickListener {
+            // TODO: redirect to a new screen that includes updates to product description, title, sku etc
+        }
     }
 
     /**
