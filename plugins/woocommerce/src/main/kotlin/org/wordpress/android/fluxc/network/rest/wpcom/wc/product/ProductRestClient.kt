@@ -221,13 +221,7 @@ class ProductRestClient(
         val remoteProductId = updatedProductModel.remoteProductId
         val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
         val responseType = object : TypeToken<ProductApiResponse>() {}.type
-
-        // build json body of items to be updated to the backend
-        val body = HashMap<String, Any>()
-        body["id"] = remoteProductId
-        body["sku"] = updatedProductModel.sku
-        body["name"] = updatedProductModel.name
-        body["description"] = updatedProductModel.description
+        val body = productModelToProductJsonBody(updatedProductModel)
 
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
                 { response: ProductApiResponse? ->
@@ -423,6 +417,25 @@ class ProductRestClient(
                     dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductReviewStatusAction(payload))
                 })
         add(request)
+    }
+
+    /**
+     * build json body of product items to be updated to the backend
+     */
+    private fun productModelToProductJsonBody(productModel: WCProductModel): HashMap<String, Any> {
+        val body = HashMap<String, Any>()
+        body["id"] = productModel.remoteProductId
+        if (productModel.description.isNotEmpty()) {
+            body["description"] = productModel.description
+        }
+        if (productModel.name.isNotEmpty()) {
+            body["name"] = productModel.name
+        }
+        if (productModel.sku.isNotEmpty()) {
+            body["sku"] = productModel.sku
+        }
+
+        return body
     }
 
     private fun productResponseToProductModel(response: ProductApiResponse): WCProductModel {
