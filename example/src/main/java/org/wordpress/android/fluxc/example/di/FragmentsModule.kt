@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.example.MainFragment
 import org.wordpress.android.fluxc.example.MediaFragment
 import org.wordpress.android.fluxc.example.NotificationsFragment
 import org.wordpress.android.fluxc.example.PostsFragment
+import org.wordpress.android.fluxc.example.ReactNativeFragment
 import org.wordpress.android.fluxc.example.SignedOutActionsFragment
 import org.wordpress.android.fluxc.example.SiteSelectorDialog
 import org.wordpress.android.fluxc.example.SitesFragment
@@ -84,4 +85,7 @@ internal abstract class FragmentsModule {
 
     @ContributesAndroidInjector
     abstract fun provideStoreSelectorDialogInjector(): StoreSelectorDialog
+
+    @ContributesAndroidInjector
+    abstract fun provideReactNativeFramgmentInjector(): ReactNativeFragment
 }

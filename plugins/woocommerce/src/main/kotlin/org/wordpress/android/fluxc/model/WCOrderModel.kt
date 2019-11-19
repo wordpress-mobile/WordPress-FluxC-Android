@@ -61,8 +61,15 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
 
     @Column var lineItems = ""
 
+    @Column var shippingLines = ""
+
     companion object {
         private val gson by lazy { Gson() }
+    }
+
+    class ShippingLine {
+        @SerializedName("method_title")
+        val methodTitle: String? = null
     }
 
     class LineItem {
@@ -125,4 +132,14 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
     fun getOrderSubtotal(): Double {
         return getLineItemList().sumByDouble { it.subtotal?.toDoubleOrNull() ?: 0.0 }
     }
+
+    /**
+     * Deserializes the JSON contained in [shippingLines] into a list of [ShippingLine] objects.
+     */
+    fun getShippingLineList(): List<ShippingLine> {
+        val responseType = object : TypeToken<List<ShippingLine>>() {}.type
+        return gson.fromJson(shippingLines, responseType) as? List<ShippingLine> ?: emptyList()
+    }
+
+    fun isMultiShippingLinesAvailable() = getShippingLineList()?.size > 1
 }

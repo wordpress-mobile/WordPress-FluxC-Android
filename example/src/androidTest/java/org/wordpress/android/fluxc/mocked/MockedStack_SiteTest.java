@@ -6,15 +6,22 @@ import org.greenrobot.eventbus.Subscribe;
 import org.junit.Test;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
+import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor;
 import org.wordpress.android.fluxc.store.AccountStore;
+import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
+import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.InitiateAutomatedTransferPayload;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferEligibilityChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferInitiated;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferStatusChecked;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
+import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
+import org.wordpress.android.util.AppLog;
+import org.wordpress.android.util.AppLog.T;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +42,8 @@ public class MockedStack_SiteTest extends MockedStack_Base {
 
     enum TestEvents {
         NONE,
+        SITE_REMOVED,
+        SITE_CHANGED,
         AUTOMATED_TRANSFER_STATUS_COMPLETE,
         AUTOMATED_TRANSFER_STATUS_INCOMPLETE,
         ELIGIBLE_FOR_AUTOMATED_TRANSFER,
@@ -43,6 +52,7 @@ public class MockedStack_SiteTest extends MockedStack_Base {
 
     private TestEvents mNextEvent;
     private CountDownLatch mCountDownLatch;
+    private int mExpectedRowsAffected;
 
     @Override
     public void setUp() throws Exception {
@@ -53,6 +63,29 @@ public class MockedStack_SiteTest extends MockedStack_Base {
         mDispatcher.register(this);
         // Reset expected test event
         mNextEvent = TestEvents.NONE;
+    }
+
+    @Test
+    public void testWPComSiteFetchAndLogoutCollision() throws InterruptedException {
+        // Fetch sites and immediately logout and clear WP.com sites
+        mCountDownLatch = new CountDownLatch(3); // Wait for OnAuthenticationChanged, OnAccountChanged and OnSiteRemoved
+        mNextEvent = TestEvents.SITE_REMOVED;
+        mExpectedRowsAffected = mSiteStore.getSitesCount();
+
+        mInterceptor.respondWith("sites-fetch-response-success.json");
+        mDispatcher.dispatch(SiteActionBuilder.newFetchSitesAction());
+        mDispatcher.dispatch(AccountActionBuilder.newSignOutAction());
+        mDispatcher.dispatch(SiteActionBuilder.newRemoveWpcomAndJetpackSitesAction());
+
+        // Wait for OnAuthenticationChanged, OnAccountChanged and OnSiteRemoved from logout/site removal
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Wait for OnSiteChanged event from fetch
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.SITE_CHANGED;
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(0, mSiteStore.getSitesCount());
     }
 
     @Test
@@ -98,6 +131,54 @@ public class MockedStack_SiteTest extends MockedStack_Base {
         mDispatcher.dispatch(SiteActionBuilder.newCheckAutomatedTransferStatusAction(site));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onAuthenticationChanged(OnAuthenticationChanged event) {
+        AppLog.d(T.TESTS, "Received OnAuthenticationChanged event");
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onAccountChanged(OnAccountChanged event) {
+        AppLog.d(T.TESTS, "Received OnAccountChanged event");
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onSiteChanged(OnSiteChanged event) {
+        AppLog.i(T.TESTS, "site count " + mSiteStore.getSitesCount());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        if (mSiteStore.getSitesCount() > 0) {
+            assertTrue(mSiteStore.hasWPComSite());
+        }
+        assertEquals(TestEvents.SITE_CHANGED, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onSiteRemoved(OnSiteRemoved event) {
+        AppLog.e(T.TESTS, "site count " + mSiteStore.getSitesCount());
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        }
+        assertEquals(mExpectedRowsAffected, event.mRowsAffected);
+        assertFalse(mSiteStore.hasSite());
+        assertFalse(mSiteStore.hasWPComSite());
+        assertEquals(TestEvents.SITE_REMOVED, mNextEvent);
+        mCountDownLatch.countDown();
     }
 
     @SuppressWarnings("unused")

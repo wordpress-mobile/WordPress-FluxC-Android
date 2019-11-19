@@ -266,6 +266,9 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     fun deleteAllProductReviews() = ProductSqlUtils.deleteAllProductReviews()
 
+    fun deleteProductImage(site: SiteModel, remoteProductId: Long, remoteMediaId: Long) =
+            ProductSqlUtils.deleteProductImage(site, remoteProductId, remoteMediaId)
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCProductAction ?: return
