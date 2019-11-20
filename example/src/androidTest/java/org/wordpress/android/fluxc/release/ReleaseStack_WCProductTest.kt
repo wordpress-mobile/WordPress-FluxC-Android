@@ -28,7 +28,9 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReview
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductReviewChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -43,7 +45,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         FETCHED_PRODUCT_REVIEWS,
         FETCHED_SINGLE_PRODUCT_REVIEW,
         UPDATED_PRODUCT_REVIEW_STATUS,
-        UPDATED_PRODUCT_IMAGES
+        UPDATED_PRODUCT_IMAGES,
+        UPDATED_PRODUCT
     }
 
     @Inject internal lateinit var productStore: WCProductStore
@@ -329,6 +332,29 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertEquals(updatedImage.id, mediaModelForProduct.mediaId)
     }
 
+    @Throws(InterruptedException::class)
+    @Test
+    fun testUpdateProduct() {
+        val updatedProductDesc = "Testing updating product description"
+        productModel.description = updatedProductDesc
+
+        val updatedProductName = "Product I"
+        productModel.name = updatedProductName
+
+        nextEvent = TestEvent.UPDATED_PRODUCT
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newUpdateProductAction(UpdateProductPayload(sSite, productModel))
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        val updatedProduct = productStore.getProductByRemoteId(sSite, productModel.remoteProductId)
+        assertNotNull(updatedProduct)
+        assertEquals(updatedProductDesc, updatedProduct?.description)
+        assertEquals(productModel.remoteProductId, updatedProduct?.remoteProductId)
+        assertEquals(updatedProductName, updatedProduct?.name)
+    }
+
     /**
      * Used by the update images test to fetch a single media model for this site
      */
@@ -409,6 +435,17 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         }
 
         assertEquals(TestEvent.UPDATED_PRODUCT_IMAGES, nextEvent)
+        mCountDownLatch.countDown()
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductUpdated(event: OnProductUpdated) {
+        event.error?.let {
+            throw AssertionError("OnProductUpdated has unexpected error: ${it.type}, ${it.message}")
+        }
+
+        assertEquals(TestEvent.UPDATED_PRODUCT, nextEvent)
         mCountDownLatch.countDown()
     }
 }

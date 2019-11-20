@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_R
 import org.wordpress.android.fluxc.action.WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
@@ -176,6 +177,10 @@ class WooProductsFragment : Fragment() {
                     }
                 }
             }
+        }
+
+        update_product.setOnClickListener {
+            replaceFragment(WooUpdateProductFragment.newInstance(selectedPos))
         }
     }
 

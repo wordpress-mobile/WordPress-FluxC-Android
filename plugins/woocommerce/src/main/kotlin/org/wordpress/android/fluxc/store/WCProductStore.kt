@@ -82,6 +82,11 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var imageList: List<WCProductImageModel>
     ) : Payload<BaseNetworkError>()
 
+    class UpdateProductPayload(
+        var site: SiteModel,
+        val product: WCProductModel
+    ) : Payload<BaseNetworkError>()
+
     enum class ProductErrorType {
         INVALID_PARAM,
         INVALID_REVIEW_ID,
@@ -143,6 +148,19 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     class RemoteUpdateProductImagesPayload(
+        var site: SiteModel,
+        val product: WCProductModel
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            site: SiteModel,
+            product: WCProductModel
+        ) : this(site, product) {
+            this.error = error
+        }
+    }
+
+    class RemoteUpdateProductPayload(
         var site: SiteModel,
         val product: WCProductModel
     ) : Payload<ProductError>() {
@@ -220,6 +238,13 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var causeOfChange: WCProductAction? = null
     }
 
+    class OnProductUpdated(
+        var rowsAffected: Int,
+        var remoteProductId: Long
+    ) : OnChanged<ProductError>() {
+        var causeOfChange: WCProductAction? = null
+    }
+
     /**
      * returns the corresponding product from the database as a [WCProductModel].
      */
@@ -290,6 +315,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 updateProductReviewStatus(action.payload as UpdateProductReviewStatusPayload)
             WCProductAction.UPDATE_PRODUCT_IMAGES ->
                 updateProductImages(action.payload as UpdateProductImagesPayload)
+            WCProductAction.UPDATE_PRODUCT ->
+                updateProduct(action.payload as UpdateProductPayload)
 
             // remote responses
             WCProductAction.FETCHED_SINGLE_PRODUCT ->
@@ -308,6 +335,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 handleUpdateProductReviewStatus(action.payload as RemoteProductReviewPayload)
             WCProductAction.UPDATED_PRODUCT_IMAGES ->
                 handleUpdateProductImages(action.payload as RemoteUpdateProductImagesPayload)
+            WCProductAction.UPDATED_PRODUCT ->
+                handleUpdateProduct(action.payload as RemoteUpdateProductPayload)
         }
     }
 
@@ -345,6 +374,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     private fun updateProductImages(payload: UpdateProductImagesPayload) {
         with(payload) { wcProductRestClient.updateProductImages(site, remoteProductId, imageList) }
+    }
+
+    private fun updateProduct(payload: UpdateProductPayload) {
+        with(payload) { wcProductRestClient.updateProduct(site, product) }
     }
 
     private fun handleFetchSingleProductCompleted(payload: RemoteProductPayload) {
@@ -470,5 +503,20 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
         onProductImagesChanged.causeOfChange = WCProductAction.UPDATED_PRODUCT_IMAGES
         emitChange(onProductImagesChanged)
+    }
+
+    private fun handleUpdateProduct(payload: RemoteUpdateProductPayload) {
+        val onProductUpdated: OnProductUpdated
+
+        if (payload.isError) {
+            onProductUpdated = OnProductUpdated(0, payload.product.remoteProductId)
+                    .also { it.error = payload.error }
+        } else {
+            val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
+            onProductUpdated = OnProductUpdated(rowsAffected, payload.product.remoteProductId)
+        }
+
+        onProductUpdated.causeOfChange = WCProductAction.UPDATED_PRODUCT
+        emitChange(onProductUpdated)
     }
 }
