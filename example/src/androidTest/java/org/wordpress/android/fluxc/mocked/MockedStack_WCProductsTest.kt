@@ -26,6 +26,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
 import org.wordpress.android.fluxc.utils.DateUtils
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -439,6 +440,41 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
 
         assertEquals(WCProductAction.UPDATED_PRODUCT_IMAGES, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteUpdateProductImagesPayload
+        assertTrue(payload.isError)
+    }
+
+    @Test
+    fun testUpdateProductSuccess() {
+        interceptor.respondWith("wc-fetch-product-response-success.json")
+
+        val testProduct = generateTestProduct()
+        testProduct.description = "Testing product description update"
+        productRestClient.updateProduct(siteModel, testProduct)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.UPDATED_PRODUCT, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteUpdateProductPayload
+        with(payload) {
+            assertNull(error)
+            assertEquals(remoteProductId, product.remoteProductId)
+            assertEquals(testProduct.description, product.description)
+        }
+    }
+
+    @Test
+    fun testUpdateProductFailed() {
+        interceptor.respondWithError("wc-response-failure-invalid-param.json")
+        val testProduct = generateTestProduct()
+        testProduct.description = "Testing product description"
+        productRestClient.updateProduct(siteModel, testProduct)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.UPDATED_PRODUCT, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteUpdateProductPayload
         assertTrue(payload.isError)
     }
 
