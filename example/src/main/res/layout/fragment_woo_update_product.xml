@@ -44,5 +44,19 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Update Product Description" />
+
+        <Button
+            android:id="@+id/update_product_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Update Product name" />
+
+        <Button
+            android:id="@+id/update_product_sku"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Update Product sku" />
     </LinearLayout>
 </ScrollView>

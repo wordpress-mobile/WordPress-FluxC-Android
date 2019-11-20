@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
@@ -88,8 +89,29 @@ class WooUpdateProductFragment : Fragment() {
                 showSingleLineDialog(activity, "Enter product description:") { editText ->
                     selectedProductModel?.let { productModel ->
                         productModel.description = editText.text.toString()
-                        val payload = UpdateProductPayload(site, productModel)
-                        dispatcher.dispatch(WCProductActionBuilder.newUpdateProductAction(payload))
+                        updateProductAction(site, productModel)
+                    } ?: prependToLog("No valid remoteProductId defined...doing nothing")
+                }
+            }
+        }
+
+        update_product_name.setOnClickListener {
+            getWCSite()?.let { site ->
+                showSingleLineDialog(activity, "Enter product name:") { editText ->
+                    selectedProductModel?.let { productModel ->
+                        productModel.name = editText.text.toString()
+                        updateProductAction(site, productModel)
+                    } ?: prependToLog("No valid remoteProductId defined...doing nothing")
+                }
+            }
+        }
+
+        update_product_sku.setOnClickListener {
+            getWCSite()?.let { site ->
+                showSingleLineDialog(activity, "Enter product sku:") { editText ->
+                    selectedProductModel?.let { productModel ->
+                        productModel.sku = editText.text.toString()
+                        updateProductAction(site, productModel)
                     } ?: prependToLog("No valid remoteProductId defined...doing nothing")
                 }
             }
@@ -101,6 +123,11 @@ class WooUpdateProductFragment : Fragment() {
             selectedProductModel = wcProductStore.getProductByRemoteId(it, remoteProductId)
                     ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
+    }
+
+    private fun updateProductAction(site: SiteModel, productModel: WCProductModel) {
+        val payload = UpdateProductPayload(site, productModel)
+        dispatcher.dispatch(WCProductActionBuilder.newUpdateProductAction(payload))
     }
 
     private fun getWCSite() = wooCommerceStore.getWooCommerceSites().getOrNull(selectedSitePosition)
