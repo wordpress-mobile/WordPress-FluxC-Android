@@ -1,0 +1,62 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="org.wordpress.android.fluxc.example.ui.products.WooUpdateProductFragment">
+
+    <LinearLayout
+        android:id="@+id/buttonContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:text="Perform actions on a selected product Id:"
+            android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/product_enter_product_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Enter Product Id" />
+
+            <TextView
+                android:id="@+id/product_entered_product_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="10dp"
+                android:paddingLeft="10dp"
+                android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
+                android:textColor="@android:color/holo_blue_bright" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/update_product_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Update Product Description" />
+
+        <Button
+            android:id="@+id/update_product_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Update Product name" />
+
+        <Button
+            android:id="@+id/update_product_sku"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Update Product sku" />
+    </LinearLayout>
+</ScrollView>

@@ -91,6 +91,7 @@ class MainFragment : Fragment() {
         themes.setOnClickListener(getOnClickListener(ThemeFragment()))
         woo.setOnClickListener(getOnClickListener(WooCommerceFragment()))
         notifs.setOnClickListener(getOnClickListener(NotificationsFragment()))
+        reactnative.setOnClickListener(getOnClickListener(ReactNativeFragment()))
     }
 
     // Private methods
