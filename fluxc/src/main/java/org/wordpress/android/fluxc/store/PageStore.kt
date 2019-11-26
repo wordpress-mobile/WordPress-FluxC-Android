@@ -17,7 +17,6 @@ import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged
 import org.wordpress.android.fluxc.store.PostStore.PostDeleteActionType.DELETE
 import org.wordpress.android.fluxc.store.PostStore.PostError
-import org.wordpress.android.fluxc.store.PostStore.PostErrorType
 import org.wordpress.android.fluxc.store.PostStore.PostErrorType.UNKNOWN_POST
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload
 import org.wordpress.android.util.DateTimeUtils
@@ -79,14 +78,13 @@ class PageStore @Inject constructor(
     }
 
     suspend fun updatePageInDb(page: PageModel): OnPostChanged = suspendCoroutine { cont ->
-        updatePostContinuation = cont
-
         val post = postStore.getPostByRemotePostId(page.remoteId, page.site)
                 ?: postStore.getPostByLocalPostId(page.pageId)
         if (post != null) {
             post.updatePageData(page)
 
             val updateAction = PostActionBuilder.newUpdatePostAction(post)
+            updatePostContinuation = cont
             dispatcher.dispatch(updateAction)
         } else {
             val event = OnPostChanged(CauseOfOnPostChanged.UpdatePost(page.pageId, page.remoteId), 0)
@@ -150,10 +148,9 @@ class PageStore @Inject constructor(
     }
 
     suspend fun deletePageFromServer(page: PageModel): OnPostChanged = suspendCoroutine { cont ->
-        deletePostContinuation = cont
-
         val post = postStore.getPostByLocalPostId(page.pageId)
         if (post != null) {
+            deletePostContinuation = cont
             val payload = RemotePostPayload(post, page.site)
             dispatcher.dispatch(PostActionBuilder.newDeletePostAction(payload))
         } else {
@@ -164,7 +161,7 @@ class PageStore @Inject constructor(
                             postDeleteActionType = DELETE
                     ), 0
             )
-            event.error = PostError(PostErrorType.UNKNOWN_POST)
+            event.error = PostError(UNKNOWN_POST)
             cont.resume(event)
         }
     }
