@@ -35,35 +35,34 @@ class WCRefundStore @Inject constructor(
         reason: String = "",
         autoRefund: Boolean = false
     ): WooResult<WCRefundModel> {
-        return createRefund(site, orderId, amount, reason, false, autoRefund, emptyList())
+        return withContext(coroutineContext) {
+            val response = restClient.createRefundByAmount(
+                    site,
+                    orderId,
+                    amount.toString(),
+                    reason,
+                    autoRefund
+            )
+            return@withContext when {
+                response.isError -> WooResult(response.error)
+                response.result != null -> WooResult(refundsMapper.map(response.result))
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
     }
 
     suspend fun createItemsRefund(
         site: SiteModel,
         orderId: Long,
-        amount: BigDecimal,
         reason: String = "",
         restockItems: Boolean = true,
         autoRefund: Boolean = false,
         items: List<WCRefundModel.WCRefundItem>
     ): WooResult<WCRefundModel> {
-        return createRefund(site, orderId, amount, reason, restockItems, autoRefund, items)
-    }
-
-    private suspend fun createRefund(
-        site: SiteModel,
-        orderId: Long,
-        amount: BigDecimal,
-        reason: String = "",
-        restockItems: Boolean,
-        autoRefund: Boolean = false,
-        items: List<WCRefundModel.WCRefundItem>
-    ): WooResult<WCRefundModel> {
         return withContext(coroutineContext) {
-            val response = restClient.createRefund(
+            val response = restClient.createRefundByItems(
                     site,
                     orderId,
-                    amount.toString(),
                     reason,
                     autoRefund,
                     items,

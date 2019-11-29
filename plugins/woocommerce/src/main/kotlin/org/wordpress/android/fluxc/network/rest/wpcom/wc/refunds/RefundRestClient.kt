@@ -28,24 +28,44 @@ constructor(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
-    suspend fun createRefund(
+    suspend fun createRefundByAmount(
         site: SiteModel,
         orderId: Long,
         amount: String,
+        reason: String,
+        automaticRefund: Boolean
+    ): WooPayload<RefundResponse> {
+        val params = mapOf(
+                "amount" to amount,
+                "reason" to reason,
+                "api_refund" to automaticRefund.toString()
+        )
+        return createRefund(site, orderId, params)
+    }
+
+    suspend fun createRefundByItems(
+        site: SiteModel,
+        orderId: Long,
         reason: String,
         automaticRefund: Boolean,
         items: List<WCRefundModel.WCRefundItem>,
         restockItems: Boolean
     ): WooPayload<RefundResponse> {
-        val url = WOOCOMMERCE.orders.id(orderId).refunds.pathV3
-
         val params = mapOf(
-            "amount" to amount,
-            "reason" to reason,
-            "api_refund" to automaticRefund.toString(),
-            "line_items" to items.toString(),
-            "restock_items" to restockItems
+                "reason" to reason,
+                "api_refund" to automaticRefund.toString(),
+                "line_items" to items.toString(),
+                "restock_items" to restockItems
         )
+        return createRefund(site, orderId, params)
+    }
+
+    private suspend fun createRefund(
+        site: SiteModel,
+        orderId: Long,
+        params: Map<String, Any>
+    ): WooPayload<RefundResponse> {
+        val url = WOOCOMMERCE.orders.id(orderId).refunds.pathV3
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
                 this,
                 site,
