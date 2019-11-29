@@ -215,13 +215,18 @@ class ProductRestClient(
      * Dispatches a WCProductAction.UPDATED_PRODUCT action with the result
      *
      * @param [site] The site to fetch product reviews for
+     * @param [storedWCProductModel] the stored model to compare with the [updatedProductModel]
      * @param [updatedProductModel] the product model that contains the update
      */
-    fun updateProduct(site: SiteModel, updatedProductModel: WCProductModel) {
+    fun updateProduct(
+        site: SiteModel,
+        storedWCProductModel: WCProductModel?,
+        updatedProductModel: WCProductModel
+    ) {
         val remoteProductId = updatedProductModel.remoteProductId
         val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
         val responseType = object : TypeToken<ProductApiResponse>() {}.type
-        val body = productModelToProductJsonBody(updatedProductModel)
+        val body = productModelToProductJsonBody(storedWCProductModel, updatedProductModel)
 
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
                 { response: ProductApiResponse? ->
@@ -422,17 +427,82 @@ class ProductRestClient(
     /**
      * build json body of product items to be updated to the backend
      */
-    private fun productModelToProductJsonBody(productModel: WCProductModel): HashMap<String, Any> {
+    private fun productModelToProductJsonBody(
+        storedWCProductModel: WCProductModel?,
+        updatedProductModel: WCProductModel
+    ): HashMap<String, Any> {
         val body = HashMap<String, Any>()
-        body["id"] = productModel.remoteProductId
-        if (productModel.description.isNotEmpty()) {
-            body["description"] = productModel.description
+        if (storedWCProductModel?.description != updatedProductModel.description) {
+            body["description"] = updatedProductModel.description
         }
-        if (productModel.name.isNotEmpty()) {
-            body["name"] = productModel.name
+        if (storedWCProductModel?.name != updatedProductModel.name) {
+            body["name"] = updatedProductModel.description
         }
-        if (productModel.sku.isNotEmpty()) {
-            body["sku"] = productModel.sku
+        if (storedWCProductModel?.sku != updatedProductModel.sku) {
+            body["sku"] = updatedProductModel.description
+        }
+        if (storedWCProductModel?.manageStock != updatedProductModel.manageStock) {
+            body["manage_stock"] = updatedProductModel.manageStock
+        }
+
+        // only allowed to change the following params if manageStock is enabled
+        if (updatedProductModel.manageStock) {
+            if (storedWCProductModel?.stockStatus != updatedProductModel.stockStatus) {
+                body["stock_status"] = updatedProductModel.stockStatus
+            }
+            if (storedWCProductModel?.stockQuantity != updatedProductModel.stockQuantity) {
+                body["stock_quantity"] = updatedProductModel.stockQuantity
+            }
+            if (storedWCProductModel?.backorders != updatedProductModel.backorders) {
+                body["backorders"] = updatedProductModel.backorders
+            }
+            if (storedWCProductModel?.backorders != updatedProductModel.backorders) {
+                body["backorders"] = updatedProductModel.backorders
+            }
+        }
+        if (storedWCProductModel?.soldIndividually != updatedProductModel.soldIndividually) {
+            body["sold_individually"] = updatedProductModel.soldIndividually
+        }
+        if (storedWCProductModel?.regularPrice != updatedProductModel.regularPrice) {
+            body["regular_price"] = updatedProductModel.regularPrice
+        }
+        if (storedWCProductModel?.salePrice != updatedProductModel.salePrice) {
+            body["sale_price"] = updatedProductModel.salePrice
+        }
+        if (storedWCProductModel?.dateOnSaleFrom != updatedProductModel.dateOnSaleFrom) {
+            body["date_on_sale_from"] = updatedProductModel.dateOnSaleFrom
+        }
+        if (storedWCProductModel?.dateOnSaleTo != updatedProductModel.dateOnSaleTo) {
+            body["date_on_sale_to"] = updatedProductModel.dateOnSaleTo
+        }
+        if (storedWCProductModel?.taxStatus != updatedProductModel.taxStatus) {
+            body["tax_status"] = updatedProductModel.taxStatus
+        }
+        if (storedWCProductModel?.taxClass != updatedProductModel.taxClass) {
+            body["tax_class"] = updatedProductModel.taxClass
+        }
+        if (storedWCProductModel?.weight != updatedProductModel.weight) {
+            body["weight"] = updatedProductModel.weight
+        }
+
+        val dimensionsBody = mutableMapOf<String, String>()
+        if (storedWCProductModel?.height != updatedProductModel.height) {
+            dimensionsBody["height"] = updatedProductModel.height
+        }
+        if (storedWCProductModel?.width != updatedProductModel.width) {
+            dimensionsBody["width"] = updatedProductModel.width
+        }
+        if (storedWCProductModel?.length != updatedProductModel.length) {
+            dimensionsBody["length"] = updatedProductModel.length
+        }
+        if (dimensionsBody.isNotEmpty()) {
+            body["dimensions"] = dimensionsBody
+        }
+        if (storedWCProductModel?.shippingClass != updatedProductModel.shippingClass) {
+            body["shipping_class"] = updatedProductModel.shippingClass
+        }
+        if (storedWCProductModel?.shortDescription != updatedProductModel.shortDescription) {
+            body["short_description"] = updatedProductModel.shortDescription
         }
 
         return body
