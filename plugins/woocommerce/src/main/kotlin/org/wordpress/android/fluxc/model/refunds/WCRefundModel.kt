@@ -23,14 +23,14 @@ data class WCRefundModel(
         val sku: String,
         val price: BigDecimal
     ) {
-        constructor(productId: Long, quantity: Float) : this(
+        constructor(productId: Long, quantity: Float, total: BigDecimal, totalTax: BigDecimal) : this(
                 0,
                 "",
                 productId,
                 0,
                 quantity,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
+                total,
+                totalTax,
                 BigDecimal.ZERO,
                 "",
                 BigDecimal.ZERO
