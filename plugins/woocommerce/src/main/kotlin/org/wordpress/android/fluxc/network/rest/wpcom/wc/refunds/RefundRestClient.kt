@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCOrderModel.LineItem
+import org.wordpress.android.fluxc.model.refunds.WCRefundModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -33,7 +34,7 @@ constructor(
         amount: String,
         reason: String,
         automaticRefund: Boolean,
-        items: List<LineItem>,
+        items: List<WCRefundModel.WCRefundItem>,
         restockItems: Boolean
     ): WooPayload<RefundResponse> {
         val url = WOOCOMMERCE.orders.id(orderId).refunds.pathV3

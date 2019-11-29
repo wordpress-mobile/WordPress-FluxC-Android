@@ -45,7 +45,7 @@ class WCRefundStore @Inject constructor(
         reason: String = "",
         restockItems: Boolean = true,
         autoRefund: Boolean = false,
-        items: List<WCOrderModel.LineItem>
+        items: List<WCRefundModel.WCRefundItem>
     ): WooResult<WCRefundModel> {
         return createRefund(site, orderId, amount, reason, restockItems, autoRefund, items)
     }
@@ -57,7 +57,7 @@ class WCRefundStore @Inject constructor(
         reason: String = "",
         restockItems: Boolean,
         autoRefund: Boolean = false,
-        items: List<WCOrderModel.LineItem>
+        items: List<WCRefundModel.WCRefundItem>
     ): WooResult<WCRefundModel> {
         return withContext(coroutineContext) {
             val response = restClient.createRefund(
