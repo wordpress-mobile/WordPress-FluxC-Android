@@ -14,9 +14,9 @@ data class WCRefundModel(
 ) {
     data class WCRefundItem(
         val itemId: Long,
-        val name: String,
-        val productId: Long,
-        val variationId: Long,
+        val name: String? = null,
+        val productId: Long? = null,
+        val variationId: Long? = null,
         @SerializedName("qty")
         val quantity: Int,
         val subtotal: BigDecimal,
@@ -24,20 +24,15 @@ data class WCRefundModel(
         val total: BigDecimal,
         @SerializedName("refund_tax")
         val totalTax: BigDecimal,
-        val sku: String,
-        val price: BigDecimal
+        val sku: String? = null,
+        val price: BigDecimal? = null
     ) {
         constructor(itemId: Long, quantity: Int, subtotal: BigDecimal, totalTax: BigDecimal) : this(
-                itemId,
-                "",
-                0,
-                0,
-                quantity,
-                subtotal,
-                subtotal + totalTax,
-                totalTax,
-                "",
-                BigDecimal.ZERO
+                itemId = itemId,
+                quantity = quantity,
+                subtotal = subtotal,
+                total = subtotal + totalTax,
+                totalTax = totalTax
         )
     }
 }
