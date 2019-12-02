@@ -55,10 +55,9 @@ constructor(
     ): WooPayload<RefundResponse> {
         val params = mapOf(
                 "reason" to reason,
-                "amount" to items.sumBy { it.total }.toString(),
+                "amount" to items.sumBy { it.total + it.totalTax }.toString(),
                 "api_refund" to automaticRefund.toString(),
-                "line_items" to GsonBuilder().create().toJson(items.associateBy { it.itemId }),
-                "restock_items" to restockItems
+                "line_items" to GsonBuilder().create().toJson(items.associateBy { it.itemId })
         )
         return createRefund(site, orderId, params)
     }
