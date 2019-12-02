@@ -57,7 +57,7 @@ constructor(
                 "reason" to reason,
                 "amount" to items.sumBy { it.total }.toString(),
                 "api_refund" to automaticRefund.toString(),
-                "line_items" to GsonBuilder().create().toJson(items.map { it.itemId to it }),
+                "line_items" to GsonBuilder().create().toJson(items.associateBy { it.itemId }),
                 "restock_items" to restockItems
         )
         return createRefund(site, orderId, params)
