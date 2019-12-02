@@ -2,6 +2,8 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
@@ -54,7 +56,7 @@ constructor(
         val params = mapOf(
                 "reason" to reason,
                 "api_refund" to automaticRefund.toString(),
-                "line_items" to items.toString(),
+                "line_items" to GsonBuilder().create().toJson(items.groupBy { it.itemId }),
                 "restock_items" to restockItems
         )
         return createRefund(site, orderId, params)

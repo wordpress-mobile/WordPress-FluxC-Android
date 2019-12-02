@@ -24,7 +24,7 @@ class RefundMapper
                             it.name ?: "",
                             it.productId ?: -1,
                             it.variationId ?: -1,
-                            it.quantity ?: 0f,
+                            it.quantity?.toInt() ?: 0,
                             it.subtotal?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
                             it.total?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
                             it.totalTax?.toBigDecimalOrNull() ?: BigDecimal.ZERO,

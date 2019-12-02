@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.model.refunds
 
+import com.google.gson.annotations.SerializedName
 import java.math.BigDecimal
 import java.util.Date
 
@@ -16,17 +17,20 @@ data class WCRefundModel(
         val name: String,
         val productId: Long,
         val variationId: Long,
-        val quantity: Float,
+        @SerializedName("qty")
+        val quantity: Int,
         val subtotal: BigDecimal,
+        @SerializedName("refund_total")
         val total: BigDecimal,
+        @SerializedName("refund_tax")
         val totalTax: BigDecimal,
         val sku: String,
         val price: BigDecimal
     ) {
-        constructor(productId: Long, quantity: Float, total: BigDecimal, totalTax: BigDecimal) : this(
-                0,
+        constructor(itemId: Long, quantity: Int, total: BigDecimal, totalTax: BigDecimal) : this(
+                itemId,
                 "",
-                productId,
+                0,
                 0,
                 quantity,
                 total,
