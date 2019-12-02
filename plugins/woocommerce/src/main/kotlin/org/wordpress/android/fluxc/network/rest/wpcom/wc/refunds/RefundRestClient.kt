@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds
 
 import android.content.Context
 import com.android.volley.RequestQueue
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.Dispatcher
@@ -18,6 +17,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.utils.sumBy
 import javax.inject.Singleton
 
 @Singleton
@@ -55,6 +55,7 @@ constructor(
     ): WooPayload<RefundResponse> {
         val params = mapOf(
                 "reason" to reason,
+                "amount" to items.sumBy { it.total }.toString(),
                 "api_refund" to automaticRefund.toString(),
                 "line_items" to GsonBuilder().create().toJson(items.groupBy { it.itemId }),
                 "restock_items" to restockItems
