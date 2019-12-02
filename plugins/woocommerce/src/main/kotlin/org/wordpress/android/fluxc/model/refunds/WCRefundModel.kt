@@ -19,7 +19,7 @@ data class WCRefundModel(
         val variationId: Long? = null,
         @SerializedName("qty")
         val quantity: Int,
-        val subtotal: BigDecimal,
+        val subtotal: BigDecimal? = null,
         @SerializedName("refund_total")
         val total: BigDecimal,
         @SerializedName("refund_tax")
@@ -30,8 +30,7 @@ data class WCRefundModel(
         constructor(itemId: Long, quantity: Int, subtotal: BigDecimal, totalTax: BigDecimal) : this(
                 itemId = itemId,
                 quantity = quantity,
-                subtotal = subtotal,
-                total = subtotal + totalTax,
+                total = subtotal,
                 totalTax = totalTax
         )
     }
