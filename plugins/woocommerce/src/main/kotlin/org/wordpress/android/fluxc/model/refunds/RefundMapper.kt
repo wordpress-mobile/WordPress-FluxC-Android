@@ -21,15 +21,15 @@ class RefundMapper
                 response.items.map {
                     WCRefundItem(
                             it.id ?: -1,
-                            it.name ?: "",
-                            it.productId ?: -1,
-                            it.variationId ?: -1,
                             it.quantity?.toInt() ?: 0,
                             it.subtotal?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
-                            it.total?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
                             it.totalTax?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
-                            it.sku ?: "",
-                            it.price?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                            it.name,
+                            it.productId,
+                            it.variationId,
+                            it.total?.toBigDecimalOrNull(),
+                            it.sku,
+                            it.price?.toBigDecimalOrNull()
                     )
                 }
         )
