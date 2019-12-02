@@ -13,7 +13,7 @@ data class WCRefundModel(
     val items: List<WCRefundItem>
 ) {
     data class WCRefundItem(
-        val itemId: Long,
+        var itemId: Long? = null,
         val name: String? = null,
         val productId: Long? = null,
         val variationId: Long? = null,
