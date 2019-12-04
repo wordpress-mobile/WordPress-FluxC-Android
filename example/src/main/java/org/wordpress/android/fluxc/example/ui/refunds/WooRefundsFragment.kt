@@ -49,7 +49,7 @@ class WooRefundsFragment : Fragment() {
                             GlobalScope.launch(Dispatchers.Main) {
                                 try {
                                     val response = withContext(Dispatchers.Default) {
-                                        refundsStore.createRefund(
+                                        refundsStore.createAmountRefund(
                                                 site,
                                                 orderEditText.text.toString().toLong(),
                                                 amountEditText.text.toString().toBigDecimal(),
