@@ -2,7 +2,6 @@ package org.wordpress.android.fluxc.store
 
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.refunds.WCRefundModel
 import org.wordpress.android.fluxc.model.refunds.RefundMapper
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
