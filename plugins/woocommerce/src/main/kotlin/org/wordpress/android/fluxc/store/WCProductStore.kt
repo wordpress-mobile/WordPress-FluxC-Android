@@ -124,6 +124,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     class RemoteProductListPayload(
         val site: SiteModel,
         val products: List<WCProductModel> = emptyList(),
+        var offset: Int = 0,
         var loadedMore: Boolean = false,
         var canLoadMore: Boolean = false
     ) : Payload<ProductError>() {
@@ -139,6 +140,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var site: SiteModel,
         var searchQuery: String,
         var products: List<WCProductModel> = emptyList(),
+        var offset: Int = 0,
         var loadedMore: Boolean = false,
         var canLoadMore: Boolean = false
     ) : Payload<ProductError>() {
@@ -402,7 +404,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         } else {
             // remove the existing products for this site if this is the first page of results, otherwise
             // products deleted outside of the app will persist
-            if (!payload.loadedMore) {
+            if (payload.offset == 0) {
                 ProductSqlUtils.deleteProductsForSite(payload.site)
             }
             val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)

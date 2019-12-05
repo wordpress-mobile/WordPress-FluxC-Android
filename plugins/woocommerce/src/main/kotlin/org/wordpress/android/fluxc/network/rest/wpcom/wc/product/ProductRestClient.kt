@@ -133,6 +133,7 @@ class ProductRestClient(
                         val payload = RemoteProductListPayload(
                                 site,
                                 productModels,
+                                offset,
                                 loadedMore,
                                 canLoadMore
                         )
@@ -142,6 +143,7 @@ class ProductRestClient(
                                 site,
                                 searchQuery,
                                 productModels,
+                                offset,
                                 loadedMore,
                                 canLoadMore
                         )
