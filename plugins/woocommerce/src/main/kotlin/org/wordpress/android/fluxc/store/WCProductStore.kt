@@ -15,7 +15,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
-import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Locale
@@ -28,7 +28,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     companion object {
         const val NUM_REVIEWS_PER_FETCH = 25
         const val DEFAULT_PRODUCT_PAGE_SIZE = 25
-        val DEFAULT_PRODUCT_SORTING = DATE_DESC
+        val DEFAULT_PRODUCT_SORTING = TITLE_ASC
     }
 
     class FetchSingleProductPayload(
