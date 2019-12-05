@@ -228,6 +228,15 @@ class ProductRestClient(
         val responseType = object : TypeToken<ProductApiResponse>() {}.type
         val body = productModelToProductJsonBody(storedWCProductModel, updatedProductModel)
 
+        if (body.isEmpty()) {
+            val payload = RemoteUpdateProductPayload(
+                    ProductError(ProductErrorType.EMPTY_REQUEST_BODY, "No updates found!"),
+                    site, WCProductModel().apply { this.remoteProductId = remoteProductId }
+            )
+            dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductAction(payload))
+            return
+        }
+
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
                 { response: ProductApiResponse? ->
                     response?.let {
@@ -425,83 +434,92 @@ class ProductRestClient(
     }
 
     /**
-     * build json body of product items to be updated to the backend
+     * Build json body of product items to be updated to the backend.
+     *
+     * This method checks if there is a cached version of the product stored locally.
+     * If not, it generates a new product model for the same product ID, with default fields
+     * and verifies that the [updatedProductModel] has fields that are different from the default
+     * fields of [productModel]. This is to ensure that we do not update product fields that do not contain any changes
      */
     private fun productModelToProductJsonBody(
-        storedWCProductModel: WCProductModel?,
+        productModel: WCProductModel?,
         updatedProductModel: WCProductModel
     ): HashMap<String, Any> {
         val body = HashMap<String, Any>()
-        if (storedWCProductModel?.description != updatedProductModel.description) {
+
+        val storedWCProductModel = productModel ?: WCProductModel().apply {
+            remoteProductId = updatedProductModel.remoteProductId
+        }
+        if (storedWCProductModel.description != updatedProductModel.description) {
             body["description"] = updatedProductModel.description
         }
-        if (storedWCProductModel?.name != updatedProductModel.name) {
-            body["name"] = updatedProductModel.description
+        if (storedWCProductModel.name != updatedProductModel.name) {
+            body["name"] = updatedProductModel.name
         }
-        if (storedWCProductModel?.sku != updatedProductModel.sku) {
-            body["sku"] = updatedProductModel.description
+        if (storedWCProductModel.sku != updatedProductModel.sku) {
+            body["sku"] = updatedProductModel.sku
         }
-        if (storedWCProductModel?.manageStock != updatedProductModel.manageStock) {
+        if (storedWCProductModel.manageStock != updatedProductModel.manageStock) {
             body["manage_stock"] = updatedProductModel.manageStock
         }
 
         // only allowed to change the following params if manageStock is enabled
         if (updatedProductModel.manageStock) {
-            if (storedWCProductModel?.stockStatus != updatedProductModel.stockStatus) {
+            if (storedWCProductModel.stockStatus != updatedProductModel.stockStatus) {
                 body["stock_status"] = updatedProductModel.stockStatus
             }
-            if (storedWCProductModel?.stockQuantity != updatedProductModel.stockQuantity) {
+            if (storedWCProductModel.stockQuantity != updatedProductModel.stockQuantity) {
                 body["stock_quantity"] = updatedProductModel.stockQuantity
             }
-            if (storedWCProductModel?.backorders != updatedProductModel.backorders) {
+            if (storedWCProductModel.backorders != updatedProductModel.backorders) {
                 body["backorders"] = updatedProductModel.backorders
             }
-            if (storedWCProductModel?.backorders != updatedProductModel.backorders) {
+            if (storedWCProductModel.backorders != updatedProductModel.backorders) {
                 body["backorders"] = updatedProductModel.backorders
             }
         }
-        if (storedWCProductModel?.soldIndividually != updatedProductModel.soldIndividually) {
+        if (storedWCProductModel.soldIndividually != updatedProductModel.soldIndividually) {
             body["sold_individually"] = updatedProductModel.soldIndividually
         }
-        if (storedWCProductModel?.regularPrice != updatedProductModel.regularPrice) {
+        if (storedWCProductModel.regularPrice != updatedProductModel.regularPrice) {
             body["regular_price"] = updatedProductModel.regularPrice
         }
-        if (storedWCProductModel?.salePrice != updatedProductModel.salePrice) {
+        if (storedWCProductModel.salePrice != updatedProductModel.salePrice) {
             body["sale_price"] = updatedProductModel.salePrice
         }
-        if (storedWCProductModel?.dateOnSaleFrom != updatedProductModel.dateOnSaleFrom) {
+        if (storedWCProductModel.dateOnSaleFrom != updatedProductModel.dateOnSaleFrom) {
             body["date_on_sale_from"] = updatedProductModel.dateOnSaleFrom
         }
-        if (storedWCProductModel?.dateOnSaleTo != updatedProductModel.dateOnSaleTo) {
+        if (storedWCProductModel.dateOnSaleTo != updatedProductModel.dateOnSaleTo) {
             body["date_on_sale_to"] = updatedProductModel.dateOnSaleTo
         }
-        if (storedWCProductModel?.taxStatus != updatedProductModel.taxStatus) {
+        if (storedWCProductModel.taxStatus != updatedProductModel.taxStatus) {
             body["tax_status"] = updatedProductModel.taxStatus
         }
-        if (storedWCProductModel?.taxClass != updatedProductModel.taxClass) {
+        if (storedWCProductModel.taxClass != updatedProductModel.taxClass) {
             body["tax_class"] = updatedProductModel.taxClass
         }
-        if (storedWCProductModel?.weight != updatedProductModel.weight) {
+        if (storedWCProductModel.weight != updatedProductModel.weight) {
             body["weight"] = updatedProductModel.weight
         }
 
         val dimensionsBody = mutableMapOf<String, String>()
-        if (storedWCProductModel?.height != updatedProductModel.height) {
+        if (storedWCProductModel.height != updatedProductModel.height) {
             dimensionsBody["height"] = updatedProductModel.height
         }
-        if (storedWCProductModel?.width != updatedProductModel.width) {
+        if (storedWCProductModel.width != updatedProductModel.width) {
             dimensionsBody["width"] = updatedProductModel.width
         }
-        if (storedWCProductModel?.length != updatedProductModel.length) {
+        if (storedWCProductModel.length != updatedProductModel.length) {
             dimensionsBody["length"] = updatedProductModel.length
         }
         if (dimensionsBody.isNotEmpty()) {
             body["dimensions"] = dimensionsBody
         }
-        if (storedWCProductModel?.shippingClass != updatedProductModel.shippingClass) {
+        if (storedWCProductModel.shippingClass != updatedProductModel.shippingClass) {
             body["shipping_class"] = updatedProductModel.shippingClass
         }
-        if (storedWCProductModel?.shortDescription != updatedProductModel.shortDescription) {
+        if (storedWCProductModel.shortDescription != updatedProductModel.shortDescription) {
             body["short_description"] = updatedProductModel.shortDescription
         }
 
