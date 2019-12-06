@@ -113,7 +113,7 @@ class ProductRestClient(
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
         val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
-                "orderBy" to orderBy,
+                "orderby" to orderBy,
                 "order" to sortOrder,
                 "offset" to offset.toString(),
                 "search" to (searchQuery ?: ""))
