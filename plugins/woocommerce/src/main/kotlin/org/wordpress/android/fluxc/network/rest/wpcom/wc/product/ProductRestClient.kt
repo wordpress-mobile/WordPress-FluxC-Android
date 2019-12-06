@@ -535,6 +535,8 @@ class ProductRestClient(
 
             dateCreated = response.date_created ?: ""
             dateModified = response.date_modified ?: ""
+            dateOnSaleFrom = response.date_on_sale_from ?: ""
+            dateOnSaleTo = response.date_on_sale_to ?: ""
 
             type = response.type ?: ""
             status = response.status ?: ""
