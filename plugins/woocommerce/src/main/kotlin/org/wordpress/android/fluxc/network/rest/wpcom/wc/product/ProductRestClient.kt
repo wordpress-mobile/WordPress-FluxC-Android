@@ -228,15 +228,6 @@ class ProductRestClient(
         val responseType = object : TypeToken<ProductApiResponse>() {}.type
         val body = productModelToProductJsonBody(storedWCProductModel, updatedProductModel)
 
-        if (body.isEmpty()) {
-            val payload = RemoteUpdateProductPayload(
-                    ProductError(ProductErrorType.EMPTY_REQUEST_BODY, "No updates found!"),
-                    site, WCProductModel().apply { this.remoteProductId = remoteProductId }
-            )
-            dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductAction(payload))
-            return
-        }
-
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
                 { response: ProductApiResponse? ->
                     response?.let {
