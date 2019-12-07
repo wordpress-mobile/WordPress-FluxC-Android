@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
+import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
@@ -36,6 +37,7 @@ class ProductSqlUtilsTest {
                 listOf(
                         WCProductModel::class.java,
                         WCProductReviewModel::class.java,
+                        WCProductShippingClassModel::class.java,
                         SiteModel::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE)
         WellSql.init(config)
@@ -127,6 +129,103 @@ class ProductSqlUtilsTest {
         // verify that the site 1 product is increases by 1
         val storedProductForSite1Count = ProductSqlUtils.getProductCountForSite(site1)
         assertEquals(2, storedProductForSite1Count)
+    }
+
+    @Test
+    fun testInsertOrUpdateProductShippingClass() {
+        val shippingClass = ProductTestUtils.generateProductList(site.id)[0]
+        assertNotNull(shippingClass)
+
+        // Test inserting a product shipping class
+        var rowsAffected = ProductSqlUtils.insertOrUpdateProductShippingClass(shippingClass)
+        assertEquals(1, rowsAffected)
+        var savedShippingClassList = ProductSqlUtils
+                .getProductShippingClassListForSite(site.id)
+        assertEquals(savedShippingClassList.size, 1)
+        assertEquals(savedShippingClassList[0].localSiteId, shippingClass.localSiteId)
+        assertEquals(savedShippingClassList[0].remoteShippingClassId, shippingClass.remoteShippingClassId)
+        assertEquals(savedShippingClassList[0].name, shippingClass.name)
+        assertEquals(savedShippingClassList[0].slug, shippingClass.slug)
+        assertEquals(savedShippingClassList[0].description, shippingClass.description)
+
+        // Test updating the same product shipping class
+        shippingClass.apply {
+            name = "Test shipping class"
+        }
+        rowsAffected = ProductSqlUtils.insertOrUpdateProductShippingClass(shippingClass)
+        assertEquals(1, rowsAffected)
+        savedShippingClassList = ProductSqlUtils.getProductShippingClassListForSite(site.id)
+        assertEquals(savedShippingClassList.size, 1)
+        assertEquals(savedShippingClassList[0].localSiteId, shippingClass.localSiteId)
+        assertEquals(savedShippingClassList[0].remoteShippingClassId, shippingClass.remoteShippingClassId)
+        assertEquals(savedShippingClassList[0].name, shippingClass.name)
+        assertEquals(savedShippingClassList[0].slug, shippingClass.slug)
+        assertEquals(savedShippingClassList[0].description, shippingClass.description)
+    }
+
+    @Test
+    fun testInsertOrUpdateProductShippingClassList() {
+        val shippingClassList = ProductTestUtils.generateProductList(site.id)
+        assertTrue(shippingClassList.isNotEmpty())
+
+        // Insert product shipping class list
+        val rowsAffected = ProductSqlUtils.insertOrUpdateProductShippingClassList(shippingClassList)
+        assertEquals(shippingClassList.size, rowsAffected)
+    }
+
+    @Test
+    fun testGetProductShippingClassListForSite() {
+        val shippingClassList = ProductTestUtils.generateProductList(site.id)
+        assertTrue(shippingClassList.isNotEmpty())
+
+        // Insert product shipping class list
+        val rowsAffected = ProductSqlUtils.insertOrUpdateProductShippingClassList(shippingClassList)
+        assertEquals(shippingClassList.size, rowsAffected)
+
+        // Get shipping class list for site and verify
+        val savedShippingClassListExists = ProductSqlUtils.getProductShippingClassListForSite(site.id)
+        assertEquals(shippingClassList.size, savedShippingClassListExists.size)
+
+        // Get shipping class list for a site that does not exist
+        val nonExistingSite = SiteModel().apply { id = 400 }
+        val savedShippingClassList = ProductSqlUtils.getProductShippingClassListForSite(nonExistingSite.id)
+        assertEquals(0, savedShippingClassList.size)
+    }
+
+    @Test
+    fun testDeleteProductShippingListForSite() {
+        val shippingClassList = ProductTestUtils.generateProductList(site.id)
+
+        var rowsAffected = ProductSqlUtils.insertOrUpdateProductShippingClassList(shippingClassList)
+        assertEquals(shippingClassList.size, rowsAffected)
+
+        // Verify products inserted
+        var savedShippingClassList = ProductSqlUtils.getProductShippingClassListForSite(site.id)
+        assertEquals(shippingClassList.size, savedShippingClassList.size)
+
+        // Delete shipping class list for site and verify
+        rowsAffected = ProductSqlUtils.deleteProductShippingClassListForSite(site)
+        assertEquals(shippingClassList.size, rowsAffected)
+        savedShippingClassList = ProductSqlUtils.getProductShippingClassListForSite(site.id)
+        assertEquals(0, savedShippingClassList.size)
+    }
+
+    @Test
+    fun testDeleteSiteDeletesProductShippingClassList() {
+        val shippingClassList = ProductTestUtils.generateProductList(site.id)
+        assertTrue(shippingClassList.isNotEmpty())
+
+        val rowsAffected = ProductSqlUtils.insertOrUpdateProductShippingClassList(shippingClassList)
+        assertEquals(shippingClassList.size, rowsAffected)
+
+        // Verify products inserted
+        var savedShippingClassList = ProductSqlUtils.getProductShippingClassListForSite(site.id)
+        assertEquals(shippingClassList.size, savedShippingClassList.size)
+
+        // Delete site and verify shipping class list  deleted via foreign key constraint
+        SiteSqlUtils.deleteSite(site)
+        savedShippingClassList = ProductSqlUtils.getProductShippingClassListForSite(site.id)
+        assertEquals(0, savedShippingClassList.size)
     }
 
     @Test
