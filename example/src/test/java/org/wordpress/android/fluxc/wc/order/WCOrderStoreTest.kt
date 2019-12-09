@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCOrderListDescriptor
 import org.wordpress.android.fluxc.model.WCOrderModel
 import org.wordpress.android.fluxc.model.WCOrderNoteModel
 import org.wordpress.android.fluxc.model.WCOrderStatusModel
@@ -78,6 +79,56 @@ class WCOrderStoreTest {
 
         val fullOrderList = orderStore.getOrdersForSite(site)
         assertEquals(3, fullOrderList.size)
+    }
+
+    @Test
+    fun testGetOrdersForListDescriptor() {
+        // Create test data and save it to db
+        val processingOrder = OrderTestUtils.generateSampleOrder(3).apply {
+            billingFirstName = "Daniel"
+            billingLastName = "Holmes"
+        }
+        val processing2Order = OrderTestUtils.generateSampleOrder(6).apply {
+            shippingFirstName = "Tristan"
+            shippingLastName = "Bueller"
+        }
+        val onHoldOrder = OrderTestUtils.generateSampleOrder(4, CoreOrderStatus.ON_HOLD.value).apply {
+            billingFirstName = "Tristan"
+            billingLastName = "Bueller"
+        }
+        val cancelledOrder = OrderTestUtils.generateSampleOrder(5, CoreOrderStatus.CANCELLED.value).apply {
+            billingFirstName = "David"
+            billingLastName = "Triffen"
+        }
+        OrderSqlUtils.insertOrUpdateOrder(processingOrder)
+        OrderSqlUtils.insertOrUpdateOrder(processing2Order)
+        OrderSqlUtils.insertOrUpdateOrder(onHoldOrder)
+        OrderSqlUtils.insertOrUpdateOrder(cancelledOrder)
+
+        // Test getting all orders
+        val site = SiteModel().apply { id = processingOrder.localSiteId }
+        WCOrderListDescriptor(site).let {
+            val orders = OrderSqlUtils.getOrdersForSite(it.site)
+            assertEquals(4, orders.size)
+        }
+
+        // Test getting filtered orders
+        WCOrderListDescriptor(site, statusFilter = "processing").let {
+            val orders = orderStore.getOrdersForDescriptor(it)
+            assertEquals(2, orders.size)
+        }
+
+        // Test getting orders for search query
+        WCOrderListDescriptor(site, searchQuery = "Tri").let {
+            val orders = orderStore.getOrdersForDescriptor(it)
+            assertEquals(3, orders.size)
+        }
+
+        // Test getting orders filtered by a status and search query
+        WCOrderListDescriptor(site, statusFilter = "processing", searchQuery = "Tri").let {
+            val orders = orderStore.getOrdersForDescriptor(it)
+            assertEquals(1, orders.size)
+        }
     }
 
     @Test

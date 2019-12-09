@@ -223,7 +223,7 @@ private class WCOrderListItemDataSource(
         itemIdentifiers: List<WCOrderListItemIdentifier>
     ): List<WCOrderListItemUIType> {
         val remoteItemIds = itemIdentifiers.mapNotNull { (it as? OrderIdentifier)?.remoteId }
-        val ordersMap = wcOrderStore.getOrdersForDescriptor(listDescriptor, remoteItemIds)
+        val ordersMap = wcOrderStore.getOrdersByRemoteOrderId(listDescriptor.site, remoteItemIds)
         // Fetch missing items
         fetcher.fetchOrders(
                 site = listDescriptor.site,

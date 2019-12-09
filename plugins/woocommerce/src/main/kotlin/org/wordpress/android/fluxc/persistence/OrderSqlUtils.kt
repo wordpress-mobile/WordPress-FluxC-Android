@@ -81,7 +81,11 @@ object OrderSqlUtils {
                 .asModel.firstOrNull()
     }
 
-    fun getOrdersForSite(site: SiteModel, status: List<String> = emptyList()): List<WCOrderModel> {
+    fun getOrdersForSite(
+        site: SiteModel,
+        status: List<String> = emptyList(),
+        searchQuery: String? = null
+    ): List<WCOrderModel> {
         val conditionClauseBuilder = WellSql.select(WCOrderModel::class.java)
                 .where()
                 .beginGroup()
@@ -89,6 +93,16 @@ object OrderSqlUtils {
 
         if (status.isNotEmpty()) {
             conditionClauseBuilder.isIn(WCOrderModelTable.STATUS, status)
+        }
+
+        if (!searchQuery.isNullOrEmpty()) {
+            conditionClauseBuilder
+                    .beginGroup()
+                    .contains(WCOrderModelTable.BILLING_LAST_NAME, searchQuery)
+                    .or().contains(WCOrderModelTable.BILLING_FIRST_NAME, searchQuery)
+                    .or().contains(WCOrderModelTable.SHIPPING_FIRST_NAME, searchQuery)
+                    .or().contains(WCOrderModelTable.SHIPPING_LAST_NAME, searchQuery)
+                    .endGroup()
         }
 
         return conditionClauseBuilder.endGroup().endWhere()
