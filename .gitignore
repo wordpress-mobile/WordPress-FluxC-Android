@@ -68,3 +68,6 @@ WordPress/src/main/res/values/com_crashlytics_export_strings.xml
 
 # libs
 libs/utils
+
+# VS Code workspace file
+FluxC.code-workspace
