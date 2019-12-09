@@ -114,19 +114,19 @@ class WCOrderStoreTest {
 
         // Test getting filtered orders
         WCOrderListDescriptor(site, statusFilter = "processing").let {
-            val orders = orderStore.getOrdersForDescriptor(it)
+            val orders = orderStore.getOrdersForListDescriptor(it)
             assertEquals(2, orders.size)
         }
 
         // Test getting orders for search query
         WCOrderListDescriptor(site, searchQuery = "Tri").let {
-            val orders = orderStore.getOrdersForDescriptor(it)
+            val orders = orderStore.getOrdersForListDescriptor(it)
             assertEquals(3, orders.size)
         }
 
         // Test getting orders filtered by a status and search query
         WCOrderListDescriptor(site, statusFilter = "processing", searchQuery = "Tri").let {
-            val orders = orderStore.getOrdersForDescriptor(it)
+            val orders = orderStore.getOrdersForListDescriptor(it)
             assertEquals(1, orders.size)
         }
     }

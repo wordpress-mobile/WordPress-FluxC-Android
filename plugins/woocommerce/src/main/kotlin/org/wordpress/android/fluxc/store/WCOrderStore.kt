@@ -310,7 +310,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     fun getOrdersForSite(site: SiteModel, vararg status: String): List<WCOrderModel> =
             OrderSqlUtils.getOrdersForSite(site, status = status.asList())
 
-    fun getOrdersForDescriptor(listDescriptor: WCOrderListDescriptor): List<WCOrderModel> {
+    fun getOrdersForListDescriptor(listDescriptor: WCOrderListDescriptor): List<WCOrderModel> {
         return listDescriptor.let {
             val statusFilter = it.statusFilter?.let { filter -> listOf(filter) } ?: emptyList()
             OrderSqlUtils.getOrdersForSite(it.site, status = statusFilter, searchQuery = it.searchQuery)
