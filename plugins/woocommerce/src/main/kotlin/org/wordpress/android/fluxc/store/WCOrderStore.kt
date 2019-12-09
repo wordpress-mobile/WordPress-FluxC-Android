@@ -5,8 +5,6 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
-import org.wordpress.android.fluxc.action.WCOrderAction.ADD_ORDER_SHIPMENT_TRACKING
-import org.wordpress.android.fluxc.action.WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
@@ -524,17 +522,11 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         // - WCOrderModel
         // - WCOrderNoteModel
         // - WCOrderShipmentTrackingModel
-
         if (!payload.isError) {
-            // Purge all WCOrderSummaryModel records on first fetch
-            if (!payload.loadedMore) {
-                OrderSqlUtils.deleteOrderSummariesForSite(payload.listDescriptor.site)
-            }
-
             // Save order summaries to the db
             OrderSqlUtils.insertOrUpdateOrderSummaries(payload.orderSummaries)
 
-            // Fetch missing or outdated orders using the list of order summaries
+            // Fetch outdated orders
             fetchOutdatedOrders(payload.listDescriptor.site, payload.orderSummaries)
         }
 
@@ -756,7 +748,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             onOrderChanged = OnOrderChanged(rowsAffected)
         }
 
-        onOrderChanged.causeOfChange = ADD_ORDER_SHIPMENT_TRACKING
+        onOrderChanged.causeOfChange = WCOrderAction.ADD_ORDER_SHIPMENT_TRACKING
         emitChange(onOrderChanged)
     }
 
@@ -771,7 +763,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             onOrderChanged = OnOrderChanged(rowsAffected)
         }
 
-        onOrderChanged.causeOfChange = DELETE_ORDER_SHIPMENT_TRACKING
+        onOrderChanged.causeOfChange = WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING
         emitChange(onOrderChanged)
     }
 
