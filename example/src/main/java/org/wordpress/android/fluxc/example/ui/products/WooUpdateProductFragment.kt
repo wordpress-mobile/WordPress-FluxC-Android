@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.example.ui.products
 import android.app.DatePickerDialog
 import android.app.DatePickerDialog.OnDateSetListener
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,7 +20,8 @@ import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog
-import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Listener
+import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.ARG_LIST_SELECTED_ITEM
+import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.LIST_SELECTOR_REQUEST_CODE
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductModel
@@ -46,6 +48,9 @@ class WooUpdateProductFragment : Fragment() {
     companion object {
         const val ARG_SELECTED_SITE_POS = "ARG_SELECTED_SITE_POS"
         const val ARG_SELECTED_PRODUCT_ID = "ARG_SELECTED_PRODUCT_ID"
+        const val LIST_RESULT_CODE_TAX_STATUS = 101
+        const val LIST_RESULT_CODE_STOCK_STATUS = 102
+        const val LIST_RESULT_CODE_BACK_ORDERS = 103
 
         fun newInstance(selectedSitePosition: Int): WooUpdateProductFragment {
             val fragment = WooUpdateProductFragment()
@@ -129,36 +134,24 @@ class WooUpdateProductFragment : Fragment() {
         }
 
         product_tax_status.setOnClickListener {
-            showListSelectorDialog(CoreProductTaxStatus.values().map { it.value }.toList(), object : Listener {
-                override fun onListItemSelected(selectedItem: String?) {
-                    selectedItem?.let {
-                        product_tax_status.text = it
-                        selectedProductModel?.taxStatus = it
-                    }
-                }
-            })
+            showListSelectorDialog(
+                    CoreProductTaxStatus.values().map { it.value }.toList(),
+                    LIST_RESULT_CODE_TAX_STATUS
+            )
         }
 
         product_stock_status.setOnClickListener {
-            showListSelectorDialog(CoreProductStockStatus.values().map { it.value }.toList(), object : Listener {
-                override fun onListItemSelected(selectedItem: String?) {
-                    selectedItem?.let {
-                        product_stock_status.text = it
-                        selectedProductModel?.stockStatus = it
-                    }
-                }
-            })
+            showListSelectorDialog(
+                    CoreProductStockStatus.values().map { it.value }.toList(),
+                    LIST_RESULT_CODE_STOCK_STATUS
+            )
         }
 
         product_back_orders.setOnClickListener {
-            showListSelectorDialog(CoreProductBackOrders.values().map { it.value }.toList(), object : Listener {
-                override fun onListItemSelected(selectedItem: String?) {
-                    selectedItem?.let {
-                        product_back_orders.text = it
-                        selectedProductModel?.backorders = it
-                    }
-                }
-            })
+            showListSelectorDialog(
+                    CoreProductBackOrders.values().map { it.value }.toList(),
+                    LIST_RESULT_CODE_BACK_ORDERS
+            )
         }
 
         product_from_date.setOnClickListener {
@@ -193,6 +186,33 @@ class WooUpdateProductFragment : Fragment() {
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == LIST_SELECTOR_REQUEST_CODE) {
+            val selectedItem = data?.getStringExtra(ARG_LIST_SELECTED_ITEM)
+            when (resultCode) {
+                LIST_RESULT_CODE_TAX_STATUS -> {
+                    selectedItem?.let {
+                        product_tax_status.text = it
+                        selectedProductModel?.taxStatus = it
+                    }
+                }
+                LIST_RESULT_CODE_STOCK_STATUS -> {
+                    selectedItem?.let {
+                        product_stock_status.text = it
+                        selectedProductModel?.stockStatus = it
+                    }
+                }
+                LIST_RESULT_CODE_BACK_ORDERS -> {
+                    selectedItem?.let {
+                        product_back_orders.text = it
+                        selectedProductModel?.backorders = it
+                    }
+                }
+            }
+        }
+    }
+
     private fun updateSelectedProductId(remoteProductId: Long) {
         getWCSite()?.let { siteModel ->
             enableProductDependentButtons()
@@ -222,9 +242,9 @@ class WooUpdateProductFragment : Fragment() {
         } ?: prependToLog("No valid site found...doing nothing")
     }
 
-    private fun showListSelectorDialog(listItems: List<String>, listener: Listener) {
+    private fun showListSelectorDialog(listItems: List<String>, resultCode: Int) {
         fragmentManager?.let { fm ->
-            val dialog = ListSelectorDialog.newInstance(listItems, listener)
+            val dialog = ListSelectorDialog.newInstance(this, listItems, resultCode)
             dialog.show(fm, "ListSelectorDialog")
         }
     }
