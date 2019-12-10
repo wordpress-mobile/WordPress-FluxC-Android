@@ -465,9 +465,6 @@ class ProductRestClient(
             if (storedWCProductModel.backorders != updatedProductModel.backorders) {
                 body["backorders"] = updatedProductModel.backorders
             }
-            if (storedWCProductModel.backorders != updatedProductModel.backorders) {
-                body["backorders"] = updatedProductModel.backorders
-            }
         }
         if (storedWCProductModel.soldIndividually != updatedProductModel.soldIndividually) {
             body["sold_individually"] = updatedProductModel.soldIndividually
