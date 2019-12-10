@@ -409,6 +409,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         return WCProductModel(1).also {
             it.localSiteId = siteModel.id
             it.remoteProductId = remoteProductId
+            it.name = "Product name"
+            it.sku = "34343-343776"
         }
     }
 
@@ -448,8 +450,12 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         interceptor.respondWith("wc-fetch-product-response-success.json")
 
         val testProduct = generateTestProduct()
-        testProduct.description = "Testing product description update"
-        productRestClient.updateProduct(siteModel, testProduct)
+        val updatedProduct = testProduct.copy().apply {
+            name = testProduct.name
+            sku = testProduct.sku
+            description = "Testing product description update"
+        }
+        productRestClient.updateProduct(siteModel, testProduct, updatedProduct)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -459,7 +465,9 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         with(payload) {
             assertNull(error)
             assertEquals(remoteProductId, product.remoteProductId)
-            assertEquals(testProduct.description, product.description)
+            assertEquals(updatedProduct.description, product.description)
+            assertEquals(updatedProduct.name, product.name)
+            assertEquals(updatedProduct.sku, product.sku)
         }
     }
 
@@ -467,8 +475,10 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     fun testUpdateProductFailed() {
         interceptor.respondWithError("wc-response-failure-invalid-param.json")
         val testProduct = generateTestProduct()
-        testProduct.description = "Testing product description"
-        productRestClient.updateProduct(siteModel, testProduct)
+        val updatedProduct = testProduct.copy().apply {
+            description = "Testing product description"
+        }
+        productRestClient.updateProduct(siteModel, testProduct, updatedProduct)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))

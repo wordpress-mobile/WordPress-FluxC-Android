@@ -91,6 +91,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         INVALID_PARAM,
         INVALID_REVIEW_ID,
         INVALID_IMAGE_ID,
+        DUPLICATE_SKU,
         GENERIC_ERROR;
 
         companion object {
@@ -379,7 +380,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun updateProduct(payload: UpdateProductPayload) {
-        with(payload) { wcProductRestClient.updateProduct(site, product) }
+        with(payload) {
+            val storedProduct = getProductByRemoteId(site, product.remoteProductId)
+            wcProductRestClient.updateProduct(site, storedProduct, product)
+        }
     }
 
     private fun handleFetchSingleProductCompleted(payload: RemoteProductPayload) {
