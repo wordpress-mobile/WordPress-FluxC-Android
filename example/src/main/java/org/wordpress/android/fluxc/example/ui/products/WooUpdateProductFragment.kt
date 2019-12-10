@@ -17,9 +17,9 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Listener
-import org.wordpress.android.fluxc.example.utils.onTextChanged
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductModel
@@ -116,7 +116,7 @@ class WooUpdateProductFragment : Fragment() {
             selectedProductModel?.manageStock = isChecked
             for (i in 0 until manageStockContainer.childCount) {
                 val child = manageStockContainer.getChildAt(i)
-                if (child is Button || child is EditText) {
+                if (child is Button || child is FloatingLabelEditText) {
                     child.isEnabled = isChecked
                 }
             }
@@ -202,6 +202,7 @@ class WooUpdateProductFragment : Fragment() {
                 product_stock_status.text = it.stockStatus
                 product_back_orders.text = it.backorders
                 product_stock_quantity.setText(it.stockQuantity.toString())
+                product_stock_quantity.isEnabled = product_manage_stock.isChecked
             } ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
     }
