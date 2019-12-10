@@ -40,10 +40,12 @@ class WooUpdateProductFragment : Fragment() {
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
 
     private var selectedSitePosition: Int = -1
+    private var selectedRemoteProductId: Long? = null
     private var selectedProductModel: WCProductModel? = null
 
     companion object {
         const val ARG_SELECTED_SITE_POS = "ARG_SELECTED_SITE_POS"
+        const val ARG_SELECTED_PRODUCT_ID = "ARG_SELECTED_PRODUCT_ID"
 
         fun newInstance(selectedSitePosition: Int): WooUpdateProductFragment {
             val fragment = WooUpdateProductFragment()
@@ -80,16 +82,20 @@ class WooUpdateProductFragment : Fragment() {
         dispatcher.unregister(this)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(ARG_SELECTED_SITE_POS, selectedSitePosition)
+        selectedRemoteProductId?.let { outState.putLong(ARG_SELECTED_PRODUCT_ID, it) }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         product_enter_product_id.setOnClickListener {
             showSingleLineDialog(activity, "Enter the remoteProductId of product to fetch:") { editText ->
-                val selectedRemoteProductId = editText.text.toString().toLongOrNull()
+                selectedRemoteProductId = editText.text.toString().toLongOrNull()
                 selectedRemoteProductId?.let { id ->
                     updateSelectedProductId(id)
-                    enableProductDependentButtons()
-                    product_entered_product_id.text = editText.text.toString()
                 } ?: prependToLog("No valid remoteProductId defined...doing nothing")
             }
         }
@@ -179,10 +185,19 @@ class WooUpdateProductFragment : Fragment() {
                 }
             } ?: prependToLog("No site found...doing nothing")
         }
+
+        savedInstanceState?.let { bundle ->
+            selectedRemoteProductId = bundle.getLong(ARG_SELECTED_PRODUCT_ID)
+            selectedSitePosition = bundle.getInt(ARG_SELECTED_SITE_POS)
+            selectedRemoteProductId?.let { updateSelectedProductId(it) }
+        }
     }
 
     private fun updateSelectedProductId(remoteProductId: Long) {
         getWCSite()?.let { siteModel ->
+            enableProductDependentButtons()
+            product_entered_product_id.text = remoteProductId.toString()
+
             selectedProductModel = wcProductStore.getProductByRemoteId(siteModel, remoteProductId)?.also {
                 product_name.setText(it.name)
                 product_description.setText(it.description)

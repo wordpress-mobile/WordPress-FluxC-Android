@@ -31,7 +31,7 @@ class FloatingLabelEditText@JvmOverloads constructor(ctx: Context, attrs: Attrib
     }
 
     fun setText(text: String) {
-        edit_text.setText(text)
+        edit_text.post { edit_text.setText(text) }
     }
 
     override fun setEnabled(isEnabled: Boolean) {
