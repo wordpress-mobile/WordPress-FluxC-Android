@@ -436,7 +436,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
             val total = getTotal()
             assertNotNull(total)
             assertEquals(11, total?.ordersCount)
-            assertEquals(301.99, total?.grossRevenue)
+            assertEquals(301.99, total?.totalSales)
         }
     }
 

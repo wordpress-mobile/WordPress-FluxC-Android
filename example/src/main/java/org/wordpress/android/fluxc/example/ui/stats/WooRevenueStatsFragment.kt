@@ -177,7 +177,7 @@ class WooRevenueStatsFragment : Fragment() {
                         event.startDate!!,
                         event.endDate!!)
                 wcRevenueStatsModel?.let {
-                    val revenueSum = it.getTotal()?.grossRevenue
+                    val revenueSum = it.getTotal()?.totalSales
                     prependToLog("Fetched stats with total " + revenueSum + " for granularity " +
                             event.granularity.toString().toLowerCase() + " from " + site.name +
                             " between " + event.startDate + " and " + event.endDate)
