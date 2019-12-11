@@ -36,8 +36,8 @@ data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Id
     class SubTotal {
         @SerializedName("orders_count")
         val ordersCount: Long? = null
-        @SerializedName("gross_revenue")
-        val grossRevenue: Double? = null
+        @SerializedName("total_sales")
+        val totalSales: Double? = null
     }
 
     /**
@@ -51,7 +51,7 @@ data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Id
     class Total {
         @SerializedName("orders_count")
         val ordersCount: Int? = null
-        @SerializedName("gross_revenue")
+        @SerializedName("total_sales")
         val grossRevenue: Double? = null
     }
 
