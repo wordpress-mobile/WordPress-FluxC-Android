@@ -56,6 +56,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     private val productModel = WCProductModel(8).apply {
         remoteProductId = BuildConfig.TEST_WC_PRODUCT_ID.toLong()
         dateCreated = "2018-04-20T15:45:14Z"
+        taxStatus = "taxable"
+        stockStatus = "instock"
+        backorders = "yes"
     }
     private val productModelWithVariations = WCProductModel(8).apply {
         remoteProductId = BuildConfig.TEST_WC_PRODUCT_WITH_VARIATIONS_ID.toLong()
