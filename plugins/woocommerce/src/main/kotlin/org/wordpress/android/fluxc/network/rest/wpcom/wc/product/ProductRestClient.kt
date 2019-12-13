@@ -625,6 +625,7 @@ class ProductRestClient(
             attributes = response.attributes?.toString() ?: ""
 
             weight = response.weight ?: ""
+            menuOrder = response.menu_order
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""

@@ -30,6 +30,8 @@ class ProductVariationApiResponse : Response {
     var image: JsonElement? = null
 
     var weight: String? = null
+    val menu_order: Int = 0
+
     var dimensions: JsonElement? = null
     var attributes: JsonElement? = null
 }

@@ -243,6 +243,9 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         with(dbVariations.first()) {
             assertEquals(this.remoteProductId, remoteProductId)
             assertEquals(this.localSiteId, siteModel.id)
+
+            // verify that the variant with the first menu order is fetched first
+            assertEquals(this.menuOrder, 1)
         }
     }
 
