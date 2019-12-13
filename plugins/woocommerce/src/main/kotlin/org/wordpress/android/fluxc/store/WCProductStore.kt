@@ -434,6 +434,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         if (payload.isError) {
             onProductChanged = OnProductChanged(0).also { it.error = payload.error }
         } else {
+            // delete product variations for site before inserting the incoming variations
+            ProductSqlUtils.deleteVariationsForProduct(payload.site, payload.remoteProductId)
             val rowsAffected = ProductSqlUtils.insertOrUpdateProductVariations(payload.variations)
             onProductChanged = OnProductChanged(rowsAffected)
         }
