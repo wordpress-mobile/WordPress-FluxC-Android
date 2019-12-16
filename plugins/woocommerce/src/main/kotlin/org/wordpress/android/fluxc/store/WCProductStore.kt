@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
+import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
@@ -55,6 +56,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     class FetchProductVariationsPayload(
         var site: SiteModel,
         var remoteProductId: Long
+    ) : Payload<BaseNetworkError>()
+
+    class FetchProductShippingClassListPayload(
+        var site: SiteModel
     ) : Payload<BaseNetworkError>()
 
     class FetchProductReviewsPayload(
@@ -186,6 +191,18 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             site: SiteModel,
             remoteProductId: Long
         ) : this(site, remoteProductId) {
+            this.error = error
+        }
+    }
+
+    class RemoteProductShippingClassListPayload(
+        val site: SiteModel,
+        val shippingClassList: List<WCProductShippingClassModel> = emptyList()
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            site: SiteModel
+        ) : this(site) {
             this.error = error
         }
     }

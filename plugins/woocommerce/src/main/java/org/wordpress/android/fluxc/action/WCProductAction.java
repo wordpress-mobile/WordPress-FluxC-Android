@@ -5,6 +5,7 @@ import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload;
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload;
@@ -12,6 +13,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReview
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload;
@@ -32,6 +34,8 @@ public enum WCProductAction implements IAction {
     SEARCH_PRODUCTS,
     @Action(payloadType = FetchProductVariationsPayload.class)
     FETCH_PRODUCT_VARIATIONS,
+    @Action(payloadType = FetchProductShippingClassListPayload.class)
+    FETCH_PRODUCT_SHIPPING_CLASS_LIST,
     @Action(payloadType = FetchProductReviewsPayload.class)
     FETCH_PRODUCT_REVIEWS,
     @Action(payloadType = FetchSingleProductReviewPayload.class)
@@ -52,6 +56,8 @@ public enum WCProductAction implements IAction {
     SEARCHED_PRODUCTS,
     @Action(payloadType = RemoteProductVariationsPayload.class)
     FETCHED_PRODUCT_VARIATIONS,
+    @Action(payloadType = RemoteProductShippingClassListPayload.class)
+    FETCHED_PRODUCT_SHIPPING_CLASS_LIST,
     @Action(payloadType = FetchProductReviewsResponsePayload.class)
     FETCHED_PRODUCT_REVIEWS,
     @Action(payloadType = RemoteProductReviewPayload.class)
