@@ -5,21 +5,24 @@ import android.app.Dialog
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
+import java.util.ArrayList
 
 class ListSelectorDialog : DialogFragment() {
     companion object {
+        const val LIST_SELECTOR_REQUEST_CODE = 1000
+        const val ARG_LIST_SELECTED_ITEM = "ARG_LIST_SELECTED_ITEM"
+        const val ARG_LIST_ITEMS = "ARG_LIST_ITEMS"
+        const val ARG_RESULT_CODE = "ARG_RESULT_CODE"
         @JvmStatic
-        fun newInstance(listItems: List<String>, listener: Listener) = ListSelectorDialog().apply {
-            this.listener = listener
+        fun newInstance(fragment: Fragment, listItems: List<String>, resultCode: Int) = ListSelectorDialog().apply {
+            setTargetFragment(fragment, LIST_SELECTOR_REQUEST_CODE)
+            this.resultCode = resultCode
             this.listItems = listItems
         }
     }
 
-    interface Listener {
-        fun onListItemSelected(selectedItem: String?)
-    }
-
-    var listener: Listener? = null
+    var resultCode: Int = -1
     var listItems: List<String>? = null
 
     override fun onResume() {
@@ -28,14 +31,27 @@ class ListSelectorDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        savedInstanceState?.let {
+            listItems = it.getStringArrayList(ARG_LIST_ITEMS)
+            resultCode = it.getInt(ARG_RESULT_CODE)
+        }
+
         return activity?.let {
             val builder = AlertDialog.Builder(it)
             builder.setTitle("Select a list item")
                     .setSingleChoiceItems(listItems?.toTypedArray(), 0) { dialog, which ->
-                        listener?.onListItemSelected(listItems?.get(which))
+                        val intent = activity?.intent
+                        intent?.putExtra(ARG_LIST_SELECTED_ITEM, listItems?.get(which))
+                        targetFragment?.onActivityResult(LIST_SELECTOR_REQUEST_CODE, resultCode, intent)
                         dialog.dismiss()
                     }
             builder.create()
         } ?: throw IllegalStateException("Activity cannot be null")
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putStringArrayList(ARG_LIST_ITEMS, listItems as ArrayList<String>?)
+        outState.putInt(ARG_RESULT_CODE, resultCode)
     }
 }

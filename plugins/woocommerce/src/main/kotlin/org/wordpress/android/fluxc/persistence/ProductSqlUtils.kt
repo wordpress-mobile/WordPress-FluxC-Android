@@ -150,7 +150,7 @@ object ProductSqlUtils {
                 .equals(WCProductVariationModelTable.REMOTE_PRODUCT_ID, remoteProductId)
                 .equals(WCProductVariationModelTable.LOCAL_SITE_ID, site.id)
                 .endGroup().endWhere()
-                .orderBy(WCProductVariationModelTable.DATE_CREATED, SelectQuery.ORDER_DESCENDING)
+                .orderBy(WCProductVariationModelTable.MENU_ORDER, SelectQuery.ORDER_ASCENDING)
                 .asModel
     }
 

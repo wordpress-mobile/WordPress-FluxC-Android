@@ -113,7 +113,7 @@ class ProductRestClient(
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
         val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
-                "orderBy" to orderBy,
+                "orderby" to orderBy,
                 "order" to sortOrder,
                 "offset" to offset.toString(),
                 "search" to (searchQuery ?: ""))
@@ -133,6 +133,7 @@ class ProductRestClient(
                         val payload = RemoteProductListPayload(
                                 site,
                                 productModels,
+                                offset,
                                 loadedMore,
                                 canLoadMore
                         )
@@ -142,6 +143,7 @@ class ProductRestClient(
                                 site,
                                 searchQuery,
                                 productModels,
+                                offset,
                                 loadedMore,
                                 canLoadMore
                         )
@@ -465,9 +467,6 @@ class ProductRestClient(
             if (storedWCProductModel.backorders != updatedProductModel.backorders) {
                 body["backorders"] = updatedProductModel.backorders
             }
-            if (storedWCProductModel.backorders != updatedProductModel.backorders) {
-                body["backorders"] = updatedProductModel.backorders
-            }
         }
         if (storedWCProductModel.soldIndividually != updatedProductModel.soldIndividually) {
             body["sold_individually"] = updatedProductModel.soldIndividually
@@ -626,6 +625,7 @@ class ProductRestClient(
             attributes = response.attributes?.toString() ?: ""
 
             weight = response.weight ?: ""
+            menuOrder = response.menu_order
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""

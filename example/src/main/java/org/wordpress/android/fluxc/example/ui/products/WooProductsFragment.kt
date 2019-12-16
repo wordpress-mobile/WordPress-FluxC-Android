@@ -50,6 +50,7 @@ class WooProductsFragment : Fragment() {
     private var selectedPos: Int = -1
     private var selectedSite: SiteModel? = null
     private var pendingFetchSingleProductRemoteId: Long? = null
+    private var pendingFetchSingleProductVariationRemoteId: Long? = null
 
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
@@ -111,8 +112,8 @@ class WooProductsFragment : Fragment() {
                         activity,
                         "Enter the remoteProductId of product to fetch variations:"
                 ) { editText ->
-                    val remoteProductId = editText.text.toString().toLongOrNull()
-                    remoteProductId?.let { id ->
+                    pendingFetchSingleProductVariationRemoteId = editText.text.toString().toLongOrNull()
+                    pendingFetchSingleProductVariationRemoteId?.let { id ->
                         prependToLog("Submitting request to fetch product variations by remoteProductID $id")
                         val payload = FetchProductVariationsPayload(site, id)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchProductVariationsAction(payload))
@@ -240,7 +241,13 @@ class WooProductsFragment : Fragment() {
                     prependToLog("Fetched ${event.rowsAffected} products")
                 }
                 FETCH_PRODUCT_VARIATIONS -> {
-                    prependToLog("Fetched ${event.rowsAffected} product variations")
+                    pendingFetchSingleProductVariationRemoteId?.let { remoteId ->
+                        pendingFetchSingleProductVariationRemoteId = null
+                        val variations = wcProductStore.getVariationsForProduct(site, remoteId)
+                        variations.forEach { variant ->
+                            prependToLog("Variations: ${variant.remoteVariationId}")
+                        }
+                    }
                 }
                 FETCH_PRODUCT_REVIEWS -> {
                     prependToLog("Fetched ${event.rowsAffected} product reviews")

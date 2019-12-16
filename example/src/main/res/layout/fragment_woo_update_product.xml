@@ -61,80 +61,80 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/product_enter_product_id">
 
-        <EditText
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:hint="Product name"
+            app:textHint="Product name"
             android:inputType="text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <EditText
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_description"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:hint="Product description"
+            app:textHint="Product description"
             android:inputType="textMultiLine"
             android:lines="2"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/product_name" />
 
-        <EditText
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_sku"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:hint="Product SKU"
+            app:textHint="Product SKU"
             android:inputType="text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/product_description" />
 
-        <EditText
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_short_desc"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:hint="Short description"
+            app:textHint="Short description"
             android:inputType="text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/product_sku" />
 
-        <EditText
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_regular_price"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
             android:layout_marginRight="10dp"
             android:enabled="false"
-            android:hint="Regular price"
+            app:textHint="Regular price"
             android:inputType="numberDecimal"
             app:layout_constraintEnd_toStartOf="@+id/product_sale_price"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/product_short_desc" />
 
-        <EditText
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_sale_price"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:layout_marginLeft="10dp"
             android:enabled="false"
-            android:hint="Sale price"
+            app:textHint="Sale price"
             android:inputType="numberDecimal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/product_regular_price"
             app:layout_constraintTop_toBottomOf="@+id/product_short_desc" />
 
-        <EditText
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_width"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -142,14 +142,14 @@
             android:layout_marginEnd="10dp"
             android:layout_marginRight="10dp"
             android:enabled="false"
-            android:hint="Product Width"
+            app:textHint="Product Width"
             android:inputType="numberDecimal"
             app:layout_constraintEnd_toStartOf="@+id/product_height"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/product_regular_price" />
 
-        <EditText
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_height"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -157,14 +157,14 @@
             android:layout_marginLeft="10dp"
             android:layout_marginTop="4dp"
             android:enabled="false"
-            android:hint="Product Height"
+            app:textHint="Product Height"
             android:inputType="numberDecimal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/product_width"
             app:layout_constraintTop_toBottomOf="@+id/product_regular_price" />
 
-        <EditText
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_length"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -172,14 +172,14 @@
             android:layout_marginEnd="10dp"
             android:layout_marginRight="10dp"
             android:enabled="false"
-            android:hint="Product Width"
+            app:textHint="Product Width"
             android:inputType="numberDecimal"
             app:layout_constraintEnd_toStartOf="@+id/product_weight"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/product_width" />
 
-        <EditText
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_weight"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -187,7 +187,7 @@
             android:layout_marginLeft="10dp"
             android:layout_marginTop="4dp"
             android:enabled="false"
-            android:hint="Product Height"
+            app:textHint="Product Height"
             android:inputType="numberDecimal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
@@ -297,12 +297,12 @@
                 app:layout_constraintStart_toEndOf="@+id/product_stock_status"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <EditText
+            <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
                 android:id="@+id/product_stock_quantity"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:enabled="false"
-                android:hint="Stock quantity"
+                app:textHint="Stock quantity"
                 android:inputType="number"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
