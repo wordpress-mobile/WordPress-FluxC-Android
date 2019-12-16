@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SORTING
+import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductError
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
@@ -182,10 +183,18 @@ class ProductRestClient(
      *
      * @param [productId] Unique server id of the product
      */
-    fun fetchProductVariations(site: SiteModel, productId: Long) {
+    fun fetchProductVariations(
+        site: SiteModel,
+        productId: Long,
+        pageSize: Int = DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE,
+        offset: Int = 0
+    ) {
         val url = WOOCOMMERCE.products.id(productId).variations.pathV3
         val responseType = object : TypeToken<List<ProductVariationApiResponse>>() {}.type
-        val params = emptyMap<String, String>()
+        val params = mutableMapOf(
+                "per_page" to pageSize.toString(),
+                "offset" to offset.toString())
+
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductVariationApiResponse>? ->
                     val variationModels = response?.map {
@@ -195,7 +204,11 @@ class ProductRestClient(
                         }
                     }.orEmpty()
 
-                    val payload = RemoteProductVariationsPayload(site, productId, variationModels)
+                    val loadedMore = offset > 0
+                    val canLoadMore = variationModels.size == pageSize
+                    val payload = RemoteProductVariationsPayload(
+                            site, productId, variationModels, offset, loadedMore, canLoadMore
+                    )
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVariationsAction(payload))
                 },
                 WPComErrorListener { networkError ->
