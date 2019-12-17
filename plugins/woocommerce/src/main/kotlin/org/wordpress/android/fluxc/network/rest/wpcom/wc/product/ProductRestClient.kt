@@ -55,12 +55,13 @@ class ProductRestClient(
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET request to `GET /wp-json/wc/v3/products/shipping_classes` to fetch
-     * prodict shipping classes for a site
+     * product shipping classes for a site
      *
      * Dispatches a WCProductAction.FETCHED_PRODUCT_SHIPPING_CLASS_LIST action with the result
      *
      * @param [site] The site to fetch product shipping class list for
      */
+    // TODO: add pagination support in another PR
     fun fetchProductShippingClassList(site: SiteModel) {
         val url = WOOCOMMERCE.products.shipping_classes.pathV3
         val responseType = object : TypeToken<List<ProductShippingClassApiResponse>>() {}.type
