@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
@@ -259,6 +260,54 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
 
         assertEquals(WCProductAction.FETCHED_PRODUCT_VARIATIONS, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteProductVariationsPayload
+        assertNotNull(payload.error)
+    }
+
+    @Test
+    fun testFetchProductShippingClassesSuccess() {
+        interceptor.respondWith("wc-fetch-product-shipping-classes-response-success.json")
+        productRestClient.fetchProductShippingClassList(siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_PRODUCT_SHIPPING_CLASS_LIST, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductShippingClassListPayload
+        assertNull(payload.error)
+        assertEquals(payload.shippingClassList.size, 2)
+        assertEquals(payload.shippingClassList[0].remoteShippingClassId, 34)
+        assertEquals(payload.shippingClassList[0].name, "example1")
+        assertEquals(payload.shippingClassList[0].slug, "example-1")
+        assertEquals(payload.shippingClassList[0].description, "Testing shipping class")
+
+        // save the shipping class list to the db
+        assertEquals(ProductSqlUtils.insertOrUpdateProductShippingClassList(payload.shippingClassList), 2)
+
+        // now delete all shipping class list for this site and save again
+        ProductSqlUtils.deleteProductShippingClassListForSite(siteModel)
+        assertEquals(ProductSqlUtils.insertOrUpdateProductShippingClassList(payload.shippingClassList), 2)
+
+        // now verify the db stored the variation correctly
+        val dbShippingClassList = ProductSqlUtils.getProductShippingClassListForSite(
+                siteModel.id
+        )
+        assertEquals(dbShippingClassList.size, 2)
+        with(dbShippingClassList.first()) {
+            assertEquals(this.remoteShippingClassId, remoteShippingClassId)
+            assertEquals(this.localSiteId, siteModel.id)
+        }
+    }
+
+    @Test
+    fun testFetchProductShippingClassesError() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        productRestClient.fetchProductShippingClassList(siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_PRODUCT_SHIPPING_CLASS_LIST, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductShippingClassListPayload
         assertNotNull(payload.error)
     }
 

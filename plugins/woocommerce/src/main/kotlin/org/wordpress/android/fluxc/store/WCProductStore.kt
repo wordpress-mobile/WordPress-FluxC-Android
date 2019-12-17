@@ -472,7 +472,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             ProductSqlUtils.deleteProductShippingClassListForSite(payload.site)
 
             val rowsAffected = ProductSqlUtils.insertOrUpdateProductShippingClassList(payload.shippingClassList)
-            OnProductChanged(rowsAffected)
+            OnProductShippingClassesChanged(rowsAffected)
         }
         emitChange(onProductShippingClassesChanged)
     }
