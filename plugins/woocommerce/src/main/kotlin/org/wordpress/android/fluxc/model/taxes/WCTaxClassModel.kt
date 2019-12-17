@@ -15,7 +15,7 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 data class WCTaxClassModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
     @Column var localSiteId = 0
     @Column var name = ""
-    @Column var slug = ""   // The unique identifier for the tax class on the server
+    @Column var slug = "" // The unique identifier for the tax class on the server
 
     override fun getId() = id
 
