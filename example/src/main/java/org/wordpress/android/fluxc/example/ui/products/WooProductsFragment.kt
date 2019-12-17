@@ -29,12 +29,14 @@ import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductsSearched
 import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
@@ -162,6 +164,14 @@ class WooProductsFragment : Fragment() {
             }
         }
 
+        fetch_product_shipping_classes.setOnClickListener {
+            selectedSite?.let { site ->
+                prependToLog("Submitting request to fetch product shipping classes for site ${site.id}")
+                val payload = FetchProductShippingClassListPayload(site)
+                dispatcher.dispatch(WCProductActionBuilder.newFetchProductShippingClassListAction(payload))
+            }
+        }
+
         update_product_images.setOnClickListener {
             showSingleLineDialog(
                     activity,
@@ -280,6 +290,16 @@ class WooProductsFragment : Fragment() {
             prependToLog("Error updating product images - error: " + event.error.type)
         } else {
             prependToLog("Product images updated")
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductShippingClassesChanged(event: OnProductShippingClassesChanged) {
+        if (event.isError) {
+            prependToLog("Error fetching product shipping classes - error: " + event.error.type)
+        } else {
+            prependToLog("Fetched ${event.rowsAffected} product shipping classes")
         }
     }
 
