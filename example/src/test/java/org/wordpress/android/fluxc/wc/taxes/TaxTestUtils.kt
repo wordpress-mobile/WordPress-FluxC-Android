@@ -1,9 +1,10 @@
 package org.wordpress.android.fluxc.wc.taxes
 
 import org.wordpress.android.fluxc.model.taxes.WCTaxClassModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient.TaxClassApiResponse
 
 object TaxTestUtils {
-    fun generateSampleTaxClass(
+    private fun generateSampleTaxClass(
         name: String = "",
         slug: String = "",
         siteId: Int = 6
@@ -24,5 +25,10 @@ object TaxTestUtils {
             add(generateSampleTaxClass(siteId = siteId, slug = slug.plus(5)))
             return this
         }
+    }
+
+    fun generateSampleTaxClassApiResponse(): List<TaxClassApiResponse> {
+        return listOf(TaxClassApiResponse("example1", "example1"),
+                TaxClassApiResponse("example2", "example2"))
     }
 }
