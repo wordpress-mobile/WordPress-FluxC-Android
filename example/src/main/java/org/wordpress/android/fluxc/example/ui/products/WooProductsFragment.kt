@@ -260,6 +260,7 @@ class WooProductsFragment : Fragment() {
                     if (event.canLoadMore) {
                         pendingFetchSingleProductVariationOffset += event.rowsAffected
                         load_more_product_variations.visibility = View.VISIBLE
+                        load_more_product_variations.isEnabled = true
                     } else {
                         pendingFetchSingleProductVariationOffset = 0
                         load_more_product_variations.isEnabled = false
