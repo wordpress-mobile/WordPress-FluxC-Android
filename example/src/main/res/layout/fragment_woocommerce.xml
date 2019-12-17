@@ -75,5 +75,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Gateways"/>
+
+                <Button
+                    android:id="@+id/taxes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Taxes"/>
         </LinearLayout>
 </ScrollView>
