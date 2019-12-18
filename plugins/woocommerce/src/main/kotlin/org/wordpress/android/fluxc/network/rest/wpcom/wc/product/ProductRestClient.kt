@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
+import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -25,6 +26,7 @@ import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SORTING
+import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductError
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
@@ -36,6 +38,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DES
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
@@ -51,6 +54,43 @@ class ProductRestClient(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+    /**
+     * Makes a GET request to `GET /wp-json/wc/v3/products/shipping_classes` to fetch
+     * product shipping classes for a site
+     *
+     * Dispatches a WCProductAction.FETCHED_PRODUCT_SHIPPING_CLASS_LIST action with the result
+     *
+     * @param [site] The site to fetch product shipping class list for
+     */
+    // TODO: add pagination support in another PR
+    fun fetchProductShippingClassList(site: SiteModel) {
+        val url = WOOCOMMERCE.products.shipping_classes.pathV3
+        val responseType = object : TypeToken<List<ProductShippingClassApiResponse>>() {}.type
+        val params = emptyMap<String, String>()
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<ProductShippingClassApiResponse>? ->
+                    val shippingClassList = response?.map {
+                        WCProductShippingClassModel().apply {
+                            remoteShippingClassId = it.id
+                            localSiteId = site.id
+                            name = it.name ?: ""
+                            slug = it.slug ?: ""
+                            description = it.description ?: ""
+                        }
+                    }.orEmpty()
+
+                    val payload = RemoteProductShippingClassListPayload(site, shippingClassList)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductShippingClassListAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val productError = networkErrorToProductError(networkError)
+                    val payload = RemoteProductShippingClassListPayload(productError, site)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductShippingClassListAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/[remoteProductId]` to fetch a single product
      *
@@ -181,11 +221,28 @@ class ProductRestClient(
      * Dispatches a WCProductAction.FETCHED_PRODUCT_VARIATIONS action with the result
      *
      * @param [productId] Unique server id of the product
+     *
+     * Variations by default are sorted by `menu_order` with sorting order = desc.
+     * i.e. `orderby` = `menu_order` and `order` = `desc`
+     *
+     * We do not pass `orderby` field in the request here because the API does not support `orderby`
+     * with `menu_order` as value. But we still need to pass `order` field to the API request in order to
+     * preserve the sorting order when fetching multiple pages of variations.
+     *
      */
-    fun fetchProductVariations(site: SiteModel, productId: Long) {
+    fun fetchProductVariations(
+        site: SiteModel,
+        productId: Long,
+        pageSize: Int = DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE,
+        offset: Int = 0
+    ) {
         val url = WOOCOMMERCE.products.id(productId).variations.pathV3
         val responseType = object : TypeToken<List<ProductVariationApiResponse>>() {}.type
-        val params = emptyMap<String, String>()
+        val params = mutableMapOf(
+                "per_page" to pageSize.toString(),
+                "offset" to offset.toString(),
+                "order" to "asc")
+
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductVariationApiResponse>? ->
                     val variationModels = response?.map {
@@ -195,7 +252,11 @@ class ProductRestClient(
                         }
                     }.orEmpty()
 
-                    val payload = RemoteProductVariationsPayload(site, productId, variationModels)
+                    val loadedMore = offset > 0
+                    val canLoadMore = variationModels.size == pageSize
+                    val payload = RemoteProductVariationsPayload(
+                            site, productId, variationModels, offset, loadedMore, canLoadMore
+                    )
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductVariationsAction(payload))
                 },
                 WPComErrorListener { networkError ->

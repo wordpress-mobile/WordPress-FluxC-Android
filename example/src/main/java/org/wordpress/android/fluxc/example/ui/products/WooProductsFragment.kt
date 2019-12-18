@@ -29,12 +29,14 @@ import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductsSearched
 import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
@@ -50,7 +52,9 @@ class WooProductsFragment : Fragment() {
     private var selectedPos: Int = -1
     private var selectedSite: SiteModel? = null
     private var pendingFetchSingleProductRemoteId: Long? = null
+
     private var pendingFetchSingleProductVariationRemoteId: Long? = null
+    private var pendingFetchSingleProductVariationOffset: Int = 0
 
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
@@ -122,6 +126,18 @@ class WooProductsFragment : Fragment() {
             }
         }
 
+        load_more_product_variations.setOnClickListener {
+            selectedSite?.let { site ->
+                pendingFetchSingleProductVariationRemoteId?.let { id ->
+                    prependToLog("Submitting offset request to fetch product variations by remoteProductID $id")
+                    val payload = FetchProductVariationsPayload(
+                            site, id, offset = pendingFetchSingleProductVariationOffset
+                    )
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchProductVariationsAction(payload))
+                } ?: prependToLog("No valid remoteProductId defined...doing nothing")
+            }
+        }
+
         fetch_reviews_for_product.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
@@ -159,6 +175,14 @@ class WooProductsFragment : Fragment() {
                         dispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductReviewAction(payload))
                     } ?: prependToLog("No valid remoteReviewId defined...doing nothing")
                 }
+            }
+        }
+
+        fetch_product_shipping_classes.setOnClickListener {
+            selectedSite?.let { site ->
+                prependToLog("Submitting request to fetch product shipping classes for site ${site.id}")
+                val payload = FetchProductShippingClassListPayload(site)
+                dispatcher.dispatch(WCProductActionBuilder.newFetchProductShippingClassListAction(payload))
             }
         }
 
@@ -241,12 +265,15 @@ class WooProductsFragment : Fragment() {
                     prependToLog("Fetched ${event.rowsAffected} products")
                 }
                 FETCH_PRODUCT_VARIATIONS -> {
-                    pendingFetchSingleProductVariationRemoteId?.let { remoteId ->
-                        pendingFetchSingleProductVariationRemoteId = null
-                        val variations = wcProductStore.getVariationsForProduct(site, remoteId)
-                        variations.forEach { variant ->
-                            prependToLog("Variations: ${variant.remoteVariationId}")
-                        }
+                    prependToLog("Fetched ${event.rowsAffected} product variants. " +
+                            "More variants available ${event.canLoadMore}")
+                    if (event.canLoadMore) {
+                        pendingFetchSingleProductVariationOffset += event.rowsAffected
+                        load_more_product_variations.visibility = View.VISIBLE
+                        load_more_product_variations.isEnabled = true
+                    } else {
+                        pendingFetchSingleProductVariationOffset = 0
+                        load_more_product_variations.isEnabled = false
                     }
                 }
                 FETCH_PRODUCT_REVIEWS -> {
@@ -280,6 +307,16 @@ class WooProductsFragment : Fragment() {
             prependToLog("Error updating product images - error: " + event.error.type)
         } else {
             prependToLog("Product images updated")
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductShippingClassesChanged(event: OnProductShippingClassesChanged) {
+        if (event.isError) {
+            prependToLog("Error fetching product shipping classes - error: " + event.error.type)
+        } else {
+            prependToLog("Fetched ${event.rowsAffected} product shipping classes")
         }
     }
 

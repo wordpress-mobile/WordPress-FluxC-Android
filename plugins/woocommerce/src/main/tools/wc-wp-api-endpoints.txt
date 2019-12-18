@@ -8,6 +8,7 @@
 /products/<id>/
 /products/<id>/variations/
 /products/
+/products/shipping_classes
 
 /products/reviews/
 /products/reviews/<id>/

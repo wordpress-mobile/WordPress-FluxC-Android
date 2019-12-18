@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
@@ -28,6 +29,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReview
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductReviewChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload
@@ -44,6 +46,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         FETCHED_PRODUCT_VARIATIONS,
         FETCHED_PRODUCT_REVIEWS,
         FETCHED_SINGLE_PRODUCT_REVIEW,
+        FETCHED_PRODUCT_SHIPPING_CLASS_LIST,
         UPDATED_PRODUCT_REVIEW_STATUS,
         UPDATED_PRODUCT_IMAGES,
         UPDATED_PRODUCT
@@ -144,6 +147,28 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         // Verify results
         val fetchedVariations = productStore.getVariationsForProduct(sSite, productModelWithVariations.remoteProductId)
         assertNotEquals(fetchedVariations.size, 0)
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchProductShippingClassesForSite() {
+        /*
+         * TEST 1: Fetch product shipping classes for site
+         */
+        // Remove all product shipping classes from the database
+        ProductSqlUtils.deleteProductShippingClassListForSite(sSite)
+        assertEquals(0, ProductSqlUtils.getProductShippingClassListForSite(sSite.id).size)
+
+        nextEvent = TestEvent.FETCHED_PRODUCT_SHIPPING_CLASS_LIST
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(WCProductActionBuilder.newFetchProductShippingClassListAction(
+                        FetchProductShippingClassListPayload(sSite)
+                ))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify results
+        val fetchedShippingClasses = productStore.getShippingClassListForSite(sSite)
+        assertTrue(fetchedShippingClasses.isNotEmpty())
     }
 
     @Throws(InterruptedException::class)
@@ -449,6 +474,19 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         }
 
         assertEquals(TestEvent.UPDATED_PRODUCT, nextEvent)
+        mCountDownLatch.countDown()
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductShippingClassesChanged(event: OnProductShippingClassesChanged) {
+        event.error?.let {
+            throw AssertionError(
+                    "OnProductShippingClassesChanged has unexpected error: ${it.type}, ${it.message}"
+            )
+        }
+
+        assertEquals(TestEvent.FETCHED_PRODUCT_SHIPPING_CLASS_LIST, nextEvent)
         mCountDownLatch.countDown()
     }
 }
