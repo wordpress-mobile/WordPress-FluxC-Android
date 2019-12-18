@@ -28,6 +28,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     companion object {
         const val NUM_REVIEWS_PER_FETCH = 25
         const val DEFAULT_PRODUCT_PAGE_SIZE = 25
+        const val DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE = 25
         val DEFAULT_PRODUCT_SORTING = DATE_DESC
     }
 
@@ -54,7 +55,9 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     class FetchProductVariationsPayload(
         var site: SiteModel,
-        var remoteProductId: Long
+        var remoteProductId: Long,
+        var pageSize: Int = DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE,
+        var offset: Int = 0
     ) : Payload<BaseNetworkError>()
 
     class FetchProductReviewsPayload(
@@ -179,7 +182,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     class RemoteProductVariationsPayload(
         val site: SiteModel,
         val remoteProductId: Long,
-        val variations: List<WCProductVariationModel> = emptyList()
+        val variations: List<WCProductVariationModel> = emptyList(),
+        var offset: Int = 0,
+        var loadedMore: Boolean = false,
+        var canLoadMore: Boolean = false
     ) : Payload<ProductError>() {
         constructor(
             error: ProductError,
@@ -360,7 +366,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun fetchProductVariations(payload: FetchProductVariationsPayload) {
-        with(payload) { wcProductRestClient.fetchProductVariations(site, remoteProductId) }
+        with(payload) { wcProductRestClient.fetchProductVariations(site, remoteProductId, pageSize, offset) }
     }
 
     private fun fetchProductReviews(payload: FetchProductReviewsPayload) {
@@ -434,10 +440,14 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         if (payload.isError) {
             onProductChanged = OnProductChanged(0).also { it.error = payload.error }
         } else {
-            // delete product variations for site before inserting the incoming variations
-            ProductSqlUtils.deleteVariationsForProduct(payload.site, payload.remoteProductId)
+            // delete product variations for site if this is the first page of results, otherwise
+            // product variations deleted outside of the app will persist
+            if (payload.offset == 0) {
+                ProductSqlUtils.deleteVariationsForProduct(payload.site, payload.remoteProductId)
+            }
+
             val rowsAffected = ProductSqlUtils.insertOrUpdateProductVariations(payload.variations)
-            onProductChanged = OnProductChanged(rowsAffected)
+            onProductChanged = OnProductChanged(rowsAffected, canLoadMore = payload.canLoadMore)
         }
 
         onProductChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_VARIATIONS

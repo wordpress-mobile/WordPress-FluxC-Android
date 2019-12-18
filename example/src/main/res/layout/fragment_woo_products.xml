@@ -68,6 +68,13 @@
             android:text="Fetch Product Variations"/>
 
         <Button
+            android:id="@+id/load_more_product_variations"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text="Load More Variations" />
+
+        <Button
             android:id="@+id/fetch_reviews_for_product"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

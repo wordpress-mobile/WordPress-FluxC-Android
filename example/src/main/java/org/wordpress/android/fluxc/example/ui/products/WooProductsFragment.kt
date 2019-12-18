@@ -50,7 +50,9 @@ class WooProductsFragment : Fragment() {
     private var selectedPos: Int = -1
     private var selectedSite: SiteModel? = null
     private var pendingFetchSingleProductRemoteId: Long? = null
+
     private var pendingFetchSingleProductVariationRemoteId: Long? = null
+    private var pendingFetchSingleProductVariationOffset: Int = 0
 
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
@@ -119,6 +121,18 @@ class WooProductsFragment : Fragment() {
                         dispatcher.dispatch(WCProductActionBuilder.newFetchProductVariationsAction(payload))
                     } ?: prependToLog("No valid remoteProductId defined...doing nothing")
                 }
+            }
+        }
+
+        load_more_product_variations.setOnClickListener {
+            selectedSite?.let { site ->
+                pendingFetchSingleProductVariationRemoteId?.let { id ->
+                    prependToLog("Submitting offset request to fetch product variations by remoteProductID $id")
+                    val payload = FetchProductVariationsPayload(
+                            site, id, offset = pendingFetchSingleProductVariationOffset
+                    )
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchProductVariationsAction(payload))
+                } ?: prependToLog("No valid remoteProductId defined...doing nothing")
             }
         }
 
@@ -241,12 +255,15 @@ class WooProductsFragment : Fragment() {
                     prependToLog("Fetched ${event.rowsAffected} products")
                 }
                 FETCH_PRODUCT_VARIATIONS -> {
-                    pendingFetchSingleProductVariationRemoteId?.let { remoteId ->
-                        pendingFetchSingleProductVariationRemoteId = null
-                        val variations = wcProductStore.getVariationsForProduct(site, remoteId)
-                        variations.forEach { variant ->
-                            prependToLog("Variations: ${variant.remoteVariationId}")
-                        }
+                    prependToLog("Fetched ${event.rowsAffected} product variants. " +
+                            "More variants available ${event.canLoadMore}")
+                    if (event.canLoadMore) {
+                        pendingFetchSingleProductVariationOffset += event.rowsAffected
+                        load_more_product_variations.visibility = View.VISIBLE
+                        load_more_product_variations.isEnabled = true
+                    } else {
+                        pendingFetchSingleProductVariationOffset = 0
+                        load_more_product_variations.isEnabled = false
                     }
                 }
                 FETCH_PRODUCT_REVIEWS -> {
