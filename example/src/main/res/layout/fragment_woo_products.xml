@@ -96,6 +96,13 @@
             android:text="Fetch Product Review by ID"/>
 
         <Button
+            android:id="@+id/fetch_product_shipping_classes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Product Shipping classes"/>
+
+        <Button
             android:id="@+id/update_product_images"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

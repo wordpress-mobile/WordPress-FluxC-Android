@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
+import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductReviewApiResponse
 
 object ProductTestUtils {
@@ -20,6 +21,33 @@ object ProductTestUtils {
             this.type = type
             this.name = name
             this.virtual = virtual
+        }
+    }
+
+    fun generateSampleProductShippingClass(
+        remoteId: Long = 1L,
+        name: String = "",
+        slug: String = "",
+        description: String = "",
+        siteId: Int = 6
+    ): WCProductShippingClassModel {
+        return WCProductShippingClassModel().apply {
+            remoteShippingClassId = remoteId
+            localSiteId = siteId
+            this.name = name
+            this.slug = slug
+            this.description = description
+        }
+    }
+
+    fun generateProductList(siteId: Int = 6): List<WCProductShippingClassModel> {
+        with(ArrayList<WCProductShippingClassModel>()) {
+            add(generateSampleProductShippingClass(1, siteId = siteId))
+            add(generateSampleProductShippingClass(2, siteId = siteId))
+            add(generateSampleProductShippingClass(3, siteId = siteId))
+            add(generateSampleProductShippingClass(4, siteId = siteId))
+            add(generateSampleProductShippingClass(5, siteId = siteId))
+            return this
         }
     }
 
