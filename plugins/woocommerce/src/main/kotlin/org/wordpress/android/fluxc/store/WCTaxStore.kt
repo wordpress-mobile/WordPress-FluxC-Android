@@ -38,6 +38,8 @@ class WCTaxStore @Inject constructor(
                         mapper.map(it).apply { localSiteId = site.id }
                     }
 
+                    // delete existing tax classes for site before adding incoming entries
+                    WCTaxSqlUtils.deleteTaxClassesForSite(site)
                     WCTaxSqlUtils.insertOrUpdateTaxClasses(taxClassModels)
                     WooResult(taxClassModels)
                 }
