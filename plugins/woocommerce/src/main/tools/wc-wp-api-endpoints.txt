@@ -24,3 +24,6 @@
 
 /payment_gateways
 /payment_gateways/<gateway_id>#String
+
+/taxes
+/taxes/classes/
