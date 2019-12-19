@@ -55,7 +55,6 @@ class WCOrderFetcher @Inject constructor(
         if (event.isError) {
             Log.e(WCOrderFetcher::class.java.simpleName,
                     "Error fetching orders by remoteOrderId: ${event.error.message}")
-            return
         }
         ongoingRequests.removeAll(event.orderIds)
     }

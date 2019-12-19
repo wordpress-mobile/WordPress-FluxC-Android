@@ -12,6 +12,10 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.LoadingItem
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.SectionHeader
 import org.wordpress.android.fluxc.example.WCOrderListItemUIType.WCOrderListUIItem
+import org.wordpress.android.util.DateTimeUtils
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 private const val VIEW_TYPE_ORDER_ITEM = 0
 private const val VIEW_TYPE_LOADING = 1
@@ -91,7 +95,7 @@ private val OrderListDiffItemCallback = object : DiffUtil.ItemCallback<WCOrderLi
         }
         if (oldItem is WCOrderListUIItem && newItem is WCOrderListUIItem) {
             // AS is lying, it's not actually smart casting, so we have to do it :sigh:
-            return (oldItem as WCOrderListUIItem) == (newItem as WCOrderListUIItem)
+            return oldItem == newItem
         }
         return false
     }
@@ -101,15 +105,22 @@ private class WCOrderItemUIViewHolder(
     @LayoutRes layout: Int,
     parentView: ViewGroup
 ) : RecyclerView.ViewHolder(LayoutInflater.from(parentView.context).inflate(layout, parentView, false)) {
+    private val utcDateFormatter by lazy {
+        SimpleDateFormat("M/d/yy HH:mm:ss", Locale.ROOT).apply { timeZone = TimeZone.getTimeZone("UTC") }
+    }
     private val orderNumberTv: TextView = itemView.findViewById(R.id.woo_order_number)
     private val orderNameTv: TextView = itemView.findViewById(R.id.woo_order_name)
     private val orderStatusTv: TextView = itemView.findViewById(R.id.woo_order_status)
     private val orderTotalTv: TextView = itemView.findViewById(R.id.woo_order_total)
+    private val orderDateTv: TextView = itemView.findViewById(R.id.woo_order_date)
     fun onBind(orderUIItem: WCOrderListUIItem) {
         orderNumberTv.text = orderUIItem.orderNumber
         orderNameTv.text = orderUIItem.orderName
         orderStatusTv.text = orderUIItem.status
         orderTotalTv.text = orderUIItem.orderTotal
+
+        val dateObj = DateTimeUtils.dateUTCFromIso8601(orderUIItem.dateCreated)
+        orderDateTv.text = utcDateFormatter.format(dateObj)
     }
 }
 

@@ -68,7 +68,7 @@
     "date_on_sale_to_gmt": null,
     "default_attributes": [
     ],
-    "description": "",
+    "description": "Testing product description update",
     "dimensions": {
       "height": "1",
       "length": "2",
@@ -170,7 +170,7 @@
         "value": "no"
       }
     ],
-    "name": "Stranger Things T-Shirt (Product Add-On - Text Field)",
+    "name": "Product name",
     "on_sale": false,
     "parent_id": 0,
     "permalink": "https://jamosova3.mystagingwebsite.com/product/stranger-things-t-shirt-product-add-on-text-field/",
@@ -218,8 +218,7 @@
     "type": "simple",
     "upsell_ids": [
     ],
-    "variations": [
-    ],
+    "variations": [192, 193],
     "virtual": false,
     "weight": ""
   }

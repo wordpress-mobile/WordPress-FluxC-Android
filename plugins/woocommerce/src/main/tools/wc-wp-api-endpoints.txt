@@ -7,6 +7,8 @@
 
 /products/<id>/
 /products/<id>/variations/
+/products/
+/products/shipping_classes
 
 /products/reviews/
 /products/reviews/<id>/
@@ -16,3 +18,12 @@
 
 /settings/general/
 /settings/products/
+
+/orders/<id>/refunds
+/orders/<id>/refunds/<refund_id>
+
+/payment_gateways
+/payment_gateways/<gateway_id>#String
+
+/taxes
+/taxes/classes/

@@ -47,11 +47,32 @@
             android:text="Fetch Single Product"/>
 
         <Button
+            android:id="@+id/fetch_products"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Products"/>
+
+        <Button
+            android:id="@+id/search_products"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Search Products"/>
+
+        <Button
             android:id="@+id/fetch_product_variations"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Fetch Product Variations"/>
+
+        <Button
+            android:id="@+id/load_more_product_variations"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text="Load More Variations" />
 
         <Button
             android:id="@+id/fetch_reviews_for_product"
@@ -73,5 +94,26 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Fetch Product Review by ID"/>
+
+        <Button
+            android:id="@+id/fetch_product_shipping_classes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Product Shipping classes"/>
+
+        <Button
+            android:id="@+id/update_product_images"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Update Product Images"/>
+
+        <Button
+            android:id="@+id/update_product"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Update Product"/>
     </LinearLayout>
 </ScrollView>

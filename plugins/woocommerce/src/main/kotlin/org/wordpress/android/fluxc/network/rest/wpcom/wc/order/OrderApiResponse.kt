@@ -50,6 +50,7 @@ class OrderApiResponse : Response {
     val shipping_total: String? = null
     val payment_method: String? = null
     val payment_method_title: String? = null
+    val date_paid_gmt: String? = null
     val prices_include_tax: Boolean = false
 
     val customer_note: String? = null
@@ -65,4 +66,8 @@ class OrderApiResponse : Response {
     val line_items: JsonElement? = null
 
     val refunds: List<Refund>? = null
+
+    // This is actually a list of objects. We're storing this as JSON initially, and it will be deserialized on demand.
+    // See WCOrderModel.ShippingLines
+    val shipping_lines: JsonElement? = null
 }

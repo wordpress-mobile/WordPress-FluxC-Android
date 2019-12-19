@@ -10,11 +10,13 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
 import kotlin.test.assertEquals
 
 @Config(manifest = Config.NONE)
@@ -81,5 +83,28 @@ class WCProductStoreTest {
         assertEquals(differentSiteProduct1.remoteProductId, differentSiteProducts[0].remoteProductId)
         assertEquals(differentSiteProduct2.remoteProductId, differentSiteProducts[1].remoteProductId)
         assertEquals(differentSiteProduct3.remoteProductId, differentSiteProducts[2].remoteProductId)
+    }
+
+    @Test
+    fun testUpdateProduct() {
+        val productModel = ProductTestUtils.generateSampleProduct(42).apply {
+            name = "test product"
+            description = "test description"
+        }
+        val site = SiteModel().apply { id = productModel.localSiteId }
+        ProductSqlUtils.insertOrUpdateProduct(productModel)
+
+        // Simulate incoming action with updated product model
+        val payload = RemoteUpdateProductPayload(site, productModel.apply {
+            description = "Updated description"
+        })
+        productStore.onAction(WCProductActionBuilder.newUpdatedProductAction(payload))
+
+        with(productStore.getProductByRemoteId(site, productModel.remoteProductId)) {
+            // The version of the product model in the database should have the updated description
+            assertEquals(productModel.description, this?.description)
+            // Other fields should not be altered by the update
+            assertEquals(productModel.name, this?.name)
+        }
     }
 }

@@ -31,6 +31,7 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_ActivityLogTestJetpack test);
     void inject(ReleaseStack_InsightsTestJetpack test);
     void inject(ReleaseStack_TimeStatsTestJetpack test);
+    void inject(ReleaseStack_TimeStatsTestWPCom test);
     void inject(ReleaseStack_ManageInsightsTestJetpack test);
     void inject(ReleaseStack_CommentTestWPCom test);
     void inject(ReleaseStack_CommentTestXMLRPC test);
@@ -65,4 +66,6 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_TransactionsTest test);
     void inject(ReleaseStack_WCOrderListTest test);
     void inject(ReleaseStack_PostSchedulingTestJetpack test);
+    void inject(ReleaseStack_ReactNativeWPAPIRequestTest test);
+    void inject(ReleaseStack_ReactNativeWPComRequestTest test);
 }

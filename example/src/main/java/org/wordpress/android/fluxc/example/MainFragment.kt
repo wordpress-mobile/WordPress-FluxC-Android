@@ -91,6 +91,7 @@ class MainFragment : Fragment() {
         themes.setOnClickListener(getOnClickListener(ThemeFragment()))
         woo.setOnClickListener(getOnClickListener(WooCommerceFragment()))
         notifs.setOnClickListener(getOnClickListener(NotificationsFragment()))
+        reactnative.setOnClickListener(getOnClickListener(ReactNativeFragment()))
     }
 
     // Private methods
@@ -129,7 +130,7 @@ class MainFragment : Fragment() {
             override fun onClick(username: String, password: String, url: String) {
                 signInAction(username, password, url)
             }
-        }, "Username", "Password", "XMLRPC Url")
+        }, "Username", "Password", "XMLRPC Url (Leave blank for WP.COM!)")
         newFragment.show(ft, "dialog")
     }
 

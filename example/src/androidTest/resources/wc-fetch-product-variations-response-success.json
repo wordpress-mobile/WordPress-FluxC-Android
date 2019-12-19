@@ -48,18 +48,9 @@
       "downloads": [
       ],
       "id": 181,
-      "image": {
-        "alt": "",
-        "date_created": "2019-03-14T07:34:12",
-        "date_created_gmt": "2019-03-14T16:34:12",
-        "date_modified": "2019-03-15T10:25:58",
-        "date_modified_gmt": "2019-03-15T19:25:58",
-        "id": 175,
-        "name": "profile-rockem-sockem",
-        "src": "https://example.com/wp-content/uploads/2019/03/profile-rockem-sockem.png?fit=300%2C225&ssl=1"
-      },
+      "image": null,
       "manage_stock": false,
-      "menu_order": 0,
+      "menu_order": 3,
       "meta_data": [
         {
           "id": 1348,
@@ -143,7 +134,7 @@
         "src": "https://example.com/wp-content/uploads/2019/03/profile-rockem-sockem.png?fit=300%2C225&ssl=1"
       },
       "manage_stock": false,
-      "menu_order": 0,
+      "menu_order": 1,
       "meta_data": [
         {
           "id": 1312,
@@ -227,7 +218,7 @@
         "src": "https://example.com/wp-content/uploads/2019/03/profile-rockem-sockem.png?fit=300%2C225&ssl=1"
       },
       "manage_stock": false,
-      "menu_order": 0,
+      "menu_order": 2,
       "meta_data": [
         {
           "id": 1276,

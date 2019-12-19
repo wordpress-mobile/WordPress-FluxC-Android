@@ -3,7 +3,7 @@
     "totals": {
       "orders_count": 11,
       "num_items_sold": 14,
-      "gross_revenue": 301.99,
+      "total_sales": 301.99,
       "coupons": 18,
       "coupons_count": 1,
       "refunds": 0,
@@ -23,7 +23,7 @@
         "subtotals": {
           "orders_count": 2,
           "num_items_sold": 2,
-          "gross_revenue": 2,
+          "total_sales": 2,
           "coupons": 18,
           "coupons_count": 1,
           "refunds": 0,
@@ -42,7 +42,7 @@
         "subtotals": {
           "orders_count": 7,
           "num_items_sold": 8,
-          "gross_revenue": 200.99,
+          "total_sales": 200.99,
           "coupons": 0,
           "coupons_count": 0,
           "refunds": 0,
@@ -61,7 +61,7 @@
         "subtotals": {
           "orders_count": 0,
           "num_items_sold": 0,
-          "gross_revenue": 0,
+          "total_sales": 0,
           "coupons": 0,
           "coupons_count": 0,
           "refunds": 0,
@@ -80,7 +80,7 @@
         "subtotals": {
           "orders_count": 0,
           "num_items_sold": 0,
-          "gross_revenue": 0,
+          "total_sales": 0,
           "coupons": 0,
           "coupons_count": 0,
           "refunds": 0,
@@ -99,7 +99,7 @@
         "subtotals": {
           "orders_count": 1,
           "num_items_sold": 3,
-          "gross_revenue": 81,
+          "total_sales": 81,
           "coupons": 0,
           "coupons_count": 0,
           "refunds": 0,
@@ -118,7 +118,7 @@
         "subtotals": {
           "orders_count": 0,
           "num_items_sold": 0,
-          "gross_revenue": 0,
+          "total_sales": 0,
           "coupons": 0,
           "coupons_count": 0,
           "refunds": 0,
@@ -137,7 +137,7 @@
         "subtotals": {
           "orders_count": 1,
           "num_items_sold": 1,
-          "gross_revenue": 18,
+          "total_sales": 18,
           "coupons": 0,
           "coupons_count": 0,
           "refunds": 0,

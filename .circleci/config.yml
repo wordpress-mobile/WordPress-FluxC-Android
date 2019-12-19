@@ -1,7 +1,8 @@
 version: 2.1
 
 orbs:
-  android: wordpress-mobile/android@0.0.23
+  # Using 1.0 of our Orbs means it will use the latest 1.0.x version from https://github.com/wordpress-mobile/circleci-orbs
+  android: wordpress-mobile/android@1.0
   slack: circleci/slack@2.5.0
 
 commands:
@@ -80,6 +81,8 @@ jobs:
         type: string
       timeout:
         type: string
+      num-flaky-test-attempts:
+        type: integer
       post-slack-status:
         type: boolean
       device:
@@ -109,6 +112,7 @@ jobs:
           device: << parameters.device >>
           project: api-project-108380595987
           timeout: << parameters.timeout >>
+          num-flaky-test-attempts: << parameters.num-flaky-test-attempts >>
           no-record-video: true
       - android/save-gradle-cache:
           cache-prefix: connected-tests
@@ -144,6 +148,7 @@ workflows:
           package: org.wordpress.android.fluxc.mocked
           device: model=Nexus5X,version=26,locale=en,orientation=portrait
           timeout: 10m
+          num-flaky-test-attempts: 0
           post-slack-status: false
   nightly:
     triggers:
@@ -160,4 +165,5 @@ workflows:
           package: org.wordpress.android.fluxc
           device: model=Nexus5X,version=26,locale=en,orientation=portrait
           timeout: 30m
+          num-flaky-test-attempts: 1
           post-slack-status: true

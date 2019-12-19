@@ -181,7 +181,7 @@ class OrderStatsRestClient(
         perPage: Int,
         force: Boolean = false
     ) {
-        val url = WOOCOMMERCE.reports.revenue.stats.pathV4
+        val url = WOOCOMMERCE.reports.revenue.stats.pathV4Analytics
         val responseType = object : TypeToken<RevenueStatsApiResponse>() {}.type
         val params = mapOf(
                 "interval" to OrderStatsApiUnit.convertToRevenueStatsInterval(granularity).toString(),
@@ -237,7 +237,7 @@ class OrderStatsRestClient(
      * The _fields param is added to retrieve only the `Totals` field from the api
      */
     fun fetchRevenueStatsAvailability(site: SiteModel, startDate: String) {
-        val url = WOOCOMMERCE.reports.revenue.stats.pathV4
+        val url = WOOCOMMERCE.reports.revenue.stats.pathV4Analytics
         val responseType = object : TypeToken<RevenueStatsApiResponse>() {}.type
         val params = mapOf(
                 "interval" to OrderStatsApiUnit.YEAR.toString(),

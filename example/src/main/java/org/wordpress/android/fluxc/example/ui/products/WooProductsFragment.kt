@@ -12,6 +12,7 @@ import kotlinx.android.synthetic.main.fragment_woo_products.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCTS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_REVIEWS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
@@ -19,16 +20,26 @@ import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_R
 import org.wordpress.android.fluxc.action.WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductImageModel
+import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductsSearched
+import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
@@ -36,10 +47,14 @@ class WooProductsFragment : Fragment() {
     @Inject internal lateinit var dispatcher: Dispatcher
     @Inject internal lateinit var wcProductStore: WCProductStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
+    @Inject internal lateinit var mediaStore: MediaStore
 
     private var selectedPos: Int = -1
     private var selectedSite: SiteModel? = null
     private var pendingFetchSingleProductRemoteId: Long? = null
+
+    private var pendingFetchSingleProductVariationRemoteId: Long? = null
+    private var pendingFetchSingleProductVariationOffset: Int = 0
 
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
@@ -76,19 +91,50 @@ class WooProductsFragment : Fragment() {
             }
         }
 
+        fetch_products.setOnClickListener {
+            selectedSite?.let { site ->
+                val payload = FetchProductsPayload(site)
+                dispatcher.dispatch(WCProductActionBuilder.newFetchProductsAction(payload))
+            }
+        }
+
+        search_products.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter a search query:"
+                ) { editText ->
+                    val payload = SearchProductsPayload(site, editText.text.toString())
+                    dispatcher.dispatch(WCProductActionBuilder.newSearchProductsAction(payload))
+                }
+            }
+        }
+
         fetch_product_variations.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                         activity,
                         "Enter the remoteProductId of product to fetch variations:"
                 ) { editText ->
-                    val remoteProductId = editText.text.toString().toLongOrNull()
-                    remoteProductId?.let { id ->
+                    pendingFetchSingleProductVariationRemoteId = editText.text.toString().toLongOrNull()
+                    pendingFetchSingleProductVariationRemoteId?.let { id ->
                         prependToLog("Submitting request to fetch product variations by remoteProductID $id")
                         val payload = FetchProductVariationsPayload(site, id)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchProductVariationsAction(payload))
                     } ?: prependToLog("No valid remoteProductId defined...doing nothing")
                 }
+            }
+        }
+
+        load_more_product_variations.setOnClickListener {
+            selectedSite?.let { site ->
+                pendingFetchSingleProductVariationRemoteId?.let { id ->
+                    prependToLog("Submitting offset request to fetch product variations by remoteProductID $id")
+                    val payload = FetchProductVariationsPayload(
+                            site, id, offset = pendingFetchSingleProductVariationOffset
+                    )
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchProductVariationsAction(payload))
+                } ?: prependToLog("No valid remoteProductId defined...doing nothing")
             }
         }
 
@@ -131,6 +177,54 @@ class WooProductsFragment : Fragment() {
                 }
             }
         }
+
+        fetch_product_shipping_classes.setOnClickListener {
+            selectedSite?.let { site ->
+                prependToLog("Submitting request to fetch product shipping classes for site ${site.id}")
+                val payload = FetchProductShippingClassListPayload(site)
+                dispatcher.dispatch(WCProductActionBuilder.newFetchProductShippingClassListAction(payload))
+            }
+        }
+
+        update_product_images.setOnClickListener {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the remoteProductId of the product to update images:"
+            ) { editTextProduct ->
+                editTextProduct.text.toString().toLongOrNull()?.let { productId ->
+                    showSingleLineDialog(
+                            activity,
+                            "Enter the mediaId of the image to assign to the product:"
+                    ) { editTextMedia ->
+                        editTextMedia.text.toString().toLongOrNull()?.let { mediaId ->
+                            updateProductImages(productId, mediaId)
+                        }
+                    }
+                }
+            }
+        }
+
+        update_product.setOnClickListener {
+            replaceFragment(WooUpdateProductFragment.newInstance(selectedPos))
+        }
+    }
+
+    /**
+     * Note that this will replace all this product's images with a single image, as defined by mediaId. Also note
+     * that the media must already be cached for this to work (ie: you may need to go to the first screen in the
+     * example app, tap Media, then ensure the media is fetched)
+     */
+    private fun updateProductImages(productId: Long, mediaId: Long) {
+        selectedSite?.let { site ->
+            mediaStore.getSiteMediaWithId(site, mediaId)?.let { media ->
+                prependToLog("Submitting request to update product images")
+                val imageList = ArrayList<WCProductImageModel>().also {
+                    it.add(WCProductImageModel.fromMediaModel(media))
+                }
+                val payload = UpdateProductImagesPayload(site, productId, imageList)
+                dispatcher.dispatch(WCProductActionBuilder.newUpdateProductImagesAction(payload))
+            } ?: prependToLog(("Not a valid media id"))
+        } ?: prependToLog(("No site selected"))
     }
 
     override fun onStart() {
@@ -158,12 +252,29 @@ class WooProductsFragment : Fragment() {
                         pendingFetchSingleProductRemoteId = null
                         val product = wcProductStore.getProductByRemoteId(site, remoteId)
                         product?.let {
-                            prependToLog("Single product fetched successfully! ${it.name}")
+                            val numVariations = it.getNumVariations()
+                            if (numVariations > 0) {
+                                prependToLog("Single product with $numVariations variations fetched! ${it.name}")
+                            } else {
+                                prependToLog("Single product fetched! ${it.name}")
+                            }
                         } ?: prependToLog("WARNING: Fetched product not found in the local database!")
                     }
                 }
+                FETCH_PRODUCTS -> {
+                    prependToLog("Fetched ${event.rowsAffected} products")
+                }
                 FETCH_PRODUCT_VARIATIONS -> {
-                    prependToLog("Fetched ${event.rowsAffected} product variations")
+                    prependToLog("Fetched ${event.rowsAffected} product variants. " +
+                            "More variants available ${event.canLoadMore}")
+                    if (event.canLoadMore) {
+                        pendingFetchSingleProductVariationOffset += event.rowsAffected
+                        load_more_product_variations.visibility = View.VISIBLE
+                        load_more_product_variations.isEnabled = true
+                    } else {
+                        pendingFetchSingleProductVariationOffset = 0
+                        load_more_product_variations.isEnabled = false
+                    }
                 }
                 FETCH_PRODUCT_REVIEWS -> {
                     prependToLog("Fetched ${event.rowsAffected} product reviews")
@@ -176,6 +287,36 @@ class WooProductsFragment : Fragment() {
                 }
                 else -> prependToLog("Product store was updated from a " + event.causeOfChange)
             }
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductsSearched(event: OnProductsSearched) {
+        if (event.isError) {
+            prependToLog("Error searching products - error: " + event.error.type)
+        } else {
+            prependToLog("Found ${event.searchResults.size} products matching ${event.searchQuery}")
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductImagesChanged(event: OnProductImagesChanged) {
+        if (event.isError) {
+            prependToLog("Error updating product images - error: " + event.error.type)
+        } else {
+            prependToLog("Product images updated")
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductShippingClassesChanged(event: OnProductShippingClassesChanged) {
+        if (event.isError) {
+            prependToLog("Error fetching product shipping classes - error: " + event.error.type)
+        } else {
+            prependToLog("Fetched ${event.rowsAffected} product shipping classes")
         }
     }
 

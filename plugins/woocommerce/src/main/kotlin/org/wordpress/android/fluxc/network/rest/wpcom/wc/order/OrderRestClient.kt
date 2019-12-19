@@ -58,7 +58,7 @@ class OrderRestClient(
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     private val ORDER_FIELDS = "id,number,status,currency,date_created_gmt,total,total_tax,shipping_total," +
             "payment_method,payment_method_title,prices_include_tax,customer_note,discount_total," +
-            "coupon_lines,refunds,billing,shipping,line_items"
+            "coupon_lines,refunds,billing,shipping,line_items,date_paid_gmt,shipping_lines"
     private val TRACKING_FIELDS = "tracking_id,tracking_number,tracking_link,tracking_provider,date_shipped"
 
     /**
@@ -181,13 +181,15 @@ class OrderRestClient(
 
                     val payload = FetchOrdersByIdsResponsePayload(
                             site = site,
-                            orders = orderModels
+                            remoteOrderIds = remoteOrderIds,
+                            fetchedOrders = orderModels
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
-                    val payload = FetchOrdersByIdsResponsePayload(error = orderError, site = site)
+                    val payload = FetchOrdersByIdsResponsePayload(
+                            error = orderError, site = site, remoteOrderIds = remoteOrderIds)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
@@ -643,6 +645,7 @@ class OrderRestClient(
             shippingTotal = response.shipping_total ?: ""
             paymentMethod = response.payment_method ?: ""
             paymentMethodTitle = response.payment_method_title ?: ""
+            datePaid = response.date_paid_gmt?.let { "${it}Z" } ?: ""
             pricesIncludeTax = response.prices_include_tax
 
             customerNote = response.customer_note ?: ""
@@ -683,6 +686,7 @@ class OrderRestClient(
             shippingCountry = response.shipping?.country ?: ""
 
             lineItems = response.line_items.toString()
+            shippingLines = response.shipping_lines.toString()
         }
     }
 
@@ -691,7 +695,8 @@ class OrderRestClient(
             remoteNoteId = response.id ?: 0
             dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: ""
             note = response.note ?: ""
-            isSystemNote = response.author == "system"
+            isSystemNote = response.author == "system" || response.author == "WooCommerce"
+            author = response.author ?: ""
             isCustomerNote = response.customer_note
         }
     }
@@ -714,6 +719,7 @@ class OrderRestClient(
             localSiteId = site.id
             statusKey = response.slug ?: ""
             label = response.name ?: ""
+            statusCount = response.total
         }
     }
 

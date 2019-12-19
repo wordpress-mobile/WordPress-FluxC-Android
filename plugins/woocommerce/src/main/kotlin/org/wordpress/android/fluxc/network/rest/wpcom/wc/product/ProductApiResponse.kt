@@ -40,6 +40,8 @@ class ProductApiResponse : Response {
     var manage_stock: String? = null
     var stock_quantity = 0
     var stock_status: String? = null
+    var date_on_sale_from: String? = null
+    var date_on_sale_to: String? = null
 
     var backorders: String? = null
     var backorders_allowed = false

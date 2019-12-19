@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="12dp"
+    tools:context="org.wordpress.android.fluxc.example.ui.products.WooUpdateProductFragment"
+    tools:ignore="HardcodedText">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Perform actions on a selected product Id:"
+        android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/product_enter_product_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enter Product Id"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <TextView
+        android:id="@+id/product_entered_product_id"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
+        android:textColor="@android:color/holo_blue_bright"
+        app:layout_constraintStart_toEndOf="@+id/product_enter_product_id"
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        tools:text="79" />
+
+    <ImageButton
+        android:id="@+id/product_update"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:clickable="false"
+        android:focusable="false"
+        android:src="@drawable/ic_check"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/productContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/product_enter_product_id">
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/product_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            app:textHint="Product name"
+            android:inputType="text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/product_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            app:textHint="Product description"
+            android:inputType="textMultiLine"
+            android:lines="2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_name" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/product_sku"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            app:textHint="Product SKU"
+            android:inputType="text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_description" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/product_short_desc"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            app:textHint="Short description"
+            android:inputType="text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_sku" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/product_regular_price"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:layout_marginRight="10dp"
+            android:enabled="false"
+            app:textHint="Regular price"
+            android:inputType="numberDecimal"
+            app:layout_constraintEnd_toStartOf="@+id/product_sale_price"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_short_desc" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/product_sale_price"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:enabled="false"
+            app:textHint="Sale price"
+            android:inputType="numberDecimal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/product_regular_price"
+            app:layout_constraintTop_toBottomOf="@+id/product_short_desc" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/product_width"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginRight="10dp"
+            android:enabled="false"
+            app:textHint="Product Width"
+            android:inputType="numberDecimal"
+            app:layout_constraintEnd_toStartOf="@+id/product_height"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_regular_price" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/product_height"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="4dp"
+            android:enabled="false"
+            app:textHint="Product Height"
+            android:inputType="numberDecimal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/product_width"
+            app:layout_constraintTop_toBottomOf="@+id/product_regular_price" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/product_length"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginRight="10dp"
+            android:enabled="false"
+            app:textHint="Product Width"
+            android:inputType="numberDecimal"
+            app:layout_constraintEnd_toStartOf="@+id/product_weight"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_width" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/product_weight"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="4dp"
+            android:enabled="false"
+            app:textHint="Product Height"
+            android:inputType="numberDecimal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/product_length"
+            app:layout_constraintTop_toBottomOf="@+id/product_width" />
+
+        <Button
+            android:id="@+id/product_tax_status"
+            style="?android:attr/spinnerStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:enabled="false"
+            android:text="Tax Status"
+            app:layout_constraintEnd_toStartOf="@+id/product_sold_individually"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_length" />
+
+        <CheckBox
+            android:id="@+id/product_sold_individually"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:enabled="false"
+            android:text="Sold Individually"
+            app:layout_constraintEnd_toEndOf="@+id/product_weight"
+            app:layout_constraintStart_toStartOf="@+id/product_weight"
+            app:layout_constraintTop_toBottomOf="@+id/product_weight" />
+
+        <TextView
+            android:id="@+id/product_schedule_sale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Schedule Sale"
+            android:textAppearance="@style/Base.TextAppearance.Widget.AppCompat.Toolbar.Subtitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_tax_status" />
+
+        <Button
+            android:id="@+id/product_from_date"
+            style="?android:attr/spinnerStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:enabled="false"
+            android:text="Start Date"
+            app:layout_constraintEnd_toStartOf="@+id/product_to_date"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_schedule_sale" />
+
+        <Button
+            android:id="@+id/product_to_date"
+            style="?android:attr/spinnerStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:enabled="false"
+            android:text="End Date"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/product_from_date"
+            app:layout_constraintTop_toBottomOf="@+id/product_schedule_sale" />
+
+        <Switch
+            android:id="@+id/product_manage_stock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Manage Stock"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_from_date" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/manageStockContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_manage_stock">
+
+            <Button
+                android:id="@+id/product_stock_status"
+                style="?android:attr/spinnerStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:enabled="false"
+                android:text="Stock Status"
+                app:layout_constraintEnd_toStartOf="@+id/product_back_orders"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/product_back_orders"
+                style="?android:attr/spinnerStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:enabled="false"
+                android:text="Allow Back Orders"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/product_stock_status"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+                android:id="@+id/product_stock_quantity"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                app:textHint="Stock quantity"
+                android:inputType="number"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/product_stock_status" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

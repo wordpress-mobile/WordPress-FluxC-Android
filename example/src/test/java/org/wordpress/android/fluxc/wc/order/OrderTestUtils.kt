@@ -35,6 +35,7 @@ object OrderTestUtils {
             localSiteId = siteId
             status = orderStatus
             dateCreated = "1955-11-05T14:15:00Z"
+            datePaid = "1956-11-05T14:15:00Z"
             currency = "USD"
             total = "10.0"
         }
@@ -74,6 +75,7 @@ object OrderTestUtils {
                 localSiteId = siteId
                 statusKey = it.slug ?: ""
                 label = it.name ?: ""
+                statusCount = it.total
             }
         }
     }

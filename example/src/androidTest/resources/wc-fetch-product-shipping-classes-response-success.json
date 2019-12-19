@@ -1,0 +1,32 @@
+{
+  "data": [{
+    "id": 34,
+    "name": "example1",
+    "slug": "example-1",
+    "description": "Testing shipping class",
+    "count": 1,
+    "_links": {
+      "self": [{
+        "href": "https:\/\/anitaastestwooshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/shipping_classes\/34"
+      }],
+      "collection": [{
+        "href": "https:\/\/anitaastestwooshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/shipping_classes"
+      }]
+    }
+  },
+    {
+      "id": 35,
+      "name": "example2",
+      "slug": "example-2",
+      "description": "Testing shipping class part 2",
+      "count": 3,
+      "_links": {
+        "self": [{
+          "href": "https:\/\/anitaastestwooshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/shipping_classes\/34"
+        }],
+        "collection": [{
+          "href": "https:\/\/anitaastestwooshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/shipping_classes"
+        }]
+      }
+    }]
+}

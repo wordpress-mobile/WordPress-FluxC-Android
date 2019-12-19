@@ -5,8 +5,6 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCOrderAction
-import org.wordpress.android.fluxc.action.WCOrderAction.ADD_ORDER_SHIPMENT_TRACKING
-import org.wordpress.android.fluxc.action.WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.generated.ListActionBuilder
 import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
@@ -81,9 +79,14 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     class FetchOrdersByIdsResponsePayload(
         val site: SiteModel,
-        var orders: List<WCOrderModel> = emptyList()
+        var remoteOrderIds: List<RemoteId>,
+        var fetchedOrders: List<WCOrderModel> = emptyList()
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel) : this(site = site) {
+        constructor(
+            error: OrderError,
+            site: SiteModel,
+            remoteOrderIds: List<RemoteId>
+        ) : this(site = site, remoteOrderIds = remoteOrderIds) {
             this.error = error
         }
     }
@@ -360,6 +363,11 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     fun getShipmentProvidersForSite(site: SiteModel): List<WCOrderShipmentProviderModel> =
             OrderSqlUtils.getOrderShipmentProvidersForSite(site)
 
+    /**
+     * @return Returns true if orders for the provided site exist in the DB, else false.
+     */
+    fun hasCachedOrdersForSite(site: SiteModel) = OrderSqlUtils.getOrdersForSite(site).isNotEmpty()
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCOrderAction ?: return
@@ -514,17 +522,11 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
         // - WCOrderModel
         // - WCOrderNoteModel
         // - WCOrderShipmentTrackingModel
-
         if (!payload.isError) {
-            // Purge all WCOrderSummaryModel records on first fetch
-            if (!payload.loadedMore) {
-                OrderSqlUtils.deleteOrderSummariesForSite(payload.listDescriptor.site)
-            }
-
             // Save order summaries to the db
             OrderSqlUtils.insertOrUpdateOrderSummaries(payload.orderSummaries)
 
-            // Fetch missing or outdated orders using the list of order summaries
+            // Fetch outdated orders
             fetchOutdatedOrders(payload.listDescriptor.site, payload.orderSummaries)
         }
 
@@ -551,17 +553,22 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun handleFetchOrderByIdsCompleted(payload: FetchOrdersByIdsResponsePayload) {
-        val onOrdersFetchedByIds = OnOrdersFetchedByIds(payload.site, payload.orders.map { RemoteId(it.remoteOrderId) })
-        if (payload.isError) {
-            onOrdersFetchedByIds.error = payload.error
+        val onOrdersFetchedByIds = if (payload.isError) {
+            OnOrdersFetchedByIds(payload.site, payload.remoteOrderIds).apply { error = payload.error }
         } else {
-            payload.orders.forEach { OrderSqlUtils.insertOrUpdateOrder(it) }
+            OnOrdersFetchedByIds(payload.site, payload.fetchedOrders.map { RemoteId(it.remoteOrderId) })
         }
+
+        if (!payload.isError) {
+            // Save the list of orders to the database
+            payload.fetchedOrders.forEach { OrderSqlUtils.insertOrUpdateOrder(it) }
+
+            // Notify listeners that the list of orders has changed (only call this if there is no error)
+            val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(localSiteId = payload.site.id)
+            mDispatcher.dispatch(ListActionBuilder.newListDataInvalidatedAction(listTypeIdentifier))
+        }
+
         emitChange(onOrdersFetchedByIds)
-        val listTypeIdentifier = WCOrderListDescriptor.calculateTypeIdentifier(
-                localSiteId = payload.site.id
-        )
-        mDispatcher.dispatch(ListActionBuilder.newListDataInvalidatedAction(listTypeIdentifier))
     }
 
     private fun handleSearchOrdersCompleted(payload: SearchOrdersResponsePayload) {
@@ -683,7 +690,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
                 existingOptions.iterator().forEach eoi@{ existingOption ->
                     if (newOption.statusKey == existingOption.statusKey) {
                         exists = true
-                        if (newOption.label != existingOption.label) {
+                        if (newOption.label != existingOption.label ||
+                                newOption.statusCount != existingOption.statusCount) {
                             addOrUpdateOptions.add(newOption)
                         }
                         return@eoi
@@ -740,7 +748,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             onOrderChanged = OnOrderChanged(rowsAffected)
         }
 
-        onOrderChanged.causeOfChange = ADD_ORDER_SHIPMENT_TRACKING
+        onOrderChanged.causeOfChange = WCOrderAction.ADD_ORDER_SHIPMENT_TRACKING
         emitChange(onOrderChanged)
     }
 
@@ -755,7 +763,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             onOrderChanged = OnOrderChanged(rowsAffected)
         }
 
-        onOrderChanged.causeOfChange = DELETE_ORDER_SHIPMENT_TRACKING
+        onOrderChanged.causeOfChange = WCOrderAction.DELETE_ORDER_SHIPMENT_TRACKING
         emitChange(onOrderChanged)
     }
 

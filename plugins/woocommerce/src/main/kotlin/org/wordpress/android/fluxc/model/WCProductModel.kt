@@ -43,6 +43,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var salePrice = ""
     @Column var onSale = false
     @Column var totalSales = 0
+    @Column var dateOnSaleFrom = ""
+    @Column var dateOnSaleTo = ""
 
     @Column var virtual = false
     @Column var downloadable = false
@@ -91,8 +93,6 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     class ProductTriplet(val id: Long, val name: String, val slug: String)
 
-    class ProductImage(val id: Long, val name: String, val src: String, val alt: String)
-
     class ProductAttribute(val id: Long, val name: String, val visible: Boolean, val options: List<String>) {
         fun getCommaSeparatedOptions(): String {
             if (options.isEmpty()) return ""
@@ -117,19 +117,17 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     /**
      * Parses the images json array into a list of product images
      */
-    fun getImages(): ArrayList<ProductImage> {
-        val imageList = ArrayList<ProductImage>()
+    fun getImages(): ArrayList<WCProductImageModel> {
+        val imageList = ArrayList<WCProductImageModel>()
         try {
             Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
                 with(jsonElement.asJsonObject) {
-                    imageList.add(
-                            ProductImage(
-                                    id = this.getLong("id"),
-                                    name = this.getString("name") ?: "",
-                                    src = this.getString("src") ?: "",
-                                    alt = this.getString("alt") ?: ""
-                            )
-                    )
+                    WCProductImageModel(this.getLong("id")).also {
+                        it.name = this.getString("name") ?: ""
+                        it.src = this.getString("src") ?: ""
+                        it.alt = this.getString("alt") ?: ""
+                        imageList.add(it)
+                    }
                 }
             }
         } catch (e: JsonParseException) {
@@ -210,6 +208,15 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             AppLog.e(T.API, e)
         }
         return fileList
+    }
+
+    fun getNumVariations(): Int {
+        try {
+            return Gson().fromJson<JsonElement>(variations, JsonElement::class.java).asJsonArray.size()
+        } catch (e: JsonParseException) {
+            AppLog.e(T.API, e)
+            return 0
+        }
     }
 
     fun getCategories() = getTriplets(categories)
