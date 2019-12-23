@@ -12,6 +12,8 @@ import okio.Buffer
 import okio.BufferedSource
 import okio.Okio
 import org.wordpress.android.fluxc.TestUtils
+import org.wordpress.android.fluxc.module.ResponseMockingInterceptor.InterceptorMode.ONE_TIME
+import org.wordpress.android.fluxc.module.ResponseMockingInterceptor.InterceptorMode.STICKY
 import java.io.BufferedReader
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -21,8 +23,16 @@ import javax.inject.Singleton
 
 @Singleton
 class ResponseMockingInterceptor : Interceptor {
+    /**
+     * ONE_TIME: Use the last response provided for the next request handled, and then clear it.
+     * STICKY: Keep using the last response provided for all requests, until a new response is provided.
+     */
+    enum class InterceptorMode { ONE_TIME, STICKY }
+
     private var nextResponseJson: String? = null
     private var nextResponseCode: Int = 200
+
+    private var mode: InterceptorMode = ONE_TIME
 
     private val gson by lazy { Gson() }
 
@@ -44,6 +54,13 @@ class ResponseMockingInterceptor : Interceptor {
     fun respondWith(jsonResponseFileName: String) {
         nextResponseJson = getStringFromResourceFile(jsonResponseFileName)
         nextResponseCode = 200
+        mode = ONE_TIME
+    }
+
+    fun respondWithSticky(jsonResponseFileName: String) {
+        nextResponseJson = getStringFromResourceFile(jsonResponseFileName)
+        nextResponseCode = 200
+        mode = STICKY
     }
 
     @JvmOverloads
@@ -77,9 +94,11 @@ class ResponseMockingInterceptor : Interceptor {
             // Will be a successful response if nextResponseCode is 200, otherwise an error response
             val response = buildResponse(request, it, nextResponseCode)
 
-            // Clean up for the next call
-            nextResponseJson = null
-            nextResponseCode = 200
+            if (mode == ONE_TIME) {
+                // Clean up for the next call
+                nextResponseJson = null
+                nextResponseCode = 200
+            }
             return response
         }
 

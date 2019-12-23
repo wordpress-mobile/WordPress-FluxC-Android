@@ -142,7 +142,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
         howManyFirstToCancel: Int = 0,
         delete: Boolean = false
     ) {
-        interceptor.respondWith("media-upload-response-success.json")
+        interceptor.respondWithSticky("media-upload-response-success.json")
         countDownLatch = CountDownLatch(mediaList.size)
         for (media in mediaList) {
             // Don't strip location, as all media are the same file and we end up with concurrent read/writes
