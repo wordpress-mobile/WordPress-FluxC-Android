@@ -31,7 +31,6 @@ import org.wordpress.android.util.AppLog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -295,44 +294,6 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         assertEquals(1, mMediaStore.getSiteMediaCount(sSite));
         MediaModel canceledMedia = mMediaStore.getMediaWithLocalId(testMedia.getId());
         assertEquals(MediaUploadState.FAILED.toString(), canceledMedia.getUploadState());
-    }
-
-    @Test
-    public void testUploadMultipleImages() throws InterruptedException {
-        // upload media to guarantee media exists
-        mUploadedIds = new ArrayList<>();
-        mNextEvent = TestEvents.UPLOADED_MULTIPLE_MEDIA;
-
-        mUploadedMediaModels = new HashMap<>();
-        // here we use the newMediaModel() with id builder, as we need it to identify uploads
-        addMediaModelToUploadArray("Test media 1");
-        addMediaModelToUploadArray("Test media 2");
-        addMediaModelToUploadArray("Test media 3");
-        addMediaModelToUploadArray("Test media 4");
-        addMediaModelToUploadArray("Test media 5");
-
-        // upload media, dispatching all at a time (not waiting for each to finish)
-        uploadMultipleMedia(new ArrayList<>(mUploadedMediaModels.values()));
-
-        // verify all have been uploaded
-        assertEquals(mUploadedMediaModels.size(), mUploadedIds.size());
-        assertEquals(mUploadedMediaModels.size(),
-                mMediaStore.getSiteMediaWithState(sSite, MediaUploadState.UPLOADED).size());
-
-        // verify they exist in the MediaStore
-        Iterator<MediaModel> iterator = mUploadedMediaModels.values().iterator();
-        while (iterator.hasNext()) {
-            MediaModel media = iterator.next();
-            assertNotNull(mMediaStore.getSiteMediaWithId(sSite, media.getMediaId()));
-        }
-
-        // delete test images (bear in mind this is done sequentially)
-        iterator = mUploadedMediaModels.values().iterator();
-        while (iterator.hasNext()) {
-            MediaModel media = iterator.next();
-            mNextEvent = TestEvents.DELETED_MEDIA;
-            deleteMedia(media);
-        }
     }
 
     @Test
@@ -647,10 +608,6 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    private void uploadMultipleMedia(List<MediaModel> mediaList) throws InterruptedException {
-        uploadMultipleMedia(mediaList, 0, false);
     }
 
     private void uploadMultipleMedia(List<MediaModel> mediaList, int howManyFirstToCancel, boolean delete)
