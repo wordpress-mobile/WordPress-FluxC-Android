@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded
 import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload
 import org.wordpress.android.fluxc.utils.MediaUtils
 import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -46,7 +47,9 @@ class MockedStack_MediaTest : MockedStack_Base() {
 
     private enum class TestEvents {
         NONE,
-        UPLOADED_MULTIPLE_MEDIA
+        CANCELED_MEDIA,
+        UPLOADED_MULTIPLE_MEDIA,
+        UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL
     }
 
     @Throws(Exception::class)
@@ -90,6 +93,81 @@ class MockedStack_MediaTest : MockedStack_Base() {
         }
     }
 
+    @Test
+    @Throws(InterruptedException::class)
+    fun testUploadMultipleImagesAndCancel() {
+        // Upload media to guarantee media exists
+        uploadedIds.clear()
+        nextEvent = TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL
+
+        uploadedMediaModels.clear()
+        // Here we use the newMediaModel() with id builder, as we need it to identify uploads
+        for (i in 1..5) {
+            addMediaModelToUploadArray("Test media $i")
+        }
+
+        // Use this variable to test cancelling 1, 2, 3, 4 or all 5 uploads
+        val amountToCancel = 4
+
+        // Upload media, dispatching all at once (not waiting for each to finish)
+        // Also cancel (and delete) the first n=`amountToCancel` media uploads
+        uploadMultipleMedia(uploadedMediaModels.values.toList(), amountToCancel, true)
+
+        // Verify how many have been uploaded
+        Assert.assertEquals((uploadedMediaModels.size - amountToCancel), uploadedIds.size)
+
+        // Verify each one of the remaining, non-cancelled uploads exist in the MediaStore
+        for (mediaId in uploadedIds) {
+            Assert.assertNotNull(mediaStore.getSiteMediaWithId(testSite, mediaId))
+        }
+
+        // Only completed uploads should exist in the store
+        Assert.assertEquals(uploadedIds.size, mediaStore.getSiteMediaCount(testSite))
+
+        // The number of uploaded media in the store should match our records of how many were not cancelled
+        Assert.assertEquals(uploadedIds.size,
+                mediaStore.getSiteMediaWithState(testSite, MediaUploadState.UPLOADED).size)
+    }
+
+    @Test
+    @Throws(InterruptedException::class)
+    fun testUploadMultipleImagesAndCancelWithoutDeleting() {
+        // Upload media to guarantee media exists
+        uploadedIds.clear()
+        nextEvent = TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL
+
+        uploadedMediaModels.clear()
+        // Here we use the newMediaModel() with id builder, as we need it to identify uploads
+        for (i in 1..5) {
+            addMediaModelToUploadArray("Test media $i")
+        }
+
+        // Use this variable to test cancelling 1, 2, 3, 4 or all 5 uploads
+        val amountToCancel = 4
+
+        // Upload media, dispatching all at once (not waiting for each to finish)
+        // Also cancel (without deleting) the first n=`amountToCancel` media uploads
+        uploadMultipleMedia(uploadedMediaModels.values.toList(), amountToCancel, false)
+
+        // Verify how many have been uploaded
+        Assert.assertEquals((uploadedMediaModels.size - amountToCancel), uploadedIds.size)
+
+        // Verify each one of the remaining, non-cancelled uploads exist in the MediaStore
+        for (mediaId in uploadedIds) {
+            Assert.assertNotNull(mediaStore.getSiteMediaWithId(testSite, mediaId))
+        }
+
+        // All the original uploads should exist in the store, whether cancelled or not
+        Assert.assertEquals(uploadedMediaModels.size, mediaStore.getSiteMediaCount(testSite))
+
+        // The number of uploaded media in the store should match our records of how many were not cancelled
+        Assert.assertEquals(uploadedIds.size, mediaStore.getSiteMediaWithState(testSite,
+                MediaUploadState.UPLOADED).size)
+
+        // All cancelled media should have a FAILED state
+        Assert.assertEquals(amountToCancel, mediaStore.getSiteMediaWithState(testSite, MediaUploadState.FAILED).size)
+    }
+
     @Suppress("unused")
     @Subscribe
     fun onMediaUploaded(event: OnMediaUploaded) {
@@ -97,17 +175,32 @@ class MockedStack_MediaTest : MockedStack_Base() {
             throw AssertionError("Unexpected error occurred with type: " + event.error.type)
         }
         if (event.canceled) {
-            throw AssertionError("Unexpected cancellation for media: " + event.media.id)
-        } else if (event.completed) {
-            if (nextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA) {
-                uploadedIds.add(event.media.mediaId)
-                // Update our own map object with the new media id
-                val media = uploadedMediaModels[event.media.id]?.apply {
-                    mediaId = event.media.mediaId
-                } ?: AppLog.e(AppLog.T.MEDIA, "MediaModel not found: " + event.media.id)
-                Assert.assertNotNull(media)
+            if (nextEvent == TestEvents.CANCELED_MEDIA || nextEvent == TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL) {
+                countDownLatch.countDown()
             } else {
-                throw AssertionError("Unexpected completion for media: " + event.media.id)
+                throw AssertionError("Unexpected cancellation for media: " + event.media.id)
+            }
+        } else if (event.completed) {
+            when (nextEvent) {
+                TestEvents.UPLOADED_MULTIPLE_MEDIA_WITH_CANCEL -> {
+                    uploadedIds.add(event.media.mediaId)
+                    // Update our own map object with the new media id
+                    val media = uploadedMediaModels[event.media.id]?.apply {
+                        mediaId = event.media.mediaId
+                    } ?: AppLog.e(T.MEDIA, "MediaModel not found: " + event.media.id)
+                    Assert.assertNotNull(media)
+                }
+                TestEvents.UPLOADED_MULTIPLE_MEDIA -> {
+                    uploadedIds.add(event.media.mediaId)
+                    // Update our own map object with the new media id
+                    val media = uploadedMediaModels[event.media.id]?.apply {
+                        mediaId = event.media.mediaId
+                    } ?: AppLog.e(T.MEDIA, "MediaModel not found: " + event.media.id)
+                    Assert.assertNotNull(media)
+                }
+                else -> {
+                    throw AssertionError("Unexpected completion for media: " + event.media.id)
+                }
             }
             countDownLatch.countDown()
         }
