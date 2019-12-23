@@ -14,10 +14,8 @@ import org.wordpress.android.fluxc.action.MediaAction;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
-import org.wordpress.android.fluxc.model.MediaModel.MediaUploadState;
 import org.wordpress.android.fluxc.model.StockMediaModel;
 import org.wordpress.android.fluxc.store.MediaStore;
-import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.FetchMediaListPayload;
 import org.wordpress.android.fluxc.store.MediaStore.MediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
@@ -47,7 +45,6 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     private enum TestEvents {
         NONE,
-        CANCELED_MEDIA,
         DELETED_MEDIA,
         FETCHED_MEDIA_LIST,
         FETCHED_MEDIA_IMAGE_LIST,
@@ -251,45 +248,6 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     }
 
     @Test
-    public void testCancelImageUpload() throws InterruptedException {
-        // First, try canceling an image with the default behavior (canceled image is deleted from the store)
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.CANCELED_MEDIA;
-        UploadMediaPayload payload = new UploadMediaPayload(sSite, testMedia, true);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
-
-        // Wait a bit and issue the cancel command
-        TestUtils.waitFor(1000);
-
-        CancelMediaPayload cancelPayload = new CancelMediaPayload(sSite, testMedia);
-        mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        assertEquals(0, mMediaStore.getSiteMediaCount(sSite));
-
-        // Now, try canceling with delete=false (canceled image should be marked as failed and kept in the store)
-        testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
-        mCountDownLatch = new CountDownLatch(1);
-        mNextEvent = TestEvents.CANCELED_MEDIA;
-        payload = new UploadMediaPayload(sSite, testMedia, true);
-        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
-
-        // Wait a bit and issue the cancel command
-        TestUtils.waitFor(1000);
-
-        cancelPayload = new CancelMediaPayload(sSite, testMedia, false);
-        mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload));
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-
-        assertEquals(1, mMediaStore.getSiteMediaCount(sSite));
-        MediaModel canceledMedia = mMediaStore.getMediaWithLocalId(testMedia.getId());
-        assertEquals(MediaUploadState.FAILED.toString(), canceledMedia.getUploadState());
-    }
-
-    @Test
     public void testUploadVideo() throws InterruptedException {
         // upload media to guarantee media exists
         MediaModel testMedia = newMediaModel(getSampleVideoPath(), MediaUtils.MIME_TYPE_VIDEO);
@@ -338,13 +296,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         if (event.isError()) {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
-        if (event.canceled) {
-            if (mNextEvent == TestEvents.CANCELED_MEDIA) {
-                mCountDownLatch.countDown();
-            } else {
-                throw new AssertionError("Unexpected cancellation for media: " + event.media.getId());
-            }
-        } else if (event.completed) {
+        if (event.completed) {
             if (mNextEvent == TestEvents.UPLOADED_MEDIA) {
                 mLastUploadedId = event.media.getMediaId();
             } else {

@@ -61,6 +61,46 @@ class MockedStack_MediaTest : MockedStack_Base() {
         nextEvent = TestEvents.NONE
     }
 
+    @Test @Throws(InterruptedException::class)
+    fun testCancelImageUpload() {
+        interceptor.respondWithSticky("media-upload-response-success.json")
+
+        // First, try canceling an image with the default behavior (canceled image is deleted from the store)
+        newMediaModel("Test Title", sampleImagePath, MediaUtils.MIME_TYPE_IMAGE).let { testMedia ->
+            countDownLatch = CountDownLatch(1)
+            nextEvent = TestEvents.CANCELED_MEDIA
+            val payload = UploadMediaPayload(testSite, testMedia, true)
+            dispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload))
+
+            // Wait a bit and issue the cancel command
+            TestUtils.waitFor(300)
+            val cancelPayload = CancelMediaPayload(testSite, testMedia)
+            dispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload))
+
+            Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+            Assert.assertEquals(0, mediaStore.getSiteMediaCount(testSite))
+        }
+
+        // Now, try canceling with delete=false (canceled image should be marked as failed and kept in the store)
+        newMediaModel("Test Title", sampleImagePath, MediaUtils.MIME_TYPE_IMAGE).let { testMedia ->
+            countDownLatch = CountDownLatch(1)
+            nextEvent = TestEvents.CANCELED_MEDIA
+            val payload = UploadMediaPayload(testSite, testMedia, true)
+            dispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload))
+
+            // Wait a bit and issue the cancel command
+            TestUtils.waitFor(300)
+            val cancelPayload = CancelMediaPayload(testSite, testMedia, false)
+            dispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload))
+
+            Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+            Assert.assertEquals(1, mediaStore.getSiteMediaCount(testSite))
+
+            val canceledMedia = mediaStore.getMediaWithLocalId(testMedia.id)
+            Assert.assertEquals(MediaUploadState.FAILED.toString(), canceledMedia.uploadState)
+        }
+    }
+
     @Test
     @Throws(InterruptedException::class)
     fun testUploadMultipleImages() {
