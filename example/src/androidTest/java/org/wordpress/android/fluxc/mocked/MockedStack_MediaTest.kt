@@ -235,7 +235,12 @@ class MockedStack_MediaTest : MockedStack_Base() {
         howManyFirstToCancel: Int = 0,
         delete: Boolean = false
     ) {
-        interceptor.respondWithSticky("media-upload-response-success.json")
+        interceptor.respondWithSticky("media-upload-response-success.json") {
+            // To imitate a real set of media upload requests as much as possible, each one should return a unique
+            // remote media id. This also makes sure the MediaModel table doesn't treat these as duplicate entries and
+            // deletes them, failing the test.
+            string: String -> string.replace("9999", Thread.currentThread().id.toString())
+        }
         countDownLatch = CountDownLatch(mediaList.size)
         for (media in mediaList) {
             // Don't strip location, as all media are the same file and we end up with concurrent read/writes
