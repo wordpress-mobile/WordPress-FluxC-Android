@@ -245,7 +245,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
 
         if (howManyFirstToCancel > 0 && howManyFirstToCancel <= mediaList.size) {
             // Wait a bit and issue the cancel command
-            TestUtils.waitFor(1000)
+            TestUtils.waitFor(500)
 
             // We'e only cancelling the first n=howManyFirstToCancel uploads
             for (i in 0 until howManyFirstToCancel) {
