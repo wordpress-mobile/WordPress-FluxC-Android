@@ -72,8 +72,8 @@ class ProductRestClient(
         val responseType = object : TypeToken<List<ProductShippingClassApiResponse>>() {}.type
         val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
-                "offset" to offset.toString(),
-                "order" to "asc")
+                "offset" to offset.toString()
+        )
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductShippingClassApiResponse>? ->
