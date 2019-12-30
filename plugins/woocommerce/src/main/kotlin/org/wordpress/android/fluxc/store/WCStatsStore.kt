@@ -641,7 +641,7 @@ class WCStatsStore @Inject constructor(
 
     private fun fetchRevenueStats(payload: FetchRevenueStatsPayload) {
         val startDate = getStartDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.startDate)
-        val endDate = getEndDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.startDate)
+        val endDate = getEndDateForRevenueStatsGranularity(payload.site, payload.granularity)
         val perPage = getRandomPageIntForRevenueStats(payload.forced)
         wcOrderStatsClient.fetchRevenueStats(
                 payload.site,
@@ -675,23 +675,18 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
-     * Given a [endDate], formats the date based on the site's timezone in format yyyy-MM-dd'T'hh:mm:ss
-     * If the endDate date is empty, fetches the date based on the [granularity]
+     * Formats the date based on the site's timezone in format yyyy-MM-dd'T'hh:mm:ss
+     * based on the [granularity] and [site]
      */
     private fun getEndDateForRevenueStatsGranularity(
         site: SiteModel,
-        granularity: StatsGranularity,
-        endDate: String?
+        granularity: StatsGranularity
     ): String {
-        return if (endDate.isNullOrEmpty()) {
-            when (granularity) {
-                StatsGranularity.DAYS -> DateUtils.getEndDateForSite(site)
-                StatsGranularity.WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
-                StatsGranularity.MONTHS -> DateUtils.getEndDateForSite(site)
-                StatsGranularity.YEARS -> DateUtils.getEndDateForSite(site)
-            }
-        } else {
-            DateUtils.getEndDateForSite(site)
+        return when (granularity) {
+            StatsGranularity.DAYS -> DateUtils.getEndDateForSite(site)
+            StatsGranularity.WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
+            StatsGranularity.MONTHS -> DateUtils.getEndDateForSite(site)
+            StatsGranularity.YEARS -> DateUtils.getEndDateForSite(site)
         }
     }
 
