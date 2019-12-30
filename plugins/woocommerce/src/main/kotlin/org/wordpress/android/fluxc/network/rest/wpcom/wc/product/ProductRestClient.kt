@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_PAGE_SIZE
+import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SHIPPING_CLASS_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
@@ -62,11 +63,18 @@ class ProductRestClient(
      *
      * @param [site] The site to fetch product shipping class list for
      */
-    // TODO: add pagination support in another PR
-    fun fetchProductShippingClassList(site: SiteModel) {
+    fun fetchProductShippingClassList(
+        site: SiteModel,
+        pageSize: Int = DEFAULT_PRODUCT_SHIPPING_CLASS_PAGE_SIZE,
+        offset: Int = 0
+    ) {
         val url = WOOCOMMERCE.products.shipping_classes.pathV3
         val responseType = object : TypeToken<List<ProductShippingClassApiResponse>>() {}.type
-        val params = emptyMap<String, String>()
+        val params = mutableMapOf(
+                "per_page" to pageSize.toString(),
+                "offset" to offset.toString(),
+                "order" to "asc")
+
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductShippingClassApiResponse>? ->
                     val shippingClassList = response?.map {
@@ -79,7 +87,11 @@ class ProductRestClient(
                         }
                     }.orEmpty()
 
-                    val payload = RemoteProductShippingClassListPayload(site, shippingClassList)
+                    val loadedMore = offset > 0
+                    val canLoadMore = shippingClassList.size == pageSize
+                    val payload = RemoteProductShippingClassListPayload(
+                            site, shippingClassList, offset, loadedMore, canLoadMore
+                    )
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductShippingClassListAction(payload))
                 },
                 WPComErrorListener { networkError ->
