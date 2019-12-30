@@ -314,11 +314,11 @@ object DateUtils {
         return formatDate(DATE_TIME_FORMAT_START, cal.time)
     }
 
-    fun getLastDayOfCurrentWeekBySite(site: SiteModel): String {
+    fun getLastDayOfCurrentWeekForSite(site: SiteModel): String {
         val cal = Calendar.getInstance(Locale.ROOT)
         cal.time = getCurrentDateFromSite(site)
         cal.set(Calendar.DAY_OF_WEEK, cal.getActualMaximum(Calendar.DAY_OF_WEEK))
-        return formatDate(DATE_TIME_FORMAT_START, cal.time)
+        return formatDate(DATE_TIME_FORMAT_END, cal.time)
     }
 
     /**

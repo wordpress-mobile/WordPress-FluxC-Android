@@ -686,7 +686,7 @@ class WCStatsStore @Inject constructor(
         return if (endDate.isNullOrEmpty()) {
             when (granularity) {
                 StatsGranularity.DAYS -> DateUtils.getEndDateForSite(site)
-                StatsGranularity.WEEKS -> DateUtils.getLastDayOfCurrentWeekBySite(site)
+                StatsGranularity.WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
                 StatsGranularity.MONTHS -> DateUtils.getEndDateForSite(site)
                 StatsGranularity.YEARS -> DateUtils.getEndDateForSite(site)
             }
