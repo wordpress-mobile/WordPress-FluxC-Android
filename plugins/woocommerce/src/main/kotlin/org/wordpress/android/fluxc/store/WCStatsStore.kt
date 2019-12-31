@@ -675,8 +675,8 @@ class WCStatsStore @Inject constructor(
     }
 
     /**
-     * Formats the date based on the site's timezone in format yyyy-MM-dd'T'hh:mm:ss
-     * based on the [granularity] and [site]
+     * Returns the appropriate end date for the [site] and [granularity] provided,
+     * to use for fetching revenue stats.
      */
     private fun getEndDateForRevenueStatsGranularity(
         site: SiteModel,
