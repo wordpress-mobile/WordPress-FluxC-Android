@@ -641,7 +641,7 @@ class WCStatsStore @Inject constructor(
 
     private fun fetchRevenueStats(payload: FetchRevenueStatsPayload) {
         val startDate = getStartDateForRevenueStatsGranularity(payload.site, payload.granularity, payload.startDate)
-        val endDate = DateUtils.getEndDateForSite(payload.site)
+        val endDate = getEndDateForRevenueStatsGranularity(payload.site, payload.granularity)
         val perPage = getRandomPageIntForRevenueStats(payload.forced)
         wcOrderStatsClient.fetchRevenueStats(
                 payload.site,
@@ -671,6 +671,22 @@ class WCStatsStore @Inject constructor(
             }
         } else {
             DateUtils.getStartDateForSite(site, startDate)
+        }
+    }
+
+    /**
+     * Returns the appropriate end date for the [site] and [granularity] provided,
+     * to use for fetching revenue stats.
+     */
+    private fun getEndDateForRevenueStatsGranularity(
+        site: SiteModel,
+        granularity: StatsGranularity
+    ): String {
+        return when (granularity) {
+            StatsGranularity.DAYS -> DateUtils.getEndDateForSite(site)
+            StatsGranularity.WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
+            StatsGranularity.MONTHS -> DateUtils.getEndDateForSite(site)
+            StatsGranularity.YEARS -> DateUtils.getEndDateForSite(site)
         }
     }
 

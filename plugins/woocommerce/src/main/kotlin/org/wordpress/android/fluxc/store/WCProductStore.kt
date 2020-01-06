@@ -30,6 +30,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         const val NUM_REVIEWS_PER_FETCH = 25
         const val DEFAULT_PRODUCT_PAGE_SIZE = 25
         const val DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE = 25
+        const val DEFAULT_PRODUCT_SHIPPING_CLASS_PAGE_SIZE = 25
         val DEFAULT_PRODUCT_SORTING = DATE_DESC
     }
 
@@ -62,7 +63,9 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     ) : Payload<BaseNetworkError>()
 
     class FetchProductShippingClassListPayload(
-        var site: SiteModel
+        var site: SiteModel,
+        var pageSize: Int = DEFAULT_PRODUCT_SHIPPING_CLASS_PAGE_SIZE,
+        var offset: Int = 0
     ) : Payload<BaseNetworkError>()
 
     class FetchProductReviewsPayload(
@@ -203,7 +206,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     class RemoteProductShippingClassListPayload(
         val site: SiteModel,
-        val shippingClassList: List<WCProductShippingClassModel> = emptyList()
+        val shippingClassList: List<WCProductShippingClassModel> = emptyList(),
+        var offset: Int = 0,
+        var loadedMore: Boolean = false,
+        var canLoadMore: Boolean = false
     ) : Payload<ProductError>() {
         constructor(
             error: ProductError,
@@ -258,7 +264,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     class OnProductShippingClassesChanged(
-        var rowsAffected: Int
+        var rowsAffected: Int,
+        var canLoadMore: Boolean = false
     ) : OnChanged<ProductError>() {
         var causeOfChange: WCProductAction? = null
     }
@@ -403,7 +410,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun fetchProductShippingClasses(payload: FetchProductShippingClassListPayload) {
-        with(payload) { wcProductRestClient.fetchProductShippingClassList(site) }
+        with(payload) { wcProductRestClient.fetchProductShippingClassList(site, pageSize, offset) }
     }
 
     private fun fetchProductReviews(payload: FetchProductReviewsPayload) {
@@ -475,11 +482,16 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         val onProductShippingClassesChanged = if (payload.isError) {
             OnProductShippingClassesChanged(0).also { it.error = payload.error }
         } else {
-            ProductSqlUtils.deleteProductShippingClassListForSite(payload.site)
+            // delete product shipping class list for site if this is the first page of results, otherwise
+            // shipping class list deleted outside of the app will persist
+            if (payload.offset == 0) {
+                ProductSqlUtils.deleteProductShippingClassListForSite(payload.site)
+            }
 
             val rowsAffected = ProductSqlUtils.insertOrUpdateProductShippingClassList(payload.shippingClassList)
-            OnProductShippingClassesChanged(rowsAffected)
+            OnProductShippingClassesChanged(rowsAffected, canLoadMore = payload.canLoadMore)
         }
+        onProductShippingClassesChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_SHIPPING_CLASS_LIST
         emitChange(onProductShippingClassesChanged)
     }
 

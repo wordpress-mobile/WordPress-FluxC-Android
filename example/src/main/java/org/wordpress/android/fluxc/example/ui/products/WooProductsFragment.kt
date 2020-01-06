@@ -56,6 +56,8 @@ class WooProductsFragment : Fragment() {
     private var pendingFetchSingleProductVariationRemoteId: Long? = null
     private var pendingFetchSingleProductVariationOffset: Int = 0
 
+    private var pendingFetchProductShippingClassListOffset: Int = 0
+
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
@@ -182,6 +184,16 @@ class WooProductsFragment : Fragment() {
             selectedSite?.let { site ->
                 prependToLog("Submitting request to fetch product shipping classes for site ${site.id}")
                 val payload = FetchProductShippingClassListPayload(site)
+                dispatcher.dispatch(WCProductActionBuilder.newFetchProductShippingClassListAction(payload))
+            }
+        }
+
+        load_more_product_shipping_classes.setOnClickListener {
+            selectedSite?.let { site ->
+                prependToLog("Submitting offset request to fetch product shipping classes for site ${site.id}")
+                val payload = FetchProductShippingClassListPayload(
+                        site, offset = pendingFetchProductShippingClassListOffset
+                )
                 dispatcher.dispatch(WCProductActionBuilder.newFetchProductShippingClassListAction(payload))
             }
         }
@@ -316,7 +328,17 @@ class WooProductsFragment : Fragment() {
         if (event.isError) {
             prependToLog("Error fetching product shipping classes - error: " + event.error.type)
         } else {
-            prependToLog("Fetched ${event.rowsAffected} product shipping classes")
+            prependToLog("Fetched ${event.rowsAffected} product shipping classes. " +
+                    "More shipping classes available ${event.canLoadMore}")
+
+            if (event.canLoadMore) {
+                pendingFetchProductShippingClassListOffset += event.rowsAffected
+                load_more_product_shipping_classes.visibility = View.VISIBLE
+                load_more_product_shipping_classes.isEnabled = true
+            } else {
+                pendingFetchProductShippingClassListOffset = 0
+                load_more_product_shipping_classes.isEnabled = false
+            }
         }
     }
 
