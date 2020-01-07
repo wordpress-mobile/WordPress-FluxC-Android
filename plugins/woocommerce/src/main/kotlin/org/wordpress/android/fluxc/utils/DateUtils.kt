@@ -321,6 +321,20 @@ object DateUtils {
         return formatDate(DATE_TIME_FORMAT_END, cal.time)
     }
 
+    fun getLastDayOfCurrentMonthForSite(site: SiteModel): String {
+        val cal = Calendar.getInstance(Locale.ROOT)
+        cal.time = getCurrentDateFromSite(site)
+        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH))
+        return formatDate(DATE_TIME_FORMAT_END, cal.time)
+    }
+
+    fun getLastDayOfCurrentYearForSite(site: SiteModel): String {
+        val cal = Calendar.getInstance(Locale.ROOT)
+        cal.time = getCurrentDateFromSite(site)
+        cal.set(Calendar.DAY_OF_YEAR, cal.getActualMaximum(Calendar.DAY_OF_YEAR))
+        return formatDate(DATE_TIME_FORMAT_END, cal.time)
+    }
+
     /**
      * Given a [SiteModel] instance, returns a [Date] instance for the current date
      *
