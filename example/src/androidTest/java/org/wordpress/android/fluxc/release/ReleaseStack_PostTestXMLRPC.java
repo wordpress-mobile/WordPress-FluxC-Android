@@ -109,6 +109,31 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
     }
 
     @Test
+    public void testUploadNewPostWithGutenbergContent() throws InterruptedException {
+        String postContent = "<!-- wp:paragraph -->\n"
+                             + "<p>Paragraph 1</p>\n"
+                             + "<!-- /wp:paragraph -->";
+        // Instantiate new post
+        createNewPost();
+        mPost.setTitle("Gutenberg content");
+        mPost.setContent(postContent);
+
+        // Upload new post to site
+        uploadPost(mPost);
+
+        PostModel uploadedPostBeforeFetch = mPostStore.getPostByLocalPostId(mPost.getId());
+        // Make sure the uploaded post content is the same as the one we uploaded
+        assertEquals(postContent, uploadedPostBeforeFetch.getContent());
+
+        // Fetch the uploaded post from the server
+        fetchPost(mPost);
+
+        PostModel uploadedPostAfterFetch = mPostStore.getPostByLocalPostId(mPost.getId());
+        // Make sure the uploaded post content is the same as the one we uploaded
+        assertEquals(postContent, uploadedPostAfterFetch.getContent());
+    }
+
+    @Test
     public void testEditRemotePost() throws InterruptedException {
         createNewPost();
         setupPostAttributes();
