@@ -531,15 +531,15 @@ class ProductRestClient(
 
         // only allowed to change the following params if manageStock is enabled
         if (updatedProductModel.manageStock) {
-            if (storedWCProductModel.stockStatus != updatedProductModel.stockStatus) {
-                body["stock_status"] = updatedProductModel.stockStatus
-            }
             if (storedWCProductModel.stockQuantity != updatedProductModel.stockQuantity) {
                 body["stock_quantity"] = updatedProductModel.stockQuantity
             }
             if (storedWCProductModel.backorders != updatedProductModel.backorders) {
                 body["backorders"] = updatedProductModel.backorders
             }
+        }
+        if (storedWCProductModel.stockStatus != updatedProductModel.stockStatus) {
+            body["stock_status"] = updatedProductModel.stockStatus
         }
         if (storedWCProductModel.soldIndividually != updatedProductModel.soldIndividually) {
             body["sold_individually"] = updatedProductModel.soldIndividually
