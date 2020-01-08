@@ -254,6 +254,18 @@
             app:layout_constraintStart_toEndOf="@+id/product_from_date"
             app:layout_constraintTop_toBottomOf="@+id/product_schedule_sale" />
 
+        <Button
+            android:id="@+id/product_stock_status"
+            style="?android:attr/spinnerStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:enabled="false"
+            android:text="Stock Status"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_from_date"/>
+
         <Switch
             android:id="@+id/product_manage_stock"
             android:layout_width="match_parent"
@@ -261,7 +273,7 @@
             android:enabled="false"
             android:text="Manage Stock"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/product_from_date" />
+            app:layout_constraintTop_toBottomOf="@+id/product_stock_status" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/manageStockContainer"
@@ -271,16 +283,15 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/product_manage_stock">
 
-            <Button
-                android:id="@+id/product_stock_status"
-                style="?android:attr/spinnerStyle"
+            <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+                android:id="@+id/product_stock_quantity"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
                 android:enabled="false"
-                android:text="Stock Status"
-                app:layout_constraintEnd_toStartOf="@+id/product_back_orders"
+                app:textHint="Stock quantity"
+                android:inputType="number"
                 app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintEnd_toStartOf="@+id/product_back_orders"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -294,19 +305,8 @@
                 android:text="Allow Back Orders"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toEndOf="@+id/product_stock_status"
+                app:layout_constraintStart_toEndOf="@+id/product_stock_quantity"
                 app:layout_constraintTop_toTopOf="parent" />
-
-            <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
-                android:id="@+id/product_stock_quantity"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                app:textHint="Stock quantity"
-                android:inputType="number"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/product_stock_status" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
