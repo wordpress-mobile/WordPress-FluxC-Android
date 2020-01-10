@@ -40,6 +40,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductSkuAvailabilityPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
@@ -224,6 +225,37 @@ class ProductRestClient(
         sorting: ProductSorting = DEFAULT_PRODUCT_SORTING
     ) {
         fetchProducts(site, pageSize, offset, sorting, searchQuery)
+    }
+
+    /**
+     * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * for a given [SiteModel] and [sku] to check if this [sku] already exists on the site
+     *
+     * Dispatches a [WCProductAction.FETCHED_PRODUCT_SKU_AVAILABILITY] action with the availability for the [sku].
+     */
+    fun fetchProductSkuAvailability(
+        site: SiteModel,
+        sku: String
+    ) {
+        val url = WOOCOMMERCE.products.pathV3
+        val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
+        val params = mutableMapOf("sku" to sku)
+
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<ProductApiResponse>? ->
+                    val available = response?.isEmpty() ?: false
+                    val payload = RemoteProductSkuAvailabilityPayload(site, sku, available)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductSkuAvailabilityAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val productError = networkErrorToProductError(networkError)
+                    // If there is a network error of some sort that prevents us from knowing if a sku is available
+                    // then just consider sku as available
+                    val payload = RemoteProductSkuAvailabilityPayload(productError, site, sku, true)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductSkuAvailabilityAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
     }
 
     /**

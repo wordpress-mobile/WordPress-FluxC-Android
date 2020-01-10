@@ -127,13 +127,15 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     class RemoteProductSkuAvailabilityPayload(
         val site: SiteModel,
-        val available: Boolean = false
+        var sku: String,
+        val available: Boolean
     ) : Payload<ProductError>() {
         constructor(
             error: ProductError,
             site: SiteModel,
+            sku: String,
             available: Boolean
-        ) : this(site, available) {
+        ) : this(site, sku, available) {
             this.error = error
         }
     }
@@ -268,6 +270,13 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var causeOfChange: WCProductAction? = null
     }
 
+    class OnProductSkuAvailabilityChanged(
+        var sku: String,
+        var available: Boolean
+    ) : OnChanged<ProductError>() {
+        var causeOfChange: WCProductAction? = null
+    }
+
     class OnProductsSearched(
         var searchQuery: String = "",
         var searchResults: List<WCProductModel> = emptyList(),
@@ -364,6 +373,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             // remote actions
             WCProductAction.FETCH_SINGLE_PRODUCT ->
                 fetchSingleProduct(action.payload as FetchSingleProductPayload)
+            WCProductAction.FETCH_PRODUCT_SKU_AVAILABILITY ->
+                fetchProductSkuAvailability(action.payload as FetchProductSkuAvailabilityPayload)
             WCProductAction.FETCH_PRODUCTS ->
                 fetchProducts(action.payload as FetchProductsPayload)
             WCProductAction.SEARCH_PRODUCTS ->
@@ -386,6 +397,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             // remote responses
             WCProductAction.FETCHED_SINGLE_PRODUCT ->
                 handleFetchSingleProductCompleted(action.payload as RemoteProductPayload)
+            WCProductAction.FETCHED_PRODUCT_SKU_AVAILABILITY ->
+                handleFetchProductSkuAvailabilityCompleted(action.payload as RemoteProductSkuAvailabilityPayload)
             WCProductAction.FETCHED_PRODUCTS ->
                 handleFetchProductsCompleted(action.payload as RemoteProductListPayload)
             WCProductAction.SEARCHED_PRODUCTS ->
@@ -411,6 +424,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     private fun fetchSingleProduct(payload: FetchSingleProductPayload) {
         with(payload) { wcProductRestClient.fetchSingleProduct(site, remoteProductId) }
+    }
+
+    private fun fetchProductSkuAvailability(payload: FetchProductSkuAvailabilityPayload) {
+        with(payload) { wcProductRestClient.fetchProductSkuAvailability(site, sku) }
     }
 
     private fun fetchProducts(payload: FetchProductsPayload) {
@@ -466,6 +483,15 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
         onProductChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT
         emitChange(onProductChanged)
+    }
+
+    private fun handleFetchProductSkuAvailabilityCompleted(payload: RemoteProductSkuAvailabilityPayload) {
+        val onProductSkuAvailabilityChanged = OnProductSkuAvailabilityChanged(payload.sku, payload.available)
+        if (payload.isError) {
+            onProductSkuAvailabilityChanged.also { it.error = payload.error }
+        }
+        onProductSkuAvailabilityChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_SKU_AVAILABILITY
+        emitChange(onProductSkuAvailabilityChanged)
     }
 
     private fun handleFetchProductsCompleted(payload: RemoteProductListPayload) {
