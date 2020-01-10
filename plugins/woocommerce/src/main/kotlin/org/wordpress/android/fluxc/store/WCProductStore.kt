@@ -34,6 +34,11 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         val DEFAULT_PRODUCT_SORTING = DATE_DESC
     }
 
+    class FetchProductSkuAvailabilityPayload(
+        var site: SiteModel,
+        var sku: String
+    ) : Payload<BaseNetworkError>()
+
     class FetchSingleProductPayload(
         var site: SiteModel,
         var remoteProductId: Long
@@ -118,6 +123,19 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         TITLE_DESC,
         DATE_ASC,
         DATE_DESC
+    }
+
+    class RemoteProductSkuAvailabilityPayload(
+        val site: SiteModel,
+        val available: Boolean = false
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            site: SiteModel,
+            available: Boolean
+        ) : this(site, available) {
+            this.error = error
+        }
     }
 
     class RemoteProductPayload(
