@@ -24,6 +24,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductSkuAvailabilityPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
@@ -213,6 +214,40 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RemoteSearchProductsPayload
         assertNotNull(payload.error)
         assertEquals(payload.searchQuery, searchQuery)
+    }
+
+    @Test
+    fun testFetchProductSkuAvailabilitySuccess() {
+        interceptor.respondWith("wc-fetch-products-response-success.json")
+        productRestClient.fetchProductSkuAvailability(siteModel, "woo-hoodie123456")
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_PRODUCT_SKU_AVAILABILITY, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductSkuAvailabilityPayload
+        with(payload) {
+            assertNull(error)
+            assertEquals(siteModel, site)
+            assertFalse(available)
+        }
+    }
+
+    @Test
+    fun testFetchProductSkuAvailabilityError() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        productRestClient.fetchProductSkuAvailability(siteModel, "woo-hoodie")
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_PRODUCT_SKU_AVAILABILITY, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductSkuAvailabilityPayload
+        with(payload) {
+            assertNotNull(error)
+            assertNotNull(sku)
+            assertTrue(available)
+        }
     }
 
     @Test
