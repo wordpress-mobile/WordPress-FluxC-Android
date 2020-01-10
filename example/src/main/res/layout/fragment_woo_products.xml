@@ -47,6 +47,13 @@
             android:text="Fetch Single Product"/>
 
         <Button
+            android:id="@+id/fetch_product_sku_availability"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch SKU Availability"/>
+
+        <Button
             android:id="@+id/fetch_products"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
