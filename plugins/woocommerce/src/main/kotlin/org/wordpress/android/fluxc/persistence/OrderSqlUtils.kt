@@ -19,7 +19,7 @@ import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.order.OrderIdSet
 
 object OrderSqlUtils {
-    private const val CHUNK_SIZE = 100
+    private const val CHUNK_SIZE = 200
 
     fun insertOrUpdateOrderSummaries(orderSummaries: List<WCOrderSummaryModel>) {
         WellSql.insert(orderSummaries).asSingleTransaction(true).execute()
