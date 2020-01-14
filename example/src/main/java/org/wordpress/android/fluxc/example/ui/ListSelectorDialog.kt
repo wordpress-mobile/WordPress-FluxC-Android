@@ -15,15 +15,22 @@ class ListSelectorDialog : DialogFragment() {
         const val ARG_LIST_ITEMS = "ARG_LIST_ITEMS"
         const val ARG_RESULT_CODE = "ARG_RESULT_CODE"
         @JvmStatic
-        fun newInstance(fragment: Fragment, listItems: List<String>, resultCode: Int) = ListSelectorDialog().apply {
+        fun newInstance(
+            fragment: Fragment,
+            listItems: List<String>,
+            resultCode: Int,
+            selectedListItem: String?
+        ) = ListSelectorDialog().apply {
             setTargetFragment(fragment, LIST_SELECTOR_REQUEST_CODE)
             this.resultCode = resultCode
             this.listItems = listItems
+            this.selectedListItem = selectedListItem
         }
     }
 
     var resultCode: Int = -1
     var listItems: List<String>? = null
+    var selectedListItem: String? = null
 
     override fun onResume() {
         super.onResume()
@@ -34,12 +41,13 @@ class ListSelectorDialog : DialogFragment() {
         savedInstanceState?.let {
             listItems = it.getStringArrayList(ARG_LIST_ITEMS)
             resultCode = it.getInt(ARG_RESULT_CODE)
+            selectedListItem = it.getString(ARG_LIST_SELECTED_ITEM)
         }
 
         return activity?.let {
             val builder = AlertDialog.Builder(it)
             builder.setTitle("Select a list item")
-                    .setSingleChoiceItems(listItems?.toTypedArray(), 0) { dialog, which ->
+                    .setSingleChoiceItems(listItems?.toTypedArray(), getListIndex()) { dialog, which ->
                         val intent = activity?.intent
                         intent?.putExtra(ARG_LIST_SELECTED_ITEM, listItems?.get(which))
                         targetFragment?.onActivityResult(LIST_SELECTOR_REQUEST_CODE, resultCode, intent)
@@ -49,9 +57,14 @@ class ListSelectorDialog : DialogFragment() {
         } ?: throw IllegalStateException("Activity cannot be null")
     }
 
+    private fun getListIndex(): Int {
+        return listItems?.indexOfFirst { it == selectedListItem } ?: 0
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putStringArrayList(ARG_LIST_ITEMS, listItems as ArrayList<String>?)
         outState.putInt(ARG_RESULT_CODE, resultCode)
+        outState.putString(ARG_LIST_SELECTED_ITEM, selectedListItem)
     }
 }
