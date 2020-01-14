@@ -19,14 +19,29 @@ import org.wordpress.android.fluxc.model.WCOrderSummaryModel
 import org.wordpress.android.fluxc.model.order.OrderIdSet
 
 object OrderSqlUtils {
+    private const val CHUNK_SIZE = 200
+
     fun insertOrUpdateOrderSummaries(orderSummaries: List<WCOrderSummaryModel>) {
         WellSql.insert(orderSummaries).asSingleTransaction(true).execute()
     }
 
+    /**
+     * Returns a list of [WCOrderSummaryModel]s that match the [remoteOrderIds] provided. This method uses
+     * Kotlin's chunked functionality to ensure we don't crash with the "SQLiteException: too many SQL variables"
+     * exception.
+     */
     fun getOrderSummariesForRemoteIds(site: SiteModel, remoteOrderIds: List<RemoteId>): List<WCOrderSummaryModel> {
         if (remoteOrderIds.isEmpty()) {
             return emptyList()
         }
+
+        return remoteOrderIds.chunked(CHUNK_SIZE).map { doGetOrderSummariesForRemoteIds(site, it) }.flatten()
+    }
+
+    private fun doGetOrderSummariesForRemoteIds(
+        site: SiteModel,
+        remoteOrderIds: List<RemoteId>
+    ): List<WCOrderSummaryModel> {
         return WellSql.select(WCOrderSummaryModel::class.java)
                 .where()
                 .equals(WCOrderSummaryModelTable.LOCAL_SITE_ID, site.id)

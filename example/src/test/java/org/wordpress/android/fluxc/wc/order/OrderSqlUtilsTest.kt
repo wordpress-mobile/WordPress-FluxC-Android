@@ -476,4 +476,25 @@ class OrderSqlUtilsTest {
                 .getOrderSummariesForRemoteIds(site, summaryList.map { RemoteId(it.remoteOrderId) })
         assertEquals(0, summariesDb.size)
     }
+
+    @Test
+    fun testGetOrderSummariesByRemoteIds() {
+        // Arrange:
+        // - Create a list of 300 WCOrderSummaryModel's
+        val site = OrderTestUtils.getAndSaveTestSite()
+        val summaryList = OrderTestUtils.getTestOrderSummaryExtendedList(site).sortedByDescending { it.id }
+
+        // Act:
+        // - Save 300 order summaries to the db
+        OrderSqlUtils.insertOrUpdateOrderSummaries(summaryList)
+
+        // Assert:
+        // - Query for the 300 order summary records from the database
+        // - Verify all records fetched successfully
+        // - Verify list saved to db matches list fetched from db
+        val summariesDb = OrderSqlUtils
+                .getOrderSummariesForRemoteIds(site, summaryList.map { RemoteId(it.remoteOrderId) }).sortedBy { it.id }
+        assertEquals(300, summariesDb.size)
+        assertEquals(summaryList, summariesDb)
+    }
 }
