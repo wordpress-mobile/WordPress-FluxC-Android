@@ -685,8 +685,8 @@ class WCStatsStore @Inject constructor(
         return when (granularity) {
             StatsGranularity.DAYS -> DateUtils.getEndDateForSite(site)
             StatsGranularity.WEEKS -> DateUtils.getLastDayOfCurrentWeekForSite(site)
-            StatsGranularity.MONTHS -> DateUtils.getEndDateForSite(site)
-            StatsGranularity.YEARS -> DateUtils.getEndDateForSite(site)
+            StatsGranularity.MONTHS -> DateUtils.getLastDayOfCurrentMonthForSite(site)
+            StatsGranularity.YEARS -> DateUtils.getLastDayOfCurrentYearForSite(site)
         }
     }
 

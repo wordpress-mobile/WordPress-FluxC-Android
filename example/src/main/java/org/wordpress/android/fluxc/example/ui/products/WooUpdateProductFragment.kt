@@ -136,21 +136,21 @@ class WooUpdateProductFragment : Fragment() {
         product_tax_status.setOnClickListener {
             showListSelectorDialog(
                     CoreProductTaxStatus.values().map { it.value }.toList(),
-                    LIST_RESULT_CODE_TAX_STATUS
+                    LIST_RESULT_CODE_TAX_STATUS, selectedProductModel?.taxStatus
             )
         }
 
         product_stock_status.setOnClickListener {
             showListSelectorDialog(
                     CoreProductStockStatus.values().map { it.value }.toList(),
-                    LIST_RESULT_CODE_STOCK_STATUS
+                    LIST_RESULT_CODE_STOCK_STATUS, selectedProductModel?.stockStatus
             )
         }
 
         product_back_orders.setOnClickListener {
             showListSelectorDialog(
                     CoreProductBackOrders.values().map { it.value }.toList(),
-                    LIST_RESULT_CODE_BACK_ORDERS
+                    LIST_RESULT_CODE_BACK_ORDERS, selectedProductModel?.backorders
             )
         }
 
@@ -242,9 +242,11 @@ class WooUpdateProductFragment : Fragment() {
         } ?: prependToLog("No valid site found...doing nothing")
     }
 
-    private fun showListSelectorDialog(listItems: List<String>, resultCode: Int) {
+    private fun showListSelectorDialog(listItems: List<String>, resultCode: Int, selectedItem: String?) {
         fragmentManager?.let { fm ->
-            val dialog = ListSelectorDialog.newInstance(this, listItems, resultCode)
+            val dialog = ListSelectorDialog.newInstance(
+                    this, listItems, resultCode, selectedItem
+            )
             dialog.show(fm, "ListSelectorDialog")
         }
     }

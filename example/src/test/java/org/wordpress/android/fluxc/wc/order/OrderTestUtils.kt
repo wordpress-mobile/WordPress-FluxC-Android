@@ -171,4 +171,12 @@ object OrderTestUtils {
 
         return summaryList
     }
+
+    fun getTestOrderSummaryExtendedList(site: SiteModel): List<WCOrderSummaryModel> {
+        val json = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order-summaries-extended.json")
+        val summaryList = getOrderSummariesFromJsonString(json, site.id)
+        assertEquals(300, summaryList.size)
+
+        return summaryList
+    }
 }
