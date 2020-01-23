@@ -10,11 +10,11 @@ class GatewayMapper
                 response.gatewayId,
                 response.title ?: "",
                 response.description ?: "",
-                response.order,
-                response.enabled,
+                response.order ?: 0,
+                response.enabled ?: false,
                 response.methodTitle ?: "",
                 response.methodDescription ?: "",
-                response.features
+                response.features ?: emptyList()
         )
     }
 }

@@ -75,10 +75,10 @@ constructor(
         @SerializedName("id") val gatewayId: String,
         @SerializedName("title") val title: String?,
         @SerializedName("description") val description: String?,
-        @SerializedName("order") val order: Int,
-        @SerializedName("enabled") val enabled: Boolean,
+        @SerializedName("order") val order: Int?,
+        @SerializedName("enabled") val enabled: Boolean?,
         @SerializedName("method_title") val methodTitle: String?,
         @SerializedName("method_description") val methodDescription: String?,
-        @SerializedName("method_supports") val features: List<String>
+        @SerializedName("method_supports") val features: List<String>?
     )
 }
