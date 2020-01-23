@@ -10,7 +10,7 @@ class GatewayMapper
                 response.gatewayId,
                 response.title ?: "",
                 response.description ?: "",
-                response.order ?: 0,
+                response.order?.toIntOrNull() ?: 0,
                 response.enabled ?: false,
                 response.methodTitle ?: "",
                 response.methodDescription ?: "",
