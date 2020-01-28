@@ -64,7 +64,7 @@ class ReactNativeFragment : Fragment() {
                     prependToLog("$callType call succeeded")
                     AppLog.i(AppLog.T.API, "$callType call result: ${response.result}")
                 }
-                is Error -> prependToLog("$callType call failed: ${response.error}")
+                is Error -> prependToLog("$callType call failed: ${response.error.volleyError?.message}")
             }
         }
     }
