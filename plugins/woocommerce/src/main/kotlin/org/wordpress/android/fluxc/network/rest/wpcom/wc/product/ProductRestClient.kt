@@ -239,7 +239,7 @@ class ProductRestClient(
     ) {
         val url = WOOCOMMERCE.products.pathV3
         val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
-        val params = mutableMapOf("sku" to sku)
+        val params = mutableMapOf("sku" to sku, "_fields" to "sku")
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductApiResponse>? ->
