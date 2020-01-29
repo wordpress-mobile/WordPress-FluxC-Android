@@ -81,6 +81,15 @@ object ProductSqlUtils {
                 .exists()
     }
 
+    fun getProductExistsBySku(site: SiteModel, sku: String): Boolean {
+        return WellSql.select(WCProductModel::class.java)
+                .where().beginGroup()
+                .equals(WCProductModelTable.SKU, sku)
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .endGroup().endWhere()
+                .exists()
+    }
+
     fun getProductsForSite(
         site: SiteModel,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
