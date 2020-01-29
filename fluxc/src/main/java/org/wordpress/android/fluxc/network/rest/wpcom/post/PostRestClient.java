@@ -244,7 +244,7 @@ public class PostRestClient extends BaseWPComRestClient {
         Map<String, Object> body = postModelToAutoSaveParams(post);
 
         final WPComGsonRequest<PostWPComRestResponse> request = WPComGsonRequest.buildPostRequest(url, body,
-                PostRemoteAutoSaveModel.class,
+                PostWPComRestResponse.class,
                 new Listener<PostWPComRestResponse>() {
                     @Override
                     public void onResponse(PostWPComRestResponse response) {
