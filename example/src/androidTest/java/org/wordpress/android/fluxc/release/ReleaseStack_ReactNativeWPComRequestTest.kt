@@ -20,7 +20,7 @@ class ReleaseStack_ReactNativeWPComRequestTest : ReleaseStack_WPComBase() {
 
     @Test
     fun testWpComCall() {
-        val url = "https://public-api.wordpress.com/wp/v2/sites/${siteFromDb.siteId}/media"
+        val url = "https://public-api.wordpress.com/wp/v2/sites/${sSite.siteId}/media"
         val params = mapOf("context" to "edit")
         val response = runBlocking { reactNativeStore.performWPComRequest(url, params) }
 
@@ -30,7 +30,7 @@ class ReleaseStack_ReactNativeWPComRequestTest : ReleaseStack_WPComBase() {
 
     @Test
     fun testWpComCall_fails() {
-        val url = "https://public-api.wordpress.com/wp/v2/sites/${siteFromDb.siteId}/an-invalid-extension"
+        val url = "https://public-api.wordpress.com/wp/v2/sites/${sSite.siteId}/an-invalid-extension"
         val response = runBlocking { reactNativeStore.performWPComRequest(url, emptyMap()) }
 
         val assertionMessage = "Call should have failed with a 404, instead response was $response"
