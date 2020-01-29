@@ -239,18 +239,22 @@ public class PostRestClient extends BaseWPComRestClient {
     }
 
     public void remoteAutoSavePost(final @NonNull PostModel post, final @NonNull SiteModel site) {
-        String url =
-                WPCOMREST.sites.site(site.getSiteId()).posts.post(post.getRemotePostId()).autosave.getUrlV1_1();
+        String url = WPCOMREST.sites.site(site.getSiteId()).posts.post(post.getRemotePostId()).getUrlV1_2();
 
         Map<String, Object> body = postModelToAutoSaveParams(post);
 
-        final WPComGsonRequest<PostRemoteAutoSaveModel> request = WPComGsonRequest.buildPostRequest(url, body,
+        final WPComGsonRequest<PostWPComRestResponse> request = WPComGsonRequest.buildPostRequest(url, body,
                 PostRemoteAutoSaveModel.class,
-                new Listener<PostRemoteAutoSaveModel>() {
+                new Listener<PostWPComRestResponse>() {
                     @Override
-                    public void onResponse(PostRemoteAutoSaveModel response) {
+                    public void onResponse(PostWPComRestResponse response) {
+                        PostModel uploadedPost = postResponseToPostModel(response);
+                        PostRemoteAutoSaveModel remoteAutoSavePost =
+                                new PostRemoteAutoSaveModel(uploadedPost.getAutoSaveRevisionId(),
+                                        uploadedPost.getRemotePostId(), uploadedPost.getAutoSaveModified(),
+                                        uploadedPost.getAutoSavePreviewUrl());
                         RemoteAutoSavePostPayload payload =
-                                new RemoteAutoSavePostPayload(post.getId(), response, site);
+                                new RemoteAutoSavePostPayload(post.getId(), remoteAutoSavePost, site);
                         mDispatcher.dispatch(UploadActionBuilder.newRemoteAutoSavedPostAction(payload));
                     }
                 },
@@ -263,8 +267,9 @@ public class PostRestClient extends BaseWPComRestClient {
                                 new RemoteAutoSavePostPayload(post.getId(), postError);
                         mDispatcher.dispatch(UploadActionBuilder.newRemoteAutoSavedPostAction(payload));
                     }
-                }
-                                                                                                   );
+                });
+        request.addQueryParameter("context", "edit");
+        request.addQueryParameter("autosave", "true");
         add(request);
     }
 
