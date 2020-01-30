@@ -304,6 +304,11 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         assertEquals(0, mUploadStore.getPendingPosts().size());
         assertEquals(0, mUploadStore.getAllRegisteredPosts().size());
         assertNull(getPostUploadModelForPostModel(uploadedPost));
+
+        // Delete test image
+        testMedia.setMediaId(mLastUploadedId);
+        mNextEvent = TestEvents.DELETED_MEDIA;
+        deleteMedia(testMedia);
     }
 
     @SuppressWarnings("unused")
