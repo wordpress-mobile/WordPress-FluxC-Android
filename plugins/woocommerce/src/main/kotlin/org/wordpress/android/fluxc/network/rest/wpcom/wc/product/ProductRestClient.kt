@@ -630,8 +630,11 @@ class ProductRestClient(
 
             dateCreated = response.date_created ?: ""
             dateModified = response.date_modified ?: ""
+
             dateOnSaleFrom = response.date_on_sale_from ?: ""
             dateOnSaleTo = response.date_on_sale_to ?: ""
+            dateOnSaleFromGmt = response.date_on_sale_from_gmt ?: ""
+            dateOnSaleToGmt = response.date_on_sale_to_gmt ?: ""
 
             type = response.type ?: ""
             status = response.status ?: ""
