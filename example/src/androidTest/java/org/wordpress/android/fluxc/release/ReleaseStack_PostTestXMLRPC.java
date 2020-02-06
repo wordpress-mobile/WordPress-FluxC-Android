@@ -12,9 +12,11 @@ import org.wordpress.android.fluxc.model.CauseOfOnPostChanged.UpdatePost;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
+import org.wordpress.android.fluxc.release.ReleaseStack_WCProductTest.TestEvent;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
+import org.wordpress.android.fluxc.store.PostStore.OnPostStatusFetched;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.PostDeleteActionType;
 import org.wordpress.android.fluxc.store.PostStore.PostError;
@@ -46,6 +48,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     private static final String POST_DEFAULT_TITLE = "PostTestXMLRPC base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
+    private static final String POST_STATUS_TO_TEST = "private";
     private static final double EXAMPLE_LATITUDE = 44.8378;
     private static final double EXAMPLE_LONGITUDE = -0.5792;
 
@@ -56,6 +59,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         POST_UPLOADED,
         POST_UPDATED,
         POSTS_FETCHED,
+        POST_STATUS_FETCHED,
         PAGES_FETCHED,
         POST_DELETED,
         POST_RESTORED,
@@ -670,6 +674,24 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertNotEquals(PostStatus.fromPost(restoredPost), PostStatus.TRASHED);
     }
 
+    @Test
+    public void testFetchPostStatus() throws InterruptedException {
+        // Instantiate new post
+        createNewPost();
+        setupPostAttributes();
+        mPost.setStatus(POST_STATUS_TO_TEST);
+
+        // Upload new post to site
+        uploadPost(mPost);
+
+        // Verify that post is uploaded correctly
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(mPost.getId());
+        assertEquals(POST_STATUS_TO_TEST, uploadedPost.getStatus());
+
+        // Fetch post status - The response will be tested in OnPostStatusFetched
+        fetchPostStatus();
+    }
+
     // Error handling tests
 
     @Test
@@ -1098,6 +1120,15 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onPostStatusFetched(OnPostStatusFetched event) {
+        assertFalse(event.isError());
+        assertEquals(TestEvents.POST_STATUS_FETCHED, mNextEvent);
+        assertEquals(event.remotePostStatus, POST_STATUS_TO_TEST);
+        mCountDownLatch.countDown();
+    }
+
     private void setupPostAttributes() {
         mPost.setTitle(POST_DEFAULT_TITLE);
         mPost.setContent(POST_DEFAULT_DESCRIPTION);
@@ -1174,6 +1205,13 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
         mDispatcher.dispatch(PostActionBuilder.newRestorePostAction(new RemotePostPayload(post, sSite)));
 
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void fetchPostStatus() throws InterruptedException {
+        mNextEvent = TestEvents.POST_STATUS_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostStatusAction(new RemotePostPayload(mPost, sSite)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
