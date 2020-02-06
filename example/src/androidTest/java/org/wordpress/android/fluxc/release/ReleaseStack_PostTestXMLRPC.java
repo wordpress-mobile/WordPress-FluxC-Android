@@ -12,7 +12,6 @@ import org.wordpress.android.fluxc.model.CauseOfOnPostChanged.UpdatePost;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.model.post.PostStatus;
-import org.wordpress.android.fluxc.release.ReleaseStack_WCProductTest.TestEvent;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
@@ -689,7 +688,7 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(POST_STATUS_TO_TEST, uploadedPost.getStatus());
 
         // Fetch post status - The response will be tested in OnPostStatusFetched
-        fetchPostStatus();
+        fetchPostStatus(uploadedPost);
     }
 
     // Error handling tests
@@ -1208,10 +1207,10 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    private void fetchPostStatus() throws InterruptedException {
+    private void fetchPostStatus(PostModel post) throws InterruptedException {
         mNextEvent = TestEvents.POST_STATUS_FETCHED;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(PostActionBuilder.newFetchPostStatusAction(new RemotePostPayload(mPost, sSite)));
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostStatusAction(new RemotePostPayload(post, sSite)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
