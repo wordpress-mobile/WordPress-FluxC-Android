@@ -582,11 +582,11 @@ class ProductRestClient(
         if (storedWCProductModel.salePrice != updatedProductModel.salePrice) {
             body["sale_price"] = updatedProductModel.salePrice
         }
-        if (storedWCProductModel.dateOnSaleFrom != updatedProductModel.dateOnSaleFrom) {
-            body["date_on_sale_from"] = updatedProductModel.dateOnSaleFrom
+        if (storedWCProductModel.dateOnSaleFromGmt != updatedProductModel.dateOnSaleFromGmt) {
+            body["date_on_sale_from_gmt"] = updatedProductModel.dateOnSaleFromGmt
         }
-        if (storedWCProductModel.dateOnSaleTo != updatedProductModel.dateOnSaleTo) {
-            body["date_on_sale_to"] = updatedProductModel.dateOnSaleTo
+        if (storedWCProductModel.dateOnSaleToGmt != updatedProductModel.dateOnSaleToGmt) {
+            body["date_on_sale_to_gmt"] = updatedProductModel.dateOnSaleToGmt
         }
         if (storedWCProductModel.taxStatus != updatedProductModel.taxStatus) {
             body["tax_status"] = updatedProductModel.taxStatus
