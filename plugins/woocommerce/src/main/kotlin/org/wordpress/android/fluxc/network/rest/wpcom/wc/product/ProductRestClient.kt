@@ -582,11 +582,11 @@ class ProductRestClient(
         if (storedWCProductModel.salePrice != updatedProductModel.salePrice) {
             body["sale_price"] = updatedProductModel.salePrice
         }
-        if (storedWCProductModel.dateOnSaleFrom != updatedProductModel.dateOnSaleFrom) {
-            body["date_on_sale_from"] = updatedProductModel.dateOnSaleFrom
+        if (storedWCProductModel.dateOnSaleFromGmt != updatedProductModel.dateOnSaleFromGmt) {
+            body["date_on_sale_from_gmt"] = updatedProductModel.dateOnSaleFromGmt
         }
-        if (storedWCProductModel.dateOnSaleTo != updatedProductModel.dateOnSaleTo) {
-            body["date_on_sale_to"] = updatedProductModel.dateOnSaleTo
+        if (storedWCProductModel.dateOnSaleToGmt != updatedProductModel.dateOnSaleToGmt) {
+            body["date_on_sale_to_gmt"] = updatedProductModel.dateOnSaleToGmt
         }
         if (storedWCProductModel.taxStatus != updatedProductModel.taxStatus) {
             body["tax_status"] = updatedProductModel.taxStatus
@@ -630,8 +630,11 @@ class ProductRestClient(
 
             dateCreated = response.date_created ?: ""
             dateModified = response.date_modified ?: ""
+
             dateOnSaleFrom = response.date_on_sale_from ?: ""
             dateOnSaleTo = response.date_on_sale_to ?: ""
+            dateOnSaleFromGmt = response.date_on_sale_from_gmt ?: ""
+            dateOnSaleToGmt = response.date_on_sale_to_gmt ?: ""
 
             type = response.type ?: ""
             status = response.status ?: ""

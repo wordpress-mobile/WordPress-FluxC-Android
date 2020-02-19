@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.persistence.PostSqlUtils;
 import org.wordpress.android.fluxc.store.PostStore;
 import org.wordpress.android.fluxc.store.PostStore.FetchPostsPayload;
 import org.wordpress.android.fluxc.store.PostStore.OnPostChanged;
+import org.wordpress.android.fluxc.store.PostStore.OnPostStatusFetched;
 import org.wordpress.android.fluxc.store.PostStore.OnPostUploaded;
 import org.wordpress.android.fluxc.store.PostStore.PostErrorType;
 import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
@@ -47,6 +48,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
     private static final String POST_DEFAULT_TITLE = "PostTestWPCom base post";
     private static final String POST_DEFAULT_DESCRIPTION = "Hi there, I'm a post from FluxC!";
+    private static final String POST_STATUS_TO_TEST = "private";
     private static final double EXAMPLE_LATITUDE = 44.8378;
     private static final double EXAMPLE_LONGITUDE = -0.5792;
 
@@ -55,6 +57,7 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         ALL_POST_REMOVED,
         POST_UPLOADED,
         POST_UPDATED,
+        POST_STATUS_FETCHED,
         POSTS_FETCHED,
         PAGES_FETCHED,
         POST_DELETED,
@@ -783,6 +786,24 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
+    public void testFetchPostStatus() throws InterruptedException {
+        // Instantiate new post
+        PostModel post = createNewPost();
+        setupPostAttributes(post);
+        post.setStatus(POST_STATUS_TO_TEST);
+
+        // Upload new post to site
+        uploadPost(post);
+
+        // Verify that post is uploaded correctly
+        PostModel uploadedPost = mPostStore.getPostByLocalPostId(post.getId());
+        assertEquals(POST_STATUS_TO_TEST, uploadedPost.getStatus());
+
+        // Fetch post status - The response will be tested in OnPostStatusFetched
+        fetchPostStatus(uploadedPost);
+    }
+
     // Error handling tests
 
     @Test
@@ -979,6 +1000,15 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
         mCountDownLatch.countDown();
     }
 
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onPostStatusFetched(OnPostStatusFetched event) {
+        assertFalse(event.isError());
+        assertEquals(TestEvents.POST_STATUS_FETCHED, mNextEvent);
+        assertEquals(event.remotePostStatus, POST_STATUS_TO_TEST);
+        mCountDownLatch.countDown();
+    }
+
     private void setupPostAttributes(PostModel post) {
         post.setTitle(POST_DEFAULT_TITLE);
         post.setContent(POST_DEFAULT_DESCRIPTION);
@@ -1056,6 +1086,13 @@ public class ReleaseStack_PostTestWPCom extends ReleaseStack_WPComBase {
 
         mDispatcher.dispatch(PostActionBuilder.newRemoteAutoSavePostAction(new RemotePostPayload(post, sSite)));
 
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void fetchPostStatus(PostModel post) throws InterruptedException {
+        mNextEvent = TestEvents.POST_STATUS_FETCHED;
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(PostActionBuilder.newFetchPostStatusAction(new RemotePostPayload(post, sSite)));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 }
