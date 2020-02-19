@@ -62,7 +62,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
         nextEvent = TestEvents.NONE
     }
 
-    @Test @Throws(InterruptedException::class)
+    @Test
     fun testCancelImageUpload() {
         interceptor.respondWithSticky("media-upload-response-success.json")
 
@@ -103,7 +103,6 @@ class MockedStack_MediaTest : MockedStack_Base() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testUploadMultipleImages() {
         // Upload media to guarantee media exists
         uploadedIds.clear()
@@ -135,7 +134,6 @@ class MockedStack_MediaTest : MockedStack_Base() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testUploadMultipleImagesAndCancel() {
         // Upload media to guarantee media exists
         uploadedIds.clear()
@@ -171,7 +169,6 @@ class MockedStack_MediaTest : MockedStack_Base() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testUploadMultipleImagesAndCancelWithoutDeleting() {
         // Upload media to guarantee media exists
         uploadedIds.clear()
@@ -270,7 +267,6 @@ class MockedStack_MediaTest : MockedStack_Base() {
         }
     }
 
-    @Throws(InterruptedException::class)
     private fun uploadMultipleMedia(
         mediaList: List<MediaModel>,
         howManyFirstToCancel: Int = 0,
