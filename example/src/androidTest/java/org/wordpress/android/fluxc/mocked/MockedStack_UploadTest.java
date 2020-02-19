@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.generated.MediaActionBuilder;
 import org.wordpress.android.fluxc.generated.PostActionBuilder;
 import org.wordpress.android.fluxc.generated.UploadActionBuilder;
 import org.wordpress.android.fluxc.model.MediaModel;
+import org.wordpress.android.fluxc.model.MediaModel.MediaUploadState;
 import org.wordpress.android.fluxc.model.MediaUploadModel;
 import org.wordpress.android.fluxc.model.PostModel;
 import org.wordpress.android.fluxc.model.PostUploadModel;
@@ -18,6 +19,7 @@ import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor;
 import org.wordpress.android.fluxc.persistence.UploadSqlUtils;
 import org.wordpress.android.fluxc.store.MediaStore;
+import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
@@ -63,6 +65,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
     private enum TestEvents {
         NONE,
         UPLOADED_POST,
+        CANCELED_MEDIA,
         UPLOADED_MEDIA,
         MEDIA_CHANGED,
         MEDIA_ERROR,
@@ -110,6 +113,56 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
         assertNotNull(mediaUploadModel);
         assertEquals(0F, mUploadStore.getUploadProgressForMedia(testMedia), 0.1);
+        assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
+    }
+
+    @Test
+    public void testCancelImageUpload() throws InterruptedException {
+        mInterceptor.respondWithSticky("media-upload-response-success.json", null);
+
+        // First, try canceling an image with the default behavior (canceled image is deleted from the store)
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.CANCELED_MEDIA;
+        UploadMediaPayload payload = new UploadMediaPayload(getTestSite(), testMedia, true);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+
+        // Wait a bit and issue the cancel command
+        TestUtils.waitFor(300);
+
+        CancelMediaPayload cancelPayload = new CancelMediaPayload(getTestSite(), testMedia);
+        mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(0, mMediaStore.getSiteMediaCount(getTestSite()));
+
+        // The delete flag was on, so there should be no associated MediaUploadModel
+        MediaUploadModel mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
+        assertNull(mediaUploadModel);
+
+        // Now, try canceling with delete=false (canceled image should be marked as failed and kept in the store)
+        testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        mCountDownLatch = new CountDownLatch(1);
+        mNextEvent = TestEvents.CANCELED_MEDIA;
+        payload = new UploadMediaPayload(getTestSite(), testMedia, true);
+        mDispatcher.dispatch(MediaActionBuilder.newUploadMediaAction(payload));
+
+        // Wait a bit and issue the cancel command
+        TestUtils.waitFor(300);
+
+        cancelPayload = new CancelMediaPayload(getTestSite(), testMedia, false);
+        mDispatcher.dispatch(MediaActionBuilder.newCancelMediaUploadAction(cancelPayload));
+
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        assertEquals(1, mMediaStore.getSiteMediaCount(getTestSite()));
+        MediaModel canceledMedia = mMediaStore.getMediaWithLocalId(testMedia.getId());
+        assertEquals(MediaUploadState.FAILED.toString(), canceledMedia.getUploadState());
+
+        // The delete flag was off, so we can expect an associated MediaUploadModel
+        mediaUploadModel = getMediaUploadModelForMediaModel(testMedia);
+        assertNotNull(mediaUploadModel);
         assertEquals(MediaUploadModel.FAILED, mediaUploadModel.getUploadState());
     }
 
@@ -424,7 +477,13 @@ public class MockedStack_UploadTest extends MockedStack_Base {
             return;
         }
 
-        if (event.completed) {
+        if (event.canceled) {
+            if (mNextEvent == TestEvents.CANCELED_MEDIA) {
+                mCountDownLatch.countDown();
+            } else {
+                throw new AssertionError("Unexpected cancellation for media: " + event.media.getId());
+            }
+        } else if (event.completed) {
             assertEquals(TestEvents.UPLOADED_MEDIA, mNextEvent);
             mCountDownLatch.countDown();
         }
