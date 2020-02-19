@@ -76,13 +76,13 @@ class WCTaxStoreTest {
     fun `get stored tax class list for site`() = test {
         fetchTaxClassListForSite()
 
-        val storedTaxClassList = store.getShippingClassListForSite(site)
+        val storedTaxClassList = store.getTaxClassListForSite(site)
 
         assertThat(storedTaxClassList.size).isEqualTo(2)
         assertThat(storedTaxClassList.first().name).isEqualTo(mapper.map(sampleTaxClassList.first()).name)
         assertThat(storedTaxClassList.first().slug).isEqualTo(mapper.map(sampleTaxClassList.first()).slug)
 
-        val invalidRequestResult = store.getShippingClassListForSite(errorSite)
+        val invalidRequestResult = store.getTaxClassListForSite(errorSite)
         assertThat(invalidRequestResult.size).isEqualTo(0)
     }
 
