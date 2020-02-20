@@ -936,7 +936,8 @@ public class PostStore extends Store {
                             // at this point we know there's a potential version conflict (the post has been modified
                             // both locally and on the remote), so flag the local version of the Post so the
                             // hosting app can inform the user and the user can decide and take action
-                            post.setRemoteLastModified(remotePostFromDb.getRemoteLastModified());
+                            remotePostFromDb.setRemoteLastModified(post.getLastModified());
+                            post = remotePostFromDb;
                         }
                     }
                     rowsAffected += mPostSqlUtils.insertOrUpdatePostKeepingLocalChanges(post);
