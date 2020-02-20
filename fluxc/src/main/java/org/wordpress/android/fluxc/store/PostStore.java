@@ -905,13 +905,44 @@ public class PostStore extends Store {
             }
 
             int rowsAffected = 0;
-            for (PostModel post : payload.posts.getPosts()) {
-                rowsAffected += mPostSqlUtils.insertOrUpdatePostKeepingLocalChanges(post);
+
+            ArrayList<Long> postIds;
+            Map<Long, PostModel> posts = new HashMap<>();
+
+            if (payload.isPages) {
+                postIds = new ArrayList<>(payload.posts.getPosts().size());
+                SiteModel site = payload.site;
+
+                for (PostModel item : payload.posts.getPosts()) {
+                    postIds.add(item.getRemotePostId());
+                }
+                posts = getPostsByRemotePostIds(postIds, site);
             }
 
+            for (PostModel post : payload.posts.getPosts()) {
+                if (payload.isPages) {
+                    PostModel remotePostFromDb = posts.get(post.getRemotePostId());
+                    if (remotePostFromDb != null) {
+                        // Check if the post's last modified date or status have changed.
+                        // We need to check status separately because when a scheduled post is published, its
+                        // modified date
+                        // will not be updated.
+                        boolean isPostChanged =
+                                !post.getLastModified().equals(remotePostFromDb.getLastModified())
+                                || !post.getStatus().equals(remotePostFromDb.getStatus());
+
+                        if (isPostChanged) {
+                            // at this point we know there's a potential version conflict (the post has been modified
+                            // both locally and on the remote), so flag the local version of the Post so the
+                            // hosting app can inform the user and the user can decide and take action
+                            post.setRemoteLastModified(remotePostFromDb.getRemoteLastModified());
+                        }
+                    }
+                    rowsAffected += mPostSqlUtils.insertOrUpdatePostKeepingLocalChanges(post);
+                }
+            }
             onPostChanged = new OnPostChanged(causeOfChange, rowsAffected, payload.canLoadMore);
         }
-
         emitChange(onPostChanged);
     }
 
