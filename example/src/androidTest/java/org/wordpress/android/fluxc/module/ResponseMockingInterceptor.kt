@@ -26,6 +26,7 @@ import javax.inject.Singleton
 class ResponseMockingInterceptor : Interceptor {
     companion object {
         private val SUBSTITUTION_DEFAULT = { string: String -> string }
+        private const val NETWORK_DELAY_MS = 500L
     }
 
     /**
@@ -96,7 +97,7 @@ class ResponseMockingInterceptor : Interceptor {
         val request = chain.request()
 
         // Give some time to create a realistic network event
-        TestUtils.waitFor(1000)
+        TestUtils.waitFor(NETWORK_DELAY_MS)
 
         lastRequest = request
         lastRequestUrl = request.url().toString()
