@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
+import org.wordpress.android.fluxc.store.DEFAULT_INSIGHTS
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
@@ -64,21 +65,21 @@ class ReleaseStack_ManageInsightsTestJetpack : ReleaseStack_Base() {
 
         val emptyStats = runBlocking { statsStore.getAddedInsights(site) }
 
-        // Starts with 5 default blocks
-        assertEquals(emptyStats.size, 4)
+        // Starts with default blocks (those in DEFAULT_INSIGHTS)
+        assertEquals(emptyStats.size, DEFAULT_INSIGHTS.size)
         if (!emptyStats.contains(InsightType.FOLLOWERS)) {
             runBlocking { statsStore.addType(site, InsightType.FOLLOWERS) }
         }
 
         val statsWithFollowers = runBlocking { statsStore.getAddedInsights(site) }
 
-        assertEquals(statsWithFollowers.size, 5)
+        assertEquals(statsWithFollowers.size, DEFAULT_INSIGHTS.size + 1)
 
         runBlocking { statsStore.removeType(site, FOLLOWERS) }
 
         val statsWithoutFollowers = runBlocking { statsStore.getAddedInsights(site) }
 
-        assertEquals(statsWithoutFollowers.size, 4)
+        assertEquals(statsWithoutFollowers.size, DEFAULT_INSIGHTS.size)
     }
 
     @Test
