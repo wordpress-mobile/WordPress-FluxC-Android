@@ -126,12 +126,14 @@ class OrderRestClient(
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderSummaryApiResponse>>() {}.type
         val networkPageSize = listDescriptor.config.networkPageSize
-        val params = mapOf(
+        val params = mutableMapOf(
                 "per_page" to networkPageSize.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter,
-                "_fields" to "id,date_created_gmt,date_modified_gmt",
-                "search" to listDescriptor.searchQuery.orEmpty())
+                "_fields" to "id,date_created_gmt,date_modified_gmt")
+        listDescriptor.searchQuery.takeUnless { it.isNullOrEmpty() }?.let {
+            params.put("search", it)
+        }
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, listDescriptor.site.siteId, params, responseType,
                 { response: List<OrderSummaryApiResponse>? ->
                     val orderSummaries = response?.map {

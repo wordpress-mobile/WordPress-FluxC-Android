@@ -30,6 +30,7 @@ import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductSkuAvailabilityPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
@@ -37,6 +38,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReview
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductSkuAvailabilityChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductsSearched
 import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
@@ -89,6 +91,18 @@ class WooProductsFragment : Fragment() {
                         val payload = FetchSingleProductPayload(site, id)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductAction(payload))
                     } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
+                }
+            }
+        }
+
+        fetch_product_sku_availability.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter a product SKU:"
+                ) { editText ->
+                    val payload = FetchProductSkuAvailabilityPayload(site, editText.text.toString())
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchProductSkuAvailabilityAction(payload))
                 }
             }
         }
@@ -309,6 +323,16 @@ class WooProductsFragment : Fragment() {
             prependToLog("Error searching products - error: " + event.error.type)
         } else {
             prependToLog("Found ${event.searchResults.size} products matching ${event.searchQuery}")
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductSkuAvailabilityChanged(event: OnProductSkuAvailabilityChanged) {
+        if (event.isError) {
+            prependToLog("Error searching product sku availability - error: " + event.error.type)
+        } else {
+            prependToLog("Sku ${event.sku} available for site ${selectedSite?.name}: ${event.available}")
         }
     }
 

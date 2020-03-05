@@ -6,6 +6,7 @@ import org.wordpress.android.fluxc.annotations.action.IAction;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductSkuAvailabilityPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload;
@@ -14,6 +15,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductSkuAvailabilityPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload;
@@ -46,6 +48,8 @@ public enum WCProductAction implements IAction {
     UPDATE_PRODUCT_IMAGES,
     @Action(payloadType = UpdateProductPayload.class)
     UPDATE_PRODUCT,
+    @Action(payloadType = FetchProductSkuAvailabilityPayload.class)
+    FETCH_PRODUCT_SKU_AVAILABILITY,
 
     // Remote responses
     @Action(payloadType = RemoteProductPayload.class)
@@ -67,5 +71,7 @@ public enum WCProductAction implements IAction {
     @Action(payloadType = RemoteUpdateProductImagesPayload.class)
     UPDATED_PRODUCT_IMAGES,
     @Action(payloadType = RemoteUpdateProductPayload.class)
-    UPDATED_PRODUCT
+    UPDATED_PRODUCT,
+    @Action(payloadType = RemoteProductSkuAvailabilityPayload.class)
+    FETCHED_PRODUCT_SKU_AVAILABILITY
 }

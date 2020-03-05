@@ -18,6 +18,8 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
@@ -106,5 +108,24 @@ class WCProductStoreTest {
             // Other fields should not be altered by the update
             assertEquals(productModel.name, this?.name)
         }
+    }
+
+    @Test
+    fun testVerifySkuExistsLocally() {
+        val sku = "woo-cap"
+        val productModel = ProductTestUtils.generateSampleProduct(42).apply {
+            name = "test product"
+            description = "test description"
+            this.sku = sku
+        }
+        val site = SiteModel().apply { id = productModel.localSiteId }
+        ProductSqlUtils.insertOrUpdateProduct(productModel)
+
+        // verify if product with sku: woo-cap exists in local cache
+        val skuAvailable = ProductSqlUtils.getProductExistsBySku(site, sku)
+        assertTrue(skuAvailable)
+
+        // verify if product with non existent sku returns false
+        assertFalse(ProductSqlUtils.getProductExistsBySku(site, "woooo"))
     }
 }

@@ -12,6 +12,9 @@ import okio.Buffer
 import okio.BufferedSource
 import okio.Okio
 import org.wordpress.android.fluxc.TestUtils
+import org.wordpress.android.fluxc.module.ResponseMockingInterceptor.InterceptorMode.ONE_TIME
+import org.wordpress.android.fluxc.module.ResponseMockingInterceptor.InterceptorMode.STICKY
+import org.wordpress.android.fluxc.module.ResponseMockingInterceptor.InterceptorMode.STICKY_SUBSTITUTION
 import java.io.BufferedReader
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -21,8 +24,23 @@ import javax.inject.Singleton
 
 @Singleton
 class ResponseMockingInterceptor : Interceptor {
+    companion object {
+        private val SUBSTITUTION_DEFAULT = { string: String -> string }
+        private const val NETWORK_DELAY_MS = 500L
+    }
+
+    /**
+     * ONE_TIME: Use the last response provided for the next request handled, and then clear it.
+     * STICKY: Keep using the last response provided for all requests, until a new response is provided.
+     * STICKY_SUBSTITUTION: Like STICKY, but also run a transformation function on the response.
+     */
+    enum class InterceptorMode { ONE_TIME, STICKY, STICKY_SUBSTITUTION }
+
     private var nextResponseJson: String? = null
     private var nextResponseCode: Int = 200
+
+    private var mode: InterceptorMode = ONE_TIME
+    private var transformStickyResponse = SUBSTITUTION_DEFAULT
 
     private val gson by lazy { Gson() }
 
@@ -44,6 +62,17 @@ class ResponseMockingInterceptor : Interceptor {
     fun respondWith(jsonResponseFileName: String) {
         nextResponseJson = getStringFromResourceFile(jsonResponseFileName)
         nextResponseCode = 200
+        mode = ONE_TIME
+        transformStickyResponse = SUBSTITUTION_DEFAULT
+    }
+
+    fun respondWithSticky(jsonResponseFileName: String, transformResponse: ((String) -> String)? = null) {
+        nextResponseJson = getStringFromResourceFile(jsonResponseFileName)
+        nextResponseCode = 200
+        transformResponse?.let {
+            transformStickyResponse = it
+        }
+        mode = if (transformResponse == null) STICKY else STICKY_SUBSTITUTION
     }
 
     @JvmOverloads
@@ -68,18 +97,24 @@ class ResponseMockingInterceptor : Interceptor {
         val request = chain.request()
 
         // Give some time to create a realistic network event
-        TestUtils.waitFor(1000)
+        TestUtils.waitFor(NETWORK_DELAY_MS)
 
         lastRequest = request
         lastRequestUrl = request.url().toString()
 
         nextResponseJson?.let {
             // Will be a successful response if nextResponseCode is 200, otherwise an error response
-            val response = buildResponse(request, it, nextResponseCode)
+            val response = if (mode == STICKY_SUBSTITUTION) {
+                buildResponse(request, transformStickyResponse(it), nextResponseCode)
+            } else {
+                buildResponse(request, it, nextResponseCode)
+            }
 
-            // Clean up for the next call
-            nextResponseJson = null
-            nextResponseCode = 200
+            if (mode == ONE_TIME) {
+                // Clean up for the next call
+                nextResponseJson = null
+                nextResponseCode = 200
+            }
             return response
         }
 

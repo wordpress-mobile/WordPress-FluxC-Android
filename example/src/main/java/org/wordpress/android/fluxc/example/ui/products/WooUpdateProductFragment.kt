@@ -136,35 +136,35 @@ class WooUpdateProductFragment : Fragment() {
         product_tax_status.setOnClickListener {
             showListSelectorDialog(
                     CoreProductTaxStatus.values().map { it.value }.toList(),
-                    LIST_RESULT_CODE_TAX_STATUS
+                    LIST_RESULT_CODE_TAX_STATUS, selectedProductModel?.taxStatus
             )
         }
 
         product_stock_status.setOnClickListener {
             showListSelectorDialog(
                     CoreProductStockStatus.values().map { it.value }.toList(),
-                    LIST_RESULT_CODE_STOCK_STATUS
+                    LIST_RESULT_CODE_STOCK_STATUS, selectedProductModel?.stockStatus
             )
         }
 
         product_back_orders.setOnClickListener {
             showListSelectorDialog(
                     CoreProductBackOrders.values().map { it.value }.toList(),
-                    LIST_RESULT_CODE_BACK_ORDERS
+                    LIST_RESULT_CODE_BACK_ORDERS, selectedProductModel?.backorders
             )
         }
 
         product_from_date.setOnClickListener {
             showDatePickerDialog(product_from_date.text.toString(), OnDateSetListener { _, year, month, dayOfMonth ->
                 product_from_date.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
-                selectedProductModel?.dateOnSaleFrom = product_from_date.text.toString()
+                selectedProductModel?.dateOnSaleFromGmt = product_from_date.text.toString()
             })
         }
 
         product_to_date.setOnClickListener {
             showDatePickerDialog(product_to_date.text.toString(), OnDateSetListener { _, year, month, dayOfMonth ->
                 product_to_date.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
-                selectedProductModel?.dateOnSaleTo = product_to_date.text.toString()
+                selectedProductModel?.dateOnSaleToGmt = product_to_date.text.toString()
             })
         }
 
@@ -231,8 +231,8 @@ class WooUpdateProductFragment : Fragment() {
                 product_weight.setText(it.weight)
                 product_tax_status.text = it.taxStatus
                 product_sold_individually.isChecked = it.soldIndividually
-                product_from_date.text = it.dateOnSaleFrom.split('T')[0]
-                product_to_date.text = it.dateOnSaleTo.split('T')[0]
+                product_from_date.text = it.dateOnSaleFromGmt.split('T')[0]
+                product_to_date.text = it.dateOnSaleToGmt.split('T')[0]
                 product_manage_stock.isChecked = it.manageStock
                 product_stock_status.text = it.stockStatus
                 product_back_orders.text = it.backorders
@@ -242,9 +242,11 @@ class WooUpdateProductFragment : Fragment() {
         } ?: prependToLog("No valid site found...doing nothing")
     }
 
-    private fun showListSelectorDialog(listItems: List<String>, resultCode: Int) {
+    private fun showListSelectorDialog(listItems: List<String>, resultCode: Int, selectedItem: String?) {
         fragmentManager?.let { fm ->
-            val dialog = ListSelectorDialog.newInstance(this, listItems, resultCode)
+            val dialog = ListSelectorDialog.newInstance(
+                    this, listItems, resultCode, selectedItem
+            )
             dialog.show(fm, "ListSelectorDialog")
         }
     }

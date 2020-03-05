@@ -23,7 +23,7 @@ class WCTaxStore @Inject constructor(
     /**
      * returns a list of tax classes for a specific site in the database
      */
-    fun getShippingClassListForSite(site: SiteModel): List<WCTaxClassModel> =
+    fun getTaxClassListForSite(site: SiteModel): List<WCTaxClassModel> =
             WCTaxSqlUtils.getTaxClassesForSite(site.id)
 
     suspend fun fetchTaxClassList(site: SiteModel): WooResult<List<WCTaxClassModel>> {

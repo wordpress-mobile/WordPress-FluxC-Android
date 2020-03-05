@@ -40,6 +40,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductSkuAvailabilityPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
@@ -224,6 +225,37 @@ class ProductRestClient(
         sorting: ProductSorting = DEFAULT_PRODUCT_SORTING
     ) {
         fetchProducts(site, pageSize, offset, sorting, searchQuery)
+    }
+
+    /**
+     * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * for a given [SiteModel] and [sku] to check if this [sku] already exists on the site
+     *
+     * Dispatches a [WCProductAction.FETCHED_PRODUCT_SKU_AVAILABILITY] action with the availability for the [sku].
+     */
+    fun fetchProductSkuAvailability(
+        site: SiteModel,
+        sku: String
+    ) {
+        val url = WOOCOMMERCE.products.pathV3
+        val responseType = object : TypeToken<List<ProductApiResponse>>() {}.type
+        val params = mutableMapOf("sku" to sku, "_fields" to "sku")
+
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<ProductApiResponse>? ->
+                    val available = response?.isEmpty() ?: false
+                    val payload = RemoteProductSkuAvailabilityPayload(site, sku, available)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductSkuAvailabilityAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val productError = networkErrorToProductError(networkError)
+                    // If there is a network error of some sort that prevents us from knowing if a sku is available
+                    // then just consider sku as available
+                    val payload = RemoteProductSkuAvailabilityPayload(productError, site, sku, true)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductSkuAvailabilityAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
     }
 
     /**
@@ -531,15 +563,15 @@ class ProductRestClient(
 
         // only allowed to change the following params if manageStock is enabled
         if (updatedProductModel.manageStock) {
-            if (storedWCProductModel.stockStatus != updatedProductModel.stockStatus) {
-                body["stock_status"] = updatedProductModel.stockStatus
-            }
             if (storedWCProductModel.stockQuantity != updatedProductModel.stockQuantity) {
                 body["stock_quantity"] = updatedProductModel.stockQuantity
             }
             if (storedWCProductModel.backorders != updatedProductModel.backorders) {
                 body["backorders"] = updatedProductModel.backorders
             }
+        }
+        if (storedWCProductModel.stockStatus != updatedProductModel.stockStatus) {
+            body["stock_status"] = updatedProductModel.stockStatus
         }
         if (storedWCProductModel.soldIndividually != updatedProductModel.soldIndividually) {
             body["sold_individually"] = updatedProductModel.soldIndividually
@@ -550,11 +582,11 @@ class ProductRestClient(
         if (storedWCProductModel.salePrice != updatedProductModel.salePrice) {
             body["sale_price"] = updatedProductModel.salePrice
         }
-        if (storedWCProductModel.dateOnSaleFrom != updatedProductModel.dateOnSaleFrom) {
-            body["date_on_sale_from"] = updatedProductModel.dateOnSaleFrom
+        if (storedWCProductModel.dateOnSaleFromGmt != updatedProductModel.dateOnSaleFromGmt) {
+            body["date_on_sale_from_gmt"] = updatedProductModel.dateOnSaleFromGmt
         }
-        if (storedWCProductModel.dateOnSaleTo != updatedProductModel.dateOnSaleTo) {
-            body["date_on_sale_to"] = updatedProductModel.dateOnSaleTo
+        if (storedWCProductModel.dateOnSaleToGmt != updatedProductModel.dateOnSaleToGmt) {
+            body["date_on_sale_to_gmt"] = updatedProductModel.dateOnSaleToGmt
         }
         if (storedWCProductModel.taxStatus != updatedProductModel.taxStatus) {
             body["tax_status"] = updatedProductModel.taxStatus
@@ -598,8 +630,11 @@ class ProductRestClient(
 
             dateCreated = response.date_created ?: ""
             dateModified = response.date_modified ?: ""
+
             dateOnSaleFrom = response.date_on_sale_from ?: ""
             dateOnSaleTo = response.date_on_sale_to ?: ""
+            dateOnSaleFromGmt = response.date_on_sale_from_gmt ?: ""
+            dateOnSaleToGmt = response.date_on_sale_to_gmt ?: ""
 
             type = response.type ?: ""
             status = response.status ?: ""
