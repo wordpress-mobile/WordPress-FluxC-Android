@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.network.xmlrpc;
 
+import android.util.Log;
 import android.util.Xml;
 
 import androidx.annotation.NonNull;
@@ -34,7 +35,7 @@ import java.util.List;
 // TODO: Would be great to use generics / return POJO or model direclty (see GSON code?)
 public class XMLRPCRequest extends BaseRequest<Object> {
     private static final String PROTOCOL_CHARSET = "utf-8";
-    private static final String PROTOCOL_CONTENT_TYPE = String.format("text/xml; charset=%s", PROTOCOL_CHARSET);
+    private static final String PROTOCOL_CONTENT_TYPE = String.format("application/xml; charset=%s", PROTOCOL_CHARSET);
 
     private final Listener<? super Object[]> mListener;
     private final XMLRPC mMethod;
@@ -44,6 +45,9 @@ public class XMLRPCRequest extends BaseRequest<Object> {
     public XMLRPCRequest(String url, XMLRPC method, List<Object> params, Listener<? super Object[]> listener,
                          BaseErrorListener errorListener) {
         super(Method.POST, url, errorListener);
+
+        Log.d("AMANDA-TEST", "XMLRPCRequest: ");
+
         mListener = listener;
         mMethod = method;
         // First params are always username/password

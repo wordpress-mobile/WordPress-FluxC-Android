@@ -13,7 +13,7 @@ import java.io.UnsupportedEncodingException;
 
 public class DiscoveryRequest extends BaseRequest<String> {
     private static final String PROTOCOL_CHARSET = "utf-8";
-    private static final String PROTOCOL_CONTENT_TYPE = String.format("text/xml; charset=%s", PROTOCOL_CHARSET);
+    private static final String PROTOCOL_CONTENT_TYPE = String.format("application/xml; charset=%s", PROTOCOL_CHARSET);
 
     private final Listener<String> mListener;
 
