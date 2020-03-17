@@ -70,6 +70,8 @@ import javax.inject.Singleton;
 @Singleton
 public class PostStore extends Store {
     public static final int NUM_POSTS_PER_FETCH = 20;
+    // We need to fetch all the pages at once, since the server doesn't order them as desired
+    public static final int NUM_PAGES_PER_FETCH = 0;
 
     public static final List<PostStatus> DEFAULT_POST_STATUS_LIST = Collections.unmodifiableList(Arrays.asList(
             PostStatus.DRAFT,
@@ -610,10 +612,10 @@ public class PostStore extends Store {
                 handleFetchedPostList((FetchPostListResponsePayload) action.getPayload());
                 break;
             case FETCH_POSTS:
-                fetchPosts((FetchPostsPayload) action.getPayload(), false);
+                fetchPosts((FetchPostsPayload) action.getPayload(), false, NUM_POSTS_PER_FETCH);
                 break;
             case FETCH_PAGES:
-                fetchPosts((FetchPostsPayload) action.getPayload(), true);
+                fetchPosts((FetchPostsPayload) action.getPayload(), true, NUM_PAGES_PER_FETCH);
                 break;
             case FETCHED_POSTS:
                 handleFetchPostsCompleted((FetchPostsResponsePayload) action.getPayload());
@@ -812,17 +814,17 @@ public class PostStore extends Store {
         mDispatcher.dispatch(ListActionBuilder.newFetchedListItemsAction(fetchedListItemsPayload));
     }
 
-    private void fetchPosts(FetchPostsPayload payload, boolean pages) {
+    private void fetchPosts(FetchPostsPayload payload, boolean pages, int numOfPostsPerFetch) {
         int offset = 0;
         if (payload.loadMore) {
             offset = mPostSqlUtils.getUploadedPostsForSite(payload.site, pages).size();
         }
 
         if (payload.site.isUsingWpComRestApi()) {
-            mPostRestClient.fetchPosts(payload.site, pages, payload.statusTypes, offset, NUM_POSTS_PER_FETCH);
+            mPostRestClient.fetchPosts(payload.site, pages, payload.statusTypes, offset, numOfPostsPerFetch);
         } else {
             // TODO: check for WP-REST-API plugin and use it here
-            mPostXMLRPCClient.fetchPosts(payload.site, pages, payload.statusTypes, offset);
+            mPostXMLRPCClient.fetchPosts(payload.site, pages, payload.statusTypes, offset, numOfPostsPerFetch);
         }
     }
 

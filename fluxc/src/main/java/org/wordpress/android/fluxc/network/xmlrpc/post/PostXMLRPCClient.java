@@ -178,17 +178,17 @@ public class PostXMLRPCClient extends BaseXMLRPCClient {
     }
 
     public void fetchPosts(final SiteModel site, final boolean getPages, List<PostStatus> statusList,
-                           final int offset) {
+                           final int offset, final int numOfPostsPerFetch) {
         List<Object> params =
                 createFetchPostListParameters(site.getSelfHostedSiteId(), site.getUsername(), site.getPassword(),
-                        getPages, offset, PostStore.NUM_POSTS_PER_FETCH, statusList, null, null, null);
+                        getPages, offset, numOfPostsPerFetch, statusList, null, null, null);
 
         final XMLRPCRequest request = new XMLRPCRequest(site.getXmlRpcUrl(), XMLRPC.GET_POSTS, params,
                 new Listener<Object[]>() {
                     @Override
                     public void onResponse(Object[] response) {
                         boolean canLoadMore = false;
-                        if (response != null && response.length == PostStore.NUM_POSTS_PER_FETCH) {
+                        if (response != null && response.length == numOfPostsPerFetch) {
                             canLoadMore = true;
                         }
 

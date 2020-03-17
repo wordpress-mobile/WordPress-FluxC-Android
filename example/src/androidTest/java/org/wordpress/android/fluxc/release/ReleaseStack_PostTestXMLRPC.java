@@ -359,8 +359,8 @@ public class ReleaseStack_PostTestXMLRPC extends ReleaseStack_XMLRPCBase {
         int firstFetchPosts = mPostStore.getPagesCountForSite(sSite);
 
         // Dangerous, will fail for a site with no pages
-        assertTrue(firstFetchPosts > 0 && firstFetchPosts <= PostStore.NUM_POSTS_PER_FETCH);
-        assertEquals(mCanLoadMorePosts, firstFetchPosts == PostStore.NUM_POSTS_PER_FETCH);
+        assertTrue(firstFetchPosts > 0);
+        assertFalse(mCanLoadMorePosts);
     }
 
     @Test
