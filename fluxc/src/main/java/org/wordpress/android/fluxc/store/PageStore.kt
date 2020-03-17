@@ -50,8 +50,6 @@ class PageStore @Inject constructor(
     private var deletePostContinuation: Continuation<OnPostChanged>? = null
     private var updatePostContinuation: Continuation<OnPostChanged>? = null
 
-    private var fetchingSite: SiteModel? = null
-
     init {
         dispatcher.register(this)
     }
@@ -176,7 +174,6 @@ class PageStore @Inject constructor(
     }
 
     suspend fun requestPagesFromServer(site: SiteModel): OnPostChanged = suspendCoroutine { cont ->
-        fetchingSite = site
         postLoadContinuation = cont
         fetchPages(site, false)
     }
@@ -211,13 +208,8 @@ class PageStore @Inject constructor(
     fun onPostChanged(event: OnPostChanged) {
         when (event.causeOfChange) {
             is CauseOfOnPostChanged.FetchPages -> {
-                if (event.canLoadMore && fetchingSite != null) {
-                    fetchPages(fetchingSite!!, true)
-                } else {
-                    postLoadContinuation?.resume(event)
-                    postLoadContinuation = null
-                    fetchingSite = null
-                }
+                postLoadContinuation?.resume(event)
+                postLoadContinuation = null
             }
             is CauseOfOnPostChanged.DeletePost -> {
                 deletePostContinuation?.resume(event)
