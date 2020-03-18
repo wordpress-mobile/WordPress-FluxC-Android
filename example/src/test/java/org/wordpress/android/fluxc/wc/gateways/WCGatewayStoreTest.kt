@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.persistence.WCGatewaySqlUtils.GatewaysTable
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCGatewayStore
 import org.wordpress.android.fluxc.test
+import org.wordpress.android.fluxc.tools.initCoroutineEngine
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
@@ -33,6 +34,7 @@ class WCGatewayStoreTest {
     private val site = SiteModel().apply { id = 321 }
     private val errorSite = SiteModel().apply { id = 123 }
     private val mapper = GatewayMapper()
+    private val coroutineEngine = initCoroutineEngine()
     private lateinit var store: WCGatewayStore
 
     private val gatewayId = GATEWAYS_RESPONSE.first().gatewayId
@@ -51,7 +53,7 @@ class WCGatewayStoreTest {
 
         store = WCGatewayStore(
                 restClient,
-                Unconfined,
+                coroutineEngine,
                 mapper
         )
     }
