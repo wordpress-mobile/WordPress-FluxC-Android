@@ -157,14 +157,14 @@ class WooUpdateProductFragment : Fragment() {
         product_from_date.setOnClickListener {
             showDatePickerDialog(product_from_date.text.toString(), OnDateSetListener { _, year, month, dayOfMonth ->
                 product_from_date.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
-                selectedProductModel?.dateOnSaleFrom = product_from_date.text.toString()
+                selectedProductModel?.dateOnSaleFromGmt = product_from_date.text.toString()
             })
         }
 
         product_to_date.setOnClickListener {
             showDatePickerDialog(product_to_date.text.toString(), OnDateSetListener { _, year, month, dayOfMonth ->
                 product_to_date.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
-                selectedProductModel?.dateOnSaleTo = product_to_date.text.toString()
+                selectedProductModel?.dateOnSaleToGmt = product_to_date.text.toString()
             })
         }
 
@@ -231,8 +231,8 @@ class WooUpdateProductFragment : Fragment() {
                 product_weight.setText(it.weight)
                 product_tax_status.text = it.taxStatus
                 product_sold_individually.isChecked = it.soldIndividually
-                product_from_date.text = it.dateOnSaleFrom.split('T')[0]
-                product_to_date.text = it.dateOnSaleTo.split('T')[0]
+                product_from_date.text = it.dateOnSaleFromGmt.split('T')[0]
+                product_to_date.text = it.dateOnSaleToGmt.split('T')[0]
                 product_manage_stock.isChecked = it.manageStock
                 product_stock_status.text = it.stockStatus
                 product_back_orders.text = it.backorders
