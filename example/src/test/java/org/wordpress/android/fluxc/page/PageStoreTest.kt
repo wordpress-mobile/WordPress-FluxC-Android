@@ -123,31 +123,6 @@ class PageStoreTest {
     }
 
     @Test
-    fun requestPagesFetchesPaginatedFromServerAndReturnsSecondEvent() = test {
-        val firstEvent = OnPostChanged(CauseOfOnPostChanged.FetchPages, 5, true)
-        val lastEvent = OnPostChanged(CauseOfOnPostChanged.FetchPages, 5, false)
-        var event: OnPostChanged? = null
-        val job = launch {
-            event = store.requestPagesFromServer(site)
-        }
-        delay(10)
-        store.onPostChanged(firstEvent)
-        delay(10)
-        store.onPostChanged(lastEvent)
-        delay(10)
-        job.join()
-
-        assertThat(lastEvent).isEqualTo(event)
-        verify(dispatcher, times(2)).dispatch(actionCaptor.capture())
-        val firstPayload = actionCaptor.firstValue.payload as FetchPostsPayload
-        assertThat(firstPayload.site).isEqualTo(site)
-        assertThat(firstPayload.loadMore).isEqualTo(false)
-        val lastPayload = actionCaptor.lastValue.payload as FetchPostsPayload
-        assertThat(lastPayload.site).isEqualTo(site)
-        assertThat(lastPayload.loadMore).isEqualTo(true)
-    }
-
-    @Test
     fun deletePageTest() = test {
         val post = pageHierarchy[0]
         whenever(postStore.getPostByLocalPostId(post.id)).thenReturn(post)

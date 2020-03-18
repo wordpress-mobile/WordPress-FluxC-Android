@@ -70,8 +70,9 @@ import javax.inject.Singleton;
 @Singleton
 public class PostStore extends Store {
     public static final int NUM_POSTS_PER_FETCH = 20;
-    // We need to fetch all the pages at once, since the server doesn't order them as desired
-    public static final int NUM_PAGES_PER_FETCH = 0;
+    // We need to always load all pages, since the server doesn't order them as desired. We are setting the page size
+    // to maximal supported limit in order to minimize number of requests.
+    private static final int NUM_PAGES_PER_FETCH = 99;
 
     public static final List<PostStatus> DEFAULT_POST_STATUS_LIST = Collections.unmodifiableList(Arrays.asList(
             PostStatus.DRAFT,

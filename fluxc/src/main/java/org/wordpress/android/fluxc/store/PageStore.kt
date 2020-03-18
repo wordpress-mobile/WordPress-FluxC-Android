@@ -173,9 +173,10 @@ class PageStore @Inject constructor(
         }
     }
 
-    suspend fun requestPagesFromServer(site: SiteModel): OnPostChanged = suspendCoroutine { cont ->
+    suspend fun requestPagesFromServer(site: SiteModel, loadMore: Boolean): OnPostChanged = suspendCoroutine { cont ->
         postLoadContinuation = cont
-        fetchPages(site, false)
+        val payload = FetchPostsPayload(site, loadMore, PAGE_TYPES)
+        dispatcher.dispatch(PostActionBuilder.newFetchPagesAction(payload))
     }
 
     /**
@@ -196,11 +197,6 @@ class PageStore @Inject constructor(
      */
     suspend fun getPagesWithLocalChanges(site: SiteModel): List<PostModel> = withContext(coroutineContext) {
         return@withContext postSqlUtils.getPostsWithLocalChanges(site.id, true)
-    }
-
-    private fun fetchPages(site: SiteModel, loadMore: Boolean) {
-        val payload = FetchPostsPayload(site, loadMore, PAGE_TYPES)
-        dispatcher.dispatch(PostActionBuilder.newFetchPagesAction(payload))
     }
 
     @SuppressWarnings("unused")
