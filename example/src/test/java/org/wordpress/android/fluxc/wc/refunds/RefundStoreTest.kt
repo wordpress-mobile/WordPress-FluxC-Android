@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.persistence.WCRefundSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCRefundStore
 import org.wordpress.android.fluxc.test
+import org.wordpress.android.fluxc.tools.initCoroutineEngine
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
@@ -51,7 +52,7 @@ class RefundStoreTest {
 
         store = WCRefundStore(
                 restClient,
-                Unconfined,
+                initCoroutineEngine(),
                 mapper
         )
     }
