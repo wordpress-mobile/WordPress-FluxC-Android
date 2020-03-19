@@ -2,27 +2,16 @@ package org.wordpress.android.fluxc.release
 
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.generated.VerticalActionBuilder
 import org.wordpress.android.fluxc.release.ReleaseStack_VerticalTest.TestEvents.SEGMENTS_FETCHED
-import org.wordpress.android.fluxc.release.ReleaseStack_VerticalTest.TestEvents.SEGMENT_PROMPT_FETCHED
 import org.wordpress.android.fluxc.store.VerticalStore
-import org.wordpress.android.fluxc.store.VerticalStore.FetchSegmentPromptPayload
-import org.wordpress.android.fluxc.store.VerticalStore.OnSegmentPromptFetched
 import org.wordpress.android.fluxc.store.VerticalStore.OnSegmentsFetched
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-
-/**
- * Add a static segment id to test to make the tests that depend on a segment id less convoluted and to the point.
- *
- * If these tests ever start to fail because of this ID, we can simply change it to a different value.
- */
-private const val SEGMENT_ID_TO_TEST = 1L
 
 /**
  * Tests with real credentials on real servers using the full release stack (no mock)
@@ -35,9 +24,7 @@ class ReleaseStack_VerticalTest : ReleaseStack_Base() {
 
     internal enum class TestEvents {
         NONE,
-        SEGMENTS_FETCHED,
-        SEGMENT_PROMPT_FETCHED,
-        VERTICALS_FETCHED
+        SEGMENTS_FETCHED
     }
 
     @Throws(Exception::class)
@@ -59,16 +46,6 @@ class ReleaseStack_VerticalTest : ReleaseStack_Base() {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
     }
 
-    @Test
-    fun testFetchSegmentPrompt() {
-        nextEvent = SEGMENT_PROMPT_FETCHED
-        mCountDownLatch = CountDownLatch(1)
-        val payload = FetchSegmentPromptPayload(segmentId = SEGMENT_ID_TO_TEST)
-        mDispatcher.dispatch(VerticalActionBuilder.newFetchSegmentPromptAction(payload))
-
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
-    }
-
     @Subscribe
     @Suppress("unused")
     fun onSegmentsFetched(event: OnSegmentsFetched) {
@@ -77,17 +54,6 @@ class ReleaseStack_VerticalTest : ReleaseStack_Base() {
         }
         assertEquals(TestEvents.SEGMENTS_FETCHED, nextEvent)
         assertTrue(event.segmentList.isNotEmpty())
-        mCountDownLatch.countDown()
-    }
-
-    @Subscribe
-    @Suppress("unused")
-    fun onSegmentPromptFetched(event: OnSegmentPromptFetched) {
-        if (event.isError) {
-            throw AssertionError("Unexpected error occurred with type: " + event.error.type)
-        }
-        assertEquals(TestEvents.SEGMENT_PROMPT_FETCHED, nextEvent)
-        assertNotNull(event.prompt)
         mCountDownLatch.countDown()
     }
 }
