@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.model
 
+import com.google.gson.JsonObject
 import org.wordpress.android.fluxc.utils.DateUtils
 
 class WCProductImageModel(val id: Long) {
@@ -17,6 +18,16 @@ class WCProductImageModel(val id: Long) {
                 name = media.fileName ?: ""
                 return this
             }
+        }
+    }
+
+    fun toJson(): JsonObject {
+        return JsonObject().also { json ->
+            json.addProperty("id", id)
+            json.addProperty("date_created", dateCreated)
+            json.addProperty("src", src)
+            json.addProperty("alt", alt)
+            json.addProperty("name", name)
         }
     }
 }

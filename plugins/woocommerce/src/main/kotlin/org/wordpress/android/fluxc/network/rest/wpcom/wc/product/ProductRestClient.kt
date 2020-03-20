@@ -374,14 +374,7 @@ class ProductRestClient(
         // build json list of images
         val jsonBody = JsonArray()
         for (image in imageList) {
-            with(JsonObject()) {
-                addProperty("id", image.id)
-                addProperty("date_created", image.dateCreated)
-                addProperty("src", image.src)
-                addProperty("alt", image.alt)
-                addProperty("name", image.name)
-                jsonBody.add(this)
-            }
+            jsonBody.add(image.toJson())
         }
         val body = HashMap<String, Any>()
         body["id"] = remoteProductId
@@ -616,6 +609,14 @@ class ProductRestClient(
         }
         if (storedWCProductModel.shortDescription != updatedProductModel.shortDescription) {
             body["short_description"] = updatedProductModel.shortDescription
+        }
+        if (storedWCProductModel.images != updatedProductModel.images) {
+            val imageList = updatedProductModel.getImages()
+            val jsonImages = JsonArray()
+            for (image in imageList) {
+                jsonImages.add(image.toJson())
+            }
+            body["images"] = jsonImages
         }
 
         return body
