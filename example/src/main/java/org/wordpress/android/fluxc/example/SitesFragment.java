@@ -157,9 +157,9 @@ public class SitesFragment extends Fragment {
         mDispatcher.unregister(this);
     }
 
-    private void newSiteAction(String name, String title) {
+    private void newSiteAction(String name) {
         // Default language "en" (english)
-        NewSitePayload newSitePayload = new NewSitePayload(name, title, "en", SiteVisibility.PUBLIC, true);
+        NewSitePayload newSitePayload = new NewSitePayload(name, "en", SiteVisibility.PUBLIC, true);
         mDispatcher.dispatch(SiteActionBuilder.newCreateNewSiteAction(newSitePayload));
     }
 
@@ -167,8 +167,8 @@ public class SitesFragment extends Fragment {
         FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
         DialogFragment newFragment = ThreeEditTextDialog.newInstance(new Listener() {
             @Override
-            public void onClick(String name, String title, String unused) {
-                newSiteAction(name, title);
+            public void onClick(String name, String unusedFirst, String unusedSecond) {
+                newSiteAction(name);
             }
         }, "Site Name", "Site Title", "Unused");
         newFragment.show(ft, "dialog");
