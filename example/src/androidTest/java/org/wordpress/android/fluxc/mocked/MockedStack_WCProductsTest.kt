@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.mocked
 
+import com.google.gson.JsonArray
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -492,6 +493,14 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         return imageList
     }
 
+    private fun generateTestImageListJsonString(): String {
+        val jsonImages = JsonArray()
+        for (image in generateTestImageList()) {
+            jsonImages.add(image.toJson())
+        }
+        return jsonImages.toString()
+    }
+
     private fun generateTestProduct(): WCProductModel {
         return WCProductModel(1).also {
             it.localSiteId = siteModel.id
@@ -541,6 +550,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             name = testProduct.name
             sku = testProduct.sku
             description = "Testing product description update"
+            images = generateTestImageListJsonString()
         }
         productRestClient.updateProduct(siteModel, testProduct, updatedProduct)
 
@@ -555,6 +565,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(updatedProduct.description, product.description)
             assertEquals(updatedProduct.name, product.name)
             assertEquals(updatedProduct.sku, product.sku)
+            assertEquals(updatedProduct.getImages().size, 2)
         }
     }
 
