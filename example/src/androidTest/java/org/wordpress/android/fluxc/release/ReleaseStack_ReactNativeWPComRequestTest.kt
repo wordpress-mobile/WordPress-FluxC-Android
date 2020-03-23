@@ -1,8 +1,8 @@
 package org.wordpress.android.fluxc.release
 
+import junit.framework.Assert.assertEquals
+import junit.framework.Assert.assertTrue
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert
-import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.store.ReactNativeFetchResponse.Success
 import org.wordpress.android.fluxc.store.ReactNativeFetchResponse.Error
@@ -19,22 +19,26 @@ class ReleaseStack_ReactNativeWPComRequestTest : ReleaseStack_WPComBase() {
     }
 
     @Test
-    fun testWpComCall() {
-        val url = "https://public-api.wordpress.com/wp/v2/sites/${sSite.siteId}/media"
-        val params = mapOf("context" to "edit")
-        val response = runBlocking { reactNativeStore.performWPComRequest(url, params) }
+    fun testWpComCall_leading_slash() {
+        assertSuccessWithPath("/wp/v2/media?context=edit")
+    }
 
+    @Test
+    fun testWpComCall_no_leading_slash() {
+        assertSuccessWithPath("wp/v2/media?context=edit")
+    }
+
+    private fun assertSuccessWithPath(path: String) {
+        val response = runBlocking { reactNativeStore.executeRequest(sSite, path) }
         val failureMessage = "Call failed with error: ${(response as? Error)?.error}"
         assertTrue(failureMessage, response is Success)
     }
 
     @Test
     fun testWpComCall_fails() {
-        val url = "https://public-api.wordpress.com/wp/v2/sites/${sSite.siteId}/an-invalid-extension"
-        val response = runBlocking { reactNativeStore.performWPComRequest(url, emptyMap()) }
-
+        val response = runBlocking { reactNativeStore.executeRequest(sSite, "an-invalid-extension") }
         val assertionMessage = "Call should have failed with a 404, instead response was $response"
         val actualStatusCode = (response as? Error)?.error?.volleyError?.networkResponse?.statusCode
-        Assert.assertEquals(assertionMessage, actualStatusCode, 404)
+        assertEquals(assertionMessage, actualStatusCode, 404)
     }
 }
