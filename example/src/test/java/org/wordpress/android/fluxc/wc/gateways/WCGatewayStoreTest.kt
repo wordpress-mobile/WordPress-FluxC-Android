@@ -33,7 +33,6 @@ class WCGatewayStoreTest {
     private val site = SiteModel().apply { id = 321 }
     private val errorSite = SiteModel().apply { id = 123 }
     private val mapper = GatewayMapper()
-    private val coroutineEngine = initCoroutineEngine()
     private lateinit var store: WCGatewayStore
 
     private val gatewayId = GATEWAYS_RESPONSE.first().gatewayId
@@ -52,7 +51,7 @@ class WCGatewayStoreTest {
 
         store = WCGatewayStore(
                 restClient,
-                coroutineEngine,
+                initCoroutineEngine(),
                 mapper
         )
     }
