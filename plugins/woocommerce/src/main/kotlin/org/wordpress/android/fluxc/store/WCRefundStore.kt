@@ -1,24 +1,24 @@
 package org.wordpress.android.fluxc.store
 
-import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.refunds.WCRefundModel
 import org.wordpress.android.fluxc.model.refunds.RefundMapper
+import org.wordpress.android.fluxc.model.refunds.WCRefundModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundRestClient
 import org.wordpress.android.fluxc.persistence.WCRefundSqlUtils
+import org.wordpress.android.fluxc.tools.CoroutineEngine
+import org.wordpress.android.util.AppLog
+import java.math.BigDecimal
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.CoroutineContext
-import java.math.BigDecimal
 
 @Singleton
 class WCRefundStore @Inject constructor(
     private val restClient: RefundRestClient,
-    private val coroutineContext: CoroutineContext,
+    private val coroutineEngine: CoroutineEngine,
     private val refundsMapper: RefundMapper
 ) {
     companion object {
@@ -34,7 +34,7 @@ class WCRefundStore @Inject constructor(
         reason: String = "",
         autoRefund: Boolean = false
     ): WooResult<WCRefundModel> {
-        return withContext(coroutineContext) {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createAmountRefund") {
             val response = restClient.createRefundByAmount(
                     site,
                     orderId,
@@ -42,7 +42,7 @@ class WCRefundStore @Inject constructor(
                     reason,
                     autoRefund
             )
-            return@withContext when {
+            return@withDefaultContext when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> WooResult(refundsMapper.map(response.result))
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -58,7 +58,7 @@ class WCRefundStore @Inject constructor(
         autoRefund: Boolean = false,
         items: List<WCRefundModel.WCRefundItem>
     ): WooResult<WCRefundModel> {
-        return withContext(coroutineContext) {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "createItemsRefund") {
             val response = restClient.createRefundByItems(
                     site,
                     orderId,
@@ -67,7 +67,7 @@ class WCRefundStore @Inject constructor(
                     items,
                     restockItems
             )
-            return@withContext when {
+            return@withDefaultContext when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> WooResult(refundsMapper.map(response.result))
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -83,9 +83,9 @@ class WCRefundStore @Inject constructor(
         orderId: Long,
         refundId: Long
     ): WooResult<WCRefundModel> {
-        return withContext(coroutineContext) {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchRefund") {
             val response = restClient.fetchRefund(site, orderId, refundId)
-            return@withContext when {
+            return@withDefaultContext when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
                     WCRefundSqlUtils.insertOrUpdate(site, orderId, response.result)
@@ -105,14 +105,14 @@ class WCRefundStore @Inject constructor(
         page: Int = DEFAULT_PAGE,
         pageSize: Int = DEFAULT_PAGE_SIZE
     ): WooResult<List<WCRefundModel>> {
-        return withContext(coroutineContext) {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchAllRefunds") {
             val response = restClient.fetchAllRefunds(
                     site,
                     orderId,
                     page,
                     pageSize
             )
-            return@withContext when {
+            return@withDefaultContext when {
                 response.isError -> WooResult(response.error)
                 response.result != null -> {
                     WCRefundSqlUtils.insertOrUpdate(site, orderId, response.result.toList())

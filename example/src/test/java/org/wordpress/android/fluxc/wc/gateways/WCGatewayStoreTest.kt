@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.wc.gateways
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import com.yarolegovich.wellsql.WellSql
-import kotlinx.coroutines.Dispatchers.Unconfined
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -25,6 +24,7 @@ import org.wordpress.android.fluxc.persistence.WCGatewaySqlUtils.GatewaysTable
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCGatewayStore
 import org.wordpress.android.fluxc.test
+import org.wordpress.android.fluxc.tools.initCoroutineEngine
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
@@ -51,7 +51,7 @@ class WCGatewayStoreTest {
 
         store = WCGatewayStore(
                 restClient,
-                Unconfined,
+                initCoroutineEngine(),
                 mapper
         )
     }
