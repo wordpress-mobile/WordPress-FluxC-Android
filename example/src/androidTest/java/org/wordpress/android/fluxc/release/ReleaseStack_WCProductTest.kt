@@ -62,6 +62,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         taxStatus = "taxable"
         stockStatus = "instock"
         backorders = "yes"
+        images = "[]"
     }
     private val productModelWithVariations = WCProductModel(8).apply {
         remoteProductId = BuildConfig.TEST_WC_PRODUCT_WITH_VARIATIONS_ID.toLong()
