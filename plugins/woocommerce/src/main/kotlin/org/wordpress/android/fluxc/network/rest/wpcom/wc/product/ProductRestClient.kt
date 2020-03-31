@@ -654,7 +654,7 @@ class ProductRestClient(
     private fun productShippingClassResponseToProductShippingClassModel(
         response: ProductShippingClassApiResponse,
         site: SiteModel
-    ) : WCProductShippingClassModel {
+    ): WCProductShippingClassModel {
         return WCProductShippingClassModel().apply {
             remoteShippingClassId = response.id
             localSiteId = site.id
