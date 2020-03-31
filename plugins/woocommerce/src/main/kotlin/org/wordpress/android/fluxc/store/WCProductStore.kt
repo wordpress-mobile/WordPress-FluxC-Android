@@ -73,6 +73,11 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var offset: Int = 0
     ) : Payload<BaseNetworkError>()
 
+    class FetchSingleProductShippingClassPayload(
+        var site: SiteModel,
+        var remoteShippingClassId: Long
+    ) : Payload<BaseNetworkError>()
+
     class FetchProductReviewsPayload(
         var site: SiteModel,
         var offset: Int = 0,
@@ -235,6 +240,19 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             error: ProductError,
             site: SiteModel
         ) : this(site) {
+            this.error = error
+        }
+    }
+
+    class RemoteProductShippingClassPayload(
+        val productShippingClassModel: WCProductShippingClassModel,
+        val site: SiteModel
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            productShippingClassModel: WCProductShippingClassModel,
+            site: SiteModel
+        ) : this(productShippingClassModel, site) {
             this.error = error
         }
     }
