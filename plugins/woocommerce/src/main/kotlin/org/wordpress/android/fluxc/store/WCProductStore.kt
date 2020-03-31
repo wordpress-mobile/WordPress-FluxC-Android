@@ -360,6 +360,12 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             ProductSqlUtils.getProductShippingClassListForSite(site.id)
 
     /**
+     * returns the corresponding product shipping class from the database as a [WCProductShippingClassModel].
+     */
+    fun getShippingByRemoteId(site: SiteModel, remoteShippingClassId: Long): WCProductShippingClassModel? =
+            ProductSqlUtils.getProductShippingClassByRemoteId(remoteShippingClassId, site.id)
+
+    /**
      * returns a list of [WCProductModel] for the give [SiteModel] and [remoteProductIds]
      * if it exists in the database
      */
