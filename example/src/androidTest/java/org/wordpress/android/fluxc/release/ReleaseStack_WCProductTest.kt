@@ -26,6 +26,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPa
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductReviewChanged
@@ -47,6 +48,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         FETCHED_PRODUCT_REVIEWS,
         FETCHED_SINGLE_PRODUCT_REVIEW,
         FETCHED_PRODUCT_SHIPPING_CLASS_LIST,
+        FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS,
         UPDATED_PRODUCT_REVIEW_STATUS,
         UPDATED_PRODUCT_IMAGES,
         UPDATED_PRODUCT
@@ -71,6 +73,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     private val remoteProductReviewId = BuildConfig.TEST_WC_PRODUCT_REVIEW_ID.toLong()
 
     private var lastEvent: OnProductChanged? = null
+    private var lastShippingClassEvent: OnProductShippingClassesChanged? = null
     private var lastReviewEvent: OnProductReviewChanged? = null
 
     @Throws(Exception::class)
@@ -170,6 +173,31 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         // Verify results
         val fetchedShippingClasses = productStore.getShippingClassListForSite(sSite)
         assertTrue(fetchedShippingClasses.isNotEmpty())
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchProductShippingClassByRemoteIdForSite() {
+        /*
+         * TEST 1: Fetch product shipping class for site
+         */
+        // Remove all product shipping classes from the database
+        val remoteShippingClassId = 31L
+        ProductSqlUtils.deleteProductShippingClassListForSite(sSite)
+        assertEquals(0, ProductSqlUtils.getProductShippingClassListForSite(sSite.id).size)
+
+        nextEvent = TestEvent.FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductShippingClassAction(
+                FetchSingleProductShippingClassPayload(sSite, remoteShippingClassId)
+        ))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify results
+        val fetchedShippingClasses = productStore.getShippingClassByRemoteId(
+                sSite, remoteShippingClassId
+        )
+        assertNotNull(fetchedShippingClasses)
     }
 
     @Throws(InterruptedException::class)
@@ -487,7 +515,18 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             )
         }
 
-        assertEquals(TestEvent.FETCHED_PRODUCT_SHIPPING_CLASS_LIST, nextEvent)
-        mCountDownLatch.countDown()
+        lastShippingClassEvent = event
+
+        when (event.causeOfChange) {
+            WCProductAction.FETCH_SINGLE_PRODUCT_SHIPPING_CLASS -> {
+                assertEquals(TestEvent.FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            WCProductAction.FETCH_PRODUCT_SHIPPING_CLASS_LIST -> {
+                assertEquals(TestEvent.FETCHED_PRODUCT_SHIPPING_CLASS_LIST, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
+        }
     }
 }
