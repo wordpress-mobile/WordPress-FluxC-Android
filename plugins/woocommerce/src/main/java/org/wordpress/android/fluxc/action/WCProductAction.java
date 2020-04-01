@@ -11,10 +11,12 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPa
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductSkuAvailabilityPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload;
@@ -38,6 +40,8 @@ public enum WCProductAction implements IAction {
     FETCH_PRODUCT_VARIATIONS,
     @Action(payloadType = FetchProductShippingClassListPayload.class)
     FETCH_PRODUCT_SHIPPING_CLASS_LIST,
+    @Action(payloadType = FetchSingleProductShippingClassPayload.class)
+    FETCH_SINGLE_PRODUCT_SHIPPING_CLASS,
     @Action(payloadType = FetchProductReviewsPayload.class)
     FETCH_PRODUCT_REVIEWS,
     @Action(payloadType = FetchSingleProductReviewPayload.class)
@@ -62,6 +66,8 @@ public enum WCProductAction implements IAction {
     FETCHED_PRODUCT_VARIATIONS,
     @Action(payloadType = RemoteProductShippingClassListPayload.class)
     FETCHED_PRODUCT_SHIPPING_CLASS_LIST,
+    @Action(payloadType = RemoteProductShippingClassPayload.class)
+    FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS,
     @Action(payloadType = FetchProductReviewsResponsePayload.class)
     FETCHED_PRODUCT_REVIEWS,
     @Action(payloadType = RemoteProductReviewPayload.class)

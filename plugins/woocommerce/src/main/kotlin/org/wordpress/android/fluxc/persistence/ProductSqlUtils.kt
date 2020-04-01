@@ -304,9 +304,21 @@ object ProductSqlUtils {
     ): List<WCProductShippingClassModel> {
         return WellSql.select(WCProductShippingClassModel::class.java)
                 .where().beginGroup()
-                .equals(WCProductReviewModelTable.LOCAL_SITE_ID, localSiteId)
+                .equals(WCProductShippingClassModelTable.LOCAL_SITE_ID, localSiteId)
                 .endGroup().endWhere()
                 .asModel
+    }
+
+    fun getProductShippingClassByRemoteId(
+        remoteShippingClassId: Long,
+        localSiteId: Int
+    ): WCProductShippingClassModel? {
+        return WellSql.select(WCProductShippingClassModel::class.java)
+                .where().beginGroup()
+                .equals(WCProductShippingClassModelTable.REMOTE_SHIPPING_CLASS_ID, remoteShippingClassId)
+                .equals(WCProductShippingClassModelTable.LOCAL_SITE_ID, localSiteId)
+                .endGroup().endWhere()
+                .asModel.firstOrNull()
     }
 
     fun deleteProductShippingClassListForSite(site: SiteModel): Int {
