@@ -29,7 +29,7 @@ import javax.inject.Singleton
 import kotlin.math.absoluteValue
 
 @Singleton
-class WooCommerceStore @Inject constructor(
+open class WooCommerceStore @Inject constructor(
     private val appContext: Context,
     dispatcher: Dispatcher,
     private val wcCoreRestClient: WooCommerceRestClient
