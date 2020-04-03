@@ -18,6 +18,7 @@ import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @Config(manifest = Config.NONE)
@@ -190,6 +191,41 @@ class ProductSqlUtilsTest {
         val nonExistingSite = SiteModel().apply { id = 400 }
         val savedShippingClassList = ProductSqlUtils.getProductShippingClassListForSite(nonExistingSite.id)
         assertEquals(0, savedShippingClassList.size)
+    }
+
+    @Test
+    fun testGetProductShippingClassByRemoteShippingId() {
+        val shippingClass = ProductTestUtils.generateSampleProductShippingClass(
+                remoteId = 40, siteId = site.id
+        )
+
+        // Insert product shipping class list
+        val rowsAffected = ProductSqlUtils.insertOrUpdateProductShippingClass(shippingClass)
+        assertEquals(1, rowsAffected)
+
+        // Get shipping class for site and remoteId and verify
+        val savedShippingClassExists = ProductSqlUtils.getProductShippingClassByRemoteId(
+                shippingClass.remoteShippingClassId, site.id
+        )
+        assertEquals(shippingClass.remoteShippingClassId, savedShippingClassExists?.remoteShippingClassId)
+        assertEquals(shippingClass.name, savedShippingClassExists?.name)
+        assertEquals(shippingClass.description, savedShippingClassExists?.description)
+        assertEquals(shippingClass.slug, savedShippingClassExists?.slug)
+        assertEquals(shippingClass.localSiteId, savedShippingClassExists?.localSiteId)
+
+        // Get shipping class for a site that does not exist
+        val nonExistingSite = SiteModel().apply { id = 400 }
+        val savedShippingClass = ProductSqlUtils.getProductShippingClassByRemoteId(
+                25, nonExistingSite.id
+        )
+        assertNull(savedShippingClass)
+
+        // Get shipping class for a site that does not exist
+        val nonExistingRemoteId = 25L
+        val nonExistentShippingClass = ProductSqlUtils.getProductShippingClassByRemoteId(
+                nonExistingRemoteId, site.id
+        )
+        assertNull(nonExistentShippingClass)
     }
 
     @Test

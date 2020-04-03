@@ -1,23 +1,23 @@
 package org.wordpress.android.fluxc.store
 
-import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.taxes.WCTaxClassMapper
 import org.wordpress.android.fluxc.model.taxes.WCTaxClassModel
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient
 import org.wordpress.android.fluxc.persistence.WCTaxSqlUtils
+import org.wordpress.android.fluxc.tools.CoroutineEngine
+import org.wordpress.android.util.AppLog
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.CoroutineContext
-import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 
 @Singleton
 class WCTaxStore @Inject constructor(
     private val restClient: WCTaxRestClient,
-    private val coroutineContext: CoroutineContext,
+    private val coroutineEngine: CoroutineEngine,
     private val mapper: WCTaxClassMapper
 ) {
     /**
@@ -27,9 +27,9 @@ class WCTaxStore @Inject constructor(
             WCTaxSqlUtils.getTaxClassesForSite(site.id)
 
     suspend fun fetchTaxClassList(site: SiteModel): WooResult<List<WCTaxClassModel>> {
-        return withContext(coroutineContext) {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchTaxClassList") {
             val response = restClient.fetchTaxClassList(site)
-            return@withContext when {
+            return@withDefaultContext when {
                 response.isError -> {
                     WooResult(response.error)
                 }

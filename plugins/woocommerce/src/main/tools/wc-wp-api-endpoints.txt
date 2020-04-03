@@ -9,6 +9,7 @@
 /products/<id>/variations/
 /products/
 /products/shipping_classes
+/products/shipping_classes/<id>/
 
 /products/reviews/
 /products/reviews/<id>/

@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_REVIEWS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_REVIEW
+import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_SHIPPING_CLASS
 import org.wordpress.android.fluxc.action.WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
@@ -35,6 +36,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPa
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
@@ -54,6 +56,7 @@ class WooProductsFragment : Fragment() {
     private var selectedPos: Int = -1
     private var selectedSite: SiteModel? = null
     private var pendingFetchSingleProductRemoteId: Long? = null
+    private var pendingFetchSingleProductShippingClassRemoteId: Long? = null
 
     private var pendingFetchSingleProductVariationRemoteId: Long? = null
     private var pendingFetchSingleProductVariationOffset: Int = 0
@@ -190,6 +193,22 @@ class WooProductsFragment : Fragment() {
                         val payload = FetchSingleProductReviewPayload(site, id)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductReviewAction(payload))
                     } ?: prependToLog("No valid remoteReviewId defined...doing nothing")
+                }
+            }
+        }
+
+        fetch_product_shipping_class.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the remoteShippingClassId of the site to fetch:"
+                ) { editText ->
+                    pendingFetchSingleProductShippingClassRemoteId = editText.text.toString().toLongOrNull()
+                    pendingFetchSingleProductShippingClassRemoteId?.let { id ->
+                        prependToLog("Submitting request to fetch product shipping class for ID $id")
+                        val payload = FetchSingleProductShippingClassPayload(site, id)
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductShippingClassAction(payload))
+                    } ?: prependToLog("No valid remoteShippingClassId defined...doing nothing")
                 }
             }
         }
@@ -350,18 +369,34 @@ class WooProductsFragment : Fragment() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProductShippingClassesChanged(event: OnProductShippingClassesChanged) {
         if (event.isError) {
-            prependToLog("Error fetching product shipping classes - error: " + event.error.type)
-        } else {
-            prependToLog("Fetched ${event.rowsAffected} product shipping classes. " +
-                    "More shipping classes available ${event.canLoadMore}")
+            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
+            return
+        }
 
-            if (event.canLoadMore) {
-                pendingFetchProductShippingClassListOffset += event.rowsAffected
-                load_more_product_shipping_classes.visibility = View.VISIBLE
-                load_more_product_shipping_classes.isEnabled = true
-            } else {
-                pendingFetchProductShippingClassListOffset = 0
-                load_more_product_shipping_classes.isEnabled = false
+        selectedSite?.let { site ->
+            when (event.causeOfChange) {
+                FETCH_SINGLE_PRODUCT_SHIPPING_CLASS -> {
+                    pendingFetchSingleProductShippingClassRemoteId?.let { remoteId ->
+                        pendingFetchSingleProductShippingClassRemoteId = null
+                        val productShippingClass = wcProductStore.getShippingClassByRemoteId(site, remoteId)
+                        productShippingClass?.let {
+                            prependToLog("Single product shipping class fetched! ${it.name}")
+                        } ?: prependToLog("WARNING: Fetched shipping class not found in the local database!")
+                    }
+                }
+                else -> {
+                    prependToLog("Fetched ${event.rowsAffected} product shipping classes. " +
+                            "More shipping classes available ${event.canLoadMore}")
+
+                    if (event.canLoadMore) {
+                        pendingFetchProductShippingClassListOffset += event.rowsAffected
+                        load_more_product_shipping_classes.visibility = View.VISIBLE
+                        load_more_product_shipping_classes.isEnabled = true
+                    } else {
+                        pendingFetchProductShippingClassListOffset = 0
+                        load_more_product_shipping_classes.isEnabled = false
+                    }
+                }
             }
         }
     }

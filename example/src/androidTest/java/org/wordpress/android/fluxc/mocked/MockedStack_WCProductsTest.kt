@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductSkuAvailabilityPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
@@ -46,6 +47,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     private var countDownLatch: CountDownLatch by notNull()
 
     private val remoteProductId = 1537L
+    private val remoteShippingClassId = 34L
     private val searchQuery = "test"
 
     private val siteModel = SiteModel().apply {
@@ -344,6 +346,51 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
 
         assertEquals(WCProductAction.FETCHED_PRODUCT_SHIPPING_CLASS_LIST, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteProductShippingClassListPayload
+        assertNotNull(payload.error)
+    }
+
+    @Test
+    fun testFetchSingleProductShippingClassSuccess() {
+        interceptor.respondWith("wc-fetch-product-shipping-class-response-success.json")
+        productRestClient.fetchSingleProductShippingClass(siteModel, remoteShippingClassId)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductShippingClassPayload
+        with(payload) {
+            assertNull(error)
+            assertEquals(remoteShippingClassId, productShippingClassModel.remoteShippingClassId)
+            assertEquals(siteModel.id, productShippingClassModel.localSiteId)
+        }
+
+        // save the product shipping class to the db
+        assertEquals(ProductSqlUtils.insertOrUpdateProductShippingClass(payload.productShippingClassModel), 1)
+
+        // now verify the db stored the product shipping class correctly
+        val productShippingClassFromDb = ProductSqlUtils.getProductShippingClassByRemoteId(
+                remoteShippingClassId, siteModel.id
+        )
+        assertNotNull(productShippingClassFromDb)
+        productShippingClassFromDb?.let { productShippingClass ->
+            assertEquals(productShippingClass.remoteShippingClassId, remoteShippingClassId)
+            assertEquals(productShippingClass.localSiteId, siteModel.id)
+            assertEquals(productShippingClass.name, "example1")
+            assertEquals(productShippingClass.slug, "example-1")
+        }
+    }
+
+    @Test
+    fun testFetchSingleProductShippingClassError() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        productRestClient.fetchSingleProductShippingClass(siteModel, remoteShippingClassId)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductShippingClassPayload
         assertNotNull(payload.error)
     }
 
