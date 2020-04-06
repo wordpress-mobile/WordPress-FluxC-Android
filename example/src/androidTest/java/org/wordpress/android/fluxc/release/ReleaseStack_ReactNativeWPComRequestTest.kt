@@ -39,6 +39,6 @@ class ReleaseStack_ReactNativeWPComRequestTest : ReleaseStack_WPComBase() {
         val response = runBlocking { reactNativeStore.executeRequest(sSite, "an-invalid-extension") }
         val assertionMessage = "Call should have failed with a 404, instead response was $response"
         val actualStatusCode = (response as? Error)?.error?.volleyError?.networkResponse?.statusCode
-        assertEquals(assertionMessage, actualStatusCode, 404)
+        assertEquals(assertionMessage, 404, actualStatusCode)
     }
 }
