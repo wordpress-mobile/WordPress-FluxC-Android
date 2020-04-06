@@ -4,6 +4,7 @@ import junit.framework.Assert.assertNotNull
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Ignore
 import org.junit.Test
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.model.SiteModel
@@ -55,6 +56,25 @@ class ReleaseStack_ReactNativeWPAPIRequestTest : ReleaseStack_Base() {
 
             // media queries with a context of 'edit' require authentication
             reactNativeStore.executeRequest(siteWithCustomRestEndpoint, "wp/v2/media?context=edit")
+        }
+
+        val assertionMessage = "Call unexpectedly failed with error: ${(response as? Error)?.error?.message}"
+        assertTrue(assertionMessage, response is Success)
+        assertNotNull((response as Success).result)
+    }
+
+    @Ignore("failing because TEST_WPORG_URL_SH_SELFSIGNED_SSL redirects to a different domain")
+    @Test
+    fun testAuthenticatedCallToSelfSignedSslSite() {
+        val response = runBlocking {
+            val siteUsingSsl = SiteModel().apply {
+                url = BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL
+                username = BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL
+                password = BuildConfig.TEST_WPORG_PASSWORD_SH_SELFSIGNED_SSL
+            }
+
+            // media queries with a context of 'edit' require authentication
+            reactNativeStore.executeRequest(siteUsingSsl, "wp/v2/media?context=edit")
         }
 
         val assertionMessage = "Call unexpectedly failed with error: ${(response as? Error)?.error?.message}"
