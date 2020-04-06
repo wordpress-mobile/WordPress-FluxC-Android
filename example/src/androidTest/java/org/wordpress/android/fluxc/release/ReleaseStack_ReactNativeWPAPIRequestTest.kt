@@ -63,6 +63,25 @@ class ReleaseStack_ReactNativeWPAPIRequestTest : ReleaseStack_Base() {
     }
 
     @Test
+    fun testAuthenticatedCallToSelfSignedSslSite() {
+        val response = runBlocking {
+            val siteUsingSsl = SiteModel().apply {
+//                url = "https://do2.wpmt.co/sslselfsigned"
+                url = BuildConfig.TEST_WPORG_URL_SH_SELFSIGNED_SSL
+                username = BuildConfig.TEST_WPORG_USERNAME_SH_SELFSIGNED_SSL
+                password = BuildConfig.TEST_WPORG_PASSWORD_SH_SELFSIGNED_SSL
+            }
+
+            // media queries with a context of 'edit' require authentication
+            reactNativeStore.executeRequest(siteUsingSsl, "wp/v2/media?context=edit")
+        }
+
+        val assertionMessage = "Call unexpectedly failed with error: ${(response as? Error)?.error?.message}"
+        assertTrue(assertionMessage, response is Success)
+        assertNotNull((response as Success).result)
+    }
+
+    @Test
     fun testIncorrectPathReturnsNotFoundError() {
         val response = runBlocking {
             val site = SiteModel().apply {
