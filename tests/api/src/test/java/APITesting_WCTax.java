@@ -15,7 +15,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 
 public class APITesting_WCTax {
-    private RequestSpecification requestSpec;
+    private RequestSpecification mRequestSpec;
 
     @Before
     public void setup() {
@@ -29,13 +29,13 @@ public class APITesting_WCTax {
             setBasePath("rest/v1.1/jetpack-blogs/173063404/rest-api/").
             addQueryParams(pathParams).
             setAuth(oauth2(System.getenv("API_TEST_OAUTH_KEY")));
-        this.requestSpec = requestBuilder.build();    
+        this.mRequestSpec = requestBuilder.build();    
     }
 
     @Test
     public void canGetTaxClasses() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/taxes/classes").
         when().
             get().

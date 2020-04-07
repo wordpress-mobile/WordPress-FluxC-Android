@@ -16,11 +16,11 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 
 public class APITesting_WCOrder {
-    private RequestSpecification requestSpec;
-    private String ORDER_FIELDS = "id,number,status,currency,date_created_gmt,total,total_tax,shipping_total," +
-            "payment_method,payment_method_title,prices_include_tax,customer_note,discount_total," +
-            "coupon_lines,refunds,billing,shipping,line_items,date_paid_gmt,shipping_lines";
-    private String TRACKING_FIELDS = "tracking_id,tracking_number,tracking_link,tracking_provider,date_shipped";
+    private RequestSpecification mRequestSpec;
+    private String mOrderFields = "id,number,status,currency,date_created_gmt,total,total_tax,shipping_total,"
+            + "payment_method,payment_method_title,prices_include_tax,customer_note,discount_total,"
+            + "coupon_lines,refunds,billing,shipping,line_items,date_paid_gmt,shipping_lines";
+    private String mTrackingFields = "tracking_id,tracking_number,tracking_link,tracking_provider,date_shipped";
 
     @Before
     public void setup() {
@@ -34,14 +34,14 @@ public class APITesting_WCOrder {
             setBasePath("rest/v1.1/jetpack-blogs/173063404/rest-api/").
             addQueryParams(pathParams).
             setAuth(oauth2(System.getenv("API_TEST_OAUTH_KEY")));
-        this.requestSpec = requestBuilder.build();    
+        this.mRequestSpec = requestBuilder.build();
     }
 
     @Test
     public void canGetAllOrders() {
         given().
-            spec(this.requestSpec).
-            queryParam("path", "/wc/v4/orders&per_page=50&offset=0&_fields=" + ORDER_FIELDS).
+            spec(this.mRequestSpec).
+            queryParam("path", "/wc/v4/orders&per_page=50&offset=0&_fields=" + mOrderFields).
         when().
             get().
         then().
@@ -52,7 +52,7 @@ public class APITesting_WCOrder {
     @Test
     public void canGetOrderListSummary() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/orders&per_page=50&offset=0&status=failed&_fields=id,"
                 + "date_created_gmt,date_modified_gmt").
         when().
@@ -65,7 +65,7 @@ public class APITesting_WCOrder {
     @Test
     public void canGetOrdersByID() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/orders&per_page=50&include=625,628,618").
         when().
             get().
@@ -80,7 +80,7 @@ public class APITesting_WCOrder {
     @Test
     public void canGetOrderStatusOptions() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/reports/orders/totals").
         when().
             get().
@@ -92,8 +92,8 @@ public class APITesting_WCOrder {
     @Test
     public void canSearchOrders() {
         given().
-            spec(this.requestSpec).
-            queryParam("path", "/wc/v4/orders&per_page=50&offset=0&status=failed&search=belt&_fields=" + ORDER_FIELDS).
+            spec(this.mRequestSpec).
+            queryParam("path", "/wc/v4/orders&per_page=50&offset=0&status=failed&search=belt&_fields=" + mOrderFields).
         when().
             get().
         then().
@@ -106,8 +106,8 @@ public class APITesting_WCOrder {
     @Test
     public void canGetSingleOrder() {
         given().
-            spec(this.requestSpec).
-            queryParam("path", "/wc/v4/orders/609&_fields=" + ORDER_FIELDS).
+            spec(this.mRequestSpec).
+                queryParam("path", "/wc/v4/orders/609&_fields=" + mOrderFields).
         when().
             get().
         then().
@@ -120,7 +120,7 @@ public class APITesting_WCOrder {
     @Test
     public void canGetOrderCount() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/reports/orders/totals&status=processing").
         when().
             get().
@@ -132,7 +132,7 @@ public class APITesting_WCOrder {
     @Test
     public void canGetHasOrders() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/orders&per_page=1&offset=0&status=processing").
         when().
             get().
@@ -158,7 +158,7 @@ public class APITesting_WCOrder {
 
         // Set Status to processing.
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             header("Content-Type", ContentType.JSON).
             queryParam("path", path).
             queryParam("_method", method).
@@ -170,7 +170,7 @@ public class APITesting_WCOrder {
 
         // Get Status.
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             header("Content-Type", ContentType.JSON).
             queryParam("path", path).
             body(jsonObj.toString()).
@@ -184,7 +184,7 @@ public class APITesting_WCOrder {
         jsonBody.put("status", "completed");
         jsonObj.put("body", jsonBody.toString());
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             header("Content-Type", ContentType.JSON).
             queryParam("path", path).
             queryParam("_method", method).
@@ -199,7 +199,7 @@ public class APITesting_WCOrder {
     @Test
     public void canGetOrderNotes() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/orders/591/notes").
         when().
             get().
@@ -226,7 +226,7 @@ public class APITesting_WCOrder {
         jsonObj.put("method", method);
 
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             header("Content-Type", ContentType.JSON).
             queryParam("path", path).
             queryParam("_method", method).
@@ -240,8 +240,8 @@ public class APITesting_WCOrder {
     @Test
     public void canGetOrderShipmentTrackings() {
         given().
-            spec(this.requestSpec).
-            queryParam("path", "/wc/v4/orders/635/shipment-trackings&_fields=" + TRACKING_FIELDS).
+            spec(this.mRequestSpec).
+            queryParam("path", "/wc/v4/orders/635/shipment-trackings&_fields=" + mTrackingFields).
         when().
             get().
         then().
@@ -254,7 +254,7 @@ public class APITesting_WCOrder {
     @Test
     public void canGetOrderShipmentProviders() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/orders/635/shipment-trackings/providers").
         when().
             get().
@@ -282,7 +282,7 @@ public class APITesting_WCOrder {
 
         // Add tracking number
         String tracking = given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             header("Content-Type", ContentType.JSON).
             queryParam("path", path).
             queryParam("_method", method).
@@ -302,7 +302,7 @@ public class APITesting_WCOrder {
         jsonObj.remove("body");
 
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             header("Content-Type", ContentType.JSON).
             queryParam("path", path).
             body(jsonObj.toString()).

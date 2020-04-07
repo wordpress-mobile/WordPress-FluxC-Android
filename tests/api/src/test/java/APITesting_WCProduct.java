@@ -17,7 +17,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 
 public class APITesting_WCProduct {
-    private RequestSpecification requestSpec;
+    private RequestSpecification mRequestSpec;
 
     @Before
     public void setup() {
@@ -31,13 +31,13 @@ public class APITesting_WCProduct {
             setBasePath("rest/v1.1/jetpack-blogs/173063404/rest-api/").
             addQueryParams(pathParams).
             setAuth(oauth2(System.getenv("API_TEST_OAUTH_KEY")));
-        this.requestSpec = requestBuilder.build();    
+        this.mRequestSpec = requestBuilder.build();    
     }
 
     @Test
     public void canGetAllProducts() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/products&per_page=50&offset=0").
         when().
             get().
@@ -49,7 +49,7 @@ public class APITesting_WCProduct {
     @Test
     public void canGetSingleProduct() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/products/12").
         when().
             get().
@@ -69,7 +69,7 @@ public class APITesting_WCProduct {
     @Test
     public void canGetProductVariations() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/products/12/variations").
         when().
             get().
@@ -83,7 +83,7 @@ public class APITesting_WCProduct {
     @Test
     public void canGetProductSkuAvailability() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/products/&_fields=sku&sku=woo-belt").
         when().
             get().
@@ -96,7 +96,7 @@ public class APITesting_WCProduct {
     @Test
     public void canGetProductShippingClasses() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/products/shipping_classes").
         when().
             get().
@@ -110,7 +110,7 @@ public class APITesting_WCProduct {
     @Test
     public void canGetProductReviews() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/products/reviews").
         when().
             get().
@@ -124,7 +124,7 @@ public class APITesting_WCProduct {
     @Test
     public void canGetSingleProductReview() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/products/reviews/1088").
         when().
             get().
@@ -151,7 +151,7 @@ public class APITesting_WCProduct {
 
         // Set Status to approved.
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             header("Content-Type", ContentType.JSON).
             queryParam("path", path).
             queryParam("_method", method).
@@ -163,7 +163,7 @@ public class APITesting_WCProduct {
 
         // Get Status.
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             header("Content-Type", ContentType.JSON).
             queryParam("path", path).
             body(jsonObj.toString()).
@@ -177,7 +177,7 @@ public class APITesting_WCProduct {
         jsonBody.put("status", "hold");
         jsonObj.put("body", jsonBody.toString());
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             header("Content-Type", ContentType.JSON).
             queryParam("path", path).
             queryParam("_method", method).
@@ -204,7 +204,7 @@ public class APITesting_WCProduct {
 
         // Set Images to none.
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             header("Content-Type", ContentType.JSON).
             queryParam("path", path).
             queryParam("_method", method).
@@ -216,7 +216,7 @@ public class APITesting_WCProduct {
 
         // Make sure there are no images now.
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             header("Content-Type", ContentType.JSON).
             queryParam("path", path).
             body(jsonObj.toString()).
@@ -280,7 +280,7 @@ public class APITesting_WCProduct {
         jsonObj.put("body", jsonBody.toString());
 
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             header("Content-Type", ContentType.JSON).
             queryParam("path", path).
             queryParam("_method", method).

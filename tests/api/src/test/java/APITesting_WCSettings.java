@@ -14,7 +14,7 @@ import static io.restassured.RestAssured.oauth2;
 import static org.hamcrest.Matchers.hasItems;
 
 public class APITesting_WCSettings {
-    private RequestSpecification requestSpec;
+    private RequestSpecification mRequestSpec;
 
     @Before
     public void setup() {
@@ -28,13 +28,13 @@ public class APITesting_WCSettings {
             setBasePath("rest/v1.1/jetpack-blogs/173063404/rest-api/").
             addQueryParams(pathParams).
             setAuth(oauth2(System.getenv("API_TEST_OAUTH_KEY")));
-        this.requestSpec = requestBuilder.build();    
+        this.mRequestSpec = requestBuilder.build();    
     }
 
     @Test
     public void canGetGeneralSettings() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/settings/general").
         when().
             get().
@@ -49,7 +49,7 @@ public class APITesting_WCSettings {
     @Test
     public void canGetProductSettings() {
         given().
-            spec(this.requestSpec).
+            spec(this.mRequestSpec).
             queryParam("path", "/wc/v4/settings/products").
         when().
             get().
