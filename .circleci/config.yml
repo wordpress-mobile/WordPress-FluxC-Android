@@ -147,7 +147,7 @@ jobs:
       - run:
           name: Update Rest Plugin
           command: |
-            wget API_TEST_SITE_URL
+            wget $API_TEST_SITE_URL
             sleep 2m
       - run:
           name: API Tests
