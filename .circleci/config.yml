@@ -151,9 +151,7 @@ jobs:
             sleep 2m
       - run:
           name: API Tests
-          command: |
-            cd tests/api 
-            gradle test
+          command: ./gradlew --stacktrace -PtestsMaxHeapSize=1536m :tests:api:test
       - android/save-test-results
 
 workflows:
