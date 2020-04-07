@@ -29,7 +29,7 @@ import javax.inject.Singleton
 import kotlin.math.absoluteValue
 
 @Singleton
-class WooCommerceStore @Inject constructor(
+open class WooCommerceStore @Inject constructor(
     private val appContext: Context,
     dispatcher: Dispatcher,
     private val wcCoreRestClient: WooCommerceRestClient
@@ -131,7 +131,7 @@ class WooCommerceStore @Inject constructor(
     /**
      * Given a [SiteModel], returns its WooCommerce product settings, or null if no settings are stored for this site.
      */
-    fun getProductSettings(site: SiteModel): WCProductSettingsModel? =
+    open fun getProductSettings(site: SiteModel): WCProductSettingsModel? =
             WCProductSettingsSqlUtils.getProductSettingsForSite(site)
 
     /**
