@@ -136,6 +136,25 @@ jobs:
                 failure_message: '${SLACK_FAILURE_MESSAGE}'
                 success_message: '${SLACK_SUCCESS_MESSAGE}'
                 webhook: '${SLACK_STATUS_WEBHOOK}'
+  WooCommerce API Tests:
+    executor: 
+      name: android/default
+      api-version: "27"
+    steps:
+      - checkout
+      - android/restore-gradle-cache
+      - copy-gradle-properties
+      - run:
+          name: Update Rest Plugin
+          command: |
+            wget API_TEST_SITE_URL
+            sleep 2m
+      - run:
+          name: API Tests
+          command: |
+            cd tests/api 
+            gradle test
+      - android/save-test-results
 
 workflows:
   fluxc:
@@ -167,3 +186,13 @@ workflows:
           timeout: 30m
           num-flaky-test-attempts: 1
           post-slack-status: true
+  nightly-api-tests:
+    triggers:
+      - schedule:
+          cron: "0 * * * *"
+          filters:
+            branches:
+              only:
+                - try/wc-api-tests
+    jobs:
+      - WooCommerce API Tests
