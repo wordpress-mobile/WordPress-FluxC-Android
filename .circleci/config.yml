@@ -185,12 +185,12 @@ workflows:
           num-flaky-test-attempts: 1
           post-slack-status: true
   nightly-api-tests:
-    #triggers:
-    #  - schedule:
-    #      cron: "0 2 * * *"
-    #      filters:
-    #        branches:
-    #          only:
-    #            - develop
+    triggers:
+      - schedule:
+          cron: "0 2 * * *"
+          filters:
+            branches:
+              only:
+                - develop
     jobs:
       - WooCommerce API Tests
