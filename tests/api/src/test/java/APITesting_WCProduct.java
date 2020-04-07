@@ -106,6 +106,18 @@ public class APITesting_WCProduct {
                  "data.name", hasItems("hats", "shirts")
             );
     }
+    
+    @Test
+    public void canGetProductShippingClassbyID() {
+        given().
+            spec(this.mRequestSpec).
+            queryParam("path", "/wc/v4/products/shipping_classes/35").
+        when().
+            get().
+        then().
+            statusCode(200).
+            body("data.name", equalTo("hats"));
+    }
 
     @Test
     public void canGetProductReviews() {
