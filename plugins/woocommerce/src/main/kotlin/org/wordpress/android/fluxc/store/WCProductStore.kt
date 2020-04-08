@@ -34,6 +34,14 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         val DEFAULT_PRODUCT_SORTING = DATE_DESC
     }
 
+    /**
+     * Defines the filter options currently supported in the app
+     */
+    enum class ProductFilterOption {
+        STOCK_STATUS, STATUS, TYPE;
+        override fun toString() = name.toLowerCase()
+    }
+
     class FetchProductSkuAvailabilityPayload(
         var site: SiteModel,
         var sku: String
