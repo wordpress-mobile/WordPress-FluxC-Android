@@ -95,7 +95,7 @@ public class APITesting_WCRefund {
 
         // Add new refund
         method = "post";
-        path = "/wc/v3/orders/156/refunds";
+        path = "/wc/v4/orders/156/refunds";
         JSONObject jsonBody = new JSONObject();
         jsonBody.put("reason", "API testing");
         jsonBody.put("amount", "142.00");
