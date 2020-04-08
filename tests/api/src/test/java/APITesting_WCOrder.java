@@ -307,9 +307,7 @@ public class APITesting_WCOrder {
             queryParam("path", path).
             body(jsonObj.toString()).
         when().
-            log().
-            all().
-            post().peek().
+            post().
         then().
             statusCode(200);
     }

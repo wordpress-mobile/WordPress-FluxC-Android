@@ -303,4 +303,66 @@ public class APITesting_WCProduct {
             statusCode(200).
             body("data.images", hasSize(4));
     }
+
+    @Test
+    public void canUpdateProduct() {
+        String path = "/wc/v4/products/19";
+        String method = "put";
+
+        JSONObject jsonBody = new JSONObject();
+        jsonBody.put("regular_price", "90");
+        jsonBody.put("name", "Sunglasses");
+        jsonBody.put("weight", "0");
+        jsonBody.put("slug", "sunglasses");
+        jsonBody.put("short_description", "Sunglasses you will love");
+        JSONObject jsonObj = new JSONObject();
+        jsonObj.put("body", jsonBody.toString());
+        jsonObj.put("path", path);
+        jsonObj.put("method", method);
+        jsonObj.put("json", "true"); 
+
+        // Reset Product
+        given().
+            spec(this.mRequestSpec).
+            header("Content-Type", ContentType.JSON).
+            queryParam("path", path).
+            queryParam("_method", method).
+            body(jsonObj.toString()).
+        when().
+            post().
+        then().
+            body("data.id", equalTo(19),
+                "data.regular_price", equalTo("90"),
+                "data.name", equalTo("Sunglasses"),
+                "data.weight", equalTo("0"),
+                "data.slug", equalTo("sunglasses"),
+                "data.short_description", equalTo("Sunglasses you will love")
+            );
+
+        // Update Product
+        jsonBody = new JSONObject();
+        jsonBody.put("regular_price", "120");
+        jsonBody.put("name", "HOT Sunglasses");
+        jsonBody.put("weight", "12");
+        jsonBody.put("slug", "hot-sunglasses");
+        jsonBody.put("short_description", "Really hot sunglasses");
+        jsonObj.put("body", jsonBody.toString());
+
+        given().
+            spec(this.mRequestSpec).
+            header("Content-Type", ContentType.JSON).
+            queryParam("path", path).
+            body(jsonObj.toString()).
+        when().
+            post().
+        then().
+            statusCode(200).
+            body("data.id", equalTo(19),
+                "data.regular_price", equalTo("120"),
+                "data.name", equalTo("HOT Sunglasses"),
+                "data.weight", equalTo("12"),
+                "data.slug", equalTo("hot-sunglasses"),
+                "data.short_description", equalTo("Really hot sunglasses")
+            );
+    }
 }
