@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SORTING
+import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
@@ -69,6 +70,39 @@ object ProductSqlUtils {
                 .isIn(WCProductModelTable.REMOTE_PRODUCT_ID, remoteProductIds)
                 .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
                 .endGroup().endWhere()
+                .asModel
+    }
+
+    fun getProductsByFilterOptions(
+        site: SiteModel,
+        filterOptions: Map<ProductFilterOption, String>,
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
+    ): List<WCProductModel> {
+        val queryBuilder = WellSql.select(WCProductModel::class.java)
+                .where().beginGroup()
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+
+        if (filterOptions.containsKey(ProductFilterOption.STATUS)) {
+            queryBuilder.equals(WCProductModelTable.STATUS, filterOptions[ProductFilterOption.STATUS])
+        }
+        if (filterOptions.containsKey(ProductFilterOption.STOCK_STATUS)) {
+            queryBuilder.equals(WCProductModelTable.STOCK_STATUS, filterOptions[ProductFilterOption.STOCK_STATUS])
+        }
+        if (filterOptions.containsKey(ProductFilterOption.TYPE)) {
+            queryBuilder.equals(WCProductModelTable.TYPE, filterOptions[ProductFilterOption.TYPE])
+        }
+
+        val sortOrder = when (sortType) {
+            TITLE_ASC, DATE_ASC -> SelectQuery.ORDER_ASCENDING
+            TITLE_DESC, DATE_DESC -> SelectQuery.ORDER_DESCENDING
+        }
+        val sortField = when (sortType) {
+            TITLE_ASC, TITLE_DESC -> WCProductModelTable.NAME
+            DATE_ASC, DATE_DESC -> WCProductModelTable.DATE_CREATED
+        }
+        return queryBuilder
+                .endGroup().endWhere()
+                .orderBy(sortField, sortOrder)
                 .asModel
     }
 

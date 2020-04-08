@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductReviewApiResponse
 
 object ProductTestUtils {
@@ -13,7 +14,9 @@ object ProductTestUtils {
         type: String = "simple",
         name: String = "",
         virtual: Boolean = false,
-        siteId: Int = 6
+        siteId: Int = 6,
+        stockStatus: String = CoreProductStockStatus.IN_STOCK.value,
+        status: String = "publish"
     ): WCProductModel {
         return WCProductModel().apply {
             remoteProductId = remoteId
@@ -21,6 +24,8 @@ object ProductTestUtils {
             this.type = type
             this.name = name
             this.virtual = virtual
+            this.stockStatus = stockStatus
+            this.status = status
         }
     }
 
