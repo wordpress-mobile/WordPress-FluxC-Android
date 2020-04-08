@@ -57,7 +57,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         var offset: Int = 0,
         var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        var remoteProductIds: List<Long>? = null
+        var remoteProductIds: List<Long>? = null,
+        var filterOptions: Map<ProductFilterOption, String>? = null
     ) : Payload<BaseNetworkError>()
 
     class SearchProductsPayload(
@@ -474,7 +475,11 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     private fun fetchProducts(payload: FetchProductsPayload) {
         with(payload) {
-            wcProductRestClient.fetchProducts(site, pageSize, offset, sorting, remoteProductIds = remoteProductIds)
+            wcProductRestClient.fetchProducts(
+                    site, pageSize, offset, sorting,
+                    remoteProductIds = remoteProductIds,
+                    filterOptions = filterOptions
+                    )
         }
     }
 

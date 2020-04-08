@@ -31,6 +31,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUC
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductError
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
+import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
@@ -180,7 +181,8 @@ class ProductRestClient(
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
-        remoteProductIds: List<Long>? = null
+        remoteProductIds: List<Long>? = null,
+        filterOptions: Map<ProductFilterOption, String>? = null
     ) {
         // orderby (string) Options: date, id, include, title and slug. Default is date.
         val orderBy = when (sortType) {
@@ -202,6 +204,10 @@ class ProductRestClient(
                 "search" to (searchQuery ?: ""))
         remoteProductIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
+        }
+
+        filterOptions?.let { filters ->
+            filters.map { params.put(it.key.toString(), it.value) }
         }
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
