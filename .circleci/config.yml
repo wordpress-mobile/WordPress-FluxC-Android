@@ -153,6 +153,9 @@ jobs:
           name: API Tests
           command: ./gradlew --stacktrace -PtestsMaxHeapSize=1536m :tests:api:test
       - android/save-test-results
+      - slack/status:
+          fail_only: 'true'
+          webhook: '${SLACK_WOO_WEBHOOK}'
 
 workflows:
   fluxc:
