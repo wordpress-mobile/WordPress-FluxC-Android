@@ -20,7 +20,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
-import java.util.Locale
+import java.util.Comparator
 
 object ProductSqlUtils {
     fun insertOrUpdateProduct(product: WCProductModel): Int {
@@ -110,14 +110,42 @@ object ProductSqlUtils {
                 .orderBy(sortField, sortOrder)
                 .asModel
 
-        // WellSQL uses case-sensitive sorting but we need case-insensitive
         if (sortType == TITLE_ASC) {
-            products.sortBy { it.name.toLowerCase(Locale.getDefault()) }
+            products.sortWith(Comparator { product1, product2 ->
+                compareProductNames(product1.name, product2.name)
+            })
         } else if (sortType == TITLE_DESC) {
-            products.sortByDescending { it.name.toLowerCase(Locale.getDefault()) }
+            products.sortWith(Comparator { product1, product2 ->
+                compareProductNames(product2.name, product1.name)
+            })
         }
 
         return products
+    }
+
+    /**
+     * WellSQL doesn't support "COLLATE NOCASE" so we have to manually provide case-insensitive
+     * sorting. We also have to account for the fact that the server sorts products with non-
+     * alpha characters in their names the reverse of how they're returned from the database.
+     * See https://github.com/woocommerce/woocommerce-android/issues/2235
+     */
+    private fun compareProductNames(name1: String, name2: String): Int {
+        val compare = name1.compareTo(name2)
+        if (compare < 0) {
+            for (index in 0 until name1.length) {
+                if (index >= name2.length) {
+                    break
+                }
+                // if the first char of the first name is non-alpha but the first char in the
+                // second name *is* alpha, return the opposite
+                if (!Character.isLetterOrDigit(name1[index])) {
+                    if (Character.isLetterOrDigit(name2[index])) {
+                        return -compare
+                    }
+                }
+            }
+        }
+        return compare
     }
 
     fun deleteProductsForSite(site: SiteModel): Int {
