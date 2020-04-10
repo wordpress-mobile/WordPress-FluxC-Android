@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
+import java.util.Locale
 
 object ProductSqlUtils {
     fun insertOrUpdateProduct(product: WCProductModel): Int {
@@ -102,12 +103,15 @@ object ProductSqlUtils {
             TITLE_ASC, TITLE_DESC -> WCProductModelTable.NAME
             DATE_ASC, DATE_DESC -> WCProductModelTable.DATE_CREATED
         }
-        return WellSql.select(WCProductModel::class.java)
+        val products = WellSql.select(WCProductModel::class.java)
                 .where()
                 .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
                 .endWhere()
                 .orderBy(sortField, sortOrder)
                 .asModel
+        // WellSQL uses case-sensitive sorting but we need case-insensitive
+        products.sortBy { it.name.toLowerCase(Locale.getDefault()) }
+        return products
     }
 
     fun deleteProductsForSite(site: SiteModel): Int {
