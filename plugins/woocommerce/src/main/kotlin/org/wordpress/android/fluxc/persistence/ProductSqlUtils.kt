@@ -109,8 +109,14 @@ object ProductSqlUtils {
                 .endWhere()
                 .orderBy(sortField, sortOrder)
                 .asModel
+
         // WellSQL uses case-sensitive sorting but we need case-insensitive
-        products.sortBy { it.name.toLowerCase(Locale.getDefault()) }
+        if (sortType == TITLE_ASC) {
+            products.sortBy { it.name.toLowerCase(Locale.getDefault()) }
+        } else if (sortType == TITLE_DESC) {
+            products.sortByDescending { it.name.toLowerCase(Locale.getDefault()) }
+        }
+
         return products
     }
 
