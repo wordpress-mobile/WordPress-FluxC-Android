@@ -514,7 +514,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         val onProductChanged: OnProductChanged
 
         if (payload.isError) {
-            onProductChanged = OnProductChanged(0).also { it.error = payload.error }
+            onProductChanged = OnProductChanged(0).also {
+                it.error = payload.error
+                it.remoteProductId = payload.product.remoteProductId
+            }
         } else {
             val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
             onProductChanged = OnProductChanged(rowsAffected).also {
