@@ -435,6 +435,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         when (event.causeOfChange) {
             WCProductAction.FETCH_SINGLE_PRODUCT -> {
                 assertEquals(TestEvent.FETCHED_SINGLE_PRODUCT, nextEvent)
+                assertEquals(event.remoteProductId, productModel.remoteProductId)
                 mCountDownLatch.countDown()
             }
             WCProductAction.FETCH_PRODUCTS -> {
