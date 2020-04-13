@@ -101,10 +101,23 @@ object ProductSqlUtils {
             TITLE_ASC, TITLE_DESC -> WCProductModelTable.NAME
             DATE_ASC, DATE_DESC -> WCProductModelTable.DATE_CREATED
         }
-        return queryBuilder
+
+        val products = queryBuilder
                 .endGroup().endWhere()
                 .orderBy(sortField, sortOrder)
                 .asModel
+
+        if (sortType == TITLE_ASC) {
+            products.sortWith(Comparator { product1, product2 ->
+                product2.name.compareTo(product1.name)
+            })
+        } else if (sortType == TITLE_DESC) {
+            products.sortWith(Comparator { product1, product2 ->
+                product1.name.compareTo(product2.name)
+            })
+        }
+
+        return products
     }
 
     fun geProductExistsByRemoteId(site: SiteModel, remoteProductId: Long): Boolean {
@@ -144,43 +157,19 @@ object ProductSqlUtils {
                 .orderBy(sortField, sortOrder)
                 .asModel
 
+        // WellSQL doesn't support "COLLATE NOCASE" so we have to manually provide
+        // case-insensitive sorting
         if (sortType == TITLE_ASC) {
             products.sortWith(Comparator { product1, product2 ->
-                compareProductNames(product2.name, product1.name)
+                product2.name.compareTo(product1.name)
             })
         } else if (sortType == TITLE_DESC) {
             products.sortWith(Comparator { product1, product2 ->
-                compareProductNames(product1.name, product2.name)
+                product1.name.compareTo(product2.name)
             })
         }
 
         return products
-    }
-
-    /**
-     * WellSQL doesn't support "COLLATE NOCASE" so we have to manually provide case-insensitive
-     * sorting. We also have to account for the fact that the server sorts products with non-
-     * alpha chars in their names to the top of the product list whereas SQLite sorts them
-     * to the bottom.
-     * See https://github.com/woocommerce/woocommerce-android/issues/2235
-     */
-    private fun compareProductNames(name1: String, name2: String): Int {
-        val compare = name1.compareTo(name2)
-        if (compare < 0) {
-            for (index in 0 until name1.length) {
-                if (index >= name2.length) {
-                    break
-                }
-                // if the first char of the first name isn't alphanumeric but the first char
-                // in the second name is, return the opposite
-                if (!Character.isLetterOrDigit(name1[index])) {
-                    if (Character.isLetterOrDigit(name2[index])) {
-                        return -compare
-                    }
-                }
-            }
-        }
-        return compare
     }
 
     fun deleteProductsForSite(site: SiteModel): Int {
