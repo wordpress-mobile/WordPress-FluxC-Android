@@ -374,7 +374,8 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
     public void testFetchingPrivateAtomicCookieForNonExistentSite() throws InterruptedException {
         authenticateUser(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
 
-        mDispatcher.dispatch(SiteActionBuilder.newFetchPrivateAtomicCookieAction(new FetchPrivateAtomicCookiePayload(-1)));
+        mDispatcher.dispatch(SiteActionBuilder.newFetchPrivateAtomicCookieAction(
+                new FetchPrivateAtomicCookiePayload(-1)));
         mNextEvent = TestEvents.ERROR_INVALID_SITE;
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
