@@ -166,13 +166,13 @@ object ProductSqlUtils {
      */
     private fun compareProductNames(name1: String, name2: String): Int {
         val compare = name1.compareTo(name2)
-        if (compare > 0) {
+        if (compare < 0) {
             for (index in 0 until name1.length) {
                 if (index >= name2.length) {
                     break
                 }
-                // if the first char of the first name is non-alpha but the first char in the
-                // second name *is* alpha, return the opposite
+                // if the first char of the first name isn't alphanumeric but the first char
+                // in the second name is, return the opposite
                 if (!Character.isLetterOrDigit(name1[index])) {
                     if (Character.isLetterOrDigit(name2[index])) {
                         return -compare
