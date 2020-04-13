@@ -1,0 +1,42 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="org.wordpress.android.fluxc.example.ui.products.WooProductFiltersFragment">
+
+    <LinearLayout
+        android:id="@+id/buttonContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/filter_stock_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filter by Stock Status"/>
+
+        <Button
+            android:id="@+id/filter_by_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filter by Status" />
+
+        <Button
+            android:id="@+id/filter_by_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filter by Product Type" />
+
+
+        <Button
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:id="@+id/filter_products"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Filter Products" />
+    </LinearLayout>
+</ScrollView>

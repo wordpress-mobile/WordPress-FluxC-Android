@@ -34,6 +34,14 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         val DEFAULT_PRODUCT_SORTING = TITLE_ASC
     }
 
+    /**
+     * Defines the filter options currently supported in the app
+     */
+    enum class ProductFilterOption {
+        STOCK_STATUS, STATUS, TYPE;
+        override fun toString() = name.toLowerCase()
+    }
+
     class FetchProductSkuAvailabilityPayload(
         var site: SiteModel,
         var sku: String
@@ -49,7 +57,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         var offset: Int = 0,
         var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        var remoteProductIds: List<Long>? = null
+        var remoteProductIds: List<Long>? = null,
+        var filterOptions: Map<ProductFilterOption, String>? = null
     ) : Payload<BaseNetworkError>()
 
     class SearchProductsPayload(
@@ -373,6 +382,17 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     fun getProductsByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): List<WCProductModel> =
             ProductSqlUtils.getProductsByRemoteIds(site, remoteProductIds)
 
+    /**
+     * returns a list of [WCProductModel] for the give [SiteModel] and [filterOptions]
+     * if it exists in the database
+     */
+    fun getProductsByFilterOptions(
+        site: SiteModel,
+        filterOptions: Map<ProductFilterOption, String>,
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
+    ): List<WCProductModel> =
+            ProductSqlUtils.getProductsByFilterOptions(site, filterOptions, sortType)
+
     fun getProductsForSite(site: SiteModel, sortType: ProductSorting = DEFAULT_PRODUCT_SORTING) =
             ProductSqlUtils.getProductsForSite(site, sortType)
 
@@ -467,7 +487,11 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     private fun fetchProducts(payload: FetchProductsPayload) {
         with(payload) {
-            wcProductRestClient.fetchProducts(site, pageSize, offset, sorting, remoteProductIds = remoteProductIds)
+            wcProductRestClient.fetchProducts(
+                    site, pageSize, offset, sorting,
+                    remoteProductIds = remoteProductIds,
+                    filterOptions = filterOptions
+                    )
         }
     }
 
