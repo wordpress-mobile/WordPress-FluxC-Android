@@ -16,9 +16,12 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.AccessCookieErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.AutomatedTransferErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.DomainAvailabilityStatus;
 import org.wordpress.android.fluxc.store.SiteStore.DomainMappabilityStatus;
+import org.wordpress.android.fluxc.store.SiteStore.FetchAccessCookiePayload;
+import org.wordpress.android.fluxc.store.SiteStore.OnAccessCookieFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferEligibilityChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferInitiated;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferStatusChecked;
@@ -75,6 +78,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         FETCHED_TLDS_FILTERED_DOMAINS,
         DOMAIN_SUGGESTION_ERROR_INVALID_QUERY,
         ERROR_INVALID_SITE,
+        ERROR_INVALID_SITE_TYPE,
         ERROR_UNKNOWN_SITE,
         INELIGIBLE_FOR_AUTOMATED_TRANSFER,
         INITIATE_INELIGIBLE_AUTOMATED_TRANSFER,
@@ -366,6 +370,29 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
+    public void testFetchingPrivateAtomicCookieForNonExistentSite() throws InterruptedException {
+        authenticateUser(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        mDispatcher.dispatch(SiteActionBuilder.newFetchAccessCookieAction(new FetchAccessCookiePayload(-1)));
+        mNextEvent = TestEvents.ERROR_INVALID_SITE;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testFetchingPrivateAtomicCookieForNonPrivateAtSite() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+
+        SiteModel nonAtomicSite = mSiteStore.getSites().get(0);
+
+        mDispatcher.dispatch(
+                SiteActionBuilder.newFetchAccessCookieAction(new FetchAccessCookiePayload(nonAtomicSite.getSiteId())));
+        mNextEvent = TestEvents.ERROR_INVALID_SITE_TYPE;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -595,6 +622,22 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         assertEquals(TestEvents.FETCHED_DOMAIN_SUPPORTED_COUNTRIES, mNextEvent);
         assertNotNull(event.supportedCountries);
         assertFalse(event.supportedCountries.isEmpty());
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onAccessCookieFetched(OnAccessCookieFetched event) {
+        if (event.isError()) {
+            assertNotNull(event.error);
+            if (mNextEvent == TestEvents.ERROR_INVALID_SITE) {
+                assertEquals(event.error.type, AccessCookieErrorType.SITE_MISSING_FROM_STORE);
+            } else if (mNextEvent == TestEvents.ERROR_INVALID_SITE_TYPE) {
+                assertEquals(event.error.type, AccessCookieErrorType.NON_PRIVATE_AT_SITE);
+            } else {
+                throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            }
+        }
         mCountDownLatch.countDown();
     }
 
