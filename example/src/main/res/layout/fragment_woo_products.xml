@@ -61,6 +61,13 @@
             android:text="Fetch Products"/>
 
         <Button
+            android:id="@+id/fetch_products_with_filters"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Products with Filters"/>
+
+        <Button
             android:id="@+id/search_products"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

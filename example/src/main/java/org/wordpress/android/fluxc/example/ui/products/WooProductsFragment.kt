@@ -117,6 +117,10 @@ class WooProductsFragment : Fragment() {
             }
         }
 
+        fetch_products_with_filters.setOnClickListener {
+            replaceFragment(WooProductFiltersFragment.newInstance(selectedPos))
+        }
+
         search_products.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(
