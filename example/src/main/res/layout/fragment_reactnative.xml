@@ -6,69 +6,51 @@
     android:padding="16dp"
     >
 
+    <TextView
+        android:id="@+id/top_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:padding="8dp"
+        android:layout_marginBottom="30dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/frame"
+        />
+
     <FrameLayout
-        android:id="@+id/wp_com_box"
+        android:id="@+id/frame"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="#1000"
         android:padding="30dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="@+id/wp_com_request_button"
+        app:layout_constraintTop_toBottomOf="@+id/top_text_view"
+        app:layout_constraintBottom_toBottomOf="@+id/request_button"
         />
 
     <EditText
-        android:id="@+id/wp_com_url_field"
+        android:id="@+id/path_field"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
-        android:hint="Enter full WP.com path"
-        app:layout_constraintTop_toTopOf="@+id/wp_com_box"
-        app:layout_constraintStart_toStartOf="@id/wp_com_box"
-        app:layout_constraintEnd_toEndOf="@+id/wp_com_box"
+        android:hint="Enter path"
+        android:text="wp/v2/media?context=edit"
+        android:imeOptions="actionSend"
+        android:inputType="textUri"
+        app:layout_constraintTop_toTopOf="@+id/frame"
+        app:layout_constraintStart_toStartOf="@id/frame"
+        app:layout_constraintEnd_toEndOf="@+id/frame"
         />
 
     <Button
-        android:id="@+id/wp_com_request_button"
+        android:id="@+id/request_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="8dp"
-        android:text="Execute WP.com Request"
-        app:layout_constraintTop_toBottomOf="@+id/wp_com_url_field"
+        android:layout_margin="8dp"
+        android:text="Execute Request"
+        app:layout_constraintTop_toBottomOf="@+id/path_field"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        />
-
-
-    <FrameLayout
-        android:id="@+id/wp_api_box"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="#1000"
-        android:layout_marginTop="30dp"
-        android:paddingBottom="30dp"
-        app:layout_constraintTop_toBottomOf="@id/wp_com_box"
-        app:layout_constraintBottom_toBottomOf="@+id/wp_api_request_button"
-        />
-
-    <EditText
-        android:id="@+id/wp_api_url_field"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:hint="Enter full WP api path"
-        app:layout_constraintTop_toTopOf="@+id/wp_api_box"
-        app:layout_constraintStart_toStartOf="@+id/wp_api_box"
-        app:layout_constraintEnd_toEndOf="@+id/wp_api_box"
-        />
-
-    <Button
-        android:id="@+id/wp_api_request_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Execute WP api Request"
-        app:layout_constraintTop_toBottomOf="@+id/wp_api_url_field"
-        app:layout_constraintStart_toStartOf="@id/wp_api_box"
-        app:layout_constraintEnd_toEndOf="@id/wp_api_box"
+        app:layout_constraintEnd_toEndOf="@+id/frame"
+        app:layout_constraintBottom_toBottomOf="@+id/frame"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
