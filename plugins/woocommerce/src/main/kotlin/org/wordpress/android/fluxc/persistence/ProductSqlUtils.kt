@@ -153,7 +153,6 @@ object ProductSqlUtils {
                 .orderBy(sortField, sortOrder)
                 .asModel
 
-
         return if (sortType == TITLE_ASC) {
             sortProductsByName(products, false)
         } else if (sortType == TITLE_DESC) {
