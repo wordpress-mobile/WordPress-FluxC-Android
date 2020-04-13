@@ -312,7 +312,6 @@ class WooProductsFragment : Fragment() {
                     }
                 }
                 FETCH_PRODUCTS -> {
-                    ProductSqlUtils.getProductsForSite(site) // TODO remove
                     prependToLog("Fetched ${event.rowsAffected} products")
                 }
                 FETCH_PRODUCT_VARIATIONS -> {

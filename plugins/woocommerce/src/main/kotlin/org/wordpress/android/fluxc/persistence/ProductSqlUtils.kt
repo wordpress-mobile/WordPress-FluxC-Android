@@ -109,11 +109,11 @@ object ProductSqlUtils {
 
         if (sortType == TITLE_ASC) {
             products.sortWith(Comparator { product1, product2 ->
-                product2.name.compareTo(product1.name)
+                product1.name.compareTo(product2.name)
             })
         } else if (sortType == TITLE_DESC) {
             products.sortWith(Comparator { product1, product2 ->
-                product1.name.compareTo(product2.name)
+                product2.name.compareTo(product1.name)
             })
         }
 
@@ -161,11 +161,11 @@ object ProductSqlUtils {
         // case-insensitive sorting
         if (sortType == TITLE_ASC) {
             products.sortWith(Comparator { product1, product2 ->
-                product2.name.compareTo(product1.name)
+                product1.name.compareTo(product2.name)
             })
         } else if (sortType == TITLE_DESC) {
             products.sortWith(Comparator { product1, product2 ->
-                product1.name.compareTo(product2.name)
+                product2.name.compareTo(product1.name)
             })
         }
 
