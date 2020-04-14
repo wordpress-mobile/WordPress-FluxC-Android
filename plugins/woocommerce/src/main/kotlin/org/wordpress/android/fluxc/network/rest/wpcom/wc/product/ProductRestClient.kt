@@ -592,6 +592,9 @@ class ProductRestClient(
         if (storedWCProductModel.catalogVisibility != updatedProductModel.catalogVisibility) {
             body["catalog_visibility"] = updatedProductModel.catalogVisibility
         }
+        if (storedWCProductModel.slug != updatedProductModel.slug) {
+            body["slug"] = updatedProductModel.slug
+        }
         if (storedWCProductModel.featured != updatedProductModel.featured) {
             body["featured"] = updatedProductModel.featured
         }
