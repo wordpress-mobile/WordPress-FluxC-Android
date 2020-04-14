@@ -63,6 +63,8 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
     @Inject AccountStore mAccountStore;
     @Inject PluginStore mPluginStore;
 
+    private static final String JETPACK_PLUGIN_NAME = "jetpack/jetpack";
+
     enum TestEvents {
         NONE,
         DELETE_SITE_PLUGIN_ERROR,
@@ -108,8 +110,14 @@ public class ReleaseStack_PluginTestJetpack extends ReleaseStack_Base {
         SiteModel site = fetchSingleJetpackSitePlugins();
 
         List<ImmutablePluginModel> plugins = mPluginStore.getPluginDirectory(site, PluginDirectoryType.SITE);
-        assertTrue(plugins.size() > 0);
-        ImmutablePluginModel immutablePlugin = plugins.get(0);
+        ImmutablePluginModel immutablePlugin = null;
+        // Find first plugin that's not Jetpack since we can't deactivate Jetpack
+        for (ImmutablePluginModel pl : plugins) {
+            if (!JETPACK_PLUGIN_NAME.equalsIgnoreCase(pl.getName())) {
+                immutablePlugin = pl;
+                break;
+            }
+        }
         assertNotNull(immutablePlugin);
         assertTrue(immutablePlugin.isInstalled());
         boolean isActive = !immutablePlugin.isActive();
