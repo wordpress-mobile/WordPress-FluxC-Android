@@ -79,7 +79,7 @@
           "value": "post-new"
         }
       ],
-      "name": "Virtual Test Product",
+      "name": "aaa test product",
       "on_sale": false,
       "parent_id": 0,
       "permalink": "https://example.com/product/virtual-test-product/",

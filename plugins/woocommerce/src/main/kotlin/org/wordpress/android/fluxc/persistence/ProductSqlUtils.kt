@@ -101,10 +101,28 @@ object ProductSqlUtils {
             TITLE_ASC, TITLE_DESC -> WCProductModelTable.NAME
             DATE_ASC, DATE_DESC -> WCProductModelTable.DATE_CREATED
         }
-        return queryBuilder
+
+        val products = queryBuilder
                 .endGroup().endWhere()
                 .orderBy(sortField, sortOrder)
                 .asModel
+
+        return if (sortType == TITLE_ASC || sortType == TITLE_DESC) {
+            sortProductsByName(products, descending = sortType == TITLE_DESC)
+        } else {
+            products
+        }
+    }
+
+    /**
+     * WellSQL doesn't support "COLLATE NOCASE" so we have to manually provide case-insensitive sorting
+     */
+    private fun sortProductsByName(products: List<WCProductModel>, descending: Boolean): List<WCProductModel> {
+        return if (descending) {
+            products.sortedByDescending { it.name.toLowerCase(Locale.getDefault()) }
+        } else {
+            products.sortedBy { it.name.toLowerCase(Locale.getDefault()) }
+        }
     }
 
     fun geProductExistsByRemoteId(site: SiteModel, remoteProductId: Long): Boolean {
@@ -144,14 +162,11 @@ object ProductSqlUtils {
                 .orderBy(sortField, sortOrder)
                 .asModel
 
-        // WellSQL uses case-sensitive sorting but we need case-insensitive
-        if (sortType == TITLE_ASC) {
-            products.sortBy { it.name.toLowerCase(Locale.getDefault()) }
-        } else if (sortType == TITLE_DESC) {
-            products.sortByDescending { it.name.toLowerCase(Locale.getDefault()) }
+        return if (sortType == TITLE_ASC || sortType == TITLE_DESC) {
+            sortProductsByName(products, descending = sortType == TITLE_DESC)
+        } else {
+            products
         }
-
-        return products
     }
 
     fun deleteProductsForSite(site: SiteModel): Int {
