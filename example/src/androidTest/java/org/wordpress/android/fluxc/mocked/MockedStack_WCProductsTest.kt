@@ -178,9 +178,9 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(productsFromDb.size, 3)
 
         // verify that the products are correctly sorted
-        assertEquals("aaa test product", productsFromDb.get(0).name)
-        assertEquals("Booklet", productsFromDb.get(1).name)
-        assertEquals("Test Product", productsFromDb.get(2).name)
+        assertEquals("aaa test product", productsFromDb[0].name)
+        assertEquals("Booklet", productsFromDb[1].name)
+        assertEquals("Test Product", productsFromDb[2].name)
     }
 
     @Test
