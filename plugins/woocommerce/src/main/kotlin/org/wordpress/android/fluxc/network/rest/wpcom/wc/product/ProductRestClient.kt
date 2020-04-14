@@ -586,6 +586,9 @@ class ProductRestClient(
         if (storedWCProductModel.sku != updatedProductModel.sku) {
             body["sku"] = updatedProductModel.sku
         }
+        if (storedWCProductModel.status != updatedProductModel.status) {
+            body["status"] = updatedProductModel.status
+        }
         if (storedWCProductModel.manageStock != updatedProductModel.manageStock) {
             body["manage_stock"] = updatedProductModel.manageStock
         }
