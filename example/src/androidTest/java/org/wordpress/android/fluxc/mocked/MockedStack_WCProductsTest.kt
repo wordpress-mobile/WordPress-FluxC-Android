@@ -176,6 +176,11 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val productsFromDb = ProductSqlUtils.getProductsForSite(siteModel)
         assertNotNull(productsFromDb)
         assertEquals(productsFromDb.size, 3)
+
+        // verify that the products are correctly sorted
+        assertEquals("aaa test product", productsFromDb[0].name)
+        assertEquals("Booklet", productsFromDb[1].name)
+        assertEquals("Test Product", productsFromDb[2].name)
     }
 
     @Test
