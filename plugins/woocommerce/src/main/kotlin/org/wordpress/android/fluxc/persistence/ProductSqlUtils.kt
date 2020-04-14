@@ -21,7 +21,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
-import java.util.Comparator
+import java.util.Locale
 
 object ProductSqlUtils {
     fun insertOrUpdateProduct(product: WCProductModel): Int {
@@ -107,17 +107,22 @@ object ProductSqlUtils {
                 .orderBy(sortField, sortOrder)
                 .asModel
 
-        if (sortType == TITLE_ASC) {
-            products.sortWith(Comparator { product1, product2 ->
-                product1.name.compareTo(product2.name)
-            })
-        } else if (sortType == TITLE_DESC) {
-            products.sortWith(Comparator { product1, product2 ->
-                product2.name.compareTo(product1.name)
-            })
+        return if (sortType == TITLE_ASC || sortType == TITLE_DESC) {
+            sortProductsByName(products, descending = sortType == TITLE_DESC)
+        } else {
+            products
         }
+    }
 
-        return products
+    /**
+     * WellSQL doesn't support "COLLATE NOCASE" so we have to manually provide case-insensitive sorting
+     */
+    private fun sortProductsByName(products: List<WCProductModel>, descending: Boolean): List<WCProductModel> {
+        return if (descending) {
+            products.sortedBy { it.name.toLowerCase(Locale.getDefault()) }
+        } else {
+            products.sortedByDescending { it.name.toLowerCase(Locale.getDefault()) }
+        }
     }
 
     fun geProductExistsByRemoteId(site: SiteModel, remoteProductId: Long): Boolean {
@@ -157,19 +162,11 @@ object ProductSqlUtils {
                 .orderBy(sortField, sortOrder)
                 .asModel
 
-        // WellSQL doesn't support "COLLATE NOCASE" so we have to manually provide
-        // case-insensitive sorting
-        if (sortType == TITLE_ASC) {
-            products.sortWith(Comparator { product1, product2 ->
-                product1.name.compareTo(product2.name)
-            })
-        } else if (sortType == TITLE_DESC) {
-            products.sortWith(Comparator { product1, product2 ->
-                product2.name.compareTo(product1.name)
-            })
+        return if (sortType == TITLE_ASC || sortType == TITLE_DESC) {
+            sortProductsByName(products, descending = sortType == TITLE_DESC)
+        } else {
+            products
         }
-
-        return products
     }
 
     fun deleteProductsForSite(site: SiteModel): Int {
