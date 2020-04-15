@@ -274,6 +274,10 @@ class WooUpdateProductFragment : Fragment() {
                 product_back_orders.text = it.backorders
                 product_stock_quantity.setText(it.stockQuantity.toString())
                 product_stock_quantity.isEnabled = product_manage_stock.isChecked
+                product_catalog_visibility.text = it.catalogVisibility
+                product_status.text = it.status
+                product_slug.setText(it.slug)
+                product_is_featured.isChecked = it.featured
             } ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
     }
