@@ -586,6 +586,18 @@ class ProductRestClient(
         if (storedWCProductModel.sku != updatedProductModel.sku) {
             body["sku"] = updatedProductModel.sku
         }
+        if (storedWCProductModel.status != updatedProductModel.status) {
+            body["status"] = updatedProductModel.status
+        }
+        if (storedWCProductModel.catalogVisibility != updatedProductModel.catalogVisibility) {
+            body["catalog_visibility"] = updatedProductModel.catalogVisibility
+        }
+        if (storedWCProductModel.slug != updatedProductModel.slug) {
+            body["slug"] = updatedProductModel.slug
+        }
+        if (storedWCProductModel.featured != updatedProductModel.featured) {
+            body["featured"] = updatedProductModel.featured
+        }
         if (storedWCProductModel.manageStock != updatedProductModel.manageStock) {
             body["manage_stock"] = updatedProductModel.manageStock
         }
