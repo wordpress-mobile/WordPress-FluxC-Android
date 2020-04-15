@@ -441,6 +441,36 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
     }
 
     @Test
+    fun testRevenueStatsDayFetchJsonError() {
+        interceptor.respondWith("wc-revenue-stats-response-empty.json")
+        orderStatsRestClient.fetchRevenueStats(
+                site = siteModel, granularity = StatsGranularity.DAYS,
+                startDate = "2019-07-07T00:00:00", endDate = "2019-07-01T23:59:59",
+                perPage = 35
+        )
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCStatsAction.FETCHED_REVENUE_STATS, lastAction!!.type)
+        val payload = lastAction!!.payload as FetchRevenueStatsResponsePayload
+        assertNull(payload.error)
+        assertEquals(siteModel, payload.site)
+        assertEquals(StatsGranularity.DAYS, payload.granularity)
+        assertNotNull(payload.stats)
+
+        with(payload.stats!!) {
+            assertEquals(siteModel.id, localSiteId)
+            assertEquals(StatsGranularity.DAYS.toString(), interval)
+
+            val intervals = getIntervalList()
+            val total = getTotal()
+            assertEquals(0, intervals.size)
+            assertNull(total)
+        }
+    }
+
+    @Test
     fun testRevenueStatsFetchCaching() {
         requestQueue.cache.clear()
 

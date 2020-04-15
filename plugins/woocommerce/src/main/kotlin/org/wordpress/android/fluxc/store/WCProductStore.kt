@@ -16,7 +16,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
-import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Locale
@@ -31,7 +31,15 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         const val DEFAULT_PRODUCT_PAGE_SIZE = 25
         const val DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE = 25
         const val DEFAULT_PRODUCT_SHIPPING_CLASS_PAGE_SIZE = 25
-        val DEFAULT_PRODUCT_SORTING = DATE_DESC
+        val DEFAULT_PRODUCT_SORTING = TITLE_ASC
+    }
+
+    /**
+     * Defines the filter options currently supported in the app
+     */
+    enum class ProductFilterOption {
+        STOCK_STATUS, STATUS, TYPE;
+        override fun toString() = name.toLowerCase()
     }
 
     class FetchProductSkuAvailabilityPayload(
@@ -49,7 +57,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         var offset: Int = 0,
         var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
-        var remoteProductIds: List<Long>? = null
+        var remoteProductIds: List<Long>? = null,
+        var filterOptions: Map<ProductFilterOption, String>? = null
     ) : Payload<BaseNetworkError>()
 
     class SearchProductsPayload(
@@ -71,6 +80,11 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var site: SiteModel,
         var pageSize: Int = DEFAULT_PRODUCT_SHIPPING_CLASS_PAGE_SIZE,
         var offset: Int = 0
+    ) : Payload<BaseNetworkError>()
+
+    class FetchSingleProductShippingClassPayload(
+        var site: SiteModel,
+        var remoteShippingClassId: Long
     ) : Payload<BaseNetworkError>()
 
     class FetchProductReviewsPayload(
@@ -239,6 +253,19 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         }
     }
 
+    class RemoteProductShippingClassPayload(
+        val productShippingClassModel: WCProductShippingClassModel,
+        val site: SiteModel
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            productShippingClassModel: WCProductShippingClassModel,
+            site: SiteModel
+        ) : this(productShippingClassModel, site) {
+            this.error = error
+        }
+    }
+
     class RemoteProductReviewPayload(
         val site: SiteModel,
         val productReview: WCProductReviewModel? = null
@@ -265,6 +292,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     // OnChanged events
     class OnProductChanged(
         var rowsAffected: Int,
+        var remoteProductId: Long = 0L, // only set for fetching a single product
         var canLoadMore: Boolean = false
     ) : OnChanged<ProductError>() {
         var causeOfChange: WCProductAction? = null
@@ -342,11 +370,28 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             ProductSqlUtils.getProductShippingClassListForSite(site.id)
 
     /**
+     * returns the corresponding product shipping class from the database as a [WCProductShippingClassModel].
+     */
+    fun getShippingClassByRemoteId(site: SiteModel, remoteShippingClassId: Long): WCProductShippingClassModel? =
+            ProductSqlUtils.getProductShippingClassByRemoteId(remoteShippingClassId, site.id)
+
+    /**
      * returns a list of [WCProductModel] for the give [SiteModel] and [remoteProductIds]
      * if it exists in the database
      */
     fun getProductsByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): List<WCProductModel> =
             ProductSqlUtils.getProductsByRemoteIds(site, remoteProductIds)
+
+    /**
+     * returns a list of [WCProductModel] for the give [SiteModel] and [filterOptions]
+     * if it exists in the database
+     */
+    fun getProductsByFilterOptions(
+        site: SiteModel,
+        filterOptions: Map<ProductFilterOption, String>,
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
+    ): List<WCProductModel> =
+            ProductSqlUtils.getProductsByFilterOptions(site, filterOptions, sortType)
 
     fun getProductsForSite(site: SiteModel, sortType: ProductSorting = DEFAULT_PRODUCT_SORTING) =
             ProductSqlUtils.getProductsForSite(site, sortType)
@@ -397,6 +442,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 updateProductImages(action.payload as UpdateProductImagesPayload)
             WCProductAction.UPDATE_PRODUCT ->
                 updateProduct(action.payload as UpdateProductPayload)
+            WCProductAction.FETCH_SINGLE_PRODUCT_SHIPPING_CLASS ->
+                fetchProductShippingClass(action.payload as FetchSingleProductShippingClassPayload)
             WCProductAction.FETCH_PRODUCT_SHIPPING_CLASS_LIST ->
                 fetchProductShippingClasses(action.payload as FetchProductShippingClassListPayload)
 
@@ -423,6 +470,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 handleUpdateProduct(action.payload as RemoteUpdateProductPayload)
             WCProductAction.FETCHED_PRODUCT_SHIPPING_CLASS_LIST ->
                 handleFetchProductShippingClassesCompleted(action.payload as RemoteProductShippingClassListPayload)
+            WCProductAction.FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS ->
+                handleFetchProductShippingClassCompleted(action.payload as RemoteProductShippingClassPayload)
         }
     }
 
@@ -438,7 +487,11 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     private fun fetchProducts(payload: FetchProductsPayload) {
         with(payload) {
-            wcProductRestClient.fetchProducts(site, pageSize, offset, sorting, remoteProductIds = remoteProductIds)
+            wcProductRestClient.fetchProducts(
+                    site, pageSize, offset, sorting,
+                    remoteProductIds = remoteProductIds,
+                    filterOptions = filterOptions
+                    )
         }
     }
 
@@ -448,6 +501,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     private fun fetchProductVariations(payload: FetchProductVariationsPayload) {
         with(payload) { wcProductRestClient.fetchProductVariations(site, remoteProductId, pageSize, offset) }
+    }
+
+    private fun fetchProductShippingClass(payload: FetchSingleProductShippingClassPayload) {
+        with(payload) { wcProductRestClient.fetchSingleProductShippingClass(site, remoteShippingClassId) }
     }
 
     private fun fetchProductShippingClasses(payload: FetchProductShippingClassListPayload) {
@@ -481,10 +538,15 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         val onProductChanged: OnProductChanged
 
         if (payload.isError) {
-            onProductChanged = OnProductChanged(0).also { it.error = payload.error }
+            onProductChanged = OnProductChanged(0).also {
+                it.error = payload.error
+                it.remoteProductId = payload.product.remoteProductId
+            }
         } else {
             val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
-            onProductChanged = OnProductChanged(rowsAffected)
+            onProductChanged = OnProductChanged(rowsAffected).also {
+                it.remoteProductId = payload.product.remoteProductId
+            }
         }
 
         onProductChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT
@@ -542,6 +604,17 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             OnProductShippingClassesChanged(rowsAffected, canLoadMore = payload.canLoadMore)
         }
         onProductShippingClassesChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_SHIPPING_CLASS_LIST
+        emitChange(onProductShippingClassesChanged)
+    }
+
+    private fun handleFetchProductShippingClassCompleted(payload: RemoteProductShippingClassPayload) {
+        val onProductShippingClassesChanged = if (payload.isError) {
+            OnProductShippingClassesChanged(0).also { it.error = payload.error }
+        } else {
+            val rowsAffected = ProductSqlUtils.insertOrUpdateProductShippingClass(payload.productShippingClassModel)
+            OnProductShippingClassesChanged(rowsAffected)
+        }
+        onProductShippingClassesChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT_SHIPPING_CLASS
         emitChange(onProductShippingClassesChanged)
     }
 

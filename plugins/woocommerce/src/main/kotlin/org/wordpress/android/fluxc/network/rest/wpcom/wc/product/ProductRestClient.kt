@@ -31,6 +31,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUC
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductError
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
+import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
@@ -40,6 +41,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductSkuAvailabilityPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
@@ -56,6 +58,41 @@ class ProductRestClient(
     accessToken: AccessToken,
     userAgent: UserAgent
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
+    /**
+     * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
+     * to fetch a single product shipping class
+     *
+     * Dispatches a WCProductAction.FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS action with the result
+     *
+     * @param [remoteShippingClassId] Unique server id of the shipping class to fetch
+     */
+    fun fetchSingleProductShippingClass(site: SiteModel, remoteShippingClassId: Long) {
+        val url = WOOCOMMERCE.products.shipping_classes.id(remoteShippingClassId).pathV3
+        val responseType = object : TypeToken<ProductShippingClassApiResponse>() {}.type
+        val params = emptyMap<String, String>()
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: ProductShippingClassApiResponse? ->
+                    response?.let {
+                        val newModel = productShippingClassResponseToProductShippingClassModel(
+                                it, site
+                        ).apply { localSiteId = site.id }
+                        val payload = RemoteProductShippingClassPayload(newModel, site)
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductShippingClassAction(payload))
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val productError = networkErrorToProductError(networkError)
+                    val payload = RemoteProductShippingClassPayload(
+                            productError,
+                            WCProductShippingClassModel().apply { this.remoteShippingClassId = remoteShippingClassId },
+                            site
+                    )
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleProductShippingClassAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
     /**
      * Makes a GET request to `GET /wp-json/wc/v3/products/shipping_classes` to fetch
      * product shipping classes for a site
@@ -79,13 +116,7 @@ class ProductRestClient(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductShippingClassApiResponse>? ->
                     val shippingClassList = response?.map {
-                        WCProductShippingClassModel().apply {
-                            remoteShippingClassId = it.id
-                            localSiteId = site.id
-                            name = it.name ?: ""
-                            slug = it.slug ?: ""
-                            description = it.description ?: ""
-                        }
+                        productShippingClassResponseToProductShippingClassModel(it, site)
                     }.orEmpty()
 
                     val loadedMore = offset > 0
@@ -150,7 +181,8 @@ class ProductRestClient(
         offset: Int = 0,
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
-        remoteProductIds: List<Long>? = null
+        remoteProductIds: List<Long>? = null,
+        filterOptions: Map<ProductFilterOption, String>? = null
     ) {
         // orderby (string) Options: date, id, include, title and slug. Default is date.
         val orderBy = when (sortType) {
@@ -172,6 +204,10 @@ class ProductRestClient(
                 "search" to (searchQuery ?: ""))
         remoteProductIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
+        }
+
+        filterOptions?.let { filters ->
+            filters.map { params.put(it.key.toString(), it.value) }
         }
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
@@ -619,6 +655,19 @@ class ProductRestClient(
         }
 
         return body
+    }
+
+    private fun productShippingClassResponseToProductShippingClassModel(
+        response: ProductShippingClassApiResponse,
+        site: SiteModel
+    ): WCProductShippingClassModel {
+        return WCProductShippingClassModel().apply {
+            remoteShippingClassId = response.id
+            localSiteId = site.id
+            name = response.name ?: ""
+            slug = response.slug ?: ""
+            description = response.description ?: ""
+        }
     }
 
     private fun productResponseToProductModel(response: ProductApiResponse): WCProductModel {

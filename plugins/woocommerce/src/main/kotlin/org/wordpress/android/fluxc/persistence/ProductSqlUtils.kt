@@ -15,11 +15,13 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SORTING
+import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
+import java.util.Locale
 
 object ProductSqlUtils {
     fun insertOrUpdateProduct(product: WCProductModel): Int {
@@ -72,6 +74,57 @@ object ProductSqlUtils {
                 .asModel
     }
 
+    fun getProductsByFilterOptions(
+        site: SiteModel,
+        filterOptions: Map<ProductFilterOption, String>,
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
+    ): List<WCProductModel> {
+        val queryBuilder = WellSql.select(WCProductModel::class.java)
+                .where().beginGroup()
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+
+        if (filterOptions.containsKey(ProductFilterOption.STATUS)) {
+            queryBuilder.equals(WCProductModelTable.STATUS, filterOptions[ProductFilterOption.STATUS])
+        }
+        if (filterOptions.containsKey(ProductFilterOption.STOCK_STATUS)) {
+            queryBuilder.equals(WCProductModelTable.STOCK_STATUS, filterOptions[ProductFilterOption.STOCK_STATUS])
+        }
+        if (filterOptions.containsKey(ProductFilterOption.TYPE)) {
+            queryBuilder.equals(WCProductModelTable.TYPE, filterOptions[ProductFilterOption.TYPE])
+        }
+
+        val sortOrder = when (sortType) {
+            TITLE_ASC, DATE_ASC -> SelectQuery.ORDER_ASCENDING
+            TITLE_DESC, DATE_DESC -> SelectQuery.ORDER_DESCENDING
+        }
+        val sortField = when (sortType) {
+            TITLE_ASC, TITLE_DESC -> WCProductModelTable.NAME
+            DATE_ASC, DATE_DESC -> WCProductModelTable.DATE_CREATED
+        }
+
+        val products = queryBuilder
+                .endGroup().endWhere()
+                .orderBy(sortField, sortOrder)
+                .asModel
+
+        return if (sortType == TITLE_ASC || sortType == TITLE_DESC) {
+            sortProductsByName(products, descending = sortType == TITLE_DESC)
+        } else {
+            products
+        }
+    }
+
+    /**
+     * WellSQL doesn't support "COLLATE NOCASE" so we have to manually provide case-insensitive sorting
+     */
+    private fun sortProductsByName(products: List<WCProductModel>, descending: Boolean): List<WCProductModel> {
+        return if (descending) {
+            products.sortedByDescending { it.name.toLowerCase(Locale.getDefault()) }
+        } else {
+            products.sortedBy { it.name.toLowerCase(Locale.getDefault()) }
+        }
+    }
+
     fun geProductExistsByRemoteId(site: SiteModel, remoteProductId: Long): Boolean {
         return WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
@@ -102,12 +155,18 @@ object ProductSqlUtils {
             TITLE_ASC, TITLE_DESC -> WCProductModelTable.NAME
             DATE_ASC, DATE_DESC -> WCProductModelTable.DATE_CREATED
         }
-        return WellSql.select(WCProductModel::class.java)
+        val products = WellSql.select(WCProductModel::class.java)
                 .where()
                 .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
                 .endWhere()
                 .orderBy(sortField, sortOrder)
                 .asModel
+
+        return if (sortType == TITLE_ASC || sortType == TITLE_DESC) {
+            sortProductsByName(products, descending = sortType == TITLE_DESC)
+        } else {
+            products
+        }
     }
 
     fun deleteProductsForSite(site: SiteModel): Int {
@@ -304,9 +363,21 @@ object ProductSqlUtils {
     ): List<WCProductShippingClassModel> {
         return WellSql.select(WCProductShippingClassModel::class.java)
                 .where().beginGroup()
-                .equals(WCProductReviewModelTable.LOCAL_SITE_ID, localSiteId)
+                .equals(WCProductShippingClassModelTable.LOCAL_SITE_ID, localSiteId)
                 .endGroup().endWhere()
                 .asModel
+    }
+
+    fun getProductShippingClassByRemoteId(
+        remoteShippingClassId: Long,
+        localSiteId: Int
+    ): WCProductShippingClassModel? {
+        return WellSql.select(WCProductShippingClassModel::class.java)
+                .where().beginGroup()
+                .equals(WCProductShippingClassModelTable.REMOTE_SHIPPING_CLASS_ID, remoteShippingClassId)
+                .equals(WCProductShippingClassModelTable.LOCAL_SITE_ID, localSiteId)
+                .endGroup().endWhere()
+                .asModel.firstOrNull()
     }
 
     fun deleteProductShippingClassListForSite(site: SiteModel): Int {

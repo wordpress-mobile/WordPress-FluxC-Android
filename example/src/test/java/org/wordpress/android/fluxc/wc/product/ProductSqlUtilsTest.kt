@@ -16,8 +16,10 @@ import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @Config(manifest = Config.NONE)
@@ -193,6 +195,41 @@ class ProductSqlUtilsTest {
     }
 
     @Test
+    fun testGetProductShippingClassByRemoteShippingId() {
+        val shippingClass = ProductTestUtils.generateSampleProductShippingClass(
+                remoteId = 40, siteId = site.id
+        )
+
+        // Insert product shipping class list
+        val rowsAffected = ProductSqlUtils.insertOrUpdateProductShippingClass(shippingClass)
+        assertEquals(1, rowsAffected)
+
+        // Get shipping class for site and remoteId and verify
+        val savedShippingClassExists = ProductSqlUtils.getProductShippingClassByRemoteId(
+                shippingClass.remoteShippingClassId, site.id
+        )
+        assertEquals(shippingClass.remoteShippingClassId, savedShippingClassExists?.remoteShippingClassId)
+        assertEquals(shippingClass.name, savedShippingClassExists?.name)
+        assertEquals(shippingClass.description, savedShippingClassExists?.description)
+        assertEquals(shippingClass.slug, savedShippingClassExists?.slug)
+        assertEquals(shippingClass.localSiteId, savedShippingClassExists?.localSiteId)
+
+        // Get shipping class for a site that does not exist
+        val nonExistingSite = SiteModel().apply { id = 400 }
+        val savedShippingClass = ProductSqlUtils.getProductShippingClassByRemoteId(
+                25, nonExistingSite.id
+        )
+        assertNull(savedShippingClass)
+
+        // Get shipping class for a site that does not exist
+        val nonExistingRemoteId = 25L
+        val nonExistentShippingClass = ProductSqlUtils.getProductShippingClassByRemoteId(
+                nonExistingRemoteId, site.id
+        )
+        assertNull(nonExistentShippingClass)
+    }
+
+    @Test
     fun testDeleteProductShippingListForSite() {
         val shippingClassList = ProductTestUtils.generateProductList(site.id)
 
@@ -260,6 +297,48 @@ class ProductSqlUtilsTest {
         val site2 = SiteModel().apply { id = differentSiteProduct1.localSiteId }
         val differentSiteProducts = ProductSqlUtils.getProductsByRemoteIds(site2, productIds)
         assertEquals(3, differentSiteProducts.size)
+    }
+
+    @Test
+    fun testGetProductsForSiteWithFilterOptions() {
+        val productFilterOptions = mapOf(
+                ProductFilterOption.STOCK_STATUS to "instock",
+                ProductFilterOption.STATUS to "publish",
+                ProductFilterOption.TYPE to "simple"
+        )
+
+        val product1 = ProductTestUtils.generateSampleProduct(40)
+        val product2 = ProductTestUtils.generateSampleProduct(41)
+        val product3 = ProductTestUtils.generateSampleProduct(42, stockStatus = "onbackorder")
+
+        ProductSqlUtils.insertOrUpdateProduct(product1)
+        ProductSqlUtils.insertOrUpdateProduct(product2)
+        ProductSqlUtils.insertOrUpdateProduct(product3)
+
+        val site = SiteModel().apply { id = product1.localSiteId }
+        val products = ProductSqlUtils.getProductsByFilterOptions(site, productFilterOptions)
+        assertEquals(2, products.size)
+
+        // insert products with the same productId but for a different site
+        val differentSiteProduct1 = ProductTestUtils.generateSampleProduct(40, siteId = 10)
+        val differentSiteProduct2 = ProductTestUtils.generateSampleProduct(
+                41, siteId = 10, type = "grouped"
+        )
+        val differentSiteProduct3 = ProductTestUtils.generateSampleProduct(
+                2, siteId = 10, status = "pending"
+        )
+
+        ProductSqlUtils.insertOrUpdateProduct(differentSiteProduct1)
+        ProductSqlUtils.insertOrUpdateProduct(differentSiteProduct2)
+        ProductSqlUtils.insertOrUpdateProduct(differentSiteProduct3)
+
+        // verify that the products for the first site is still 2
+        assertEquals(2, ProductSqlUtils.getProductsByFilterOptions(site, productFilterOptions).size)
+
+        // verify that the products for the second site is 3
+        val site2 = SiteModel().apply { id = differentSiteProduct1.localSiteId }
+        val differentSiteProducts = ProductSqlUtils.getProductsByFilterOptions(site2, productFilterOptions)
+        assertEquals(1, differentSiteProducts.size)
     }
 
     @Test

@@ -1,0 +1,21 @@
+{
+  "data": {
+    "id": 34,
+    "name": "example1",
+    "slug": "example-1",
+    "description": "Testing shipping class",
+    "count": 1,
+    "_links": {
+      "self": [
+        {
+          "href": "https:\/\/anitaastestwooshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/shipping_classes\/34"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https:\/\/anitaastestwooshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/shipping_classes"
+        }
+      ]
+    }
+  }
+}
