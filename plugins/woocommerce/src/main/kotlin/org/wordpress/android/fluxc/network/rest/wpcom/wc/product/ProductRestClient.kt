@@ -658,9 +658,10 @@ class ProductRestClient(
         if (storedWCProductModel.shortDescription != updatedProductModel.shortDescription) {
             body["short_description"] = updatedProductModel.shortDescription
         }
-        if (storedWCProductModel.images != updatedProductModel.images) {
+        if (!storedWCProductModel.hasSameImages(updatedProductModel)) {
+            val updatedImages = updatedProductModel.getImages()
             body["images"] = JsonArray().also {
-                for (image in updatedProductModel.getImages()) {
+                for (image in updatedImages) {
                     it.add(image.toJson())
                 }
             }
