@@ -201,6 +201,12 @@ class WooUpdateProductFragment : Fragment() {
             selectedProductModel?.featured = isChecked
         }
 
+        product_reviews_allowed.setOnCheckedChangeListener { _, isChecked ->
+            selectedProductModel?.reviewsAllowed = isChecked
+        }
+
+        product_purchase_note.onTextChanged { selectedProductModel?.purchaseNote = it }
+
         product_slug.onTextChanged { selectedProductModel?.slug = it }
 
         savedInstanceState?.let { bundle ->
