@@ -666,7 +666,12 @@ class ProductRestClient(
                 }
             }
         }
-
+        if (storedWCProductModel.reviewsAllowed != updatedProductModel.reviewsAllowed) {
+            body["reviews_allowed"] = updatedProductModel.reviewsAllowed
+        }
+        if (storedWCProductModel.purchaseNote != updatedProductModel.purchaseNote) {
+            body["purchase_note"] = updatedProductModel.purchaseNote
+        }
         return body
     }
 
