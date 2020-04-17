@@ -412,6 +412,12 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         val updatedProductSlug = "product-slug"
         productModel.slug = updatedProductSlug
 
+        val updatedProductReviewsAllowed = true
+        productModel.reviewsAllowed = updatedProductReviewsAllowed
+
+        val updateProductPurchaseNote = "Test purchase note"
+        productModel.purchaseNote = updateProductPurchaseNote
+
         nextEvent = TestEvent.UPDATED_PRODUCT
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
@@ -428,6 +434,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertEquals(updatedProductVisibility, updatedProduct?.catalogVisibility)
         assertEquals(updatedProductFeatured, updatedProduct?.featured)
         assertEquals(updatedProductSlug, updatedProduct?.slug)
+        assertEquals(updatedProductReviewsAllowed, updatedProduct?.reviewsAllowed)
+        assertEquals(updateProductPurchaseNote, updatedProduct?.purchaseNote)
     }
 
     /**
