@@ -672,6 +672,12 @@ class ProductRestClient(
         if (storedWCProductModel.purchaseNote != updatedProductModel.purchaseNote) {
             body["purchase_note"] = updatedProductModel.purchaseNote
         }
+        if (storedWCProductModel.menuOrder != updatedProductModel.menuOrder) {
+            body["menu_order"] = updatedProductModel.menuOrder
+        }
+        if (storedWCProductModel.permalink != updatedProductModel.permalink) {
+            body["permalink"] = updatedProductModel.permalink
+        }
         return body
     }
 
@@ -750,6 +756,7 @@ class ProductRestClient(
             ratingCount = response.rating_count
 
             parentId = response.parent_id
+            menuOrder = response.menu_order
             purchaseNote = response.purchase_note ?: ""
 
             categories = response.categories?.toString() ?: ""
