@@ -675,9 +675,6 @@ class ProductRestClient(
         if (storedWCProductModel.menuOrder != updatedProductModel.menuOrder) {
             body["menu_order"] = updatedProductModel.menuOrder
         }
-        if (storedWCProductModel.permalink != updatedProductModel.permalink) {
-            body["permalink"] = updatedProductModel.permalink
-        }
         return body
     }
 

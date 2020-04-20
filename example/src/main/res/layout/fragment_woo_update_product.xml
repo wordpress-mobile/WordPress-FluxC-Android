@@ -395,16 +395,5 @@
             app:layout_constraintTop_toBottomOf="@+id/product_purchase_note"
             app:textHint="Menu order" />
 
-        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
-            android:id="@+id/product_permalink"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:enabled="false"
-            android:inputType="text"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/product_menu_order"
-            app:textHint="Permalink" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

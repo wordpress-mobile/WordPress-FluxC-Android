@@ -212,8 +212,6 @@ class WooUpdateProductFragment : Fragment() {
 
         product_menu_order.onTextChanged { selectedProductModel?.menuOrder = StringUtils.stringToInt(it) }
 
-        product_permalink.onTextChanged { selectedProductModel?.permalink = it }
-
         savedInstanceState?.let { bundle ->
             selectedRemoteProductId = bundle.getLong(ARG_SELECTED_PRODUCT_ID)
             selectedSitePosition = bundle.getInt(ARG_SELECTED_SITE_POS)
@@ -292,7 +290,6 @@ class WooUpdateProductFragment : Fragment() {
                 product_reviews_allowed.isChecked = it.reviewsAllowed
                 product_purchase_note.setText(it.purchaseNote)
                 product_menu_order.setText(it.menuOrder.toString())
-                product_permalink.setText(it.permalink)
             } ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
     }
