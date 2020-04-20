@@ -210,6 +210,8 @@ class WooUpdateProductFragment : Fragment() {
 
         product_slug.onTextChanged { selectedProductModel?.slug = it }
 
+        product_external_url.onTextChanged { selectedProductModel?.externalUrl = it }
+
         product_menu_order.onTextChanged { selectedProductModel?.menuOrder = StringUtils.stringToInt(it) }
 
         savedInstanceState?.let { bundle ->
@@ -290,6 +292,7 @@ class WooUpdateProductFragment : Fragment() {
                 product_reviews_allowed.isChecked = it.reviewsAllowed
                 product_purchase_note.setText(it.purchaseNote)
                 product_menu_order.setText(it.menuOrder.toString())
+                product_external_url.setText(it.externalUrl)
             } ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
     }

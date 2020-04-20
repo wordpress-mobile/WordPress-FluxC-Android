@@ -601,6 +601,9 @@ class ProductRestClient(
         if (storedWCProductModel.manageStock != updatedProductModel.manageStock) {
             body["manage_stock"] = updatedProductModel.manageStock
         }
+        if (storedWCProductModel.externalUrl != updatedProductModel.externalUrl) {
+            body["external_url"] = updatedProductModel.externalUrl
+        }
 
         // only allowed to change the following params if manageStock is enabled
         if (updatedProductModel.manageStock) {
