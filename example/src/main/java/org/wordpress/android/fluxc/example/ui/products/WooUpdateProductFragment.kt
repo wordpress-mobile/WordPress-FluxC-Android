@@ -284,6 +284,8 @@ class WooUpdateProductFragment : Fragment() {
                 product_status.text = it.status
                 product_slug.setText(it.slug)
                 product_is_featured.isChecked = it.featured
+                product_reviews_allowed.isChecked = it.reviewsAllowed
+                product_purchase_note.setText(it.purchaseNote)
             } ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
     }
