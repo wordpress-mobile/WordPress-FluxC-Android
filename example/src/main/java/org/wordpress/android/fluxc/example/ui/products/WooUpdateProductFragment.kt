@@ -201,6 +201,12 @@ class WooUpdateProductFragment : Fragment() {
             selectedProductModel?.featured = isChecked
         }
 
+        product_reviews_allowed.setOnCheckedChangeListener { _, isChecked ->
+            selectedProductModel?.reviewsAllowed = isChecked
+        }
+
+        product_purchase_note.onTextChanged { selectedProductModel?.purchaseNote = it }
+
         product_slug.onTextChanged { selectedProductModel?.slug = it }
 
         savedInstanceState?.let { bundle ->
@@ -278,6 +284,8 @@ class WooUpdateProductFragment : Fragment() {
                 product_status.text = it.status
                 product_slug.setText(it.slug)
                 product_is_featured.isChecked = it.featured
+                product_reviews_allowed.isChecked = it.reviewsAllowed
+                product_purchase_note.setText(it.purchaseNote)
             } ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
     }
