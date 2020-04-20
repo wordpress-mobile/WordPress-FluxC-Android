@@ -35,6 +35,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.utils.DateUtils
+import org.wordpress.android.util.StringUtils
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -209,6 +210,10 @@ class WooUpdateProductFragment : Fragment() {
 
         product_slug.onTextChanged { selectedProductModel?.slug = it }
 
+        product_menu_order.onTextChanged { selectedProductModel?.menuOrder = StringUtils.stringToInt(it) }
+
+        product_permalink.onTextChanged { selectedProductModel?.permalink = it }
+
         savedInstanceState?.let { bundle ->
             selectedRemoteProductId = bundle.getLong(ARG_SELECTED_PRODUCT_ID)
             selectedSitePosition = bundle.getInt(ARG_SELECTED_SITE_POS)
@@ -286,6 +291,8 @@ class WooUpdateProductFragment : Fragment() {
                 product_is_featured.isChecked = it.featured
                 product_reviews_allowed.isChecked = it.reviewsAllowed
                 product_purchase_note.setText(it.purchaseNote)
+                product_menu_order.setText(it.menuOrder.toString())
+                product_permalink.setText(it.permalink)
             } ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
     }
