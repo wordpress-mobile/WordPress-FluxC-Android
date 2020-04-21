@@ -54,7 +54,9 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var downloadLimit = 0
     @Column var downloadExpiry = 0
     @Column var soldIndividually = false
+
     @Column var externalUrl = ""
+    @Column var buttonText = ""
 
     @Column var taxStatus = "" // taxable, shipping, none
     @Column var taxClass = ""
