@@ -378,11 +378,34 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:enabled="false"
-            android:inputType="number"
+            android:inputType="text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/product_reviews_allowed"
             app:textHint="Purchase note" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/product_external_url"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:enabled="false"
+            android:inputType="text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_purchase_note"
+            app:textHint="External url (external products only)" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/product_menu_order"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:inputType="number"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_external_url"
+            app:textHint="Menu order" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

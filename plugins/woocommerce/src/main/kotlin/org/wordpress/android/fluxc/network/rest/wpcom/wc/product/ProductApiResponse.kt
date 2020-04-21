@@ -64,6 +64,7 @@ class ProductApiResponse : Response {
     var rating_count = 0
 
     var parent_id = 0
+    val menu_order = 0
     var purchase_note: String? = null
 
     var categories: JsonElement? = null
