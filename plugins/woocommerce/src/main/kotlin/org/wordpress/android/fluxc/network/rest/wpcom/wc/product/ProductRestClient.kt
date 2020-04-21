@@ -601,6 +601,9 @@ class ProductRestClient(
         if (storedWCProductModel.manageStock != updatedProductModel.manageStock) {
             body["manage_stock"] = updatedProductModel.manageStock
         }
+        if (storedWCProductModel.externalUrl != updatedProductModel.externalUrl) {
+            body["external_url"] = updatedProductModel.externalUrl
+        }
 
         // only allowed to change the following params if manageStock is enabled
         if (updatedProductModel.manageStock) {
@@ -671,6 +674,9 @@ class ProductRestClient(
         }
         if (storedWCProductModel.purchaseNote != updatedProductModel.purchaseNote) {
             body["purchase_note"] = updatedProductModel.purchaseNote
+        }
+        if (storedWCProductModel.menuOrder != updatedProductModel.menuOrder) {
+            body["menu_order"] = updatedProductModel.menuOrder
         }
         return body
     }
@@ -750,6 +756,7 @@ class ProductRestClient(
             ratingCount = response.rating_count
 
             parentId = response.parent_id
+            menuOrder = response.menu_order
             purchaseNote = response.purchase_note ?: ""
 
             categories = response.categories?.toString() ?: ""
