@@ -604,6 +604,9 @@ class ProductRestClient(
         if (storedWCProductModel.externalUrl != updatedProductModel.externalUrl) {
             body["external_url"] = updatedProductModel.externalUrl
         }
+        if (storedWCProductModel.buttonText != updatedProductModel.buttonText) {
+            body["button_text"] = updatedProductModel.buttonText
+        }
 
         // only allowed to change the following params if manageStock is enabled
         if (updatedProductModel.manageStock) {
