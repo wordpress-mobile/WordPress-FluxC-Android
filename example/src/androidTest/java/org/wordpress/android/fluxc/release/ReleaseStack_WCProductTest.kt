@@ -579,8 +579,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             event.error?.let {
                 throw AssertionError("onProductPasswordChanged has unexpected error: ${it.type}, ${it.message}")
             }
-        }
-        else if (event.causeOfChange == WCProductAction.FETCH_PRODUCT_PASSWORD) {
+        } else if (event.causeOfChange == WCProductAction.FETCH_PRODUCT_PASSWORD) {
             assertEquals(TestEvent.FETCHED_PRODUCT_PASSWORD, nextEvent)
             assertEquals(event.password, updatedPassword)
         } else if (event.causeOfChange == WCProductAction.UPDATE_PRODUCT_PASSWORD) {

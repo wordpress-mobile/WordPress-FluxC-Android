@@ -376,7 +376,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     class OnProductPasswordChanged(
         var remoteProductId: Long,
         var password: String?
-    )  : OnChanged<ProductError>() {
+    ) : OnChanged<ProductError>() {
         var causeOfChange: WCProductAction? = null
     }
 
@@ -580,7 +580,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun updateProductPassword(payload: UpdateProductPasswordPayload) {
-        with(payload) { wcProductRestClient.updateProductPassword(site, remoteProductId, password)}
+        with(payload) { wcProductRestClient.updateProductPassword(site, remoteProductId, password) }
     }
 
     private fun updateProductReviewStatus(payload: UpdateProductReviewStatusPayload) {
