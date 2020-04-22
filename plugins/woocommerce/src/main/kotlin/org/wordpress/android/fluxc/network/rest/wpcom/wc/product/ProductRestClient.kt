@@ -50,6 +50,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsP
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import java.util.HashMap
 import javax.inject.Singleton
 
@@ -308,8 +309,7 @@ class ProductRestClient(
                 params,
                 PostWPComRestResponse::class.java,
                 { response ->
-                    val password = response.password
-                    val payload = RemoteProductPasswordPayload(remoteProductId, site, password)
+                    val payload = RemoteProductPasswordPayload(remoteProductId, site, response.password ?: "")
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductPasswordAction(payload))
                 }
         ) { networkError ->
@@ -324,23 +324,22 @@ class ProductRestClient(
      * Makes a WP.COM POST request to `/sites/$site/posts/$post_ID` to update just the password for a product
      */
     fun updateProductPassword(site: SiteModel, remoteProductId: Long, password: String) {
-        val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_1
+        val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_2
 
         val body = HashMap<String, Any>()
-        body["id"] = remoteProductId
         body["password"] = password
 
         val request = WPComGsonRequest.buildPostRequest(url,
                 body,
                 PostWPComRestResponse::class.java,
                 { response ->
-                    val payload = RemoteProductPasswordPayload(remoteProductId, site, response.password)
-                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductPasswordAction(payload))
+                    val payload = RemoteUpdatedProductPasswordPayload(remoteProductId, site, response.password ?: "")
+                    dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductPasswordAction(payload))
                 }
         ) { networkError ->
-            val payload = RemoteProductPasswordPayload(remoteProductId, site, "")
+            val payload = RemoteUpdatedProductPasswordPayload(remoteProductId, site, "")
             payload.error = networkErrorToProductError(networkError)
-            dispatcher.dispatch(WCProductActionBuilder.newFetchedProductPasswordAction(payload))
+            dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductPasswordAction(payload))
         }
         add(request)
     }

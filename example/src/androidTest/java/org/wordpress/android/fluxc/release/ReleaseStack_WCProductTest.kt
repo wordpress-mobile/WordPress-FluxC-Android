@@ -10,8 +10,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
-import org.wordpress.android.fluxc.action.WCProductAction.FETCHED_PRODUCT_PASSWORD
-import org.wordpress.android.fluxc.action.WCProductAction.UPDATED_PRODUCT_PASSWORD
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.MediaActionBuilder
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
@@ -280,7 +278,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testUpdateAndFetchProductPassword() {
+    fun testUpdateProductPassword() {
         // first dispatch a request to update the password
         nextEvent = TestEvent.UPDATED_PRODUCT_PASSWORD
         mCountDownLatch = CountDownLatch(1)
@@ -296,7 +294,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        // then dispatch a request to fetch it so we can make it's the same we just updated to
+        // then dispatch a request to fetch it so we can make sure it's the same we just updated to
         nextEvent = TestEvent.FETCHED_PRODUCT_PASSWORD
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
@@ -582,10 +580,10 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
                 throw AssertionError("onProductPasswordChanged has unexpected error: ${it.type}, ${it.message}")
             }
         }
-        else if (event.causeOfChange == FETCHED_PRODUCT_PASSWORD) {
+        else if (event.causeOfChange == WCProductAction.FETCH_PRODUCT_PASSWORD) {
             assertEquals(TestEvent.FETCHED_PRODUCT_PASSWORD, nextEvent)
             assertEquals(event.password, updatedPassword)
-        } else if (event.causeOfChange == UPDATED_PRODUCT_PASSWORD) {
+        } else if (event.causeOfChange == WCProductAction.UPDATE_PRODUCT_PASSWORD) {
             assertEquals(TestEvent.UPDATED_PRODUCT_PASSWORD, nextEvent)
             assertEquals(event.password, updatedPassword)
         }
