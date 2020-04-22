@@ -302,9 +302,7 @@ class ProductRestClient(
      */
     fun fetchProductPassword(site: SiteModel, remoteProductId: Long) {
         val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_1
-
-        val params: MutableMap<String, String> = HashMap()
-        params["fields"] = "pasword"
+        val params = mutableMapOf("fields" to "password")
 
         val request = WPComGsonRequest.buildGetRequest(url,
                 params,

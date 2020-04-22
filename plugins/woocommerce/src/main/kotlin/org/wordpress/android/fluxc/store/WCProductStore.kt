@@ -354,7 +354,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     class OnProductPasswordChanged(
         var remoteProductId: Long,
-        var password: String
+        var password: String?
     )  : OnChanged<ProductError>() {
         var causeOfChange: WCProductAction? = null
     }
@@ -473,7 +473,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 fetchProductShippingClass(action.payload as FetchSingleProductShippingClassPayload)
             WCProductAction.FETCH_PRODUCT_SHIPPING_CLASS_LIST ->
                 fetchProductShippingClasses(action.payload as FetchProductShippingClassListPayload)
-            WCProductAction.FETCHED_PRODUCT_PASSWORD ->
+            WCProductAction.FETCH_PRODUCT_PASSWORD ->
                 fetchProductPassword(action.payload as FetchProductPasswordPayload)
 
             // remote responses
@@ -501,6 +501,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 handleFetchProductShippingClassesCompleted(action.payload as RemoteProductShippingClassListPayload)
             WCProductAction.FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS ->
                 handleFetchProductShippingClassCompleted(action.payload as RemoteProductShippingClassPayload)
+            WCProductAction.FETCHED_PRODUCT_PASSWORD ->
+                handleFetchProductPasswordCompleted(action.payload as RemoteProductPasswordPayload)
         }
     }
 
@@ -649,6 +651,15 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         }
         onProductShippingClassesChanged.causeOfChange = WCProductAction.FETCH_SINGLE_PRODUCT_SHIPPING_CLASS
         emitChange(onProductShippingClassesChanged)
+    }
+
+    private fun handleFetchProductPasswordCompleted(payload: RemoteProductPasswordPayload) {
+        val onProductPasswordChanged = if (payload.isError) {
+            OnProductPasswordChanged(payload.remoteProductId, null).also { it.error = payload.error }
+        } else {
+            OnProductPasswordChanged(payload.remoteProductId, payload.password)
+        }
+        emitChange(onProductPasswordChanged)
     }
 
     private fun handleFetchProductVariationsCompleted(payload: RemoteProductVariationsPayload) {

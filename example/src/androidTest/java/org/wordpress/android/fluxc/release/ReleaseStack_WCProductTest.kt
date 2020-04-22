@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
@@ -31,6 +32,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReview
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductPasswordChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductReviewChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
@@ -51,6 +53,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         FETCHED_SINGLE_PRODUCT_REVIEW,
         FETCHED_PRODUCT_SHIPPING_CLASS_LIST,
         FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS,
+        FETCHED_PRODUCT_PASSWORD,
         UPDATED_PRODUCT_REVIEW_STATUS,
         UPDATED_PRODUCT_IMAGES,
         UPDATED_PRODUCT
@@ -267,6 +270,19 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         // Verify results
         val fetchedReviewsForProduct = productStore.getProductReviewsForSite(sSite)
         assertEquals(reviewsByProduct.size, fetchedReviewsForProduct.size)
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchProductPassword() {
+        // TODO: we'll need to set the password first and then verify it's the same when we fetch it
+        nextEvent = TestEvent.FETCHED_PRODUCT_PASSWORD
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder
+                        .newFetchProductPasswordAction(FetchProductPasswordPayload(sSite, productModel.remoteProductId))
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
     }
 
     @Throws(InterruptedException::class)
@@ -534,6 +550,17 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         }
 
         assertEquals(TestEvent.UPDATED_PRODUCT, nextEvent)
+        mCountDownLatch.countDown()
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductPasswordChanged(event: OnProductPasswordChanged) {
+        event.error?.let {
+            throw AssertionError("onProductPasswordChanged has unexpected error: ${it.type}, ${it.message}")
+        }
+
+        assertEquals(TestEvent.FETCHED_PRODUCT_PASSWORD, nextEvent)
         mCountDownLatch.countDown()
     }
 
