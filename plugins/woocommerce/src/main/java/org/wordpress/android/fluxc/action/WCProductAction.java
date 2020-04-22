@@ -24,8 +24,10 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsP
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload;
 
@@ -58,6 +60,8 @@ public enum WCProductAction implements IAction {
     FETCH_PRODUCT_SKU_AVAILABILITY,
     @Action(payloadType = FetchProductPasswordPayload.class)
     FETCH_PRODUCT_PASSWORD,
+    @Action(payloadType = UpdateProductPasswordPayload.class)
+    UPDATE_PRODUCT_PASSWORD,
 
 
     // Remote responses
@@ -86,5 +90,7 @@ public enum WCProductAction implements IAction {
     @Action(payloadType = RemoteProductSkuAvailabilityPayload.class)
     FETCHED_PRODUCT_SKU_AVAILABILITY,
     @Action(payloadType = RemoteProductPasswordPayload.class)
-    FETCHED_PRODUCT_PASSWORD
+    FETCHED_PRODUCT_PASSWORD,
+    @Action(payloadType = RemoteUpdatedProductPasswordPayload.class)
+    UPDATED_PRODUCT_PASSWORD,
 }

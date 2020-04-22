@@ -10,6 +10,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
+import org.wordpress.android.fluxc.action.WCProductAction.FETCHED_PRODUCT_PASSWORD
+import org.wordpress.android.fluxc.action.WCProductAction.UPDATED_PRODUCT_PASSWORD
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.MediaActionBuilder
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
@@ -37,6 +39,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.OnProductReviewChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload
 import java.util.concurrent.CountDownLatch
@@ -54,9 +57,10 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         FETCHED_PRODUCT_SHIPPING_CLASS_LIST,
         FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS,
         FETCHED_PRODUCT_PASSWORD,
+        UPDATED_PRODUCT,
         UPDATED_PRODUCT_REVIEW_STATUS,
         UPDATED_PRODUCT_IMAGES,
-        UPDATED_PRODUCT
+        UPDATED_PRODUCT_PASSWORD
     }
 
     @Inject internal lateinit var productStore: WCProductStore
@@ -76,6 +80,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         dateCreated = "2018-04-20T15:45:14Z"
     }
     private val remoteProductReviewId = BuildConfig.TEST_WC_PRODUCT_REVIEW_ID.toLong()
+
+    private val updatedPassword = "password"
 
     private var lastEvent: OnProductChanged? = null
     private var lastShippingClassEvent: OnProductShippingClassesChanged? = null
@@ -274,8 +280,23 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
-    fun testFetchProductPassword() {
-        // TODO: we'll need to set the password first and then verify it's the same when we fetch it
+    fun testUpdateAndFetchProductPassword() {
+        // first dispatch a request to update the password
+        nextEvent = TestEvent.UPDATED_PRODUCT_PASSWORD
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder
+                        .newUpdateProductPasswordAction(
+                                UpdateProductPasswordPayload(
+                                        sSite,
+                                        productModel.remoteProductId,
+                                        updatedPassword
+                                )
+                        )
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // then dispatch a request to fetch it so we can make it's the same we just updated to
         nextEvent = TestEvent.FETCHED_PRODUCT_PASSWORD
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
@@ -556,11 +577,19 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProductPasswordChanged(event: OnProductPasswordChanged) {
-        event.error?.let {
-            throw AssertionError("onProductPasswordChanged has unexpected error: ${it.type}, ${it.message}")
+        if (event.isError) {
+            event.error?.let {
+                throw AssertionError("onProductPasswordChanged has unexpected error: ${it.type}, ${it.message}")
+            }
+        }
+        else if (event.causeOfChange == FETCHED_PRODUCT_PASSWORD) {
+            assertEquals(TestEvent.FETCHED_PRODUCT_PASSWORD, nextEvent)
+            assertEquals(event.password, updatedPassword)
+        } else if (event.causeOfChange == UPDATED_PRODUCT_PASSWORD) {
+            assertEquals(TestEvent.UPDATED_PRODUCT_PASSWORD, nextEvent)
+            assertEquals(event.password, updatedPassword)
         }
 
-        assertEquals(TestEvent.FETCHED_PRODUCT_PASSWORD, nextEvent)
         mCountDownLatch.countDown()
     }
 

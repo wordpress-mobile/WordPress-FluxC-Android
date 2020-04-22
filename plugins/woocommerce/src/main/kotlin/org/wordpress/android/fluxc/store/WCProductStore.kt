@@ -105,6 +105,12 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var remoteProductId: Long
     ) : Payload<BaseNetworkError>()
 
+    class UpdateProductPasswordPayload(
+        var site: SiteModel,
+        var remoteProductId: Long,
+        var password: String
+    ) : Payload<BaseNetworkError>()
+
     class UpdateProductReviewStatusPayload(
         var site: SiteModel,
         var remoteReviewId: Long,
@@ -182,6 +188,21 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             remoteProductId: Long,
             site: SiteModel,
             password: String?
+        ) : this(remoteProductId, site, password) {
+            this.error = error
+        }
+    }
+
+    class RemoteUpdatedProductPasswordPayload(
+        val remoteProductId: Long,
+        val site: SiteModel,
+        val password: String
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            remoteProductId: Long,
+            site: SiteModel,
+            password: String
         ) : this(remoteProductId, site, password) {
             this.error = error
         }
@@ -359,6 +380,13 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var causeOfChange: WCProductAction? = null
     }
 
+    class OnProductPasswordUpdated(
+        var remoteProductId: Long,
+        var password: String?
+    )  : OnChanged<ProductError>() {
+        var causeOfChange: WCProductAction? = null
+    }
+
     class OnProductUpdated(
         var rowsAffected: Int,
         var remoteProductId: Long
@@ -475,6 +503,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 fetchProductShippingClasses(action.payload as FetchProductShippingClassListPayload)
             WCProductAction.FETCH_PRODUCT_PASSWORD ->
                 fetchProductPassword(action.payload as FetchProductPasswordPayload)
+            WCProductAction.UPDATE_PRODUCT_PASSWORD ->
+                updateProductPasswword(action.payload as UpdateProductPasswordPayload)
 
             // remote responses
             WCProductAction.FETCHED_SINGLE_PRODUCT ->
@@ -503,6 +533,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 handleFetchProductShippingClassCompleted(action.payload as RemoteProductShippingClassPayload)
             WCProductAction.FETCHED_PRODUCT_PASSWORD ->
                 handleFetchProductPasswordCompleted(action.payload as RemoteProductPasswordPayload)
+            WCProductAction.UPDATED_PRODUCT_PASSWORD ->
+                handleUpdatedProductPasswwordCompleted(action.payload as RemoteUpdatedProductPasswordPayload)
         }
     }
 
@@ -552,6 +584,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     private fun fetchProductPassword(payload: FetchProductPasswordPayload) {
         with(payload) { wcProductRestClient.fetchProductPassword(site, remoteProductId) }
+    }
+
+    private fun updateProductPasswword(payload: UpdateProductPasswordPayload) {
+        with(payload) { wcProductRestClient.updateProductPassword(site, remoteProductId, password)}
     }
 
     private fun updateProductReviewStatus(payload: UpdateProductReviewStatusPayload) {
@@ -660,6 +696,15 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             OnProductPasswordChanged(payload.remoteProductId, payload.password)
         }
         emitChange(onProductPasswordChanged)
+    }
+
+    private fun handleUpdatedProductPasswwordCompleted(payload: RemoteUpdatedProductPasswordPayload) {
+        val onProductPasswordUpdated = if (payload.isError) {
+            OnProductPasswordUpdated(payload.remoteProductId, null).also { it.error = payload.error }
+        } else {
+            OnProductPasswordChanged(payload.remoteProductId, payload.password)
+        }
+        emitChange(onProductPasswordUpdated)
     }
 
     private fun handleFetchProductVariationsCompleted(payload: RemoteProductVariationsPayload) {

@@ -321,6 +321,31 @@ class ProductRestClient(
     }
 
     /**
+     * Makes a WP.COM POST request to `/sites/$site/posts/$post_ID` to update just the password for a product
+     */
+    fun updateProductPassword(site: SiteModel, remoteProductId: Long, password: String) {
+        val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_1
+
+        val body = HashMap<String, Any>()
+        body["id"] = remoteProductId
+        body["password"] = password
+
+        val request = WPComGsonRequest.buildPostRequest(url,
+                body,
+                PostWPComRestResponse::class.java,
+                { response ->
+                    val payload = RemoteProductPasswordPayload(remoteProductId, site, response.password)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductPasswordAction(payload))
+                }
+        ) { networkError ->
+            val payload = RemoteProductPasswordPayload(remoteProductId, site, "")
+            payload.error = networkErrorToProductError(networkError)
+            dispatcher.dispatch(WCProductActionBuilder.newFetchedProductPasswordAction(payload))
+        }
+        add(request)
+    }
+
+    /**
      * Makes a GET request to `POST /wp-json/wc/v3/products/[productId]/variations` to fetch
      * variations for a product
      *
