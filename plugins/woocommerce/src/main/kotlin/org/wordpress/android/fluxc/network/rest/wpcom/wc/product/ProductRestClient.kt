@@ -604,6 +604,9 @@ class ProductRestClient(
         if (storedWCProductModel.externalUrl != updatedProductModel.externalUrl) {
             body["external_url"] = updatedProductModel.externalUrl
         }
+        if (storedWCProductModel.buttonText != updatedProductModel.buttonText) {
+            body["button_text"] = updatedProductModel.buttonText
+        }
 
         // only allowed to change the following params if manageStock is enabled
         if (updatedProductModel.manageStock) {
@@ -727,7 +730,9 @@ class ProductRestClient(
             downloadable = response.downloadable
             downloadLimit = response.download_limit
             downloadExpiry = response.download_expiry
+
             externalUrl = response.external_url ?: ""
+            buttonText = response.button_text ?: ""
 
             taxStatus = response.tax_status ?: ""
             taxClass = response.tax_class ?: ""
