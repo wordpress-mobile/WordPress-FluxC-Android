@@ -389,6 +389,27 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
+    public void testCommentResponseContainsURL() throws InterruptedException {
+        // New Comment
+        createNewComment();
+
+        // Edit comment instance
+        mNewComment.setContent("Trying with 10,000 gigawatts");
+
+        // Create new Comment
+        mNextEvent = TestEvents.COMMENT_CHANGED;
+        RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(sSite, mFirstPost, mNewComment);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Check the new comment response contains URL
+        CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertNotNull(comment.getUrl());
+    }
+
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onCommentChanged(OnCommentChanged event) {
