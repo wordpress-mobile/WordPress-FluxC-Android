@@ -32,7 +32,9 @@ class ProductApiResponse : Response {
     var downloadable = false
     var download_limit = 0
     var download_expiry = 0
+
     var external_url: String? = null
+    val button_text: String? = null
 
     var tax_status: String? = null
     var tax_class: String? = null
