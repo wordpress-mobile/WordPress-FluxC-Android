@@ -100,6 +100,11 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var remoteReviewId: Long
     ) : Payload<BaseNetworkError>()
 
+    class FetchProductPasswordPayload(
+        var site: SiteModel,
+        var remoteProductId: Long
+    ) : Payload<BaseNetworkError>()
+
     class UpdateProductReviewStatusPayload(
         var site: SiteModel,
         var remoteReviewId: Long,
@@ -163,6 +168,21 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             product: WCProductModel,
             site: SiteModel
         ) : this(product, site) {
+            this.error = error
+        }
+    }
+
+    class RemoteProductPasswordPayload(
+        val remoteProductId: Long,
+        val site: SiteModel,
+        val password: String?
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            remoteProductId: Long,
+            site: SiteModel,
+            password: String?
+        ) : this(remoteProductId, site, password) {
             this.error = error
         }
     }
@@ -332,6 +352,13 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var causeOfChange: WCProductAction? = null
     }
 
+    class OnProductPasswordChanged(
+        var remoteProductId: Long,
+        var password: String
+    )  : OnChanged<ProductError>() {
+        var causeOfChange: WCProductAction? = null
+    }
+
     class OnProductUpdated(
         var rowsAffected: Int,
         var remoteProductId: Long
@@ -446,6 +473,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 fetchProductShippingClass(action.payload as FetchSingleProductShippingClassPayload)
             WCProductAction.FETCH_PRODUCT_SHIPPING_CLASS_LIST ->
                 fetchProductShippingClasses(action.payload as FetchProductShippingClassListPayload)
+            WCProductAction.FETCHED_PRODUCT_PASSWORD ->
+                fetchProductPassword(action.payload as FetchProductPasswordPayload)
 
             // remote responses
             WCProductAction.FETCHED_SINGLE_PRODUCT ->
@@ -517,6 +546,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     private fun fetchSingleProductReview(payload: FetchSingleProductReviewPayload) {
         with(payload) { wcProductRestClient.fetchProductReviewById(site, remoteReviewId) }
+    }
+
+    private fun fetchProductPassword(payload: FetchProductPasswordPayload) {
+        with(payload) { wcProductRestClient.fetchProductPassword(site, remoteProductId) }
     }
 
     private fun updateProductReviewStatus(payload: UpdateProductReviewStatusPayload) {

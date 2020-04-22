@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.action;
 import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload;
@@ -13,6 +14,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayloa
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload;
@@ -54,6 +56,9 @@ public enum WCProductAction implements IAction {
     UPDATE_PRODUCT,
     @Action(payloadType = FetchProductSkuAvailabilityPayload.class)
     FETCH_PRODUCT_SKU_AVAILABILITY,
+    @Action(payloadType = FetchProductPasswordPayload.class)
+    FETCH_PRODUCT_PASSWORD,
+
 
     // Remote responses
     @Action(payloadType = RemoteProductPayload.class)
@@ -79,5 +84,7 @@ public enum WCProductAction implements IAction {
     @Action(payloadType = RemoteUpdateProductPayload.class)
     UPDATED_PRODUCT,
     @Action(payloadType = RemoteProductSkuAvailabilityPayload.class)
-    FETCHED_PRODUCT_SKU_AVAILABILITY
+    FETCHED_PRODUCT_SKU_AVAILABILITY,
+    @Action(payloadType = RemoteProductPasswordPayload.class)
+    FETCHED_PRODUCT_PASSWORD
 }
