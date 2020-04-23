@@ -279,7 +279,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testUpdateProductPassword() {
-        // first dispatch a request to update the password
+        // first dispatch a request to update the password - note that this will fail for private products
         nextEvent = TestEvent.UPDATED_PRODUCT_PASSWORD
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
