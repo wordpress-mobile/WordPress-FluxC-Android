@@ -581,10 +581,10 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             }
         } else if (event.causeOfChange == WCProductAction.FETCH_PRODUCT_PASSWORD) {
             assertEquals(TestEvent.FETCHED_PRODUCT_PASSWORD, nextEvent)
-            assertEquals(event.password, updatedPassword)
+            assertEquals(updatedPassword, event.password)
         } else if (event.causeOfChange == WCProductAction.UPDATE_PRODUCT_PASSWORD) {
             assertEquals(TestEvent.UPDATED_PRODUCT_PASSWORD, nextEvent)
-            assertEquals(event.password, updatedPassword)
+            assertEquals(updatedPassword, event.password)
         }
 
         mCountDownLatch.countDown()
