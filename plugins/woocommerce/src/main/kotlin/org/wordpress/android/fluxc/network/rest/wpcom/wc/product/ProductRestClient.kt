@@ -325,9 +325,8 @@ class ProductRestClient(
      */
     fun updateProductPassword(site: SiteModel, remoteProductId: Long, password: String) {
         val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_2
-
-        val body = HashMap<String, Any>()
-        body["password"] = password
+        val body = listOfNotNull(
+                "password" to password).toMap()
 
         val request = WPComGsonRequest.buildPostRequest(url,
                 body,
@@ -341,6 +340,8 @@ class ProductRestClient(
             payload.error = networkErrorToProductError(networkError)
             dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductPasswordAction(payload))
         }
+        request.addQueryParameter("context", "edit")
+        request.addQueryParameter("fields", "password")
         add(request)
     }
 
