@@ -4,7 +4,8 @@ enum class CoreProductType(val value: String) {
     SIMPLE("simple"),
     GROUPED("grouped"),
     EXTERNAL("external"),
-    VARIABLE("variable");
+    VARIABLE("variable"),
+    VARIATION("variation");
 
     companion object {
         private val valueMap = values().associateBy(CoreProductType::value)
