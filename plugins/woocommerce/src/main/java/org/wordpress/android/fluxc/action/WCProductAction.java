@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.action;
 import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload;
@@ -13,6 +14,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayloa
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload;
@@ -22,8 +24,10 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsP
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload;
 
@@ -54,6 +58,11 @@ public enum WCProductAction implements IAction {
     UPDATE_PRODUCT,
     @Action(payloadType = FetchProductSkuAvailabilityPayload.class)
     FETCH_PRODUCT_SKU_AVAILABILITY,
+    @Action(payloadType = FetchProductPasswordPayload.class)
+    FETCH_PRODUCT_PASSWORD,
+    @Action(payloadType = UpdateProductPasswordPayload.class)
+    UPDATE_PRODUCT_PASSWORD,
+
 
     // Remote responses
     @Action(payloadType = RemoteProductPayload.class)
@@ -79,5 +88,9 @@ public enum WCProductAction implements IAction {
     @Action(payloadType = RemoteUpdateProductPayload.class)
     UPDATED_PRODUCT,
     @Action(payloadType = RemoteProductSkuAvailabilityPayload.class)
-    FETCHED_PRODUCT_SKU_AVAILABILITY
+    FETCHED_PRODUCT_SKU_AVAILABILITY,
+    @Action(payloadType = RemoteProductPasswordPayload.class)
+    FETCHED_PRODUCT_PASSWORD,
+    @Action(payloadType = RemoteUpdatedProductPasswordPayload.class)
+    UPDATED_PRODUCT_PASSWORD,
 }

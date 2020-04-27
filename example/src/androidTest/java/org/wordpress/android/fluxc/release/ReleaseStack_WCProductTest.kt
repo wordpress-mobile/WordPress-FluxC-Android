@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
@@ -31,10 +32,12 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReview
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductPasswordChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductReviewChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload
 import java.util.concurrent.CountDownLatch
@@ -51,9 +54,11 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         FETCHED_SINGLE_PRODUCT_REVIEW,
         FETCHED_PRODUCT_SHIPPING_CLASS_LIST,
         FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS,
+        FETCHED_PRODUCT_PASSWORD,
+        UPDATED_PRODUCT,
         UPDATED_PRODUCT_REVIEW_STATUS,
         UPDATED_PRODUCT_IMAGES,
-        UPDATED_PRODUCT
+        UPDATED_PRODUCT_PASSWORD
     }
 
     @Inject internal lateinit var productStore: WCProductStore
@@ -73,6 +78,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         dateCreated = "2018-04-20T15:45:14Z"
     }
     private val remoteProductReviewId = BuildConfig.TEST_WC_PRODUCT_REVIEW_ID.toLong()
+
+    private val updatedPassword = "password"
 
     private var lastEvent: OnProductChanged? = null
     private var lastShippingClassEvent: OnProductShippingClassesChanged? = null
@@ -267,6 +274,34 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         // Verify results
         val fetchedReviewsForProduct = productStore.getProductReviewsForSite(sSite)
         assertEquals(reviewsByProduct.size, fetchedReviewsForProduct.size)
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun testUpdateProductPassword() {
+        // first dispatch a request to update the password - note that this will fail for private products
+        nextEvent = TestEvent.UPDATED_PRODUCT_PASSWORD
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder
+                        .newUpdateProductPasswordAction(
+                                UpdateProductPasswordPayload(
+                                        sSite,
+                                        productModel.remoteProductId,
+                                        updatedPassword
+                                )
+                        )
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // then dispatch a request to fetch it so we can make sure it's the same we just updated to
+        nextEvent = TestEvent.FETCHED_PRODUCT_PASSWORD
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder
+                        .newFetchProductPasswordAction(FetchProductPasswordPayload(sSite, productModel.remoteProductId))
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
     }
 
     @Throws(InterruptedException::class)
@@ -534,6 +569,24 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         }
 
         assertEquals(TestEvent.UPDATED_PRODUCT, nextEvent)
+        mCountDownLatch.countDown()
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductPasswordChanged(event: OnProductPasswordChanged) {
+        if (event.isError) {
+            event.error?.let {
+                throw AssertionError("onProductPasswordChanged has unexpected error: ${it.type}, ${it.message}")
+            }
+        } else if (event.causeOfChange == WCProductAction.FETCH_PRODUCT_PASSWORD) {
+            assertEquals(TestEvent.FETCHED_PRODUCT_PASSWORD, nextEvent)
+            assertEquals(updatedPassword, event.password)
+        } else if (event.causeOfChange == WCProductAction.UPDATE_PRODUCT_PASSWORD) {
+            assertEquals(TestEvent.UPDATED_PRODUCT_PASSWORD, nextEvent)
+            assertEquals(updatedPassword, event.password)
+        }
+
         mCountDownLatch.countDown()
     }
 

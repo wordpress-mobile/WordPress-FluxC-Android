@@ -16,6 +16,7 @@ import kotlinx.android.synthetic.main.fragment_woo_update_product.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
@@ -31,7 +32,10 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStoc
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductTaxStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductVisibility
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductPasswordChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.utils.DateUtils
@@ -47,6 +51,7 @@ class WooUpdateProductFragment : Fragment() {
     private var selectedSitePosition: Int = -1
     private var selectedRemoteProductId: Long? = null
     private var selectedProductModel: WCProductModel? = null
+    private var password: String? = null
 
     companion object {
         const val ARG_SELECTED_SITE_POS = "ARG_SELECTED_SITE_POS"
@@ -178,6 +183,15 @@ class WooUpdateProductFragment : Fragment() {
                 if (selectedProductModel?.remoteProductId != null) {
                     val payload = UpdateProductPayload(site, selectedProductModel!!)
                     dispatcher.dispatch(WCProductActionBuilder.newUpdateProductAction(payload))
+                    val updatedPassword = product_password.getText()
+                    if (updatedPassword != password) {
+                        val passwordPayload = UpdateProductPasswordPayload(
+                                site,
+                                selectedProductModel?.remoteProductId!!,
+                                updatedPassword
+                        )
+                        dispatcher.dispatch(WCProductActionBuilder.newUpdateProductPasswordAction(passwordPayload))
+                    }
                 } else {
                     prependToLog("No valid remoteProductId defined...doing nothing")
                 }
@@ -267,6 +281,11 @@ class WooUpdateProductFragment : Fragment() {
             enableProductDependentButtons()
             product_entered_product_id.text = remoteProductId.toString()
 
+            // fetch the password for this product
+            val action = WCProductActionBuilder
+                    .newFetchProductPasswordAction(FetchProductPasswordPayload(siteModel, remoteProductId))
+            dispatcher.dispatch(action)
+
             selectedProductModel = wcProductStore.getProductByRemoteId(siteModel, remoteProductId)?.also {
                 product_name.setText(it.name)
                 product_description.setText(it.description)
@@ -338,5 +357,23 @@ class WooUpdateProductFragment : Fragment() {
             return
         }
         prependToLog("Product updated ${event.rowsAffected}")
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductPasswordChanged(event: OnProductPasswordChanged) {
+        if (event.isError) {
+            event.error?.let {
+                prependToLog("onProductPasswordChanged has unexpected error: ${it.type}, ${it.message}")
+            }
+        } else if (event.causeOfChange == WCProductAction.FETCH_PRODUCT_PASSWORD) {
+            prependToLog("Password fetched: ${event.password}")
+            product_password.setText(event.password ?: "")
+            password = event.password
+        } else if (event.causeOfChange == WCProductAction.UPDATE_PRODUCT_PASSWORD) {
+            prependToLog("Password updated: ${event.password}")
+            product_password.setText(event.password ?: "")
+            password = event.password
+        }
     }
 }

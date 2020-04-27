@@ -9,6 +9,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
+import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
@@ -22,6 +23,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErro
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
 import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_PAGE_SIZE
@@ -38,6 +40,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload
@@ -47,6 +50,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsP
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import java.util.HashMap
 import javax.inject.Singleton
 
@@ -291,6 +295,53 @@ class ProductRestClient(
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductSkuAvailabilityAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Makes a WP.COM GET request to `/sites/$site/posts/$post_ID` to fetch just the password for a product
+     */
+    fun fetchProductPassword(site: SiteModel, remoteProductId: Long) {
+        val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_1
+        val params = mutableMapOf("fields" to "password")
+
+        val request = WPComGsonRequest.buildGetRequest(url,
+                params,
+                PostWPComRestResponse::class.java,
+                { response ->
+                    val payload = RemoteProductPasswordPayload(remoteProductId, site, response.password ?: "")
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductPasswordAction(payload))
+                }
+        ) { networkError ->
+            val payload = RemoteProductPasswordPayload(remoteProductId, site, "")
+            payload.error = networkErrorToProductError(networkError)
+            dispatcher.dispatch(WCProductActionBuilder.newFetchedProductPasswordAction(payload))
+        }
+        add(request)
+    }
+
+    /**
+     * Makes a WP.COM POST request to `/sites/$site/posts/$post_ID` to update just the password for a product
+     */
+    fun updateProductPassword(site: SiteModel, remoteProductId: Long, password: String) {
+        val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_2
+        val body = listOfNotNull(
+                "password" to password).toMap()
+
+        val request = WPComGsonRequest.buildPostRequest(url,
+                body,
+                PostWPComRestResponse::class.java,
+                { response ->
+                    val payload = RemoteUpdatedProductPasswordPayload(remoteProductId, site, response.password ?: "")
+                    dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductPasswordAction(payload))
+                }
+        ) { networkError ->
+            val payload = RemoteUpdatedProductPasswordPayload(remoteProductId, site, "")
+            payload.error = networkErrorToProductError(networkError)
+            dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductPasswordAction(payload))
+        }
+        request.addQueryParameter("context", "edit")
+        request.addQueryParameter("fields", "password")
         add(request)
     }
 
