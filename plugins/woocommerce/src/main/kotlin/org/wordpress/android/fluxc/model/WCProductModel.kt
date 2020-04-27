@@ -54,7 +54,9 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var downloadLimit = 0
     @Column var downloadExpiry = 0
     @Column var soldIndividually = false
+
     @Column var externalUrl = ""
+    @Column var buttonText = ""
 
     @Column var taxStatus = "" // taxable, shipping, none
     @Column var taxClass = ""
@@ -78,6 +80,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     @Column var parentId = 0
     @Column var purchaseNote = ""
+    @Column var menuOrder = 0
 
     @Column var categories = "" // array of categories
     @Column var tags = "" // array of tags
@@ -122,19 +125,21 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      */
     fun getImages(): ArrayList<WCProductImageModel> {
         val imageList = ArrayList<WCProductImageModel>()
-        try {
-            Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                with(jsonElement.asJsonObject) {
-                    WCProductImageModel(this.getLong("id")).also {
-                        it.name = this.getString("name") ?: ""
-                        it.src = this.getString("src") ?: ""
-                        it.alt = this.getString("alt") ?: ""
-                        imageList.add(it)
+        if (!images.isEmpty()) {
+            try {
+                Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+                    with(jsonElement.asJsonObject) {
+                        WCProductImageModel(this.getLong("id")).also {
+                            it.name = this.getString("name") ?: ""
+                            it.src = this.getString("src") ?: ""
+                            it.alt = this.getString("alt") ?: ""
+                            imageList.add(it)
+                        }
                     }
                 }
+            } catch (e: JsonParseException) {
+                AppLog.e(T.API, e)
             }
-        } catch (e: JsonParseException) {
-            AppLog.e(T.API, e)
         }
         return imageList
     }
@@ -261,5 +266,23 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
             AppLog.e(T.API, e)
         }
         return triplets
+    }
+
+    /**
+     * Compares this product's images with the passed product's images, returns true only if both
+     * lists contain the same images in the same order
+     */
+    fun hasSameImages(updatedProduct: WCProductModel): Boolean {
+        val updatedImages = updatedProduct.getImages()
+        val thisImages = getImages()
+        if (thisImages.size != updatedImages.size) {
+            return false
+        }
+        for (i in thisImages.indices) {
+            if (thisImages[i].id != updatedImages[i].id) {
+                return false
+            }
+        }
+        return true
     }
 }

@@ -26,13 +26,16 @@ import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductBackOrders
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductTaxStatus
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductVisibility
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import org.wordpress.android.fluxc.utils.DateUtils
+import org.wordpress.android.util.StringUtils
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -51,6 +54,8 @@ class WooUpdateProductFragment : Fragment() {
         const val LIST_RESULT_CODE_TAX_STATUS = 101
         const val LIST_RESULT_CODE_STOCK_STATUS = 102
         const val LIST_RESULT_CODE_BACK_ORDERS = 103
+        const val LIST_RESULT_CODE_VISIBILITY = 104
+        const val LIST_RESULT_CODE_STATUS = 105
 
         fun newInstance(selectedSitePosition: Int): WooUpdateProductFragment {
             val fragment = WooUpdateProductFragment()
@@ -179,6 +184,38 @@ class WooUpdateProductFragment : Fragment() {
             } ?: prependToLog("No site found...doing nothing")
         }
 
+        product_status.setOnClickListener {
+            showListSelectorDialog(
+                    CoreProductStatus.values().map { it.value }.toList(),
+                    LIST_RESULT_CODE_STATUS, selectedProductModel?.status
+            )
+        }
+
+        product_catalog_visibility.setOnClickListener {
+            showListSelectorDialog(
+                    CoreProductVisibility.values().map { it.value }.toList(),
+                    LIST_RESULT_CODE_VISIBILITY, selectedProductModel?.catalogVisibility
+            )
+        }
+
+        product_is_featured.setOnCheckedChangeListener { _, isChecked ->
+            selectedProductModel?.featured = isChecked
+        }
+
+        product_reviews_allowed.setOnCheckedChangeListener { _, isChecked ->
+            selectedProductModel?.reviewsAllowed = isChecked
+        }
+
+        product_purchase_note.onTextChanged { selectedProductModel?.purchaseNote = it }
+
+        product_slug.onTextChanged { selectedProductModel?.slug = it }
+
+        product_external_url.onTextChanged { selectedProductModel?.externalUrl = it }
+
+        product_button_text.onTextChanged { selectedProductModel?.buttonText = it }
+
+        product_menu_order.onTextChanged { selectedProductModel?.menuOrder = StringUtils.stringToInt(it) }
+
         savedInstanceState?.let { bundle ->
             selectedRemoteProductId = bundle.getLong(ARG_SELECTED_PRODUCT_ID)
             selectedSitePosition = bundle.getInt(ARG_SELECTED_SITE_POS)
@@ -207,6 +244,18 @@ class WooUpdateProductFragment : Fragment() {
                     selectedItem?.let {
                         product_back_orders.text = it
                         selectedProductModel?.backorders = it
+                    }
+                }
+                LIST_RESULT_CODE_STATUS -> {
+                    selectedItem?.let {
+                        product_status.text = it
+                        selectedProductModel?.status = it
+                    }
+                }
+                LIST_RESULT_CODE_VISIBILITY -> {
+                    selectedItem?.let {
+                        product_catalog_visibility.text = it
+                        selectedProductModel?.catalogVisibility = it
                     }
                 }
             }
@@ -238,6 +287,15 @@ class WooUpdateProductFragment : Fragment() {
                 product_back_orders.text = it.backorders
                 product_stock_quantity.setText(it.stockQuantity.toString())
                 product_stock_quantity.isEnabled = product_manage_stock.isChecked
+                product_catalog_visibility.text = it.catalogVisibility
+                product_status.text = it.status
+                product_slug.setText(it.slug)
+                product_is_featured.isChecked = it.featured
+                product_reviews_allowed.isChecked = it.reviewsAllowed
+                product_purchase_note.setText(it.purchaseNote)
+                product_menu_order.setText(it.menuOrder.toString())
+                product_external_url.setText(it.externalUrl)
+                product_button_text.setText(it.buttonText)
             } ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
     }

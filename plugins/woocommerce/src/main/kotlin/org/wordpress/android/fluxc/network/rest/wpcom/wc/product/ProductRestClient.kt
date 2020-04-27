@@ -586,8 +586,26 @@ class ProductRestClient(
         if (storedWCProductModel.sku != updatedProductModel.sku) {
             body["sku"] = updatedProductModel.sku
         }
+        if (storedWCProductModel.status != updatedProductModel.status) {
+            body["status"] = updatedProductModel.status
+        }
+        if (storedWCProductModel.catalogVisibility != updatedProductModel.catalogVisibility) {
+            body["catalog_visibility"] = updatedProductModel.catalogVisibility
+        }
+        if (storedWCProductModel.slug != updatedProductModel.slug) {
+            body["slug"] = updatedProductModel.slug
+        }
+        if (storedWCProductModel.featured != updatedProductModel.featured) {
+            body["featured"] = updatedProductModel.featured
+        }
         if (storedWCProductModel.manageStock != updatedProductModel.manageStock) {
             body["manage_stock"] = updatedProductModel.manageStock
+        }
+        if (storedWCProductModel.externalUrl != updatedProductModel.externalUrl) {
+            body["external_url"] = updatedProductModel.externalUrl
+        }
+        if (storedWCProductModel.buttonText != updatedProductModel.buttonText) {
+            body["button_text"] = updatedProductModel.buttonText
         }
 
         // only allowed to change the following params if manageStock is enabled
@@ -646,14 +664,23 @@ class ProductRestClient(
         if (storedWCProductModel.shortDescription != updatedProductModel.shortDescription) {
             body["short_description"] = updatedProductModel.shortDescription
         }
-        if (storedWCProductModel.images != updatedProductModel.images) {
+        if (!storedWCProductModel.hasSameImages(updatedProductModel)) {
+            val updatedImages = updatedProductModel.getImages()
             body["images"] = JsonArray().also {
-                for (image in updatedProductModel.getImages()) {
+                for (image in updatedImages) {
                     it.add(image.toJson())
                 }
             }
         }
-
+        if (storedWCProductModel.reviewsAllowed != updatedProductModel.reviewsAllowed) {
+            body["reviews_allowed"] = updatedProductModel.reviewsAllowed
+        }
+        if (storedWCProductModel.purchaseNote != updatedProductModel.purchaseNote) {
+            body["purchase_note"] = updatedProductModel.purchaseNote
+        }
+        if (storedWCProductModel.menuOrder != updatedProductModel.menuOrder) {
+            body["menu_order"] = updatedProductModel.menuOrder
+        }
         return body
     }
 
@@ -703,7 +730,9 @@ class ProductRestClient(
             downloadable = response.downloadable
             downloadLimit = response.download_limit
             downloadExpiry = response.download_expiry
+
             externalUrl = response.external_url ?: ""
+            buttonText = response.button_text ?: ""
 
             taxStatus = response.tax_status ?: ""
             taxClass = response.tax_class ?: ""
@@ -732,6 +761,7 @@ class ProductRestClient(
             ratingCount = response.rating_count
 
             parentId = response.parent_id
+            menuOrder = response.menu_order
             purchaseNote = response.purchase_note ?: ""
 
             categories = response.categories?.toString() ?: ""

@@ -15,6 +15,8 @@ import org.wordpress.android.fluxc.generated.MediaActionBuilder
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStatus
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductVisibility
 import org.wordpress.android.fluxc.persistence.MediaSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.MediaStore
@@ -398,6 +400,27 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         val updatedProductName = "Product I"
         productModel.name = updatedProductName
 
+        val updatedProductStatus = CoreProductStatus.PRIVATE.value
+        productModel.status = updatedProductStatus
+
+        val updatedProductVisibility = CoreProductVisibility.HIDDEN.value
+        productModel.catalogVisibility = updatedProductVisibility
+
+        val updatedProductFeatured = false
+        productModel.featured = updatedProductFeatured
+
+        val updatedProductSlug = "product-slug"
+        productModel.slug = updatedProductSlug
+
+        val updatedProductReviewsAllowed = true
+        productModel.reviewsAllowed = updatedProductReviewsAllowed
+
+        val updateProductPurchaseNote = "Test purchase note"
+        productModel.purchaseNote = updateProductPurchaseNote
+
+        val updatedProductMenuOrder = 5
+        productModel.menuOrder = updatedProductMenuOrder
+
         nextEvent = TestEvent.UPDATED_PRODUCT
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
@@ -410,6 +433,13 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertEquals(updatedProductDesc, updatedProduct?.description)
         assertEquals(productModel.remoteProductId, updatedProduct?.remoteProductId)
         assertEquals(updatedProductName, updatedProduct?.name)
+        assertEquals(updatedProductStatus, updatedProduct?.status)
+        assertEquals(updatedProductVisibility, updatedProduct?.catalogVisibility)
+        assertEquals(updatedProductFeatured, updatedProduct?.featured)
+        assertEquals(updatedProductSlug, updatedProduct?.slug)
+        assertEquals(updatedProductReviewsAllowed, updatedProduct?.reviewsAllowed)
+        assertEquals(updateProductPurchaseNote, updatedProduct?.purchaseNote)
+        assertEquals(updatedProductMenuOrder, updatedProduct?.menuOrder)
     }
 
     /**
