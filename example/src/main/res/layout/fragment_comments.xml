@@ -23,4 +23,10 @@
         android:layout_height="wrap_content"
         android:text="Like/Unlike first comment" />
 
+    <Button
+        android:id="@+id/show_link_address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show link address" />
+
 </LinearLayout>
