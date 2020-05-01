@@ -143,5 +143,12 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Update Product"/>
+
+        <Button
+            android:id="@+id/fetch_all_categories"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Product Categories For Site"/>
     </LinearLayout>
 </ScrollView>

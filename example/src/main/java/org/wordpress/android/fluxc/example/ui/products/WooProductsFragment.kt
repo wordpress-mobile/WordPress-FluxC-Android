@@ -13,6 +13,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCTS
+import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_CATEGORIES
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_REVIEWS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
@@ -29,6 +30,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.FetchAllCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductSkuAvailabilityPayload
@@ -256,6 +258,14 @@ class WooProductsFragment : Fragment() {
         update_product.setOnClickListener {
             replaceFragment(WooUpdateProductFragment.newInstance(selectedPos))
         }
+
+        fetch_all_categories.setOnClickListener {
+            selectedSite?.let { site ->
+                prependToLog("Submitting request to fetch product categories for site ${site.id}")
+                val payload = FetchAllCategoriesPayload(site)
+                dispatcher.dispatch(WCProductActionBuilder.newFetchProductCategoriesAction(payload))
+            }
+        }
     }
 
     /**
@@ -333,6 +343,9 @@ class WooProductsFragment : Fragment() {
                 }
                 UPDATE_PRODUCT_REVIEW_STATUS -> {
                     prependToLog("${event.rowsAffected} product reviews updated")
+                }
+                FETCH_PRODUCT_CATEGORIES -> {
+                    prependToLog("Fetched ${event.rowsAffected} product categories")
                 }
                 else -> prependToLog("Product store was updated from a " + event.causeOfChange)
             }

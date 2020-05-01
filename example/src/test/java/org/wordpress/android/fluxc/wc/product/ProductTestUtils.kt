@@ -2,10 +2,12 @@ package org.wordpress.android.fluxc.wc.product
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductCategoryApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductReviewApiResponse
 
 object ProductTestUtils {
@@ -72,6 +74,20 @@ object ProductTestUtils {
                 rating = it.rating ?: 0
                 verified = it.verified ?: false
                 reviewerAvatarsJson = it.reviewer_avatar_urls.toString()
+            }
+        }
+    }
+
+    fun getProductCategoriesFromJsonString(json: String, siteId: Int): List<WCProductCategoryModel> {
+        val responseType = object : TypeToken<List<ProductCategoryApiResponse>>() {}.type
+        val converted = Gson().fromJson(json, responseType) as? List<ProductCategoryApiResponse> ?: emptyList()
+        return converted.map {
+            WCProductCategoryModel().apply {
+                localSiteId = siteId
+                remoteCategoryId = it.id ?: 0L
+                name = it.name ?: ""
+                slug = it.slug ?: ""
+                parent = it.parent ?: 0L
             }
         }
     }
