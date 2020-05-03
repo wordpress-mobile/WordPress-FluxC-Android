@@ -669,7 +669,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     @Test
     fun testFetchProductCategoriesSuccess() {
         interceptor.respondWith("wc-fetch-all-product-categories-response-success.json")
-        productRestClient.fetchAllProductCategories(siteModel, 0)
+        productRestClient.fetchAllProductCategories(siteModel, 1)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))

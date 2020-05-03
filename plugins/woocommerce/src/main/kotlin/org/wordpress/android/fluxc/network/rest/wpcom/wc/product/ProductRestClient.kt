@@ -831,8 +831,13 @@ class ProductRestClient(
         if (storedWCProductModel.menuOrder != updatedProductModel.menuOrder) {
             body["menu_order"] = updatedProductModel.menuOrder
         }
-        if (storedWCProductModel.categories != updatedProductModel.categories) {
-            body["categories"] = updatedProductModel.categories
+        if (!storedWCProductModel.hasSameCategories(updatedProductModel)) {
+            val updatedCategories = updatedProductModel.getCategories()
+            body["categories"] = JsonArray().also {
+                for (category in updatedCategories) {
+                    it.add(category.toJson())
+                }
+            }
         }
         return body
     }
