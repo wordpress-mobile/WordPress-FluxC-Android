@@ -660,7 +660,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.FETCHED_PRODUCT_CATEGORIES
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
-                WCProductActionBuilder.newFetchProductCategoriesAction(FetchAllProductCategoriesPayload(sSite)))
+                WCProductActionBuilder.newFetchProductCategoriesAction(
+                        FetchAllProductCategoriesPayload(sSite)))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
