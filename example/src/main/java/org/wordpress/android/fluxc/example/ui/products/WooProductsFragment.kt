@@ -259,6 +259,10 @@ class WooProductsFragment : Fragment() {
             replaceFragment(WooUpdateProductFragment.newInstance(selectedPos))
         }
 
+        update_product_categories.setOnClickListener {
+            replaceFragment(WooProductCategoriesFragment.newInstance(selectedPos))
+        }
+
         fetch_all_product_categories.setOnClickListener {
             selectedSite?.let { site ->
                 prependToLog("Submitting request to fetch product categories for site ${site.id}")
@@ -421,7 +425,7 @@ class WooProductsFragment : Fragment() {
         if (event.isError) {
             prependToLog("Error fetching product categories - error: " + event.error.type)
         } else {
-            prependToLog("Product categories fetched")
+            prependToLog("Fetched ${event.rowsAffected} product categories")
         }
     }
 

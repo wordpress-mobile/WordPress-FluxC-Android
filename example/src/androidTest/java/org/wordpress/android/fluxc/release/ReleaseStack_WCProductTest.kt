@@ -635,7 +635,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         lastProductCategoryEvent = event
 
         when (event.causeOfChange) {
-            WCProductAction.FETCHED_PRODUCT_REVIEWS -> {
+            WCProductAction.FETCHED_PRODUCT_CATEGORIES -> {
                 assertEquals(TestEvent.FETCHED_PRODUCT_CATEGORIES, nextEvent)
                 mCountDownLatch.countDown()
             }

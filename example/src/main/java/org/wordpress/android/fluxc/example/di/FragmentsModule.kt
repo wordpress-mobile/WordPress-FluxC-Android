@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.ui.WooCommerceFragment
 import org.wordpress.android.fluxc.example.ui.gateways.WooGatewaysFragment
 import org.wordpress.android.fluxc.example.ui.orders.WooOrdersFragment
+import org.wordpress.android.fluxc.example.ui.products.WooProductCategoriesFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductFiltersFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductsFragment
 import org.wordpress.android.fluxc.example.ui.products.WooUpdateProductFragment
@@ -76,6 +77,9 @@ internal abstract class FragmentsModule {
 
     @ContributesAndroidInjector
     abstract fun provideWooUpdateProductFragmentInjector(): WooUpdateProductFragment
+
+    @ContributesAndroidInjector
+    abstract fun provideWooProductCategoriesFragmentInjector(): WooProductCategoriesFragment
 
     @ContributesAndroidInjector
     abstract fun provideWooProductFiltersFragmentInjector(): WooProductFiltersFragment

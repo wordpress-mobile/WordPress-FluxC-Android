@@ -657,7 +657,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun fetchAllProductCategories(payloadProduct: FetchAllProductCategoriesPayload) {
-        with(payloadProduct) { wcProductRestClient.fetchAllProductCategories(site, offset, productCategorySorting, remoteCategoryIds) }
+        with(payloadProduct) { wcProductRestClient.fetchAllProductCategories(
+                site, offset, productCategorySorting, remoteCategoryIds) }
     }
 
     private fun addProductCategory(payload: AddProductCategoryPayload) {
