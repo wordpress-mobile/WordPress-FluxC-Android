@@ -395,7 +395,7 @@ public class ReleaseStack_CommentTestWPCom extends ReleaseStack_WPComBase {
         createNewComment();
 
         // Edit comment instance
-        mNewComment.setContent("Trying with 10,000 gigawatts");
+        mNewComment.setContent("Trying with: " + (new Random()).nextFloat() * 10 + " gigawatts");
 
         // Create new Comment
         mNextEvent = TestEvents.COMMENT_CHANGED;
