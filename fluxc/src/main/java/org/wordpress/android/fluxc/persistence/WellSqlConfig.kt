@@ -1086,7 +1086,7 @@ open class WellSqlConfig : DefaultWellConfig {
                                     "REMOTE_CATEGORY_ID INTEGER," +
                                     "NAME TEXT NOT NULL," +
                                     "SLUG TEXT," +
-                                    "PARENT INTEGER" +
+                                    "PARENT INTEGER," +
                                     "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
                                     "FOREIGN KEY(LOCAL_SITE_ID) REFERENCES SiteModel(_id) ON DELETE CASCADE," +
                                     "UNIQUE (REMOTE_CATEGORY_ID, LOCAL_SITE_ID) " +

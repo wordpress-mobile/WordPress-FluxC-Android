@@ -5,7 +5,7 @@ import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryResponsePayload;
-import org.wordpress.android.fluxc.store.WCProductStore.FetchAllCategoriesPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.FetchAllProductCategoriesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload;
@@ -66,7 +66,7 @@ public enum WCProductAction implements IAction {
     FETCH_PRODUCT_PASSWORD,
     @Action(payloadType = UpdateProductPasswordPayload.class)
     UPDATE_PRODUCT_PASSWORD,
-    @Action(payloadType = FetchAllCategoriesPayload.class)
+    @Action(payloadType = FetchAllProductCategoriesPayload.class)
     FETCH_PRODUCT_CATEGORIES,
     @Action(payloadType = AddProductCategoryPayload.class)
     ADD_PRODUCT_CATEGORY,

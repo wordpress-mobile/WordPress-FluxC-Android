@@ -84,7 +84,7 @@ object ProductTestUtils {
         return converted.map {
             WCProductCategoryModel().apply {
                 localSiteId = siteId
-                remoteCategoryId = it.id ?: 0L
+                remoteCategoryId = it.id
                 name = it.name ?: ""
                 slug = it.slug ?: ""
                 parent = it.parent ?: 0L

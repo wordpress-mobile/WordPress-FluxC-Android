@@ -30,7 +30,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCProductStore
-import org.wordpress.android.fluxc.store.WCProductStore.FetchAllCategoriesPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchAllProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductSkuAvailabilityPayload
@@ -39,6 +39,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductCategoryChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
@@ -259,10 +260,10 @@ class WooProductsFragment : Fragment() {
             replaceFragment(WooUpdateProductFragment.newInstance(selectedPos))
         }
 
-        fetch_all_categories.setOnClickListener {
+        fetch_all_product_categories.setOnClickListener {
             selectedSite?.let { site ->
                 prependToLog("Submitting request to fetch product categories for site ${site.id}")
-                val payload = FetchAllCategoriesPayload(site)
+                val payload = FetchAllProductCategoriesPayload(site)
                 dispatcher.dispatch(WCProductActionBuilder.newFetchProductCategoriesAction(payload))
             }
         }
@@ -415,6 +416,16 @@ class WooProductsFragment : Fragment() {
                     }
                 }
             }
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductCategoriesFetched(event: OnProductCategoryChanged) {
+        if (event.isError) {
+            prependToLog("Error fetching product categories - error: " + event.error.type)
+        } else {
+            prependToLog("Product categories fetched")
         }
     }
 

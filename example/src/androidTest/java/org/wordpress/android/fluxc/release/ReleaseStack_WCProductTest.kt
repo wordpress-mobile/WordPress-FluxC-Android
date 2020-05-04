@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.generated.MediaActionBuilder
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.WCProductModel.ProductTriplet
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductVisibility
 import org.wordpress.android.fluxc.persistence.MediaSqlUtils
@@ -22,6 +23,7 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.FetchAllProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
@@ -30,6 +32,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductCategoryChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductPasswordChanged
@@ -51,6 +54,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         FETCHED_PRODUCTS,
         FETCHED_PRODUCT_VARIATIONS,
         FETCHED_PRODUCT_REVIEWS,
+        FETCHED_PRODUCT_CATEGORIES,
         FETCHED_SINGLE_PRODUCT_REVIEW,
         FETCHED_PRODUCT_SHIPPING_CLASS_LIST,
         FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS,
@@ -58,7 +62,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         UPDATED_PRODUCT,
         UPDATED_PRODUCT_REVIEW_STATUS,
         UPDATED_PRODUCT_IMAGES,
-        UPDATED_PRODUCT_PASSWORD
+        UPDATED_PRODUCT_PASSWORD,
+        ADDED_PRODUCT_CATEGORY,
     }
 
     @Inject internal lateinit var productStore: WCProductStore
@@ -84,6 +89,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     private var lastEvent: OnProductChanged? = null
     private var lastShippingClassEvent: OnProductShippingClassesChanged? = null
     private var lastReviewEvent: OnProductReviewChanged? = null
+    private var lastProductCategoryEvent: OnProductCategoryChanged? = null
 
     @Throws(Exception::class)
     override fun setUp() {
@@ -456,6 +462,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         val updatedProductMenuOrder = 5
         productModel.menuOrder = updatedProductMenuOrder
 
+        val updatedProductCategories = arrayListOf<ProductTriplet>()
+        productModel.categories = updatedProductCategories.toString()
+
         nextEvent = TestEvent.UPDATED_PRODUCT
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
@@ -475,6 +484,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertEquals(updatedProductReviewsAllowed, updatedProduct?.reviewsAllowed)
         assertEquals(updateProductPurchaseNote, updatedProduct?.purchaseNote)
         assertEquals(updatedProductMenuOrder, updatedProduct?.menuOrder)
+        assertEquals(updatedProductCategories, updatedProduct?.categories)
     }
 
     /**
@@ -612,5 +622,70 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
         }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductCategoriesChanged(event: OnProductCategoryChanged) {
+        event.error?.let {
+            throw AssertionError("OnProductCategoryChanged has unexpected error: " + it.type)
+        }
+
+        lastProductCategoryEvent = event
+
+        when (event.causeOfChange) {
+            WCProductAction.FETCHED_PRODUCT_REVIEWS -> {
+                assertEquals(TestEvent.FETCHED_PRODUCT_CATEGORIES, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            WCProductAction.ADDED_PRODUCT_CATEGORY -> {
+                assertEquals(TestEvent.ADDED_PRODUCT_CATEGORY, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
+        }
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchProductCategories() {
+        /*
+         * TEST 1: Fetch product categories for site
+         */
+        // Remove all product categories from the database
+        ProductSqlUtils.deleteAllProductCategories()
+        assertEquals(0, ProductSqlUtils.getProductCategoriesForSite(sSite).size)
+
+        nextEvent = TestEvent.FETCHED_PRODUCT_CATEGORIES
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newFetchProductCategoriesAction(FetchAllProductCategoriesPayload(sSite, offset = 1)))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify results
+        val fetchAllCategories = productStore.getProductCategoriesForSite(sSite)
+        assertTrue(fetchAllCategories.isNotEmpty())
+
+        /*
+         * TEST 2: Fetch product categories matching a list of category ids
+         */
+        // Store a couple of the Ids from the previous test
+        val idsToFetch = fetchAllCategories.take(3).map { it.remoteCategoryId }
+
+        // Remove all product categories from the database
+        ProductSqlUtils.deleteAllProductCategories()
+        assertEquals(0, ProductSqlUtils.getProductCategoriesForSite(sSite).size)
+
+        nextEvent = TestEvent.FETCHED_PRODUCT_CATEGORIES
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newFetchProductCategoriesAction(
+                        FetchAllProductCategoriesPayload(sSite, remoteCategoryIds = idsToFetch, offset = 1))
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify results
+        val fetchCategoryIds = productStore.getProductCategoriesForSite(sSite)
+        assertEquals(idsToFetch.size, fetchCategoryIds.size)
     }
 }

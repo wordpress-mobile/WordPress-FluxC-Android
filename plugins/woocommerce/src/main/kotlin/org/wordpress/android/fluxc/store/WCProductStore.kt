@@ -16,7 +16,7 @@ import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
-import org.wordpress.android.fluxc.store.WCProductStore.CategorySorting.NAME_ASC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.util.AppLog
@@ -132,11 +132,11 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         val product: WCProductModel
     ) : Payload<BaseNetworkError>()
 
-    class FetchAllCategoriesPayload(
+    class FetchAllProductCategoriesPayload(
         var site: SiteModel,
         var pageSize: Int = DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE,
         var offset: Int = 1,
-        var sorting: CategorySorting = DEFAULT_CATEGORY_SORTING,
+        var productCategorySorting: ProductCategorySorting = DEFAULT_CATEGORY_SORTING,
         var remoteCategoryIds: List<Long>? = null
     ) : Payload<BaseNetworkError>()
 
@@ -178,7 +178,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         DATE_DESC
     }
 
-    enum class CategorySorting {
+    enum class ProductCategorySorting {
         NAME_ASC,
         NAME_DESC
     }
@@ -519,7 +519,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     fun deleteProductImage(site: SiteModel, remoteProductId: Long, remoteMediaId: Long) =
             ProductSqlUtils.deleteProductImage(site, remoteProductId, remoteMediaId)
 
-    fun getProductCategoriesForSite(site: SiteModel, sortType: CategorySorting = DEFAULT_CATEGORY_SORTING) =
+    fun getProductCategoriesForSite(site: SiteModel, sortType: ProductCategorySorting = DEFAULT_CATEGORY_SORTING) =
             ProductSqlUtils.getProductCategoriesForSite(site, sortType)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
@@ -556,7 +556,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             WCProductAction.UPDATE_PRODUCT_PASSWORD ->
                 updateProductPassword(action.payload as UpdateProductPasswordPayload)
             WCProductAction.FETCH_PRODUCT_CATEGORIES ->
-                fetchAllProductCategories(action.payload as FetchAllCategoriesPayload)
+                fetchAllProductCategories(action.payload as FetchAllProductCategoriesPayload)
             WCProductAction.ADD_PRODUCT_CATEGORY ->
                 addProductCategory(action.payload as AddProductCategoryPayload)
 
@@ -656,8 +656,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         with(payload) { wcProductRestClient.updateProductImages(site, remoteProductId, imageList) }
     }
 
-    private fun fetchAllProductCategories(payload: FetchAllCategoriesPayload) {
-        with(payload) { wcProductRestClient.fetchAllProductCategories(site, offset, sorting, remoteCategoryIds) }
+    private fun fetchAllProductCategories(payloadProduct: FetchAllProductCategoriesPayload) {
+        with(payloadProduct) { wcProductRestClient.fetchAllProductCategories(site, offset, productCategorySorting, remoteCategoryIds) }
     }
 
     private fun addProductCategory(payload: AddProductCategoryPayload) {

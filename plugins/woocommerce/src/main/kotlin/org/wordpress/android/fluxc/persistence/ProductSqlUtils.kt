@@ -16,9 +16,9 @@ import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
-import org.wordpress.android.fluxc.store.WCProductStore.CategorySorting
-import org.wordpress.android.fluxc.store.WCProductStore.CategorySorting.NAME_ASC
-import org.wordpress.android.fluxc.store.WCProductStore.CategorySorting.NAME_DESC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting
+import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
@@ -188,7 +188,7 @@ object ProductSqlUtils {
 
     fun getProductCategoriesForSite(
         site: SiteModel,
-        sortType: CategorySorting = DEFAULT_CATEGORY_SORTING
+        sortType: ProductCategorySorting = DEFAULT_CATEGORY_SORTING
     ): List<WCProductCategoryModel> {
         val sortOrder = when (sortType) {
             NAME_ASC -> SelectQuery.ORDER_ASCENDING

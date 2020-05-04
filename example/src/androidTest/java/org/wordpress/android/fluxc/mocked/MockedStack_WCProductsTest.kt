@@ -19,7 +19,7 @@ import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
-import org.wordpress.android.fluxc.store.WCProductStore.CategorySorting
+import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoryListPayload
@@ -686,7 +686,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(10, ProductSqlUtils.insertOrUpdateProductCategories(payload.categories))
         assertEquals(
                 5,
-                ProductSqlUtils.getProductCategoriesForSite(siteModel, CategorySorting.NAME_ASC).size)
+                ProductSqlUtils.getProductCategoriesForSite(siteModel, ProductCategorySorting.NAME_ASC).size)
     }
 
     @Test

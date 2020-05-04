@@ -28,9 +28,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
 import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryResponsePayload
-import org.wordpress.android.fluxc.store.WCProductStore.CategorySorting
-import org.wordpress.android.fluxc.store.WCProductStore.CategorySorting.NAME_ASC
-import org.wordpress.android.fluxc.store.WCProductStore.CategorySorting.NAME_DESC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting
+import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SHIPPING_CLASS_PAGE_SIZE
@@ -629,17 +628,16 @@ class ProductRestClient(
      *
      * @param [site] The site to fetch product categories for
      * @param [offset] The offset to use for the fetch
-     * @param [sorting] Optional. The sorting type of the categories
+     * @param [productCategorySorting] Optional. The sorting type of the categories
      * @param [categoryIds] Optional. A list of remote category IDs to fetch
      */
     fun fetchAllProductCategories(
         site: SiteModel,
-        offset: Int,
-        sorting: CategorySorting? = DEFAULT_CATEGORY_SORTING,
+        offset: Int = 1,
+        productCategorySorting: ProductCategorySorting? = DEFAULT_CATEGORY_SORTING,
         categoryIds: List<Long>? = null
     ) {
-        val sortOrder = when (sorting) {
-            NAME_ASC -> "asc"
+        val sortOrder = when (productCategorySorting) {
             NAME_DESC -> "desc"
             else -> "asc"
         }
@@ -691,11 +689,14 @@ class ProductRestClient(
         val url = WOOCOMMERCE.products.categories.id(category.remoteCategoryId).pathV3
 
         val responseType = object : TypeToken<ProductCategoryApiResponse>() {}.type
-        val params = mutableMapOf("name" to category.name)
+        val params = mutableMapOf(
+                "name" to category.name,
+                "parent" to category.parent.toString()
+        )
         val request = JetpackTunnelGsonRequest.buildPostRequest(url, site.siteId, params, responseType,
                 { response: ProductCategoryApiResponse? ->
                     val categoryResponse = response?.let {
-                        addProductCategoryResponseToModel(it).apply {
+                        productCategoryResponseToProductCategoryModel(it).apply {
                             localSiteId = site.id
                         }
                     }
@@ -1006,15 +1007,6 @@ class ProductRestClient(
     ): WCProductCategoryModel {
         return WCProductCategoryModel().apply {
             remoteCategoryId = response.id
-            name = response.name ?: ""
-            slug = response.slug ?: ""
-            parent = response.parent ?: 0L
-        }
-    }
-
-    private fun addProductCategoryResponseToModel(response: ProductCategoryApiResponse): WCProductCategoryModel {
-        return WCProductCategoryModel().apply {
-            remoteCategoryId = response.id ?: 0
             name = response.name ?: ""
             slug = response.slug ?: ""
             parent = response.parent ?: 0L
