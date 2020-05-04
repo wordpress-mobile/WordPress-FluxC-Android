@@ -23,7 +23,7 @@ android {
 
     defaultConfig {
         versionCode 1
-        versionName "0.1"
+        versionName "0.4"
         minSdkVersion 15
         targetSdkVersion 26
     }
@@ -70,3 +70,5 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
 }
+version = android.defaultConfig.versionName
+group = "com.github.wordpress-mobile.WordPress-FluxC-Android"

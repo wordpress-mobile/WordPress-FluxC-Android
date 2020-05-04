@@ -12,8 +12,8 @@ import kotlinx.android.synthetic.main.fragment_woo_products.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.action.WCProductAction.FETCHED_PRODUCT_CATEGORIES
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCTS
-import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_CATEGORIES
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_REVIEWS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
@@ -344,9 +344,6 @@ class WooProductsFragment : Fragment() {
                 }
                 UPDATE_PRODUCT_REVIEW_STATUS -> {
                     prependToLog("${event.rowsAffected} product reviews updated")
-                }
-                FETCH_PRODUCT_CATEGORIES -> {
-                    prependToLog("Fetched ${event.rowsAffected} product categories")
                 }
                 else -> prependToLog("Product store was updated from a " + event.causeOfChange)
             }
