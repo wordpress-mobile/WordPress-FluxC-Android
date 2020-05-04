@@ -659,7 +659,7 @@ class ProductRestClient(
                             productCategoryResponseToProductCategoryModel(category).apply { localSiteId = site.id }
                         }
                         val canLoadMore = categories.size == WCProductStore.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE
-                        val loadedMore = offset > 0
+                        val loadedMore = offset > 1
                         val payload = RemoteProductCategoryListPayload(
                                 site, categories, loadedMore, canLoadMore)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductCategoriesAction(payload))

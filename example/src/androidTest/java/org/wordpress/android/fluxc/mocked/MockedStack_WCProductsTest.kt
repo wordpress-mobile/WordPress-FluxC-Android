@@ -13,8 +13,10 @@ import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.WCProductModel.ProductTriplet
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
@@ -561,6 +563,44 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             it.remoteProductId = remoteProductId
             it.name = "Product name"
             it.sku = "34343-343776"
+            it.categories = "[]"
+        }
+    }
+
+    private fun generateTestProductCategoriesListJsonString(): String {
+        val jsonProductCategories = JsonArray()
+        for (triplet in generateTestProductCategoriesList()) {
+            jsonProductCategories.add(triplet.toJson())
+        }
+        return jsonProductCategories.toString()
+    }
+
+    private fun generateTestCategoriesList(): List<WCProductCategoryModel> {
+        val categoriesList = ArrayList<WCProductCategoryModel>()
+        with(WCProductCategoryModel(1)) {
+            remoteCategoryId = 1
+            parent = 0L
+            slug = ""
+            name = ""
+            categoriesList.add(this)
+        }
+        with(WCProductCategoryModel(2)) {
+            remoteCategoryId = 2
+            parent = 0L
+            slug = ""
+            name = ""
+            categoriesList.add(this)
+        }
+        return categoriesList
+    }
+
+    private fun generateTestProductCategoriesList(): List<ProductTriplet> {
+        return generateTestCategoriesList().map {
+            ProductTriplet(
+                    it.remoteCategoryId,
+                    it.name,
+                    it.slug
+            )
         }
     }
 
@@ -605,6 +645,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             sku = testProduct.sku
             description = "Testing product description update"
             images = generateTestImageListJsonString()
+            categories = generateTestProductCategoriesListJsonString()
         }
         productRestClient.updateProduct(siteModel, testProduct, updatedProduct)
 
@@ -620,6 +661,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(updatedProduct.name, product.name)
             assertEquals(updatedProduct.sku, product.sku)
             assertEquals(updatedProduct.getImages().size, 2)
+            assertEquals(updatedProduct.getCategories().size, 2)
         }
     }
 
@@ -629,6 +671,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val testProduct = generateTestProduct()
         val updatedProduct = testProduct.copy().apply {
             description = "Testing product description"
+            categories = generateTestProductCategoriesListJsonString()
         }
         productRestClient.updateProduct(siteModel, testProduct, updatedProduct)
 
@@ -678,14 +721,14 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RemoteProductCategoryListPayload
         assertFalse(payload.isError)
         assertEquals(siteModel.id, payload.site.id)
-        assertEquals(10, payload.categories.size)
+        assertEquals(7, payload.categories.size)
         assertFalse(payload.loadedMore)
-        assertTrue(payload.canLoadMore)
+        assertFalse(payload.canLoadMore)
 
         // Save product categories to the database
-        assertEquals(10, ProductSqlUtils.insertOrUpdateProductCategories(payload.categories))
+        assertEquals(7, ProductSqlUtils.insertOrUpdateProductCategories(payload.categories))
         assertEquals(
-                5,
+                7,
                 ProductSqlUtils.getProductCategoriesForSite(siteModel, ProductCategorySorting.NAME_ASC).size)
     }
 

@@ -77,6 +77,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         stockStatus = "instock"
         backorders = "yes"
         images = "[]"
+        categories = "[]"
     }
     private val productModelWithVariations = WCProductModel(8).apply {
         remoteProductId = BuildConfig.TEST_WC_PRODUCT_WITH_VARIATIONS_ID.toLong()
@@ -659,7 +660,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.FETCHED_PRODUCT_CATEGORIES
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
-                WCProductActionBuilder.newFetchProductCategoriesAction(FetchAllProductCategoriesPayload(sSite, offset = 1)))
+                WCProductActionBuilder.newFetchProductCategoriesAction(FetchAllProductCategoriesPayload(sSite)))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
