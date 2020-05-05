@@ -27,7 +27,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
 import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.WCProductStore
-import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
@@ -666,43 +665,6 @@ class ProductRestClient(
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductCategoriesAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
-        add(request)
-    }
-
-    /**
-     * Posts a new Add Category record to the API for a category.
-     *
-     * Makes a POST call `/wc/v3/products/categories/id` to save a Category record via the Jetpack tunnel (see [JetpackTunnelGsonRequest]).
-     * Returns a [WCProductCategoryModel] on successful response.
-     *
-     * Dispatches [WCProductAction.ADDED_PRODUCT_CATEGORY] action with the results.
-     */
-    fun addProductCategory(
-        site: SiteModel,
-        category: WCProductCategoryModel
-    ) {
-        val url = WOOCOMMERCE.products.categories.id(category.remoteCategoryId).pathV3
-
-        val responseType = object : TypeToken<ProductCategoryApiResponse>() {}.type
-        val params = mutableMapOf(
-                "name" to category.name,
-                "parent" to category.parent.toString()
-        )
-        val request = JetpackTunnelGsonRequest.buildPostRequest(url, site.siteId, params, responseType,
-                { response: ProductCategoryApiResponse? ->
-                    val categoryResponse = response?.let {
-                        productCategoryResponseToProductCategoryModel(it).apply {
-                            localSiteId = site.id
-                        }
-                    }
-                    val payload = AddProductCategoryResponsePayload(site, categoryResponse)
-                    dispatcher.dispatch(WCProductActionBuilder.newAddedProductCategoryAction(payload))
-                },
-                WPComErrorListener { networkError ->
-                    val productCategorySaveError = networkErrorToProductError(networkError)
-                    val payload = AddProductCategoryResponsePayload(productCategorySaveError, site, category)
-                    dispatcher.dispatch(WCProductActionBuilder.newAddedProductCategoryAction(payload))
-                })
         add(request)
     }
 
