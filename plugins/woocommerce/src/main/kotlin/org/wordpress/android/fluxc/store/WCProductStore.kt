@@ -136,8 +136,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var site: SiteModel,
         var pageSize: Int = DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE,
         var offset: Int = 1,
-        var productCategorySorting: ProductCategorySorting = DEFAULT_CATEGORY_SORTING,
-        var remoteCategoryIds: List<Long>? = null
+        var productCategorySorting: ProductCategorySorting = DEFAULT_CATEGORY_SORTING
     ) : Payload<BaseNetworkError>()
 
     class AddProductCategoryPayload(
@@ -658,7 +657,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     private fun fetchAllProductCategories(payloadProduct: FetchAllProductCategoriesPayload) {
         with(payloadProduct) { wcProductRestClient.fetchAllProductCategories(
-                site, offset, productCategorySorting, remoteCategoryIds) }
+                site, offset, productCategorySorting) }
     }
 
     private fun addProductCategory(payload: AddProductCategoryPayload) {

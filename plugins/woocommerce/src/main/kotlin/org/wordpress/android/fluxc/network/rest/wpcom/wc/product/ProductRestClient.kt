@@ -629,13 +629,11 @@ class ProductRestClient(
      * @param [site] The site to fetch product categories for
      * @param [offset] The offset to use for the fetch
      * @param [productCategorySorting] Optional. The sorting type of the categories
-     * @param [categoryIds] Optional. A list of remote category IDs to fetch
      */
     fun fetchAllProductCategories(
         site: SiteModel,
         offset: Int = 1,
-        productCategorySorting: ProductCategorySorting? = DEFAULT_CATEGORY_SORTING,
-        categoryIds: List<Long>? = null
+        productCategorySorting: ProductCategorySorting? = DEFAULT_CATEGORY_SORTING
     ) {
         val sortOrder = when (productCategorySorting) {
             NAME_DESC -> "desc"
@@ -649,9 +647,6 @@ class ProductRestClient(
                 "page" to offset.toString(),
                 "order" to sortOrder,
                 "orderby" to "name")
-        categoryIds?.let { ids ->
-            params.put("include", ids.map { it }.joinToString())
-        }
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductCategoryApiResponse>? ->
                     response?.let {

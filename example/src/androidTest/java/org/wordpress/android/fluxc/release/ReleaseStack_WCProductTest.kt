@@ -530,9 +530,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testFetchProductCategories() {
-        /*
-         * TEST 1: Fetch product categories for site
-         */
         // Remove all product categories from the database
         ProductSqlUtils.deleteAllProductCategories()
         assertEquals(0, ProductSqlUtils.getProductCategoriesForSite(sSite).size)
@@ -547,28 +544,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         // Verify results
         val fetchAllCategories = productStore.getProductCategoriesForSite(sSite)
         assertTrue(fetchAllCategories.isNotEmpty())
-
-        /*
-         * TEST 2: Fetch product categories matching a list of category ids
-         */
-        // Store a couple of the Ids from the previous test
-        val idsToFetch = fetchAllCategories.take(3).map { it.remoteCategoryId }
-
-        // Remove all product categories from the database
-        ProductSqlUtils.deleteAllProductCategories()
-        assertEquals(0, ProductSqlUtils.getProductCategoriesForSite(sSite).size)
-
-        nextEvent = TestEvent.FETCHED_PRODUCT_CATEGORIES
-        mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(
-                WCProductActionBuilder.newFetchProductCategoriesAction(
-                        FetchAllProductCategoriesPayload(sSite, remoteCategoryIds = idsToFetch, offset = 1))
-        )
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
-
-        // Verify results
-        val fetchCategoryIds = productStore.getProductCategoriesForSite(sSite)
-        assertEquals(idsToFetch.size, fetchCategoryIds.size)
     }
 
     /**
