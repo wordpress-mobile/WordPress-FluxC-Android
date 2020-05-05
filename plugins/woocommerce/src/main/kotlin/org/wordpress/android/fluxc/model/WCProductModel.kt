@@ -83,7 +83,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var purchaseNote = ""
     @Column var menuOrder = 0
 
-    @Column var categories = "" // array of categories
+    @Column var categories = "[]" // array of categories
     @Column var tags = "" // array of tags
     @Column var images = "" // array of images
     @Column var attributes = "" // array of attributes

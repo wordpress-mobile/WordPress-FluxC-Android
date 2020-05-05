@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.release
 
+import com.google.gson.JsonArray
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.junit.Assert.assertEquals
@@ -13,6 +14,7 @@ import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.MediaActionBuilder
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
+import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductModel.ProductTriplet
@@ -463,8 +465,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         val updatedProductMenuOrder = 5
         productModel.menuOrder = updatedProductMenuOrder
 
-        val updatedProductCategories = arrayListOf<ProductTriplet>()
-        productModel.categories = updatedProductCategories.toString()
+        val updatedProductCategories = generateTestProductCategoriesListJsonString()
+        productModel.categories = updatedProductCategories
 
         nextEvent = TestEvent.UPDATED_PRODUCT
         mCountDownLatch = CountDownLatch(1)
@@ -486,6 +488,43 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertEquals(updateProductPurchaseNote, updatedProduct?.purchaseNote)
         assertEquals(updatedProductMenuOrder, updatedProduct?.menuOrder)
         assertEquals(updatedProductCategories, updatedProduct?.categories)
+    }
+
+    private fun generateTestProductCategoriesListJsonString(): String {
+        val jsonProductCategories = JsonArray()
+        for (triplet in generateTestProductCategoriesList()) {
+            jsonProductCategories.add(triplet.toJson())
+        }
+        return jsonProductCategories.toString()
+    }
+
+    private fun generateTestProductCategoriesList(): List<ProductTriplet> {
+        return generateTestCategoriesList().map {
+            ProductTriplet(
+                    it.remoteCategoryId,
+                    it.name,
+                    it.slug
+            )
+        }
+    }
+
+    private fun generateTestCategoriesList(): List<WCProductCategoryModel> {
+        val categoriesList = ArrayList<WCProductCategoryModel>()
+        with(WCProductCategoryModel(1)) {
+            remoteCategoryId = 1
+            parent = 0L
+            slug = ""
+            name = ""
+            categoriesList.add(this)
+        }
+        with(WCProductCategoryModel(2)) {
+            remoteCategoryId = 2
+            parent = 0L
+            slug = ""
+            name = ""
+            categoriesList.add(this)
+        }
+        return categoriesList
     }
 
     @Throws(InterruptedException::class)

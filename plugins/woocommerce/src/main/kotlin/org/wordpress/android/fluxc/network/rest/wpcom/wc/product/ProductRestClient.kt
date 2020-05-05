@@ -923,7 +923,7 @@ class ProductRestClient(
             menuOrder = response.menu_order
             purchaseNote = response.purchase_note ?: ""
 
-            categories = response.categories?.toString() ?: ""
+            categories = response.categories?.toString() ?: "[]"
             tags = response.tags?.toString() ?: ""
             images = response.images?.toString() ?: ""
             attributes = response.attributes?.toString() ?: ""
