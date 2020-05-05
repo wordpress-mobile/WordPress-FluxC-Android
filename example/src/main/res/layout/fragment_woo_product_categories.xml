@@ -11,14 +11,6 @@
         android:orientation="vertical">
 
         <Button
-            android:id="@+id/product_enter_product_id"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:text="Enter Product Id" />
-
-        <Button
             android:id="@+id/update_product_categories"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
