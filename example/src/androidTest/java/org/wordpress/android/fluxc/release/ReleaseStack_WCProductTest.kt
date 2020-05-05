@@ -64,7 +64,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         UPDATED_PRODUCT_REVIEW_STATUS,
         UPDATED_PRODUCT_IMAGES,
         UPDATED_PRODUCT_PASSWORD,
-        ADDED_PRODUCT_CATEGORY,
     }
 
     @Inject internal lateinit var productStore: WCProductStore
@@ -659,10 +658,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         when (event.causeOfChange) {
             WCProductAction.FETCHED_PRODUCT_CATEGORIES -> {
                 assertEquals(TestEvent.FETCHED_PRODUCT_CATEGORIES, nextEvent)
-                mCountDownLatch.countDown()
-            }
-            WCProductAction.ADDED_PRODUCT_CATEGORY -> {
-                assertEquals(TestEvent.ADDED_PRODUCT_CATEGORY, nextEvent)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
