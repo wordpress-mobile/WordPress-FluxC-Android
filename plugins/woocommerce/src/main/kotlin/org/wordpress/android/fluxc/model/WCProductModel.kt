@@ -102,8 +102,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         fun toJson(): JsonObject {
             return JsonObject().also { json ->
                 json.addProperty("id", id)
-                json.addProperty("slug", slug)
                 json.addProperty("name", name)
+                json.addProperty("slug", slug)
             }
         }
     }
