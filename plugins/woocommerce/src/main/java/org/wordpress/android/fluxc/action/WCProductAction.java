@@ -3,8 +3,6 @@ package org.wordpress.android.fluxc.action;
 import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
-import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload;
-import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryResponsePayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchAllProductCategoriesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload;
@@ -68,8 +66,6 @@ public enum WCProductAction implements IAction {
     UPDATE_PRODUCT_PASSWORD,
     @Action(payloadType = FetchAllProductCategoriesPayload.class)
     FETCH_PRODUCT_CATEGORIES,
-    @Action(payloadType = AddProductCategoryPayload.class)
-    ADD_PRODUCT_CATEGORY,
 
 
     // Remote responses
@@ -102,7 +98,5 @@ public enum WCProductAction implements IAction {
     @Action(payloadType = RemoteUpdatedProductPasswordPayload.class)
     UPDATED_PRODUCT_PASSWORD,
     @Action(payloadType = RemoteProductCategoryListPayload.class)
-    FETCHED_PRODUCT_CATEGORIES,
-    @Action(payloadType = AddProductCategoryResponsePayload.class)
-    ADDED_PRODUCT_CATEGORY,
+    FETCHED_PRODUCT_CATEGORIES
 }
