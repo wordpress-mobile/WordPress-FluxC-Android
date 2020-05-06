@@ -105,16 +105,15 @@
             app:layout_constraintTop_toBottomOf="@+id/product_sku"
             app:textHint="Product slug" />
 
-        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
-            android:id="@+id/product_categories"
+        <Button
+            android:id="@+id/update_product_categories"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:inputType="text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/product_slug"
-            app:textHint="Categories" />
+            android:text="Update Product Categories"/>
 
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_short_desc"
@@ -124,7 +123,7 @@
             android:inputType="text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/product_categories"
+            app:layout_constraintTop_toBottomOf="@+id/update_product_categories"
             app:textHint="Short description" />
 
         <Button

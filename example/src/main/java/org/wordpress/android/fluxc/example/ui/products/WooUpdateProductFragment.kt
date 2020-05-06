@@ -19,6 +19,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.ARG_LIST_SELECTED_ITEM
@@ -218,6 +219,10 @@ class WooUpdateProductFragment : Fragment() {
 
         product_reviews_allowed.setOnCheckedChangeListener { _, isChecked ->
             selectedProductModel?.reviewsAllowed = isChecked
+        }
+
+        update_product_categories.setOnClickListener {
+            replaceFragment(WooProductCategoriesFragment.newInstance(selectedSitePosition, selectedRemoteProductId!!))
         }
 
         product_purchase_note.onTextChanged { selectedProductModel?.purchaseNote = it }

@@ -18,7 +18,6 @@ import org.wordpress.android.fluxc.example.ProductCategoriesAdapter.OnProductCat
 import org.wordpress.android.fluxc.example.ProductCategoriesAdapter.ProductCategoryViewHolderModel
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
-import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductModel
@@ -37,7 +36,7 @@ class WooProductCategoriesFragment : Fragment(), OnProductCategoryClickListener 
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
 
     private var selectedSitePosition: Int = -1
-    private var selectedRemoteProductId: Long? = null
+    private var selectedRemoteProductId: Long = -1
     private var selectedProductModel: WCProductModel? = null
     private var productCategories: List<WCProductCategoryModel>? = null
     private lateinit var productCategoriesAdapter: ProductCategoriesAdapter
@@ -46,10 +45,11 @@ class WooProductCategoriesFragment : Fragment(), OnProductCategoryClickListener 
         const val ARG_SELECTED_SITE_POS = "ARG_SELECTED_SITE_POS"
         const val ARG_SELECTED_PRODUCT_ID = "ARG_SELECTED_PRODUCT_ID"
 
-        fun newInstance(selectedSitePosition: Int): WooProductCategoriesFragment {
+        fun newInstance(selectedSitePosition: Int, selectedProductId: Long): WooProductCategoriesFragment {
             val fragment = WooProductCategoriesFragment()
             val args = Bundle()
             args.putInt(ARG_SELECTED_SITE_POS, selectedSitePosition)
+            args.putLong(ARG_SELECTED_PRODUCT_ID, selectedProductId)
             fragment.arguments = args
             return fragment
         }
@@ -70,6 +70,7 @@ class WooProductCategoriesFragment : Fragment(), OnProductCategoryClickListener 
 
         arguments?.let {
             selectedSitePosition = it.getInt(ARG_SELECTED_SITE_POS, 0)
+            selectedRemoteProductId = it.getLong(ARG_SELECTED_PRODUCT_ID, 0)
         }
     }
 
@@ -81,7 +82,7 @@ class WooProductCategoriesFragment : Fragment(), OnProductCategoryClickListener 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt(ARG_SELECTED_SITE_POS, selectedSitePosition)
-        selectedRemoteProductId?.let { outState.putLong(ARG_SELECTED_PRODUCT_ID, it) }
+        outState.putLong(ARG_SELECTED_PRODUCT_ID, selectedRemoteProductId)
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(layout.fragment_woo_product_categories, container, false)
@@ -100,12 +101,7 @@ class WooProductCategoriesFragment : Fragment(), OnProductCategoryClickListener 
             selectedSitePosition = bundle.getInt(ARG_SELECTED_SITE_POS)
         }
 
-        showSingleLineDialog(activity, "Enter the remoteProductId of product categories to fetch:") { editText ->
-            selectedRemoteProductId = editText.text.toString().toLongOrNull()
-            selectedRemoteProductId?.let { id ->
-                updateSelectedProductId(id)
-            } ?: prependToLog("No valid remoteProductId defined...doing nothing")
-        }
+        updateSelectedProductId(selectedRemoteProductId)
 
         update_product_categories.setOnClickListener {
             getWCSite()?.let { site ->
@@ -150,8 +146,6 @@ class WooProductCategoriesFragment : Fragment(), OnProductCategoryClickListener 
             prependToLog("Submitting request to fetch product categories for site ${siteModel.id}")
             val payload = FetchAllProductCategoriesPayload(siteModel)
             dispatcher.dispatch(WCProductActionBuilder.newFetchProductCategoriesAction(payload))
-
-            showProductCategories()
         } ?: prependToLog("No valid site found...doing nothing")
     }
 
@@ -193,6 +187,7 @@ class WooProductCategoriesFragment : Fragment(), OnProductCategoryClickListener 
         } else {
             productCategories = productStore.getProductCategoriesForSite(getWCSite()!!)
             prependToLog("Fetched ${event.rowsAffected} product categories")
+            showProductCategories()
         }
     }
 
