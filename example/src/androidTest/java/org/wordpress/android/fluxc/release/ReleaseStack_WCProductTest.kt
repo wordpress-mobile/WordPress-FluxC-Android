@@ -16,7 +16,6 @@ import org.wordpress.android.fluxc.generated.MediaActionBuilder
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
-import org.wordpress.android.fluxc.model.WCProductModel.ProductTriplet
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductVisibility
 import org.wordpress.android.fluxc.persistence.MediaSqlUtils
@@ -436,49 +435,60 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     @Throws(InterruptedException::class)
     @Test
     fun testUpdateProduct() {
+        nextEvent = TestEvent.FETCHED_SINGLE_PRODUCT
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder
+                        .newFetchSingleProductAction(FetchSingleProductPayload(sSite, productModel.remoteProductId))
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify results
+        val fetchedProduct = productStore.getProductByRemoteId(sSite, productModel.remoteProductId)
+        assertNotNull(fetchedProduct)
+        assertEquals(fetchedProduct!!.remoteProductId, productModel.remoteProductId)
+
         val updatedProductDesc = "Testing updating product description"
-        productModel.description = updatedProductDesc
+        fetchedProduct.description = updatedProductDesc
 
         val updatedProductName = "Product I"
-        productModel.name = updatedProductName
+        fetchedProduct.name = updatedProductName
 
         val updatedProductStatus = CoreProductStatus.PRIVATE.value
-        productModel.status = updatedProductStatus
+        fetchedProduct.status = updatedProductStatus
 
         val updatedProductVisibility = CoreProductVisibility.HIDDEN.value
-        productModel.catalogVisibility = updatedProductVisibility
+        fetchedProduct.catalogVisibility = updatedProductVisibility
 
         val updatedProductFeatured = false
-        productModel.featured = updatedProductFeatured
+        fetchedProduct.featured = updatedProductFeatured
 
         val updatedProductSlug = "product-slug"
-        productModel.slug = updatedProductSlug
+        fetchedProduct.slug = updatedProductSlug
 
         val updatedProductReviewsAllowed = true
-        productModel.reviewsAllowed = updatedProductReviewsAllowed
+        fetchedProduct.reviewsAllowed = updatedProductReviewsAllowed
 
         val updateProductPurchaseNote = "Test purchase note"
-        productModel.purchaseNote = updateProductPurchaseNote
+        fetchedProduct.purchaseNote = updateProductPurchaseNote
 
         val updatedProductMenuOrder = 5
-        productModel.menuOrder = updatedProductMenuOrder
+        fetchedProduct.menuOrder = updatedProductMenuOrder
 
-        val updatedProductCategories = JsonArray().also {
-            it.add(ProductTriplet(1374, "Uncategorized", "uncategorized").toJson())
-        }.toString()
-        productModel.categories = updatedProductCategories
+        val updatedProductCategories = JsonArray().toString()
+        fetchedProduct.categories = updatedProductCategories
 
         nextEvent = TestEvent.UPDATED_PRODUCT
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
-                WCProductActionBuilder.newUpdateProductAction(UpdateProductPayload(sSite, productModel))
+                WCProductActionBuilder.newUpdateProductAction(UpdateProductPayload(sSite, fetchedProduct))
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        val updatedProduct = productStore.getProductByRemoteId(sSite, productModel.remoteProductId)
+        val updatedProduct = productStore.getProductByRemoteId(sSite, fetchedProduct.remoteProductId)
         assertNotNull(updatedProduct)
         assertEquals(updatedProductDesc, updatedProduct?.description)
-        assertEquals(productModel.remoteProductId, updatedProduct?.remoteProductId)
+        assertEquals(fetchedProduct.remoteProductId, updatedProduct?.remoteProductId)
         assertEquals(updatedProductName, updatedProduct?.name)
         assertEquals(updatedProductStatus, updatedProduct?.status)
         assertEquals(updatedProductVisibility, updatedProduct?.catalogVisibility)
