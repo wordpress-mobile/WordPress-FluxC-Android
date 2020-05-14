@@ -31,7 +31,7 @@ public class APITesting_WCProduct {
             setBasePath("rest/v1.1/jetpack-blogs/173063404/rest-api/").
             addQueryParams(pathParams).
             setAuth(oauth2(System.getenv("API_TEST_OAUTH_KEY")));
-        this.mRequestSpec = requestBuilder.build();    
+        this.mRequestSpec = requestBuilder.build();
     }
 
     @Test
@@ -62,7 +62,7 @@ public class APITesting_WCProduct {
                  "data.attributes.name", hasItems("Color", "Size"),
                  "data.attributes.find { it.name == 'Size' }.options", hasItems("Large", "Medium", "Small"),
                  "data.attributes.find { it.name == 'Color' }.options", hasItems("Blue", "Green", "Red"),
-                 "data.variations", hasSize(3)    
+                 "data.variations", hasSize(3)
             );
     }
 
@@ -106,7 +106,7 @@ public class APITesting_WCProduct {
                  "data.name", hasItems("hats", "shirts")
             );
     }
-    
+
     @Test
     public void canGetProductShippingClassbyID() {
         given().
@@ -150,7 +150,7 @@ public class APITesting_WCProduct {
 
     @Test
     public void canUpdateProductReviewStatus() {
-        String path = "/wc/v4/products/reviews/1088/";
+        String path = "/wc/v3/products/reviews/1088/";
         String method = "put";
 
         JSONObject jsonBody = new JSONObject();
@@ -200,7 +200,7 @@ public class APITesting_WCProduct {
             statusCode(200).
             body("data.status", equalTo("hold"));
     }
-   
+
     @Test
     public void canUpdateProductImages() {
         String path = "/wc/v4/products/13";
@@ -212,7 +212,7 @@ public class APITesting_WCProduct {
         jsonObj.put("body", jsonBody.toString());
         jsonObj.put("path", path);
         jsonObj.put("method", method);
-        jsonObj.put("json", "true"); 
+        jsonObj.put("json", "true");
 
         // Set Images to none.
         given().
@@ -243,11 +243,11 @@ public class APITesting_WCProduct {
         JSONObject jsonImage = new JSONObject();
         jsonImage.put("id", 40);
         jsonImage.put("date_created", "2020-02-18T20:45:45");
-        jsonImage.put("date_created_gmt", "2020-02-18T20:45:45");    
-        jsonImage.put("date_modified", "2020-02-18T20:45:45");  
-        jsonImage.put("date_modified_gmt", "2020-02-18T20:45:45");  
+        jsonImage.put("date_created_gmt", "2020-02-18T20:45:45");
+        jsonImage.put("date_modified", "2020-02-18T20:45:45");
+        jsonImage.put("date_modified_gmt", "2020-02-18T20:45:45");
         jsonImage.put("src", "https://woomobileapitesting.mystagingwebsite.com/wp-content"
-            + "/uploads/2020/02/hoodie-2.jpg");  
+            + "/uploads/2020/02/hoodie-2.jpg");
         jsonImage.put("name", "hoodie-2.jpg");
         jsonImage.put("alt", "");
         jsonImagesArray.put(0, jsonImage);
@@ -255,11 +255,11 @@ public class APITesting_WCProduct {
         jsonImage = new JSONObject();
         jsonImage.put("id", 41);
         jsonImage.put("date_created", "2020-02-18T20:45:45");
-        jsonImage.put("date_created_gmt", "2020-02-18T20:45:45");    
-        jsonImage.put("date_modified", "2020-02-18T20:45:45");  
-        jsonImage.put("date_modified_gmt", "2020-02-18T20:45:45");  
+        jsonImage.put("date_created_gmt", "2020-02-18T20:45:45");
+        jsonImage.put("date_modified", "2020-02-18T20:45:45");
+        jsonImage.put("date_modified_gmt", "2020-02-18T20:45:45");
         jsonImage.put("src", "https://woomobileapitesting.mystagingwebsite.com/wp-content"
-            + "/uploads/2020/02/hoodie-blue-1.jpg");  
+            + "/uploads/2020/02/hoodie-blue-1.jpg");
         jsonImage.put("name", "hoodie-blue-1.jpg");
         jsonImage.put("alt", "");
         jsonImagesArray.put(1, jsonImage);
@@ -267,11 +267,11 @@ public class APITesting_WCProduct {
         jsonImage = new JSONObject();
         jsonImage.put("id", 42);
         jsonImage.put("date_created", "2020-02-18T20:45:45");
-        jsonImage.put("date_created_gmt", "2020-02-18T20:45:45");    
-        jsonImage.put("date_modified", "2020-02-18T20:45:45");  
-        jsonImage.put("date_modified_gmt", "2020-02-18T20:45:45");  
+        jsonImage.put("date_created_gmt", "2020-02-18T20:45:45");
+        jsonImage.put("date_modified", "2020-02-18T20:45:45");
+        jsonImage.put("date_modified_gmt", "2020-02-18T20:45:45");
         jsonImage.put("src", "https://woomobileapitesting.mystagingwebsite.com/wp-content"
-            + "/uploads/2020/02/hoodie-green-1.jpg");  
+            + "/uploads/2020/02/hoodie-green-1.jpg");
         jsonImage.put("name", "hoodie-green-1.jpg");
         jsonImage.put("alt", "");
         jsonImagesArray.put(2, jsonImage);
@@ -279,11 +279,11 @@ public class APITesting_WCProduct {
         jsonImage = new JSONObject();
         jsonImage.put("id", 43);
         jsonImage.put("date_created", "2020-02-18T20:45:45");
-        jsonImage.put("date_created_gmt", "2020-02-18T20:45:45");    
-        jsonImage.put("date_modified", "2020-02-18T20:45:45");  
-        jsonImage.put("date_modified_gmt", "2020-02-18T20:45:45");  
+        jsonImage.put("date_created_gmt", "2020-02-18T20:45:45");
+        jsonImage.put("date_modified", "2020-02-18T20:45:45");
+        jsonImage.put("date_modified_gmt", "2020-02-18T20:45:45");
         jsonImage.put("src", "https://woomobileapitesting.mystagingwebsite.com/wp-content"
-            + "/uploads/2020/02/hoodie-with-logo-2.jpg");  
+            + "/uploads/2020/02/hoodie-with-logo-2.jpg");
         jsonImage.put("name", "hoodie-with-logo-2.jpg");
         jsonImage.put("alt", "");
         jsonImagesArray.put(3, jsonImage);
@@ -319,7 +319,7 @@ public class APITesting_WCProduct {
         jsonObj.put("body", jsonBody.toString());
         jsonObj.put("path", path);
         jsonObj.put("method", method);
-        jsonObj.put("json", "true"); 
+        jsonObj.put("json", "true");
 
         // Reset Product
         given().

@@ -81,7 +81,7 @@ public class APITesting_WCOrder {
     public void canGetOrderStatusOptions() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/reports/orders/totals").
+            queryParam("path", "/wc/v3/reports/orders/totals").
         when().
             get().
         then().
@@ -121,7 +121,7 @@ public class APITesting_WCOrder {
     public void canGetOrderCount() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/reports/orders/totals&status=processing").
+            queryParam("path", "/wc/v3/reports/orders/totals&status=processing").
         when().
             get().
         then().
@@ -241,7 +241,7 @@ public class APITesting_WCOrder {
     public void canGetOrderShipmentTrackings() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/orders/635/shipment-trackings&_fields=" + mTrackingFields).
+            queryParam("path", "/wc/v3/orders/635/shipment-trackings&_fields=" + mTrackingFields).
         when().
             get().
         then().
@@ -255,19 +255,19 @@ public class APITesting_WCOrder {
     public void canGetOrderShipmentProviders() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/orders/635/shipment-trackings/providers").
+            queryParam("path", "/wc/v3/orders/635/shipment-trackings/providers").
         when().
             get().
         then().
             statusCode(200).
-            body("data.'United States (US)'.USPS", 
+            body("data.'United States (US)'.USPS",
                 equalTo("https://tools.usps.com/go/TrackConfirmAction_input?qtc_tLabels1=%number%")
             );
     }
 
     @Test
     public void canAddAndDeleteShipmentTracking() {
-        String path = "/wc/v4/orders/634/shipment-trackings";
+        String path = "/wc/v3/orders/634/shipment-trackings";
         String method = "post";
 
         JSONObject jsonBody = new JSONObject();
@@ -293,10 +293,10 @@ public class APITesting_WCOrder {
             statusCode(200).
         extract().
             path("data.tracking_id");
-        
-        // Delete tracking number    
+
+        // Delete tracking number
         method = "delete";
-        path = "/wc/v4/orders/634/shipment-trackings/" + tracking + "&_method=" + method;
+        path = "/wc/v3/orders/634/shipment-trackings/" + tracking + "&_method=" + method;
         jsonObj.put("path", path);
         jsonObj.remove("method");
         jsonObj.remove("body");

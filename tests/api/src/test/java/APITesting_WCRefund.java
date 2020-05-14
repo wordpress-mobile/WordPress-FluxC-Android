@@ -61,7 +61,7 @@ public class APITesting_WCRefund {
 
     @Test
     public void canCreateRefund() {
-        String path = "/wc/v4/orders/156/refunds";
+        String path = "/wc/v3/orders/156/refunds";
         // Get previous refund
         Integer id = given().
             spec(this.mRequestSpec).
@@ -72,16 +72,16 @@ public class APITesting_WCRefund {
             statusCode(200).
         extract().
             path("data[0].id");
-        
-        // Delete previous refund    
-        String method = "delete";        
-        JSONObject jsonObj = new JSONObject();      
+
+        // Delete previous refund
+        String method = "delete";
+        JSONObject jsonObj = new JSONObject();
         jsonObj.put("json", "true");
         jsonObj.put("method", method);
 
         if (id != null) {
             path = path + "/" + Integer.toString(id) + "&_method=" + method;
-            jsonObj.put("path", path); 
+            jsonObj.put("path", path);
             given().
                 spec(this.mRequestSpec).
                 header("Content-Type", ContentType.JSON).
@@ -95,7 +95,7 @@ public class APITesting_WCRefund {
 
         // Add new refund
         method = "post";
-        path = "/wc/v4/orders/156/refunds";
+        path = "/wc/v3/orders/156/refunds";
         JSONObject jsonBody = new JSONObject();
         jsonBody.put("reason", "API testing");
         jsonBody.put("amount", "142.00");
