@@ -28,7 +28,7 @@ import org.wordpress.android.fluxc.tools.initCoroutineEngine
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
-class WCTaxStoreTest {
+class WCShippingLabelStoreTest {
     private val restClient = mock<ShippingLabelRestClient>()
     private val orderId = 25L
     private val site = SiteModel().apply { id = 321 }
@@ -68,7 +68,8 @@ class WCTaxStoreTest {
         assertThat(result.model?.size).isEqualTo(shippingLabelModels.size)
         assertThat(result.model?.first()?.localOrderId).isEqualTo(shippingLabelModels.first().localOrderId)
         assertThat(result.model?.first()?.localSiteId).isEqualTo(shippingLabelModels.first().localSiteId)
-        assertThat(result.model?.first()?.remoteShippingLabelId).isEqualTo(shippingLabelModels.first().remoteShippingLabelId)
+        assertThat(result.model?.first()?.remoteShippingLabelId)
+                .isEqualTo(shippingLabelModels.first().remoteShippingLabelId)
         assertThat(result.model?.first()?.carrierId).isEqualTo(shippingLabelModels.first().carrierId)
         assertThat(result.model?.first()?.packageName).isEqualTo(shippingLabelModels.first().packageName)
         assertThat(result.model?.first()?.refundableAmount).isEqualTo(shippingLabelModels.first().refundableAmount)
@@ -90,7 +91,8 @@ class WCTaxStoreTest {
         assertThat(storedTaxClassList.size).isEqualTo(shippingLabelModels.size)
         assertThat(storedTaxClassList.first().localOrderId).isEqualTo(shippingLabelModels.first().localOrderId)
         assertThat(storedTaxClassList.first().localSiteId).isEqualTo(shippingLabelModels.first().localSiteId)
-        assertThat(storedTaxClassList.first().remoteShippingLabelId).isEqualTo(shippingLabelModels.first().remoteShippingLabelId)
+        assertThat(storedTaxClassList.first().remoteShippingLabelId)
+                .isEqualTo(shippingLabelModels.first().remoteShippingLabelId)
         assertThat(storedTaxClassList.first().carrierId).isEqualTo(shippingLabelModels.first().carrierId)
         assertThat(storedTaxClassList.first().packageName).isEqualTo(shippingLabelModels.first().packageName)
         assertThat(storedTaxClassList.first().refundableAmount).isEqualTo(shippingLabelModels.first().refundableAmount)
@@ -108,4 +110,3 @@ class WCTaxStoreTest {
         return store.fetchShippingLabelsForOrder(site, orderId)
     }
 }
-
