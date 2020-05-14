@@ -39,10 +39,8 @@ class WCShippingLabelStore @Inject constructor(
                 response.isError -> {
                     WooResult(response.error)
                 }
-                response.result?.labelsData != null -> {
-                    val shippingLabels = response.result.labelsData.map {
-                        mapper.map(response.result, it).apply { localSiteId = site.id }
-                    }
+                response.result != null -> {
+                    val shippingLabels = mapper.map(response.result, site)
 
                     // delete existing shipping labels for the order before adding incoming entries
                     WCShippingLabelSqlUtils.deleteShippingLabelsForOrder(orderId)
