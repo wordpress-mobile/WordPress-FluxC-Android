@@ -296,7 +296,7 @@ public class APITesting_WCOrder {
 
         // Delete tracking number
         method = "delete";
-        path = "/wc/v3/orders/634/shipment-trackings/" + tracking + "&_method=" + method;
+        path = path + '/' + tracking + "&_method=" + method;
         jsonObj.put("path", path);
         jsonObj.remove("method");
         jsonObj.remove("body");
