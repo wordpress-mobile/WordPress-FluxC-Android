@@ -23,7 +23,7 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
     @Column var refundableAmount = 0F
     @Column var currency = ""
     @Column var paperSize = ""
-    @Column var productNames = ""  // list of product names the shipping label was purchased for
+    @Column var productNames = "" // list of product names the shipping label was purchased for
 
     @Column var formData = "" // map containing package and product details related to that shipping label
     @Column var storeOptions = "" // map containing store settings such as currency and dimensions
