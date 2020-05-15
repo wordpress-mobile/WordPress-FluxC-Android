@@ -852,6 +852,11 @@ class ProductRestClient(
             salePrice = response.sale_price ?: ""
             onSale = response.on_sale
 
+            dateOnSaleFrom = response.date_on_sale_from ?: ""
+            dateOnSaleTo = response.date_on_sale_to ?: ""
+            dateOnSaleFromGmt = response.date_on_sale_from_gmt ?: ""
+            dateOnSaleToGmt = response.date_on_sale_to_gmt ?: ""
+
             virtual = response.virtual
             downloadable = response.downloadable
             purchasable = response.purchasable

@@ -30,6 +30,11 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
     @Column var regularPrice = ""
     @Column var salePrice = ""
 
+    @Column var dateOnSaleFrom = ""
+    @Column var dateOnSaleTo = ""
+    @Column var dateOnSaleFromGmt = ""
+    @Column var dateOnSaleToGmt = ""
+
     @Column var onSale = false
     @Column var purchasable = false
     @Column var virtual = false
