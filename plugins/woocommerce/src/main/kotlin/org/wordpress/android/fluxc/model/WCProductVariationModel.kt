@@ -1,12 +1,18 @@
 package org.wordpress.android.fluxc.model
 
 import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonParseException
 import com.google.gson.reflect.TypeToken
 import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
+import org.wordpress.android.fluxc.network.utils.getLong
+import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T
 
 /**
  * Product variations - see http://woocommerce.github.io/woocommerce-rest-api-docs/#product-variations
@@ -44,7 +50,7 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
     @Column var stockQuantity = 0
     @Column var stockStatus = ""
 
-    @Column var imageUrl = ""
+    @Column var image = ""
 
     @Column var weight = ""
     @Column var length = ""
@@ -65,6 +71,28 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
         val id: Long? = null
         val name: String? = null
         val option: String? = null
+    }
+
+    /**
+     * Parses the images json array into a list of product images
+     */
+    fun getImage(): WCProductImageModel? {
+        if (image.isNotBlank()) {
+            try {
+                with(Gson().fromJson(image, JsonElement::class.java).asJsonObject) {
+                    WCProductImageModel(this.getLong("id")).also {
+                        it.name = this.getString("name") ?: ""
+                        it.src = this.getString("src") ?: ""
+                        it.alt = this.getString("alt") ?: ""
+                        return it
+                    }
+                }
+            } catch (e: JsonParseException) {
+                AppLog.e(T.API, e)
+                return null
+            }
+        }
+        return null
     }
 
     /**

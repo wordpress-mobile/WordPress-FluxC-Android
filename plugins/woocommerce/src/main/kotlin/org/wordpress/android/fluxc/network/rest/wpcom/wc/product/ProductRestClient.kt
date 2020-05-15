@@ -876,11 +876,7 @@ class ProductRestClient(
                 height = json.getString("height") ?: ""
             }
 
-            response.image?.let {
-                (it as? JsonObject)?.let { json ->
-                    imageUrl = json.getString("src") ?: ""
-                } ?: ""
-            }
+            image = response.image?.toString() ?: ""
         }
     }
 

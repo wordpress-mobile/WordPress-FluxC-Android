@@ -127,7 +127,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         val imageList = ArrayList<WCProductImageModel>()
         if (!images.isEmpty()) {
             try {
-                Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+                Gson().fromJson(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
                     with(jsonElement.asJsonObject) {
                         WCProductImageModel(this.getLong("id")).also {
                             it.name = this.getString("name") ?: ""
@@ -149,7 +149,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      */
     fun getFirstImageUrl(): String? {
         try {
-            Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.firstOrNull { jsonElement ->
+            Gson().fromJson(images, JsonElement::class.java).asJsonArray.firstOrNull { jsonElement ->
                 return (jsonElement.asJsonObject).getString("src")
             }
         } catch (e: JsonParseException) {
