@@ -31,3 +31,4 @@
 
 /connect/label/
 /connect/label/<order_id>/
+/connect/label/<order_id>/<label_id>/refund
