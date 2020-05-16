@@ -28,6 +28,8 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
     @Column var formData = "" // map containing package and product details related to that shipping label
     @Column var storeOptions = "" // map containing store settings such as currency and dimensions
 
+    @Column var refund = "" // map containing refund information for a shipping label
+
     override fun getId() = id
 
     override fun setId(id: Int) {
@@ -78,6 +80,15 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
         return gson.fromJson(productNames, responseType) as? List<String> ?: emptyList()
     }
 
+    /**
+     * Returns data related to the refund of a shipping label.
+     * Will only be available in the API if a refund has been initiated
+     */
+    fun getRefund(): WCShippingLabelRefundModel? {
+        val responseType = object : TypeToken<WCShippingLabelRefundModel>() {}.type
+        return gson.fromJson(refund, responseType) as? WCShippingLabelRefundModel
+    }
+
     class StoreOptions {
         @SerializedName("currency_symbol") val currencySymbol: String? = null
         @SerializedName("dimension_unit") val dimensionUnit: String? = null
@@ -126,5 +137,10 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
         val url: String? = null
         val value: Int? = null
         @SerializedName("product_id") val productId: Long? = null
+    }
+
+    class WCShippingLabelRefundModel {
+        val status: String? = null
+        @SerializedName("request_date") val requestDate: Long? = null
     }
 }
