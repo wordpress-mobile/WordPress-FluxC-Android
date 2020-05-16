@@ -9,8 +9,8 @@ import android.widget.Button
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_shippinglabels.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.Dispatcher
@@ -30,6 +30,8 @@ class WooShippingLabelFragment : Fragment() {
 
     private var selectedPos: Int = -1
     private var selectedSite: SiteModel? = null
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
@@ -58,7 +60,7 @@ class WooShippingLabelFragment : Fragment() {
                 showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
                     val orderId = orderEditText.text.toString().toLong()
                     prependToLog("Submitting request to fetch shipping labels for order $orderId")
-                    GlobalScope.launch(Dispatchers.Main) {
+                    coroutineScope.launch {
                         try {
                             val response = withContext(Dispatchers.Default) {
                                 wcShippingLabelStore.fetchShippingLabelsForOrder(site, orderId)
