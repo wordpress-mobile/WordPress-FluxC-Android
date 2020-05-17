@@ -29,6 +29,6 @@
 /taxes
 /taxes/classes/
 
-/connect/label/
 /connect/label/<order_id>/
-/connect/label/<order_id>/<label_id>/refund
+/connect/label/<order_id>/<shippingLabelId>/
+/connect/label/<order_id>/<shippingLabelId>/refund
