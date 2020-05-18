@@ -56,10 +56,12 @@ class WCShippingLabelSqlUtilsTest {
         assertEquals(savedShippingLabels[0].localOrderId, shippingLabel.localOrderId)
         assertEquals(savedShippingLabels[0].remoteShippingLabelId, shippingLabel.remoteShippingLabelId)
         assertEquals(savedShippingLabels[0].serviceName, shippingLabel.serviceName)
+        assertNotNull(savedShippingLabels[0].refund)
 
         // Test updating the same shipping label
         shippingLabel.apply {
             serviceName = "Test service name"
+            refund = ""
         }
         rowsAffected = WCShippingLabelSqlUtils.insertOrUpdateShippingLabel(shippingLabel)
         assertEquals(1, rowsAffected)
@@ -69,6 +71,7 @@ class WCShippingLabelSqlUtilsTest {
         assertEquals(savedShippingLabels[0].localOrderId, shippingLabel.localOrderId)
         assertEquals(savedShippingLabels[0].remoteShippingLabelId, shippingLabel.remoteShippingLabelId)
         assertEquals(savedShippingLabels[0].serviceName, shippingLabel.serviceName)
+        assertEquals(savedShippingLabels[0].refund, shippingLabel.refund)
     }
 
     @Test
