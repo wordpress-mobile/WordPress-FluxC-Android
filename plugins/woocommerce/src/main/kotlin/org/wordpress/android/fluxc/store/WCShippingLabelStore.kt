@@ -51,4 +51,23 @@ class WCShippingLabelStore @Inject constructor(
             }
         }
     }
+
+    suspend fun refundShippingLabelForOrder(
+        site: SiteModel,
+        orderId: Long,
+        remoteShippingLabelId: Long
+    ): WooResult<Boolean> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "refundShippingLabelForOrder") {
+            val response = restClient.refundShippingLabelForOrder(site, orderId, remoteShippingLabelId)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result != null -> {
+                    WooResult(response.result.success)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
 }
