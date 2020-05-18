@@ -78,6 +78,36 @@ class WooShippingLabelFragment : Fragment() {
                 }
             }
         }
+
+        refund_shipping_label.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
+                    val orderId = orderEditText.text.toString().toLong()
+                    showSingleLineDialog(activity, "Enter the remote shipping Label Id:") { remoteIdEditText ->
+                        val remoteId = remoteIdEditText.text.toString().toLong()
+                        prependToLog("Submitting request to refund shipping label for order $orderId with id $remoteId")
+
+                        coroutineScope.launch {
+                            try {
+                                val response = withContext(Dispatchers.Default) {
+                                    wcShippingLabelStore.refundShippingLabelForOrder(site, orderId, remoteId)
+                                }
+                                response.error?.let {
+                                    prependToLog("${it.type}: ${it.message}")
+                                }
+                                response.model?.let {
+                                    prependToLog(
+                                            "Refund for $orderId with shipping label $remoteId is ${response.model}"
+                                    )
+                                }
+                            } catch (e: Exception) {
+                                prependToLog("Error: ${e.message}")
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun showSiteSelectorDialog(selectedPos: Int, listener: StoreSelectorDialog.Listener) {
