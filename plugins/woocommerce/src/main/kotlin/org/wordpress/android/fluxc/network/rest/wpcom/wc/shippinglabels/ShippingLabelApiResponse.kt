@@ -12,7 +12,8 @@ class ShippingLabelApiResponse : Response {
     val formData: JsonElement? = null
     val storeOptions: JsonElement? = null
     val labelsData: List<LabelItem>? = null
-    val refund: JsonElement? = null
+
+    val success: Boolean? = null
 
     class LabelItem {
         @SerializedName("label_id") val labelId: Long? = null
@@ -25,5 +26,6 @@ class ShippingLabelApiResponse : Response {
         val status: String? = null
         val rate: BigDecimal? = null
         val currency: String? = null
+        val refund: JsonElement? = null
     }
 }
