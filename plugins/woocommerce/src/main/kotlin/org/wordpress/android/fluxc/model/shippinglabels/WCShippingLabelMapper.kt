@@ -24,6 +24,7 @@ class WCShippingLabelMapper
                 paperSize = response.paperSize ?: ""
                 storeOptions = response.storeOptions.toString()
                 formData = response.formData.toString()
+                refund = response.refund.toString()
 
                 localSiteId = site.id
             }
