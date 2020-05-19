@@ -92,6 +92,7 @@ class MainFragment : Fragment() {
         woo.setOnClickListener(getOnClickListener(WooCommerceFragment()))
         notifs.setOnClickListener(getOnClickListener(NotificationsFragment()))
         reactnative.setOnClickListener(getOnClickListener(ReactNativeFragment()))
+        editortheme.setOnClickListener(getOnClickListener(EditorThemeFragment()))
     }
 
     // Private methods
