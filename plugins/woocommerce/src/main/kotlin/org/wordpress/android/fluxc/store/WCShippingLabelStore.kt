@@ -70,4 +70,23 @@ class WCShippingLabelStore @Inject constructor(
             }
         }
     }
+
+    suspend fun printShippingLabel(
+        site: SiteModel,
+        paperSize: String,
+        remoteShippingLabelId: Long
+    ): WooResult<String> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "printShippingLabel") {
+            val response = restClient.printShippingLabel(site, paperSize, remoteShippingLabelId)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result?.success == true -> {
+                    WooResult(response.result.b64Content)
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
 }
