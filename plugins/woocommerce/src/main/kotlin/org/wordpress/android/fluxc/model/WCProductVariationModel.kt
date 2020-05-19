@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
+import java.lang.IllegalStateException
 
 /**
  * Product variations - see http://woocommerce.github.io/woocommerce-rest-api-docs/#product-variations
@@ -88,6 +89,10 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
                     }
                 }
             } catch (e: JsonParseException) {
+                AppLog.e(T.API, e)
+                return null
+            }
+            catch (e: IllegalStateException) {
                 AppLog.e(T.API, e)
                 return null
             }

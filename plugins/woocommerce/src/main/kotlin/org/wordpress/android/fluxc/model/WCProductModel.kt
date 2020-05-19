@@ -125,7 +125,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      */
     fun getImages(): ArrayList<WCProductImageModel> {
         val imageList = ArrayList<WCProductImageModel>()
-        if (!images.isEmpty()) {
+        if (images.isNotEmpty()) {
             try {
                 Gson().fromJson(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
                     with(jsonElement.asJsonObject) {
@@ -138,6 +138,9 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                     }
                 }
             } catch (e: JsonParseException) {
+                AppLog.e(T.API, e)
+            }
+            catch (e: IllegalStateException) {
                 AppLog.e(T.API, e)
             }
         }
