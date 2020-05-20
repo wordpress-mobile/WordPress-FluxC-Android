@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.Payload
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
@@ -30,6 +31,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     companion object {
         const val NUM_REVIEWS_PER_FETCH = 25
         const val DEFAULT_PRODUCT_PAGE_SIZE = 25
+        const val DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE = 25
         const val DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE = 25
         const val DEFAULT_PRODUCT_SHIPPING_CLASS_PAGE_SIZE = 25
         val DEFAULT_PRODUCT_SORTING = TITLE_ASC
@@ -128,6 +130,13 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     class UpdateProductPayload(
         var site: SiteModel,
         val product: WCProductModel
+    ) : Payload<BaseNetworkError>()
+
+    class FetchProductCategoriesPayload(
+        var site: SiteModel,
+        var pageSize: Int = DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE,
+        var offset: Int = 1,
+        var productCategorySorting: ProductCategorySorting = DEFAULT_CATEGORY_SORTING
     ) : Payload<BaseNetworkError>()
 
     enum class ProductErrorType {
@@ -337,6 +346,20 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         constructor(error: ProductError, site: SiteModel) : this(site) { this.error = error }
     }
 
+    class RemoteProductCategoriesPayload(
+        val site: SiteModel,
+        val categories: List<WCProductCategoryModel> = emptyList(),
+        var loadedMore: Boolean = false,
+        var canLoadMore: Boolean = false
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            site: SiteModel
+        ) : this(site) {
+            this.error = error
+        }
+    }
+
     // OnChanged events
     class OnProductChanged(
         var rowsAffected: Int,
@@ -390,6 +413,13 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     class OnProductUpdated(
         var rowsAffected: Int,
         var remoteProductId: Long
+    ) : OnChanged<ProductError>() {
+        var causeOfChange: WCProductAction? = null
+    }
+
+    class OnProductCategoryChanged(
+        var rowsAffected: Int,
+        var canLoadMore: Boolean = false
     ) : OnChanged<ProductError>() {
         var causeOfChange: WCProductAction? = null
     }

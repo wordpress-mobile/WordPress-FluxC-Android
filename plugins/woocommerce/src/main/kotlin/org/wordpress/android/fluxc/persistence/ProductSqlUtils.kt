@@ -514,7 +514,7 @@ object ProductSqlUtils {
                 .where()
                 .equals(WCProductCategoryModelTable.LOCAL_SITE_ID, site.id)
                 .or()
-                .equals(WCProductCategoryModelTable.LOCAL_SITE_ID, 0)  // Should never happen, but sanity cleanup
+                .equals(WCProductCategoryModelTable.LOCAL_SITE_ID, 0) // Should never happen, but sanity cleanup
                 .endWhere().execute()
     }
 
