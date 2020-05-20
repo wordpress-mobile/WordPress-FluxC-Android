@@ -135,31 +135,34 @@ class WooShippingLabelFragment : Fragment() {
         print_shipping_label.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(activity, "Enter the remote shipping Label Id:") { remoteIdEditText ->
-                    if (remoteIdEditText.text.toString().isNotEmpty()) {
-                        val remoteId = remoteIdEditText.text.toString().toLong()
-                        prependToLog("Submitting request to print shipping label for id $remoteId")
+                    if (remoteIdEditText.text.isEmpty()) {
+                        prependToLog("Remote Id is null so doing nothing")
+                        return@showSingleLineDialog
+                    }
 
-                        coroutineScope.launch {
-                            try {
-                                val response = withContext(Dispatchers.Default) {
-                                    // the paper size can be label, legal, letter
-                                    // For the example app, the default is set as label
-                                    wcShippingLabelStore.printShippingLabel(site, "label", remoteId)
-                                }
-                                response.error?.let {
-                                    prependToLog("${it.type}: ${it.message}")
-                                }
-                                response.model?.let { base64Content ->
-                                    // Since this function is used only by Woo testers and the Woo app
-                                    // only supports API > 21, it's fine to add a check here to support devices
-                                    // above API 19
-                                    if (VERSION.SDK_INT >= VERSION_CODES.KITKAT) {
-                                        writePDFToFile(base64Content)?.let { openWebView(it) }
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                prependToLog("Error: ${e.message}")
+                    val remoteId = remoteIdEditText.text.toString().toLong()
+                    prependToLog("Submitting request to print shipping label for id $remoteId")
+
+                    coroutineScope.launch {
+                        try {
+                            val response = withContext(Dispatchers.Default) {
+                                // the paper size can be label, legal, letter
+                                // For the example app, the default is set as label
+                                wcShippingLabelStore.printShippingLabel(site, "label", remoteId)
                             }
+                            response.error?.let {
+                                prependToLog("${it.type}: ${it.message}")
+                            }
+                            response.model?.let { base64Content ->
+                                // Since this function is used only by Woo testers and the Woo app
+                                // only supports API > 21, it's fine to add a check here to support devices
+                                // above API 19
+                                if (VERSION.SDK_INT >= VERSION_CODES.KITKAT) {
+                                    writePDFToFile(base64Content)?.let { openWebView(it) }
+                                }
+                            }
+                        } catch (e: Exception) {
+                            prependToLog("Error: ${e.message}")
                         }
                     }
                 }
