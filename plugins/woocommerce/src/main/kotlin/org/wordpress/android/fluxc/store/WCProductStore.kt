@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
+import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.util.AppLog
@@ -32,6 +33,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         const val DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE = 25
         const val DEFAULT_PRODUCT_SHIPPING_CLASS_PAGE_SIZE = 25
         val DEFAULT_PRODUCT_SORTING = TITLE_ASC
+        val DEFAULT_CATEGORY_SORTING = NAME_ASC
     }
 
     /**
@@ -39,7 +41,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
      */
     enum class ProductFilterOption {
         STOCK_STATUS, STATUS, TYPE;
-        override fun toString() = name.toLowerCase()
+        override fun toString() = name.toLowerCase(Locale.US)
     }
 
     class FetchProductSkuAvailabilityPayload(
@@ -148,6 +150,11 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         TITLE_DESC,
         DATE_ASC,
         DATE_DESC
+    }
+
+    enum class ProductCategorySorting {
+        NAME_ASC,
+        NAME_DESC
     }
 
     class RemoteProductSkuAvailabilityPayload(
