@@ -95,8 +95,18 @@ class WooShippingLabelFragment : Fragment() {
         refund_shipping_label.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
+                    if (orderEditText.text.isEmpty()) {
+                        prependToLog("OrderId is null so doing nothing")
+                        return@showSingleLineDialog
+                    }
+
                     val orderId = orderEditText.text.toString().toLong()
                     showSingleLineDialog(activity, "Enter the remote shipping Label Id:") { remoteIdEditText ->
+                        if (remoteIdEditText.text.isEmpty()) {
+                            prependToLog("Remote Id is null so doing nothing")
+                            return@showSingleLineDialog
+                        }
+
                         val remoteId = remoteIdEditText.text.toString().toLong()
                         prependToLog("Submitting request to refund shipping label for order $orderId with id $remoteId")
 
