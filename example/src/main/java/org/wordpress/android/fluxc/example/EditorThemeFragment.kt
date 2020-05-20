@@ -12,7 +12,9 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.EditorThemeActionBuilder
+import org.wordpress.android.fluxc.model.EditorTheme
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.EditorThemeStore
 import org.wordpress.android.fluxc.store.EditorThemeStore.FetchEditorThemePayload
 import org.wordpress.android.fluxc.store.EditorThemeStore.OnEditorThemeChanged
@@ -72,10 +74,9 @@ class EditorThemeFragment : Fragment() {
         dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
     }
 
-    private fun logTheme(theme: Bundle) {
-        val colors = (theme?.getParcelableArrayList<Bundle>("colors")?.map { it.getString("slug") }?.joinToString(", "))
-        val gradients = (theme?.getParcelableArrayList<Bundle>("gradients")?.map { it.getString("slug") }?.joinToString(", "))
-
+    private fun logTheme(theme: EditorTheme) {
+        val colors = theme.themeSupport.colors?.map { it.asJsonObject.getString("slug") }?.joinToString(", ")
+        val gradients = theme.themeSupport.gradients?.map { it.asJsonObject.getString("slug") }?.joinToString(", ")
         prependToLog("Found: \n colors: ${colors} \n gradients: ${gradients}")
     }
 }
