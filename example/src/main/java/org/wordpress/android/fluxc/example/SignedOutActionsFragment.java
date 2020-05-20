@@ -236,7 +236,7 @@ public class SignedOutActionsFragment extends Fragment {
     }
 
     private void fetchWhatsNew() {
-        mDispatcher.dispatch(WhatsNewActionBuilder.newFetchWhatsNewAction(new WhatsNewFetchPayload("850")));
+        mDispatcher.dispatch(WhatsNewActionBuilder.newFetchWhatsNewAction(new WhatsNewFetchPayload("850", true)));
     }
 
     @SuppressWarnings("unused")
