@@ -556,6 +556,24 @@ class ProductSqlUtilsTest {
         assertEquals(0, savedCategories.size)
     }
 
+    @Test
+    fun testDeleteProductCategoriesForSite() {
+        val categories = ProductTestUtils.getProductCategories(site.id)
+
+        var rowsAffected = ProductSqlUtils.insertOrUpdateProductCategories(categories)
+        assertEquals(categories.size, rowsAffected)
+
+        // Verify categories inserted
+        var savedCategories = ProductSqlUtils.getProductCategoriesForSite(site)
+        assertEquals(categories.size, savedCategories.size)
+
+        // Delete categories for site and verify
+        rowsAffected = ProductSqlUtils.deleteAllProductCategoriesForSite(site)
+        assertEquals(categories.size, rowsAffected)
+        savedCategories = ProductSqlUtils.getProductCategoriesForSite(site)
+        assertEquals(0, savedCategories.size)
+    }
+
     private fun getProductReviews(localSiteId: Int): List<WCProductReviewModel> {
         val reviewJson = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/product-reviews.json")
         return ProductTestUtils.getProductReviewsFromJsonString(reviewJson, localSiteId)
