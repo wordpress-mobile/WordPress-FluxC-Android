@@ -47,4 +47,28 @@ constructor(
             }
         }
     }
+
+    suspend fun refundShippingLabelForOrder(
+        site: SiteModel,
+        orderId: Long,
+        remoteShippingLabelId: Long
+    ): WooPayload<ShippingLabelApiResponse> {
+        val url = WOOCOMMERCE.connect.label.order(orderId).shippingLabelId(remoteShippingLabelId).refund.pathV1
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                emptyMap(),
+                ShippingLabelApiResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
 }

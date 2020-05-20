@@ -19,6 +19,7 @@ class WCShippingLabelMapper
                 refundableAmount = labelItem.refundableAmount?.toFloat() ?: 0F
                 currency = labelItem.currency ?: ""
                 productNames = labelItem.productNames.toString()
+                refund = labelItem.refund.toString()
 
                 localOrderId = response.orderId ?: 0L
                 paperSize = response.paperSize ?: ""

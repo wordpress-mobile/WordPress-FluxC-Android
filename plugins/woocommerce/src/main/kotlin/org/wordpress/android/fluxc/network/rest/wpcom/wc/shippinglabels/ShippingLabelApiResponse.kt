@@ -13,6 +13,8 @@ class ShippingLabelApiResponse : Response {
     val storeOptions: JsonElement? = null
     val labelsData: List<LabelItem>? = null
 
+    val success: Boolean? = null
+
     class LabelItem {
         @SerializedName("label_id") val labelId: Long? = null
         @SerializedName("tracking") val trackingNumber: String? = null
@@ -24,5 +26,6 @@ class ShippingLabelApiResponse : Response {
         val status: String? = null
         val rate: BigDecimal? = null
         val currency: String? = null
+        val refund: JsonElement? = null
     }
 }

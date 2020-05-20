@@ -25,12 +25,15 @@ import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
 class WCShippingLabelStoreTest {
     private val restClient = mock<ShippingLabelRestClient>()
     private val orderId = 25L
+    private val refundShippingLabelId = 12L
     private val site = SiteModel().apply { id = 321 }
     private val errorSite = SiteModel().apply { id = 123 }
     private val mapper = WCShippingLabelMapper()
@@ -75,6 +78,7 @@ class WCShippingLabelStoreTest {
         assertThat(result.model?.first()?.refundableAmount).isEqualTo(shippingLabelModels.first().refundableAmount)
         assertThat(result.model?.first()?.rate).isEqualTo(shippingLabelModels.first().rate)
         assertThat(result.model?.first()?.paperSize).isEqualTo(shippingLabelModels.first().paperSize)
+        assertNotNull(result.model?.first()?.refund)
 
         val invalidRequestResult = store.fetchShippingLabelsForOrder(errorSite, orderId)
         assertThat(invalidRequestResult.model).isNull()
@@ -98,9 +102,20 @@ class WCShippingLabelStoreTest {
         assertThat(storedTaxClassList.first().refundableAmount).isEqualTo(shippingLabelModels.first().refundableAmount)
         assertThat(storedTaxClassList.first().rate).isEqualTo(shippingLabelModels.first().rate)
         assertThat(storedTaxClassList.first().paperSize).isEqualTo(shippingLabelModels.first().paperSize)
+        assertNotNull(storedTaxClassList.first().refund)
 
         val invalidRequestResult = store.getShippingLabelsForOrder(errorSite, orderId)
         assertThat(invalidRequestResult.size).isEqualTo(0)
+    }
+
+    @Test
+    fun `refund shipping label for order`() = test {
+        val result = refundShippingLabelForOrder()
+        assertTrue(result.model!!)
+
+        val invalidRequestResult = store.refundShippingLabelForOrder(errorSite, orderId, refundShippingLabelId)
+        assertThat(invalidRequestResult.model).isNull()
+        assertThat(invalidRequestResult.error).isEqualTo(error)
     }
 
     private suspend fun fetchShippingLabelsForOrder(): WooResult<List<WCShippingLabelModel>> {
@@ -108,5 +123,18 @@ class WCShippingLabelStoreTest {
         whenever(restClient.fetchShippingLabelsForOrder(orderId, site)).thenReturn(fetchTaxClassListPayload)
         whenever(restClient.fetchShippingLabelsForOrder(orderId, errorSite)).thenReturn(WooPayload(error))
         return store.fetchShippingLabelsForOrder(site, orderId)
+    }
+
+    private suspend fun refundShippingLabelForOrder(): WooResult<Boolean> {
+        val fetchTaxClassListPayload = WooPayload(sampleShippingLabelApiResponse)
+        whenever(restClient.refundShippingLabelForOrder(
+                site, orderId, refundShippingLabelId
+        )).thenReturn(fetchTaxClassListPayload)
+
+        whenever(restClient.refundShippingLabelForOrder(
+                errorSite, orderId, refundShippingLabelId
+        )).thenReturn(WooPayload(error))
+
+        return store.refundShippingLabelForOrder(site, orderId, refundShippingLabelId)
     }
 }

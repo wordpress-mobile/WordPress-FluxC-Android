@@ -18,7 +18,8 @@ object WCShippingLabelTestUtils {
         rate: Float = 7.65F,
         refundableAmount: Float = 7.65F,
         currency: String = "USD",
-        paperSize: String = "label"
+        paperSize: String = "label",
+        refund: String? = null
     ): WCShippingLabelModel {
         return WCShippingLabelModel().apply {
             localSiteId = siteId
@@ -32,6 +33,7 @@ object WCShippingLabelTestUtils {
             this.refundableAmount = refundableAmount
             this.currency = currency
             this.paperSize = paperSize
+            refund?.let { this.refund = it }
         }
     }
 
@@ -41,7 +43,12 @@ object WCShippingLabelTestUtils {
         remoteShippingLabelId: Long = 0
     ): List<WCShippingLabelModel> {
         with(ArrayList<WCShippingLabelModel>()) {
-            add(generateSampleShippingLabel(siteId = siteId, orderId = orderId, remoteId = remoteShippingLabelId + 1))
+            add(generateSampleShippingLabel(
+                    siteId = siteId,
+                    orderId = orderId,
+                    remoteId = remoteShippingLabelId + 1,
+                    refund = "{\"status\": \"pending\",\"request_date\": 1604847663000}"
+            ))
             add(generateSampleShippingLabel(siteId = siteId, orderId = orderId, remoteId = remoteShippingLabelId + 2))
             add(generateSampleShippingLabel(siteId = siteId, orderId = orderId, remoteId = remoteShippingLabelId + 3))
             add(generateSampleShippingLabel(siteId = siteId, orderId = orderId, remoteId = remoteShippingLabelId + 4))
