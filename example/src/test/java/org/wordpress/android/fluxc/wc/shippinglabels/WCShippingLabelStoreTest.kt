@@ -42,6 +42,10 @@ class WCShippingLabelStoreTest {
     private val sampleShippingLabelApiResponse = WCShippingLabelTestUtils.generateSampleShippingLabelApiResponse()
     private val error = WooError(INVALID_RESPONSE, NETWORK_ERROR, "Invalid site ID")
 
+    private val printPaperSize = "label"
+    private val samplePrintShippingLabelApiResponse =
+            WCShippingLabelTestUtils.generateSamplePrintShippingLabelApiResponse()
+
     @Before
     fun setUp() {
         val appContext = RuntimeEnvironment.application.applicationContext
@@ -118,23 +122,46 @@ class WCShippingLabelStoreTest {
         assertThat(invalidRequestResult.error).isEqualTo(error)
     }
 
+    @Test
+    fun `print shipping label for order`() = test {
+        val result = printShippingLabelForOrder()
+        assertThat(result.model).isEqualTo(samplePrintShippingLabelApiResponse?.b64Content)
+
+        val invalidRequestResult = store.printShippingLabel(errorSite, printPaperSize, refundShippingLabelId)
+        assertThat(invalidRequestResult.model).isNull()
+        assertThat(invalidRequestResult.error).isEqualTo(error)
+    }
+
     private suspend fun fetchShippingLabelsForOrder(): WooResult<List<WCShippingLabelModel>> {
-        val fetchTaxClassListPayload = WooPayload(sampleShippingLabelApiResponse)
-        whenever(restClient.fetchShippingLabelsForOrder(orderId, site)).thenReturn(fetchTaxClassListPayload)
+        val fetchShippingLabelsPayload = WooPayload(sampleShippingLabelApiResponse)
+        whenever(restClient.fetchShippingLabelsForOrder(orderId, site)).thenReturn(fetchShippingLabelsPayload)
         whenever(restClient.fetchShippingLabelsForOrder(orderId, errorSite)).thenReturn(WooPayload(error))
         return store.fetchShippingLabelsForOrder(site, orderId)
     }
 
     private suspend fun refundShippingLabelForOrder(): WooResult<Boolean> {
-        val fetchTaxClassListPayload = WooPayload(sampleShippingLabelApiResponse)
+        val refundShippingLabelPayload = WooPayload(sampleShippingLabelApiResponse)
         whenever(restClient.refundShippingLabelForOrder(
                 site, orderId, refundShippingLabelId
-        )).thenReturn(fetchTaxClassListPayload)
+        )).thenReturn(refundShippingLabelPayload)
 
         whenever(restClient.refundShippingLabelForOrder(
                 errorSite, orderId, refundShippingLabelId
         )).thenReturn(WooPayload(error))
 
         return store.refundShippingLabelForOrder(site, orderId, refundShippingLabelId)
+    }
+
+    private suspend fun printShippingLabelForOrder(): WooResult<String> {
+        val printShippingLabelPayload = WooPayload(samplePrintShippingLabelApiResponse)
+        whenever(restClient.printShippingLabel(
+                site, printPaperSize, refundShippingLabelId
+        )).thenReturn(printShippingLabelPayload)
+
+        whenever(restClient.printShippingLabel(
+                errorSite, printPaperSize, refundShippingLabelId
+        )).thenReturn(WooPayload(error))
+
+        return store.printShippingLabel(site, printPaperSize, refundShippingLabelId)
     }
 }
