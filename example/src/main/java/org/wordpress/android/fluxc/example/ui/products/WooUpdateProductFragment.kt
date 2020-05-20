@@ -212,6 +212,10 @@ class WooUpdateProductFragment : Fragment() {
             )
         }
 
+        select_product_categories.setOnClickListener {
+            // TODO: display list of categories
+        }
+
         product_is_featured.setOnCheckedChangeListener { _, isChecked ->
             selectedProductModel?.featured = isChecked
         }
@@ -314,6 +318,7 @@ class WooUpdateProductFragment : Fragment() {
                 product_purchase_note.setText(it.purchaseNote)
                 product_menu_order.setText(it.menuOrder.toString())
                 product_external_url.setText(it.externalUrl)
+                product_categories.setText(it.getCommaSeparatedCategoryNames())
                 product_button_text.setText(it.buttonText)
             } ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
