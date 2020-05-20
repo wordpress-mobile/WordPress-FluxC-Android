@@ -135,7 +135,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     class FetchProductCategoriesPayload(
         var site: SiteModel,
         var pageSize: Int = DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE,
-        var offset: Int = 1,
+        var offset: Int = 0,
         var productCategorySorting: ProductCategorySorting = DEFAULT_CATEGORY_SORTING
     ) : Payload<BaseNetworkError>()
 
@@ -349,6 +349,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     class RemoteProductCategoriesPayload(
         val site: SiteModel,
         val categories: List<WCProductCategoryModel> = emptyList(),
+        var offset: Int = 0,
         var loadedMore: Boolean = false,
         var canLoadMore: Boolean = false
     ) : Payload<ProductError>() {
@@ -502,6 +503,9 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     fun deleteProductImage(site: SiteModel, remoteProductId: Long, remoteMediaId: Long) =
             ProductSqlUtils.deleteProductImage(site, remoteProductId, remoteMediaId)
 
+    fun getProductCategoriesForSite(site: SiteModel, sortType: ProductCategorySorting = DEFAULT_CATEGORY_SORTING) =
+            ProductSqlUtils.getProductCategoriesForSite(site, sortType)
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCProductAction ?: return
@@ -535,6 +539,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 fetchProductPassword(action.payload as FetchProductPasswordPayload)
             WCProductAction.UPDATE_PRODUCT_PASSWORD ->
                 updateProductPassword(action.payload as UpdateProductPasswordPayload)
+            WCProductAction.FETCH_PRODUCT_CATEGORIES ->
+                fetchProductCategories(action.payload as FetchProductCategoriesPayload)
 
             // remote responses
             WCProductAction.FETCHED_SINGLE_PRODUCT ->
@@ -565,6 +571,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 handleFetchProductPasswordCompleted(action.payload as RemoteProductPasswordPayload)
             WCProductAction.UPDATED_PRODUCT_PASSWORD ->
                 handleUpdatedProductPasswordCompleted(action.payload as RemoteUpdatedProductPasswordPayload)
+            WCProductAction.FETCHED_PRODUCT_CATEGORIES ->
+                handleFetchProductCategories(action.payload as RemoteProductCategoriesPayload)
         }
     }
 
@@ -626,6 +634,11 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     private fun updateProductImages(payload: UpdateProductImagesPayload) {
         with(payload) { wcProductRestClient.updateProductImages(site, remoteProductId, imageList) }
+    }
+
+    private fun fetchProductCategories(payloadProduct: FetchProductCategoriesPayload) {
+        with(payloadProduct) { wcProductRestClient.fetchProductCategories(
+                site, pageSize, offset, productCategorySorting) }
     }
 
     private fun updateProduct(payload: UpdateProductPayload) {
@@ -846,5 +859,25 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
         onProductUpdated.causeOfChange = WCProductAction.UPDATED_PRODUCT
         emitChange(onProductUpdated)
+    }
+
+    private fun handleFetchProductCategories(payload: RemoteProductCategoriesPayload) {
+        val onProductCategoryChanged: OnProductCategoryChanged
+
+        if (payload.isError) {
+            onProductCategoryChanged = OnProductCategoryChanged(0).also { it.error = payload.error }
+        } else {
+            // Clear existing product categories if this is a fresh fetch (loadMore = false).
+            // This is the simplest way to keep our local categories in sync with remote categories
+            // in case of deletions.
+            if (!payload.loadedMore) {
+                ProductSqlUtils.deleteAllProductCategoriesForSite(payload.site)
+            }
+            val rowsAffected = ProductSqlUtils.insertOrUpdateProductCategories(payload.categories)
+            onProductCategoryChanged = OnProductCategoryChanged(rowsAffected, canLoadMore = payload.canLoadMore)
+        }
+
+        onProductCategoryChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_CATEGORIES
+        emitChange(onProductCategoryChanged)
     }
 }
