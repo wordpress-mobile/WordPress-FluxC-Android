@@ -563,7 +563,7 @@ class ProductRestClient(
         site: SiteModel,
         category: WCProductCategoryModel
     ) {
-        val url = WOOCOMMERCE.products.categories.id(category.remoteCategoryId).pathV3
+        val url = WOOCOMMERCE.products.categories.pathV3
 
         val responseType = object : TypeToken<ProductCategoryApiResponse>() {}.type
         val params = mutableMapOf(

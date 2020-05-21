@@ -145,6 +145,13 @@
             android:text="Load More Product Categories" />
 
         <Button
+            android:id="@+id/add_product_category"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Add Product Category" />
+
+        <Button
             android:id="@+id/update_product_images"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
