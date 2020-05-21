@@ -71,6 +71,11 @@ class WooShippingLabelFragment : Fragment() {
         fetch_shipping_labels.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
+                    if (orderEditText.text.isEmpty()) {
+                        prependToLog("OrderId is null so doing nothing")
+                        return@showSingleLineDialog
+                    }
+
                     val orderId = orderEditText.text.toString().toLong()
                     prependToLog("Submitting request to fetch shipping labels for order $orderId")
                     coroutineScope.launch {
@@ -82,7 +87,8 @@ class WooShippingLabelFragment : Fragment() {
                                 prependToLog("${it.type}: ${it.message}")
                             }
                             response.model?.let {
-                                prependToLog("Order $orderId has ${it.size} shipping labels")
+                                val labelIds = it.map { it.remoteShippingLabelId }.joinToString(",")
+                                prependToLog("Order $orderId has ${it.size} shipping labels with ids $labelIds")
                             }
                         } catch (e: Exception) {
                             prependToLog("Error: ${e.message}")
