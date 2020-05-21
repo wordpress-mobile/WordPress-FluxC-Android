@@ -149,6 +149,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         INVALID_REVIEW_ID,
         INVALID_IMAGE_ID,
         DUPLICATE_SKU,
+        DUPLICATE_CATEGORY_NAME,
         GENERIC_ERROR;
 
         companion object {
