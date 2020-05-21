@@ -14,7 +14,6 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.EditorThemeActionBuilder
 import org.wordpress.android.fluxc.model.EditorTheme
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.EditorThemeStore
 import org.wordpress.android.fluxc.store.EditorThemeStore.FetchEditorThemePayload
 import org.wordpress.android.fluxc.store.EditorThemeStore.OnEditorThemeChanged
@@ -64,7 +63,7 @@ class EditorThemeFragment : Fragment() {
         }
 
         val site = this.site ?: return
-        val theme = event.editorThemes.get(editorThemeStore.editorThemeKeyForSite(site)) ?: return
+        val theme = event.getEditorThemeForSite(site) ?: return
         logTheme(theme)
     }
 
@@ -75,8 +74,8 @@ class EditorThemeFragment : Fragment() {
     }
 
     private fun logTheme(theme: EditorTheme) {
-        val colors = theme.themeSupport.colors?.map { it.asJsonObject.getString("slug") }?.joinToString(", ")
-        val gradients = theme.themeSupport.gradients?.map { it.asJsonObject.getString("slug") }?.joinToString(", ")
+        val colors = theme.themeSupport.colors?.map { it.slug }?.joinToString(", ")
+        val gradients = theme.themeSupport.gradients?.map { it.slug }?.joinToString(", ")
         prependToLog("Found: \n colors: ${colors} \n gradients: ${gradients}")
     }
 }
