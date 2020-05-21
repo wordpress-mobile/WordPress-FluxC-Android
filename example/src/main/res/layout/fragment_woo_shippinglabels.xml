@@ -52,5 +52,12 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Refund Shipping Label"/>
+
+        <Button
+            android:id="@+id/print_shipping_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Print Shipping Label"/>
     </LinearLayout>
 </ScrollView>

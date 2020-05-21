@@ -71,4 +71,40 @@ constructor(
             }
         }
     }
+
+    suspend fun printShippingLabel(
+        site: SiteModel,
+        paperSize: String,
+        remoteShippingLabelId: Long
+    ): WooPayload<PrintShippingLabelApiResponse> {
+        val url = WOOCOMMERCE.connect.label.print.pathV1
+        val params = mapOf(
+                "paper_size" to paperSize,
+                "label_id_csv" to remoteShippingLabelId.toString(),
+                "caption_csv" to "",
+                "json" to "true"
+        )
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                params,
+                PrintShippingLabelApiResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
+    data class PrintShippingLabelApiResponse(
+        val mimeType: String,
+        val b64Content: String,
+        val success: Boolean
+    )
 }

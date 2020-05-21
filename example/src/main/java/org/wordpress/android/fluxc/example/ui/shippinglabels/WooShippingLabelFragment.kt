@@ -1,11 +1,18 @@
 package org.wordpress.android.fluxc.example.ui.shippinglabels
 
 import android.content.Context
+import android.content.Intent
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.os.Bundle
+import android.os.Environment
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.annotation.RequiresApi
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_shippinglabels.*
@@ -21,6 +28,12 @@ import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 class WooShippingLabelFragment : Fragment() {
@@ -58,6 +71,11 @@ class WooShippingLabelFragment : Fragment() {
         fetch_shipping_labels.setOnClickListener {
             selectedSite?.let { site ->
                 showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
+                    if (orderEditText.text.isEmpty()) {
+                        prependToLog("OrderId is null so doing nothing")
+                        return@showSingleLineDialog
+                    }
+
                     val orderId = orderEditText.text.toString().toLong()
                     prependToLog("Submitting request to fetch shipping labels for order $orderId")
                     coroutineScope.launch {
@@ -69,7 +87,8 @@ class WooShippingLabelFragment : Fragment() {
                                 prependToLog("${it.type}: ${it.message}")
                             }
                             response.model?.let {
-                                prependToLog("Order $orderId has ${it.size} shipping labels")
+                                val labelIds = it.map { it.remoteShippingLabelId }.joinToString(",")
+                                prependToLog("Order $orderId has ${it.size} shipping labels with ids $labelIds")
                             }
                         } catch (e: Exception) {
                             prependToLog("Error: ${e.message}")
@@ -118,6 +137,43 @@ class WooShippingLabelFragment : Fragment() {
                 }
             }
         }
+
+        print_shipping_label.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(activity, "Enter the remote shipping Label Id:") { remoteIdEditText ->
+                    if (remoteIdEditText.text.isEmpty()) {
+                        prependToLog("Remote Id is null so doing nothing")
+                        return@showSingleLineDialog
+                    }
+
+                    val remoteId = remoteIdEditText.text.toString().toLong()
+                    prependToLog("Submitting request to print shipping label for id $remoteId")
+
+                    coroutineScope.launch {
+                        try {
+                            val response = withContext(Dispatchers.Default) {
+                                // the paper size can be label, legal, letter
+                                // For the example app, the default is set as label
+                                wcShippingLabelStore.printShippingLabel(site, "label", remoteId)
+                            }
+                            response.error?.let {
+                                prependToLog("${it.type}: ${it.message}")
+                            }
+                            response.model?.let { base64Content ->
+                                // Since this function is used only by Woo testers and the Woo app
+                                // only supports API > 21, it's fine to add a check here to support devices
+                                // above API 19
+                                if (VERSION.SDK_INT >= VERSION_CODES.KITKAT) {
+                                    writePDFToFile(base64Content)?.let { openWebView(it) }
+                                }
+                            }
+                        } catch (e: Exception) {
+                            prependToLog("Error: ${e.message}")
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun showSiteSelectorDialog(selectedPos: Int, listener: StoreSelectorDialog.Listener) {
@@ -134,5 +190,63 @@ class WooShippingLabelFragment : Fragment() {
                 child.isEnabled = enabled
             }
         }
+    }
+
+    /**
+     * Creates a temporary file for storing captured photos
+     */
+    @RequiresApi(VERSION_CODES.KITKAT)
+    private fun createTempPdfFile(context: Context): File? {
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+        val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+        return try {
+            File.createTempFile(
+                    "PDF_${timeStamp}_",
+                    ".pdf",
+                    storageDir
+            )
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+            prependToLog("Error when creating temp file: ${ex.message}")
+            null
+        }
+    }
+
+    /**
+     * Since this function is used only by Woo testers and the Woo app
+     * only supports API > 21, it's fine to leave this method to support only
+     * API 19 and above.
+     */
+    @RequiresApi(VERSION_CODES.KITKAT)
+    private fun writePDFToFile(base64Content: String): File? {
+        return try {
+            createTempPdfFile(requireContext())?.let { file ->
+                val out = FileOutputStream(file)
+                val pdfAsBytes = Base64.decode(base64Content, 0)
+                out.write(pdfAsBytes)
+                out.flush()
+                out.close()
+                file
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            prependToLog("Error when writing pdf to file: ${e.message}")
+            null
+        }
+    }
+
+    private fun openWebView(file: File) {
+        val authority = requireContext().applicationContext.packageName + ".provider"
+        val fileUri = FileProvider.getUriForFile(
+                requireContext(),
+                authority,
+                file
+        )
+
+        val sendIntent = Intent(Intent.ACTION_VIEW)
+        sendIntent.setDataAndType(fileUri, "application/pdf")
+        sendIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        startActivity(sendIntent)
     }
 }
