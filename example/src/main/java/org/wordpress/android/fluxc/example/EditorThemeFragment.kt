@@ -62,8 +62,7 @@ class EditorThemeFragment : Fragment() {
             return
         }
 
-        val site = this.site ?: return
-        val theme = event.getEditorThemeForSite(site) ?: return
+        val theme = event.editorTheme ?: return
         logTheme(theme)
     }
 
@@ -74,8 +73,8 @@ class EditorThemeFragment : Fragment() {
     }
 
     private fun logTheme(theme: EditorTheme) {
-        val colors = theme.themeSupport.colors?.map { it.slug }?.joinToString(", ")
-        val gradients = theme.themeSupport.gradients?.map { it.slug }?.joinToString(", ")
-        prependToLog("Found: \n colors: ${colors} \n gradients: ${gradients}")
+        val colors = theme.themeSupport.colors?.map { it.slug }?.joinToString(",\n\t")
+        val gradients = theme.themeSupport.gradients?.map { it.slug }?.joinToString(",\n\t")
+        prependToLog("Found: \n colors:\n\t${colors}\n gradients:\n\t${gradients}")
     }
 }
