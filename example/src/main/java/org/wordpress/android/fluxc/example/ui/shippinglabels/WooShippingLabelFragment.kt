@@ -70,7 +70,7 @@ class WooShippingLabelFragment : Fragment() {
 
         fetch_shipping_labels.setOnClickListener {
             selectedSite?.let { site ->
-                showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
+                showSingleLineDialog(activity, "Enter the order ID:", isNumeric = true) { orderEditText ->
                     if (orderEditText.text.isEmpty()) {
                         prependToLog("OrderId is null so doing nothing")
                         return@showSingleLineDialog
@@ -100,14 +100,16 @@ class WooShippingLabelFragment : Fragment() {
 
         refund_shipping_label.setOnClickListener {
             selectedSite?.let { site ->
-                showSingleLineDialog(activity, "Enter the order ID:") { orderEditText ->
+                showSingleLineDialog(activity, "Enter the order ID:", isNumeric = true) { orderEditText ->
                     if (orderEditText.text.isEmpty()) {
                         prependToLog("OrderId is null so doing nothing")
                         return@showSingleLineDialog
                     }
 
                     val orderId = orderEditText.text.toString().toLong()
-                    showSingleLineDialog(activity, "Enter the remote shipping Label Id:") { remoteIdEditText ->
+                    showSingleLineDialog(
+                            activity, "Enter the remote shipping Label Id:", isNumeric = true
+                    ) { remoteIdEditText ->
                         if (remoteIdEditText.text.isEmpty()) {
                             prependToLog("Remote Id is null so doing nothing")
                             return@showSingleLineDialog
@@ -140,7 +142,9 @@ class WooShippingLabelFragment : Fragment() {
 
         print_shipping_label.setOnClickListener {
             selectedSite?.let { site ->
-                showSingleLineDialog(activity, "Enter the remote shipping Label Id:") { remoteIdEditText ->
+                showSingleLineDialog(
+                        activity, "Enter the remote shipping Label Id:", isNumeric = true
+                ) { remoteIdEditText ->
                     if (remoteIdEditText.text.isEmpty()) {
                         prependToLog("Remote Id is null so doing nothing")
                         return@showSingleLineDialog
