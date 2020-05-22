@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.EditorThemeActionBuilder
 import org.wordpress.android.fluxc.model.EditorTheme
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.persistence.EditorThemeSqlUtils
 import org.wordpress.android.fluxc.store.EditorThemeStore
 import org.wordpress.android.fluxc.store.EditorThemeStore.FetchEditorThemePayload
 import org.wordpress.android.fluxc.store.EditorThemeStore.OnEditorThemeChanged
@@ -41,7 +42,9 @@ class EditorThemeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        fetch_theme.setOnClickListener(::onClick)
+        fetch_theme.setOnClickListener(::onFetchThemeClick)
+        fetch_cached_theme.setOnClickListener(::onFetchCachedThemeClick)
+        clear_cache.setOnClickListener(::onDeleteCacheClick)
     }
 
     override fun onStart() {
@@ -64,17 +67,40 @@ class EditorThemeFragment : Fragment() {
 
         val theme = event.editorTheme ?: return
         logTheme(theme)
+        prependToLog("Fetched Theme")
     }
 
-    private fun onClick(@Suppress("UNUSED_PARAMETER") view: View?) {
+    private fun onFetchThemeClick(@Suppress("UNUSED_PARAMETER") view: View?) {
         val site = this.site ?: return
+        if (editorThemeStore.getEditorThemeForSite(site) != null) {
+            prependToLog("Has Cached Theme")
+        }
+
         val payload = FetchEditorThemePayload(site)
         dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
+        prependToLog("Fetching Theme")
+    }
+
+    private fun onDeleteCacheClick(@Suppress("UNUSED_PARAMETER") view: View?) {
+        val site = this.site ?: return
+        EditorThemeSqlUtils().deleteEditorThemeForSite(site)
+    }
+
+    private fun onFetchCachedThemeClick(@Suppress("UNUSED_PARAMETER") view: View?) {
+        val site = this.site ?: return
+        val theme = editorThemeStore.getEditorThemeForSite(site)
+
+        if (theme != null) {
+            logTheme(theme)
+            prependToLog("Found Cached Theme")
+        } else {
+            prependToLog("No theme Cached")
+        }
     }
 
     private fun logTheme(theme: EditorTheme) {
-        val colors = theme.themeSupport.colors?.map { it.slug }?.joinToString(",\n\t")
-        val gradients = theme.themeSupport.gradients?.map { it.slug }?.joinToString(",\n\t")
-        prependToLog("Found: \n colors:\n\t${colors}\n gradients:\n\t${gradients}")
+        val colors = theme.themeSupport.colors?.map { it.slug }?.joinToString(", ")
+        val gradients = theme.themeSupport.gradients?.map { it.slug }?.joinToString(",")
+        prependToLog("Found: \n colors: [${colors}] \n gradients: [${gradients}]")
     }
 }

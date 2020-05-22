@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".EditorThemeFragment">
 
     <Button
@@ -10,4 +11,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Fetch Theme From First Site" />
+
+    <Button
+        android:id="@+id/fetch_cached_theme"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch Cached Theme For First Site" />
+
+    <Button
+        android:id="@+id/clear_cache"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Clear Cache For First Site" />
 </LinearLayout>
