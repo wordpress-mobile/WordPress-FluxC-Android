@@ -101,6 +101,6 @@ class EditorThemeFragment : Fragment() {
     private fun logTheme(theme: EditorTheme) {
         val colors = theme.themeSupport.colors?.map { it.slug }?.joinToString(", ")
         val gradients = theme.themeSupport.gradients?.map { it.slug }?.joinToString(",")
-        prependToLog("Found: \n colors: [${colors}] \n gradients: [${gradients}]")
+        prependToLog("Found: \n colors: [$colors] \n gradients: [$gradients]")
     }
 }
