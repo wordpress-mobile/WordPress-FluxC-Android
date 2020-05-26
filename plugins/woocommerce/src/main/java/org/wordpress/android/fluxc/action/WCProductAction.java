@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.action;
 import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload;
@@ -13,6 +14,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload;
@@ -62,6 +64,8 @@ public enum WCProductAction implements IAction {
     FETCH_PRODUCT_PASSWORD,
     @Action(payloadType = UpdateProductPasswordPayload.class)
     UPDATE_PRODUCT_PASSWORD,
+    @Action(payloadType = FetchProductCategoriesPayload.class)
+    FETCH_PRODUCT_CATEGORIES,
 
 
     // Remote responses
@@ -93,4 +97,6 @@ public enum WCProductAction implements IAction {
     FETCHED_PRODUCT_PASSWORD,
     @Action(payloadType = RemoteUpdatedProductPasswordPayload.class)
     UPDATED_PRODUCT_PASSWORD,
+    @Action(payloadType = RemoteProductCategoriesPayload.class)
+    FETCHED_PRODUCT_CATEGORIES
 }
