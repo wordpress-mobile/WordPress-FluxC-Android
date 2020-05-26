@@ -28,3 +28,8 @@
 
 /taxes
 /taxes/classes/
+
+/connect/label/print
+/connect/label/<order_id>/
+/connect/label/<order_id>/<shippingLabelId>/
+/connect/label/<order_id>/<shippingLabelId>/refund
