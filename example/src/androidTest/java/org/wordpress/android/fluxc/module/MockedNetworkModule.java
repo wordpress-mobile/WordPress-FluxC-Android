@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.discovery.DiscoveryWPAPIRestClient;
 import org.wordpress.android.fluxc.network.discovery.DiscoveryXMLRPCClient;
 import org.wordpress.android.fluxc.network.discovery.SelfHostedEndpointFinder;
+import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder;
 import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AppSecrets;
@@ -20,16 +21,20 @@ import org.wordpress.android.fluxc.network.rest.wpcom.media.MediaRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostRestClient;
+import org.wordpress.android.fluxc.network.rest.wpcom.reactnative.ReactNativeWPComRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.SiteRestClient;
 import org.wordpress.android.fluxc.network.wporg.plugin.PluginWPOrgClient;
 import org.wordpress.android.fluxc.network.xmlrpc.media.MediaXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.post.PostXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.site.SiteXMLRPCClient;
 
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import kotlin.coroutines.CoroutineContext;
+import kotlinx.coroutines.Dispatchers;
 import okhttp3.OkHttpClient;
 
 @Module
@@ -58,6 +63,49 @@ public class MockedNetworkModule {
     @Provides
     public RequestQueue provideRequestQueue(OkHttpClient.Builder okHttpClientBuilder, Context appContext) {
         return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClientBuilder));
+    }
+
+    @Singleton
+    @Named("regular")
+    @Provides
+    public RequestQueue provideRegularRequestQueue(OkHttpClient.Builder okHttpClientBuilder,
+                                            Context appContext) {
+        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClientBuilder));
+    }
+
+    @Singleton
+    @Named("custom-ssl")
+    @Provides
+    public RequestQueue provideCustomRequestQueue(OkHttpClient.Builder okHttpClientBuilder,
+                                                   Context appContext) {
+        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClientBuilder));
+    }
+
+    @Singleton
+    @Provides
+    public ReactNativeWPComRestClient providesReactNativeWPComRestClient(
+            WPComGsonRequestBuilder wpComGsonRequestBuilder,
+            Context appContext,
+            Dispatcher dispatcher,
+            @Named("regular") RequestQueue requestQueue,
+            AccessToken accessToken,
+            UserAgent userAgent) {
+        ReactNativeWPComRestClient reactNativeWPComRestClient = new ReactNativeWPComRestClient(
+                wpComGsonRequestBuilder,
+                appContext,
+                dispatcher,
+                requestQueue,
+                accessToken,
+                userAgent);
+
+        reactNativeWPComRestClient.setEnableCaching(false);
+        return reactNativeWPComRestClient;
+    }
+
+    @Singleton
+    @Provides
+    public CoroutineContext provideCoroutineContext() {
+        return Dispatchers.getDefault();
     }
 
     @Singleton

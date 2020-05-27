@@ -32,4 +32,5 @@ public interface MockedNetworkAppComponent {
     void inject(MockedStack_WCOrdersTest object);
     void inject(MockedStack_WCProductsTest object);
     void inject(MockedStack_WCStatsTest object);
+    void inject(MockedStack_EditorThemeStoreTest object);
 }
