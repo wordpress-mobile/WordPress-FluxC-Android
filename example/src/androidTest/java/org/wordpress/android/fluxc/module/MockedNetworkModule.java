@@ -83,27 +83,6 @@ public class MockedNetworkModule {
 
     @Singleton
     @Provides
-    public ReactNativeWPComRestClient providesReactNativeWPComRestClient(
-            WPComGsonRequestBuilder wpComGsonRequestBuilder,
-            Context appContext,
-            Dispatcher dispatcher,
-            @Named("regular") RequestQueue requestQueue,
-            AccessToken accessToken,
-            UserAgent userAgent) {
-        ReactNativeWPComRestClient reactNativeWPComRestClient = new ReactNativeWPComRestClient(
-                wpComGsonRequestBuilder,
-                appContext,
-                dispatcher,
-                requestQueue,
-                accessToken,
-                userAgent);
-
-        reactNativeWPComRestClient.setEnableCaching(false);
-        return reactNativeWPComRestClient;
-    }
-
-    @Singleton
-    @Provides
     public CoroutineContext provideCoroutineContext() {
         return Dispatchers.getDefault();
     }
