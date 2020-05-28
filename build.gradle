@@ -70,7 +70,7 @@ subprojects {
 
 ext {
     daggerVersion = '2.22.1'
-    wellSqlVersion = '1.5.0'
+    wellSqlVersion = '1.6.0'
     supportLibraryVersion = '27.1.1'
     arch_paging_version = '1.0.1'
     arch_lifecycle_version = '1.1.1'

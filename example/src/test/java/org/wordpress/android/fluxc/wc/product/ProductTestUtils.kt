@@ -2,10 +2,13 @@ package org.wordpress.android.fluxc.wc.product
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import org.wordpress.android.fluxc.UnitTestUtils
+import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductCategoryApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductReviewApiResponse
 
 object ProductTestUtils {
@@ -62,16 +65,31 @@ object ProductTestUtils {
         return converted.map {
             WCProductReviewModel().apply {
                 localSiteId = siteId
-                remoteProductReviewId = it.id ?: 0L
-                remoteProductId = it.product_id ?: 0L
+                remoteProductReviewId = it.id
+                remoteProductId = it.product_id
                 dateCreated = it.date_created_gmt?.let { "${it}Z" } ?: ""
                 status = it.status ?: ""
                 reviewerName = it.reviewer ?: ""
                 reviewerEmail = it.reviewer_email ?: ""
                 review = it.review ?: ""
-                rating = it.rating ?: 0
-                verified = it.verified ?: false
+                rating = it.rating
+                verified = it.verified
                 reviewerAvatarsJson = it.reviewer_avatar_urls.toString()
+            }
+        }
+    }
+
+    fun getProductCategories(siteId: Int): List<WCProductCategoryModel> {
+        val categoryJson = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/product-categories.json")
+        val responseType = object : TypeToken<List<ProductCategoryApiResponse>>() {}.type
+        val converted = Gson().fromJson(categoryJson, responseType) as? List<ProductCategoryApiResponse> ?: emptyList()
+        return converted.map {
+            WCProductCategoryModel().apply {
+                localSiteId = siteId
+                remoteCategoryId = it.id
+                name = it.name ?: ""
+                slug = it.slug ?: ""
+                parent = it.parent ?: 0L
             }
         }
     }

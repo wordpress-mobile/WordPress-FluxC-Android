@@ -14,6 +14,9 @@
 /products/reviews/
 /products/reviews/<id>/
 
+/products/categories/
+/products/categories/<id>/
+
 /reports/orders/totals/
 /reports/revenue/stats/
 
@@ -28,3 +31,8 @@
 
 /taxes
 /taxes/classes/
+
+/connect/label/print
+/connect/label/<order_id>/
+/connect/label/<order_id>/<shippingLabelId>/
+/connect/label/<order_id>/<shippingLabelId>/refund
