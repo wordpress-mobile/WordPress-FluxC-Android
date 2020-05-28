@@ -265,8 +265,8 @@ class WooUpdateProductFragment : Fragment() {
             selectedRemoteProductId = bundle.getLong(ARG_SELECTED_PRODUCT_ID)
             selectedSitePosition = bundle.getInt(ARG_SELECTED_SITE_POS)
             selectedCategories = bundle.getParcelableArrayList(ARG_SELECTED_CATEGORIES)
+            selectedRemoteProductId?.let { updateSelectedProductId(it) }
         }
-        selectedRemoteProductId?.let { updateSelectedProductId(it) }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

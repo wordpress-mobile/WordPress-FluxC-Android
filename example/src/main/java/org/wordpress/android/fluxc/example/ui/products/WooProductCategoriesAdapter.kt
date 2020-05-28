@@ -59,7 +59,6 @@ class WooProductCategoriesAdapter(
 
     fun setProductCategories(productsCategories: List<ProductCategoryViewHolderModel>) {
         if (productCategoryList.isEmpty()) {
-            productCategoryList.clear()
             productCategoryList.addAll(productsCategories)
             notifyDataSetChanged()
         } else {
