@@ -1018,7 +1018,7 @@ class ProductRestClient(
             "woocommerce_rest_review_invalid_id" -> ProductErrorType.INVALID_REVIEW_ID
             "woocommerce_product_invalid_image_id" -> ProductErrorType.INVALID_IMAGE_ID
             "product_invalid_sku" -> ProductErrorType.DUPLICATE_SKU
-            "term_exists" -> ProductErrorType.DUPLICATE_CATEGORY_NAME
+            "term_exists" -> ProductErrorType.TERM_EXISTS
             else -> ProductErrorType.fromString(wpComError.apiError)
         }
         return ProductError(productErrorType, wpComError.message)

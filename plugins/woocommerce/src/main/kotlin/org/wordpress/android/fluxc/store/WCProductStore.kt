@@ -149,7 +149,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         INVALID_REVIEW_ID,
         INVALID_IMAGE_ID,
         DUPLICATE_SKU,
-        DUPLICATE_CATEGORY_NAME,
+        TERM_EXISTS, // indicates duplicate term name. Currently only used when adding product categories
         GENERIC_ERROR;
 
         companion object {
