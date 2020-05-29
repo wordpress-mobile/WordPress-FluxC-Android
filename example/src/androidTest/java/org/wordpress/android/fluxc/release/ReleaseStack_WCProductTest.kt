@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.MediaActionBuilder
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
+import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStatus
@@ -22,6 +23,7 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
@@ -45,6 +47,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatu
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
+import kotlin.random.Random
 
 class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     internal enum class TestEvent {
@@ -61,7 +64,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         UPDATED_PRODUCT_REVIEW_STATUS,
         UPDATED_PRODUCT_IMAGES,
         UPDATED_PRODUCT_PASSWORD,
-        FETCH_PRODUCT_CATEGORIES
+        FETCH_PRODUCT_CATEGORIES,
+        ADDED_PRODUCT_CATEGORY
     }
 
     @Inject internal lateinit var productStore: WCProductStore
@@ -230,6 +234,31 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         // Verify results
         val fetchAllCategories = productStore.getProductCategoriesForSite(sSite)
         assertTrue(fetchAllCategories.isNotEmpty())
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun testAddProductCategory() {
+        // Remove all product categories from the database
+        ProductSqlUtils.deleteAllProductCategories()
+        assertEquals(0, ProductSqlUtils.getProductCategoriesForSite(sSite).size)
+
+        nextEvent = TestEvent.ADDED_PRODUCT_CATEGORY
+        mCountDownLatch = CountDownLatch(1)
+
+        val productCategoryModel = WCProductCategoryModel().apply {
+            // duplicate category names fail in the API level so added a random number next to the "Test"
+            name = "Test" + Random.nextInt(0, 10000)
+        }
+        mDispatcher.dispatch(WCProductActionBuilder.newAddProductCategoryAction(
+                AddProductCategoryPayload(sSite, productCategoryModel))
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify results
+        val fetchAllCategories = productStore.getProductCategoriesForSite(sSite)
+        assertTrue(fetchAllCategories.isNotEmpty())
+        assertTrue(fetchAllCategories.size == 1)
     }
 
     @Throws(InterruptedException::class)
@@ -655,6 +684,10 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         when (event.causeOfChange) {
             WCProductAction.FETCH_PRODUCT_CATEGORIES -> {
                 assertEquals(TestEvent.FETCH_PRODUCT_CATEGORIES, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            WCProductAction.ADDED_PRODUCT_CATEGORY -> {
+                assertEquals(TestEvent.ADDED_PRODUCT_CATEGORY, nextEvent)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)

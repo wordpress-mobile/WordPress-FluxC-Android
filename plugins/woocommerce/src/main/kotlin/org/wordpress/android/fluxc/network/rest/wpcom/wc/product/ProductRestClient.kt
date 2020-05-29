@@ -44,6 +44,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPasswordPayload
@@ -551,6 +552,43 @@ class ProductRestClient(
     }
 
     /**
+     * Posts a new Add Category record to the API for a category.
+     *
+     * Makes a POST call `/wc/v3/products/categories/id` to save a Category record via the Jetpack tunnel.
+     * Returns a [WCProductCategoryModel] on successful response.
+     *
+     * Dispatches [WCProductAction.ADDED_PRODUCT_CATEGORY] action with the results.
+     */
+    fun addProductCategory(
+        site: SiteModel,
+        category: WCProductCategoryModel
+    ) {
+        val url = WOOCOMMERCE.products.categories.pathV3
+
+        val responseType = object : TypeToken<ProductCategoryApiResponse>() {}.type
+        val params = mutableMapOf(
+                "name" to category.name,
+                "parent" to category.parent.toString()
+        )
+        val request = JetpackTunnelGsonRequest.buildPostRequest(url, site.siteId, params, responseType,
+                { response: ProductCategoryApiResponse? ->
+                    val categoryResponse = response?.let {
+                        productCategoryResponseToProductCategoryModel(it).apply {
+                            localSiteId = site.id
+                        }
+                    }
+                    val payload = RemoteAddProductCategoryResponsePayload(site, categoryResponse)
+                    dispatcher.dispatch(WCProductActionBuilder.newAddedProductCategoryAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val productCategorySaveError = networkErrorToProductError(networkError)
+                    val payload = RemoteAddProductCategoryResponsePayload(productCategorySaveError, site, category)
+                    dispatcher.dispatch(WCProductActionBuilder.newAddedProductCategoryAction(payload))
+                })
+        add(request)
+    }
+
+    /**
      * Makes a GET call to `/wc/v3/products/reviews` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of product reviews for a given WooCommerce [SiteModel].
      *
@@ -980,6 +1018,7 @@ class ProductRestClient(
             "woocommerce_rest_review_invalid_id" -> ProductErrorType.INVALID_REVIEW_ID
             "woocommerce_product_invalid_image_id" -> ProductErrorType.INVALID_IMAGE_ID
             "product_invalid_sku" -> ProductErrorType.DUPLICATE_SKU
+            "term_exists" -> ProductErrorType.TERM_EXISTS
             else -> ProductErrorType.fromString(wpComError.apiError)
         }
         return ProductError(productErrorType, wpComError.message)
