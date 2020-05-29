@@ -148,8 +148,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                 }
             } catch (e: JsonParseException) {
                 AppLog.e(T.API, e)
-            }
-            catch (e: IllegalStateException) {
+            } catch (e: IllegalStateException) {
                 AppLog.e(T.API, e)
             }
         }
