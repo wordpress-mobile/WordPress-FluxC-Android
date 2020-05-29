@@ -131,6 +131,20 @@
             android:text="Load More Shipping classes" />
 
         <Button
+            android:id="@+id/fetch_product_categories"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Product Categories"/>
+
+        <Button
+            android:id="@+id/load_more_product_categories"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text="Load More Product Categories" />
+
+        <Button
             android:id="@+id/update_product_images"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

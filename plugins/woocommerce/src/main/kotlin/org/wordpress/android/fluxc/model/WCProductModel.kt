@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.model
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
 import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
@@ -97,7 +98,15 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var width = ""
     @Column var height = ""
 
-    class ProductTriplet(val id: Long, val name: String, val slug: String)
+    class ProductTriplet(val id: Long, val name: String, val slug: String) {
+        fun toJson(): JsonObject {
+            return JsonObject().also { json ->
+                json.addProperty("id", id)
+                json.addProperty("name", name)
+                json.addProperty("slug", slug)
+            }
+        }
+    }
 
     class ProductAttribute(val id: Long, val name: String, val visible: Boolean, val options: List<String>) {
         fun getCommaSeparatedOptions(): String {
@@ -125,7 +134,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      */
     fun getImages(): ArrayList<WCProductImageModel> {
         val imageList = ArrayList<WCProductImageModel>()
-        if (!images.isEmpty()) {
+        if (images.isNotEmpty()) {
             try {
                 Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
                     with(jsonElement.asJsonObject) {
@@ -251,15 +260,17 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     private fun getTriplets(jsonStr: String): ArrayList<ProductTriplet> {
         val triplets = ArrayList<ProductTriplet>()
         try {
-            Gson().fromJson<JsonElement>(jsonStr, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                with(jsonElement.asJsonObject) {
-                    triplets.add(
-                            ProductTriplet(
-                                    id = this.getLong("id"),
-                                    name = this.getString("name") ?: "",
-                                    slug = this.getString("slug") ?: ""
-                            )
-                    )
+            if (jsonStr.isNotEmpty()) {
+                Gson().fromJson<JsonElement>(jsonStr, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+                    with(jsonElement.asJsonObject) {
+                        triplets.add(
+                                ProductTriplet(
+                                        id = this.getLong("id"),
+                                        name = this.getString("name") ?: "",
+                                        slug = this.getString("slug") ?: ""
+                                )
+                        )
+                    }
                 }
             }
         } catch (e: JsonParseException) {
@@ -280,6 +291,24 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         }
         for (i in thisImages.indices) {
             if (thisImages[i].id != updatedImages[i].id) {
+                return false
+            }
+        }
+        return true
+    }
+
+    /**
+     * Compares this product's categories with the passed product's categories, returns true only if both
+     * lists contain the same categories in the same order
+     */
+    fun hasSameCategories(updatedProduct: WCProductModel): Boolean {
+        val updatedCategories = updatedProduct.getCategories()
+        val storedCategories = getCategories()
+        if (storedCategories.size != updatedCategories.size) {
+            return false
+        }
+        for (i in storedCategories.indices) {
+            if (storedCategories[i].id != updatedCategories[i].id) {
                 return false
             }
         }

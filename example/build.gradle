@@ -81,6 +81,10 @@ android.buildTypes.all { buildType ->
     }
 }
 
+androidExtensions {
+    experimental = true
+}
+
 dependencies {
     implementation project(':fluxc')
     implementation project(':plugins:woocommerce')

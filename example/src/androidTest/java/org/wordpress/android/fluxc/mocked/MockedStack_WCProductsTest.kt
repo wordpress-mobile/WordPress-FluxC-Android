@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
@@ -662,6 +663,43 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val productAfter = ProductSqlUtils.getProductByRemoteId(siteModel, remoteProductId)
         assertNotNull(productAfter)
         assertEquals(productAfter!!.getImages().size, 1)
+    }
+
+    @Test
+    fun testFetchProductCategoriesSuccess() {
+        interceptor.respondWith("wc-fetch-all-product-categories-response-success.json")
+        productRestClient.fetchProductCategories(siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_PRODUCT_CATEGORIES, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductCategoriesPayload
+        assertFalse(payload.isError)
+        assertEquals(siteModel.id, payload.site.id)
+        assertEquals(7, payload.categories.size)
+        assertFalse(payload.loadedMore)
+        assertFalse(payload.canLoadMore)
+
+        // Save product categories to the database
+        assertEquals(7, ProductSqlUtils.insertOrUpdateProductCategories(payload.categories))
+        assertEquals(
+                7,
+                ProductSqlUtils.getProductCategoriesForSite(siteModel).size)
+    }
+
+    @Test
+    fun testFetchProductCategoriesFailed() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        productRestClient.fetchProductCategories(siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_PRODUCT_CATEGORIES, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductCategoriesPayload
+        assertTrue(payload.isError)
+        assertEquals(ProductErrorType.GENERIC_ERROR, payload.error.type)
     }
 
     @Suppress("unused")
