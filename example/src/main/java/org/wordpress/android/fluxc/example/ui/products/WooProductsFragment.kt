@@ -12,6 +12,7 @@ import kotlinx.android.synthetic.main.fragment_woo_products.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.action.WCProductAction.ADDED_PRODUCT_CATEGORY
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCTS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_CATEGORIES
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_REVIEWS
@@ -27,9 +28,11 @@ import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
@@ -257,6 +260,23 @@ class WooProductsFragment : Fragment() {
             }
         }
 
+        add_product_category.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter a catrgory name:"
+                ) { editText ->
+                    val categoryName = editText.text.toString()
+                    if (categoryName.isNotEmpty()) {
+                        prependToLog("Submitting request to add product category")
+                        val wcProductCategoryModel = WCProductCategoryModel().apply { name = categoryName }
+                        val payload = AddProductCategoryPayload(site, wcProductCategoryModel)
+                        dispatcher.dispatch(WCProductActionBuilder.newAddProductCategoryAction(payload))
+                    } else prependToLog("No category name entered...doing nothing")
+                }
+            }
+        }
+
         update_product_images.setOnClickListener {
             showSingleLineDialog(
                     activity,
@@ -414,6 +434,9 @@ class WooProductsFragment : Fragment() {
                         load_more_product_categories.isEnabled = false
                     }
                 }
+                ADDED_PRODUCT_CATEGORY -> {
+                    prependToLog("${event.rowsAffected} product category added")
+                } else -> { }
             }
         }
     }

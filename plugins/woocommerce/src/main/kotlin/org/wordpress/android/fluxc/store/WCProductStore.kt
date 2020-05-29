@@ -139,11 +139,17 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var productCategorySorting: ProductCategorySorting = DEFAULT_CATEGORY_SORTING
     ) : Payload<BaseNetworkError>()
 
+    class AddProductCategoryPayload(
+        val site: SiteModel,
+        val category: WCProductCategoryModel
+    ) : Payload<BaseNetworkError>()
+
     enum class ProductErrorType {
         INVALID_PARAM,
         INVALID_REVIEW_ID,
         INVALID_IMAGE_ID,
         DUPLICATE_SKU,
+        TERM_EXISTS, // indicates duplicate term name. Currently only used when adding product categories
         GENERIC_ERROR;
 
         companion object {
@@ -361,6 +367,17 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         }
     }
 
+    class RemoteAddProductCategoryResponsePayload(
+        val site: SiteModel,
+        val category: WCProductCategoryModel?
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            site: SiteModel,
+            category: WCProductCategoryModel?
+        ) : this(site, category) { this.error = error }
+    }
+
     // OnChanged events
     class OnProductChanged(
         var rowsAffected: Int,
@@ -541,6 +558,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 updateProductPassword(action.payload as UpdateProductPasswordPayload)
             WCProductAction.FETCH_PRODUCT_CATEGORIES ->
                 fetchProductCategories(action.payload as FetchProductCategoriesPayload)
+            WCProductAction.ADD_PRODUCT_CATEGORY ->
+                addProductCategory(action.payload as AddProductCategoryPayload)
 
             // remote responses
             WCProductAction.FETCHED_SINGLE_PRODUCT ->
@@ -573,6 +592,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 handleUpdatedProductPasswordCompleted(action.payload as RemoteUpdatedProductPasswordPayload)
             WCProductAction.FETCHED_PRODUCT_CATEGORIES ->
                 handleFetchProductCategories(action.payload as RemoteProductCategoriesPayload)
+            WCProductAction.ADDED_PRODUCT_CATEGORY ->
+                handleAddProductCategory(action.payload as RemoteAddProductCategoryResponsePayload)
         }
     }
 
@@ -639,6 +660,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     private fun fetchProductCategories(payloadProduct: FetchProductCategoriesPayload) {
         with(payloadProduct) { wcProductRestClient.fetchProductCategories(
                 site, pageSize, offset, productCategorySorting) }
+    }
+
+    private fun addProductCategory(payload: AddProductCategoryPayload) {
+        with(payload) { wcProductRestClient.addProductCategory(site, category) }
     }
 
     private fun updateProduct(payload: UpdateProductPayload) {
@@ -878,6 +903,20 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         }
 
         onProductCategoryChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_CATEGORIES
+        emitChange(onProductCategoryChanged)
+    }
+
+    private fun handleAddProductCategory(payload: RemoteAddProductCategoryResponsePayload) {
+        val onProductCategoryChanged: OnProductCategoryChanged
+
+        if (payload.isError) {
+            onProductCategoryChanged = OnProductCategoryChanged(0).also { it.error = payload.error }
+        } else {
+            val rowsAffected = payload.category?.let { ProductSqlUtils.insertOrUpdateProductCategory(it) } ?: 0
+            onProductCategoryChanged = OnProductCategoryChanged(rowsAffected)
+        }
+
+        onProductCategoryChanged.causeOfChange = WCProductAction.ADDED_PRODUCT_CATEGORY
         emitChange(onProductCategoryChanged)
     }
 }

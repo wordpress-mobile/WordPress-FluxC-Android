@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
@@ -21,6 +22,7 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
@@ -663,6 +665,27 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val productAfter = ProductSqlUtils.getProductByRemoteId(siteModel, remoteProductId)
         assertNotNull(productAfter)
         assertEquals(productAfter!!.getImages().size, 1)
+    }
+
+    @Test
+    fun testAddProductCategorySuccess() {
+        interceptor.respondWith("wc-add-product-category-response-success.json")
+
+        val productCategoryModel = WCProductCategoryModel().apply { name = "test12" }
+        productRestClient.addProductCategory(siteModel, productCategoryModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.ADDED_PRODUCT_CATEGORY, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteAddProductCategoryResponsePayload
+        assertFalse(payload.isError)
+        assertEquals(siteModel.id, payload.site.id)
+        assertEquals(productCategoryModel.name, payload.category?.name)
+
+        // Save product categories to the database
+        assertEquals(1, ProductSqlUtils.insertOrUpdateProductCategory(payload.category!!))
+        assertEquals(1, ProductSqlUtils.getProductCategoriesForSite(siteModel).size)
     }
 
     @Test
