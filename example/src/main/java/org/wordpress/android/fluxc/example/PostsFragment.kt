@@ -46,9 +46,9 @@ class PostsFragment : Fragment() {
 
         create_new_post_first_site.setOnClickListener {
             val examplePost = postStore.instantiatePostModel(getFirstSite(), false)
-            examplePost.title = "From example activity"
-            examplePost.content = "Hi there, I'm a post from FluxC!"
-            examplePost.featuredImageId = 0
+            examplePost.setTitle("From example activity")
+            examplePost.setContent("Hi there, I'm a post from FluxC!")
+            examplePost.setFeaturedImageId(0)
             val payload = RemotePostPayload(examplePost, getFirstSite())
             dispatcher.dispatch(PostActionBuilder.newPushPostAction(payload))
         }

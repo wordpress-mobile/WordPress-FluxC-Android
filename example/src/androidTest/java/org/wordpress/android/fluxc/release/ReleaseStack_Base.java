@@ -41,16 +41,22 @@ public class ReleaseStack_Base {
 
     @Before
     public void setUp() throws Exception {
+        setUp(true);
+    }
+
+    protected void setUp(boolean reset) throws Exception {
         // Needed for Mockito
         System.setProperty("dexmaker.dexcache", getInstrumentation().getTargetContext().getCacheDir().getPath());
         mAppContext = getInstrumentation().getTargetContext().getApplicationContext();
 
         mReleaseStackAppComponent = DaggerReleaseStack_AppComponent.builder()
-                .appContextModule(new AppContextModule(mAppContext))
-                .build();
+                                                                   .appContextModule(new AppContextModule(mAppContext))
+                                                                   .build();
         WellSqlConfig config = new WellSqlConfig(mAppContext, WellSqlConfig.ADDON_WOOCOMMERCE);
         WellSql.init(config);
-        config.reset();
+
+        // There are some suites that do not require the db to the be reset before each test
+        if (reset) config.reset();
     }
 
     @After

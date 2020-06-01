@@ -107,7 +107,7 @@ Say hello on our [Slack][6] channel: `#mobile`.
 
 WordPress-FluxC-Android is an Open Source project covered by the [GNU General Public License version 2](LICENSE.md).
 
-[1]: https://facebook.github.io/flux/docs/overview.html
+[1]: https://facebook.github.io/flux/docs/overview/
 [2]: https://google.github.io/dagger/
 [3]: https://github.com/yarolegovich/wellsql
 [4]: https://github.com/wordpress-mobile/WordPress-FluxC-Android/blob/ba9dd84c54b12d53e01dfdb8efb4a18ed8343311/fluxc/src/main/java/org/wordpress/android/fluxc/store/SiteStore.java

@@ -274,6 +274,26 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         assertEquals(null, comment);
     }
 
+    @Test
+    public void testCommentResponseContainsURL() throws InterruptedException {
+        // New Comment
+        createNewComment();
+
+        // Edit comment instance
+        mNewComment.setContent("Trying with: " + (new Random()).nextFloat() * 10 + " gigawatts");
+
+        // Create new Comment
+        mNextEvent = TestEvents.COMMENT_CHANGED;
+        RemoteCreateCommentPayload payload = new RemoteCreateCommentPayload(sSite, mPosts.get(0), mNewComment);
+        mCountDownLatch = new CountDownLatch(1);
+        mDispatcher.dispatch(CommentActionBuilder.newCreateNewCommentAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+
+        // Check the new comment response contains URL
+        CommentModel comment = mCommentStore.getCommentByLocalId(mNewComment.getId());
+        assertNotNull(comment.getUrl());
+    }
+
     // OnChanged Events
 
     @SuppressWarnings("unused")

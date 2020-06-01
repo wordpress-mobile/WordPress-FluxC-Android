@@ -196,6 +196,7 @@ class OrderSqlUtilsTest {
         assertEquals(firstOptionDb.localSiteId, firstOption.id)
         assertEquals(firstOptionDb.statusKey, firstOption.statusKey)
         assertEquals(firstOptionDb.label, firstOption.label)
+        assertEquals(firstOptionDb.statusCount, firstOption.statusCount)
 
         // Save full list, but only all but the first 2 should be inserted
         rowsAffected = orderStatusOptions.sumBy { OrderSqlUtils.insertOrUpdateOrderStatusOption(it) }
@@ -210,6 +211,7 @@ class OrderSqlUtilsTest {
             it.statusKey == firstOption.statusKey
         }
         assertEquals(firstOption.label, newFirstOption.label)
+        assertEquals(firstOption.statusCount, newFirstOption.statusCount)
 
         // Get order status options from the database
         val orderStatusOptionsDb = OrderSqlUtils.getOrderStatusOptionsForSite(siteModel)
@@ -253,6 +255,7 @@ class OrderSqlUtilsTest {
         val firstOption = OrderSqlUtils.getOrderStatusOptionForSiteByKey(siteModel, orderStatusOptions[0].statusKey)
         assertNotNull(firstOption)
         assertEquals(firstOption.label, orderStatusOptions[0].label)
+        assertEquals(firstOption.statusCount, orderStatusOptions[0].statusCount)
     }
 
     @Test
@@ -472,5 +475,26 @@ class OrderSqlUtilsTest {
         summariesDb = OrderSqlUtils
                 .getOrderSummariesForRemoteIds(site, summaryList.map { RemoteId(it.remoteOrderId) })
         assertEquals(0, summariesDb.size)
+    }
+
+    @Test
+    fun testGetOrderSummariesByRemoteIds() {
+        // Arrange:
+        // - Create a list of 300 WCOrderSummaryModel's
+        val site = OrderTestUtils.getAndSaveTestSite()
+        val summaryList = OrderTestUtils.getTestOrderSummaryExtendedList(site).sortedByDescending { it.id }
+
+        // Act:
+        // - Save 300 order summaries to the db
+        OrderSqlUtils.insertOrUpdateOrderSummaries(summaryList)
+
+        // Assert:
+        // - Query for the 300 order summary records from the database
+        // - Verify all records fetched successfully
+        // - Verify list saved to db matches list fetched from db
+        val summariesDb = OrderSqlUtils
+                .getOrderSummariesForRemoteIds(site, summaryList.map { RemoteId(it.remoteOrderId) }).sortedBy { it.id }
+        assertEquals(300, summariesDb.size)
+        assertEquals(summaryList, summariesDb)
     }
 }

@@ -9,9 +9,11 @@ import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMV2
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCNewVisitorStatsModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
 import org.wordpress.android.fluxc.model.WCTopEarnerModel
+import org.wordpress.android.fluxc.model.WCVisitorStatsModel
 import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -20,7 +22,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErro
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchNewVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
+import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
@@ -62,6 +66,22 @@ class OrderStatsRestClient(
             fun convertToRevenueStatsInterval(granularity: StatsGranularity): OrderStatsApiUnit {
                 return when (granularity) {
                     StatsGranularity.DAYS -> HOUR
+                    StatsGranularity.WEEKS -> DAY
+                    StatsGranularity.MONTHS -> DAY
+                    StatsGranularity.YEARS -> MONTH
+                }
+            }
+
+            /**
+             * Based on the design changes, when:
+             *  `Today` tab is selected: [OrderStatsApiUnit] field passed to the visitor stats API should be [DAY]
+             *  `This week` tab is selected: [OrderStatsApiUnit] field passed to the visitor stats API should be [DAY]
+             *  `This month` tab is selected: [OrderStatsApiUnit] field passed to the visitor stats API should be [DAY]
+             *  `This year` tab is selected: [OrderStatsApiUnit] field passed to the visitor stats API should be [MONTH]
+             */
+            fun convertToVisitorsStatsApiUnit(granularity: StatsGranularity): OrderStatsApiUnit {
+                return when (granularity) {
+                    StatsGranularity.DAYS -> DAY
                     StatsGranularity.WEEKS -> DAY
                     StatsGranularity.MONTHS -> DAY
                     StatsGranularity.YEARS -> MONTH
@@ -161,7 +181,7 @@ class OrderStatsRestClient(
         perPage: Int,
         force: Boolean = false
     ) {
-        val url = WOOCOMMERCE.reports.revenue.stats.pathV4
+        val url = WOOCOMMERCE.reports.revenue.stats.pathV4Analytics
         val responseType = object : TypeToken<RevenueStatsApiResponse>() {}.type
         val params = mapOf(
                 "interval" to OrderStatsApiUnit.convertToRevenueStatsInterval(granularity).toString(),
@@ -203,12 +223,49 @@ class OrderStatsRestClient(
         add(request)
     }
 
+    /**
+     * Makes a GET call to `/wc/v4/reports/revenue/stats`, to check if the site supports the v4 stats api.
+     * If v4 stats is not available for the site, returns [OrderStatsErrorType.PLUGIN_NOT_ACTIVE]
+     *
+     * @param[site] the site to fetch stats data for
+     * @param[startDate] the current date to include in ISO format (YYYY-MM-dd'T'HH:mm:ss)
+     *
+     * Since only the response code is needed to verify if the v4 stats is supported or not,
+     * this method has been optimised:
+     * The interval param is set to [OrderStatsApiUnit.YEAR] by default
+     * The after param is set to the current date by default
+     * The _fields param is added to retrieve only the `Totals` field from the api
+     */
+    fun fetchRevenueStatsAvailability(site: SiteModel, startDate: String) {
+        val url = WOOCOMMERCE.reports.revenue.stats.pathV4Analytics
+        val responseType = object : TypeToken<RevenueStatsApiResponse>() {}.type
+        val params = mapOf(
+                "interval" to OrderStatsApiUnit.YEAR.toString(),
+                "after" to startDate,
+                "_fields" to "totals")
+
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: RevenueStatsApiResponse? ->
+                    val payload = FetchRevenueStatsAvailabilityResponsePayload(site, true)
+                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAvailabilityAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val orderError = networkErrorToOrderError(networkError)
+                    val payload = FetchRevenueStatsAvailabilityResponsePayload(orderError, site, false)
+                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedRevenueStatsAvailabilityAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
     fun fetchVisitorStats(
         site: SiteModel,
         unit: OrderStatsApiUnit,
         date: String,
         quantity: Int,
-        force: Boolean = false
+        force: Boolean = false,
+        startDate: String? = null,
+        endDate: String? = null
     ) {
         val url = WPCOMREST.sites.site(site.siteId).stats.visits.urlV1_1
         val params = mapOf(
@@ -219,12 +276,20 @@ class OrderStatsRestClient(
         val request = WPComGsonRequest
                 .buildGetRequest(url, params, VisitorStatsApiResponse::class.java,
                         { response ->
-                            val visits = getVisitorsFromResponse(response)
-                            val payload = FetchVisitorStatsResponsePayload(
-                                    site = site,
-                                    apiUnit = unit,
-                                    visits = visits
-                            )
+                            val model = WCVisitorStatsModel().apply {
+                                this.localSiteId = site.id
+                                this.unit = unit.toString()
+                                this.fields = response.fields.toString()
+                                this.data = response.data.toString()
+                                this.quantity = quantity.toString()
+                                this.date = date
+                                endDate?.let { this.endDate = it }
+                                startDate?.let {
+                                    this.startDate = startDate
+                                    this.isCustomField = true
+                                }
+                            }
+                            val payload = FetchVisitorStatsResponsePayload(site, unit, model)
                             mDispatcher.dispatch(WCStatsActionBuilder.newFetchedVisitorStatsAction(payload))
                         },
                         { networkError ->
@@ -239,17 +304,51 @@ class OrderStatsRestClient(
         add(request)
     }
 
-    /**
-     * Returns the number of visitors from the VisitorStatsApiResponse data, which is an array of items for
-     * each period, the first element of which contains the date and the second contains the visitor count
-     */
-    private fun getVisitorsFromResponse(response: VisitorStatsApiResponse): Int {
-        return try {
-            response.data?.asJsonArray?.map { it.asJsonArray?.get(1)?.asInt ?: 0 }?.sum() ?: 0
-        } catch (e: Exception) {
-            AppLog.e(T.API, "${e.javaClass.simpleName} parsing visitor stats", e)
-            0
-        }
+    fun fetchNewVisitorStats(
+        site: SiteModel,
+        unit: OrderStatsApiUnit,
+        granularity: StatsGranularity,
+        date: String,
+        quantity: Int,
+        force: Boolean = false,
+        startDate: String? = null,
+        endDate: String? = null
+    ) {
+        val url = WPCOMREST.sites.site(site.siteId).stats.visits.urlV1_1
+        val params = mapOf(
+                "unit" to unit.toString(),
+                "date" to date,
+                "quantity" to quantity.toString(),
+                "stat_fields" to "visitors")
+        val request = WPComGsonRequest
+                .buildGetRequest(url, params, VisitorStatsApiResponse::class.java,
+                        { response ->
+                            val model = WCNewVisitorStatsModel().apply {
+                                this.localSiteId = site.id
+                                this.granularity = granularity.toString()
+                                this.fields = response.fields.toString()
+                                this.data = response.data.toString()
+                                this.quantity = quantity.toString()
+                                this.date = date
+                                endDate?.let { this.endDate = it }
+                                startDate?.let {
+                                    this.startDate = startDate
+                                    this.isCustomField = true
+                                }
+                            }
+                            val payload = FetchNewVisitorStatsResponsePayload(site, granularity, model)
+                            mDispatcher.dispatch(WCStatsActionBuilder.newFetchedNewVisitorStatsAction(payload))
+                        },
+                        { networkError ->
+                            val orderError = networkErrorToOrderError(networkError)
+                            val payload = FetchNewVisitorStatsResponsePayload(orderError, site, granularity)
+                            mDispatcher.dispatch(WCStatsActionBuilder.newFetchedNewVisitorStatsAction(payload))
+                        })
+
+        request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
+        if (force) request.setShouldForceUpdate()
+
+        add(request)
     }
 
     fun fetchTopEarnersStats(

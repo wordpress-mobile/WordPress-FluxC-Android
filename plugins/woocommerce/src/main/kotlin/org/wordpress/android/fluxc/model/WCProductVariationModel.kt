@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.model
 
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
@@ -44,11 +46,27 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
     @Column var width = ""
     @Column var height = ""
 
+    @Column var menuOrder = 0
+
     @Column var attributes = ""
 
     override fun getId() = id
 
     override fun setId(id: Int) {
         this.id = id
+    }
+
+    class ProductVariantOption {
+        val id: Long? = null
+        val name: String? = null
+        val option: String? = null
+    }
+
+    /**
+     * Deserializes the JSON contained in [attributes] into a list of [ProductVariantOption] objects.
+     */
+    fun getProductVariantOptions(): List<ProductVariantOption> {
+        val responseType = object : TypeToken<List<ProductVariantOption>>() {}.type
+        return Gson().fromJson(attributes, responseType) as? List<ProductVariantOption> ?: emptyList()
     }
 }

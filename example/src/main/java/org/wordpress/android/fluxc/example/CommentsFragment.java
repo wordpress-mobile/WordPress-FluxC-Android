@@ -76,6 +76,15 @@ public class CommentsFragment extends Fragment {
                 likeOrUnlikeFirstComment();
             }
         });
+        view.findViewById(R.id.show_link_address).setOnClickListener(new OnClickListener() {
+            @Override public void onClick(View v) {
+                if (getFirstComment() == null) {
+                    ToastUtils.showToast(getActivity(), "Fetch comments first");
+                    return;
+                }
+                showLinkAddress();
+            }
+        });
         return view;
     }
 
@@ -122,6 +131,12 @@ public class CommentsFragment extends Fragment {
         mDispatcher.dispatch(CommentActionBuilder.newLikeCommentAction(
                 new CommentStore.RemoteLikeCommentPayload(getFirstSite(), getFirstComment(),
                         !getFirstComment().getILike())));
+    }
+
+    private void showLinkAddress() {
+        CommentModel commentModel = getFirstComment();
+        ToastUtils.showToast(getActivity(), commentModel.getUrl());
+        prependToLog("Comment link address " + commentModel.getUrl());
     }
 
     @SuppressWarnings("unused")

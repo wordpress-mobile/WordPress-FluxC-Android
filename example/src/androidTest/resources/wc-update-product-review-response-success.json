@@ -1,0 +1,36 @@
+{
+  "data": {
+    "id": 5499,
+    "date_created": "2019-07-09T09:48:07",
+    "date_created_gmt": "2019-07-09T15:48:07",
+    "product_id": 18,
+    "status": "spam",
+    "reviewer": "Johnny",
+    "reviewer_email": "johnny@gmail.com",
+    "review": "<p>What a lovely cap!<\/p>\n",
+    "rating": 4,
+    "verified": false,
+    "reviewer_avatar_urls": {
+      "24": "https:\/\/secure.gravatar.com\/avatar\/136c70acb946f0f37b12bb6fbfe56f2c?s=24&d=mm&r=g",
+      "48": "https:\/\/secure.gravatar.com\/avatar\/136c70acb946f0f37b12bb6fbfe56f2c?s=48&d=mm&r=g",
+      "96": "https:\/\/secure.gravatar.com\/avatar\/136c70acb946f0f37b12bb6fbfe56f2c?s=96&d=mm&r=g"
+    },
+    "_links": {
+      "self": [
+        {
+          "href": "https:\/\/testwooshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/reviews\/5499"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https:\/\/testwooshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/reviews"
+        }
+      ],
+      "up": [
+        {
+          "href": "https:\/\/testwooshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/18"
+        }
+      ]
+    }
+  }
+}

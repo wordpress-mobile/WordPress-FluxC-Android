@@ -35,6 +35,7 @@ object OrderTestUtils {
             localSiteId = siteId
             status = orderStatus
             dateCreated = "1955-11-05T14:15:00Z"
+            datePaid = "1956-11-05T14:15:00Z"
             currency = "USD"
             total = "10.0"
         }
@@ -74,6 +75,7 @@ object OrderTestUtils {
                 localSiteId = siteId
                 statusKey = it.slug ?: ""
                 label = it.name ?: ""
+                statusCount = it.total
             }
         }
     }
@@ -166,6 +168,14 @@ object OrderTestUtils {
         val json = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order-summaries.json")
         val summaryList = getOrderSummariesFromJsonString(json, site.id)
         assertEquals(10, summaryList.size)
+
+        return summaryList
+    }
+
+    fun getTestOrderSummaryExtendedList(site: SiteModel): List<WCOrderSummaryModel> {
+        val json = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/order-summaries-extended.json")
+        val summaryList = getOrderSummariesFromJsonString(json, site.id)
+        assertEquals(300, summaryList.size)
 
         return summaryList
     }

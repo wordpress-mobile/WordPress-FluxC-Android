@@ -1,13 +1,14 @@
 package org.wordpress.android.fluxc.model
 
 import com.google.gson.Gson
+import com.google.gson.JsonParser
+import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
-import com.google.gson.annotations.SerializedName
 
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
@@ -36,8 +37,8 @@ data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Id
     class SubTotal {
         @SerializedName("orders_count")
         val ordersCount: Long? = null
-        @SerializedName("gross_revenue")
-        val grossRevenue: Double? = null
+        @SerializedName("total_sales")
+        val totalSales: Double? = null
     }
 
     /**
@@ -51,15 +52,30 @@ data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Id
     class Total {
         @SerializedName("orders_count")
         val ordersCount: Int? = null
-        @SerializedName("gross_revenue")
-        val grossRevenue: Double? = null
+        @SerializedName("total_sales")
+        val totalSales: Double? = null
     }
 
     /**
      * Deserializes the JSON contained in [data] into a Total object.
+     * The [total] param by default is a map which is parsed into [Total].
+     *
+     * There are some instances where the [total] param can be an empty list
+     * https://github.com/woocommerce/woocommerce-android/issues/2154
+     *
+     * To address this issue, we check if the [total] param is a JsonArray
+     * and return a null response, if that's the case.
      */
     fun getTotal(): Total? {
-        val responseType = object : TypeToken<Total>() {}.type
-        return gson.fromJson(total, responseType) as? Total
+        val jsonElement = JsonParser().parse(total)
+        return if (jsonElement.isJsonArray) {
+            if (jsonElement.asJsonArray.size() > 0) {
+                val responseType = object : TypeToken<Total>() {}.type
+                gson.fromJson(jsonElement.asJsonArray[0], responseType) as? Total
+            } else null
+        } else {
+            val responseType = object : TypeToken<Total>() {}.type
+            gson.fromJson(total, responseType) as? Total
+        }
     }
 }

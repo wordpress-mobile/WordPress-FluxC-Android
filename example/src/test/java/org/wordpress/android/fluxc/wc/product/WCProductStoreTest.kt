@@ -10,12 +10,17 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
@@ -81,5 +86,99 @@ class WCProductStoreTest {
         assertEquals(differentSiteProduct1.remoteProductId, differentSiteProducts[0].remoteProductId)
         assertEquals(differentSiteProduct2.remoteProductId, differentSiteProducts[1].remoteProductId)
         assertEquals(differentSiteProduct3.remoteProductId, differentSiteProducts[2].remoteProductId)
+    }
+
+    @Test
+    fun testUpdateProduct() {
+        val productModel = ProductTestUtils.generateSampleProduct(42).apply {
+            name = "test product"
+            description = "test description"
+        }
+        val site = SiteModel().apply { id = productModel.localSiteId }
+        ProductSqlUtils.insertOrUpdateProduct(productModel)
+
+        // Simulate incoming action with updated product model
+        val payload = RemoteUpdateProductPayload(site, productModel.apply {
+            description = "Updated description"
+        })
+        productStore.onAction(WCProductActionBuilder.newUpdatedProductAction(payload))
+
+        with(productStore.getProductByRemoteId(site, productModel.remoteProductId)) {
+            // The version of the product model in the database should have the updated description
+            assertEquals(productModel.description, this?.description)
+            // Other fields should not be altered by the update
+            assertEquals(productModel.name, this?.name)
+        }
+    }
+
+    @Test
+    fun testVerifySkuExistsLocally() {
+        val sku = "woo-cap"
+        val productModel = ProductTestUtils.generateSampleProduct(42).apply {
+            name = "test product"
+            description = "test description"
+            this.sku = sku
+        }
+        val site = SiteModel().apply { id = productModel.localSiteId }
+        ProductSqlUtils.insertOrUpdateProduct(productModel)
+
+        // verify if product with sku: woo-cap exists in local cache
+        val skuAvailable = ProductSqlUtils.getProductExistsBySku(site, sku)
+        assertTrue(skuAvailable)
+
+        // verify if product with non existent sku returns false
+        assertFalse(ProductSqlUtils.getProductExistsBySku(site, "woooo"))
+    }
+
+    @Test
+    fun testGetProductsByFilterOptions() {
+        val filterOptions = mapOf<ProductFilterOption, String>(
+                ProductFilterOption.TYPE to "simple",
+                ProductFilterOption.STOCK_STATUS to "instock",
+                ProductFilterOption.STATUS to "publish"
+        )
+        val product1 = ProductTestUtils.generateSampleProduct(3)
+        val product2 = ProductTestUtils.generateSampleProduct(
+                31, type = "variable", status = "draft"
+        )
+        val product3 = ProductTestUtils.generateSampleProduct(
+                42, stockStatus = "onbackorder", status = "pending"
+                )
+
+        ProductSqlUtils.insertOrUpdateProduct(product1)
+        ProductSqlUtils.insertOrUpdateProduct(product2)
+        ProductSqlUtils.insertOrUpdateProduct(product3)
+
+        val site = SiteModel().apply { id = product1.localSiteId }
+        val products = productStore.getProductsByFilterOptions(site, filterOptions)
+        assertEquals(1, products.size)
+
+        // insert products with the same product options but for a different site
+        val differentSiteProduct1 = ProductTestUtils.generateSampleProduct(10, siteId = 10)
+        val differentSiteProduct2 = ProductTestUtils.generateSampleProduct(
+                11, siteId = 10, type = "variable", status = "draft"
+        )
+        val differentSiteProduct3 = ProductTestUtils.generateSampleProduct(
+                12, siteId = 10, stockStatus = "onbackorder", status = "pending"
+        )
+
+        ProductSqlUtils.insertOrUpdateProduct(differentSiteProduct1)
+        ProductSqlUtils.insertOrUpdateProduct(differentSiteProduct2)
+        ProductSqlUtils.insertOrUpdateProduct(differentSiteProduct3)
+
+        // verify that the products for the first site is still 1
+        assertEquals(1, productStore.getProductsByFilterOptions(site, filterOptions).size)
+
+        // verify that the products for the second site is 3
+        val site2 = SiteModel().apply { id = differentSiteProduct1.localSiteId }
+        val filterOptions2 = mapOf(ProductFilterOption.STATUS to "draft")
+        val differentSiteProducts = productStore.getProductsByFilterOptions(site2, filterOptions2)
+        assertEquals(1, differentSiteProducts.size)
+        assertEquals(differentSiteProduct2.status, differentSiteProducts[0].status)
+
+        val filterOptions3 = mapOf(ProductFilterOption.STOCK_STATUS to "onbackorder")
+        val differentProductFilters = productStore.getProductsByFilterOptions(site2, filterOptions3)
+        assertEquals(1, differentProductFilters.size)
+        assertEquals(differentSiteProduct3.stockStatus, differentProductFilters[0].stockStatus)
     }
 }

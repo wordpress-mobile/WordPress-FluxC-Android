@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.model
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
 import com.yarolegovich.wellsql.core.Identifiable
 import com.yarolegovich.wellsql.core.annotation.Column
@@ -44,12 +45,19 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var onSale = false
     @Column var totalSales = 0
 
+    @Column var dateOnSaleFrom = ""
+    @Column var dateOnSaleTo = ""
+    @Column var dateOnSaleFromGmt = ""
+    @Column var dateOnSaleToGmt = ""
+
     @Column var virtual = false
     @Column var downloadable = false
     @Column var downloadLimit = 0
     @Column var downloadExpiry = 0
     @Column var soldIndividually = false
+
     @Column var externalUrl = ""
+    @Column var buttonText = ""
 
     @Column var taxStatus = "" // taxable, shipping, none
     @Column var taxClass = ""
@@ -73,6 +81,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
     @Column var parentId = 0
     @Column var purchaseNote = ""
+    @Column var menuOrder = 0
 
     @Column var categories = "" // array of categories
     @Column var tags = "" // array of tags
@@ -89,9 +98,15 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var width = ""
     @Column var height = ""
 
-    class ProductTriplet(val id: Long, val name: String, val slug: String)
-
-    class ProductImage(val id: Long, val name: String, val src: String, val alt: String)
+    class ProductTriplet(val id: Long, val name: String, val slug: String) {
+        fun toJson(): JsonObject {
+            return JsonObject().also { json ->
+                json.addProperty("id", id)
+                json.addProperty("name", name)
+                json.addProperty("slug", slug)
+            }
+        }
+    }
 
     class ProductAttribute(val id: Long, val name: String, val visible: Boolean, val options: List<String>) {
         fun getCommaSeparatedOptions(): String {
@@ -117,23 +132,23 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     /**
      * Parses the images json array into a list of product images
      */
-    fun getImages(): ArrayList<ProductImage> {
-        val imageList = ArrayList<ProductImage>()
-        try {
-            Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                with(jsonElement.asJsonObject) {
-                    imageList.add(
-                            ProductImage(
-                                    id = this.getLong("id"),
-                                    name = this.getString("name") ?: "",
-                                    src = this.getString("src") ?: "",
-                                    alt = this.getString("alt") ?: ""
-                            )
-                    )
+    fun getImages(): ArrayList<WCProductImageModel> {
+        val imageList = ArrayList<WCProductImageModel>()
+        if (images.isNotEmpty()) {
+            try {
+                Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+                    with(jsonElement.asJsonObject) {
+                        WCProductImageModel(this.getLong("id")).also {
+                            it.name = this.getString("name") ?: ""
+                            it.src = this.getString("src") ?: ""
+                            it.alt = this.getString("alt") ?: ""
+                            imageList.add(it)
+                        }
+                    }
                 }
+            } catch (e: JsonParseException) {
+                AppLog.e(T.API, e)
             }
-        } catch (e: JsonParseException) {
-            AppLog.e(T.API, e)
         }
         return imageList
     }
@@ -212,6 +227,15 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return fileList
     }
 
+    fun getNumVariations(): Int {
+        try {
+            return Gson().fromJson<JsonElement>(variations, JsonElement::class.java).asJsonArray.size()
+        } catch (e: JsonParseException) {
+            AppLog.e(T.API, e)
+            return 0
+        }
+    }
+
     fun getCategories() = getTriplets(categories)
 
     fun getCommaSeparatedCategoryNames() = getCommaSeparatedTripletNames(getCategories())
@@ -236,20 +260,58 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     private fun getTriplets(jsonStr: String): ArrayList<ProductTriplet> {
         val triplets = ArrayList<ProductTriplet>()
         try {
-            Gson().fromJson<JsonElement>(jsonStr, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                with(jsonElement.asJsonObject) {
-                    triplets.add(
-                            ProductTriplet(
-                                    id = this.getLong("id"),
-                                    name = this.getString("name") ?: "",
-                                    slug = this.getString("slug") ?: ""
-                            )
-                    )
+            if (jsonStr.isNotEmpty()) {
+                Gson().fromJson<JsonElement>(jsonStr, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+                    with(jsonElement.asJsonObject) {
+                        triplets.add(
+                                ProductTriplet(
+                                        id = this.getLong("id"),
+                                        name = this.getString("name") ?: "",
+                                        slug = this.getString("slug") ?: ""
+                                )
+                        )
+                    }
                 }
             }
         } catch (e: JsonParseException) {
             AppLog.e(T.API, e)
         }
         return triplets
+    }
+
+    /**
+     * Compares this product's images with the passed product's images, returns true only if both
+     * lists contain the same images in the same order
+     */
+    fun hasSameImages(updatedProduct: WCProductModel): Boolean {
+        val updatedImages = updatedProduct.getImages()
+        val thisImages = getImages()
+        if (thisImages.size != updatedImages.size) {
+            return false
+        }
+        for (i in thisImages.indices) {
+            if (thisImages[i].id != updatedImages[i].id) {
+                return false
+            }
+        }
+        return true
+    }
+
+    /**
+     * Compares this product's categories with the passed product's categories, returns true only if both
+     * lists contain the same categories in the same order
+     */
+    fun hasSameCategories(updatedProduct: WCProductModel): Boolean {
+        val updatedCategories = updatedProduct.getCategories()
+        val storedCategories = getCategories()
+        if (storedCategories.size != updatedCategories.size) {
+            return false
+        }
+        for (i in storedCategories.indices) {
+            if (storedCategories[i].id != updatedCategories[i].id) {
+                return false
+            }
+        }
+        return true
     }
 }

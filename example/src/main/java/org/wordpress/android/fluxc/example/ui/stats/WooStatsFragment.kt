@@ -96,14 +96,14 @@ class WooStatsFragment : Fragment(), CustomStatsDialog.Listener {
 
         fetch_visitor_stats.setOnClickListener {
             getFirstWCSite()?.let {
-                val payload = FetchVisitorStatsPayload(it, StatsGranularity.MONTHS, false)
+                val payload = FetchVisitorStatsPayload(it, StatsGranularity.DAYS, false)
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchVisitorStatsAction(payload))
             }
         }
 
         fetch_visitor_stats_forced.setOnClickListener {
             getFirstWCSite()?.let {
-                val payload = FetchVisitorStatsPayload(it, StatsGranularity.MONTHS, true)
+                val payload = FetchVisitorStatsPayload(it, StatsGranularity.DAYS, true)
                 dispatcher.dispatch(WCStatsActionBuilder.newFetchVisitorStatsAction(payload))
             }
         }
@@ -189,10 +189,31 @@ class WooStatsFragment : Fragment(), CustomStatsDialog.Listener {
                     }
                 }
             }
-            WCStatsAction.FETCH_VISITOR_STATS ->
-                prependToLog("Fetched visitor stats from ${site!!.name}")
-            else ->
-                prependToLog("WooCommerce stats were updated from a " + event.causeOfChange)
+            WCStatsAction.FETCH_VISITOR_STATS -> {
+                val visitorStatsMap = wcStatsStore.getVisitorStats(
+                        site!!,
+                        event.granularity,
+                        event.quantity,
+                        event.date,
+                        event.isCustomField
+                )
+                if (visitorStatsMap.isEmpty()) {
+                    prependToLog("No visitor stats were stored for site " + site.name + " =(")
+                } else {
+                    if (event.isCustomField) {
+                        prependToLog(
+                                "Fetched visitor stats for " + visitorStatsMap.size + " " +
+                                        event.granularity.toString().toLowerCase() + " from " + site.name +
+                                        " with quantity " + event.quantity + " and date " + event.date
+                        )
+                    } else {
+                        prependToLog(
+                                "Fetched visitor stats for " + visitorStatsMap.size + " " +
+                                        event.granularity.toString().toLowerCase() + " from " + site.name
+                        )
+                    }
+                }
+            }
         }
     }
 

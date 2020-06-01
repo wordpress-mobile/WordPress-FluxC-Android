@@ -38,10 +38,13 @@ import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersCountResponsePa
 import org.wordpress.android.fluxc.store.WCOrderStore.FetchOrdersResponsePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderError
 import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType
+import org.wordpress.android.fluxc.store.WCOrderStore.OrderErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderNotePayload
 import org.wordpress.android.fluxc.store.WCOrderStore.RemoteOrderPayload
 import org.wordpress.android.fluxc.store.WCOrderStore.SearchOrdersResponsePayload
 import org.wordpress.android.fluxc.utils.DateUtils
+import org.wordpress.android.util.AppLog
+import org.wordpress.android.util.AppLog.T
 import javax.inject.Singleton
 import kotlin.collections.MutableMap.MutableEntry
 
@@ -55,7 +58,7 @@ class OrderRestClient(
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     private val ORDER_FIELDS = "id,number,status,currency,date_created_gmt,total,total_tax,shipping_total," +
             "payment_method,payment_method_title,prices_include_tax,customer_note,discount_total," +
-            "coupon_lines,refunds,billing,shipping,line_items"
+            "coupon_lines,refunds,billing,shipping,line_items,date_paid_gmt,shipping_lines"
     private val TRACKING_FIELDS = "tracking_id,tracking_number,tracking_link,tracking_provider,date_shipped"
 
     /**
@@ -123,12 +126,14 @@ class OrderRestClient(
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderSummaryApiResponse>>() {}.type
         val networkPageSize = listDescriptor.config.networkPageSize
-        val params = mapOf(
+        val params = mutableMapOf(
                 "per_page" to networkPageSize.toString(),
                 "offset" to offset.toString(),
                 "status" to statusFilter,
-                "_fields" to "id,date_created_gmt,date_modified_gmt",
-                "search" to listDescriptor.searchQuery.orEmpty())
+                "_fields" to "id,date_created_gmt,date_modified_gmt")
+        listDescriptor.searchQuery.takeUnless { it.isNullOrEmpty() }?.let {
+            params.put("search", it)
+        }
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, listDescriptor.site.siteId, params, responseType,
                 { response: List<OrderSummaryApiResponse>? ->
                     val orderSummaries = response?.map {
@@ -167,6 +172,7 @@ class OrderRestClient(
         val url = WOOCOMMERCE.orders.pathV3
         val responseType = object : TypeToken<List<OrderApiResponse>>() {}.type
         val params = mapOf(
+                "per_page" to remoteOrderIds.size.toString(),
                 "include" to remoteOrderIds.map { it.value }.joinToString()
         )
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
@@ -177,13 +183,15 @@ class OrderRestClient(
 
                     val payload = FetchOrdersByIdsResponsePayload(
                             site = site,
-                            orders = orderModels
+                            remoteOrderIds = remoteOrderIds,
+                            fetchedOrders = orderModels
                     )
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
-                    val payload = FetchOrdersByIdsResponsePayload(error = orderError, site = site)
+                    val payload = FetchOrdersByIdsResponsePayload(
+                            error = orderError, site = site, remoteOrderIds = remoteOrderIds)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrdersByIdsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
@@ -592,9 +600,21 @@ class OrderRestClient(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, JsonElement::class.java,
                 { response: JsonElement? ->
                     response?.let {
-                        val providers = jsonResponseToShipmentProviderList(site, it)
-                        val payload = FetchOrderShipmentProvidersResponsePayload(site, order, providers)
-                        dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentProvidersAction(payload))
+                        try {
+                            val providers = jsonResponseToShipmentProviderList(site, it)
+                            val payload = FetchOrderShipmentProvidersResponsePayload(site, order, providers)
+                            dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentProvidersAction(payload))
+                        } catch (e: IllegalStateException) {
+                            // we have at least once instance of the response being invalid json so we catch the exception
+                            // https://github.com/wordpress-mobile/WordPress-FluxC-Android/issues/1331
+                            AppLog.e(T.UTILS, "IllegalStateException parsing shipment provider list, response = $it")
+                            val payload = FetchOrderShipmentProvidersResponsePayload(
+                                    OrderError(INVALID_RESPONSE, it.toString()),
+                                    site,
+                                    order
+                            )
+                            dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentProvidersAction(payload))
+                        }
                     }
                 },
                 WPComErrorListener { networkError ->
@@ -627,6 +647,7 @@ class OrderRestClient(
             shippingTotal = response.shipping_total ?: ""
             paymentMethod = response.payment_method ?: ""
             paymentMethodTitle = response.payment_method_title ?: ""
+            datePaid = response.date_paid_gmt?.let { "${it}Z" } ?: ""
             pricesIncludeTax = response.prices_include_tax
 
             customerNote = response.customer_note ?: ""
@@ -667,6 +688,7 @@ class OrderRestClient(
             shippingCountry = response.shipping?.country ?: ""
 
             lineItems = response.line_items.toString()
+            shippingLines = response.shipping_lines.toString()
         }
     }
 
@@ -675,7 +697,8 @@ class OrderRestClient(
             remoteNoteId = response.id ?: 0
             dateCreated = response.date_created_gmt?.let { "${it}Z" } ?: ""
             note = response.note ?: ""
-            isSystemNote = response.author == "system"
+            isSystemNote = response.author == "system" || response.author == "WooCommerce"
+            author = response.author ?: ""
             isCustomerNote = response.customer_note
         }
     }
@@ -698,6 +721,7 @@ class OrderRestClient(
             localSiteId = site.id
             statusKey = response.slug ?: ""
             label = response.name ?: ""
+            statusCount = response.total
         }
     }
 
@@ -721,19 +745,21 @@ class OrderRestClient(
         response: JsonElement
     ): List<WCOrderShipmentProviderModel> {
         val providers = mutableListOf<WCOrderShipmentProviderModel>()
-        response.asJsonObject.entrySet().forEach { countryEntry: MutableEntry<String, JsonElement> ->
-            countryEntry.value.asJsonObject.entrySet().map { carrierEntry ->
-                carrierEntry?.let { carrier ->
-                    val provider = WCOrderShipmentProviderModel().apply {
-                        localSiteId = site.id
-                        this.country = countryEntry.key
-                        this.carrierName = carrier.key
-                        this.carrierLink = carrier.value.asString
+        response.asJsonObject.entrySet()
+                .forEach { countryEntry: MutableEntry<String, JsonElement> ->
+                    countryEntry.value.asJsonObject.entrySet().map { carrierEntry ->
+                        carrierEntry?.let { carrier ->
+                            val provider = WCOrderShipmentProviderModel().apply {
+                                localSiteId = site.id
+                                this.country = countryEntry.key
+                                this.carrierName = carrier.key
+                                this.carrierLink = carrier.value.asString
+                            }
+                            providers.add(provider)
+                        }
                     }
-                    providers.add(provider)
                 }
-            }
-        }
+
         return providers
     }
 }

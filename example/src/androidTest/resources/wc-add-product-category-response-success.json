@@ -1,0 +1,21 @@
+{
+  "data": {
+    "id": 105,
+    "name": "test12",
+    "slug": "test12",
+    "parent": 0,
+    "description": "",
+    "display": "default",
+    "image": null,
+    "menu_order": 0,
+    "count": 0,
+    "_links": {
+      "self": [{
+        "href": "https:\/\/awootestshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/categories\/105"
+      }],
+      "collection": [{
+        "href": "https:\/\/awootestshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/categories"
+      }]
+    }
+  }
+}
