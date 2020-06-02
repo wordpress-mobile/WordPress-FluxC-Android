@@ -40,6 +40,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnWPComSiteFetched;
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
 import org.wordpress.android.fluxc.store.WhatsNewStore;
 import org.wordpress.android.fluxc.store.WhatsNewStore.OnWhatsNewFetched;
+import org.wordpress.android.fluxc.store.WhatsNewStore.WhatsNewAppId;
 import org.wordpress.android.fluxc.store.WhatsNewStore.WhatsNewFetchPayload;
 
 import javax.inject.Inject;
@@ -236,7 +237,8 @@ public class SignedOutActionsFragment extends Fragment {
     }
 
     private void fetchWhatsNew() {
-        mDispatcher.dispatch(WhatsNewActionBuilder.newFetchWhatsNewAction(new WhatsNewFetchPayload("850", true)));
+        mDispatcher.dispatch(WhatsNewActionBuilder.newFetchWhatsNewAction(new WhatsNewFetchPayload("14.7",
+                WhatsNewAppId.WP_ANDROID, true)));
     }
 
     @SuppressWarnings("unused")
