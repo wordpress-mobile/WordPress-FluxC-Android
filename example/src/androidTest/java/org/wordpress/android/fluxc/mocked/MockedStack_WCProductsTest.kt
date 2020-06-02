@@ -272,9 +272,9 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(WCProductAction.FETCHED_PRODUCT_VARIATIONS, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteProductVariationsPayload
         assertNull(payload.error)
-        assertEquals(payload.remoteProductId, remoteProductId)
-        assertEquals(payload.variations.size, 3)
-        assertEquals(payload.variations[0].image, "")
+        assertEquals(remoteProductId, payload.remoteProductId)
+        assertEquals(3, payload.variations.size)
+        assertEquals("null", payload.variations[0].image)
         assertNotNull(payload.variations[1].image)
 
         // save the variation to the db
