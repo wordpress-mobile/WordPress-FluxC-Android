@@ -15,6 +15,11 @@ class ProductVariationApiResponse : Response {
     var regular_price: String? = null
     var sale_price: String? = null
 
+    var date_on_sale_from: String? = null
+    var date_on_sale_to: String? = null
+    var date_on_sale_from_gmt: String? = null
+    var date_on_sale_to_gmt: String? = null
+
     var date_created: String? = null
     var date_modified: String? = null
 
