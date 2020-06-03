@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 import android.content.Context
 import com.android.volley.RequestQueue
 import com.google.gson.JsonArray
-import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
@@ -11,6 +10,7 @@ import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
@@ -26,11 +26,15 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
 import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
+import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SHIPPING_CLASS_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
+import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting
+import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductError
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
@@ -39,6 +43,8 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
@@ -490,6 +496,98 @@ class ProductRestClient(
     }
 
     /**
+     * Makes a GET call to `/wc/v3/products/categories` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a list of product categories for a given WooCommerce [SiteModel].
+     *
+     * The number of categories to fetch is defined in [WCProductStore.DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE], and retrieving older
+     * categories is done by passing an [offset].
+     *
+     * Dispatches a [WCProductAction.FETCHED_PRODUCT_CATEGORIES]
+     *
+     * @param [site] The site to fetch product categories for
+     * @param [offset] The offset to use for the fetch
+     * @param [productCategorySorting] Optional. The sorting type of the categories
+     */
+    fun fetchProductCategories(
+        site: SiteModel,
+        pageSize: Int = DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE,
+        offset: Int = 0,
+        productCategorySorting: ProductCategorySorting? = DEFAULT_CATEGORY_SORTING
+    ) {
+        val sortOrder = when (productCategorySorting) {
+            NAME_DESC -> "desc"
+            else -> "asc"
+        }
+
+        val url = WOOCOMMERCE.products.categories.pathV3
+        val responseType = object : TypeToken<List<ProductCategoryApiResponse>>() {}.type
+        val params = mutableMapOf(
+                "per_page" to pageSize.toString(),
+                "offset" to offset.toString(),
+                "order" to sortOrder,
+                "orderby" to "name"
+        )
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<ProductCategoryApiResponse>? ->
+                    response?.let {
+                        val categories = it.map { category ->
+                            productCategoryResponseToProductCategoryModel(category).apply { localSiteId = site.id }
+                        }
+                        val canLoadMore = categories.size == pageSize
+                        val loadedMore = offset > 0
+                        val payload = RemoteProductCategoriesPayload(
+                                site, categories, offset, loadedMore, canLoadMore
+                        )
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchedProductCategoriesAction(payload))
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val productCategoryError = networkErrorToProductError(networkError)
+                    val payload = RemoteProductCategoriesPayload(productCategoryError, site)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductCategoriesAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Posts a new Add Category record to the API for a category.
+     *
+     * Makes a POST call `/wc/v3/products/categories/id` to save a Category record via the Jetpack tunnel.
+     * Returns a [WCProductCategoryModel] on successful response.
+     *
+     * Dispatches [WCProductAction.ADDED_PRODUCT_CATEGORY] action with the results.
+     */
+    fun addProductCategory(
+        site: SiteModel,
+        category: WCProductCategoryModel
+    ) {
+        val url = WOOCOMMERCE.products.categories.pathV3
+
+        val responseType = object : TypeToken<ProductCategoryApiResponse>() {}.type
+        val params = mutableMapOf(
+                "name" to category.name,
+                "parent" to category.parent.toString()
+        )
+        val request = JetpackTunnelGsonRequest.buildPostRequest(url, site.siteId, params, responseType,
+                { response: ProductCategoryApiResponse? ->
+                    val categoryResponse = response?.let {
+                        productCategoryResponseToProductCategoryModel(it).apply {
+                            localSiteId = site.id
+                        }
+                    }
+                    val payload = RemoteAddProductCategoryResponsePayload(site, categoryResponse)
+                    dispatcher.dispatch(WCProductActionBuilder.newAddedProductCategoryAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val productCategorySaveError = networkErrorToProductError(networkError)
+                    val payload = RemoteAddProductCategoryResponsePayload(productCategorySaveError, site, category)
+                    dispatcher.dispatch(WCProductActionBuilder.newAddedProductCategoryAction(payload))
+                })
+        add(request)
+    }
+
+    /**
      * Makes a GET call to `/wc/v3/products/reviews` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of product reviews for a given WooCommerce [SiteModel].
      *
@@ -732,6 +830,14 @@ class ProductRestClient(
         if (storedWCProductModel.menuOrder != updatedProductModel.menuOrder) {
             body["menu_order"] = updatedProductModel.menuOrder
         }
+        if (!storedWCProductModel.hasSameCategories(updatedProductModel)) {
+            val updatedCategories = updatedProductModel.getCategories()
+            body["categories"] = JsonArray().also {
+                for (category in updatedCategories) {
+                    it.add(category.toJson())
+                }
+            }
+        }
         return body
     }
 
@@ -852,6 +958,11 @@ class ProductRestClient(
             salePrice = response.sale_price ?: ""
             onSale = response.on_sale
 
+            dateOnSaleFrom = response.date_on_sale_from ?: ""
+            dateOnSaleTo = response.date_on_sale_to ?: ""
+            dateOnSaleFromGmt = response.date_on_sale_from_gmt ?: ""
+            dateOnSaleToGmt = response.date_on_sale_to_gmt ?: ""
+
             virtual = response.virtual
             downloadable = response.downloadable
             purchasable = response.purchasable
@@ -871,11 +982,7 @@ class ProductRestClient(
                 height = json.getString("height") ?: ""
             }
 
-            response.image?.let {
-                (it as? JsonObject)?.let { json ->
-                    imageUrl = json.getString("src") ?: ""
-                } ?: ""
-            }
+            image = response.image?.toString() ?: ""
         }
     }
 
@@ -894,12 +1001,24 @@ class ProductRestClient(
         }
     }
 
+    private fun productCategoryResponseToProductCategoryModel(
+        response: ProductCategoryApiResponse
+    ): WCProductCategoryModel {
+        return WCProductCategoryModel().apply {
+            remoteCategoryId = response.id
+            name = response.name ?: ""
+            slug = response.slug ?: ""
+            parent = response.parent ?: 0L
+        }
+    }
+
     private fun networkErrorToProductError(wpComError: WPComGsonNetworkError): ProductError {
         val productErrorType = when (wpComError.apiError) {
             "rest_invalid_param" -> ProductErrorType.INVALID_PARAM
             "woocommerce_rest_review_invalid_id" -> ProductErrorType.INVALID_REVIEW_ID
             "woocommerce_product_invalid_image_id" -> ProductErrorType.INVALID_IMAGE_ID
             "product_invalid_sku" -> ProductErrorType.DUPLICATE_SKU
+            "term_exists" -> ProductErrorType.TERM_EXISTS
             else -> ProductErrorType.fromString(wpComError.apiError)
         }
         return ProductError(productErrorType, wpComError.message)

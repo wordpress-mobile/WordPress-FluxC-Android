@@ -2,6 +2,7 @@ package org.wordpress.android.fluxc.persistence
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import com.wellsql.generated.WCProductCategoryModelTable
 import com.wellsql.generated.WCProductModelTable
 import com.wellsql.generated.WCProductReviewModelTable
 import com.wellsql.generated.WCProductShippingClassModelTable
@@ -9,12 +10,17 @@ import com.wellsql.generated.WCProductVariationModelTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SORTING
+import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting
+import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
+import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
@@ -420,4 +426,97 @@ object ProductSqlUtils {
                     .put(shippingClass, UpdateAllExceptId(WCProductShippingClassModel::class.java)).execute()
         }
     }
+
+    private fun sortCategoriesByName(
+        categories: List<WCProductCategoryModel>,
+        descending: Boolean
+    ): List<WCProductCategoryModel> {
+        return if (descending) {
+            categories.sortedByDescending { it.name.toLowerCase(Locale.getDefault()) }
+        } else {
+            categories.sortedBy { it.name.toLowerCase(Locale.getDefault()) }
+        }
+    }
+
+    fun getProductCategoriesForSite(
+        site: SiteModel,
+        sortType: ProductCategorySorting = DEFAULT_CATEGORY_SORTING
+    ): List<WCProductCategoryModel> {
+        val sortOrder = when (sortType) {
+            NAME_ASC -> SelectQuery.ORDER_ASCENDING
+            NAME_DESC -> SelectQuery.ORDER_DESCENDING
+        }
+        val sortField = when (sortType) {
+            NAME_ASC, NAME_DESC -> WCProductCategoryModelTable.NAME
+        }
+        val categories = WellSql.select(WCProductCategoryModel::class.java)
+                .where()
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .endWhere()
+                .orderBy(sortField, sortOrder)
+                .asModel
+
+        return if (sortType == NAME_ASC || sortType == NAME_DESC) {
+            sortCategoriesByName(categories, descending = sortType == NAME_DESC)
+        } else {
+            categories
+        }
+    }
+
+    fun getProductCategoryByRemoteId(
+        localSiteId: Int,
+        categoryId: Long
+    ): WCProductCategoryModel? {
+        return WellSql.select(WCProductCategoryModel::class.java)
+                .where()
+                .beginGroup()
+                .equals(WCProductCategoryModelTable.LOCAL_SITE_ID, localSiteId)
+                .equals(WCProductCategoryModelTable.REMOTE_CATEGORY_ID, categoryId)
+                .endGroup()
+                .endWhere()
+                .asModel.firstOrNull()
+    }
+
+    fun insertOrUpdateProductCategories(productCategories: List<WCProductCategoryModel>): Int {
+        var rowsAffected = 0
+        productCategories.forEach {
+            rowsAffected += insertOrUpdateProductCategory(it)
+        }
+        return rowsAffected
+    }
+
+    fun insertOrUpdateProductCategory(productCategory: WCProductCategoryModel): Int {
+        val result = WellSql.select(WCProductCategoryModel::class.java)
+                .where().beginGroup()
+                .equals(WCProductCategoryModelTable.ID, productCategory.id)
+                .or()
+                .beginGroup()
+                .equals(WCProductCategoryModelTable.REMOTE_CATEGORY_ID, productCategory.remoteCategoryId)
+                .equals(WCProductCategoryModelTable.LOCAL_SITE_ID, productCategory.localSiteId)
+                .endGroup()
+                .endGroup().endWhere()
+                .asModel.firstOrNull()
+
+        return if (result == null) {
+            // Insert
+            WellSql.insert(productCategory).asSingleTransaction(true).execute()
+            1
+        } else {
+            // Update
+            val oldId = result.id
+            WellSql.update(WCProductCategoryModel::class.java).whereId(oldId)
+                    .put(productCategory, UpdateAllExceptId(WCProductCategoryModel::class.java)).execute()
+        }
+    }
+
+    fun deleteAllProductCategoriesForSite(site: SiteModel): Int {
+        return WellSql.delete(WCProductCategoryModel::class.java)
+                .where()
+                .equals(WCProductCategoryModelTable.LOCAL_SITE_ID, site.id)
+                .or()
+                .equals(WCProductCategoryModelTable.LOCAL_SITE_ID, 0) // Should never happen, but sanity cleanup
+                .endWhere().execute()
+    }
+
+    fun deleteAllProductCategories() = WellSql.delete(WCProductCategoryModel::class.java).execute()
 }

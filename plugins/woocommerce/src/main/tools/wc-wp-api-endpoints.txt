@@ -14,6 +14,9 @@
 /products/reviews/
 /products/reviews/<id>/
 
+/products/categories/
+/products/categories/<id>/
+
 /reports/orders/totals/
 /reports/revenue/stats/
 

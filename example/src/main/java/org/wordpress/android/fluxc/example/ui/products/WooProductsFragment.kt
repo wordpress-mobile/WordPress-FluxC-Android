@@ -12,7 +12,9 @@ import kotlinx.android.synthetic.main.fragment_woo_products.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.action.WCProductAction.ADDED_PRODUCT_CATEGORY
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCTS
+import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_CATEGORIES
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_REVIEWS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
@@ -26,9 +28,12 @@ import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductSkuAvailabilityPayload
@@ -37,6 +42,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductCategoryChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
@@ -62,6 +68,7 @@ class WooProductsFragment : Fragment() {
     private var pendingFetchSingleProductVariationOffset: Int = 0
 
     private var pendingFetchProductShippingClassListOffset: Int = 0
+    private var pendingFetchProductCategoriesOffset: Int = 0
 
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
@@ -235,6 +242,41 @@ class WooProductsFragment : Fragment() {
             }
         }
 
+        fetch_product_categories.setOnClickListener {
+            selectedSite?.let { site ->
+                prependToLog("Submitting request to fetch product categories for site ${site.id}")
+                val payload = FetchProductCategoriesPayload(site)
+                dispatcher.dispatch(WCProductActionBuilder.newFetchProductCategoriesAction(payload))
+            }
+        }
+
+        load_more_product_categories.setOnClickListener {
+            selectedSite?.let { site ->
+                prependToLog("Submitting offset request to fetch product categories for site ${site.id}")
+                val payload = FetchProductCategoriesPayload(
+                        site, offset = pendingFetchProductCategoriesOffset
+                )
+                dispatcher.dispatch(WCProductActionBuilder.newFetchProductCategoriesAction(payload))
+            }
+        }
+
+        add_product_category.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter a catrgory name:"
+                ) { editText ->
+                    val categoryName = editText.text.toString()
+                    if (categoryName.isNotEmpty()) {
+                        prependToLog("Submitting request to add product category")
+                        val wcProductCategoryModel = WCProductCategoryModel().apply { name = categoryName }
+                        val payload = AddProductCategoryPayload(site, wcProductCategoryModel)
+                        dispatcher.dispatch(WCProductActionBuilder.newAddProductCategoryAction(payload))
+                    } else prependToLog("No category name entered...doing nothing")
+                }
+            }
+        }
+
         update_product_images.setOnClickListener {
             showSingleLineDialog(
                     activity,
@@ -366,6 +408,36 @@ class WooProductsFragment : Fragment() {
             prependToLog("Error updating product images - error: " + event.error.type)
         } else {
             prependToLog("Product images updated")
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductCategoriesChanged(event: OnProductCategoryChanged) {
+        if (event.isError) {
+            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
+            return
+        }
+
+        selectedSite?.let { site ->
+            when (event.causeOfChange) {
+                FETCH_PRODUCT_CATEGORIES -> {
+                    prependToLog("Fetched ${event.rowsAffected} product categories. " +
+                            "More categories available ${event.canLoadMore}")
+
+                    if (event.canLoadMore) {
+                        pendingFetchProductCategoriesOffset += event.rowsAffected
+                        load_more_product_categories.visibility = View.VISIBLE
+                        load_more_product_categories.isEnabled = true
+                    } else {
+                        pendingFetchProductCategoriesOffset = 0
+                        load_more_product_categories.isEnabled = false
+                    }
+                }
+                ADDED_PRODUCT_CATEGORY -> {
+                    prependToLog("${event.rowsAffected} product category added")
+                } else -> { }
+            }
         }
     }
 
