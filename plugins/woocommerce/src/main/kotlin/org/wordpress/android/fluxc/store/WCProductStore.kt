@@ -523,6 +523,9 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     fun getProductCategoriesForSite(site: SiteModel, sortType: ProductCategorySorting = DEFAULT_CATEGORY_SORTING) =
             ProductSqlUtils.getProductCategoriesForSite(site, sortType)
 
+    fun getProductCategoryByRemoteId(site: SiteModel, remoteId: Long) =
+            ProductSqlUtils.getProductCategoryByRemoteId(site.id, remoteId)
+
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {
         val actionType = action.type as? WCProductAction ?: return
