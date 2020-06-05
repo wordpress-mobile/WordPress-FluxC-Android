@@ -441,7 +441,9 @@ class WooProductsFragment : Fragment() {
                     }
                 }
                 ADDED_PRODUCT_CATEGORY -> {
-                    val category = enteredCategoryName?.let { wcProductStore.getProductCategoryByName(site, it) }
+                    val category = enteredCategoryName?.let {
+                        wcProductStore.getProductCategoryByNameAndParentId(site, it)
+                    }
                     prependToLog("${event.rowsAffected} product category added with name: ${category?.name}")
                 } else -> { }
             }

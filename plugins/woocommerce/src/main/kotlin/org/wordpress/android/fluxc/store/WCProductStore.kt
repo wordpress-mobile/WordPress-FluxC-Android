@@ -526,8 +526,11 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     fun getProductCategoryByRemoteId(site: SiteModel, remoteId: Long) =
             ProductSqlUtils.getProductCategoryByRemoteId(site.id, remoteId)
 
-    fun getProductCategoryByName(site: SiteModel, categoryName: String) =
-            ProductSqlUtils.getProductCategoryByName(site.id, categoryName)
+    fun getProductCategoryByNameAndParentId(
+        site: SiteModel,
+        categoryName: String,
+        parentId: Long = 0L
+    ) = ProductSqlUtils.getProductCategoryByNameAndParentId(site.id, categoryName, parentId)
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
     override fun onAction(action: Action<*>) {

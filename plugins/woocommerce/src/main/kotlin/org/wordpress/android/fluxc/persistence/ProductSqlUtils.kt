@@ -477,15 +477,17 @@ object ProductSqlUtils {
                 .asModel.firstOrNull()
     }
 
-    fun getProductCategoryByName(
+    fun getProductCategoryByNameAndParentId(
         localSiteId: Int,
-        categoryName: String
+        categoryName: String,
+        parentId: Long
     ): WCProductCategoryModel? {
         return WellSql.select(WCProductCategoryModel::class.java)
                 .where()
                 .beginGroup()
                 .equals(WCProductCategoryModelTable.LOCAL_SITE_ID, localSiteId)
                 .equals(WCProductCategoryModelTable.NAME, categoryName)
+                .equals(WCProductCategoryModelTable.PARENT, parentId)
                 .endGroup()
                 .endWhere()
                 .asModel.firstOrNull()
