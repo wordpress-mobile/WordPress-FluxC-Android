@@ -477,6 +477,20 @@ object ProductSqlUtils {
                 .asModel.firstOrNull()
     }
 
+    fun getProductCategoryByName(
+        localSiteId: Int,
+        categoryName: String
+    ): WCProductCategoryModel? {
+        return WellSql.select(WCProductCategoryModel::class.java)
+                .where()
+                .beginGroup()
+                .equals(WCProductCategoryModelTable.LOCAL_SITE_ID, localSiteId)
+                .equals(WCProductCategoryModelTable.NAME, categoryName)
+                .endGroup()
+                .endWhere()
+                .asModel.firstOrNull()
+    }
+
     fun insertOrUpdateProductCategories(productCategories: List<WCProductCategoryModel>): Int {
         var rowsAffected = 0
         productCategories.forEach {
