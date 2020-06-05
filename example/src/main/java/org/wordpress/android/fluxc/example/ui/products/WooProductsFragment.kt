@@ -70,6 +70,8 @@ class WooProductsFragment : Fragment() {
     private var pendingFetchProductShippingClassListOffset: Int = 0
     private var pendingFetchProductCategoriesOffset: Int = 0
 
+    private var enteredCategoryName: String? = null
+
     override fun onAttach(context: Context?) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
@@ -264,15 +266,19 @@ class WooProductsFragment : Fragment() {
             selectedSite?.let { site ->
                 showSingleLineDialog(
                         activity,
-                        "Enter a catrgory name:"
+                        "Enter a category name:"
                 ) { editText ->
-                    val categoryName = editText.text.toString()
-                    if (categoryName.isNotEmpty()) {
+                    enteredCategoryName = editText.text.toString()
+                    if (enteredCategoryName != null && enteredCategoryName?.isNotEmpty() == true) {
                         prependToLog("Submitting request to add product category")
-                        val wcProductCategoryModel = WCProductCategoryModel().apply { name = categoryName }
+                        val wcProductCategoryModel = WCProductCategoryModel().apply {
+                            name = enteredCategoryName!!
+                        }
                         val payload = AddProductCategoryPayload(site, wcProductCategoryModel)
                         dispatcher.dispatch(WCProductActionBuilder.newAddProductCategoryAction(payload))
-                    } else prependToLog("No category name entered...doing nothing")
+                    } else {
+                        prependToLog("No category name entered...doing nothing")
+                    }
                 }
             }
         }
@@ -435,7 +441,10 @@ class WooProductsFragment : Fragment() {
                     }
                 }
                 ADDED_PRODUCT_CATEGORY -> {
-                    prependToLog("${event.rowsAffected} product category added")
+                    val category = enteredCategoryName?.let {
+                        wcProductStore.getProductCategoryByNameAndParentId(site, it)
+                    }
+                    prependToLog("${event.rowsAffected} product category added with name: ${category?.name}")
                 } else -> { }
             }
         }
