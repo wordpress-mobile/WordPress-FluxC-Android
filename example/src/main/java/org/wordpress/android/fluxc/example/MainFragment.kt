@@ -49,7 +49,7 @@ class MainFragment : Fragment() {
     // Used for 2fa
     private var authenticatePayload: AuthenticatePayload? = null
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }
@@ -120,7 +120,7 @@ class MainFragment : Fragment() {
                         signInAction(it.username, it.password, it.url)
                     }
                 }, certifString)
-        newFragment.show(ft, "dialog")
+        ft?.let { newFragment.show(it, "dialog") }
     }
 
     private fun showSigninDialog() {
@@ -131,7 +131,7 @@ class MainFragment : Fragment() {
                 signInAction(username, password, url)
             }
         }, "Username", "Password", "XMLRPC Url (Leave blank for WP.COM!)")
-        newFragment.show(ft, "dialog")
+        ft?.let { newFragment.show(it, "dialog") }
     }
 
     private fun show2faDialog() {
@@ -145,7 +145,7 @@ class MainFragment : Fragment() {
                 signIn2fa(text3)
             }
         }, "", "", "2FA Code")
-        newFragment.show(ft, "2fadialog")
+        ft?.let { newFragment.show(it, "2fadialog") }
     }
 
     private fun signIn2fa(twoStepCode: String) {
@@ -166,7 +166,7 @@ class MainFragment : Fragment() {
                 }
             }
         }, "Username", "Password", "unused")
-        newFragment.show(ft, "dialog")
+        ft?.let { newFragment.show(it, "dialog") }
     }
 
     /**
