@@ -108,8 +108,8 @@ internal abstract class FragmentsModule {
     abstract fun provideStoreSelectorDialogInjector(): StoreSelectorDialog
 
     @ContributesAndroidInjector
-    abstract fun provideReactNativeFramgmentInjector(): ReactNativeFragment
+    abstract fun provideReactNativeFragmentInjector(): ReactNativeFragment
 
     @ContributesAndroidInjector
-    abstract fun provideEditorThemeFramgmentInjector(): EditorThemeFragment
+    abstract fun provideEditorThemeFragmentInjector(): EditorThemeFragment
 }

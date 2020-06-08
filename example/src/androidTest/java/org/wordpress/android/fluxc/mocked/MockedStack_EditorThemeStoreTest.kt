@@ -44,6 +44,7 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
         interceptor.respondWith("editor-theme-custom-elements-success-response.json")
         dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
 
+        // See onEditorThemeChanged for the latch's countdown to fire.
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
         assertNotEmpty(editorTheme)
         val cachedTheme = editorThemeStore.getEditorThemeForSite(site)
@@ -55,6 +56,7 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
         interceptor.respondWith("editor-theme-unsupported-response.json")
         dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
 
+        // See onEditorThemeChanged for the latch's countdown to fire.
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
         assertEmpty(editorTheme)
         val cachedTheme = editorThemeStore.getEditorThemeForSite(site)
