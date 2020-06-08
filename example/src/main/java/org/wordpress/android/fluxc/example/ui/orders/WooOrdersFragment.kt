@@ -70,7 +70,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
     private var pendingOpenAddShipmentTracking: Boolean = false
     private var pendingAddShipmentTrackingRemoteOrderID: Long? = null
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }

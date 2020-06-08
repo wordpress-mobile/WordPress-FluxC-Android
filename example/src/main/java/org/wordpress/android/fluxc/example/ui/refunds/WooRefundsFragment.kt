@@ -30,7 +30,7 @@ class WooRefundsFragment : Fragment() {
     @Inject internal lateinit var ordersStore: WCOrderStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }

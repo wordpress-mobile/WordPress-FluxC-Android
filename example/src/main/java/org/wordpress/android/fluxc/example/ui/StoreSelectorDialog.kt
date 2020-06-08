@@ -35,7 +35,7 @@ class StoreSelectorDialog : DialogFragment() {
     var listener: Listener? = null
     var selectedPos: Int = -1
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }
