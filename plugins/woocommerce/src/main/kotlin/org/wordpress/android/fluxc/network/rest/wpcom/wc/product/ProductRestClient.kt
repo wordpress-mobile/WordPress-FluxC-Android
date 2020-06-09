@@ -963,6 +963,19 @@ class ProductRestClient(
             dateOnSaleFromGmt = response.date_on_sale_from_gmt ?: ""
             dateOnSaleToGmt = response.date_on_sale_to_gmt ?: ""
 
+            taxStatus = response.tax_status ?: ""
+            taxClass = response.tax_class ?: ""
+
+            backorders = response.backorders ?: ""
+            backordersAllowed = response.backorders_allowed
+            backordered = response.backordered
+
+            shippingClass = response.shipping_class ?: ""
+            shippingClassId = response.shipping_class_id
+
+            downloadLimit = response.download_limit
+            downloadExpiry = response.download_expiry
+
             virtual = response.virtual
             downloadable = response.downloadable
             purchasable = response.purchasable
@@ -975,6 +988,9 @@ class ProductRestClient(
 
             weight = response.weight ?: ""
             menuOrder = response.menu_order
+
+            attributes = response.attributes?.toString() ?: ""
+            downloads = response.downloads?.toString() ?: ""
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""
