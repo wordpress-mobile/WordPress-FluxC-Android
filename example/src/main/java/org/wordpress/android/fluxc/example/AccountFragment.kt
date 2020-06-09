@@ -24,7 +24,7 @@ class AccountFragment : Fragment() {
     @Inject internal lateinit var accountStore: AccountStore
     @Inject internal lateinit var dispatcher: Dispatcher
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }
@@ -80,7 +80,7 @@ class AccountFragment : Fragment() {
         val editText = EditText(activity)
         alert.setMessage("Update your display name:")
         alert.setView(editText)
-        alert.setPositiveButton(android.R.string.ok) { dialog, whichButton ->
+        alert.setPositiveButton(android.R.string.ok) { _, _ ->
             val displayName = editText.text.toString()
             val payload = PushAccountSettingsPayload()
             payload.params = HashMap<String, Any>()

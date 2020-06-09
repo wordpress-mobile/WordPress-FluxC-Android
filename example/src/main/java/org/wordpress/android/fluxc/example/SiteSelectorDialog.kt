@@ -41,7 +41,7 @@ class SiteSelectorDialog : DialogFragment() {
     var listener: Listener? = null
     var selectedPos: Int = -1
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }
@@ -111,7 +111,7 @@ class SiteSelectorDialog : DialogFragment() {
                     ?: LayoutInflater.from(context)
                             .inflate(android.R.layout.simple_list_item_single_choice, parent, false)
             val site = getItem(position)
-            (cv as TextView).text = site.displayName ?: site.name
+            (cv as TextView).text = site?.displayName ?: site?.name
             return cv
         }
 
