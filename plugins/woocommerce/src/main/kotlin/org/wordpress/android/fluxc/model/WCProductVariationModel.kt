@@ -42,10 +42,25 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
     @Column var dateOnSaleFromGmt = ""
     @Column var dateOnSaleToGmt = ""
 
+    @Column var taxStatus = "" // taxable, shipping, none
+    @Column var taxClass = ""
+
     @Column var onSale = false
     @Column var purchasable = false
     @Column var virtual = false
     @Column var downloadable = false
+
+    @Column var downloadLimit = 0
+    @Column var downloadExpiry = 0
+
+    @Column var downloads = "" // array of downloadable files
+    @Column var backorders = "" // no, notify, yes
+
+    @Column var backordersAllowed = false
+    @Column var backordered = false
+
+    @Column var shippingClass = ""
+    @Column var shippingClassId = 0
 
     @Column var manageStock = false
     @Column var stockQuantity = 0
