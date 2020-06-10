@@ -1,6 +1,9 @@
 package org.wordpress.android.fluxc.instaflux;
 
-import com.facebook.stetho.okhttp3.StethoInterceptor;
+import com.facebook.flipper.android.AndroidFlipperClient;
+import com.facebook.flipper.core.FlipperClient;
+import com.facebook.flipper.plugins.network.FlipperOkhttpInterceptor;
+import com.facebook.flipper.plugins.network.NetworkFlipperPlugin;
 
 import javax.inject.Named;
 
@@ -12,7 +15,12 @@ import okhttp3.Interceptor;
 @Module
 public class InterceptorModule {
     @Provides @IntoSet @Named("network-interceptors")
-    public Interceptor provideStethoInterceptor() {
-        return new StethoInterceptor();
+    public Interceptor provideFlipperInterceptor() {
+        FlipperClient client = AndroidFlipperClient.getInstanceIfInitialized();
+        NetworkFlipperPlugin plugin = null;
+        if (client == null) {
+            plugin = client.getPluginByClass(NetworkFlipperPlugin.class);
+        }
+        return new FlipperOkhttpInterceptor(plugin);
     }
 }

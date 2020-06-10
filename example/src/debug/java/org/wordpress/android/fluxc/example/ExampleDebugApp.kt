@@ -19,9 +19,9 @@ class ExampleDebugApp : ExampleApp() {
     override fun onCreate() {
         super.onCreate()
         component.inject(this)
-        SoLoader.init(this, false)
 
         if (FlipperUtils.shouldEnableFlipper(this)) {
+            SoLoader.init(this, false)
             val client = AndroidFlipperClient.getInstance(this)
             client.addPlugin(InspectorFlipperPlugin(applicationContext, DescriptorMapping.withDefaults()))
             client.addPlugin(NetworkFlipperPlugin())
