@@ -12,7 +12,7 @@ import javax.inject.Named
 @Module
 class InterceptorModule {
     @Provides @IntoSet @Named("network-interceptors")
-    fun provideFlipperInterceptor() : Interceptor =
+    fun provideFlipperInterceptor(): Interceptor =
             FlipperOkhttpInterceptor(
                     AndroidFlipperClient.getInstanceIfInitialized()?.getPluginByClass(NetworkFlipperPlugin::class.java)
             )
