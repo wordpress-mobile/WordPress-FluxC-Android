@@ -27,6 +27,7 @@ import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailPayload;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
+import org.wordpress.android.fluxc.store.AccountStore.OnAuthOptionsFetched;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
@@ -97,6 +98,11 @@ public class SignedOutActionsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 showFetchConnectSiteInfoDialog();
+            }
+        });
+        view.findViewById(R.id.fetch_auth_options).setOnClickListener(new OnClickListener() {
+            @Override public void onClick(View v) {
+                showFetchAuthOptionsDialog();
             }
         });
         return view;
@@ -209,6 +215,21 @@ public class SignedOutActionsFragment extends Fragment {
         alert.show();
     }
 
+    private void showFetchAuthOptionsDialog() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+        final EditText editText = new EditText(getActivity());
+        editText.setSingleLine();
+        alert.setMessage("Fetch auth options for (e-mail or username):");
+        alert.setView(editText);
+        alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String emailOrUsername = editText.getText().toString();
+                mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(emailOrUsername));
+            }
+        });
+        alert.show();
+    }
+
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNewUserValidated(OnNewUserCreated event) {
@@ -271,6 +292,18 @@ public class SignedOutActionsFragment extends Fragment {
         } else {
             prependToLog("Fetch WP.com site for URL " + event.checkedUrl + ": success! Site name: "
                     + event.site.getName());
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onFetchedAuthOptions(OnAuthOptionsFetched event) {
+        if (event.isError()) {
+            prependToLog("Auth Options: error: " + event.error.type + " - " + event.error.message);
+        } else {
+            prependToLog("Auth Options: success!"
+                         + "\n\tIs passwordless: " + event.isPasswordless
+                         + "\n\tIs email verified: " + event.isEmailVerified);
         }
     }
 
