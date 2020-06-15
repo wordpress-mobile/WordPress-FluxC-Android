@@ -237,8 +237,8 @@ public class SignedOutActionsFragment extends Fragment {
     }
 
     private void fetchWhatsNew() {
-        mDispatcher.dispatch(WhatsNewActionBuilder.newFetchWhatsNewAction(new WhatsNewFetchPayload("14.7",
-                WhatsNewAppId.WP_ANDROID, true)));
+        mDispatcher.dispatch(WhatsNewActionBuilder.newFetchRemoteAnnouncementAction(new WhatsNewFetchPayload("14.7",
+                WhatsNewAppId.WP_ANDROID)));
     }
 
     @SuppressWarnings("unused")
