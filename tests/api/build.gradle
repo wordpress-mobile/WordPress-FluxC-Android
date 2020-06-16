@@ -1,0 +1,17 @@
+apply plugin: 'java'
+dependencies {
+    testImplementation 'io.rest-assured:rest-assured:4.2.0' 
+    testImplementation 'junit:junit:4.13'
+    testCompile 'org.json:json:20190722'
+}
+
+test {
+  testLogging {
+    events "passed", "skipped", "failed", "standardOut", "standardError"
+  }
+}
+
+repositories {
+    google()
+    jcenter()
+}

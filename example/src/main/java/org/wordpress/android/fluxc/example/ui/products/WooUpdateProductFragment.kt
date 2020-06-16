@@ -5,6 +5,7 @@ import android.app.DatePickerDialog.OnDateSetListener
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +13,7 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
+import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_woo_update_product.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -19,13 +21,17 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.ARG_LIST_SELECTED_ITEM
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.LIST_SELECTOR_REQUEST_CODE
+import org.wordpress.android.fluxc.example.ui.products.WooProductCategoriesFragment.Companion.ARG_SELECTED_PRODUCT_CATEGORIES
+import org.wordpress.android.fluxc.example.ui.products.WooProductCategoriesFragment.Companion.PRODUCT_CATEGORIES_REQUEST_CODE
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.WCProductModel.ProductTriplet
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductBackOrders
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
@@ -52,15 +58,18 @@ class WooUpdateProductFragment : Fragment() {
     private var selectedRemoteProductId: Long? = null
     private var selectedProductModel: WCProductModel? = null
     private var password: String? = null
+    private var selectedCategories: List<ProductCategory>? = null
 
     companion object {
         const val ARG_SELECTED_SITE_POS = "ARG_SELECTED_SITE_POS"
         const val ARG_SELECTED_PRODUCT_ID = "ARG_SELECTED_PRODUCT_ID"
+        const val ARG_SELECTED_CATEGORIES = "ARG_SELECTED_CATEGORIES"
         const val LIST_RESULT_CODE_TAX_STATUS = 101
         const val LIST_RESULT_CODE_STOCK_STATUS = 102
         const val LIST_RESULT_CODE_BACK_ORDERS = 103
         const val LIST_RESULT_CODE_VISIBILITY = 104
         const val LIST_RESULT_CODE_STATUS = 105
+        const val LIST_RESULT_CODE_CATEGORIES = 106
 
         fun newInstance(selectedSitePosition: Int): WooUpdateProductFragment {
             val fragment = WooUpdateProductFragment()
@@ -79,7 +88,7 @@ class WooUpdateProductFragment : Fragment() {
         }
     }
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }
@@ -101,6 +110,7 @@ class WooUpdateProductFragment : Fragment() {
         super.onSaveInstanceState(outState)
         outState.putInt(ARG_SELECTED_SITE_POS, selectedSitePosition)
         selectedRemoteProductId?.let { outState.putLong(ARG_SELECTED_PRODUCT_ID, it) }
+        selectedCategories?.let { outState.putParcelableArrayList(ARG_SELECTED_CATEGORIES, it as? ArrayList) }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -181,6 +191,10 @@ class WooUpdateProductFragment : Fragment() {
         product_update.setOnClickListener {
             getWCSite()?.let { site ->
                 if (selectedProductModel?.remoteProductId != null) {
+                    // update categories only if new categories has been selected
+                    selectedCategories?.let { selectedProductModel?.categories =
+                            it.map { it.toProductTriplet().toJson() }.toString() }
+
                     val payload = UpdateProductPayload(site, selectedProductModel!!)
                     dispatcher.dispatch(WCProductActionBuilder.newUpdateProductAction(payload))
                     val updatedPassword = product_password.getText()
@@ -212,6 +226,23 @@ class WooUpdateProductFragment : Fragment() {
             )
         }
 
+        select_product_categories.setOnClickListener {
+            getWCSite()?.let {
+                val categories = wcProductStore.getProductCategoriesForSite(it)
+                        .map { ProductCategory(it.remoteCategoryId, it.name, it.slug) }
+
+                val selectedProductCategories = selectedCategories ?: selectedProductModel?.getCategories()
+                        ?.map { it.toProductCategory() }
+
+                replaceFragment(WooProductCategoriesFragment.newInstance(
+                        fragment = this,
+                        productCategories = categories,
+                        resultCode = LIST_RESULT_CODE_CATEGORIES,
+                        selectedProductCategories = selectedProductCategories?.toMutableList()
+                ))
+            }
+        }
+
         product_is_featured.setOnCheckedChangeListener { _, isChecked ->
             selectedProductModel?.featured = isChecked
         }
@@ -233,6 +264,7 @@ class WooUpdateProductFragment : Fragment() {
         savedInstanceState?.let { bundle ->
             selectedRemoteProductId = bundle.getLong(ARG_SELECTED_PRODUCT_ID)
             selectedSitePosition = bundle.getInt(ARG_SELECTED_SITE_POS)
+            selectedCategories = bundle.getParcelableArrayList(ARG_SELECTED_CATEGORIES)
             selectedRemoteProductId?.let { updateSelectedProductId(it) }
         }
     }
@@ -273,6 +305,8 @@ class WooUpdateProductFragment : Fragment() {
                     }
                 }
             }
+        } else if (requestCode == PRODUCT_CATEGORIES_REQUEST_CODE) {
+            this.selectedCategories = data?.getParcelableArrayListExtra(ARG_SELECTED_PRODUCT_CATEGORIES)
         }
     }
 
@@ -315,6 +349,10 @@ class WooUpdateProductFragment : Fragment() {
                 product_menu_order.setText(it.menuOrder.toString())
                 product_external_url.setText(it.externalUrl)
                 product_button_text.setText(it.buttonText)
+                product_categories.setText(
+                        selectedCategories?.joinToString(", ") { it.name }
+                                ?: it.getCommaSeparatedCategoryNames()
+                )
             } ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
     }
@@ -362,18 +400,37 @@ class WooUpdateProductFragment : Fragment() {
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProductPasswordChanged(event: OnProductPasswordChanged) {
-        if (event.isError) {
-            event.error?.let {
-                prependToLog("onProductPasswordChanged has unexpected error: ${it.type}, ${it.message}")
+        when {
+            event.isError -> {
+                event.error?.let {
+                    prependToLog("onProductPasswordChanged has unexpected error: ${it.type}, ${it.message}")
+                }
             }
-        } else if (event.causeOfChange == WCProductAction.FETCH_PRODUCT_PASSWORD) {
-            prependToLog("Password fetched: ${event.password}")
-            product_password.setText(event.password ?: "")
-            password = event.password
-        } else if (event.causeOfChange == WCProductAction.UPDATE_PRODUCT_PASSWORD) {
-            prependToLog("Password updated: ${event.password}")
-            product_password.setText(event.password ?: "")
-            password = event.password
+            event.causeOfChange == WCProductAction.FETCH_PRODUCT_PASSWORD -> {
+                prependToLog("Password fetched: ${event.password}")
+                product_password.setText(event.password ?: "")
+                password = event.password
+            }
+            event.causeOfChange == WCProductAction.UPDATE_PRODUCT_PASSWORD -> {
+                prependToLog("Password updated: ${event.password}")
+                product_password.setText(event.password ?: "")
+                password = event.password
+            }
         }
+    }
+
+    @Parcelize
+    data class ProductCategory(
+        val id: Long,
+        val name: String,
+        val slug: String
+    ) : Parcelable {
+        fun toProductTriplet(): ProductTriplet {
+            return ProductTriplet(this.id, this.name, this.slug)
+        }
+    }
+
+    private fun ProductTriplet.toProductCategory(): ProductCategory {
+        return ProductCategory(this.id, this.name, this.slug)
     }
 }

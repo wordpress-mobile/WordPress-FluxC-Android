@@ -27,6 +27,7 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -79,6 +80,10 @@ android.buildTypes.all { buildType ->
     testProperties.any { property ->
         buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(), "\"${property.value}\""
     }
+}
+
+androidExtensions {
+    experimental = true
 }
 
 dependencies {
@@ -136,4 +141,7 @@ dependencies {
     // Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
+
+    // Multidex
+    implementation 'com.android.support:multidex:1.0.3'
 }

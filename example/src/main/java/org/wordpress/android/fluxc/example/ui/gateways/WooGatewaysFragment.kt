@@ -28,7 +28,7 @@ class WooGatewaysFragment : Fragment() {
     @Inject internal lateinit var gatewayStore: WCGatewayStore
     @Inject internal lateinit var wooCommerceStore: WooCommerceStore
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }

@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.action.WCProductAction
 import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
@@ -21,6 +22,8 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPayload
@@ -269,10 +272,10 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(WCProductAction.FETCHED_PRODUCT_VARIATIONS, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteProductVariationsPayload
         assertNull(payload.error)
-        assertEquals(payload.remoteProductId, remoteProductId)
-        assertEquals(payload.variations.size, 3)
-        assertEquals(payload.variations[0].imageUrl, "")
-        assertNotNull(payload.variations[1].imageUrl)
+        assertEquals(remoteProductId, payload.remoteProductId)
+        assertEquals(3, payload.variations.size)
+        assertEquals("null", payload.variations[0].image)
+        assertNotNull(payload.variations[1].image)
 
         // save the variation to the db
         assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(payload.variations), 3)
@@ -662,6 +665,64 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val productAfter = ProductSqlUtils.getProductByRemoteId(siteModel, remoteProductId)
         assertNotNull(productAfter)
         assertEquals(productAfter!!.getImages().size, 1)
+    }
+
+    @Test
+    fun testAddProductCategorySuccess() {
+        interceptor.respondWith("wc-add-product-category-response-success.json")
+
+        val productCategoryModel = WCProductCategoryModel().apply { name = "test12" }
+        productRestClient.addProductCategory(siteModel, productCategoryModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.ADDED_PRODUCT_CATEGORY, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteAddProductCategoryResponsePayload
+        assertFalse(payload.isError)
+        assertEquals(siteModel.id, payload.site.id)
+        assertEquals(productCategoryModel.name, payload.category?.name)
+
+        // Save product categories to the database
+        assertEquals(1, ProductSqlUtils.insertOrUpdateProductCategory(payload.category!!))
+        assertEquals(1, ProductSqlUtils.getProductCategoriesForSite(siteModel).size)
+    }
+
+    @Test
+    fun testFetchProductCategoriesSuccess() {
+        interceptor.respondWith("wc-fetch-all-product-categories-response-success.json")
+        productRestClient.fetchProductCategories(siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_PRODUCT_CATEGORIES, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductCategoriesPayload
+        assertFalse(payload.isError)
+        assertEquals(siteModel.id, payload.site.id)
+        assertEquals(7, payload.categories.size)
+        assertFalse(payload.loadedMore)
+        assertFalse(payload.canLoadMore)
+
+        // Save product categories to the database
+        assertEquals(7, ProductSqlUtils.insertOrUpdateProductCategories(payload.categories))
+        assertEquals(
+                7,
+                ProductSqlUtils.getProductCategoriesForSite(siteModel).size)
+    }
+
+    @Test
+    fun testFetchProductCategoriesFailed() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        productRestClient.fetchProductCategories(siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_PRODUCT_CATEGORIES, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductCategoriesPayload
+        assertTrue(payload.isError)
+        assertEquals(ProductErrorType.GENERIC_ERROR, payload.error.type)
     }
 
     @Suppress("unused")

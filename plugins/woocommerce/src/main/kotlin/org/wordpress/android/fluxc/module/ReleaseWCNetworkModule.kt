@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.refunds.RefundRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.taxes.WCTaxRestClient
 import javax.inject.Named
 import javax.inject.Singleton
@@ -93,6 +94,17 @@ class ReleaseWCNetworkModule {
         token: AccessToken,
         userAgent: UserAgent
     ) = WCTaxRestClient(dispatcher, requestBuilder, appContext, requestQueue, token, userAgent)
+
+    @Singleton
+    @Provides
+    fun provideShippingLabelRestClient(
+        appContext: Context,
+        requestBuilder: JetpackTunnelGsonRequestBuilder,
+        dispatcher: Dispatcher,
+        @Named("regular") requestQueue: RequestQueue,
+        token: AccessToken,
+        userAgent: UserAgent
+    ) = ShippingLabelRestClient(dispatcher, requestBuilder, appContext, requestQueue, token, userAgent)
 
     @Singleton
     @Provides

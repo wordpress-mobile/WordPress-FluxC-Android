@@ -280,7 +280,7 @@ public class ReleaseStack_CommentTestXMLRPC extends ReleaseStack_XMLRPCBase {
         createNewComment();
 
         // Edit comment instance
-        mNewComment.setContent("Trying with: 20,000 gigawatts");
+        mNewComment.setContent("Trying with: " + (new Random()).nextFloat() * 10 + " gigawatts");
 
         // Create new Comment
         mNextEvent = TestEvents.COMMENT_CHANGED;

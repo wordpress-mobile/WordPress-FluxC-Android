@@ -81,5 +81,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Taxes"/>
+
+                <Button
+                    android:id="@+id/shipping_labels"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Shipping Labels"/>
         </LinearLayout>
 </ScrollView>
