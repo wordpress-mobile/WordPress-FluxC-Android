@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.DomainSuggestionResponse;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailPayload;
+import org.wordpress.android.fluxc.store.AccountStore.FetchAuthOptionsPayload;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthOptionsFetched;
@@ -224,7 +225,8 @@ public class SignedOutActionsFragment extends Fragment {
         alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String emailOrUsername = editText.getText().toString();
-                mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(emailOrUsername));
+                FetchAuthOptionsPayload fetchAuthOptionsPayload = new FetchAuthOptionsPayload(emailOrUsername);
+                mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(fetchAuthOptionsPayload));
             }
         });
         alert.show();

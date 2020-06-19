@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthEmailPayloadFlow;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailPayloadSource;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType;
+import org.wordpress.android.fluxc.store.AccountStore.FetchAuthOptionsPayload;
 import org.wordpress.android.fluxc.store.AccountStore.FetchUsernameSuggestionsPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
@@ -408,7 +409,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     public void testFetchAuthOptionsForUserWithPassword() throws InterruptedException {
         mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_USER_WITH_PASSWORD;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(BuildConfig.TEST_WPCOM_EMAIL_TEST1));
+        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -416,7 +418,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     public void testFetchAuthOptionsForPasswordlessUser() throws InterruptedException {
         mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_PASSWORDLESS_USER;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(BuildConfig.TEST_WPCOM_EMAIL_PASSWORDLESS));
+        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_PASSWORDLESS);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -424,7 +427,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     public void testFetchAuthOptionsForUserWithUnverifiedEmail() throws InterruptedException {
         mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_UNVERIFIED_EMAIL;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(BuildConfig.TEST_WPCOM_EMAIL_UNVERIFIED));
+        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_UNVERIFIED);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -433,7 +437,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
         mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_ERROR_UNKNOWN_USER;
         mCountDownLatch = new CountDownLatch(1);
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(unknownEmail));
+        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(unknownEmail);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
