@@ -1,0 +1,114 @@
+[
+  {
+    "theme_supports": {
+      "align-wide": true,
+      "automatic-feed-links": true,
+      "custom-header": false,
+      "custom-background": {
+        "default-image": "",
+        "default-preset": "default",
+        "default-position-x": "left",
+        "default-position-y": "top",
+        "default-size": "auto",
+        "default-repeat": "repeat",
+        "default-attachment": "scroll",
+        "default-color": "f5efe0"
+      },
+      "custom-logo": {
+        "width": 120,
+        "height": 90,
+        "flex-width": true,
+        "flex-height": true,
+        "header-text": []
+      },
+      "customize-selective-refresh-widgets": true,
+      "dark-editor-style": false,
+      "disable-custom-colors": false,
+      "disable-custom-font-sizes": false,
+      "disable-custom-gradients": false,
+      "editor-color-palette": [
+        {
+          "name": "Accent Color",
+          "slug": "accent",
+          "color": "#cd2653"
+        },
+        {
+          "name": "Primary",
+          "slug": "primary",
+          "color": "#000000"
+        },
+        {
+          "name": "Secondary",
+          "slug": "secondary",
+          "color": "#6d6d6d"
+        },
+        {
+          "name": "Subtle Background",
+          "slug": "subtle-background",
+          "color": "#dcd7ca"
+        },
+        {
+          "name": "Background Color",
+          "slug": "background",
+          "color": "#f5efe0"
+        }
+      ],
+      "editor-font-sizes": [
+        {
+          "name": "Small",
+          "size": 18,
+          "slug": "small"
+        },
+        {
+          "name": "Regular",
+          "size": 21,
+          "slug": "normal"
+        },
+        {
+          "name": "Large",
+          "size": 26.25,
+          "slug": "large"
+        },
+        {
+          "name": "Larger",
+          "size": 32,
+          "slug": "larger"
+        }
+      ],
+      "editor-gradient-presets": [
+        {
+          "name": "Blue to Purple",
+          "gradient": "linear-gradient(135deg,rgba(6,147,227,1) 0%,rgb(155,81,224) 100%)",
+          "slug": "blue-to-purple"
+        }
+      ],
+      "editor-styles": false,
+      "html5": [
+        "search-form",
+        "comment-form",
+        "comment-list",
+        "gallery",
+        "caption",
+        "script",
+        "style"
+      ],
+      "post-thumbnails": true,
+      "responsive-embeds": true,
+      "title-tag": true,
+      "wp-block-styles": false,
+      "formats": [
+        "standard"
+      ]
+    },
+    "author": "<a href=\"https://wordpress.org/\">the WordPress team</a>",
+    "author_name": "the WordPress team",
+    "author_uri": "https://wordpress.org/",
+    "description": "Our default theme for 2020 is designed to take full advantage of the flexibility of the block editor. Organizations and businesses have the ability to create dynamic landing pages with endless layouts using the group and column blocks. The centered content column and fine-tuned typography also makes it perfect for traditional blogs. Complete editor styles give you a good idea of what your content will look like, even before you publish. You can give your site a personal touch by changing the background colors and the accent color in the Customizer. The colors of all elements on your site are automatically calculated based on the colors you pick, ensuring a high, accessible color contrast for your visitors.",
+    "name": "Twenty Twenty-copy",
+    "stylesheet": "twentytwenty-copy",
+    "template": "twentytwenty-copy",
+    "theme_uri": null,
+    "version": "1.2",
+    "screenshot": "https://nosy-basilisk.jurassic.ninja/wp-content/themes/twentytwenty-copy/screenshot.png"
+  }
+]

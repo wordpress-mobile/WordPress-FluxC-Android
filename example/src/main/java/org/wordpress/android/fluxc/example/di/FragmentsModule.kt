@@ -4,6 +4,7 @@ import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import org.wordpress.android.fluxc.example.AccountFragment
 import org.wordpress.android.fluxc.example.CommentsFragment
+import org.wordpress.android.fluxc.example.EditorThemeFragment
 import org.wordpress.android.fluxc.example.MainFragment
 import org.wordpress.android.fluxc.example.MediaFragment
 import org.wordpress.android.fluxc.example.NotificationsFragment
@@ -107,5 +108,8 @@ internal abstract class FragmentsModule {
     abstract fun provideStoreSelectorDialogInjector(): StoreSelectorDialog
 
     @ContributesAndroidInjector
-    abstract fun provideReactNativeFramgmentInjector(): ReactNativeFragment
+    abstract fun provideReactNativeFragmentInjector(): ReactNativeFragment
+
+    @ContributesAndroidInjector
+    abstract fun provideEditorThemeFragmentInjector(): EditorThemeFragment
 }
