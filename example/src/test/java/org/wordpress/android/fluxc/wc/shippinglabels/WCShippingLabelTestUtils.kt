@@ -20,7 +20,8 @@ object WCShippingLabelTestUtils {
         refundableAmount: Float = 7.65F,
         currency: String = "USD",
         paperSize: String = "label",
-        refund: String? = null
+        refund: String? = null,
+        productNames: String = "[Woo T-shirt, Herman Chair]"
     ): WCShippingLabelModel {
         return WCShippingLabelModel().apply {
             localSiteId = siteId
@@ -34,6 +35,7 @@ object WCShippingLabelTestUtils {
             this.refundableAmount = refundableAmount
             this.currency = currency
             this.paperSize = paperSize
+            this.productNames = productNames
             refund?.let { this.refund = it }
         }
     }
