@@ -94,6 +94,7 @@ jobs:
       - checkout
       - android/restore-gradle-cache:
           cache-prefix: connected-tests
+      - copy-gradle-properties
       - decrypt-properties-files
       - run:
           name: Build
