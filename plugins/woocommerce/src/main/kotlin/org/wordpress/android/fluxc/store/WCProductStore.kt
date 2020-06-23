@@ -465,6 +465,13 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var causeOfChange: WCProductAction? = null
     }
 
+    class OnProductTagChanged(
+        var rowsAffected: Int,
+        var canLoadMore: Boolean = false
+    ) : OnChanged<ProductError>() {
+        var causeOfChange: WCProductAction? = null
+    }
+
     /**
      * returns the corresponding product from the database as a [WCProductModel].
      */
@@ -530,6 +537,12 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     fun getProductReviewsForProductAndSiteId(localSiteId: Int, remoteProductId: Long): List<WCProductReviewModel> =
             ProductSqlUtils.getProductReviewsForProductAndSiteId(localSiteId, remoteProductId)
 
+    /**
+     * returns a list of tags for a specific site in the database
+     */
+    fun getTagsForSite(site: SiteModel): List<WCProductTagModel> =
+            ProductSqlUtils.getProductTagsForSite(site.id)
+
     fun getProductReviewByRemoteId(
         localSiteId: Int,
         remoteReviewId: Long
@@ -592,6 +605,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 fetchProductCategories(action.payload as FetchProductCategoriesPayload)
             WCProductAction.ADD_PRODUCT_CATEGORY ->
                 addProductCategory(action.payload as AddProductCategoryPayload)
+            WCProductAction.FETCH_PRODUCT_TAGS ->
+                fetchProductTags(action.payload as FetchProductTagsPayload)
 
             // remote responses
             WCProductAction.FETCHED_SINGLE_PRODUCT ->
@@ -626,6 +641,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 handleFetchProductCategories(action.payload as RemoteProductCategoriesPayload)
             WCProductAction.ADDED_PRODUCT_CATEGORY ->
                 handleAddProductCategory(action.payload as RemoteAddProductCategoryResponsePayload)
+            WCProductAction.FETCHED_PRODUCT_TAGS ->
+                handleFetchProductTagsCompleted(action.payload as RemoteProductTagsPayload)
         }
     }
 
@@ -696,6 +713,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     private fun addProductCategory(payload: AddProductCategoryPayload) {
         with(payload) { wcProductRestClient.addProductCategory(site, category) }
+    }
+
+    private fun fetchProductTags(payload: FetchProductTagsPayload) {
+        with(payload) { wcProductRestClient.fetchProductTags(site, pageSize, offset) }
     }
 
     private fun updateProduct(payload: UpdateProductPayload) {
@@ -950,5 +971,22 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
         onProductCategoryChanged.causeOfChange = WCProductAction.ADDED_PRODUCT_CATEGORY
         emitChange(onProductCategoryChanged)
+    }
+
+    private fun handleFetchProductTagsCompleted(payload: RemoteProductTagsPayload) {
+        val onProductTagsChanged = if (payload.isError) {
+            OnProductTagChanged(0).also { it.error = payload.error }
+        } else {
+            // delete product tags for site if this is the first page of results, otherwise
+            // tags deleted outside of the app will persist
+            if (payload.offset == 0) {
+                ProductSqlUtils.deleteProductTagsForSite(payload.site)
+            }
+
+            val rowsAffected = ProductSqlUtils.insertOrUpdateProductTags(payload.tags)
+            OnProductTagChanged(rowsAffected, canLoadMore = payload.canLoadMore)
+        }
+        onProductTagsChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_TAGS
+        emitChange(onProductTagsChanged)
     }
 }
