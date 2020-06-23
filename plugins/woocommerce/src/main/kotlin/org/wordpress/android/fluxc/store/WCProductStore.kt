@@ -12,6 +12,7 @@ import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
+import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
@@ -34,6 +35,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         const val DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE = 100
         const val DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE = 25
         const val DEFAULT_PRODUCT_SHIPPING_CLASS_PAGE_SIZE = 25
+        const val DEFAULT_PRODUCT_TAGS_PAGE_SIZE = 25
         val DEFAULT_PRODUCT_SORTING = TITLE_ASC
         val DEFAULT_CATEGORY_SORTING = NAME_ASC
     }
@@ -142,6 +144,12 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     class AddProductCategoryPayload(
         val site: SiteModel,
         val category: WCProductCategoryModel
+    ) : Payload<BaseNetworkError>()
+
+    class FetchProductTagsPayload(
+        var site: SiteModel,
+        var pageSize: Int = DEFAULT_PRODUCT_TAGS_PAGE_SIZE,
+        var offset: Int = 0
     ) : Payload<BaseNetworkError>()
 
     enum class ProductErrorType {
@@ -376,6 +384,21 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
             site: SiteModel,
             category: WCProductCategoryModel?
         ) : this(site, category) { this.error = error }
+    }
+
+    class RemoteProductTagsPayload(
+        val site: SiteModel,
+        val tags: List<WCProductTagModel> = emptyList(),
+        var offset: Int = 0,
+        var loadedMore: Boolean = false,
+        var canLoadMore: Boolean = false
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            site: SiteModel
+        ) : this(site) {
+            this.error = error
+        }
     }
 
     // OnChanged events
