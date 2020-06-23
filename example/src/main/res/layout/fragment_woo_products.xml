@@ -159,6 +159,20 @@
             android:text="Update Product Images"/>
 
         <Button
+            android:id="@+id/fetch_product_tags"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Product Tags"/>
+
+        <Button
+            android:id="@+id/load_more_product_tags"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text="Load More Product Tags" />
+
+        <Button
             android:id="@+id/update_product"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

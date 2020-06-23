@@ -28,6 +28,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPa
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductTagsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
@@ -39,6 +40,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductPasswordChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductReviewChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductTagChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload
@@ -65,7 +67,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         UPDATED_PRODUCT_IMAGES,
         UPDATED_PRODUCT_PASSWORD,
         FETCH_PRODUCT_CATEGORIES,
-        ADDED_PRODUCT_CATEGORY
+        ADDED_PRODUCT_CATEGORY,
+        FETCHED_PRODUCT_TAGS
     }
 
     @Inject internal lateinit var productStore: WCProductStore
@@ -92,6 +95,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     private var lastProductCategoryEvent: OnProductCategoryChanged? = null
     private var lastShippingClassEvent: OnProductShippingClassesChanged? = null
     private var lastReviewEvent: OnProductReviewChanged? = null
+    private var lastProductTagEvent: OnProductTagChanged? = null
 
     @Throws(Exception::class)
     override fun setUp() {
@@ -529,6 +533,23 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertEquals(updatedProductMenuOrder, updatedProduct?.menuOrder)
     }
 
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchProductTagsForSite() {
+        // Remove all product tags from the database
+        ProductSqlUtils.deleteProductTagsForSite(sSite)
+        assertEquals(0, ProductSqlUtils.getProductTagsForSite(sSite.id).size)
+
+        nextEvent = TestEvent.FETCHED_PRODUCT_TAGS
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(WCProductActionBuilder.newFetchProductTagsAction(FetchProductTagsPayload(sSite)))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify results
+        val fetchedTags = productStore.getTagsForSite(sSite)
+        assertTrue(fetchedTags.isNotEmpty())
+    }
+
     /**
      * Used by the update images test to fetch a single media model for this site
      */
@@ -688,6 +709,26 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             }
             WCProductAction.ADDED_PRODUCT_CATEGORY -> {
                 assertEquals(TestEvent.ADDED_PRODUCT_CATEGORY, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductTagChanged(event: OnProductTagChanged) {
+        event.error?.let {
+            throw AssertionError(
+                    "OnProductTagChanged has unexpected error: ${it.type}, ${it.message}"
+            )
+        }
+
+        lastProductTagEvent = event
+
+        when (event.causeOfChange) {
+            WCProductAction.FETCH_PRODUCT_TAGS -> {
+                assertEquals(TestEvent.FETCHED_PRODUCT_TAGS, nextEvent)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)

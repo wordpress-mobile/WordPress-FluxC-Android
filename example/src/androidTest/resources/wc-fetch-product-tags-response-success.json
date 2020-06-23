@@ -1,0 +1,45 @@
+{
+  "data": [{
+    "id": 1,
+    "name": "awoo",
+    "slug": "awoo",
+    "description": "",
+    "count": 0,
+    "_links": {
+      "self": [{
+        "href": "https:\/\/awootestshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/tags\/155"
+      }],
+      "collection": [{
+        "href": "https:\/\/awootestshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/tags"
+      }]
+    }
+  }, {
+    "id": 2,
+    "name": "saturn",
+    "slug": "saturn",
+    "description": "",
+    "count": 0,
+    "_links": {
+      "self": [{
+        "href": "https:\/\/awootestshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/tags\/156"
+      }],
+      "collection": [{
+        "href": "https:\/\/awootestshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/tags"
+      }]
+    }
+  }, {
+    "id": 3,
+    "name": "test",
+    "slug": "test",
+    "description": "",
+    "count": 0,
+    "_links": {
+      "self": [{
+        "href": "https:\/\/awootestshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/tags\/154"
+      }],
+      "collection": [{
+        "href": "https:\/\/awootestshop.mystagingwebsite.com\/wp-json\/wc\/v3\/products\/tags"
+      }]
+    }
+  }]
+}
