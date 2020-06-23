@@ -883,6 +883,14 @@ class ProductRestClient(
                 }
             }
         }
+        if (!storedWCProductModel.hasSameTags(updatedProductModel)) {
+            val updatedTags = updatedProductModel.getTags()
+            body["tags"] = JsonArray().also {
+                for (tag in updatedTags) {
+                    it.add(tag.toJson())
+                }
+            }
+        }
         return body
     }
 
