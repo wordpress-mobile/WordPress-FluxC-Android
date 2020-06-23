@@ -163,7 +163,7 @@ class ProductRestClient(
         pageSize: Int = DEFAULT_PRODUCT_TAGS_PAGE_SIZE,
         offset: Int = 0
     ) {
-        val url = WOOCOMMERCE.products.shipping_classes.pathV3
+        val url = WOOCOMMERCE.products.tags.pathV3
         val responseType = object : TypeToken<List<ProductTagApiResponse>>() {}.type
         val params = mutableMapOf(
                 "per_page" to pageSize.toString(),

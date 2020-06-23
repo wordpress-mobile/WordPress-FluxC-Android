@@ -37,6 +37,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPa
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductSkuAvailabilityPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductTagsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
@@ -47,6 +48,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductSkuAvailabilityChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductTagChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductsSearched
 import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
@@ -69,6 +71,7 @@ class WooProductsFragment : Fragment() {
 
     private var pendingFetchProductShippingClassListOffset: Int = 0
     private var pendingFetchProductCategoriesOffset: Int = 0
+    private var pendingFetchProductTagsOffset: Int = 0
 
     private var enteredCategoryName: String? = null
 
@@ -283,6 +286,22 @@ class WooProductsFragment : Fragment() {
             }
         }
 
+        fetch_product_tags.setOnClickListener {
+            selectedSite?.let { site ->
+                prependToLog("Submitting request to fetch product tags for site ${site.id}")
+                val payload = FetchProductTagsPayload(site)
+                dispatcher.dispatch(WCProductActionBuilder.newFetchProductTagsAction(payload))
+            }
+        }
+
+        load_more_product_tags.setOnClickListener {
+            selectedSite?.let { site ->
+                prependToLog("Submitting offset request to fetch product tags for site ${site.id}")
+                val payload = FetchProductTagsPayload(site, offset = pendingFetchProductTagsOffset)
+                dispatcher.dispatch(WCProductActionBuilder.newFetchProductTagsAction(payload))
+            }
+        }
+
         update_product_images.setOnClickListener {
             showSingleLineDialog(
                     activity,
@@ -483,6 +502,25 @@ class WooProductsFragment : Fragment() {
                     }
                 }
             }
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductTagChanged(event: OnProductTagChanged) {
+        if (event.isError) {
+            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
+            return
+        }
+
+        prependToLog("Fetched ${event.rowsAffected} product tags. More tags available ${event.canLoadMore}")
+        if (event.canLoadMore) {
+            pendingFetchProductTagsOffset += event.rowsAffected
+            load_more_product_tags.visibility = View.VISIBLE
+            load_more_product_tags.isEnabled = true
+        } else {
+            pendingFetchProductTagsOffset = 0
+            load_more_product_tags.isEnabled = false
         }
     }
 
