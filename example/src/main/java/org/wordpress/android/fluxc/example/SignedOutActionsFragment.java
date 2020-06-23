@@ -28,8 +28,10 @@ import org.wordpress.android.fluxc.generated.WhatsNewActionBuilder;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.DomainSuggestionResponse;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailPayload;
+import org.wordpress.android.fluxc.store.AccountStore.FetchAuthOptionsPayload;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
+import org.wordpress.android.fluxc.store.AccountStore.OnAuthOptionsFetched;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
 import org.wordpress.android.fluxc.store.PlanOffersStore;
 import org.wordpress.android.fluxc.store.PlanOffersStore.OnPlanOffersFetched;
@@ -120,6 +122,11 @@ public class SignedOutActionsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 fetchWhatsNew();
+            }
+        });
+        view.findViewById(R.id.fetch_auth_options).setOnClickListener(new OnClickListener() {
+            @Override public void onClick(View v) {
+                showFetchAuthOptionsDialog();
             }
         });
         return view;
@@ -232,6 +239,22 @@ public class SignedOutActionsFragment extends Fragment {
         alert.show();
     }
 
+    private void showFetchAuthOptionsDialog() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+        final EditText editText = new EditText(getActivity());
+        editText.setSingleLine();
+        alert.setMessage("Fetch auth options for (e-mail or username):");
+        alert.setView(editText);
+        alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String emailOrUsername = editText.getText().toString();
+                FetchAuthOptionsPayload fetchAuthOptionsPayload = new FetchAuthOptionsPayload(emailOrUsername);
+                mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(fetchAuthOptionsPayload));
+            }
+        });
+        alert.show();
+    }
+
     private void fetchPlanOffers() {
         mDispatcher.dispatch(ActionBuilder.generateNoPayloadAction(PlanOffersAction.FETCH_PLAN_OFFERS));
     }
@@ -323,6 +346,18 @@ public class SignedOutActionsFragment extends Fragment {
             prependToLog("Fetch Whats New error: " + event.error.getType());
         } else {
             prependToLog("Fetch Whats New success!");
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onFetchedAuthOptions(OnAuthOptionsFetched event) {
+        if (event.isError()) {
+            prependToLog("Auth Options: error: " + event.error.type + " - " + event.error.message);
+        } else {
+            prependToLog("Auth Options: success!"
+                         + "\n\tIs passwordless: " + event.isPasswordless
+                         + "\n\tIs email verified: " + event.isEmailVerified);
         }
     }
 

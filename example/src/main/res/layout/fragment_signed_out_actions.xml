@@ -59,4 +59,10 @@
         android:layout_height="wrap_content"
         android:text="What's new info" />
 
+    <Button
+        android:id="@+id/fetch_auth_options"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch Auth Options" />
+
 </LinearLayout>
