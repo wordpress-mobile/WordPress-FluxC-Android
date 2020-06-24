@@ -59,11 +59,13 @@ class WooUpdateProductFragment : Fragment() {
     private var selectedProductModel: WCProductModel? = null
     private var password: String? = null
     private var selectedCategories: List<ProductCategory>? = null
+    private var selectedTags: MutableList<ProductTag>? = null
 
     companion object {
         const val ARG_SELECTED_SITE_POS = "ARG_SELECTED_SITE_POS"
         const val ARG_SELECTED_PRODUCT_ID = "ARG_SELECTED_PRODUCT_ID"
         const val ARG_SELECTED_CATEGORIES = "ARG_SELECTED_CATEGORIES"
+        const val ARG_SELECTED_TAGS = "ARG_SELECTED_TAGS"
         const val LIST_RESULT_CODE_TAX_STATUS = 101
         const val LIST_RESULT_CODE_STOCK_STATUS = 102
         const val LIST_RESULT_CODE_BACK_ORDERS = 103
@@ -111,6 +113,7 @@ class WooUpdateProductFragment : Fragment() {
         outState.putInt(ARG_SELECTED_SITE_POS, selectedSitePosition)
         selectedRemoteProductId?.let { outState.putLong(ARG_SELECTED_PRODUCT_ID, it) }
         selectedCategories?.let { outState.putParcelableArrayList(ARG_SELECTED_CATEGORIES, it as? ArrayList) }
+        selectedTags?.let { outState.putParcelableArrayList(ARG_SELECTED_TAGS, it as? ArrayList) }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -265,6 +268,7 @@ class WooUpdateProductFragment : Fragment() {
             selectedRemoteProductId = bundle.getLong(ARG_SELECTED_PRODUCT_ID)
             selectedSitePosition = bundle.getInt(ARG_SELECTED_SITE_POS)
             selectedCategories = bundle.getParcelableArrayList(ARG_SELECTED_CATEGORIES)
+            selectedTags = bundle.getParcelableArrayList(ARG_SELECTED_TAGS)
             selectedRemoteProductId?.let { updateSelectedProductId(it) }
         }
     }
@@ -353,6 +357,9 @@ class WooUpdateProductFragment : Fragment() {
                         selectedCategories?.joinToString(", ") { it.name }
                                 ?: it.getCommaSeparatedCategoryNames()
                 )
+                product_tags.setText(
+                        selectedTags?.joinToString(", ") { it.name } ?: it.getCommaSeparatedTagNames()
+                )
             } ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
     }
@@ -429,6 +436,13 @@ class WooUpdateProductFragment : Fragment() {
             return ProductTriplet(this.id, this.name, this.slug)
         }
     }
+
+    @Parcelize
+    data class ProductTag(
+        val id: Long? = 0L,
+        val name: String,
+        val slug: String
+    ) : Parcelable
 
     private fun ProductTriplet.toProductCategory(): ProductCategory {
         return ProductCategory(this.id, this.name, this.slug)
