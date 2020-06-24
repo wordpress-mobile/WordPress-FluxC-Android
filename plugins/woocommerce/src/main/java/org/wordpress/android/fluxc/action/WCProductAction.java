@@ -4,6 +4,7 @@ import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.AddProductTagPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload;
@@ -17,6 +18,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayloa
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagResponsePayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPasswordPayload;
@@ -74,6 +76,8 @@ public enum WCProductAction implements IAction {
     ADD_PRODUCT_CATEGORY,
     @Action(payloadType = FetchProductTagsPayload.class)
     FETCH_PRODUCT_TAGS,
+    @Action(payloadType = AddProductTagPayload.class)
+    ADD_PRODUCT_TAG,
 
 
     // Remote responses
@@ -110,5 +114,7 @@ public enum WCProductAction implements IAction {
     @Action(payloadType = RemoteAddProductCategoryResponsePayload.class)
     ADDED_PRODUCT_CATEGORY,
     @Action(payloadType = RemoteProductTagsPayload.class)
-    FETCHED_PRODUCT_TAGS
+    FETCHED_PRODUCT_TAGS,
+    @Action(payloadType = RemoteAddProductTagResponsePayload.class)
+    ADDED_PRODUCT_TAG,
 }
