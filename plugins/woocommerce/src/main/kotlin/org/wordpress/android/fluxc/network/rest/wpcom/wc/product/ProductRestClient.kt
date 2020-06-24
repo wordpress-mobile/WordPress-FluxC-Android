@@ -46,6 +46,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPasswordPayload
@@ -187,6 +188,42 @@ class ProductRestClient(
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductTagsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Adds a new Tag to the site.
+     *
+     * Makes a POST call `/wc/v3/products/tags/` to save a [WCProductTagModel] record via the Jetpack tunnel.
+     * Returns a [WCProductTagModel] on successful response.
+     *
+     * Dispatches [WCProductAction.ADDED_PRODUCT_TAG] action with the results.
+     */
+    fun addProductTag(
+        site: SiteModel,
+        tag: WCProductTagModel
+    ) {
+        val url = WOOCOMMERCE.products.tags.pathV3
+
+        val responseType = object : TypeToken<ProductTagApiResponse>() {}.type
+        val params = mutableMapOf(
+                "name" to tag.name
+        )
+        val request = JetpackTunnelGsonRequest.buildPostRequest(url, site.siteId, params, responseType,
+                { response: ProductTagApiResponse? ->
+                    val tagResponse = response?.let {
+                        productTagApiResponseToProductTagModel(it, site).apply {
+                            localSiteId = site.id
+                        }
+                    }
+                    val payload = RemoteAddProductTagResponsePayload(site, tagResponse)
+                    dispatcher.dispatch(WCProductActionBuilder.newAddedProductTagAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val productTagError = networkErrorToProductError(networkError)
+                    val payload = RemoteAddProductTagResponsePayload(productTagError, site, tag)
+                    dispatcher.dispatch(WCProductActionBuilder.newAddedProductTagAction(payload))
+                })
         add(request)
     }
 

@@ -623,6 +623,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 addProductCategory(action.payload as AddProductCategoryPayload)
             WCProductAction.FETCH_PRODUCT_TAGS ->
                 fetchProductTags(action.payload as FetchProductTagsPayload)
+            WCProductAction.ADD_PRODUCT_TAG ->
+                addProductTag(action.payload as AddProductTagPayload)
 
             // remote responses
             WCProductAction.FETCHED_SINGLE_PRODUCT ->
@@ -659,6 +661,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                 handleAddProductCategory(action.payload as RemoteAddProductCategoryResponsePayload)
             WCProductAction.FETCHED_PRODUCT_TAGS ->
                 handleFetchProductTagsCompleted(action.payload as RemoteProductTagsPayload)
+            WCProductAction.ADDED_PRODUCT_TAG ->
+                handleAddProductTagCompleted(action.payload as RemoteAddProductTagResponsePayload)
         }
     }
 
@@ -733,6 +737,10 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     private fun fetchProductTags(payload: FetchProductTagsPayload) {
         with(payload) { wcProductRestClient.fetchProductTags(site, pageSize, offset) }
+    }
+
+    private fun addProductTag(payload: AddProductTagPayload) {
+        with(payload) { wcProductRestClient.addProductTag(site, tag) }
     }
 
     private fun updateProduct(payload: UpdateProductPayload) {
@@ -1004,5 +1012,19 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         }
         onProductTagsChanged.causeOfChange = WCProductAction.FETCH_PRODUCT_TAGS
         emitChange(onProductTagsChanged)
+    }
+
+    private fun handleAddProductTagCompleted(payload: RemoteAddProductTagResponsePayload) {
+        val onProductTagChanged: OnProductTagChanged
+
+        if (payload.isError) {
+            onProductTagChanged = OnProductTagChanged(0).also { it.error = payload.error }
+        } else {
+            val rowsAffected = payload.tag?.let { ProductSqlUtils.insertOrUpdateProductTag(it) } ?: 0
+            onProductTagChanged = OnProductTagChanged(rowsAffected)
+        }
+
+        onProductTagChanged.causeOfChange = WCProductAction.ADDED_PRODUCT_TAG
+        emitChange(onProductTagChanged)
     }
 }
