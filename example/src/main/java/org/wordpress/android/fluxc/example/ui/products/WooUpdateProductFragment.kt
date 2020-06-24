@@ -28,6 +28,8 @@ import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.ARG_L
 import org.wordpress.android.fluxc.example.ui.ListSelectorDialog.Companion.LIST_SELECTOR_REQUEST_CODE
 import org.wordpress.android.fluxc.example.ui.products.WooProductCategoriesFragment.Companion.ARG_SELECTED_PRODUCT_CATEGORIES
 import org.wordpress.android.fluxc.example.ui.products.WooProductCategoriesFragment.Companion.PRODUCT_CATEGORIES_REQUEST_CODE
+import org.wordpress.android.fluxc.example.ui.products.WooProductTagsFragment.Companion.ARG_SELECTED_PRODUCT_TAGS
+import org.wordpress.android.fluxc.example.ui.products.WooProductTagsFragment.Companion.PRODUCT_TAGS_REQUEST_CODE
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductModel
@@ -59,7 +61,7 @@ class WooUpdateProductFragment : Fragment() {
     private var selectedProductModel: WCProductModel? = null
     private var password: String? = null
     private var selectedCategories: List<ProductCategory>? = null
-    private var selectedTags: MutableList<ProductTag>? = null
+    private var selectedTags: List<ProductTag>? = null
 
     companion object {
         const val ARG_SELECTED_SITE_POS = "ARG_SELECTED_SITE_POS"
@@ -72,6 +74,7 @@ class WooUpdateProductFragment : Fragment() {
         const val LIST_RESULT_CODE_VISIBILITY = 104
         const val LIST_RESULT_CODE_STATUS = 105
         const val LIST_RESULT_CODE_CATEGORIES = 106
+        const val LIST_RESULT_CODE_TAGS = 107
 
         fun newInstance(selectedSitePosition: Int): WooUpdateProductFragment {
             val fragment = WooUpdateProductFragment()
@@ -198,6 +201,9 @@ class WooUpdateProductFragment : Fragment() {
                     selectedCategories?.let { selectedProductModel?.categories =
                             it.map { it.toProductTriplet().toJson() }.toString() }
 
+                    selectedTags?.let { selectedProductModel?.tags =
+                            it.map { it.toProductTriplet().toJson() }.toString() }
+
                     val payload = UpdateProductPayload(site, selectedProductModel!!)
                     dispatcher.dispatch(WCProductActionBuilder.newUpdateProductAction(payload))
                     val updatedPassword = product_password.getText()
@@ -246,6 +252,23 @@ class WooUpdateProductFragment : Fragment() {
             }
         }
 
+        select_product_tags.setOnClickListener {
+            getWCSite()?.let {
+                val tags = wcProductStore.getTagsForSite(it)
+                        .map { ProductTag(it.remoteTagId, it.name, it.slug) }
+
+                val selectedProductTags = selectedTags ?: selectedProductModel?.getTags()
+                        ?.map { it.toProductTag() }
+
+                replaceFragment(WooProductTagsFragment.newInstance(
+                        fragment = this,
+                        productTags = tags,
+                        resultCode = LIST_RESULT_CODE_TAGS,
+                        selectedProductTags = selectedProductTags?.toMutableList()
+                ))
+            }
+        }
+
         product_is_featured.setOnCheckedChangeListener { _, isChecked ->
             selectedProductModel?.featured = isChecked
         }
@@ -269,8 +292,8 @@ class WooUpdateProductFragment : Fragment() {
             selectedSitePosition = bundle.getInt(ARG_SELECTED_SITE_POS)
             selectedCategories = bundle.getParcelableArrayList(ARG_SELECTED_CATEGORIES)
             selectedTags = bundle.getParcelableArrayList(ARG_SELECTED_TAGS)
-            selectedRemoteProductId?.let { updateSelectedProductId(it) }
         }
+        selectedRemoteProductId?.let { updateSelectedProductId(it) }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -311,6 +334,8 @@ class WooUpdateProductFragment : Fragment() {
             }
         } else if (requestCode == PRODUCT_CATEGORIES_REQUEST_CODE) {
             this.selectedCategories = data?.getParcelableArrayListExtra(ARG_SELECTED_PRODUCT_CATEGORIES)
+        } else if (requestCode == PRODUCT_TAGS_REQUEST_CODE) {
+            this.selectedTags = data?.getParcelableArrayListExtra(ARG_SELECTED_PRODUCT_TAGS)
         }
     }
 
@@ -358,7 +383,8 @@ class WooUpdateProductFragment : Fragment() {
                                 ?: it.getCommaSeparatedCategoryNames()
                 )
                 product_tags.setText(
-                        selectedTags?.joinToString(", ") { it.name } ?: it.getCommaSeparatedTagNames()
+                        selectedTags?.joinToString(", ") { it.name }
+                                ?: it.getCommaSeparatedTagNames()
                 )
             } ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
@@ -439,12 +465,20 @@ class WooUpdateProductFragment : Fragment() {
 
     @Parcelize
     data class ProductTag(
-        val id: Long? = 0L,
+        val id: Long,
         val name: String,
         val slug: String
-    ) : Parcelable
+    ) : Parcelable {
+        fun toProductTriplet(): ProductTriplet {
+            return ProductTriplet(this.id, this.name, this.slug)
+        }
+    }
 
     private fun ProductTriplet.toProductCategory(): ProductCategory {
         return ProductCategory(this.id, this.name, this.slug)
+    }
+
+    private fun ProductTriplet.toProductTag(): ProductTag {
+        return ProductTag(this.id, this.name, this.slug)
     }
 }
