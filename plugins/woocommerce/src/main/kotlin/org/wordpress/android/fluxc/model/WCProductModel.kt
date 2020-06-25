@@ -316,4 +316,22 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         }
         return true
     }
+
+    /**
+     * Compares this product's tags with the passed product's tags, returns true only if both
+     * lists contain the same tags in the same order
+     */
+    fun hasSameTags(updatedProduct: WCProductModel): Boolean {
+        val updatedTags = updatedProduct.getTags()
+        val storedTags = getTags()
+        if (storedTags.size != updatedTags.size) {
+            return false
+        }
+        for (i in storedTags.indices) {
+            if (storedTags[i].id != updatedTags[i].id) {
+                return false
+            }
+        }
+        return true
+    }
 }

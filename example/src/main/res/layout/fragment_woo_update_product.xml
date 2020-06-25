@@ -142,6 +142,32 @@
             app:layout_constraintStart_toEndOf="@+id/product_categories"
             app:layout_constraintTop_toBottomOf="@+id/product_short_desc" />
 
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/product_tags"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:inputType="text"
+            app:layout_constraintEnd_toStartOf="@+id/select_product_tags"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_categories"
+            app:textHint="Product Tags" />
+
+        <Button
+            android:id="@+id/select_product_tags"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:enabled="false"
+            android:text="Select Tags"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/product_tags"
+            app:layout_constraintTop_toBottomOf="@+id/product_categories" />
+
         <Button
             android:id="@+id/product_catalog_visibility"
             style="?android:attr/spinnerStyle"
@@ -153,7 +179,7 @@
             app:layout_constraintEnd_toStartOf="@+id/product_status"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/product_categories" />
+            app:layout_constraintTop_toBottomOf="@+id/product_tags" />
 
         <Button
             android:id="@+id/product_status"
@@ -166,7 +192,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/product_catalog_visibility"
-            app:layout_constraintTop_toBottomOf="@+id/product_categories" />
+            app:layout_constraintTop_toBottomOf="@+id/product_tags" />
 
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_regular_price"
