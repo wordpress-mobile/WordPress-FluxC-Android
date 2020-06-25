@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.mocked
 
+import android.os.Bundle
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.junit.Assert
@@ -46,9 +47,17 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
 
         // See onEditorThemeChanged for the latch's countdown to fire.
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Validate Callback
         assertNotEmpty(editorTheme)
+
+        // Validate Cache
         val cachedTheme = editorThemeStore.getEditorThemeForSite(site)
         assertNotEmpty(cachedTheme)
+
+        // Validate Bundle
+        val themeBundle = editorTheme!!.themeSupport.toBundle()
+        assertNotEmpty(themeBundle)
     }
 
     @Test
@@ -58,9 +67,17 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
 
         // See onEditorThemeChanged for the latch's countdown to fire.
         Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Validate Callback
         assertEmpty(editorTheme)
+
+        // Validate Cache
         val cachedTheme = editorThemeStore.getEditorThemeForSite(site)
         assertEmpty(cachedTheme)
+
+        // Validate Bundle
+        val themeBundle = editorTheme!!.themeSupport.toBundle()
+        assertEmpty(themeBundle)
     }
 
     private fun assertNotEmpty(theme: EditorTheme?) {
@@ -69,8 +86,22 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
     }
 
     private fun assertEmpty(theme: EditorTheme?) {
-        Assert.assertTrue(theme?.themeSupport?.colors.isNullOrEmpty())
-        Assert.assertTrue(theme?.themeSupport?.gradients.isNullOrEmpty())
+        Assert.assertTrue(theme?.themeSupport?.colors == null)
+        Assert.assertTrue(theme?.themeSupport?.gradients == null)
+    }
+
+    private fun assertEmpty(theme: Bundle) {
+        val colors = theme.getSerializable("colors")
+        val gradients = theme.getSerializable("gradients")
+        Assert.assertTrue(colors == null)
+        Assert.assertTrue(gradients == null)
+    }
+
+    private fun assertNotEmpty(theme: Bundle) {
+        val colors = theme.getSerializable("colors") as ArrayList<*>
+        val gradients = theme.getSerializable("gradients") as ArrayList<*>
+        Assert.assertFalse(colors.isNullOrEmpty())
+        Assert.assertFalse(gradients.isNullOrEmpty())
     }
 
     @Suppress("unused")
