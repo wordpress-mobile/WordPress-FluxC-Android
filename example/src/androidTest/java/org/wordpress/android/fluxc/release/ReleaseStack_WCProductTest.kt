@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductVisibility
 import org.wordpress.android.fluxc.persistence.MediaSqlUtils
@@ -24,6 +25,7 @@ import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload
+import org.wordpress.android.fluxc.store.WCProductStore.AddProductTagPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
@@ -68,7 +70,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         UPDATED_PRODUCT_PASSWORD,
         FETCH_PRODUCT_CATEGORIES,
         ADDED_PRODUCT_CATEGORY,
-        FETCHED_PRODUCT_TAGS
+        FETCHED_PRODUCT_TAGS,
+        ADDED_PRODUCT_TAG
     }
 
     @Inject internal lateinit var productStore: WCProductStore
@@ -550,6 +553,32 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertTrue(fetchedTags.isNotEmpty())
     }
 
+    @Throws(InterruptedException::class)
+    @Test
+    fun testAddProductTag() {
+        // Remove all product tags from the database
+        ProductSqlUtils.deleteProductTagsForSite(sSite)
+        assertEquals(0, ProductSqlUtils.getProductTagsForSite(sSite.id).size)
+
+        nextEvent = TestEvent.ADDED_PRODUCT_TAG
+        mCountDownLatch = CountDownLatch(1)
+
+        val productTagModel = WCProductTagModel().apply {
+            // duplicate tag names fail in the API level so added a random number next to the "Test"
+            name = "Test" + Random.nextInt(0, 10000)
+        }
+        mDispatcher.dispatch(WCProductActionBuilder.newAddProductTagAction(
+                AddProductTagPayload(sSite, productTagModel)
+        )
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify results
+        val fetchTags = productStore.getTagsForSite(sSite)
+        assertTrue(fetchTags.isNotEmpty())
+        assertTrue(fetchTags.size == 1)
+    }
+
     /**
      * Used by the update images test to fetch a single media model for this site
      */
@@ -729,6 +758,10 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         when (event.causeOfChange) {
             WCProductAction.FETCH_PRODUCT_TAGS -> {
                 assertEquals(TestEvent.FETCHED_PRODUCT_TAGS, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            WCProductAction.ADDED_PRODUCT_TAG -> {
+                assertEquals(TestEvent.ADDED_PRODUCT_TAG, nextEvent)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)

@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
@@ -23,6 +24,7 @@ import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
@@ -770,6 +772,31 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(WCProductAction.FETCHED_PRODUCT_TAGS, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteProductTagsPayload
         assertNotNull(payload.error)
+    }
+
+    @Test
+    fun testAddProductTagSuccess() {
+        interceptor.respondWith("wc-add-product-tag-response-success.json")
+
+        val productTagModel = WCProductTagModel().apply {
+            name = "test12"
+            slug = "test12"
+        }
+        productRestClient.addProductTag(siteModel, productTagModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.ADDED_PRODUCT_TAG, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteAddProductTagResponsePayload
+        assertFalse(payload.isError)
+        assertEquals(siteModel.id, payload.site.id)
+        assertEquals(productTagModel.name, payload.tag?.name)
+        assertEquals(productTagModel.slug, payload.tag?.slug)
+
+        // Save product tags to the database
+        assertEquals(1, ProductSqlUtils.insertOrUpdateProductTag(payload.tag!!))
+        assertEquals(1, ProductSqlUtils.getProductTagsForSite(siteModel.id).size)
     }
 
     @Suppress("unused")
