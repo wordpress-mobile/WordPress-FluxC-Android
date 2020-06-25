@@ -10,7 +10,7 @@ commands:
     steps:
       - run:
           name: Setup gradle.properties
-          command: cp example/gradle.properties-example example/gradle.properties
+          command: cp example/gradle.properties-example example/gradle.properties && cp gradle.properties-example gradle.properties
   decrypt-file:
     parameters:
       input:
@@ -43,7 +43,7 @@ commands:
 
 jobs:
   Lint:
-    executor: 
+    executor:
       name: android/default
       api-version: "27"
     steps:
@@ -61,7 +61,7 @@ jobs:
       - android/save-gradle-cache
       - android/save-lint-results
   Unit Tests:
-    executor: 
+    executor:
       name: android/default
       api-version: "27"
     steps:
@@ -87,13 +87,14 @@ jobs:
         type: boolean
       device:
         type: string
-    executor: 
+    executor:
       name: android/default
       api-version: "27"
     steps:
       - checkout
       - android/restore-gradle-cache:
           cache-prefix: connected-tests
+      - copy-gradle-properties
       - decrypt-properties-files
       - run:
           name: Build
@@ -137,7 +138,7 @@ jobs:
                 success_message: '${SLACK_SUCCESS_MESSAGE}'
                 webhook: '${SLACK_STATUS_WEBHOOK}'
   WooCommerce API Tests:
-    executor: 
+    executor:
       name: android/default
       api-version: "27"
     steps:
