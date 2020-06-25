@@ -173,6 +173,13 @@
             android:text="Load More Product Tags" />
 
         <Button
+            android:id="@+id/add_product_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Add Product Tag" />
+
+        <Button
             android:id="@+id/update_product"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
