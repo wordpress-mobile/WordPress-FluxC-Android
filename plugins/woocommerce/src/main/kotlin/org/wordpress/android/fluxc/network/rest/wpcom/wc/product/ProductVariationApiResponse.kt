@@ -15,6 +15,14 @@ class ProductVariationApiResponse : Response {
     var regular_price: String? = null
     var sale_price: String? = null
 
+    var date_on_sale_from: String? = null
+    var date_on_sale_to: String? = null
+    var date_on_sale_from_gmt: String? = null
+    var date_on_sale_to_gmt: String? = null
+
+    var tax_status: String? = null
+    var tax_class: String? = null
+
     var date_created: String? = null
     var date_modified: String? = null
 
@@ -22,6 +30,16 @@ class ProductVariationApiResponse : Response {
     var purchasable = false
     var virtual = false
     var downloadable = false
+
+    var backorders: String? = null
+    var backorders_allowed = false
+    var backordered = false
+
+    var shipping_class: String? = null
+    var shipping_class_id = 0
+
+    var download_limit = 0
+    var download_expiry = 0
 
     var manage_stock = false
     var stock_quantity = 0
@@ -34,4 +52,5 @@ class ProductVariationApiResponse : Response {
 
     var dimensions: JsonElement? = null
     var attributes: JsonElement? = null
+    var downloads: JsonElement? = null
 }

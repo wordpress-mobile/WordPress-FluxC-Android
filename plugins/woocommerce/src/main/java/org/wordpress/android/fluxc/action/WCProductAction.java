@@ -10,6 +10,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductSkuAvailabilityPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.FetchProductTagsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductVariationsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload;
@@ -24,6 +25,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductSkuAvailabilityPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductTagsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload;
@@ -70,6 +72,8 @@ public enum WCProductAction implements IAction {
     FETCH_PRODUCT_CATEGORIES,
     @Action(payloadType = AddProductCategoryPayload.class)
     ADD_PRODUCT_CATEGORY,
+    @Action(payloadType = FetchProductTagsPayload.class)
+    FETCH_PRODUCT_TAGS,
 
 
     // Remote responses
@@ -104,5 +108,7 @@ public enum WCProductAction implements IAction {
     @Action(payloadType = RemoteProductCategoriesPayload.class)
     FETCHED_PRODUCT_CATEGORIES,
     @Action(payloadType = RemoteAddProductCategoryResponsePayload.class)
-    ADDED_PRODUCT_CATEGORY
+    ADDED_PRODUCT_CATEGORY,
+    @Action(payloadType = RemoteProductTagsPayload.class)
+    FETCHED_PRODUCT_TAGS
 }

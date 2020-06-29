@@ -4,6 +4,7 @@ import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import org.wordpress.android.fluxc.example.AccountFragment
 import org.wordpress.android.fluxc.example.CommentsFragment
+import org.wordpress.android.fluxc.example.EditorThemeFragment
 import org.wordpress.android.fluxc.example.MainFragment
 import org.wordpress.android.fluxc.example.MediaFragment
 import org.wordpress.android.fluxc.example.NotificationsFragment
@@ -21,6 +22,7 @@ import org.wordpress.android.fluxc.example.ui.gateways.WooGatewaysFragment
 import org.wordpress.android.fluxc.example.ui.orders.WooOrdersFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductCategoriesFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductFiltersFragment
+import org.wordpress.android.fluxc.example.ui.products.WooProductTagsFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductsFragment
 import org.wordpress.android.fluxc.example.ui.products.WooUpdateProductFragment
 import org.wordpress.android.fluxc.example.ui.refunds.WooRefundsFragment
@@ -86,6 +88,9 @@ internal abstract class FragmentsModule {
     abstract fun provideWooProductCategoriesFragmentInjector(): WooProductCategoriesFragment
 
     @ContributesAndroidInjector
+    abstract fun provideWooProductTagsFragmentInjector(): WooProductTagsFragment
+
+    @ContributesAndroidInjector
     abstract fun provideWooOrdersFragmentInjector(): WooOrdersFragment
 
     @ContributesAndroidInjector
@@ -107,5 +112,8 @@ internal abstract class FragmentsModule {
     abstract fun provideStoreSelectorDialogInjector(): StoreSelectorDialog
 
     @ContributesAndroidInjector
-    abstract fun provideReactNativeFramgmentInjector(): ReactNativeFragment
+    abstract fun provideReactNativeFragmentInjector(): ReactNativeFragment
+
+    @ContributesAndroidInjector
+    abstract fun provideEditorThemeFragmentInjector(): EditorThemeFragment
 }

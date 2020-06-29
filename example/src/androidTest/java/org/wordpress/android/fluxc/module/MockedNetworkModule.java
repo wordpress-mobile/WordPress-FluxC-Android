@@ -26,10 +26,13 @@ import org.wordpress.android.fluxc.network.xmlrpc.media.MediaXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.post.PostXMLRPCClient;
 import org.wordpress.android.fluxc.network.xmlrpc.site.SiteXMLRPCClient;
 
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import kotlin.coroutines.CoroutineContext;
+import kotlinx.coroutines.Dispatchers;
 import okhttp3.OkHttpClient;
 
 @Module
@@ -58,6 +61,28 @@ public class MockedNetworkModule {
     @Provides
     public RequestQueue provideRequestQueue(OkHttpClient.Builder okHttpClientBuilder, Context appContext) {
         return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClientBuilder));
+    }
+
+    @Singleton
+    @Named("regular")
+    @Provides
+    public RequestQueue provideRegularRequestQueue(OkHttpClient.Builder okHttpClientBuilder,
+                                            Context appContext) {
+        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClientBuilder));
+    }
+
+    @Singleton
+    @Named("custom-ssl")
+    @Provides
+    public RequestQueue provideCustomRequestQueue(OkHttpClient.Builder okHttpClientBuilder,
+                                                   Context appContext) {
+        return Volley.newRequestQueue(appContext, new OkHttpStack(okHttpClientBuilder));
+    }
+
+    @Singleton
+    @Provides
+    public CoroutineContext provideCoroutineContext() {
+        return Dispatchers.getDefault();
     }
 
     @Singleton

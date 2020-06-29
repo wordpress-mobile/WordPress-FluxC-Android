@@ -17,6 +17,9 @@
 /products/categories/
 /products/categories/<id>/
 
+/products/tags/
+/products/tags/<id>/
+
 /reports/orders/totals/
 /reports/revenue/stats/
 

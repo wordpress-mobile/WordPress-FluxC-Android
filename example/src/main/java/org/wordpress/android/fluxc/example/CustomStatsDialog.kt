@@ -64,7 +64,7 @@ class CustomStatsDialog : DialogFragment() {
 
     override fun onResume() {
         super.onResume()
-        dialog.window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT)
+        dialog?.window?.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

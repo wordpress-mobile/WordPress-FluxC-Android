@@ -18,21 +18,32 @@ import androidx.fragment.app.FragmentTransaction;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
+import org.wordpress.android.fluxc.action.PlanOffersAction;
+import org.wordpress.android.fluxc.annotations.action.ActionBuilder;
 import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
+import org.wordpress.android.fluxc.generated.WhatsNewActionBuilder;
 import org.wordpress.android.fluxc.network.rest.wpcom.site.DomainSuggestionResponse;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailPayload;
+import org.wordpress.android.fluxc.store.AccountStore.FetchAuthOptionsPayload;
 import org.wordpress.android.fluxc.store.AccountStore.NewAccountPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
+import org.wordpress.android.fluxc.store.AccountStore.OnAuthOptionsFetched;
 import org.wordpress.android.fluxc.store.AccountStore.OnNewUserCreated;
+import org.wordpress.android.fluxc.store.PlanOffersStore;
+import org.wordpress.android.fluxc.store.PlanOffersStore.OnPlanOffersFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnConnectSiteInfoChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnSuggestedDomains;
 import org.wordpress.android.fluxc.store.SiteStore.OnURLChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnWPComSiteFetched;
 import org.wordpress.android.fluxc.store.SiteStore.SuggestDomainsPayload;
+import org.wordpress.android.fluxc.store.WhatsNewStore;
+import org.wordpress.android.fluxc.store.WhatsNewStore.OnWhatsNewFetched;
+import org.wordpress.android.fluxc.store.WhatsNewStore.WhatsNewAppId;
+import org.wordpress.android.fluxc.store.WhatsNewStore.WhatsNewFetchPayload;
 
 import javax.inject.Inject;
 
@@ -41,6 +52,8 @@ import dagger.android.support.AndroidSupportInjection;
 
 public class SignedOutActionsFragment extends Fragment {
     @Inject AccountStore mAccountStore;
+    @Inject WhatsNewStore mWhatsNewStore;
+    @Inject PlanOffersStore mPlanOffersStore;
     @Inject Dispatcher mDispatcher;
 
     @Override
@@ -97,6 +110,23 @@ public class SignedOutActionsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 showFetchConnectSiteInfoDialog();
+            }
+        });
+        view.findViewById(R.id.plans_info).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fetchPlanOffers();
+            }
+        });
+        view.findViewById(R.id.whats_new_info).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fetchWhatsNew();
+            }
+        });
+        view.findViewById(R.id.fetch_auth_options).setOnClickListener(new OnClickListener() {
+            @Override public void onClick(View v) {
+                showFetchAuthOptionsDialog();
             }
         });
         return view;
@@ -209,6 +239,31 @@ public class SignedOutActionsFragment extends Fragment {
         alert.show();
     }
 
+    private void showFetchAuthOptionsDialog() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+        final EditText editText = new EditText(getActivity());
+        editText.setSingleLine();
+        alert.setMessage("Fetch auth options for (e-mail or username):");
+        alert.setView(editText);
+        alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String emailOrUsername = editText.getText().toString();
+                FetchAuthOptionsPayload fetchAuthOptionsPayload = new FetchAuthOptionsPayload(emailOrUsername);
+                mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(fetchAuthOptionsPayload));
+            }
+        });
+        alert.show();
+    }
+
+    private void fetchPlanOffers() {
+        mDispatcher.dispatch(ActionBuilder.generateNoPayloadAction(PlanOffersAction.FETCH_PLAN_OFFERS));
+    }
+
+    private void fetchWhatsNew() {
+        mDispatcher.dispatch(WhatsNewActionBuilder.newFetchRemoteAnnouncementAction(new WhatsNewFetchPayload("14.7",
+                WhatsNewAppId.WP_ANDROID)));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onNewUserValidated(OnNewUserCreated event) {
@@ -271,6 +326,38 @@ public class SignedOutActionsFragment extends Fragment {
         } else {
             prependToLog("Fetch WP.com site for URL " + event.checkedUrl + ": success! Site name: "
                     + event.site.getName());
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPlanOffersFetched(OnPlanOffersFetched event) {
+        if (event.isError()) {
+            prependToLog("Fetch Plan Offers error: " + event.error.getType());
+        } else {
+            prependToLog("Fetch Plan Offers success!");
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onWhatsNewFetched(OnWhatsNewFetched event) {
+        if (event.isError()) {
+            prependToLog("Fetch Whats New error: " + event.error.getType());
+        } else {
+            prependToLog("Fetch Whats New success!");
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onFetchedAuthOptions(OnAuthOptionsFetched event) {
+        if (event.isError()) {
+            prependToLog("Auth Options: error: " + event.error.type + " - " + event.error.message);
+        } else {
+            prependToLog("Auth Options: success!"
+                         + "\n\tIs passwordless: " + event.isPasswordless
+                         + "\n\tIs email verified: " + event.isEmailVerified);
         }
     }
 

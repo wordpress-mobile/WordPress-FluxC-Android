@@ -16,9 +16,11 @@ import org.wordpress.android.fluxc.store.AccountStore.AuthEmailPayloadFlow;
 import org.wordpress.android.fluxc.store.AccountStore.AuthEmailPayloadSource;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType;
+import org.wordpress.android.fluxc.store.AccountStore.FetchAuthOptionsPayload;
 import org.wordpress.android.fluxc.store.AccountStore.FetchUsernameSuggestionsPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthEmailSent;
+import org.wordpress.android.fluxc.store.AccountStore.OnAuthOptionsFetched;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnDomainContactFetched;
 import org.wordpress.android.fluxc.store.AccountStore.OnUsernameChanged;
@@ -59,7 +61,11 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         CHANGE_USERNAME_ERROR_INVALID_INPUT,
         FETCH_USERNAME_SUGGESTIONS_ERROR_NO_NAME,
         FETCH_USERNAME_SUGGESTIONS_SUCCESS,
-        FETCH_DOMAIN_CONTACT
+        FETCH_DOMAIN_CONTACT,
+        FETCH_AUTH_OPTIONS_USER_WITH_PASSWORD,
+        FETCH_AUTH_OPTIONS_PASSWORDLESS_USER,
+        FETCH_AUTH_OPTIONS_UNVERIFIED_EMAIL,
+        FETCH_AUTH_OPTIONS_ERROR_UNKNOWN_USER,
     }
 
     private TestEvents mNextEvent;
@@ -399,6 +405,43 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
+    public void testFetchAuthOptionsForUserWithPassword() throws InterruptedException {
+        mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_USER_WITH_PASSWORD;
+        mCountDownLatch = new CountDownLatch(1);
+        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_TEST1);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testFetchAuthOptionsForPasswordlessUser() throws InterruptedException {
+        mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_PASSWORDLESS_USER;
+        mCountDownLatch = new CountDownLatch(1);
+        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_PASSWORDLESS);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testFetchAuthOptionsForUserWithUnverifiedEmail() throws InterruptedException {
+        mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_UNVERIFIED_EMAIL;
+        mCountDownLatch = new CountDownLatch(1);
+        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_UNVERIFIED);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testFetchAuthOptionsForUnknownUser() throws InterruptedException {
+        String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
+        mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_ERROR_UNKNOWN_USER;
+        mCountDownLatch = new CountDownLatch(1);
+        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(unknownEmail);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onDomainContactFetched(OnDomainContactFetched event) {
@@ -532,6 +575,40 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         } else if (event.suggestions.size() != 0) {
             assertEquals(mNextEvent, TestEvents.FETCH_USERNAME_SUGGESTIONS_SUCCESS);
             mCountDownLatch.countDown();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onAuthOptionsFetched(OnAuthOptionsFetched event) {
+        AppLog.i(AppLog.T.API, "Received OnAuthOptionsFetched");
+
+        if (event.isError()) {
+            AppLog.i(AppLog.T.API, "OnAuthOptionsFetched: " + event.error.type + " - " + event.error.message);
+
+            switch (event.error.type) {
+                case GENERIC_ERROR:
+                    throw new AssertionError("Error should not be tested: " + event.error.type);
+                case UNKNOWN_USER:
+                    assertEquals(mNextEvent, TestEvents.FETCH_AUTH_OPTIONS_ERROR_UNKNOWN_USER);
+                    mCountDownLatch.countDown();
+                    break;
+                default:
+                    throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            }
+        } else {
+            if (event.isPasswordless) {
+                assertEquals(mNextEvent, TestEvents.FETCH_AUTH_OPTIONS_PASSWORDLESS_USER);
+                mCountDownLatch.countDown();
+            } else {
+                if (event.isEmailVerified) {
+                    assertEquals(mNextEvent, TestEvents.FETCH_AUTH_OPTIONS_USER_WITH_PASSWORD);
+                    mCountDownLatch.countDown();
+                } else {
+                    assertEquals(mNextEvent, TestEvents.FETCH_AUTH_OPTIONS_UNVERIFIED_EMAIL);
+                    mCountDownLatch.countDown();
+                }
+            }
         }
     }
 

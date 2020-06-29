@@ -30,6 +30,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductSkuAvailabilityPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductTagsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
@@ -272,10 +273,10 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(WCProductAction.FETCHED_PRODUCT_VARIATIONS, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteProductVariationsPayload
         assertNull(payload.error)
-        assertEquals(payload.remoteProductId, remoteProductId)
-        assertEquals(payload.variations.size, 3)
-        assertEquals(payload.variations[0].imageUrl, "")
-        assertNotNull(payload.variations[1].imageUrl)
+        assertEquals(remoteProductId, payload.remoteProductId)
+        assertEquals(3, payload.variations.size)
+        assertEquals("null", payload.variations[0].image)
+        assertNotNull(payload.variations[1].image)
 
         // save the variation to the db
         assertEquals(ProductSqlUtils.insertOrUpdateProductVariations(payload.variations), 3)
@@ -723,6 +724,52 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         val payload = lastAction!!.payload as RemoteProductCategoriesPayload
         assertTrue(payload.isError)
         assertEquals(ProductErrorType.GENERIC_ERROR, payload.error.type)
+    }
+
+    @Test
+    fun testFetchProductTagsSuccess() {
+        interceptor.respondWith("wc-fetch-product-tags-response-success.json")
+        productRestClient.fetchProductTags(siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_PRODUCT_TAGS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductTagsPayload
+        assertNull(payload.error)
+        assertEquals(payload.tags.size, 3)
+        assertEquals(payload.tags[0].remoteTagId, 1)
+        assertEquals(payload.tags[0].name, "awoo")
+        assertEquals(payload.tags[0].slug, "awoo")
+        assertEquals(payload.tags[0].description, "")
+
+        // save the tags to the db
+        assertEquals(ProductSqlUtils.insertOrUpdateProductTags(payload.tags), 3)
+
+        // now delete all tags for this site and save again
+        ProductSqlUtils.deleteProductTagsForSite(siteModel)
+        assertEquals(ProductSqlUtils.insertOrUpdateProductTags(payload.tags), 3)
+
+        // now verify the db stored the tags correctly
+        val dbTags = ProductSqlUtils.getProductTagsForSite(siteModel.id)
+        assertEquals(dbTags.size, 3)
+        with(dbTags.first()) {
+            assertEquals(this.remoteTagId, 1)
+            assertEquals(this.localSiteId, siteModel.id)
+        }
+    }
+
+    @Test
+    fun testFetchProductTagsError() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        productRestClient.fetchProductTags(siteModel)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_PRODUCT_TAGS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductTagsPayload
+        assertNotNull(payload.error)
     }
 
     @Suppress("unused")

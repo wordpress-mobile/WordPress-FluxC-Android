@@ -136,7 +136,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         val imageList = ArrayList<WCProductImageModel>()
         if (images.isNotEmpty()) {
             try {
-                Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+                Gson().fromJson(images, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
                     with(jsonElement.asJsonObject) {
                         WCProductImageModel(this.getLong("id")).also {
                             it.name = this.getString("name") ?: ""
@@ -148,6 +148,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                 }
             } catch (e: JsonParseException) {
                 AppLog.e(T.API, e)
+            } catch (e: IllegalStateException) {
+                AppLog.e(T.API, e)
             }
         }
         return imageList
@@ -158,7 +160,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      */
     fun getFirstImageUrl(): String? {
         try {
-            Gson().fromJson<JsonElement>(images, JsonElement::class.java).asJsonArray.firstOrNull { jsonElement ->
+            Gson().fromJson(images, JsonElement::class.java).asJsonArray.firstOrNull { jsonElement ->
                 return (jsonElement.asJsonObject).getString("src")
             }
         } catch (e: JsonParseException) {
@@ -309,6 +311,24 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         }
         for (i in storedCategories.indices) {
             if (storedCategories[i].id != updatedCategories[i].id) {
+                return false
+            }
+        }
+        return true
+    }
+
+    /**
+     * Compares this product's tags with the passed product's tags, returns true only if both
+     * lists contain the same tags in the same order
+     */
+    fun hasSameTags(updatedProduct: WCProductModel): Boolean {
+        val updatedTags = updatedProduct.getTags()
+        val storedTags = getTags()
+        if (storedTags.size != updatedTags.size) {
+            return false
+        }
+        for (i in storedTags.indices) {
+            if (storedTags[i].id != updatedTags[i].id) {
                 return false
             }
         }

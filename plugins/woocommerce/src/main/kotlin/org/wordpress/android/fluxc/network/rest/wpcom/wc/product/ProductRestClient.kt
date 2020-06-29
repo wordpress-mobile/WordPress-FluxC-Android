@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 import android.content.Context
 import com.android.volley.RequestQueue
 import com.google.gson.JsonArray
-import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
@@ -16,6 +15,7 @@ import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
+import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
@@ -32,6 +32,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUC
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SHIPPING_CLASS_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_SORTING
+import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_TAGS_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting
@@ -53,6 +54,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductReviewPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductShippingClassPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductSkuAvailabilityPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductTagsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
@@ -141,6 +143,48 @@ class ProductRestClient(
                     val productError = networkErrorToProductError(networkError)
                     val payload = RemoteProductShippingClassListPayload(productError, site)
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductShippingClassListAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Makes a GET request to `GET /wp-json/wc/v3/products/tags` to fetch
+     * product tags for a site
+     *
+     * Dispatches a WCProductAction.FETCHED_PRODUCT_TAGS action with the result
+     *
+     * @param [site] The site to fetch product shipping class list for
+     * @param [pageSize] The size of the tags needed from the API response
+     * @param [offset] The page number passed to the API
+     */
+    fun fetchProductTags(
+        site: SiteModel,
+        pageSize: Int = DEFAULT_PRODUCT_TAGS_PAGE_SIZE,
+        offset: Int = 0
+    ) {
+        val url = WOOCOMMERCE.products.tags.pathV3
+        val responseType = object : TypeToken<List<ProductTagApiResponse>>() {}.type
+        val params = mutableMapOf(
+                "per_page" to pageSize.toString(),
+                "offset" to offset.toString()
+        )
+
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: List<ProductTagApiResponse>? ->
+                    val tags = response?.map {
+                        productTagApiResponseToProductTagModel(it, site)
+                    }.orEmpty()
+
+                    val loadedMore = offset > 0
+                    val canLoadMore = tags.size == pageSize
+                    val payload = RemoteProductTagsPayload(site, tags, offset, loadedMore, canLoadMore)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductTagsAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val productError = networkErrorToProductError(networkError)
+                    val payload = RemoteProductTagsPayload(productError, site)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedProductTagsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
         add(request)
@@ -839,7 +883,29 @@ class ProductRestClient(
                 }
             }
         }
+        if (!storedWCProductModel.hasSameTags(updatedProductModel)) {
+            val updatedTags = updatedProductModel.getTags()
+            body["tags"] = JsonArray().also {
+                for (tag in updatedTags) {
+                    it.add(tag.toJson())
+                }
+            }
+        }
         return body
+    }
+
+    private fun productTagApiResponseToProductTagModel(
+        response: ProductTagApiResponse,
+        site: SiteModel
+    ): WCProductTagModel {
+        return WCProductTagModel().apply {
+            remoteTagId = response.id
+            localSiteId = site.id
+            name = response.name ?: ""
+            slug = response.slug ?: ""
+            description = response.description ?: ""
+            count = response.count
+        }
     }
 
     private fun productShippingClassResponseToProductShippingClassModel(
@@ -959,6 +1025,24 @@ class ProductRestClient(
             salePrice = response.sale_price ?: ""
             onSale = response.on_sale
 
+            dateOnSaleFrom = response.date_on_sale_from ?: ""
+            dateOnSaleTo = response.date_on_sale_to ?: ""
+            dateOnSaleFromGmt = response.date_on_sale_from_gmt ?: ""
+            dateOnSaleToGmt = response.date_on_sale_to_gmt ?: ""
+
+            taxStatus = response.tax_status ?: ""
+            taxClass = response.tax_class ?: ""
+
+            backorders = response.backorders ?: ""
+            backordersAllowed = response.backorders_allowed
+            backordered = response.backordered
+
+            shippingClass = response.shipping_class ?: ""
+            shippingClassId = response.shipping_class_id
+
+            downloadLimit = response.download_limit
+            downloadExpiry = response.download_expiry
+
             virtual = response.virtual
             downloadable = response.downloadable
             purchasable = response.purchasable
@@ -972,17 +1056,16 @@ class ProductRestClient(
             weight = response.weight ?: ""
             menuOrder = response.menu_order
 
+            attributes = response.attributes?.toString() ?: ""
+            downloads = response.downloads?.toString() ?: ""
+
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""
                 width = json.getString("width") ?: ""
                 height = json.getString("height") ?: ""
             }
 
-            response.image?.let {
-                (it as? JsonObject)?.let { json ->
-                    imageUrl = json.getString("src") ?: ""
-                } ?: ""
-            }
+            image = response.image?.toString() ?: ""
         }
     }
 

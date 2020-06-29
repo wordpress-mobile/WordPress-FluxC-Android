@@ -31,7 +31,7 @@ class ThemeFragment : Fragment() {
     @Inject internal lateinit var themeStore: ThemeStore
     @Inject internal lateinit var dispatcher: Dispatcher
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }

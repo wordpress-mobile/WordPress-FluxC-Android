@@ -7,6 +7,7 @@ import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
+import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductCategoryApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductReviewApiResponse
@@ -92,5 +93,37 @@ object ProductTestUtils {
                 parent = it.parent ?: 0L
             }
         }
+    }
+
+    fun generateSampleProductTag(
+        remoteId: Long = 1L,
+        name: String = "",
+        slug: String = "",
+        description: String = "",
+        count: Int = 3,
+        siteId: Int = 6
+    ): WCProductTagModel {
+        return WCProductTagModel().apply {
+            remoteTagId = remoteId
+            localSiteId = siteId
+            this.name = name
+            this.slug = slug
+            this.description = description
+            this.count = count
+        }
+    }
+
+    fun generateProductTags(siteId: Int = 6): List<WCProductTagModel> {
+        val tagList = mutableListOf<WCProductTagModel>()
+        for (i in 0 until 5) {
+            tagList.add(generateSampleProductTag(
+                    i.toLong(),
+                    siteId = siteId,
+                    name = "$i",
+                    slug = "$i",
+                    description = "$i"
+            ))
+        }
+        return tagList
     }
 }
