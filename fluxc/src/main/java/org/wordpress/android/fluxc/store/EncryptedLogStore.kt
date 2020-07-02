@@ -75,7 +75,7 @@ class EncryptedLogStore @Inject constructor(
                 sourceFile = encryptedLog.file,
                 uuid = encryptedLog.uuid,
                 publicKey = keyPair.publicKey
-        ).read()
+        ).encrypt()
         encryptedLogRestClient.uploadLog(encryptedLog.uuid, contents)
     }
 
