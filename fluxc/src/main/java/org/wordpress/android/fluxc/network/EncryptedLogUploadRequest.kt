@@ -8,12 +8,13 @@ import com.android.volley.Response.ErrorListener
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.HttpHeaderParser
 import org.json.JSONObject
-import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
 
 private const val AUTHORIZATION_HEADER = "Authorization"
 private const val CONTENT_TYPE_HEADER = "Content-Type"
 private const val CONTENT_TYPE_JSON = "application/json"
 private const val UUID_HEADER = "log-uuid"
+private const val UPLOAD_URL = "https://public-api.wordpress.com/rest/v1.1/encrypted-logging"
+// WPCOMREST.encrypted_logging.urlV1_1
 
 class EncryptedLogUploadRequest(
     private val logUuid: String,
@@ -21,7 +22,7 @@ class EncryptedLogUploadRequest(
     private val clientSecret: String,
     private val successListener: Response.Listener<NetworkResponse>,
     errorListener: ErrorListener
-) : Request<NetworkResponse>(Method.POST, WPCOMREST.encrypted_logging.urlV1_1, errorListener) {
+) : Request<NetworkResponse>(Method.POST, UPLOAD_URL, errorListener) {
     override fun getHeaders(): Map<String, String> {
         return mapOf(
                 CONTENT_TYPE_HEADER to CONTENT_TYPE_JSON,
