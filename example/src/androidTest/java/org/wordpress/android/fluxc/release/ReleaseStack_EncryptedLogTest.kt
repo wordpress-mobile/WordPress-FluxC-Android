@@ -1,36 +1,57 @@
 package org.wordpress.android.fluxc.release
 
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
-import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.core.Is.`is`
-import org.hamcrest.core.IsNull.nullValue
+import org.greenrobot.eventbus.Subscribe
+import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.wordpress.android.fluxc.model.encryptedlogging.EncryptedLogUploadState.UPLOADING
-import org.wordpress.android.fluxc.persistence.EncryptedLogSqlUtils
+import org.junit.Assert.assertTrue
+import org.wordpress.android.fluxc.TestUtils
+import org.wordpress.android.fluxc.generated.EncryptedLogActionBuilder
+import org.wordpress.android.fluxc.release.ReleaseStack_EncryptedLogTest.TestEvents.ENCRYPTED_LOG_UPLOADED_SUCCESSFULLY
 import org.wordpress.android.fluxc.store.EncryptedLogStore
+import org.wordpress.android.fluxc.store.EncryptedLogStore.OnEncryptedLogUploaded
+import org.wordpress.android.fluxc.store.EncryptedLogStore.UploadEncryptedLogPayload
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 private const val TEST_UUID = "TEST-UUID"
 
 class ReleaseStack_EncryptedLogTest : ReleaseStack_Base() {
     @Inject lateinit var encryptedLogStore: EncryptedLogStore
-    @Inject lateinit var encryptedLogSqlUtils: EncryptedLogSqlUtils
+
+    private var nextEvent: TestEvents? = null
+
+    private enum class TestEvents {
+        NONE,
+        ENCRYPTED_LOG_UPLOADED_SUCCESSFULLY
+    }
 
     @Throws(Exception::class)
     override fun setUp() {
         super.setUp()
         mReleaseStackAppComponent.inject(this)
+        init()
+        nextEvent = TestEvents.NONE
     }
 
     @Test
     fun testQueueForUpload() {
-        runBlocking {
-            encryptedLogStore.queueLogForUpload(TEST_UUID, createTempFile(suffix = TEST_UUID))
-            assertThat(encryptedLogSqlUtils.getEncryptedLog(TEST_UUID)?.uploadState, `is`(UPLOADING))
+        nextEvent = ENCRYPTED_LOG_UPLOADED_SUCCESSFULLY
 
-            delay(5000)
-            assertThat(encryptedLogSqlUtils.getEncryptedLog(TEST_UUID), nullValue())
+        val payload = UploadEncryptedLogPayload(uuid = TEST_UUID, file = createTempFile(suffix = TEST_UUID))
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(EncryptedLogActionBuilder.newUploadLogAction(payload))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+    }
+
+    @Suppress("unused")
+    @Subscribe
+    fun onEncryptedLogUploaded(event: OnEncryptedLogUploaded) {
+        if (event.isError) {
+            throw AssertionError("Unexpected error occurred in onEncryptedLogUploaded: ${event.error}")
+        } else {
+            assertEquals(nextEvent, ENCRYPTED_LOG_UPLOADED_SUCCESSFULLY)
         }
+        mCountDownLatch.countDown()
     }
 }
