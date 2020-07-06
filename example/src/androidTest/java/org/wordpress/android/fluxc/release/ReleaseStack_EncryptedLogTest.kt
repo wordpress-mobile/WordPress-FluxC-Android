@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 private const val TEST_UUID = "TEST-UUID"
 
-class ReleaseStack_EncryptedLogTest: ReleaseStack_Base() {
+class ReleaseStack_EncryptedLogTest : ReleaseStack_Base() {
     @Inject lateinit var encryptedLogStore: EncryptedLogStore
     @Inject lateinit var encryptedLogSqlUtils: EncryptedLogSqlUtils
 
