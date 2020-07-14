@@ -506,6 +506,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         val updatedProductReviewsAllowed = true
         productModel.reviewsAllowed = updatedProductReviewsAllowed
 
+        val updatedProductVirtual = true
+        productModel.virtual = updatedProductVirtual
+
         val updateProductPurchaseNote = "Test purchase note"
         productModel.purchaseNote = updateProductPurchaseNote
 
@@ -529,6 +532,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertEquals(updatedProductFeatured, updatedProduct?.featured)
         assertEquals(updatedProductSlug, updatedProduct?.slug)
         assertEquals(updatedProductReviewsAllowed, updatedProduct?.reviewsAllowed)
+        assertEquals(updatedProductVirtual, updatedProduct?.virtual)
         assertEquals(updateProductPurchaseNote, updatedProduct?.purchaseNote)
         assertEquals(updatedProductMenuOrder, updatedProduct?.menuOrder)
     }

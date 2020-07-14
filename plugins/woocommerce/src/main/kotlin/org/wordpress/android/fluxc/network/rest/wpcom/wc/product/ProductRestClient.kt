@@ -869,6 +869,9 @@ class ProductRestClient(
         if (storedWCProductModel.reviewsAllowed != updatedProductModel.reviewsAllowed) {
             body["reviews_allowed"] = updatedProductModel.reviewsAllowed
         }
+        if (storedWCProductModel.virtual != updatedProductModel.virtual) {
+            body["virtual"] = updatedProductModel.virtual
+        }
         if (storedWCProductModel.purchaseNote != updatedProductModel.purchaseNote) {
             body["purchase_note"] = updatedProductModel.purchaseNote
         }
