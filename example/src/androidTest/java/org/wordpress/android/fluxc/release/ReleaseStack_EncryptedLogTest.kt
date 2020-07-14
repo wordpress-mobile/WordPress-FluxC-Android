@@ -49,7 +49,11 @@ class ReleaseStack_EncryptedLogTest : ReleaseStack_Base() {
         val testIds = testIds()
         mCountDownLatch = CountDownLatch(testIds.size)
         testIds.forEach { uuid ->
-            val payload = UploadEncryptedLogPayload(uuid = uuid, file = createTempFile(suffix = uuid))
+            val payload = UploadEncryptedLogPayload(
+                    uuid = uuid,
+                    file = createTempFile(suffix = uuid),
+                    shouldStartUploadImmediately = true
+            )
             mDispatcher.dispatch(EncryptedLogActionBuilder.newUploadLogAction(payload))
         }
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -60,7 +64,11 @@ class ReleaseStack_EncryptedLogTest : ReleaseStack_Base() {
         nextEvent = ENCRYPTED_LOG_UPLOAD_FAILED_WITH_INVALID_UUID
 
         mCountDownLatch = CountDownLatch(1)
-        val payload = UploadEncryptedLogPayload(uuid = INVALID_UUID, file = createTempFile(suffix = INVALID_UUID))
+        val payload = UploadEncryptedLogPayload(
+                uuid = INVALID_UUID,
+                file = createTempFile(suffix = INVALID_UUID),
+                shouldStartUploadImmediately = true
+        )
         mDispatcher.dispatch(EncryptedLogActionBuilder.newUploadLogAction(payload))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
     }
