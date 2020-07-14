@@ -418,8 +418,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     public void testFetchAuthOptionsForPasswordlessUser() throws InterruptedException {
         mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_PASSWORDLESS_USER;
         mCountDownLatch = new CountDownLatch(1);
-        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_PASSWORDLESS);
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
+//        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_PASSWORDLESS);
+//        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -427,8 +427,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     public void testFetchAuthOptionsForUserWithUnverifiedEmail() throws InterruptedException {
         mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_UNVERIFIED_EMAIL;
         mCountDownLatch = new CountDownLatch(1);
-        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_UNVERIFIED);
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
+//        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_UNVERIFIED);
+//        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 

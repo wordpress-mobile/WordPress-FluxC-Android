@@ -606,6 +606,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             name = testProduct.name
             sku = testProduct.sku
             description = "Testing product description update"
+            virtual = true
             images = generateTestImageListJsonString()
         }
         productRestClient.updateProduct(siteModel, testProduct, updatedProduct)
@@ -621,6 +622,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(updatedProduct.description, product.description)
             assertEquals(updatedProduct.name, product.name)
             assertEquals(updatedProduct.sku, product.sku)
+            assertEquals(updatedProduct.virtual, product.virtual)
             assertEquals(updatedProduct.getImages().size, 2)
         }
     }
