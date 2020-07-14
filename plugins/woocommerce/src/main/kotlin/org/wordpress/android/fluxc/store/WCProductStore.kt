@@ -152,6 +152,11 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         var offset: Int = 0
     ) : Payload<BaseNetworkError>()
 
+    class AddProductTagsPayload(
+        val site: SiteModel,
+        val tags: List<String>
+    ) : Payload<BaseNetworkError>()
+
     enum class ProductErrorType {
         INVALID_PARAM,
         INVALID_REVIEW_ID,
@@ -399,6 +404,19 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         ) : this(site) {
             this.error = error
         }
+    }
+
+    class RemoteAddProductTagsResponsePayload(
+        val site: SiteModel,
+        val tags: List<String>,
+        val addedTags: List<WCProductTagModel> = emptyList()
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            site: SiteModel,
+            tags: List<String>,
+            addedTags: List<WCProductTagModel> = emptyList()
+        ) : this(site, tags, addedTags) { this.error = error }
     }
 
     // OnChanged events
