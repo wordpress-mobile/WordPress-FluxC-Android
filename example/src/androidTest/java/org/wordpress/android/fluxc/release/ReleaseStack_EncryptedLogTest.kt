@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.store.EncryptedLogStore.OnEncryptedLogUploade
 import org.wordpress.android.fluxc.store.EncryptedLogStore.UploadEncryptedLogError.InvalidRequest
 import org.wordpress.android.fluxc.store.EncryptedLogStore.UploadEncryptedLogError.TooManyRequests
 import org.wordpress.android.fluxc.store.EncryptedLogStore.UploadEncryptedLogPayload
+import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -51,7 +52,7 @@ class ReleaseStack_EncryptedLogTest : ReleaseStack_Base() {
         testIds.forEach { uuid ->
             val payload = UploadEncryptedLogPayload(
                     uuid = uuid,
-                    file = createTempFile(suffix = uuid),
+                    file = createTempFileWithContent(suffix = uuid, content = "Testing FluxC log upload for $uuid"),
                     shouldStartUploadImmediately = true
             )
             mDispatcher.dispatch(EncryptedLogActionBuilder.newUploadLogAction(payload))
@@ -97,5 +98,11 @@ class ReleaseStack_EncryptedLogTest : ReleaseStack_Base() {
 
     private fun testIds() = (1..NUMBER_OF_LOGS_TO_UPLOAD).map { i ->
         "$TEST_UUID_PREFIX$i"
+    }
+
+    private fun createTempFileWithContent(suffix: String, content: String): File {
+        val file = createTempFile(suffix = suffix)
+        file.writeText(content)
+        return file
     }
 }
