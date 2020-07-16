@@ -548,6 +548,30 @@ object ProductSqlUtils {
                 .asModel
     }
 
+    fun getProductTagsByNames(
+        localSiteId: Int,
+        tags: List<String>
+    ): List<WCProductTagModel> {
+        return WellSql.select(WCProductTagModel::class.java)
+                .where().beginGroup()
+                .equals(WCProductTagModelTable.LOCAL_SITE_ID, localSiteId)
+                .isIn(WCProductModelTable.NAME, tags)
+                .endGroup().endWhere()
+                .asModel
+    }
+
+    fun getProductTagsByName(
+        localSiteId: Int,
+        tagName: String
+    ): WCProductTagModel? {
+        return WellSql.select(WCProductTagModel::class.java)
+                .where().beginGroup()
+                .equals(WCProductTagModelTable.LOCAL_SITE_ID, localSiteId)
+                .equals(WCProductTagModelTable.NAME, tagName)
+                .endGroup().endWhere()
+                .asModel.firstOrNull()
+    }
+
     fun getProductTagByRemoteId(
         remoteTagId: Long,
         localSiteId: Int
