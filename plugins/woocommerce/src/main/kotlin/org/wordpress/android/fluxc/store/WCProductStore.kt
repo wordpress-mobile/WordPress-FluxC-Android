@@ -559,6 +559,12 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     fun getTagsForSite(site: SiteModel): List<WCProductTagModel> =
             ProductSqlUtils.getProductTagsForSite(site.id)
 
+    fun getProductTagsByNames(site: SiteModel, tagNames: List<String>) =
+            ProductSqlUtils.getProductTagsByNames(site.id, tagNames)
+
+    fun getProductTagsByName(site: SiteModel, tagName: String) =
+            ProductSqlUtils.getProductTagByName(site.id, tagName)
+
     fun getProductReviewByRemoteId(
         localSiteId: Int,
         remoteReviewId: Long

@@ -560,7 +560,7 @@ object ProductSqlUtils {
                 .asModel
     }
 
-    fun getProductTagsByName(
+    fun getProductTagByName(
         localSiteId: Int,
         tagName: String
     ): WCProductTagModel? {

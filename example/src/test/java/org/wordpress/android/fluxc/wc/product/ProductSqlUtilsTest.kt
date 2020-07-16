@@ -646,7 +646,7 @@ class ProductSqlUtilsTest {
         assertEquals(tagList.size, rowsAffected)
 
         // Get tag by name and verify
-        val savedTagExists = ProductSqlUtils.getProductTagsByName(site.id, tagList[0].name)
+        val savedTagExists = ProductSqlUtils.getProductTagByName(site.id, tagList[0].name)
         assertEquals(tagList[0].name, savedTagExists?.name)
         assertEquals(tagList[0].remoteTagId, savedTagExists?.remoteTagId)
         assertEquals(tagList[0].slug, savedTagExists?.slug)
@@ -654,7 +654,7 @@ class ProductSqlUtilsTest {
 
         // Get tag for a name that does not exist
         val nonExistingTagName = "test"
-        val savedTag = ProductSqlUtils.getProductTagsByName(site.id, nonExistingTagName)
+        val savedTag = ProductSqlUtils.getProductTagByName(site.id, nonExistingTagName)
         assertNull(savedTag)
     }
 
