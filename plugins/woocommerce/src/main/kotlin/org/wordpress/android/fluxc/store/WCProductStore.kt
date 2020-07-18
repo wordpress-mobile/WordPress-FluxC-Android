@@ -35,7 +35,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         const val DEFAULT_PRODUCT_CATEGORY_PAGE_SIZE = 100
         const val DEFAULT_PRODUCT_VARIATIONS_PAGE_SIZE = 25
         const val DEFAULT_PRODUCT_SHIPPING_CLASS_PAGE_SIZE = 25
-        const val DEFAULT_PRODUCT_TAGS_PAGE_SIZE = 25
+        const val DEFAULT_PRODUCT_TAGS_PAGE_SIZE = 100
         val DEFAULT_PRODUCT_SORTING = TITLE_ASC
         val DEFAULT_CATEGORY_SORTING = NAME_ASC
     }
