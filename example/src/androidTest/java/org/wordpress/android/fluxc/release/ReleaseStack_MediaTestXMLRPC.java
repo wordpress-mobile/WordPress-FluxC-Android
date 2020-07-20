@@ -22,7 +22,6 @@ import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
-import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
 
 import java.util.ArrayList;
@@ -78,7 +77,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Test
     public void testDeleteMedia() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -104,7 +103,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Test
     public void testFetchMediaList() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -156,7 +155,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Test
     public void testFetchMediaThatExists() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -183,7 +182,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Test
     public void testEditMedia() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -210,7 +209,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Test
     public void testUploadImage() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -227,7 +226,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Test
     public void testUploadImageAttachedToPost() throws InterruptedException {
         // Upload media attached to remotely saved post
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
         testMedia.setLocalPostId(5);
         testMedia.setPostId(1);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
@@ -243,7 +242,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         deleteMedia(testMedia);
 
         // Upload media attached to a local draft
-        testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        testMedia = newMediaModel(getSampleImagePath(), "image");
         testMedia.setLocalPostId(5);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
@@ -261,7 +260,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
     @Test
     public void testUploadVideo() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(getSampleVideoPath(), MediaUtils.MIME_TYPE_VIDEO);
+        MediaModel testMedia = newMediaModel(getSampleVideoPath(), "video");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -288,7 +287,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         site.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_WORDPRESS_4_3_ENDPOINT);
 
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
 
         UploadMediaPayload payload = new UploadMediaPayload(site, testMedia, true);
@@ -322,7 +321,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
         site.setXmlRpcUrl(BuildConfig.TEST_WPORG_URL_SH_WORDPRESS_4_3_ENDPOINT);
 
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(getSampleVideoPath(), MediaUtils.MIME_TYPE_VIDEO);
+        MediaModel testMedia = newMediaModel(getSampleVideoPath(), "video");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
 
         UploadMediaPayload payload = new UploadMediaPayload(site, testMedia, true);
@@ -442,7 +441,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     private void fetchMediaImageList() throws InterruptedException {
         FetchMediaListPayload fetchPayload = new FetchMediaListPayload(
-                sSite, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false, MediaUtils.MIME_TYPE_IMAGE);
+                sSite, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false, "image");
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));

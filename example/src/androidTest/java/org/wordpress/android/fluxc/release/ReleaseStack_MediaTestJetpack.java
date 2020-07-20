@@ -21,7 +21,6 @@ import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.store.SiteStore;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteRemoved;
-import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -72,7 +71,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         site = mSiteStore.getSites().get(0);
 
         // Attempt to upload an image that exceeds the site's maximum upload_max_filesize or post_max_size
-        MediaModel testMedia = newMediaModel(site, getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(site, getSampleImagePath(), "image");
         mNextEvent = TestEvents.ERROR_EXCEEDS_FILESIZE_LIMIT;
         uploadMedia(site, testMedia);
 
@@ -92,7 +91,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         site.setMemoryLimit(1985); // Artificially set the site's memory limit, in bytes
 
         // Attempt to upload an image that exceeds the site's memory limit
-        MediaModel testMedia = newMediaModel(site, getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(site, getSampleImagePath(), "image");
         mNextEvent = TestEvents.ERROR_EXCEEDS_MEMORY_LIMIT;
         uploadMedia(site, testMedia);
 
@@ -116,7 +115,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         site.setSpaceUsed(50);
 
         // Attempt to upload an image that exceeds the site's memory limit
-        MediaModel testMedia = newMediaModel(site, getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(site, getSampleImagePath(), "image");
         mNextEvent = TestEvents.ERROR_EXCEEDS_SITE_SPACE_QUOTA_LIMIT;
         uploadMedia(site, testMedia);
 

@@ -15,7 +15,6 @@ import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.MediaStore.CancelMediaPayload
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded
 import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload
-import org.wordpress.android.fluxc.utils.MediaUtils
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.concurrent.ConcurrentLinkedQueue

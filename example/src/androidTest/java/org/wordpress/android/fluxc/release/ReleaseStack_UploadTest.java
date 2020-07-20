@@ -27,7 +27,6 @@ import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
 import org.wordpress.android.fluxc.store.UploadStore;
 import org.wordpress.android.fluxc.store.UploadStore.ClearMediaPayload;
 import org.wordpress.android.fluxc.store.UploadStore.OnUploadChanged;
-import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.fluxc.utils.WellSqlUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -83,7 +82,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
     @Test
     public void testUploadImage() throws InterruptedException {
         // Start uploading media
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         UploadMediaPayload payload = new UploadMediaPayload(sSite, testMedia, true);
         mCountDownLatch = new CountDownLatch(1);
@@ -214,7 +213,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
     @Test
     public void testRegisterPostAndUploadMedia() throws InterruptedException {
         // Start uploading media
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         UploadMediaPayload payload = new UploadMediaPayload(sSite, testMedia, true);
         mCountDownLatch = new CountDownLatch(1);

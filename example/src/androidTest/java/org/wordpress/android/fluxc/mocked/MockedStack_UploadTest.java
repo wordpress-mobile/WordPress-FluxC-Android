@@ -29,7 +29,6 @@ import org.wordpress.android.fluxc.store.PostStore.RemotePostPayload;
 import org.wordpress.android.fluxc.store.UploadStore;
 import org.wordpress.android.fluxc.store.UploadStore.ClearMediaPayload;
 import org.wordpress.android.fluxc.store.UploadStore.OnUploadChanged;
-import org.wordpress.android.fluxc.utils.MediaUtils;
 import org.wordpress.android.fluxc.utils.WellSqlUtils;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
@@ -89,7 +88,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
 
     @Test
     public void testUploadMedia() throws InterruptedException {
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
         startSuccessfulMediaUpload(testMedia, getTestSite());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -102,7 +101,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
 
     @Test
     public void testUploadMediaError() throws InterruptedException {
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
         startFailingMediaUpload(testMedia, getTestSite());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -121,7 +120,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         mInterceptor.respondWithSticky("media-upload-response-success.json", null);
 
         // First, try canceling an image with the default behavior (canceled image is deleted from the store)
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CANCELED_MEDIA;
         UploadMediaPayload payload = new UploadMediaPayload(getTestSite(), testMedia, true);
@@ -142,7 +141,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         assertNull(mediaUploadModel);
 
         // Now, try canceling with delete=false (canceled image should be marked as failed and kept in the store)
-        testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        testMedia = newMediaModel(getSampleImagePath(), "image");
         mCountDownLatch = new CountDownLatch(1);
         mNextEvent = TestEvents.CANCELED_MEDIA;
         payload = new UploadMediaPayload(getTestSite(), testMedia, true);
@@ -175,7 +174,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         setupPostAttributes();
 
         // Start uploading media
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
         testMedia.setLocalPostId(mPost.getId());
         startFailingMediaUpload(testMedia, site);
 
@@ -272,7 +271,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         setupPostAttributes();
 
         // Start uploading media
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
         testMedia.setLocalPostId(mPost.getId());
         startSuccessfulMediaUpload(testMedia, site);
 
@@ -342,7 +341,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         setupPostAttributes();
 
         // Start uploading media
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
         testMedia.setLocalPostId(mPost.getId());
         startFailingMediaUpload(testMedia, site);
 
@@ -373,7 +372,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         clearMedia(mPost, mUploadStore.getFailedMediaForPost(mPost));
 
         // Upload a new media item to the cancelled post
-        testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        testMedia = newMediaModel(getSampleImagePath(), "image");
         testMedia.setLocalPostId(mPost.getId());
         startFailingMediaUpload(testMedia, site);
 
@@ -399,7 +398,7 @@ public class MockedStack_UploadTest extends MockedStack_Base {
         setupPostAttributes();
 
         // Start uploading media
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
         testMedia.setLocalPostId(mPost.getId());
         startSuccessfulMediaUpload(testMedia, site);
 
