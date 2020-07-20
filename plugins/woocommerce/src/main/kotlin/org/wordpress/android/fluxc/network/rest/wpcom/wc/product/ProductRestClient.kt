@@ -225,6 +225,45 @@ class ProductRestClient(
     }
 
     /**
+     * Makes a GET request to `/wp-json/wc/v3/products/[remoteProductId]/variations/[remoteVariationId]` to fetch
+     * a single product variation
+     *
+     * Dispatches a WCProductAction.FETCHED_SINGLE_VARIATION action with the result
+     *
+     * @param [remoteProductId] Unique server id of the product to fetch
+     * @param [remoteVariationId] Unique server id of the variation to fetch
+     */
+    fun fetchSingleVariation(site: SiteModel, remoteProductId: Long, remoteVariationId: Long) {
+        val url = WOOCOMMERCE.products.id(remoteProductId).variations.variation(remoteVariationId).pathV3
+        val responseType = object : TypeToken<ProductVariationApiResponse>() {}.type
+        val params = emptyMap<String, String>()
+        val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
+                { response: ProductVariationApiResponse? ->
+                    response?.let {
+                        val newModel = productVariationResponseToProductVariationModel(it).apply {
+                            localSiteId = site.id
+                        }
+                        val payload = RemoteVariationPayload(newModel, site)
+                        dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleVariationAction(payload))
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val productError = networkErrorToProductError(networkError)
+                    val payload = RemoteVariationPayload(
+                            productError,
+                            WCProductVariationModel().apply {
+                                this.remoteProductId = remoteProductId
+                                this.remoteVariationId = remoteVariationId
+                            },
+                            site
+                    )
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchedSingleVariationAction(payload))
+                },
+                { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
      * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of products for the given WooCommerce [SiteModel].
      *

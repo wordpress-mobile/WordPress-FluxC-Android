@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleVariationPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload;
@@ -31,6 +32,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayl
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload;
@@ -42,6 +44,8 @@ public enum WCProductAction implements IAction {
     // Remote actions
     @Action(payloadType = FetchSingleProductPayload.class)
     FETCH_SINGLE_PRODUCT,
+    @Action(payloadType = FetchSingleVariationPayload.class)
+    FETCH_SINGLE_VARIATION,
     @Action(payloadType = FetchProductsPayload.class)
     FETCH_PRODUCTS,
     @Action(payloadType = SearchProductsPayload.class)
@@ -79,6 +83,8 @@ public enum WCProductAction implements IAction {
     // Remote responses
     @Action(payloadType = RemoteProductPayload.class)
     FETCHED_SINGLE_PRODUCT,
+    @Action(payloadType = RemoteVariationPayload.class)
+    FETCHED_SINGLE_VARIATION,
     @Action(payloadType = RemoteProductListPayload.class)
     FETCHED_PRODUCTS,
     @Action(payloadType = RemoteSearchProductsPayload.class)
