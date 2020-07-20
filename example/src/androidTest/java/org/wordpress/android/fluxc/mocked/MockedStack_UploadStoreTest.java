@@ -58,7 +58,7 @@ public class MockedStack_UploadStoreTest extends MockedStack_Base {
 
     @Test
     public void testUploadMedia() throws InterruptedException {
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
         startSuccessfulMediaUpload(testMedia, getTestSite());
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
 
@@ -101,7 +101,7 @@ public class MockedStack_UploadStoreTest extends MockedStack_Base {
         MediaModel testMedia = mMediaStore.instantiateMediaModel();
         testMedia.setFilePath(mediaPath);
         testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1, mediaPath.length()));
-        testMedia.setMimeType(mimeType + testMedia.getFileExtension());
+        testMedia.setMimeType(mimeType);
         testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/"), mediaPath.length()));
         testMedia.setTitle(testTitle);
         testMedia.setDescription(testDescription);

@@ -71,7 +71,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         site = mSiteStore.getSites().get(0);
 
         // Attempt to upload an image that exceeds the site's maximum upload_max_filesize or post_max_size
-        MediaModel testMedia = newMediaModel(site, getSampleImagePath(), "image");
+        MediaModel testMedia = newMediaModel(site, getSampleImagePath(), "image/jpeg");
         mNextEvent = TestEvents.ERROR_EXCEEDS_FILESIZE_LIMIT;
         uploadMedia(site, testMedia);
 
@@ -91,7 +91,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         site.setMemoryLimit(1985); // Artificially set the site's memory limit, in bytes
 
         // Attempt to upload an image that exceeds the site's memory limit
-        MediaModel testMedia = newMediaModel(site, getSampleImagePath(), "image");
+        MediaModel testMedia = newMediaModel(site, getSampleImagePath(), "image/jpeg");
         mNextEvent = TestEvents.ERROR_EXCEEDS_MEMORY_LIMIT;
         uploadMedia(site, testMedia);
 
@@ -115,7 +115,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         site.setSpaceUsed(50);
 
         // Attempt to upload an image that exceeds the site's memory limit
-        MediaModel testMedia = newMediaModel(site, getSampleImagePath(), "image");
+        MediaModel testMedia = newMediaModel(site, getSampleImagePath(), "image/jpeg");
         mNextEvent = TestEvents.ERROR_EXCEEDS_SITE_SPACE_QUOTA_LIMIT;
         uploadMedia(site, testMedia);
 
@@ -156,7 +156,7 @@ public class ReleaseStack_MediaTestJetpack extends ReleaseStack_Base {
         MediaModel testMedia = mMediaStore.instantiateMediaModel();
         testMedia.setFilePath(mediaPath);
         testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1, mediaPath.length()));
-        testMedia.setMimeType(mimeType + "/" + testMedia.getFileExtension());
+        testMedia.setMimeType(mimeType);
         testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/"), mediaPath.length()));
         testMedia.setTitle(testTitle);
         testMedia.setDescription(testDescription);

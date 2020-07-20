@@ -82,7 +82,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
     @Test
     public void testUploadImage() throws InterruptedException {
         // Start uploading media
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         UploadMediaPayload payload = new UploadMediaPayload(sSite, testMedia, true);
         mCountDownLatch = new CountDownLatch(1);
@@ -213,7 +213,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
     @Test
     public void testRegisterPostAndUploadMedia() throws InterruptedException {
         // Start uploading media
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image");
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         UploadMediaPayload payload = new UploadMediaPayload(sSite, testMedia, true);
         mCountDownLatch = new CountDownLatch(1);
@@ -426,7 +426,7 @@ public class ReleaseStack_UploadTest extends ReleaseStack_WPComBase {
         MediaModel testMedia = mMediaStore.instantiateMediaModel();
         testMedia.setFilePath(mediaPath);
         testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1, mediaPath.length()));
-        testMedia.setMimeType(mimeType + testMedia.getFileExtension());
+        testMedia.setMimeType(mimeType);
         testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/"), mediaPath.length()));
         testMedia.setTitle(testTitle);
         testMedia.setDescription(testDescription);
