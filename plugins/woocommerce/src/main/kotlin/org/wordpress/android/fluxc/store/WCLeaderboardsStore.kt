@@ -19,13 +19,14 @@ class WCLeaderboardsStore @Inject constructor(
 ) {
     suspend fun fetchAllLeaderboards(
         site: SiteModel
-    ): WooResult<List<LeaderboardsApiResponse>> = coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchLeaderboards") {
-        with(restClient.fetchLeaderboards(site)) {
-            return@withDefaultContext when {
-                isError -> WooResult(error)
-                result != null -> WooResult(result.toList())
-                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+    ): WooResult<List<LeaderboardsApiResponse>> =
+            coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchLeaderboards") {
+                with(restClient.fetchLeaderboards(site)) {
+                    return@withDefaultContext when {
+                        isError -> WooResult(error)
+                        result != null -> WooResult(result.toList())
+                        else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+                    }
+                }
             }
-        }
-    }
 }
