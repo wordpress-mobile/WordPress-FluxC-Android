@@ -390,7 +390,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         MediaModel testMedia = mMediaStore.instantiateMediaModel();
         testMedia.setFilePath(mediaPath);
         testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1));
-        testMedia.setMimeType(mimeType + testMedia.getFileExtension());
+        testMedia.setMimeType(mimeType + "/" + testMedia.getFileExtension());
         testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/")));
         testMedia.setTitle(testTitle);
         testMedia.setDescription(testDescription);
