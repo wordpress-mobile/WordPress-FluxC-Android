@@ -829,24 +829,24 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
     }
 
     private fun handleFetchSingleVariationCompleted(payload: RemoteVariationPayload) {
-        val onProductChanged: OnVariationChanged
+        val onVariationChanged: OnVariationChanged
 
         if (payload.isError) {
-            onProductChanged = OnVariationChanged(0).also {
+            onVariationChanged = OnVariationChanged(0).also {
                 it.error = payload.error
                 it.remoteProductId = payload.variation.remoteProductId
                 it.remoteVariationId = payload.variation.remoteVariationId
             }
         } else {
             val rowsAffected = ProductSqlUtils.insertOrUpdateProductVariation(payload.variation)
-            onProductChanged = OnVariationChanged(rowsAffected).also {
+            onVariationChanged = OnVariationChanged(rowsAffected).also {
                 it.remoteProductId = payload.variation.remoteProductId
                 it.remoteVariationId = payload.variation.remoteVariationId
             }
         }
 
-        onProductChanged.causeOfChange = WCProductAction.FETCH_SINGLE_VARIATION
-        emitChange(onProductChanged)
+        onVariationChanged.causeOfChange = WCProductAction.FETCH_SINGLE_VARIATION
+        emitChange(onVariationChanged)
     }
 
     private fun handleFetchProductSkuAvailabilityCompleted(payload: RemoteProductSkuAvailabilityPayload) {
