@@ -31,6 +31,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsP
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload;
@@ -38,6 +39,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateVariationPayload;
 
 @ActionEnum
 public enum WCProductAction implements IAction {
@@ -66,6 +68,8 @@ public enum WCProductAction implements IAction {
     UPDATE_PRODUCT_IMAGES,
     @Action(payloadType = UpdateProductPayload.class)
     UPDATE_PRODUCT,
+    @Action(payloadType = UpdateVariationPayload.class)
+    UPDATE_VARIATION,
     @Action(payloadType = FetchProductSkuAvailabilityPayload.class)
     FETCH_PRODUCT_SKU_AVAILABILITY,
     @Action(payloadType = FetchProductPasswordPayload.class)
@@ -105,6 +109,8 @@ public enum WCProductAction implements IAction {
     UPDATED_PRODUCT_IMAGES,
     @Action(payloadType = RemoteUpdateProductPayload.class)
     UPDATED_PRODUCT,
+    @Action(payloadType = RemoteUpdateVariationPayload.class)
+    UPDATED_VARIATION,
     @Action(payloadType = RemoteProductSkuAvailabilityPayload.class)
     FETCHED_PRODUCT_SKU_AVAILABILITY,
     @Action(payloadType = RemoteProductPasswordPayload.class)
