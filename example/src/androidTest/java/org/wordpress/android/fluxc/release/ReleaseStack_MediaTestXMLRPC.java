@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.store.MediaStore.OnMediaChanged;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched;
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
+import org.wordpress.android.fluxc.utils.MimeType.Type;
 import org.wordpress.android.util.AppLog;
 
 import java.util.ArrayList;
@@ -441,7 +442,7 @@ public class ReleaseStack_MediaTestXMLRPC extends ReleaseStack_XMLRPCBase {
 
     private void fetchMediaImageList() throws InterruptedException {
         FetchMediaListPayload fetchPayload = new FetchMediaListPayload(
-                sSite, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false, "image/jpeg");
+                sSite, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false, Type.IMAGE);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
