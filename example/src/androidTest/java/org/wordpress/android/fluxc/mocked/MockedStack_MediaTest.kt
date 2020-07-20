@@ -256,7 +256,7 @@ class MockedStack_MediaTest : MockedStack_Base() {
         return mediaStore.instantiateMediaModel().apply {
             filePath = mediaPath
             fileExtension = mediaPath.substring(mediaPath.lastIndexOf(".") + 1)
-            this.mimeType = mimeType + fileExtension
+            this.mimeType = "$mimeType/$fileExtension"
             fileName = mediaPath.substring(mediaPath.lastIndexOf("/"))
             title = testTitle
             description = testDescription
