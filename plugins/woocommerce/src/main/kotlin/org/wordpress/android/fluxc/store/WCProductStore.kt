@@ -449,8 +449,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
 
     class OnVariationChanged(
         var rowsAffected: Int,
-        var remoteProductId: Long = 0L, // only set for fetching a single product
-        var remoteVariationId: Long = 0L, // only set for fetching a single product
+        var remoteProductId: Long = 0L, // only set for fetching a single variation
+        var remoteVariationId: Long = 0L, // only set for fetching a single variation
         var canLoadMore: Boolean = false
     ) : OnChanged<ProductError>() {
         var causeOfChange: WCProductAction? = null
