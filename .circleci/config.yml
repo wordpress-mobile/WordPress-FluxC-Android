@@ -165,7 +165,7 @@ workflows:
       - Firebase Test:
           name: Mocked Connected Tests
           results-history-name: CircleCI FluxC Mocked Tests
-          package: org.wordpress.android.fluxc.mocked
+          package: org.wordpress.android.fluxc.release
           device: model=Nexus5X,version=26,locale=en,orientation=portrait
           timeout: 10m
           num-flaky-test-attempts: 0
