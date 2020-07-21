@@ -185,5 +185,12 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Update Product"/>
+
+        <Button
+            android:id="@+id/update_variation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Update Variation"/>
     </LinearLayout>
 </ScrollView>

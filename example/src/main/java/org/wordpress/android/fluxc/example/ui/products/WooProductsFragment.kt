@@ -352,6 +352,10 @@ class WooProductsFragment : Fragment() {
         update_product.setOnClickListener {
             replaceFragment(WooUpdateProductFragment.newInstance(selectedPos))
         }
+
+        update_variation.setOnClickListener {
+            replaceFragment(WooUpdateVariationFragment.newInstance(selectedPos))
+        }
     }
 
     /**
