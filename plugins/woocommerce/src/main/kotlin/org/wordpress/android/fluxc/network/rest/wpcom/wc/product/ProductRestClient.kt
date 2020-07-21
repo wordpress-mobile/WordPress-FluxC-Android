@@ -59,6 +59,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsP
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload
 import java.util.HashMap
@@ -242,6 +243,7 @@ class ProductRestClient(
                 { response: ProductVariationApiResponse? ->
                     response?.let {
                         val newModel = productVariationResponseToProductVariationModel(it).apply {
+                            this.remoteProductId = remoteProductId
                             localSiteId = site.id
                         }
                         val payload = RemoteVariationPayload(newModel, site)
@@ -552,27 +554,31 @@ class ProductRestClient(
         val remoteProductId = updatedProductVariationModel.remoteProductId
         val remoteVariationId = updatedProductVariationModel.remoteVariationId
         val url = WOOCOMMERCE.products.id(remoteProductId).variations.variation(remoteVariationId).pathV3
-        val responseType = object : TypeToken<ProductApiResponse>() {}.type
+        val responseType = object : TypeToken<ProductVariationApiResponse>() {}.type
         val body = variantModelToProductJsonBody(storedWCProductVariationModel, updatedProductVariationModel)
 
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
-                { response: ProductApiResponse? ->
+                { response: ProductVariationApiResponse? ->
                     response?.let {
-                        val newModel = productResponseToProductModel(it).apply {
+                        val newModel = productVariationResponseToProductVariationModel(it).apply {
+                            this.remoteProductId = remoteProductId
                             localSiteId = site.id
                         }
-                        val payload = RemoteUpdateProductPayload(site, newModel)
-                        dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductAction(payload))
+                        val payload = RemoteUpdateVariationPayload(site, newModel)
+                        dispatcher.dispatch(WCProductActionBuilder.newUpdatedVariationAction(payload))
                     }
                 },
                 WPComErrorListener { networkError ->
                     val productError = networkErrorToProductError(networkError)
-                    val payload = RemoteUpdateProductPayload(
+                    val payload = RemoteUpdateVariationPayload(
                             productError,
                             site,
-                            WCProductModel().apply { this.remoteProductId = remoteProductId }
+                            WCProductVariationModel().apply {
+                                this.remoteProductId = remoteProductId
+                                this.remoteVariationId = remoteVariationId
+                            }
                     )
-                    dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductAction(payload))
+                    dispatcher.dispatch(WCProductActionBuilder.newUpdatedVariationAction(payload))
                 })
         add(request)
     }
