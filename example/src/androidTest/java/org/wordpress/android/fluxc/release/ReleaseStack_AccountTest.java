@@ -624,6 +624,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         }
     }
+
     private void authenticate(String username, String password) throws InterruptedException {
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
         mCountDownLatch = new CountDownLatch(1);

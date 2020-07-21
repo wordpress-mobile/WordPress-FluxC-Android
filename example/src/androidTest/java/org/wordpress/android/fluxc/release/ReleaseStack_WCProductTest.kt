@@ -24,6 +24,7 @@ import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.MediaStore.OnMediaListFetched
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload
+import org.wordpress.android.fluxc.store.WCProductStore.AddProductTagsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
@@ -46,6 +47,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPaylo
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload
+import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
@@ -68,7 +70,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         UPDATED_PRODUCT_PASSWORD,
         FETCH_PRODUCT_CATEGORIES,
         ADDED_PRODUCT_CATEGORY,
-        FETCHED_PRODUCT_TAGS
+        FETCHED_PRODUCT_TAGS,
+        ADDED_PRODUCT_TAGS
     }
 
     @Inject internal lateinit var productStore: WCProductStore
@@ -506,6 +509,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         val updatedProductReviewsAllowed = true
         productModel.reviewsAllowed = updatedProductReviewsAllowed
 
+        val updatedProductVirtual = true
+        productModel.virtual = updatedProductVirtual
+
         val updateProductPurchaseNote = "Test purchase note"
         productModel.purchaseNote = updateProductPurchaseNote
 
@@ -529,6 +535,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertEquals(updatedProductFeatured, updatedProduct?.featured)
         assertEquals(updatedProductSlug, updatedProduct?.slug)
         assertEquals(updatedProductReviewsAllowed, updatedProduct?.reviewsAllowed)
+        assertEquals(updatedProductVirtual, updatedProduct?.virtual)
         assertEquals(updateProductPurchaseNote, updatedProduct?.purchaseNote)
         assertEquals(updatedProductMenuOrder, updatedProduct?.menuOrder)
     }
@@ -548,6 +555,28 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         // Verify results
         val fetchedTags = productStore.getTagsForSite(sSite)
         assertTrue(fetchedTags.isNotEmpty())
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun testAddProductTags() {
+        // Remove all product tags from the database
+        ProductSqlUtils.deleteProductTagsForSite(sSite)
+        assertEquals(0, ProductSqlUtils.getProductTagsForSite(sSite.id).size)
+
+        nextEvent = TestEvent.ADDED_PRODUCT_TAGS
+        mCountDownLatch = CountDownLatch(1)
+
+        val productTags = listOf("Test" + Date().time, "Test1" + Date().time)
+        mDispatcher.dispatch(WCProductActionBuilder.newAddProductTagsAction(
+                AddProductTagsPayload(sSite, productTags)
+        ))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify results
+        val fetchAllTags = productStore.getProductTagsByNames(sSite, productTags)
+        assertTrue(fetchAllTags.isNotEmpty())
+        assertTrue(fetchAllTags.size == 2)
     }
 
     /**
@@ -729,6 +758,10 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         when (event.causeOfChange) {
             WCProductAction.FETCH_PRODUCT_TAGS -> {
                 assertEquals(TestEvent.FETCHED_PRODUCT_TAGS, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            WCProductAction.ADDED_PRODUCT_TAGS -> {
+                assertEquals(TestEvent.ADDED_PRODUCT_TAGS, nextEvent)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)

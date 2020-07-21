@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
@@ -606,6 +607,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             name = testProduct.name
             sku = testProduct.sku
             description = "Testing product description update"
+            virtual = true
             images = generateTestImageListJsonString()
         }
         productRestClient.updateProduct(siteModel, testProduct, updatedProduct)
@@ -621,6 +623,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(updatedProduct.description, product.description)
             assertEquals(updatedProduct.name, product.name)
             assertEquals(updatedProduct.sku, product.sku)
+            assertEquals(updatedProduct.virtual, product.virtual)
             assertEquals(updatedProduct.getImages().size, 2)
         }
     }
@@ -769,6 +772,47 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
 
         assertEquals(WCProductAction.FETCHED_PRODUCT_TAGS, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteProductTagsPayload
+        assertNotNull(payload.error)
+    }
+
+    @Test
+    fun testAddProductTagsSuccess() {
+        val tagNames = listOf("batchAdd1", "batchAdd6")
+        interceptor.respondWith("wc-add-product-tags-response-success.json")
+        productRestClient.addProductTags(siteModel, tagNames)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.ADDED_PRODUCT_TAGS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteAddProductTagsResponsePayload
+        assertNull(payload.error)
+        assertEquals(2, payload.tags.size)
+        assertEquals(payload.tags[0].name, "")
+        assertEquals(payload.tags[1].name, "batchAdd6")
+
+        // save the tags to the db
+        payload.tags.map {
+            if (it.name.isNotEmpty()) {
+                assertEquals(1, ProductSqlUtils.insertOrUpdateProductTag(it))
+            }
+        }
+
+        val savedTags = ProductSqlUtils.getProductTagsByNames(siteModel.id, tagNames)
+        assertEquals(1, savedTags.size)
+        assertEquals("batchAdd6", savedTags[0].name)
+    }
+
+    @Test
+    fun testAddProductTagsError() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        productRestClient.addProductTags(siteModel, listOf("test1", "test2"))
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.ADDED_PRODUCT_TAGS, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteAddProductTagsResponsePayload
         assertNotNull(payload.error)
     }
 
