@@ -6,6 +6,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.Type.PRODUCTS
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
@@ -29,4 +30,13 @@ class WCLeaderboardsStore @Inject constructor(
                     }
                 }
             }
+
+    suspend fun fetchProductLeaderboards(
+        site: SiteModel
+    ): WooResult<LeaderboardsApiResponse> =
+            fetchAllLeaderboards(site)
+                    .model
+                    ?.firstOrNull { it.type == PRODUCTS }
+                    ?.run { WooResult(this) }
+                    ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
 }
