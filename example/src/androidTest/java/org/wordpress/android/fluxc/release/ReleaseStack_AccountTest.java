@@ -418,8 +418,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     public void testFetchAuthOptionsForPasswordlessUser() throws InterruptedException {
         mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_PASSWORDLESS_USER;
         mCountDownLatch = new CountDownLatch(1);
-//        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_PASSWORDLESS);
-//        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
+        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_PASSWORDLESS);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -427,8 +427,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     public void testFetchAuthOptionsForUserWithUnverifiedEmail() throws InterruptedException {
         mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_UNVERIFIED_EMAIL;
         mCountDownLatch = new CountDownLatch(1);
-//        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_UNVERIFIED);
-//        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
+        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_UNVERIFIED);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
@@ -624,6 +624,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         }
     }
+
     private void authenticate(String username, String password) throws InterruptedException {
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
         mCountDownLatch = new CountDownLatch(1);
