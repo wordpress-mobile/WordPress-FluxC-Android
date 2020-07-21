@@ -45,5 +45,12 @@
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Fetch Leaderboards"/>
+
+        <Button
+            android:id="@+id/fetch_product_leaderboards"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Product Leaderboards"/>
     </LinearLayout>
 </ScrollView>
