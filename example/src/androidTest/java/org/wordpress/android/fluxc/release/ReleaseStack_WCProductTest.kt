@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductVisibility
 import org.wordpress.android.fluxc.persistence.MediaSqlUtils
@@ -34,6 +35,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductCategoryChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
@@ -42,6 +44,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.OnProductReviewChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductTagChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
+import org.wordpress.android.fluxc.store.WCProductStore.OnVariationChanged
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload
@@ -68,7 +71,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         UPDATED_PRODUCT_PASSWORD,
         FETCH_PRODUCT_CATEGORIES,
         ADDED_PRODUCT_CATEGORY,
-        FETCHED_PRODUCT_TAGS
+        FETCHED_PRODUCT_TAGS,
+        FETCHED_SINGLE_VARIATION,
+        UPDATED_VARIATION
     }
 
     @Inject internal lateinit var productStore: WCProductStore
@@ -87,11 +92,19 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         remoteProductId = BuildConfig.TEST_WC_PRODUCT_WITH_VARIATIONS_ID.toLong()
         dateCreated = "2018-04-20T15:45:14Z"
     }
+
+    private val variation = WCProductVariationModel().apply {
+        remoteVariationId = 759
+        remoteProductId = BuildConfig.TEST_WC_PRODUCT_WITH_VARIATIONS_ID.toLong()
+        dateCreated = "2018-04-20T15:45:14Z"
+    }
+
     private val remoteProductReviewId = BuildConfig.TEST_WC_PRODUCT_REVIEW_ID.toLong()
 
     private val updatedPassword = "password"
 
     private var lastEvent: OnProductChanged? = null
+    private var lastVariationEvent: OnVariationChanged? = null
     private var lastProductCategoryEvent: OnProductCategoryChanged? = null
     private var lastShippingClassEvent: OnProductShippingClassesChanged? = null
     private var lastReviewEvent: OnProductReviewChanged? = null
@@ -127,6 +140,39 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         // Verify there's only one product for this site
         assertEquals(ProductSqlUtils.getProductCountForSite(sSite), 1)
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchSingleVariation() {
+        // remove all variation for this site and verify there are none
+        ProductSqlUtils.deleteVariationsForProduct(sSite, productModelWithVariations.remoteProductId)
+        assertEquals(
+                ProductSqlUtils.getVariationsForProduct(sSite, productModelWithVariations.remoteProductId).size,
+                0
+        )
+
+        nextEvent = TestEvent.FETCHED_SINGLE_VARIATION
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(WCProductActionBuilder.newFetchSingleVariationAction(FetchSingleVariationPayload(
+                sSite,
+                variation.remoteProductId,
+                variation.remoteVariationId
+        )))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify results
+        val fetchedVariation = productStore.getVariationByRemoteId(
+                sSite,
+                variation.remoteProductId,
+                variation.remoteVariationId
+        )
+        assertNotNull(fetchedVariation)
+        assertEquals(fetchedVariation!!.remoteProductId, variation.remoteProductId)
+        assertEquals(fetchedVariation.remoteVariationId, variation.remoteVariationId)
+
+        // Verify there's only one variation for this site
+        assertEquals(1, ProductSqlUtils.getVariationsForProduct(sSite, variation.remoteProductId).size)
     }
 
     @Throws(InterruptedException::class)
@@ -582,6 +628,26 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             }
             WCProductAction.FETCH_PRODUCT_VARIATIONS -> {
                 assertEquals(TestEvent.FETCHED_PRODUCT_VARIATIONS, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onVariationChanged(event: OnVariationChanged) {
+        event.error?.let {
+            throw AssertionError("OnVariationChanged has unexpected error: " + it.type)
+        }
+
+        lastVariationEvent = event
+
+        when (event.causeOfChange) {
+            WCProductAction.FETCH_SINGLE_VARIATION -> {
+                assertEquals(TestEvent.FETCHED_SINGLE_VARIATION, nextEvent)
+                assertEquals(event.remoteProductId, variation.remoteProductId)
+                assertEquals(event.remoteVariationId, variation.remoteVariationId)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
