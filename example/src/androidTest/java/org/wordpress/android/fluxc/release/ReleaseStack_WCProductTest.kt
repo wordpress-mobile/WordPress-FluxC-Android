@@ -45,10 +45,12 @@ import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClasses
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductTagChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
 import org.wordpress.android.fluxc.store.WCProductStore.OnVariationChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnVariationUpdated
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateVariationPayload
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.inject.Inject
@@ -93,10 +95,13 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         dateCreated = "2018-04-20T15:45:14Z"
     }
 
-    private val variation = WCProductVariationModel().apply {
+    private val variationModel = WCProductVariationModel().apply {
         remoteVariationId = 759
         remoteProductId = BuildConfig.TEST_WC_PRODUCT_WITH_VARIATIONS_ID.toLong()
         dateCreated = "2018-04-20T15:45:14Z"
+        taxStatus = "taxable"
+        stockStatus = "instock"
+        image = "{}"
     }
 
     private val remoteProductReviewId = BuildConfig.TEST_WC_PRODUCT_REVIEW_ID.toLong()
@@ -156,23 +161,23 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(WCProductActionBuilder.newFetchSingleVariationAction(FetchSingleVariationPayload(
                 sSite,
-                variation.remoteProductId,
-                variation.remoteVariationId
+                variationModel.remoteProductId,
+                variationModel.remoteVariationId
         )))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
         val fetchedVariation = productStore.getVariationByRemoteId(
                 sSite,
-                variation.remoteProductId,
-                variation.remoteVariationId
+                variationModel.remoteProductId,
+                variationModel.remoteVariationId
         )
         assertNotNull(fetchedVariation)
-        assertEquals(fetchedVariation!!.remoteProductId, variation.remoteProductId)
-        assertEquals(fetchedVariation.remoteVariationId, variation.remoteVariationId)
+        assertEquals(fetchedVariation!!.remoteProductId, variationModel.remoteProductId)
+        assertEquals(fetchedVariation.remoteVariationId, variationModel.remoteVariationId)
 
         // Verify there's only one variation for this site
-        assertEquals(1, ProductSqlUtils.getVariationsForProduct(sSite, variation.remoteProductId).size)
+        assertEquals(1, ProductSqlUtils.getVariationsForProduct(sSite, variationModel.remoteProductId).size)
     }
 
     @Throws(InterruptedException::class)
@@ -581,6 +586,41 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
+    fun testUpdateVariation() {
+        val updatedVariationStatus = CoreProductStatus.PUBLISH.value
+        variationModel.status = updatedVariationStatus
+
+        val updatedVariationMenuOrder = 5
+        variationModel.menuOrder = updatedVariationMenuOrder
+
+        val updatedVariationRegularPrice = "123"
+        variationModel.regularPrice = updatedVariationRegularPrice
+
+        val updatedVariationSalePrice = "12"
+        variationModel.salePrice = updatedVariationSalePrice
+
+        nextEvent = TestEvent.UPDATED_VARIATION
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newUpdateVariationAction(UpdateVariationPayload(sSite, variationModel))
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        val updatedVariation = productStore.getVariationByRemoteId(
+                sSite,
+                variationModel.remoteProductId,
+                variationModel.remoteVariationId
+        )
+        assertNotNull(updatedVariation)
+        assertEquals(variationModel.remoteProductId, updatedVariation?.remoteProductId)
+        assertEquals(updatedVariationStatus, updatedVariation?.status)
+        assertEquals(updatedVariationMenuOrder, updatedVariation?.menuOrder)
+        assertEquals(updatedVariationRegularPrice, updatedVariation?.regularPrice)
+        assertEquals(updatedVariationSalePrice, updatedVariation?.salePrice)
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
     fun testFetchProductTagsForSite() {
         // Remove all product tags from the database
         ProductSqlUtils.deleteProductTagsForSite(sSite)
@@ -646,8 +686,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         when (event.causeOfChange) {
             WCProductAction.FETCH_SINGLE_VARIATION -> {
                 assertEquals(TestEvent.FETCHED_SINGLE_VARIATION, nextEvent)
-                assertEquals(event.remoteProductId, variation.remoteProductId)
-                assertEquals(event.remoteVariationId, variation.remoteVariationId)
+                assertEquals(event.remoteProductId, variationModel.remoteProductId)
+                assertEquals(event.remoteVariationId, variationModel.remoteVariationId)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
@@ -708,6 +748,17 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         }
 
         assertEquals(TestEvent.UPDATED_PRODUCT, nextEvent)
+        mCountDownLatch.countDown()
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onVariationUpdated(event: OnVariationUpdated) {
+        event.error?.let {
+            throw AssertionError("OnVariationUpdated has unexpected error: ${it.type}, ${it.message}")
+        }
+
+        assertEquals(TestEvent.UPDATED_VARIATION, nextEvent)
         mCountDownLatch.countDown()
     }
 

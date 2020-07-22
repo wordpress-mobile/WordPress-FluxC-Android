@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
 import android.content.Context
+import android.util.Log
 import com.android.volley.RequestQueue
 import com.google.gson.JsonArray
 import com.google.gson.reflect.TypeToken
@@ -1064,7 +1065,7 @@ class ProductRestClient(
             body["shipping_class"] = updatedVariationModel.shippingClass
         }
         if (storedVariationModel.image != updatedVariationModel.image) {
-            body["image"] = updatedVariationModel.image
+//            body["image"] = "null"
         }
         if (storedVariationModel.menuOrder != updatedVariationModel.menuOrder) {
             body["menu_order"] = updatedVariationModel.menuOrder
