@@ -90,11 +90,14 @@ class WooLeaderboardsFragment : Fragment(), StoreSelectorDialog.Listener {
     }
 
     private fun logLeaderboardResponse(response: LeaderboardsApiResponse) {
-        prependToLog("===================")
-        prependToLog("Leaderboard Type: ${response.type}")
         response.items?.forEach {
-            prependToLog("link: ${it.display}")
+            prependToLog("  display: ${it.display ?: "Display not available"}")
+            prependToLog("  value: ${it.value ?: "Value not available"}")
+            prependToLog("  link: ${it.link ?: "Link not available"}")
+            prependToLog("  --------- Item ---------")
         }
+        prependToLog("Leaderboard Type: ${response.type}")
+        prependToLog("===================")
     }
 
     private suspend inline fun <T> takeAsyncRequestWithValidSite(crossinline action: suspend (SiteModel) -> T) =
