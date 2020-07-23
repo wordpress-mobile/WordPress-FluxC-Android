@@ -20,6 +20,7 @@ class WCShippingLabelMapper
                 currency = labelItem.currency ?: ""
                 productNames = labelItem.productNames.toString()
                 refund = labelItem.refund.toString()
+                dateCreated = labelItem.dateCreated?.toString() ?: ""
 
                 localOrderId = response.orderId ?: 0L
                 paperSize = response.paperSize ?: ""
