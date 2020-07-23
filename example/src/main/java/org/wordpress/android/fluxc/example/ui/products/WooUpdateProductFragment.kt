@@ -277,6 +277,10 @@ class WooUpdateProductFragment : Fragment() {
             selectedProductModel?.reviewsAllowed = isChecked
         }
 
+        product_is_virtual.setOnCheckedChangeListener { _, isChecked ->
+            selectedProductModel?.virtual = isChecked
+        }
+
         product_purchase_note.onTextChanged { selectedProductModel?.purchaseNote = it }
 
         product_slug.onTextChanged { selectedProductModel?.slug = it }
@@ -374,6 +378,7 @@ class WooUpdateProductFragment : Fragment() {
                 product_slug.setText(it.slug)
                 product_is_featured.isChecked = it.featured
                 product_reviews_allowed.isChecked = it.reviewsAllowed
+                product_is_virtual.isChecked = it.virtual
                 product_purchase_note.setText(it.purchaseNote)
                 product_menu_order.setText(it.menuOrder.toString())
                 product_external_url.setText(it.externalUrl)

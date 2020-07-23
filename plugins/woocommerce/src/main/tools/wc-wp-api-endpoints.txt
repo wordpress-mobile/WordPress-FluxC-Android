@@ -20,6 +20,7 @@
 
 /products/tags/
 /products/tags/<id>/
+/products/tags/batch/
 
 /reports/orders/totals/
 /reports/revenue/stats/

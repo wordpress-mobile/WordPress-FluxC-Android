@@ -13,9 +13,11 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction.ADDED_PRODUCT_CATEGORY
+import org.wordpress.android.fluxc.action.WCProductAction.ADDED_PRODUCT_TAGS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCTS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_CATEGORIES
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_REVIEWS
+import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_TAGS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_REVIEW
@@ -34,6 +36,7 @@ import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload
+import org.wordpress.android.fluxc.store.WCProductStore.AddProductTagsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
@@ -78,6 +81,7 @@ class WooProductsFragment : Fragment() {
     private var pendingFetchProductTagsOffset: Int = 0
 
     private var enteredCategoryName: String? = null
+    private val enteredTagNames: MutableList<String> = mutableListOf()
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -332,6 +336,32 @@ class WooProductsFragment : Fragment() {
             }
         }
 
+        add_product_tags.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter tag name:"
+                ) { editTextTagName1 ->
+                    showSingleLineDialog(
+                            activity,
+                            "Enter another tag name:"
+                    ) { editTextTagName2 ->
+                        val tagName1 = editTextTagName1.text.toString()
+                        val tagName2 = editTextTagName2.text.toString()
+                        if (tagName1.isNotEmpty() && tagName2.isNotEmpty()) {
+                            enteredTagNames.add(tagName1)
+                            enteredTagNames.add(tagName2)
+                            prependToLog("Submitting request to add product tags for site ${site.id}")
+                            val payload = AddProductTagsPayload(site, enteredTagNames)
+                            dispatcher.dispatch(WCProductActionBuilder.newAddProductTagsAction(payload))
+                        } else {
+                            prependToLog("Tag name is empty. Doing nothing..")
+                        }
+                    }
+                }
+            }
+        }
+
         update_product_images.setOnClickListener {
             showSingleLineDialog(
                     activity,
@@ -574,14 +604,30 @@ class WooProductsFragment : Fragment() {
             return
         }
 
-        prependToLog("Fetched ${event.rowsAffected} product tags. More tags available ${event.canLoadMore}")
-        if (event.canLoadMore) {
-            pendingFetchProductTagsOffset += event.rowsAffected
-            load_more_product_tags.visibility = View.VISIBLE
-            load_more_product_tags.isEnabled = true
-        } else {
-            pendingFetchProductTagsOffset = 0
-            load_more_product_tags.isEnabled = false
+        selectedSite?.let { site ->
+            when (event.causeOfChange) {
+                FETCH_PRODUCT_TAGS -> {
+                    prependToLog("Fetched ${event.rowsAffected} product tags. More tags available ${event.canLoadMore}")
+                    if (event.canLoadMore) {
+                        pendingFetchProductTagsOffset += event.rowsAffected
+                        load_more_product_tags.visibility = View.VISIBLE
+                        load_more_product_tags.isEnabled = true
+                    } else {
+                        pendingFetchProductTagsOffset = 0
+                        load_more_product_tags.isEnabled = false
+                    }
+                }
+
+                ADDED_PRODUCT_TAGS -> {
+                    val tags = wcProductStore.getProductTagsByNames(site, enteredTagNames)
+                    val tagNames = tags.map { it.name }.joinToString(",")
+                    prependToLog("${event.rowsAffected} product tags added for $tagNames")
+                    if (enteredTagNames.size > event.rowsAffected) {
+                        prependToLog("Error occurred when trying to add some product tags")
+                    }
+                }
+                else -> { }
+            }
         }
     }
 

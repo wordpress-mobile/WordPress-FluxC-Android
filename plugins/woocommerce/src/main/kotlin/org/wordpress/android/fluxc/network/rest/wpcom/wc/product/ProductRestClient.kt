@@ -46,6 +46,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPasswordPayload
@@ -189,6 +190,42 @@ class ProductRestClient(
                     dispatcher.dispatch(WCProductActionBuilder.newFetchedProductTagsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
+        add(request)
+    }
+
+    /**
+     * Makes a POST request to `POST /wp-json/wc/v3/products/tags/batch` to add
+     * product tags for a site
+     *
+     * Dispatches a WCProductAction.ADDED_PRODUCT_TAGS action with the result
+     *
+     * @param [site] The site to fetch product shipping class list for
+     * @param [tags] The list of tag names that needed to be added to the site
+     */
+    fun addProductTags(
+        site: SiteModel,
+        tags: List<String>
+    ) {
+        val url = WOOCOMMERCE.products.tags.batch.pathV3
+        val responseType = object : TypeToken<BatchAddProductTagApiResponse>() {}.type
+        val params = mutableMapOf(
+                "create" to tags.map { mapOf("name" to it) }
+        )
+
+        val request = JetpackTunnelGsonRequest.buildPostRequest(url, site.siteId, params, responseType,
+                { response: BatchAddProductTagApiResponse? ->
+                    val addedTags = response?.addedTags?.map {
+                        productTagApiResponseToProductTagModel(it, site)
+                    }.orEmpty()
+
+                    val payload = RemoteAddProductTagsResponsePayload(site, addedTags)
+                    dispatcher.dispatch(WCProductActionBuilder.newAddedProductTagsAction(payload))
+                },
+                WPComErrorListener { networkError ->
+                    val productError = networkErrorToProductError(networkError)
+                    val payload = RemoteAddProductTagsResponsePayload(productError, site)
+                    dispatcher.dispatch(WCProductActionBuilder.newAddedProductTagsAction(payload))
+                })
         add(request)
     }
 
@@ -956,6 +993,9 @@ class ProductRestClient(
         }
         if (storedWCProductModel.reviewsAllowed != updatedProductModel.reviewsAllowed) {
             body["reviews_allowed"] = updatedProductModel.reviewsAllowed
+        }
+        if (storedWCProductModel.virtual != updatedProductModel.virtual) {
+            body["virtual"] = updatedProductModel.virtual
         }
         if (storedWCProductModel.purchaseNote != updatedProductModel.purchaseNote) {
             body["purchase_note"] = updatedProductModel.purchaseNote

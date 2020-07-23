@@ -424,6 +424,17 @@
             app:layout_constraintStart_toEndOf="@+id/product_is_featured"
             app:layout_constraintTop_toBottomOf="@+id/manageStockContainer" />
 
+        <CheckBox
+            android:id="@+id/product_is_virtual"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:enabled="false"
+            android:text="Virtual"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_is_featured" />
+
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_purchase_note"
             android:layout_width="0dp"
@@ -433,7 +444,7 @@
             android:inputType="text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/product_reviews_allowed"
+            app:layout_constraintTop_toBottomOf="@+id/product_is_virtual"
             app:textHint="Purchase note" />
 
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
