@@ -101,7 +101,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         dateCreated = "2018-04-20T15:45:14Z"
         taxStatus = "taxable"
         stockStatus = "instock"
-        image = "{}"
+        image = ""
     }
 
     private val remoteProductReviewId = BuildConfig.TEST_WC_PRODUCT_REVIEW_ID.toLong()

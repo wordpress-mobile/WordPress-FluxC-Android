@@ -1064,8 +1064,9 @@ class ProductRestClient(
         if (storedVariationModel.shippingClass != updatedVariationModel.shippingClass) {
             body["shipping_class"] = updatedVariationModel.shippingClass
         }
-        if (storedVariationModel.image != updatedVariationModel.image) {
-//            body["image"] = "null"
+        // TODO: Once removal is supported, we can remove the extra isNotBlank() condition
+        if (storedVariationModel.image != updatedVariationModel.image && updatedVariationModel.image.isNotBlank()) {
+            body["image"] = updatedVariationModel.image
         }
         if (storedVariationModel.menuOrder != updatedVariationModel.menuOrder) {
             body["menu_order"] = updatedVariationModel.menuOrder
