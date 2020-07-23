@@ -17,6 +17,7 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
     @Column var remoteShippingLabelId = 0L // The unique identifier for this note on the server
     @Column var trackingNumber = ""
     @Column var carrierId = ""
+    @Column var dateCreated = ""
     @Column var serviceName = ""
     @Column var status = ""
     @Column var packageName = ""
