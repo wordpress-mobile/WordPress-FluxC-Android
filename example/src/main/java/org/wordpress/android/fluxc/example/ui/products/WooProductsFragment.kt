@@ -129,7 +129,8 @@ class WooProductsFragment : Fragment() {
                             pendingFetchSingleVariationRemoteId = variationIdText.text.toString().toLongOrNull()
                             pendingFetchSingleVariationRemoteId?.let { variationId ->
                                 prependToLog("Submitting request to fetch product by " +
-                                        "remoteProductId $pendingFetchSingleProductRemoteId, remoteVariationProductID $variationId")
+                                        "remoteProductId $pendingFetchSingleProductRemoteId, " +
+                                        "remoteVariationProductID $variationId")
                                 val payload = FetchSingleVariationPayload(site, productId, variationId)
                                 dispatcher.dispatch(WCProductActionBuilder.newFetchSingleVariationAction(payload))
                             } ?: prependToLog("No valid remoteVariationId defined...doing nothing")

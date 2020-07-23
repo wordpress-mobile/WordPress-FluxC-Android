@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.product
 
 import android.content.Context
-import android.util.Log
 import com.android.volley.RequestQueue
 import com.google.gson.JsonArray
 import com.google.gson.reflect.TypeToken
