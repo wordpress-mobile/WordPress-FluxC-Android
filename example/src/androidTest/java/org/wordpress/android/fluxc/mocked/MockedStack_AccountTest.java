@@ -9,13 +9,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
+import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor;
 import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AccountUsernameActionType;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload;
+import org.wordpress.android.fluxc.store.AccountStore.FetchAuthOptionsPayload;
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged;
+import org.wordpress.android.fluxc.store.AccountStore.OnAuthOptionsFetched;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.AccountStore.OnUsernameChanged;
 import org.wordpress.android.fluxc.store.AccountStore.PushUsernamePayload;
@@ -42,7 +45,8 @@ public class MockedStack_AccountTest extends MockedStack_Base {
 
     enum TestEvents {
         NONE,
-        CHANGE_USERNAME_SUCCESSFUL
+        CHANGE_USERNAME_SUCCESSFUL,
+        FETCH_AUTH_OPTIONS_UNVERIFIED_EMAIL,
     }
 
     private TestEvents mNextEvent;
@@ -114,6 +118,16 @@ public class MockedStack_AccountTest extends MockedStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
+    public void testFetchAuthOptionsForUserWithUnverifiedEmail() throws InterruptedException {
+        mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_UNVERIFIED_EMAIL;
+        mCountDownLatch = new CountDownLatch(1);
+        mInterceptor.respondWith("fetch-auth-options-response-success-unverified-email.json");
+        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_UNVERIFIED);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -139,6 +153,17 @@ public class MockedStack_AccountTest extends MockedStack_Base {
         assertEquals(mNextEvent, TestEvents.CHANGE_USERNAME_SUCCESSFUL);
         assertEquals(TEST_USERNAME, event.username);
         mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onAuthOptionsFetched(OnAuthOptionsFetched event) {
+        if (event.isError()) {
+            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+        } else if (!event.isEmailVerified) {
+            assertEquals(mNextEvent, TestEvents.FETCH_AUTH_OPTIONS_UNVERIFIED_EMAIL);
+            mCountDownLatch.countDown();
+        }
     }
 
     private void signOut() throws InterruptedException {
