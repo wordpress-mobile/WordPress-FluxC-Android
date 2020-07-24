@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import javax.inject.Singleton
 
@@ -27,19 +28,32 @@ constructor(
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     suspend fun fetchLeaderboards(
-        site: SiteModel
+        site: SiteModel,
+        unit: OrderStatsApiUnit?,
+        queryTimeRange: LongRange?,
+        quantity: Int?
     ) = WOOCOMMERCE.leaderboards.pathV4Analytics
-            .requestTo(site)
+            .requestTo(site, unit, queryTimeRange, quantity)
             .handleResult()
 
     private suspend fun String.requestTo(
-        site: SiteModel
+        site: SiteModel,
+        unit: OrderStatsApiUnit?,
+        queryTimeRange: LongRange?,
+        quantity: Int?
     ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
             this@LeaderboardsRestClient,
             site,
             this,
-            emptyMap(),
+            createParameters(unit, queryTimeRange, quantity),
             Array<LeaderboardsApiResponse>::class.java
+    )
+
+    private fun createParameters(unit: OrderStatsApiUnit?, queryTimeRange: LongRange?, quantity: Int?) = mapOf(
+            "interval" to unit?.toString().orEmpty(),
+            "before" to queryTimeRange?.start.toString(),
+            "after" to queryTimeRange?.endInclusive.toString(),
+            "per_page" to quantity?.toString().orEmpty()
     )
 
     private fun <T> JetpackResponse<T>.handleResult() =
