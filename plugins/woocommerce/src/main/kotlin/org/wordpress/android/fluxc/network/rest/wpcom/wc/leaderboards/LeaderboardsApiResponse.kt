@@ -19,7 +19,7 @@ class LeaderboardsApiResponse : Response {
                 ?.firstOrNull()
                 ?.toList()
 
-    inner class LeaderboardItem {
+    class LeaderboardItem {
         val display: String? = null
         val value: String? = null
         val link
@@ -29,10 +29,12 @@ class LeaderboardsApiResponse : Response {
                     ?.firstOrNull()
                     ?.url
 
-        val itemId
-            get() = Regex("([?&])([^=]+)=([^&]+)")
-                    .takeIf { it.containsMatchIn(link.orEmpty()) }
-                    ?.find(link.orEmpty())
+        fun resolveItemIdByType(type: Type) = link
+                ?.split("&")
+                ?.firstOrNull { it.contains("${type.value}=", true) }
+                ?.split("=")
+                ?.last()
+                ?.toIntOrNull()
 
         private fun SpannableStringBuilder.spansAsList() =
                 getSpans(0, length, URLSpan::class.java)
