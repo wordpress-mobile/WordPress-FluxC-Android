@@ -583,6 +583,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
                     assertEquals(mNextEvent, TestEvents.FETCH_AUTH_OPTIONS_ERROR_UNKNOWN_USER);
                     mCountDownLatch.countDown();
                     break;
+                case EMAIL_LOGIN_NOT_ALLOWED:
+                    // We handle this error in the mocked stack.
                 default:
                     throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }

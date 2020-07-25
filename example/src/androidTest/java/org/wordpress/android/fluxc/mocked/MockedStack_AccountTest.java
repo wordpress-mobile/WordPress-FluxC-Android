@@ -37,6 +37,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(AndroidJUnit4.class)
 public class MockedStack_AccountTest extends MockedStack_Base {
     private static final String TEST_USERNAME = "TEST_USERNAME";
+    private static final String TEST_SUSPICIOUS_EMAIL = "test_suspicious_email@example.org";
 
     @Inject Dispatcher mDispatcher;
     @Inject AccountStore mAccountStore;
@@ -47,6 +48,7 @@ public class MockedStack_AccountTest extends MockedStack_Base {
         NONE,
         CHANGE_USERNAME_SUCCESSFUL,
         FETCH_AUTH_OPTIONS_UNVERIFIED_EMAIL,
+        FETCH_AUTH_OPTIONS_ERROR_EMAIL_LOGIN_NOT_ALLOWED
     }
 
     private TestEvents mNextEvent;
@@ -128,6 +130,16 @@ public class MockedStack_AccountTest extends MockedStack_Base {
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
+    @Test
+    public void testFetchAuthOptionsForUserWithSuspiciousEmail() throws InterruptedException {
+        mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_ERROR_EMAIL_LOGIN_NOT_ALLOWED;
+        mCountDownLatch = new CountDownLatch(1);
+        mInterceptor.respondWithError("fetch-auth-options-response-failure-email-login-not-allowed.json");
+        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(TEST_SUSPICIOUS_EMAIL);
+        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onAuthenticationChanged(OnAuthenticationChanged event) {
@@ -159,7 +171,18 @@ public class MockedStack_AccountTest extends MockedStack_Base {
     @Subscribe
     public void onAuthOptionsFetched(OnAuthOptionsFetched event) {
         if (event.isError()) {
-            throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            switch (event.error.type) {
+                case GENERIC_ERROR:
+                    throw new AssertionError("Error should not be tested: " + event.error.type);
+                case EMAIL_LOGIN_NOT_ALLOWED:
+                    assertEquals(mNextEvent, TestEvents.FETCH_AUTH_OPTIONS_ERROR_EMAIL_LOGIN_NOT_ALLOWED);
+                    mCountDownLatch.countDown();
+                    break;
+                case UNKNOWN_USER:
+                    // We handle this error in the release stack.
+                default:
+                    throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
+            }
         } else if (!event.isEmailVerified) {
             assertEquals(mNextEvent, TestEvents.FETCH_AUTH_OPTIONS_UNVERIFIED_EMAIL);
             mCountDownLatch.countDown();
