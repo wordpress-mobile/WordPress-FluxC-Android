@@ -13,11 +13,13 @@ import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -32,7 +34,7 @@ class WCProductStoreTest {
         val appContext = RuntimeEnvironment.application.applicationContext
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
-                listOf(WCProductModel::class.java),
+                listOf(WCProductModel::class.java, WCProductVariationModel::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)
@@ -108,6 +110,32 @@ class WCProductStoreTest {
             assertEquals(productModel.description, this?.description)
             // Other fields should not be altered by the update
             assertEquals(productModel.name, this?.name)
+        }
+    }
+
+    @Test
+    fun testUpdateVariation() {
+        val variationModel = ProductTestUtils.generateSampleVariation(42, 24).apply {
+            description = "test description"
+        }
+        val site = SiteModel().apply { id = variationModel.localSiteId }
+        ProductSqlUtils.insertOrUpdateProductVariation(variationModel)
+
+        // Simulate incoming action with updated product model
+        val payload = RemoteUpdateVariationPayload(site, variationModel.apply {
+            description = "Updated description"
+        })
+        productStore.onAction(WCProductActionBuilder.newUpdatedVariationAction(payload))
+
+        with(productStore.getVariationByRemoteId(
+                site,
+                variationModel.remoteProductId,
+                variationModel.remoteVariationId
+        )) {
+            // The version of the product model in the database should have the updated description
+            assertEquals(variationModel.description, this?.description)
+            // Other fields should not be altered by the update
+            assertEquals(variationModel.status, this?.status)
         }
     }
 
