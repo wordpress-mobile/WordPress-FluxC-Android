@@ -18,7 +18,7 @@ import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
+import org.wordpress.android.fluxc.model.leaderboards.WCProductLeaderboardsModel
 import org.wordpress.android.fluxc.store.WCLeaderboardsStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
@@ -45,7 +45,6 @@ class WooLeaderboardsFragment : Fragment(), StoreSelectorDialog.Listener {
         super.onViewCreated(view, savedInstanceState)
 
         leaderboards_select_site.setOnClickListener(::onLeaderboardsSelectSiteButtonClicked)
-        fetch_leaderboards.setOnClickListener(::onFetchAllLeaderboardsClicked)
         fetch_product_leaderboards.setOnClickListener(::onFetchProductsLeaderboardsClicked)
     }
 
@@ -53,19 +52,6 @@ class WooLeaderboardsFragment : Fragment(), StoreSelectorDialog.Listener {
         fragmentManager?.let { fm ->
             StoreSelectorDialog.newInstance(this, selectedPos)
                     .show(fm, "StoreSelectorDialog")
-        }
-    }
-
-    private fun onFetchAllLeaderboardsClicked(view: View) {
-        coroutineScope.launch {
-            try {
-                takeAsyncRequestWithValidSite { wcLeaderboardsStore.fetchAllLeaderboards(it) }
-                        ?.model
-                        ?.forEach { logLeaderboardResponse(it) }
-                        ?: prependToLog("Couldn't fetch Leaderboards.")
-            } catch (ex: Exception) {
-                prependToLog("Couldn't fetch Leaderboards. Error: ${ex.message}")
-            }
         }
     }
 
@@ -89,14 +75,13 @@ class WooLeaderboardsFragment : Fragment(), StoreSelectorDialog.Listener {
         leaderboards_selected_site.text = site.name ?: site.displayName
     }
 
-    private fun logLeaderboardResponse(response: LeaderboardsApiResponse) {
-        response.items?.forEach {
-            prependToLog("  display: ${it.display ?: "Display not available"}")
-            prependToLog("  value: ${it.value ?: "Value not available"}")
-            prependToLog("  link: ${it.link ?: "Link not available"}")
-            prependToLog("  --------- Item ---------")
+    private fun logLeaderboardResponse(model: WCProductLeaderboardsModel) {
+        model.productList.forEach {
+            prependToLog("  product name: ${it.name ?: "Display not available"}")
+            prependToLog("  product id: ${it.id ?: "Value not available"}")
+            prependToLog("  --------- Product ---------")
         }
-        prependToLog("Leaderboard Type: ${response.type}")
+        prependToLog("Leaderboard ID: ${model.id}")
         prependToLog("===================")
     }
 
