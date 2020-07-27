@@ -11,6 +11,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.Leaderboar
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.Type.PRODUCTS
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
+import org.wordpress.android.fluxc.persistence.WCLeaderboardsSqlUtils.getCurrentLeaderboards
+import org.wordpress.android.fluxc.persistence.WCLeaderboardsSqlUtils.insertNewLeaderboards
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
@@ -33,7 +35,12 @@ class WCLeaderboardsStore @Inject constructor(
                 fetchAllLeaderboards(site, unit, queryTimeRange, quantity)
                         .model
                         ?.firstOrNull { it.type == PRODUCTS }
-                        ?.run { WooResult(mapper.map(this, site, productStore)) }
+                        ?.run { mapper.map(this, site, productStore) }
+                        ?.let {
+                            insertNewLeaderboards(it)
+                            getCurrentLeaderboards()
+                        }
+                        ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
 
