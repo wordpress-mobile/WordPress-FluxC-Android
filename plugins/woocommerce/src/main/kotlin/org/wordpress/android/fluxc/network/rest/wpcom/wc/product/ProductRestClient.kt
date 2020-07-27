@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
+import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest
@@ -24,7 +25,15 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErro
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
@@ -70,7 +79,8 @@ class ProductRestClient(
     private val dispatcher: Dispatcher,
     requestQueue: RequestQueue,
     accessToken: AccessToken,
-    userAgent: UserAgent
+    userAgent: UserAgent,
+    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
@@ -262,6 +272,41 @@ class ProductRestClient(
     }
 
     /**
+     * Makes a GET request to `/wp-json/wc/v3/products/[remoteProductId]` to fetch a single product
+     * but requiring this call to be suspended so the return call be synced within the coroutine job
+     *
+     * @param [remoteProductId] Unique server id of the product to fetch
+     */
+    suspend fun fetchSingleProductWithSyncRequest(
+        site: SiteModel,
+        remoteProductId: Long
+    ) = WOOCOMMERCE.products.id(remoteProductId).pathV3
+            .requestTo(site)
+            .handleResult()
+
+    private suspend fun String.requestTo(
+        site: SiteModel
+    ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+            this@ProductRestClient,
+            site,
+            this,
+            emptyMap(),
+            ProductApiResponse::class.java
+    )
+
+    private fun JetpackResponse<ProductApiResponse>.handleResult() =
+            when (this) {
+                is JetpackSuccess -> {
+                    data?.let { WooPayload(productResponseToProductModel(it)) }
+                            ?: WooPayload(WooError(INVALID_RESPONSE,
+                                    GenericErrorType.INVALID_RESPONSE))
+                }
+                is JetpackError -> {
+                    WooPayload(error.toWooError())
+                }
+            }
+
+    /**
      * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
      * retrieving a list of products for the given WooCommerce [SiteModel].
      *
@@ -293,7 +338,8 @@ class ProductRestClient(
                 "orderby" to orderBy,
                 "order" to sortOrder,
                 "offset" to offset.toString(),
-                "search" to (searchQuery ?: ""))
+                "search" to (searchQuery ?: "")
+        )
         remoteProductIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
         }
@@ -414,7 +460,8 @@ class ProductRestClient(
     fun updateProductPassword(site: SiteModel, remoteProductId: Long, password: String) {
         val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_2
         val body = listOfNotNull(
-                "password" to password).toMap()
+                "password" to password
+        ).toMap()
 
         val request = WPComGsonRequest.buildPostRequest(url,
                 body,
@@ -460,7 +507,8 @@ class ProductRestClient(
         val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
                 "offset" to offset.toString(),
-                "order" to "asc")
+                "order" to "asc"
+        )
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductVariationApiResponse>? ->
@@ -698,7 +746,8 @@ class ProductRestClient(
         val params = mutableMapOf(
                 "per_page" to WCProductStore.NUM_REVIEWS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
-                "status" to statusFilter)
+                "status" to statusFilter
+        )
         reviewIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
         }
@@ -714,7 +763,8 @@ class ProductRestClient(
                         val canLoadMore = reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
                         val loadedMore = offset > 0
                         val payload = FetchProductReviewsResponsePayload(
-                                site, reviews, productIds, filterByStatus, loadedMore, canLoadMore)
+                                site, reviews, productIds, filterByStatus, loadedMore, canLoadMore
+                        )
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductReviewsAction(payload))
                     }
                 },

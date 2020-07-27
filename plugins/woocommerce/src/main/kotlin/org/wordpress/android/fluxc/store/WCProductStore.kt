@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
+import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Locale
@@ -27,8 +28,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcProductRestClient: ProductRestClient) :
-        Store(dispatcher) {
+class WCProductStore @Inject constructor(
+    dispatcher: Dispatcher,
+    private val wcProductRestClient: ProductRestClient,
+    private val coroutineEngine: CoroutineEngine
+) : Store(dispatcher) {
     companion object {
         const val NUM_REVIEWS_PER_FETCH = 25
         const val DEFAULT_PRODUCT_PAGE_SIZE = 25
@@ -691,6 +695,13 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
                     )
         }
     }
+
+    suspend fun fetchProductListSynced(site: SiteModel, ids: List<Long>) =
+            coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchProductList") {
+                ids.mapNotNull {
+                    wcProductRestClient.fetchSingleProductWithSyncRequest(site, it).result
+                }
+            }
 
     private fun searchProducts(payload: SearchProductsPayload) {
         with(payload) { wcProductRestClient.searchProducts(site, searchQuery, pageSize, offset, sorting) }
