@@ -186,6 +186,8 @@ public class MockedStack_AccountTest extends MockedStack_Base {
         } else if (!event.isEmailVerified) {
             assertEquals(mNextEvent, TestEvents.FETCH_AUTH_OPTIONS_UNVERIFIED_EMAIL);
             mCountDownLatch.countDown();
+        } else {
+            throw new AssertionError("Unexpected verified email in the mocked stack");
         }
     }
 

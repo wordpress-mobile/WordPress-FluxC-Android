@@ -600,6 +600,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
                     // We test for unverified emails in the mocked stack, otherwise we might run into a security issue
                     // where the API returns an EMAIL_LOGIN_NOT_ALLOWED error asking for an username to be provided
                     // instead of an email.
+                    throw new AssertionError("Unexpected unverified email in the release stack");
                 }
             }
         }
