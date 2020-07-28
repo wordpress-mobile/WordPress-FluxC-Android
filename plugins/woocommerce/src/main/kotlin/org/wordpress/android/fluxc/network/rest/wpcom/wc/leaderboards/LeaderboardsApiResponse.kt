@@ -1,5 +1,7 @@
 package org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards
 
+import android.annotation.TargetApi
+import android.os.Build
 import android.text.Html
 import android.text.SpannableStringBuilder
 import android.text.style.URLSpan
@@ -21,23 +23,16 @@ class LeaderboardsApiResponse : Response {
     }
 
     class LeaderboardItem(
-        val itemRows: Array<LeaderboardItemRow>? = null
+        private val itemRows: Array<LeaderboardItemRow>? = null
     ) {
-        val itemHtmlTag by lazy {
+        private val itemHtmlTag by lazy {
             itemRows
                     ?.first()
                     ?.display
         }
 
-        val itemName by lazy {
-            itemRows
-                    ?.first()
-                    ?.value
-        }
-
-        //TODO: fix deprecation issue
         val link by lazy {
-            Html.fromHtml(itemHtmlTag)
+            fromHtmlWithSafeApiCall(itemHtmlTag)
                     .run { this as? SpannableStringBuilder }
                     ?.spansAsList()
                     ?.firstOrNull()
@@ -54,6 +49,12 @@ class LeaderboardsApiResponse : Response {
         private fun SpannableStringBuilder.spansAsList() =
                 getSpans(0, length, URLSpan::class.java)
                         .toList()
+
+        @TargetApi(Build.VERSION_CODES.N)
+        private fun fromHtmlWithSafeApiCall(source: String?) = source
+                ?.takeIf { Build.VERSION.SDK_INT >= Build.VERSION_CODES.N }?.let {
+                    Html.fromHtml(source, Html.FROM_HTML_MODE_LEGACY)
+                } ?: Html.fromHtml(source)
     }
 
     class LeaderboardItemRow {
