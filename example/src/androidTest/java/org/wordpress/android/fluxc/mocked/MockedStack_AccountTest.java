@@ -9,7 +9,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.TestUtils;
-import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.generated.AccountActionBuilder;
 import org.wordpress.android.fluxc.generated.AuthenticationActionBuilder;
 import org.wordpress.android.fluxc.module.ResponseMockingInterceptor;
@@ -37,6 +36,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(AndroidJUnit4.class)
 public class MockedStack_AccountTest extends MockedStack_Base {
     private static final String TEST_USERNAME = "TEST_USERNAME";
+    private static final String TEST_UNVERIFIED_EMAIL = "test_unverified_email@example.org";
     private static final String TEST_SUSPICIOUS_EMAIL = "test_suspicious_email@example.org";
 
     @Inject Dispatcher mDispatcher;
@@ -125,7 +125,7 @@ public class MockedStack_AccountTest extends MockedStack_Base {
         mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_UNVERIFIED_EMAIL;
         mCountDownLatch = new CountDownLatch(1);
         mInterceptor.respondWith("fetch-auth-options-response-success-unverified-email.json");
-        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_UNVERIFIED);
+        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(TEST_UNVERIFIED_EMAIL);
         mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
