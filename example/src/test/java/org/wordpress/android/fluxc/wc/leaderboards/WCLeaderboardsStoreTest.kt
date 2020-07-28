@@ -17,7 +17,7 @@ import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.leaderboards.WCProductLeaderboardsMapper
-import org.wordpress.android.fluxc.model.leaderboards.WCProductLeaderboardsModel
+import org.wordpress.android.fluxc.model.leaderboards.WCTopPerformerProductModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.Type.PRODUCTS
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
@@ -43,7 +43,7 @@ class WCLeaderboardsStoreTest {
         val appContext = RuntimeEnvironment.application.applicationContext
         val config = SingleStoreWellSqlConfigForTests(
                 appContext,
-                listOf(SiteModel::class.java, WCProductLeaderboardsModel::class.java),
+                listOf(SiteModel::class.java, WCTopPerformerProductModel::class.java),
                 WellSqlConfig.ADDON_WOOCOMMERCE
         )
         WellSql.init(config)

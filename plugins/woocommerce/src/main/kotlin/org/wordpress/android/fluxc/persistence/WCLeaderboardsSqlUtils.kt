@@ -1,19 +1,18 @@
 package org.wordpress.android.fluxc.persistence
 
 import com.yarolegovich.wellsql.WellSql
-import org.wordpress.android.fluxc.model.leaderboards.WCProductLeaderboardsModel
+import org.wordpress.android.fluxc.model.leaderboards.WCTopPerformerProductModel
 
 object WCLeaderboardsSqlUtils {
     fun deleteCurrentLeaderboards() =
-            WellSql.delete(WCProductLeaderboardsModel::class.java).execute()
+            WellSql.delete(WCTopPerformerProductModel::class.java).execute()
 
     fun getCurrentLeaderboards() =
-            WellSql.select(WCProductLeaderboardsModel::class.java)
+            WellSql.select(WCTopPerformerProductModel::class.java)
                     .asModel
                     .toList()
-                    .firstOrNull()
 
-    fun insertNewLeaderboards(leadearboards: WCProductLeaderboardsModel) {
+    fun insertNewLeaderboards(leadearboards: List<WCTopPerformerProductModel>) {
         deleteCurrentLeaderboards()
         WellSql.insert(leadearboards).asSingleTransaction(true).execute()
     }

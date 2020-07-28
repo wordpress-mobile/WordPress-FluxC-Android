@@ -9,11 +9,14 @@ import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
-data class WCProductLeaderboardsModel(
+data class WCTopPerformerProductModel(
     @PrimaryKey @Column private var id: Int = 0,
-    @Column var products: String = ""
+    @Column var productInfo: String = "",
+    @Column var currency: String = "",
+    @Column var quantity: Int = 0,
+    @Column var total: Double = 0.0
 ) : Identifiable {
-    val productList by lazy { Gson().fromJson(products, Array<WCProductModel>::class.java).toList() }
+    val product by lazy { Gson().fromJson(productInfo, WCProductModel::class.java) }
 
     override fun setId(id: Int) {
         this.id = id

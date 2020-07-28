@@ -2,7 +2,7 @@ package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.leaderboards.WCProductLeaderboardsMapper
-import org.wordpress.android.fluxc.model.leaderboards.WCProductLeaderboardsModel
+import org.wordpress.android.fluxc.model.leaderboards.WCTopPerformerProductModel
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
@@ -30,7 +30,7 @@ class WCLeaderboardsStore @Inject constructor(
         unit: OrderStatsApiUnit? = null,
         queryTimeRange: LongRange? = null,
         quantity: Int? = null
-    ): WooResult<WCProductLeaderboardsModel> =
+    ): WooResult<List<WCTopPerformerProductModel>> =
             coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchLeaderboards") {
                 fetchAllLeaderboards(site, unit, queryTimeRange, quantity)
                         .model

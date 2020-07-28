@@ -18,7 +18,7 @@ import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.leaderboards.WCProductLeaderboardsModel
+import org.wordpress.android.fluxc.model.leaderboards.WCTopPerformerProductModel
 import org.wordpress.android.fluxc.store.WCLeaderboardsStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
@@ -75,14 +75,16 @@ class WooLeaderboardsFragment : Fragment(), StoreSelectorDialog.Listener {
         leaderboards_selected_site.text = site.name ?: site.displayName
     }
 
-    private fun logLeaderboardResponse(model: WCProductLeaderboardsModel) {
-        model.productList.forEach {
-            prependToLog("  product name: ${it.name ?: "Display not available"}")
-            prependToLog("  product id: ${it.id ?: "Value not available"}")
+    private fun logLeaderboardResponse(model: List<WCTopPerformerProductModel>) {
+        model.forEach {
+            prependToLog("  Top Performer Product name: ${it.product.name ?: "Product name not available"}")
+            prependToLog("  Top Performer currency: ${it.currency ?: "Currency not available"}")
+            prependToLog("  Top Performer quantity: ${it.quantity ?: "Quantity not available"}")
+            prependToLog("  Top Performer total: ${it.total ?: "total not available"}")
+            prependToLog("  Top Performer id: ${it.id ?: "ID not available"}")
             prependToLog("  --------- Product ---------")
         }
-        prependToLog("Leaderboard ID: ${model.id}")
-        prependToLog("===================")
+        prependToLog("========== Top Performers =========")
     }
 
     private suspend inline fun <T> takeAsyncRequestWithValidSite(crossinline action: suspend (SiteModel) -> T) =
