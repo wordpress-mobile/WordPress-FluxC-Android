@@ -27,6 +27,7 @@ import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleShippingLabelApiResponse
+import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.stubbedTopPerformersList
 
 @Config(manifest = Config.NONE)
 @RunWith(RobolectricTestRunner::class)
@@ -89,6 +90,19 @@ class WCLeaderboardsStoreTest {
                 .thenReturn(WooPayload(response))
         storeUnderTest.fetchProductLeaderboards(site)
         verify(mapper, times(1)).map(any(), any(), any())
+    }
+
+    @Test
+    fun `fetch product leaderboards should return WooResult correctly`() = test {
+        val response = generateSampleShippingLabelApiResponse()
+        val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
+        whenever(restClient.fetchLeaderboards(site, null, null, null))
+                .thenReturn(WooPayload(response))
+        whenever(mapper.map(filteredResponse!!, site, productStore)).thenReturn(stubbedTopPerformersList)
+        val result = storeUnderTest.fetchProductLeaderboards(site)
+        assertThat(result.model).isNotNull
+        assertThat(result.model).isEqualTo(stubbedTopPerformersList)
+        assertThat(result.error).isNull()
     }
 
     private fun createStoreUnderTest() =
