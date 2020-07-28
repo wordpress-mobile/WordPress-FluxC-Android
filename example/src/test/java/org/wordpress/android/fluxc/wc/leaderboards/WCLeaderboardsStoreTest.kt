@@ -1,0 +1,101 @@
+package org.wordpress.android.fluxc.wc.leaderboards
+
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.spy
+import com.nhaarman.mockitokotlin2.times
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
+import com.yarolegovich.wellsql.WellSql
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
+import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.leaderboards.WCProductLeaderboardsMapper
+import org.wordpress.android.fluxc.model.leaderboards.WCProductLeaderboardsModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.Type.PRODUCTS
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
+import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import org.wordpress.android.fluxc.store.WCLeaderboardsStore
+import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.test
+import org.wordpress.android.fluxc.tools.initCoroutineEngine
+import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleShippingLabelApiResponse
+
+@Config(manifest = Config.NONE)
+@RunWith(RobolectricTestRunner::class)
+class WCLeaderboardsStoreTest {
+    private lateinit var storeUnderTest: WCLeaderboardsStore
+    private lateinit var restClient: LeaderboardsRestClient
+    private lateinit var productStore: WCProductStore
+    private lateinit var mapper: WCProductLeaderboardsMapper
+
+    private val site = SiteModel().apply { id = 321 }
+
+    @Before
+    fun setUp() {
+        val appContext = RuntimeEnvironment.application.applicationContext
+        val config = SingleStoreWellSqlConfigForTests(
+                appContext,
+                listOf(SiteModel::class.java, WCProductLeaderboardsModel::class.java),
+                WellSqlConfig.ADDON_WOOCOMMERCE
+        )
+        WellSql.init(config)
+        config.reset()
+        initMocks()
+        createStoreUnderTest()
+    }
+
+    private fun initMocks() {
+        restClient = mock()
+        productStore = mock()
+        mapper = mock()
+    }
+
+    @Test
+    fun `fetch product leaderboards with empty result should return WooError`() = test {
+        whenever(restClient.fetchLeaderboards(site, null, null, null))
+                .thenReturn(WooPayload(emptyArray()))
+        val result = storeUnderTest.fetchProductLeaderboards(site)
+        assertThat(result.model).isNull()
+        assertThat(result.error).isNotNull
+    }
+
+    @Test
+    fun `fetch product leaderboards should filter leaderboards by PRODUCTS type`() = test {
+        mapper = spy()
+        createStoreUnderTest()
+        val response = generateSampleShippingLabelApiResponse()
+        val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
+
+        whenever(restClient.fetchLeaderboards(site, null, null, null))
+                .thenReturn(WooPayload(response))
+        storeUnderTest.fetchProductLeaderboards(site)
+        verify(mapper).map(filteredResponse!!, site, productStore)
+    }
+
+    @Test
+    fun `fetch product leaderboards should call mapper once`() = test {
+        mapper = spy()
+        createStoreUnderTest()
+        val response = generateSampleShippingLabelApiResponse()
+        whenever(restClient.fetchLeaderboards(site, null, null, null))
+                .thenReturn(WooPayload(response))
+        storeUnderTest.fetchProductLeaderboards(site)
+        verify(mapper, times(1)).map(any(), any(), any())
+    }
+
+    private fun createStoreUnderTest() =
+            WCLeaderboardsStore(
+                    restClient,
+                    productStore,
+                    mapper,
+                    initCoroutineEngine()
+            ).apply { storeUnderTest = this }
+}
