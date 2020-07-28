@@ -50,11 +50,11 @@ constructor(
     )
 
     private fun createParameters(unit: OrderStatsApiUnit?, queryTimeRange: LongRange?, quantity: Int?) = mapOf(
-            "interval" to unit?.toString().orEmpty(),
-            "before" to queryTimeRange?.start.toString(),
-            "after" to queryTimeRange?.endInclusive.toString(),
-            "per_page" to quantity?.toString().orEmpty()
-    )
+            "after" to (queryTimeRange?.endInclusive ?: "").toString(),
+            "before" to (queryTimeRange?.start ?: "").toString(),
+            "per_page" to quantity?.toString().orEmpty(),
+            "interval" to unit?.toString().orEmpty()
+    ).filter { it.value.isNotEmpty() }
 
     private fun <T> JetpackResponse<T>.handleResult() =
             when (this) {
