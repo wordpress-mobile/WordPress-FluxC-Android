@@ -1019,6 +1019,14 @@ class ProductRestClient(
                 }
             }
         }
+        if (!storedWCProductModel.hasSameGroupedProductIds(updatedProductModel)) {
+            val updatedGroupedProductIds = updatedProductModel.getGroupedProductIds()
+            body["grouped_products"] = JsonArray().also {
+                for (groupedProductId in updatedGroupedProductIds) {
+                    it.add(groupedProductId)
+                }
+            }
+        }
         return body
     }
 

@@ -347,4 +347,22 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         }
         return true
     }
+
+    /**
+     * Compares this product's groupedProductIds with the passed product's groupedProductIds, returns true only if both
+     * lists contain the same groupedProductIds in the same order
+     */
+    fun hasSameGroupedProductIds(updatedProduct: WCProductModel): Boolean {
+        val updatedGroupedIds = updatedProduct.getGroupedProductIds()
+        val storedGroupedIds = getGroupedProductIds()
+        if (storedGroupedIds.size != updatedGroupedIds.size) {
+            return false
+        }
+        for (i in storedGroupedIds.indices) {
+            if (storedGroupedIds[i] != updatedGroupedIds[i]) {
+                return false
+            }
+        }
+        return true
+    }
 }
