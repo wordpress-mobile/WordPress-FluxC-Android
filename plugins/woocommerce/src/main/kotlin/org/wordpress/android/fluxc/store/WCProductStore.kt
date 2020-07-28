@@ -31,7 +31,7 @@ import javax.inject.Singleton
 class WCProductStore @Inject constructor(
     dispatcher: Dispatcher,
     private val wcProductRestClient: ProductRestClient,
-    private val coroutineEngine: CoroutineEngine
+    private val coroutineEngine: CoroutineEngine? = null
 ) : Store(dispatcher) {
     companion object {
         const val NUM_REVIEWS_PER_FETCH = 25
@@ -697,7 +697,7 @@ class WCProductStore @Inject constructor(
     }
 
     suspend fun fetchProductListSynced(site: SiteModel, ids: List<Long>) =
-            coroutineEngine.withDefaultContext(AppLog.T.API, this, "fetchProductList") {
+            coroutineEngine?.withDefaultContext(AppLog.T.API, this, "fetchProductList") {
                 ids.mapNotNull {
                     wcProductRestClient.fetchSingleProductWithSyncRequest(site, it).result
                 }
