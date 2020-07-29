@@ -2,6 +2,8 @@ package org.wordpress.android.fluxc.model.leaderboards
 
 import com.google.gson.Gson
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardProductItem
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
 import org.wordpress.android.fluxc.store.WCProductStore
 import javax.inject.Inject
@@ -18,21 +20,18 @@ class WCProductLeaderboardsMapper @Inject constructor(
             ?.mapNotNull { productItem ->
                 productItem.productId
                         ?.let { productStore.fetchSingleProductSynced(site, it) }
-                        ?.run {
-                            WCTopPerformerProductModel(
-                                    hashCode(),
-                                    gson.toJson(this),
-                                    productItem.currency.toString(),
-                                    productItem.quantity?.toIntOrNull() ?: 0,
-                                    productItem.total?.toDoubleOrNull() ?: 0.0
-                            )
-                        }
+                        ?.parseToWCTopPerformerProductModel(productItem)
             }
 
-    /*
-    ?.mapNotNull { it.resolveItemIdByType(PRODUCTS) }
-    ?.run { productStore.fetchProductListSynced(site, this) }
-    ?.let { WCTopPerformerProductModel(it.hashCode(), Gson().toJson(it)) }
-
-     */
+    private fun WCProductModel.parseToWCTopPerformerProductModel(
+        productItem: LeaderboardProductItem
+    ): WCTopPerformerProductModel {
+        return WCTopPerformerProductModel(
+                hashCode(),
+                gson.toJson(this),
+                productItem.currency.toString(),
+                productItem.quantity?.toIntOrNull() ?: 0,
+                productItem.total?.toDoubleOrNull() ?: 0.0
+        )
+    }
 }
