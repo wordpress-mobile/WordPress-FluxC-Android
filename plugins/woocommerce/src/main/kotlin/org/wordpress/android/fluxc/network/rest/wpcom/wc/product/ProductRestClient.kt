@@ -1224,6 +1224,7 @@ class ProductRestClient(
             relatedIds = response.related_ids?.toString() ?: ""
             crossSellIds = response.cross_sell_ids?.toString() ?: ""
             upsellIds = response.upsell_ids?.toString() ?: ""
+            groupedProductIds = response.grouped_products?.toString() ?: ""
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""
