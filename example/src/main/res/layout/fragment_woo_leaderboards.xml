@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.wordpress.android.fluxc.example.ui.shippinglabels.WooShippingLabelFragment">
+    tools:context="org.wordpress.android.fluxc.example.ui.leaderboards.WooLeaderboardsFragment">
 
     <LinearLayout
         android:id="@+id/buttonContainer"
