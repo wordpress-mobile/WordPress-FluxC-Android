@@ -1105,7 +1105,7 @@ class ProductRestClient(
         }
         // TODO: Once removal is supported, we can remove the extra isNotBlank() condition
         if (storedVariationModel.image != updatedVariationModel.image && updatedVariationModel.image.isNotBlank()) {
-            body["image"] = updatedVariationModel.image
+            body["image"] = updatedVariationModel.getImage()?.toJson() ?: ""
         }
         if (storedVariationModel.menuOrder != updatedVariationModel.menuOrder) {
             body["menu_order"] = updatedVariationModel.menuOrder
