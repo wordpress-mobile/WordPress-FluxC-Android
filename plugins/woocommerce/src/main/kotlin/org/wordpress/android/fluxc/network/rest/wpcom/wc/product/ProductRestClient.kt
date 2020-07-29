@@ -82,7 +82,7 @@ class ProductRestClient(
     requestQueue: RequestQueue,
     accessToken: AccessToken,
     userAgent: UserAgent,
-    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
+    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder? = null
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
@@ -324,11 +324,11 @@ class ProductRestClient(
         remoteProductId: Long
     ) = WOOCOMMERCE.products.id(remoteProductId).pathV3
             .requestTo(site)
-            .handleResult()
+            ?.handleResult()
 
     private suspend fun String.requestTo(
         site: SiteModel
-    ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+    ) = jetpackTunnelGsonRequestBuilder?.syncGetRequest(
             this@ProductRestClient,
             site,
             this,
