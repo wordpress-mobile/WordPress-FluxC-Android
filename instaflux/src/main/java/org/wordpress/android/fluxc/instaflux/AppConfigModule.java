@@ -3,8 +3,12 @@ package org.wordpress.android.fluxc.instaflux;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.goterl.lazycode.lazysodium.exceptions.SodiumException;
+
+import org.wordpress.android.fluxc.model.encryptedlogging.EncryptionUtils;
 import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AppSecrets;
+import org.wordpress.android.fluxc.store.EncryptedLoggingKey;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -39,5 +43,15 @@ public class AppConfigModule {
     @Provides
     public UserAgent provideUserAgent(Context appContext) {
         return new UserAgent(appContext, "instaflux-android");
+    }
+
+    @Provides
+    public EncryptedLoggingKey provideEncryptedLoggingKey() {
+        try {
+            return new EncryptedLoggingKey(EncryptionUtils.getSodium().cryptoBoxKeypair().getPublicKey());
+        } catch (SodiumException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
