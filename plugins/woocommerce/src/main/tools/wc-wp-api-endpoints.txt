@@ -7,6 +7,7 @@
 
 /products/<id>/
 /products/<id>/variations/
+/products/<id>/variations/<variation_id>
 /products/
 /products/shipping_classes
 /products/shipping_classes/<id>/
