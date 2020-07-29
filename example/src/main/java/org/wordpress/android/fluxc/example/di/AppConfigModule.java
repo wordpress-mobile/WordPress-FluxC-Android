@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import org.wordpress.android.fluxc.example.BuildConfig;
 import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AppSecrets;
+import org.wordpress.android.fluxc.store.EncryptedLoggingKey;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -39,5 +40,10 @@ public class AppConfigModule {
     @Provides
     public UserAgent provideUserAgent(Context appContext) {
         return new UserAgent(appContext, "fluxc-example-android");
+    }
+
+    @Provides
+    public EncryptedLoggingKey provideEncryptedLoggingKey() {
+        return new EncryptedLoggingKey(getStringBuildConfigValue("ENCRYPTED_LOGGING_PUBLIC_KEY"));
     }
 }

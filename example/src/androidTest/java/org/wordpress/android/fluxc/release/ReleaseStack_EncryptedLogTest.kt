@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.store.EncryptedLogStore.OnEncryptedLogUploade
 import org.wordpress.android.fluxc.store.EncryptedLogStore.UploadEncryptedLogError.InvalidRequest
 import org.wordpress.android.fluxc.store.EncryptedLogStore.UploadEncryptedLogError.TooManyRequests
 import org.wordpress.android.fluxc.store.EncryptedLogStore.UploadEncryptedLogPayload
+import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -49,7 +50,11 @@ class ReleaseStack_EncryptedLogTest : ReleaseStack_Base() {
         val testIds = testIds()
         mCountDownLatch = CountDownLatch(testIds.size)
         testIds.forEach { uuid ->
-            val payload = UploadEncryptedLogPayload(uuid = uuid, file = createTempFile(suffix = uuid))
+            val payload = UploadEncryptedLogPayload(
+                    uuid = uuid,
+                    file = createTempFileWithContent(suffix = uuid, content = "Testing FluxC log upload for $uuid"),
+                    shouldStartUploadImmediately = true
+            )
             mDispatcher.dispatch(EncryptedLogActionBuilder.newUploadLogAction(payload))
         }
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -60,7 +65,11 @@ class ReleaseStack_EncryptedLogTest : ReleaseStack_Base() {
         nextEvent = ENCRYPTED_LOG_UPLOAD_FAILED_WITH_INVALID_UUID
 
         mCountDownLatch = CountDownLatch(1)
-        val payload = UploadEncryptedLogPayload(uuid = INVALID_UUID, file = createTempFile(suffix = INVALID_UUID))
+        val payload = UploadEncryptedLogPayload(
+                uuid = INVALID_UUID,
+                file = createTempFile(suffix = INVALID_UUID),
+                shouldStartUploadImmediately = true
+        )
         mDispatcher.dispatch(EncryptedLogActionBuilder.newUploadLogAction(payload))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
     }
@@ -89,5 +98,11 @@ class ReleaseStack_EncryptedLogTest : ReleaseStack_Base() {
 
     private fun testIds() = (1..NUMBER_OF_LOGS_TO_UPLOAD).map { i ->
         "$TEST_UUID_PREFIX$i"
+    }
+
+    private fun createTempFileWithContent(suffix: String, content: String): File {
+        val file = createTempFile(suffix = suffix)
+        file.writeText(content)
+        return file
     }
 }
