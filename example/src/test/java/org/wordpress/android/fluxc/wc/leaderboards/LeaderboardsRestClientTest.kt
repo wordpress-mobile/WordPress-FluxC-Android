@@ -8,7 +8,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
-import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
@@ -21,14 +20,13 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.Leaderboar
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit.DAY
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleShippingLabelApiResponse
+import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.stubSite
 
 class LeaderboardsRestClientTest {
     private lateinit var restClientUnderTest: LeaderboardsRestClient
     private lateinit var requestBuilder: JetpackTunnelGsonRequestBuilder
     private lateinit var jetpackSuccessResponse: JetpackSuccess<Array<LeaderboardsApiResponse>>
     private lateinit var jetpackErrorResponse: JetpackError<Array<LeaderboardsApiResponse>>
-
-    private val site = SiteModel().apply { id = 321 }
 
     @Before
     fun setUp() {
@@ -50,10 +48,10 @@ class LeaderboardsRestClientTest {
         val expectedResult = generateSampleShippingLabelApiResponse()
         configureSuccessRequest(expectedResult!!)
 
-        val response = restClientUnderTest.fetchLeaderboards(site, DAY, 1L..22L, 5)
+        val response = restClientUnderTest.fetchLeaderboards(stubSite, DAY, 1L..22L, 5)
         verify(requestBuilder, times(1)).syncGetRequest(
                 restClientUnderTest,
-                site,
+                stubSite,
                 WOOCOMMERCE.leaderboards.pathV4Analytics,
                 mapOf(
                         "before" to "22",
@@ -73,7 +71,7 @@ class LeaderboardsRestClientTest {
     fun `fetch leaderboards should correctly return failure as WooError`() = test {
         configureErrorRequest()
         val response = restClientUnderTest.fetchLeaderboards(
-                site,
+                stubSite,
                 DAY,
                 1L..22L,
                 5)
@@ -89,7 +87,7 @@ class LeaderboardsRestClientTest {
         whenever(
                 requestBuilder.syncGetRequest(
                         restClientUnderTest,
-                        site,
+                        stubSite,
                         WOOCOMMERCE.leaderboards.pathV4Analytics,
                         mapOf(
                                 "after" to "1",
@@ -107,7 +105,7 @@ class LeaderboardsRestClientTest {
         whenever(
                 requestBuilder.syncGetRequest(
                         restClientUnderTest,
-                        site,
+                        stubSite,
                         WOOCOMMERCE.leaderboards.pathV4Analytics,
                         mapOf(
                                 "after" to "1",
