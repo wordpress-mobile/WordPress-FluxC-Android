@@ -8,8 +8,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.Leaderboar
 import org.wordpress.android.fluxc.store.WCProductStore
 import javax.inject.Inject
 
-class WCProductLeaderboardsMapper @Inject constructor(
-) {
+class WCProductLeaderboardsMapper @Inject constructor() {
     private val gson = Gson()
 
     suspend fun map(

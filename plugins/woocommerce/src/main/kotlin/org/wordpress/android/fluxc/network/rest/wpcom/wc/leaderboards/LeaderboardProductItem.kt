@@ -78,4 +78,3 @@ class LeaderboardProductItem(
             takeIf { isNotEmpty() && size > 2 }
                     ?.let { this[2] }
 }
-
