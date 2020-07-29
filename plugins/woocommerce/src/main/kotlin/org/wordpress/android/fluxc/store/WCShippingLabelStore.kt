@@ -29,6 +29,13 @@ class WCShippingLabelStore @Inject constructor(
     ): List<WCShippingLabelModel> =
             WCShippingLabelSqlUtils.getShippingClassesForOrder(site.id, orderId)
 
+    fun getShippingLabelById(
+        site: SiteModel,
+        orderId: Long,
+        remoteShippingLabelId: Long
+    ): WCShippingLabelModel? =
+            WCShippingLabelSqlUtils.getShippingLabelById(site.id, orderId, remoteShippingLabelId)
+
     suspend fun fetchShippingLabelsForOrder(
         site: SiteModel,
         orderId: Long
