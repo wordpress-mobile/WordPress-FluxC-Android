@@ -87,5 +87,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Shipping Labels"/>
+
+                <Button
+                    android:id="@+id/leaderboards"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Leadearboards"/>
         </LinearLayout>
 </ScrollView>
