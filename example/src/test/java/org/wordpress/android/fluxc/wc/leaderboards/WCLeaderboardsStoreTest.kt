@@ -53,12 +53,6 @@ class WCLeaderboardsStoreTest {
         createStoreUnderTest()
     }
 
-    private fun initMocks() {
-        restClient = mock()
-        productStore = mock()
-        mapper = mock()
-    }
-
     @Test
     fun `fetch product leaderboards with empty result should return WooError`() = test {
         whenever(restClient.fetchLeaderboards(site, null, null, null))
@@ -103,6 +97,12 @@ class WCLeaderboardsStoreTest {
         assertThat(result.model).isNotNull
         assertThat(result.model).isEqualTo(stubbedTopPerformersList)
         assertThat(result.error).isNull()
+    }
+
+    private fun initMocks() {
+        restClient = mock()
+        productStore = mock()
+        mapper = mock()
     }
 
     private fun createStoreUnderTest() =

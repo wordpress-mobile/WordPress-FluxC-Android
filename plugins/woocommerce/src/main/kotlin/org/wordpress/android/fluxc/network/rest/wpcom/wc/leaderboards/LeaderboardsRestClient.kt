@@ -50,8 +50,8 @@ constructor(
     )
 
     private fun createParameters(unit: OrderStatsApiUnit?, queryTimeRange: LongRange?, quantity: Int?) = mapOf(
-            "after" to (queryTimeRange?.endInclusive ?: "").toString(),
-            "before" to (queryTimeRange?.start ?: "").toString(),
+            "before" to (queryTimeRange?.endInclusive ?: "").toString(),
+            "after" to (queryTimeRange?.start ?: "").toString(),
             "per_page" to quantity?.toString().orEmpty(),
             "interval" to unit?.toString().orEmpty()
     ).filter { it.value.isNotEmpty() }
