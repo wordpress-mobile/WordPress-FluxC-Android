@@ -560,7 +560,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         val updatedProductReviewsAllowed = true
         productModel.reviewsAllowed = updatedProductReviewsAllowed
 
-        val updatedProductVirtual = true
+        val updatedProductVirtual = false
         productModel.virtual = updatedProductVirtual
 
         val updateProductPurchaseNote = "Test purchase note"
@@ -569,7 +569,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         val updatedProductMenuOrder = 5
         productModel.menuOrder = updatedProductMenuOrder
 
-        val updatedGroupedProductIds = "[10, 11]"
+        val updatedGroupedProductIds = "[770,771]"
         productModel.groupedProductIds = updatedGroupedProductIds
 
         nextEvent = TestEvent.UPDATED_PRODUCT
