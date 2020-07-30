@@ -30,25 +30,25 @@ object WCLeaderboardsTestFixtures {
     val stubbedTopPerformersList by lazy {
         listOf(
                 WCTopPerformerProductModel(
-                        0,
                         "info 0",
                         "currency 0",
                         0,
-                        0.0
+                        0.0,
+                        321
                 ),
                 WCTopPerformerProductModel(
-                        1,
                         "info 1",
                         "currency 1",
                         1,
-                        1.0
+                        1.0,
+                        321
                 ),
                 WCTopPerformerProductModel(
-                        2,
                         "info 2",
                         "currency 2",
                         2,
-                        2.0
+                        2.0,
+                        321
                 )
         )
     }

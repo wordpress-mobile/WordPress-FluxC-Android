@@ -98,6 +98,18 @@ class WCLeaderboardsStoreTest {
         assertThat(result.error).isNull()
     }
 
+    @Test
+    fun `fetch product leaderboards from a invalid site ID should return WooResult with error`() = test {
+        val response = generateSampleShippingLabelApiResponse()
+        val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
+        whenever(restClient.fetchLeaderboards(stubSite, null, null, null))
+                .thenReturn(WooPayload(response))
+        whenever(mapper.map(filteredResponse!!, SiteModel().apply { id = 100 }, productStore)).thenReturn(stubbedTopPerformersList)
+        val result = storeUnderTest.fetchProductLeaderboards(stubSite)
+        assertThat(result.model).isNull()
+        assertThat(result.error).isNotNull
+    }
+
     private fun initMocks() {
         restClient = mock()
         productStore = mock()
