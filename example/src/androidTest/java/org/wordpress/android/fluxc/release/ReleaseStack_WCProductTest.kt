@@ -569,6 +569,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         val updatedProductMenuOrder = 5
         productModel.menuOrder = updatedProductMenuOrder
 
+        val updatedGroupedProductIds = "[10, 11]"
+        productModel.groupedProductIds = updatedGroupedProductIds
+
         nextEvent = TestEvent.UPDATED_PRODUCT
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
@@ -589,6 +592,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertEquals(updatedProductVirtual, updatedProduct?.virtual)
         assertEquals(updateProductPurchaseNote, updatedProduct?.purchaseNote)
         assertEquals(updatedProductMenuOrder, updatedProduct?.menuOrder)
+        assertEquals(updatedGroupedProductIds, updatedProduct?.groupedProductIds)
     }
 
     @Throws(InterruptedException::class)
