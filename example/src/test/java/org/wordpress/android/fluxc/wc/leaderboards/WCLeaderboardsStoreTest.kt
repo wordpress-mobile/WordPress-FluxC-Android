@@ -56,6 +56,7 @@ class WCLeaderboardsStoreTest {
     fun `fetch product leaderboards with empty result should return WooError`() = test {
         whenever(restClient.fetchLeaderboards(stubSite, null, null, null))
                 .thenReturn(WooPayload(emptyArray()))
+
         val result = storeUnderTest.fetchProductLeaderboards(stubSite)
         assertThat(result.model).isNull()
         assertThat(result.error).isNotNull
@@ -70,6 +71,7 @@ class WCLeaderboardsStoreTest {
 
         whenever(restClient.fetchLeaderboards(stubSite, null, null, null))
                 .thenReturn(WooPayload(response))
+
         storeUnderTest.fetchProductLeaderboards(stubSite)
         verify(mapper).map(filteredResponse!!, stubSite, productStore)
     }
@@ -79,8 +81,10 @@ class WCLeaderboardsStoreTest {
         mapper = spy()
         createStoreUnderTest()
         val response = generateSampleShippingLabelApiResponse()
+
         whenever(restClient.fetchLeaderboards(stubSite, null, null, null))
                 .thenReturn(WooPayload(response))
+
         storeUnderTest.fetchProductLeaderboards(stubSite)
         verify(mapper, times(1)).map(any(), any(), any())
     }
@@ -89,9 +93,12 @@ class WCLeaderboardsStoreTest {
     fun `fetch product leaderboards should return WooResult correctly`() = test {
         val response = generateSampleShippingLabelApiResponse()
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
+
         whenever(restClient.fetchLeaderboards(stubSite, null, null, null))
                 .thenReturn(WooPayload(response))
+
         whenever(mapper.map(filteredResponse!!, stubSite, productStore)).thenReturn(stubbedTopPerformersList)
+
         val result = storeUnderTest.fetchProductLeaderboards(stubSite)
         assertThat(result.model).isNotNull
         assertThat(result.model).isEqualTo(stubbedTopPerformersList)
@@ -102,9 +109,16 @@ class WCLeaderboardsStoreTest {
     fun `fetch product leaderboards from a invalid site ID should return WooResult with error`() = test {
         val response = generateSampleShippingLabelApiResponse()
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
+
         whenever(restClient.fetchLeaderboards(stubSite, null, null, null))
                 .thenReturn(WooPayload(response))
-        whenever(mapper.map(filteredResponse!!, SiteModel().apply { id = 100 }, productStore)).thenReturn(stubbedTopPerformersList)
+
+        whenever(mapper.map(
+                filteredResponse!!,
+                SiteModel().apply { id = 100 },
+                productStore))
+                .thenReturn(stubbedTopPerformersList)
+
         val result = storeUnderTest.fetchProductLeaderboards(stubSite)
         assertThat(result.model).isNull()
         assertThat(result.error).isNotNull
