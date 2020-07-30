@@ -38,7 +38,7 @@ class WCLeaderboardsStore @Inject constructor(
                         ?.run { mapper.map(this, site, productStore) }
                         ?.let {
                             insertNewLeaderboards(it)
-                            getCurrentLeaderboards()
+                            getCurrentLeaderboards(site)
                         }
                         ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))

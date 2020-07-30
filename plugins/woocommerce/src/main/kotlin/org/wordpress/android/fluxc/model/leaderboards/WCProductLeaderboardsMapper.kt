@@ -19,18 +19,17 @@ class WCProductLeaderboardsMapper @Inject constructor() {
             ?.mapNotNull { productItem ->
                 productItem.productId
                         ?.let { productStore.fetchSingleProductSynced(site, it) }
-                        ?.parseToWCTopPerformerProductModel(productItem)
+                        ?.toWCTopPerformerProductModel(productItem, site)
             }
 
-    private fun WCProductModel.parseToWCTopPerformerProductModel(
-        productItem: LeaderboardProductItem
-    ): WCTopPerformerProductModel {
-        return WCTopPerformerProductModel(
-                hashCode(),
-                gson.toJson(this),
-                productItem.currency.toString(),
-                productItem.quantity?.toIntOrNull() ?: 0,
-                productItem.total?.toDoubleOrNull() ?: 0.0
-        )
-    }
+    private fun WCProductModel.toWCTopPerformerProductModel(
+        productItem: LeaderboardProductItem,
+        site: SiteModel
+    ) = WCTopPerformerProductModel(
+            gson.toJson(this),
+            productItem.currency.toString(),
+            productItem.quantity?.toIntOrNull() ?: 0,
+            productItem.total?.toDoubleOrNull() ?: 0.0,
+            site.id
+    )
 }

@@ -1,14 +1,19 @@
 package org.wordpress.android.fluxc.persistence
 
+import com.wellsql.generated.WCTopPerformerProductModelTable
 import com.yarolegovich.wellsql.WellSql
+import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.leaderboards.WCTopPerformerProductModel
 
 object WCLeaderboardsSqlUtils {
     fun deleteCurrentLeaderboards() =
             WellSql.delete(WCTopPerformerProductModel::class.java).execute()
 
-    fun getCurrentLeaderboards() =
+    fun getCurrentLeaderboards(site: SiteModel) =
             WellSql.select(WCTopPerformerProductModel::class.java)
+                    .where()
+                    .equals(WCTopPerformerProductModelTable.LOCAL_SITE_ID, site.id)
+                    .endWhere()
                     .asModel
                     .toList()
 
