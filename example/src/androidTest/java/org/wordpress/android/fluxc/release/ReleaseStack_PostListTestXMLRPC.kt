@@ -27,10 +27,13 @@ import org.wordpress.android.fluxc.store.PostStore
 import org.wordpress.android.fluxc.store.PostStore.DEFAULT_POST_STATUS_LIST
 import javax.inject.Inject
 
+private const val TEST_POST_LIST_SEARCH_QUERY = "a"
+
 internal class XmlRpcPostListTestCase(
     val statusList: List<PostStatus> = DEFAULT_POST_STATUS_LIST,
     val order: ListOrder = ListOrder.DESC,
     val orderBy: PostListOrderBy = PostListOrderBy.DATE,
+    val searchQuery: String? = null,
     val testMode: ListStoreConnectedTestMode = SinglePage(false)
 )
 
@@ -59,7 +62,8 @@ internal class ReleaseStack_PostListTestXMLRPC(
                 XmlRpcPostListTestCase(statusList = listOf(SCHEDULED)),
                 XmlRpcPostListTestCase(statusList = listOf(TRASHED)),
                 XmlRpcPostListTestCase(order = ListOrder.ASC, testMode = MultiplePages),
-                XmlRpcPostListTestCase(orderBy = PostListOrderBy.ID, testMode = MultiplePages)
+                XmlRpcPostListTestCase(orderBy = PostListOrderBy.ID, testMode = MultiplePages),
+                XmlRpcPostListTestCase(searchQuery = TEST_POST_LIST_SEARCH_QUERY)
         )
     }
 
@@ -83,6 +87,7 @@ internal class ReleaseStack_PostListTestXMLRPC(
                 statusList = testCase.statusList,
                 order = testCase.order,
                 orderBy = testCase.orderBy,
+                searchQuery = testCase.searchQuery,
                 config = TEST_LIST_CONFIG
         )
         return listStoreConnectedTestHelper.getList(descriptor, TestPostListDataSource(mDispatcher))
