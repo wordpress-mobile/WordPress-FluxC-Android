@@ -84,9 +84,7 @@ class LogEncrypterTest {
     // Helpers
 
     private fun encryptContent(content: String, uuid: String = UUID.randomUUID().toString()): String {
-        val file = createTempFile()
-        file.writeText(content)
-        return LogEncrypter(file, uuid, keypair.publicKey).encrypt()
+        return LogEncrypter(uuid, keypair.publicKey).encrypt(content)
     }
 
     private fun decryptContent(encryptedText: String): String {
