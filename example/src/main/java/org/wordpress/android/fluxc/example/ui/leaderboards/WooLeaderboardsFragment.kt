@@ -77,6 +77,7 @@ class WooLeaderboardsFragment : Fragment(), StoreSelectorDialog.Listener {
 
     private fun logLeaderboardResponse(model: List<WCTopPerformerProductModel>) {
         model.forEach {
+            prependToLog("  Top Performer Product id: ${it.product.remoteProductId ?: "Product id not available"}")
             prependToLog("  Top Performer Product name: ${it.product.name ?: "Product name not available"}")
             prependToLog("  Top Performer currency: ${it.currency ?: "Currency not available"}")
             prependToLog("  Top Performer quantity: ${it.quantity ?: "Quantity not available"}")
