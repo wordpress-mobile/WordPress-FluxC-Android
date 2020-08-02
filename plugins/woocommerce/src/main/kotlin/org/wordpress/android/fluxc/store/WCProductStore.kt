@@ -772,9 +772,9 @@ class WCProductStore @Inject constructor(
         }
     }
 
-    suspend fun fetchSingleProductSynced(site: SiteModel, productId: Long) =
+    suspend fun fetchProductListSynced(site: SiteModel, productIds: List<Long>) =
             coroutineEngine?.withDefaultContext(AppLog.T.API, this, "fetchProductList") {
-                wcProductRestClient.fetchSingleProductWithSyncRequest(site, productId)?.result
+                wcProductRestClient.fetchProductsWithSyncRequest(site = site, remoteProductIds = productIds)?.result
             }
 
     private fun searchProducts(payload: SearchProductsPayload) {

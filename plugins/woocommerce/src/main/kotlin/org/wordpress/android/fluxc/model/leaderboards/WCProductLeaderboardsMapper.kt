@@ -16,10 +16,12 @@ class WCProductLeaderboardsMapper @Inject constructor() {
         site: SiteModel,
         productStore: WCProductStore
     ) = response.products
-            ?.mapNotNull { productItem ->
-                productItem.productId
-                        ?.let { productStore.fetchSingleProductSynced(site, it) }
-                        ?.toWCTopPerformerProductModel(productItem, site)
+            ?.mapNotNull { it.productId }
+            ?.let { productStore.fetchProductListSynced(site, it) }
+            ?.mapNotNull { product ->
+                response.products
+                        ?.find { it.productId == product.remoteProductId }
+                        ?.let { product.toWCTopPerformerProductModel(it, site) }
             }
 
     private fun WCProductModel.toWCTopPerformerProductModel(
