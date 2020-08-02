@@ -14,6 +14,7 @@ import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleProductList
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleShippingLabelApiResponse
+import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateStubbedProductIdList
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.stubSite
 
 @Config(manifest = Config.NONE)
@@ -41,7 +42,7 @@ class WCProductLeaderboardsMapperTest {
                 productStore
         )
         assertThat(result).isNotNull
-        assertThat(result!!.size).isEqualTo(5)
+        assertThat(result!!.size).isEqualTo(3)
     }
 
     @Test
@@ -54,7 +55,7 @@ class WCProductLeaderboardsMapperTest {
                 productStore
         )
         assertThat(result).isNotNull
-        assertThat(result!!.size).isEqualTo(4)
+        assertThat(result!!.size).isEqualTo(2)
     }
 
     @Test
@@ -70,23 +71,31 @@ class WCProductLeaderboardsMapperTest {
     }
 
     private suspend fun configureProductStoreMock() {
-        listOf(14, 22, 15, 20, 13)
-                .forEachIndexed { index, it ->
-                    whenever(productStore.fetchSingleProductSynced(stubSite, it.toLong()))
-                            .thenReturn(expectedProducts[index])
+        generateStubbedProductIdList
+                .let {
+                    whenever(productStore.fetchProductListSynced(stubSite, it))
+                            .thenReturn(expectedProducts)
                 }
     }
 
     private suspend fun configureFailingProductStoreMock() {
-        listOf(14, 22, 15, 20, 13)
-                .forEachIndexed { index, it ->
-                    whenever(productStore.fetchSingleProductSynced(stubSite, it.toLong()))
+        generateStubbedProductIdList
+                .let {
+                    whenever(productStore.fetchProductListSynced(stubSite, it))
                             .thenReturn(null)
                 }
     }
 
     private suspend fun configureExactFailingProductStoreMock(productId: Long) {
-        whenever(productStore.fetchSingleProductSynced(stubSite, productId))
-                .thenReturn(null)
+        expectedProducts
+                .filter { it.remoteProductId != productId }
+                .let {
+                    whenever(productStore
+                            .fetchProductListSynced(
+                                    stubSite,
+                                    generateStubbedProductIdList
+                            )
+                    ).thenReturn(it)
+                }
     }
 }

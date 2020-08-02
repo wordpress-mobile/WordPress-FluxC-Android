@@ -22,7 +22,7 @@ class WCProductLeaderboardsMapper @Inject constructor() {
                 response.products
                         ?.find { it.productId == product.remoteProductId }
                         ?.let { product.toWCTopPerformerProductModel(it, site) }
-            }
+            }.orEmpty()
 
     private fun WCProductModel.toWCTopPerformerProductModel(
         productItem: LeaderboardProductItem,
