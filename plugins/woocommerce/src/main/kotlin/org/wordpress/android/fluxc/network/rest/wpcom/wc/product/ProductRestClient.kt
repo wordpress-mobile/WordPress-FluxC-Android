@@ -424,8 +424,6 @@ class ProductRestClient(
                         .requestTo(site, it)
             }?.handleResultFrom(site)
 
-
-
     private suspend fun String.requestTo(
         site: SiteModel,
         params: Map<String, String>
