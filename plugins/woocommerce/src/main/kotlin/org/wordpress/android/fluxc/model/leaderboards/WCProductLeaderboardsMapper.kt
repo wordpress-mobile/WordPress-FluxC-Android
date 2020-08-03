@@ -16,6 +16,7 @@ class WCProductLeaderboardsMapper @Inject constructor() {
         site: SiteModel,
         productStore: WCProductStore
     ) = response.products
+            ?.takeIf { it.isNotEmpty() }
             ?.mapNotNull { it.productId }
             ?.let { productStore.fetchProductListSynced(site, it) }
             ?.mapNotNull { product ->
