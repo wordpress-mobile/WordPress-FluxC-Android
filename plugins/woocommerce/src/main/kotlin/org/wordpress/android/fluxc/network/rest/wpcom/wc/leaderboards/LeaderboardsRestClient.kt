@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import javax.inject.Singleton
 
 @Singleton
@@ -29,7 +30,7 @@ constructor(
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     suspend fun fetchLeaderboards(
         site: SiteModel,
-        unit: OrderStatsApiUnit?,
+        unit: StatsGranularity?,
         queryTimeRange: LongRange?,
         quantity: Int?
     ) = WOOCOMMERCE.leaderboards.pathV4Analytics
@@ -38,7 +39,7 @@ constructor(
 
     private suspend fun String.requestTo(
         site: SiteModel,
-        unit: OrderStatsApiUnit?,
+        unit: StatsGranularity?,
         queryTimeRange: LongRange?,
         quantity: Int?
     ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
@@ -49,11 +50,11 @@ constructor(
             Array<LeaderboardsApiResponse>::class.java
     )
 
-    private fun createParameters(unit: OrderStatsApiUnit?, queryTimeRange: LongRange?, quantity: Int?) = mapOf(
+    private fun createParameters(unit: StatsGranularity?, queryTimeRange: LongRange?, quantity: Int?) = mapOf(
             "before" to (queryTimeRange?.endInclusive ?: "").toString(),
             "after" to (queryTimeRange?.start ?: "").toString(),
             "per_page" to quantity?.toString().orEmpty(),
-            "interval" to unit?.toString().orEmpty()
+            "interval" to (unit?.let { OrderStatsApiUnit.fromStatsGranularity(it).toString() } ?: "")
     ).filter { it.value.isNotEmpty() }
 
     private fun <T> JetpackResponse<T>.handleResult() =

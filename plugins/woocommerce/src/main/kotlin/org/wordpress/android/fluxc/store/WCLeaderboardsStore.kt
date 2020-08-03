@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.Leaderboar
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.persistence.WCLeaderboardsSqlUtils.getCurrentLeaderboards
 import org.wordpress.android.fluxc.persistence.WCLeaderboardsSqlUtils.insertNewLeaderboards
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import javax.inject.Inject
@@ -27,7 +28,7 @@ class WCLeaderboardsStore @Inject constructor(
 ) {
     suspend fun fetchProductLeaderboards(
         site: SiteModel,
-        unit: OrderStatsApiUnit? = null,
+        unit: StatsGranularity? = null,
         queryTimeRange: LongRange? = null,
         quantity: Int? = null
     ): WooResult<List<WCTopPerformerProductModel>> =
@@ -46,7 +47,7 @@ class WCLeaderboardsStore @Inject constructor(
 
     private suspend fun fetchAllLeaderboards(
         site: SiteModel,
-        unit: OrderStatsApiUnit? = null,
+        unit: StatsGranularity? = null,
         queryTimeRange: LongRange? = null,
         quantity: Int? = null
     ): WooResult<List<LeaderboardsApiResponse>> =
