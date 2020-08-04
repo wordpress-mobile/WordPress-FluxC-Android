@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.release
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
