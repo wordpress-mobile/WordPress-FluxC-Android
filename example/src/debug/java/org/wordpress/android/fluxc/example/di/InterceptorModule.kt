@@ -14,6 +14,6 @@ class InterceptorModule {
     @Provides @IntoSet @Named("network-interceptors")
     fun provideFlipperInterceptor(): Interceptor =
             FlipperOkhttpInterceptor(
-                    AndroidFlipperClient.getInstanceIfInitialized()?.getPluginByClass(NetworkFlipperPlugin::class.java)
+                    AndroidFlipperClient.getInstanceIfInitialized()?.getPlugin(NetworkFlipperPlugin.ID)
             )
 }

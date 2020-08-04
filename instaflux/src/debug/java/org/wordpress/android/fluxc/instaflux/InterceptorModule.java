@@ -18,8 +18,8 @@ public class InterceptorModule {
     public Interceptor provideFlipperInterceptor() {
         FlipperClient client = AndroidFlipperClient.getInstanceIfInitialized();
         NetworkFlipperPlugin plugin = null;
-        if (client == null) {
-            plugin = client.getPluginByClass(NetworkFlipperPlugin.class);
+        if (client != null) {
+            plugin = client.getPlugin(NetworkFlipperPlugin.ID);
         }
         return new FlipperOkhttpInterceptor(plugin);
     }

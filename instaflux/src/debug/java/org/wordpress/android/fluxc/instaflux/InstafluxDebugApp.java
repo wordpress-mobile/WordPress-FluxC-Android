@@ -20,9 +20,8 @@ public class InstafluxDebugApp extends InstafluxApp {
         if (FlipperUtils.shouldEnableFlipper(this)) {
             SoLoader.init(this, false);
             FlipperClient client = AndroidFlipperClient.getInstance(this);
-            client.addPlugin(new InspectorFlipperPlugin(getApplicationContext(), DescriptorMapping.withDefaults()));
-            client.addPlugin(new NetworkFlipperPlugin());
             client.addPlugin(new InspectorFlipperPlugin(this, DescriptorMapping.withDefaults()));
+            client.addPlugin(new NetworkFlipperPlugin());
             client.start();
         }
     }

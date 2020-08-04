@@ -22,11 +22,10 @@ class ExampleDebugApp : ExampleApp() {
 
         if (FlipperUtils.shouldEnableFlipper(this)) {
             SoLoader.init(this, false)
-            val client = AndroidFlipperClient.getInstance(this)
-            client.addPlugin(InspectorFlipperPlugin(applicationContext, DescriptorMapping.withDefaults()))
-            client.addPlugin(NetworkFlipperPlugin())
-            client.addPlugin(InspectorFlipperPlugin(this, DescriptorMapping.withDefaults()))
-            client.start()
+            AndroidFlipperClient.getInstance(this).apply {
+                addPlugin(InspectorFlipperPlugin(applicationContext, DescriptorMapping.withDefaults()))
+                addPlugin(NetworkFlipperPlugin())
+            }.start()
         }
     }
 }
