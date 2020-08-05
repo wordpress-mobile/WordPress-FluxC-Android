@@ -16,7 +16,6 @@ import org.wordpress.android.fluxc.model.post.PostStatus.SCHEDULED
 import org.wordpress.android.fluxc.model.post.PostStatus.TRASHED
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestHelper
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode
-import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.MultiplePages
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.SinglePage
 import org.wordpress.android.fluxc.release.utils.TEST_LIST_CONFIG
 import org.wordpress.android.fluxc.release.utils.TestPostListDataSource
@@ -55,12 +54,12 @@ internal class ReleaseStack_PostListTestXMLRPC(
                  They are very easy to extend on, so if we start running them on an account with pre-setup, they can
                  made to be a lot more demanding by ensuring that each post list type returns some data.
                  */
-                XmlRpcPostListTestCase(testMode = MultiplePages),
+                XmlRpcPostListTestCase(),
                 XmlRpcPostListTestCase(statusList = listOf(DRAFT)),
                 XmlRpcPostListTestCase(statusList = listOf(SCHEDULED)),
                 XmlRpcPostListTestCase(statusList = listOf(TRASHED)),
-                XmlRpcPostListTestCase(order = ListOrder.ASC, testMode = MultiplePages),
-                XmlRpcPostListTestCase(orderBy = PostListOrderBy.ID, testMode = MultiplePages),
+                XmlRpcPostListTestCase(order = ListOrder.ASC),
+                XmlRpcPostListTestCase(orderBy = PostListOrderBy.ID),
                 XmlRpcPostListTestCase(searchQuery = TEST_POST_LIST_SEARCH_QUERY)
         )
     }
