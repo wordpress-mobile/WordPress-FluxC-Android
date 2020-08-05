@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
+import org.wordpress.android.fluxc.utils.DateUtils
 import javax.inject.Singleton
 
 @Singleton
@@ -46,13 +47,26 @@ constructor(
             this@LeaderboardsRestClient,
             site,
             this,
-            createParameters(unit, queryTimeRange, quantity),
+            createParameters(site, unit, queryTimeRange, quantity),
             Array<LeaderboardsApiResponse>::class.java
     )
 
-    private fun createParameters(unit: StatsGranularity?, queryTimeRange: LongRange?, quantity: Int?) = mapOf(
-            "before" to (queryTimeRange?.endInclusive ?: "").toString(),
-            "after" to (queryTimeRange?.start ?: "").toString(),
+    private fun createParameters(
+        site: SiteModel,
+        unit: StatsGranularity?,
+        queryTimeRange: LongRange?,
+        quantity: Int?
+    ) = mapOf(
+            "before" to (
+                    queryTimeRange?.endInclusive
+                            ?: DateUtils.getEndDateForSite(site)
+                            ?: "")
+                    .toString(),
+            "after" to (
+                    queryTimeRange?.start
+                            ?: unit?.startDateTime(site)
+                            ?: "")
+                    .toString(),
             "per_page" to quantity?.toString().orEmpty(),
             "interval" to (unit?.let { OrderStatsApiUnit.fromStatsGranularity(it).toString() } ?: "")
     ).filter { it.value.isNotEmpty() }

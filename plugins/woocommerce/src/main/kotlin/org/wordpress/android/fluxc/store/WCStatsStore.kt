@@ -73,6 +73,13 @@ class WCStatsStore @Inject constructor(
                 return fromOrderStatsApiUnit(OrderStatsApiUnit.valueOf(value.toUpperCase()))
             }
         }
+
+        fun startDateTime(site: SiteModel) = when (this) {
+            DAYS -> DateUtils.getStartDateForSite(site, DateUtils.getStartOfCurrentDay())
+            WEEKS -> DateUtils.getFirstDayOfCurrentWeekBySite(site)
+            MONTHS -> DateUtils.getFirstDayOfCurrentMonthBySite(site)
+            YEARS -> DateUtils.getFirstDayOfCurrentYearBySite(site)
+        }
     }
 
     /**
