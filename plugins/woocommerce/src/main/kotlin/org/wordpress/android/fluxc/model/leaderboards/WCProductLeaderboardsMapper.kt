@@ -5,6 +5,8 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardProductItem
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
+import org.wordpress.android.fluxc.persistence.ProductSqlUtils
+import org.wordpress.android.fluxc.persistence.ProductSqlUtils.geProductExistsByRemoteId
 import org.wordpress.android.fluxc.store.WCProductStore
 import javax.inject.Inject
 
@@ -18,12 +20,31 @@ class WCProductLeaderboardsMapper @Inject constructor() {
     ) = response.products
             ?.takeIf { it.isNotEmpty() }
             ?.mapNotNull { it.productId }
-            ?.let { productStore.fetchProductListSynced(site, it) }
+            ?.asProductList(site, productStore)
             ?.mapNotNull { product ->
                 response.products
                         ?.find { it.productId == product.remoteProductId }
                         ?.let { product.toWCTopPerformerProductModel(it, site) }
             }.orEmpty()
+
+    private suspend fun List<Long>.asProductList(
+        site: SiteModel,
+        productStore: WCProductStore
+    ): List<WCProductModel> {
+        val remotelyFetchedProducts = this
+                .filter { geProductExistsByRemoteId(site, it).not() }
+                .let { productStore.fetchProductListSynced(site, it) }
+                .orEmpty()
+
+        val locallyFetchedProducts = this
+                .filter { geProductExistsByRemoteId(site, it) }
+                .mapNotNull { ProductSqlUtils.getProductByRemoteId(site, it) }
+
+        return mutableListOf<WCProductModel>().apply {
+            addAll(remotelyFetchedProducts)
+            addAll(locallyFetchedProducts)
+        }.toList()
+    }
 
     private fun WCProductModel.toWCTopPerformerProductModel(
         productItem: LeaderboardProductItem,

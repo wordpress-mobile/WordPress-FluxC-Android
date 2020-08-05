@@ -2,14 +2,20 @@ package org.wordpress.android.fluxc.wc.leaderboards
 
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
+import com.yarolegovich.wellsql.WellSql
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
+import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.leaderboards.WCProductLeaderboardsMapper
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.Type.PRODUCTS
+import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleProductList
@@ -29,6 +35,15 @@ class WCProductLeaderboardsMapperTest {
 
     @Before
     fun setUp() {
+        SingleStoreWellSqlConfigForTests(
+                RuntimeEnvironment.application.applicationContext,
+                listOf(SiteModel::class.java, WCProductModel::class.java),
+                WellSqlConfig.ADDON_WOOCOMMERCE
+        ).let {
+            WellSql.init(it)
+            it.reset()
+        }
+
         mapperUnderTest = WCProductLeaderboardsMapper()
         productStore = mock()
     }
@@ -90,11 +105,12 @@ class WCProductLeaderboardsMapperTest {
         expectedProducts
                 .filter { it.remoteProductId != productId }
                 .let {
-                    whenever(productStore
-                            .fetchProductListSynced(
-                                    stubSite,
-                                    generateStubbedProductIdList
-                            )
+                    whenever(
+                            productStore
+                                    .fetchProductListSynced(
+                                            stubSite,
+                                            generateStubbedProductIdList
+                                    )
                     ).thenReturn(it)
                 }
     }
