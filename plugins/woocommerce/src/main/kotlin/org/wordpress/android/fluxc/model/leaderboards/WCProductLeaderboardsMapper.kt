@@ -33,7 +33,8 @@ class WCProductLeaderboardsMapper @Inject constructor() {
     ): List<WCProductModel> {
         val remotelyFetchedProducts = this
                 .filter { geProductExistsByRemoteId(site, it).not() }
-                .let { productStore.fetchProductListSynced(site, it) }
+                .takeIf { it.isNotEmpty() }
+                ?.let { productStore.fetchProductListSynced(site, it) }
                 .orEmpty()
 
         val locallyFetchedProducts = this
