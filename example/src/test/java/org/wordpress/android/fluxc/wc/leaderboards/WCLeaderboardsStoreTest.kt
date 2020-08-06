@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.Leaderboar
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCLeaderboardsStore
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleShippingLabelApiResponse
@@ -55,7 +56,7 @@ class WCLeaderboardsStoreTest {
 
     @Test
     fun `fetch product leaderboards with empty result should return WooError`() = test {
-        whenever(restClient.fetchLeaderboards(stubSite, null, null, null))
+        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null))
                 .thenReturn(WooPayload(emptyArray()))
 
         val result = storeUnderTest.fetchProductLeaderboards(stubSite)
@@ -70,11 +71,11 @@ class WCLeaderboardsStoreTest {
         val response = generateSampleShippingLabelApiResponse()
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
-        whenever(restClient.fetchLeaderboards(stubSite, null, null, null))
+        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null))
                 .thenReturn(WooPayload(response))
 
         storeUnderTest.fetchProductLeaderboards(stubSite)
-        verify(mapper).map(filteredResponse!!, stubSite, productStore)
+        verify(mapper).map(filteredResponse!!, stubSite, productStore, DAYS)
     }
 
     @Test
@@ -83,11 +84,11 @@ class WCLeaderboardsStoreTest {
         createStoreUnderTest()
         val response = generateSampleShippingLabelApiResponse()
 
-        whenever(restClient.fetchLeaderboards(stubSite, null, null, null))
+        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null))
                 .thenReturn(WooPayload(response))
 
         storeUnderTest.fetchProductLeaderboards(stubSite)
-        verify(mapper, times(1)).map(any(), any(), any())
+        verify(mapper, times(1)).map(any(), any(), any(), any())
     }
 
     @Test
@@ -95,10 +96,10 @@ class WCLeaderboardsStoreTest {
         val response = generateSampleShippingLabelApiResponse()
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
-        whenever(restClient.fetchLeaderboards(stubSite, null, null, null))
+        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null))
                 .thenReturn(WooPayload(response))
 
-        whenever(mapper.map(filteredResponse!!, stubSite, productStore)).thenReturn(stubbedTopPerformersList)
+        whenever(mapper.map(filteredResponse!!, stubSite, productStore, DAYS)).thenReturn(stubbedTopPerformersList)
 
         val result = storeUnderTest.fetchProductLeaderboards(stubSite)
         assertThat(result.model).isNotNull
@@ -111,13 +112,14 @@ class WCLeaderboardsStoreTest {
         val response = generateSampleShippingLabelApiResponse()
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
-        whenever(restClient.fetchLeaderboards(stubSite, null, null, null))
+        whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null))
                 .thenReturn(WooPayload(response))
 
         whenever(mapper.map(
                 filteredResponse!!,
                 SiteModel().apply { id = 100 },
-                productStore))
+                productStore,
+                DAYS))
                 .thenReturn(stubbedTopPerformersList)
 
         val result = storeUnderTest.fetchProductLeaderboards(stubSite)

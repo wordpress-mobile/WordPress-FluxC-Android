@@ -40,10 +40,59 @@
         </LinearLayout>
 
         <Button
-            android:id="@+id/fetch_product_leaderboards"
+            android:id="@+id/fetch_product_leaderboards_of_day"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Fetch Product Leaderboards"/>
+            android:text="Fetch Product Leaderboards of Day"/>
+
+        <Button
+            android:id="@+id/fetch_product_leaderboards_of_week"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Product Leaderboards of Week"/>
+
+        <Button
+            android:id="@+id/fetch_product_leaderboards_of_month"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Product Leaderboards of Month"/>
+
+        <Button
+            android:id="@+id/fetch_product_leaderboards_of_year"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Product Leaderboards of Year"/>
+
+        <Button
+            android:id="@+id/retrieve_cached_leaderboards_of_day"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Retrieve Cached Product Leaderboards of Day"/>
+
+        <Button
+            android:id="@+id/retrieve_cached_leaderboards_of_week"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Retrieve Cached Product Leaderboards of Week"/>
+
+        <Button
+            android:id="@+id/retrieve_cached_leaderboards_of_month"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Retrieve Cached Product Leaderboards of Month"/>
+
+        <Button
+            android:id="@+id/retrieve_cached_leaderboards_of_year"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Retrieve Cached Product Leaderboards of Year"/>
     </LinearLayout>
 </ScrollView>

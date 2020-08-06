@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.model.leaderboards.WCProductLeaderboardsMappe
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse.Type.PRODUCTS
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleProductList
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleShippingLabelApiResponse
@@ -54,7 +55,8 @@ class WCProductLeaderboardsMapperTest {
         val result = mapperUnderTest.map(
                 productApiResponse!!,
                 stubSite,
-                productStore
+                productStore,
+                DAYS
         )
         assertThat(result).isNotNull
         assertThat(result!!.size).isEqualTo(3)
@@ -67,7 +69,8 @@ class WCProductLeaderboardsMapperTest {
         val result = mapperUnderTest.map(
                 productApiResponse!!,
                 stubSite,
-                productStore
+                productStore,
+                DAYS
         )
         assertThat(result).isNotNull
         assertThat(result!!.size).isEqualTo(2)
@@ -79,7 +82,8 @@ class WCProductLeaderboardsMapperTest {
         val result = mapperUnderTest.map(
                 productApiResponse!!,
                 stubSite,
-                productStore
+                productStore,
+                DAYS
         )
         assertThat(result).isNotNull
         assertThat(result).isEmpty()

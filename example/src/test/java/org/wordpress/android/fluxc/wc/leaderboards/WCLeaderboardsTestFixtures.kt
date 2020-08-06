@@ -34,21 +34,24 @@ object WCLeaderboardsTestFixtures {
                         "currency 0",
                         0,
                         0.0,
-                        321
+                        321,
+                        "DAYS"
                 ),
                 WCTopPerformerProductModel(
                         "info 1",
                         "currency 1",
                         1,
                         1.0,
-                        321
+                        321,
+                        "DAYS"
                 ),
                 WCTopPerformerProductModel(
                         "info 2",
                         "currency 2",
                         2,
                         2.0,
-                        321
+                        321,
+                        "DAYS"
                 )
         )
     }

@@ -15,6 +15,7 @@ data class WCTopPerformerProductModel(
     @Column var quantity: Int = 0,
     @Column var total: Double = 0.0,
     @Column var localSiteId: Int = 0,
+    @Column var unit: String = "",
     @PrimaryKey @Column private var id: Int = 0
 ) : Identifiable {
     val product by lazy { Gson().fromJson(productInfo, WCProductModel::class.java) }

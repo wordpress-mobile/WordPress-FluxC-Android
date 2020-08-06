@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.Leaderboar
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils.geProductExistsByRemoteId
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import javax.inject.Inject
 
 class WCProductLeaderboardsMapper @Inject constructor() {
@@ -16,7 +17,8 @@ class WCProductLeaderboardsMapper @Inject constructor() {
     suspend fun map(
         response: LeaderboardsApiResponse,
         site: SiteModel,
-        productStore: WCProductStore
+        productStore: WCProductStore,
+        unit: StatsGranularity
     ) = response.products
             ?.takeIf { it.isNotEmpty() }
             ?.mapNotNull { it.productId }
@@ -24,7 +26,7 @@ class WCProductLeaderboardsMapper @Inject constructor() {
             ?.mapNotNull { product ->
                 response.products
                         ?.find { it.productId == product.remoteProductId }
-                        ?.let { product.toWCTopPerformerProductModel(it, site) }
+                        ?.let { product.toWCTopPerformerProductModel(it, site, unit) }
             }.orEmpty()
 
     private suspend fun List<Long>.asProductList(
@@ -49,12 +51,14 @@ class WCProductLeaderboardsMapper @Inject constructor() {
 
     private fun WCProductModel.toWCTopPerformerProductModel(
         productItem: LeaderboardProductItem,
-        site: SiteModel
+        site: SiteModel,
+        unit: StatsGranularity
     ) = WCTopPerformerProductModel(
             gson.toJson(this),
             productItem.currency.toString(),
             productItem.quantity?.toIntOrNull() ?: 0,
             productItem.total?.toDoubleOrNull() ?: 0.0,
-            site.id
+            site.id,
+            unit.toString()
     )
 }
