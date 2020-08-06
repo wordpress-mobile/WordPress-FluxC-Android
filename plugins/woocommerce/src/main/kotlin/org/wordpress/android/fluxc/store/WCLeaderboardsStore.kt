@@ -41,6 +41,9 @@ class WCLeaderboardsStore @Inject constructor(
                             getCurrentLeaderboards(site)
                         }
                         ?.let { WooResult(it) }
+                        ?: getCurrentLeaderboards(site)
+                                .takeIf { it.isNotEmpty() }
+                                ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
 
