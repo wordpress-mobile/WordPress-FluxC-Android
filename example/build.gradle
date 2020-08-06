@@ -15,6 +15,11 @@ apply plugin: 'kotlin-kapt'
 android {
     compileSdkVersion 28
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     defaultConfig {
         applicationId "org.wordpress.android.fluxc.example"
         minSdkVersion 16
@@ -134,8 +139,9 @@ dependencies {
     androidTestUtil 'androidx.test:orchestrator:1.2.0'
 
     // Debug dependencies
-    debugImplementation 'com.facebook.stetho:stetho:1.5.0'
-    debugImplementation 'com.facebook.stetho:stetho-okhttp3:1.5.0'
+    debugImplementation 'com.facebook.flipper:flipper:0.51.0'
+    debugImplementation 'com.facebook.soloader:soloader:0.9.0'
+    debugImplementation 'com.facebook.flipper:flipper-network-plugin:0.51.0'
 
     // Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
