@@ -1019,6 +1019,9 @@ class ProductRestClient(
                 }
             }
         }
+        if (storedWCProductModel.groupedProductIds != updatedProductModel.groupedProductIds) {
+            body["grouped_products"] = updatedProductModel.getGroupedProductIds()
+        }
         return body
     }
 
@@ -1105,7 +1108,7 @@ class ProductRestClient(
         }
         // TODO: Once removal is supported, we can remove the extra isNotBlank() condition
         if (storedVariationModel.image != updatedVariationModel.image && updatedVariationModel.image.isNotBlank()) {
-            body["image"] = updatedVariationModel.image
+            body["image"] = updatedVariationModel.getImage()?.toJson() ?: ""
         }
         if (storedVariationModel.menuOrder != updatedVariationModel.menuOrder) {
             body["menu_order"] = updatedVariationModel.menuOrder
@@ -1216,6 +1219,7 @@ class ProductRestClient(
             relatedIds = response.related_ids?.toString() ?: ""
             crossSellIds = response.cross_sell_ids?.toString() ?: ""
             upsellIds = response.upsell_ids?.toString() ?: ""
+            groupedProductIds = response.grouped_products?.toString() ?: ""
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""

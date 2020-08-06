@@ -131,6 +131,24 @@ class WooUpdateProductFragment : Fragment() {
             }
         }
 
+        grouped_product_ids.isEnabled = false
+        select_grouped_product_ids.setOnClickListener {
+            showSingleLineDialog(activity, "Enter a remoteProductId:") { editText ->
+                editText.text.toString().toIntOrNull()?.let { id ->
+
+                    val storedGroupedProductIds =
+                            selectedProductModel?.getGroupedProductIds()?.toMutableList() ?: mutableListOf()
+                    storedGroupedProductIds.add(id)
+                    selectedProductModel?.groupedProductIds = storedGroupedProductIds.joinToString(
+                            separator = ",",
+                            prefix = "[",
+                            postfix = "]"
+                    )
+                    selectedProductModel?.groupedProductIds?.let { updateGroupedProductIds(it) }
+                } ?: prependToLog("No valid remoteProductId defined...doing nothing")
+            }
+        }
+
         product_name.onTextChanged { selectedProductModel?.name = it }
         product_description.onTextChanged { selectedProductModel?.description = it }
         product_sku.onTextChanged { selectedProductModel?.sku = it }
@@ -343,6 +361,10 @@ class WooUpdateProductFragment : Fragment() {
         }
     }
 
+    private fun updateGroupedProductIds(storedGroupedProductIds: String) {
+        grouped_product_ids.setText(storedGroupedProductIds)
+    }
+
     private fun updateSelectedProductId(remoteProductId: Long) {
         getWCSite()?.let { siteModel ->
             enableProductDependentButtons()
@@ -383,6 +405,7 @@ class WooUpdateProductFragment : Fragment() {
                 product_menu_order.setText(it.menuOrder.toString())
                 product_external_url.setText(it.externalUrl)
                 product_button_text.setText(it.buttonText)
+                updateGroupedProductIds(it.groupedProductIds)
                 product_categories.setText(
                         selectedCategories?.joinToString(", ") { it.name }
                                 ?: it.getCommaSeparatedCategoryNames()

@@ -78,4 +78,5 @@ class ProductApiResponse : Response {
     var related_ids: JsonElement? = null
     var cross_sell_ids: JsonElement? = null
     var upsell_ids: JsonElement? = null
+    var grouped_products: JsonElement? = null
 }
