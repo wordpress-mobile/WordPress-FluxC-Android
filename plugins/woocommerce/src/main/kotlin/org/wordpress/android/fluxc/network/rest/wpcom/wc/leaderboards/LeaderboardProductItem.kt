@@ -86,6 +86,29 @@ class LeaderboardProductItem(
                 ?.filter { it.contains("&#") }
                 ?.reduce { total, new -> "$total$new" }
                 ?.run { fromHtmlWithSafeApiCall(this) }
+                ?: plainTextCurrency
+    }
+
+    /**
+     * This property will serve as a fallback for cases where the currency is represented in plain text instead of
+     * HTML currency code.
+     *
+     * It will extract the raw content between tags and leave only the currency information
+     *
+     * Example:
+     *
+     *  HTML tag -> <span class=\"woocommerce-Price-amount amount\"><span class=\"woocommerce-Price-currencySymbol\">DKK<\/span>36.000,00<\/span>
+     *
+     *  parse HTML tag to string
+     *      Output: DKK36.000,00
+     *
+     *  regex filter with replace
+     *      Output: DKK
+     */
+    private val plainTextCurrency by lazy {
+        fromHtmlWithSafeApiCall(priceAmountHtmlTag)
+                .toString()
+                .replace(Regex("[0-9.,]"), "")
     }
 
     /**
