@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.example.di
 
-import com.facebook.stetho.okhttp3.StethoInterceptor
+import com.facebook.flipper.android.AndroidFlipperClient
+import com.facebook.flipper.plugins.network.FlipperOkhttpInterceptor
+import com.facebook.flipper.plugins.network.NetworkFlipperPlugin
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
@@ -10,5 +12,8 @@ import javax.inject.Named
 @Module
 class InterceptorModule {
     @Provides @IntoSet @Named("network-interceptors")
-    fun provideStethoInterceptor(): Interceptor = StethoInterceptor()
+    fun provideFlipperInterceptor(): Interceptor =
+            FlipperOkhttpInterceptor(
+                    AndroidFlipperClient.getInstanceIfInitialized()?.getPlugin(NetworkFlipperPlugin.ID)
+            )
 }
