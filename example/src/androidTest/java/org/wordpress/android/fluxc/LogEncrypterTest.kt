@@ -9,6 +9,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
+import org.wordpress.android.fluxc.model.encryptedlogging.EncryptedLoggingKey
 import org.wordpress.android.fluxc.model.encryptedlogging.EncryptedSecretStreamKey
 import org.wordpress.android.fluxc.model.encryptedlogging.EncryptionUtils
 import org.wordpress.android.fluxc.model.encryptedlogging.LogEncrypter
@@ -84,7 +85,7 @@ class LogEncrypterTest {
     // Helpers
 
     private fun encryptContent(content: String, uuid: String = UUID.randomUUID().toString()): String {
-        return LogEncrypter(uuid, keypair.publicKey).encrypt(content)
+        return LogEncrypter(EncryptedLoggingKey(keypair.publicKey)).encrypt(content, uuid)
     }
 
     private fun decryptContent(encryptedText: String): String {

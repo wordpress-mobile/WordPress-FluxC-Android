@@ -6,10 +6,10 @@ import android.text.TextUtils;
 import com.goterl.lazycode.lazysodium.exceptions.SodiumException;
 
 import org.wordpress.android.fluxc.example.BuildConfig;
+import org.wordpress.android.fluxc.model.encryptedlogging.EncryptedLoggingKey;
 import org.wordpress.android.fluxc.model.encryptedlogging.EncryptionUtils;
 import org.wordpress.android.fluxc.network.UserAgent;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AppSecrets;
-import org.wordpress.android.fluxc.store.EncryptedLoggingKey;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
