@@ -9,11 +9,13 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
+import org.wordpress.android.fluxc.model.encryptedlogging.EncryptedLoggingKey
 import org.wordpress.android.fluxc.model.encryptedlogging.EncryptedSecretStreamKey
 import org.wordpress.android.fluxc.model.encryptedlogging.EncryptionUtils
 import org.wordpress.android.fluxc.model.encryptedlogging.LogEncrypter
 import org.wordpress.android.fluxc.model.encryptedlogging.SecretStreamKey
 import java.util.UUID
+import kotlin.random.Random.Default.nextInt
 
 class LogEncrypterTest {
     private lateinit var keypair: KeyPair
@@ -68,6 +70,12 @@ class LogEncrypterTest {
     }
 
     @Test
+    fun testThatMultilineLogsCanBeDecrypted() {
+        val testLogString = (0..(nextInt(100) + 2)).joinToString(separator = "\n") { UUID.randomUUID().toString() }
+        assertEquals(testLogString, decryptContent(encryptContent(testLogString)))
+    }
+
+    @Test
     fun testThatEmptyLogsCanBeEncrypted() {
         val testLogString = ""
         assertEquals(testLogString, decryptContent(encryptContent(testLogString)))
@@ -84,9 +92,7 @@ class LogEncrypterTest {
     // Helpers
 
     private fun encryptContent(content: String, uuid: String = UUID.randomUUID().toString()): String {
-        val file = createTempFile()
-        file.writeText(content)
-        return LogEncrypter(file, uuid, keypair.publicKey).encrypt()
+        return LogEncrypter(EncryptedLoggingKey(keypair.publicKey)).encrypt(content, uuid)
     }
 
     private fun decryptContent(encryptedText: String): String {
