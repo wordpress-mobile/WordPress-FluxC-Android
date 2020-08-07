@@ -21,8 +21,8 @@ object WCLeaderboardsSqlUtils {
                     .equals(WCTopPerformerProductModelTable.UNIT, unit.toString())
                     .endWhere()
                     .asModel
-                    .toList()
-                    .orEmpty() // required since WellSql Java implementation does return null
+                    ?.toList()
+                    .orEmpty()
 
     fun insertNewLeaderboards(leadearboards: List<WCTopPerformerProductModel>, unit: StatsGranularity) {
         deleteCurrentLeaderboards(unit)
