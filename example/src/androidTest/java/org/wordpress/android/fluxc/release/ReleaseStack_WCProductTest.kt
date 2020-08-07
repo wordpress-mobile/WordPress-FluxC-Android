@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
+import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductVisibility
 import org.wordpress.android.fluxc.persistence.MediaSqlUtils
@@ -35,6 +36,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductCategoryChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
@@ -43,10 +45,13 @@ import org.wordpress.android.fluxc.store.WCProductStore.OnProductReviewChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClassesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductTagChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
+import org.wordpress.android.fluxc.store.WCProductStore.OnVariationChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnVariationUpdated
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateVariationPayload
 import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit.MILLISECONDS
@@ -71,7 +76,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         FETCH_PRODUCT_CATEGORIES,
         ADDED_PRODUCT_CATEGORY,
         FETCHED_PRODUCT_TAGS,
-        ADDED_PRODUCT_TAGS
+        ADDED_PRODUCT_TAGS,
+        FETCHED_SINGLE_VARIATION,
+        UPDATED_VARIATION
     }
 
     @Inject internal lateinit var productStore: WCProductStore
@@ -90,11 +97,22 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         remoteProductId = BuildConfig.TEST_WC_PRODUCT_WITH_VARIATIONS_ID.toLong()
         dateCreated = "2018-04-20T15:45:14Z"
     }
+
+    private val variationModel = WCProductVariationModel().apply {
+        remoteVariationId = 759
+        remoteProductId = BuildConfig.TEST_WC_PRODUCT_WITH_VARIATIONS_ID.toLong()
+        dateCreated = "2018-04-20T15:45:14Z"
+        taxStatus = "taxable"
+        stockStatus = "instock"
+        image = ""
+    }
+
     private val remoteProductReviewId = BuildConfig.TEST_WC_PRODUCT_REVIEW_ID.toLong()
 
     private val updatedPassword = "password"
 
     private var lastEvent: OnProductChanged? = null
+    private var lastVariationEvent: OnVariationChanged? = null
     private var lastProductCategoryEvent: OnProductCategoryChanged? = null
     private var lastShippingClassEvent: OnProductShippingClassesChanged? = null
     private var lastReviewEvent: OnProductReviewChanged? = null
@@ -130,6 +148,39 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         // Verify there's only one product for this site
         assertEquals(ProductSqlUtils.getProductCountForSite(sSite), 1)
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun testFetchSingleVariation() {
+        // remove all variation for this site and verify there are none
+        ProductSqlUtils.deleteVariationsForProduct(sSite, productModelWithVariations.remoteProductId)
+        assertEquals(
+                ProductSqlUtils.getVariationsForProduct(sSite, productModelWithVariations.remoteProductId).size,
+                0
+        )
+
+        nextEvent = TestEvent.FETCHED_SINGLE_VARIATION
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(WCProductActionBuilder.newFetchSingleVariationAction(FetchSingleVariationPayload(
+                sSite,
+                variationModel.remoteProductId,
+                variationModel.remoteVariationId
+        )))
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Verify results
+        val fetchedVariation = productStore.getVariationByRemoteId(
+                sSite,
+                variationModel.remoteProductId,
+                variationModel.remoteVariationId
+        )
+        assertNotNull(fetchedVariation)
+        assertEquals(fetchedVariation!!.remoteProductId, variationModel.remoteProductId)
+        assertEquals(fetchedVariation.remoteVariationId, variationModel.remoteVariationId)
+
+        // Verify there's only one variation for this site
+        assertEquals(1, ProductSqlUtils.getVariationsForProduct(sSite, variationModel.remoteProductId).size)
     }
 
     @Throws(InterruptedException::class)
@@ -509,7 +560,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         val updatedProductReviewsAllowed = true
         productModel.reviewsAllowed = updatedProductReviewsAllowed
 
-        val updatedProductVirtual = true
+        val updatedProductVirtual = false
         productModel.virtual = updatedProductVirtual
 
         val updateProductPurchaseNote = "Test purchase note"
@@ -517,6 +568,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         val updatedProductMenuOrder = 5
         productModel.menuOrder = updatedProductMenuOrder
+
+        val updatedGroupedProductIds = "[770,771]"
+        productModel.groupedProductIds = updatedGroupedProductIds
 
         nextEvent = TestEvent.UPDATED_PRODUCT
         mCountDownLatch = CountDownLatch(1)
@@ -538,6 +592,42 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertEquals(updatedProductVirtual, updatedProduct?.virtual)
         assertEquals(updateProductPurchaseNote, updatedProduct?.purchaseNote)
         assertEquals(updatedProductMenuOrder, updatedProduct?.menuOrder)
+        assertEquals(updatedGroupedProductIds, updatedProduct?.groupedProductIds)
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
+    fun testUpdateVariation() {
+        val updatedVariationStatus = CoreProductStatus.PUBLISH.value
+        variationModel.status = updatedVariationStatus
+
+        val updatedVariationMenuOrder = 5
+        variationModel.menuOrder = updatedVariationMenuOrder
+
+        val updatedVariationRegularPrice = "123"
+        variationModel.regularPrice = updatedVariationRegularPrice
+
+        val updatedVariationSalePrice = "12"
+        variationModel.salePrice = updatedVariationSalePrice
+
+        nextEvent = TestEvent.UPDATED_VARIATION
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newUpdateVariationAction(UpdateVariationPayload(sSite, variationModel))
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        val updatedVariation = productStore.getVariationByRemoteId(
+                sSite,
+                variationModel.remoteProductId,
+                variationModel.remoteVariationId
+        )
+        assertNotNull(updatedVariation)
+        assertEquals(variationModel.remoteProductId, updatedVariation?.remoteProductId)
+        assertEquals(updatedVariationStatus, updatedVariation?.status)
+        assertEquals(updatedVariationMenuOrder, updatedVariation?.menuOrder)
+        assertEquals(updatedVariationRegularPrice, updatedVariation?.regularPrice)
+        assertEquals(updatedVariationSalePrice, updatedVariation?.salePrice)
     }
 
     @Throws(InterruptedException::class)
@@ -619,6 +709,26 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onVariationChanged(event: OnVariationChanged) {
+        event.error?.let {
+            throw AssertionError("OnVariationChanged has unexpected error: " + it.type)
+        }
+
+        lastVariationEvent = event
+
+        when (event.causeOfChange) {
+            WCProductAction.FETCH_SINGLE_VARIATION -> {
+                assertEquals(TestEvent.FETCHED_SINGLE_VARIATION, nextEvent)
+                assertEquals(event.remoteProductId, variationModel.remoteProductId)
+                assertEquals(event.remoteVariationId, variationModel.remoteVariationId)
+                mCountDownLatch.countDown()
+            }
+            else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProductReviewChanged(event: OnProductReviewChanged) {
         event.error?.let {
             throw AssertionError("OnProductReviewChanged has unexpected error: " + it.type)
@@ -671,6 +781,17 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         }
 
         assertEquals(TestEvent.UPDATED_PRODUCT, nextEvent)
+        mCountDownLatch.countDown()
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onVariationUpdated(event: OnVariationUpdated) {
+        event.error?.let {
+            throw AssertionError("OnVariationUpdated has unexpected error: ${it.type}, ${it.message}")
+        }
+
+        assertEquals(TestEvent.UPDATED_VARIATION, nextEvent)
         mCountDownLatch.countDown()
     }
 

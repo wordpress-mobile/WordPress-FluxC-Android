@@ -8,6 +8,7 @@ import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
+import java.math.BigDecimal
 
 @Table(addOn = WellSqlConfig.ADDON_WOOCOMMERCE)
 class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identifiable {
@@ -16,6 +17,7 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
     @Column var remoteShippingLabelId = 0L // The unique identifier for this note on the server
     @Column var trackingNumber = ""
     @Column var carrierId = ""
+    @Column var dateCreated = ""
     @Column var serviceName = ""
     @Column var status = ""
     @Column var packageName = ""
@@ -135,13 +137,13 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
     }
 
     class ProductItem {
-        val height: Int? = null
-        val length: Int? = null
+        val height: BigDecimal? = null
+        val length: BigDecimal? = null
         val quantity: Int? = null
-        val width: Int? = null
+        val width: BigDecimal? = null
         val name: String? = null
         val url: String? = null
-        val value: Int? = null
+        val value: BigDecimal? = null
         @SerializedName("product_id") val productId: Long? = null
     }
 

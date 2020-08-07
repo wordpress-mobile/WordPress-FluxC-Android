@@ -73,6 +73,20 @@ object ProductSqlUtils {
                 .asModel.firstOrNull()
     }
 
+    fun getVariationByRemoteId(
+        site: SiteModel,
+        remoteProductId: Long,
+        remoteVariationId: Long
+    ): WCProductVariationModel? {
+        return WellSql.select(WCProductVariationModel::class.java)
+                .where().beginGroup()
+                .equals(WCProductVariationModelTable.REMOTE_PRODUCT_ID, remoteProductId)
+                .equals(WCProductVariationModelTable.REMOTE_VARIATION_ID, remoteVariationId)
+                .equals(WCProductVariationModelTable.LOCAL_SITE_ID, site.id)
+                .endGroup().endWhere()
+                .asModel.firstOrNull()
+    }
+
     fun getProductsByRemoteIds(site: SiteModel, remoteProductIds: List<Long>): List<WCProductModel> {
         return WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
