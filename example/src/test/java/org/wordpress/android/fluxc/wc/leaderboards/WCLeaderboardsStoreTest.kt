@@ -28,7 +28,7 @@ import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.tools.initCoroutineEngine
-import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleShippingLabelApiResponse
+import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleLeaderboardsApiResponse
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.stubSite
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.stubbedTopPerformersList
 
@@ -68,7 +68,7 @@ class WCLeaderboardsStoreTest {
     fun `fetch product leaderboards should filter leaderboards by PRODUCTS type`() = test {
         mapper = spy()
         createStoreUnderTest()
-        val response = generateSampleShippingLabelApiResponse()
+        val response = generateSampleLeaderboardsApiResponse()
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
         whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null))
@@ -82,7 +82,7 @@ class WCLeaderboardsStoreTest {
     fun `fetch product leaderboards should call mapper once`() = test {
         mapper = spy()
         createStoreUnderTest()
-        val response = generateSampleShippingLabelApiResponse()
+        val response = generateSampleLeaderboardsApiResponse()
 
         whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null))
                 .thenReturn(WooPayload(response))
@@ -93,7 +93,7 @@ class WCLeaderboardsStoreTest {
 
     @Test
     fun `fetch product leaderboards should return WooResult correctly`() = test {
-        val response = generateSampleShippingLabelApiResponse()
+        val response = generateSampleLeaderboardsApiResponse()
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
         whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null))
@@ -109,7 +109,7 @@ class WCLeaderboardsStoreTest {
 
     @Test
     fun `fetch product leaderboards from a invalid site ID should return WooResult with error`() = test {
-        val response = generateSampleShippingLabelApiResponse()
+        val response = generateSampleLeaderboardsApiResponse()
         val filteredResponse = response?.firstOrNull { it.type == PRODUCTS }
 
         whenever(restClient.fetchLeaderboards(stubSite, DAYS, null, null))

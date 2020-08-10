@@ -20,7 +20,7 @@ import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.test
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleProductList
-import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleShippingLabelApiResponse
+import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleLeaderboardsApiResponse
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateStubbedProductIdList
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.stubSite
 
@@ -31,7 +31,7 @@ class WCProductLeaderboardsMapperTest {
     private lateinit var productStore: WCProductStore
 
     private val expectedProducts = generateSampleProductList()
-    private val productApiResponse = generateSampleShippingLabelApiResponse()
+    private val productApiResponse = generateSampleLeaderboardsApiResponse()
             ?.firstOrNull() { it.type == PRODUCTS }
 
     @Before

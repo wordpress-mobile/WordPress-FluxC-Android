@@ -19,7 +19,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.Leaderboar
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.test
-import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleShippingLabelApiResponse
+import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.generateSampleLeaderboardsApiResponse
 import org.wordpress.android.fluxc.wc.leaderboards.WCLeaderboardsTestFixtures.stubSite
 
 class LeaderboardsRestClientTest {
@@ -45,7 +45,7 @@ class LeaderboardsRestClientTest {
 
     @Test
     fun `fetch leaderboards should call syncGetRequest with correct parameters and return expected response`() = test {
-        val expectedResult = generateSampleShippingLabelApiResponse()
+        val expectedResult = generateSampleLeaderboardsApiResponse()
         configureSuccessRequest(expectedResult!!)
 
         val response = restClientUnderTest.fetchLeaderboards(stubSite, DAYS, 1L..22L, 5)

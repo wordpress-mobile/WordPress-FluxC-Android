@@ -20,7 +20,7 @@ object WCLeaderboardsTestFixtures {
                         ?.let { Gson().fromJson(it, ProductApiResponse::class.java) }
             }.map { it.asProductModel() }
 
-    fun generateSampleShippingLabelApiResponse() =
+    fun generateSampleLeaderboardsApiResponse() =
             UnitTestUtils
                     .getStringFromResourceFile(this.javaClass, "wc/leaderboards-response-example.json")
                     ?.run { Gson().fromJson(this, Array<LeaderboardsApiResponse>::class.java) }
