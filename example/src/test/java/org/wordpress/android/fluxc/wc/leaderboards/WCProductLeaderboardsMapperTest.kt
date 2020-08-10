@@ -32,7 +32,7 @@ class WCProductLeaderboardsMapperTest {
 
     private val expectedProducts = generateSampleProductList()
     private val productApiResponse = generateSampleLeaderboardsApiResponse()
-            ?.firstOrNull() { it.type == PRODUCTS }
+            ?.firstOrNull { it.type == PRODUCTS }
 
     @Before
     fun setUp() {
@@ -59,7 +59,7 @@ class WCProductLeaderboardsMapperTest {
                 DAYS
         )
         assertThat(result).isNotNull
-        assertThat(result!!.size).isEqualTo(3)
+        assertThat(result.size).isEqualTo(3)
     }
 
     @Test
@@ -73,7 +73,7 @@ class WCProductLeaderboardsMapperTest {
                 DAYS
         )
         assertThat(result).isNotNull
-        assertThat(result!!.size).isEqualTo(2)
+        assertThat(result.size).isEqualTo(2)
     }
 
     @Test
