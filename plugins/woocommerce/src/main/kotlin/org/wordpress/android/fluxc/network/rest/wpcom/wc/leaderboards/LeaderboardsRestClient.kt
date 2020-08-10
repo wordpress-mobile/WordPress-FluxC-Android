@@ -59,8 +59,7 @@ constructor(
     ) = mapOf(
             "before" to (
                     queryTimeRange?.endInclusive
-                            ?: DateUtils.getEndDateForSite(site)
-                            ?: "")
+                            ?: DateUtils.getEndDateForSite(site))
                     .toString(),
             "after" to (
                     queryTimeRange?.start
