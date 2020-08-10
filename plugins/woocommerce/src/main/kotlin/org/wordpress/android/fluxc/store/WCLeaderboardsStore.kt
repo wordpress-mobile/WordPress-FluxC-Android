@@ -38,11 +38,11 @@ class WCLeaderboardsStore @Inject constructor(
                         ?.firstOrNull { it.type == PRODUCTS }
                         ?.run { mapper.map(this, site, productStore, unit) }
                         ?.let {
-                            insertNewLeaderboards(it, unit)
-                            getCurrentLeaderboards(site, unit)
+                            insertNewLeaderboards(it, site.id, unit)
+                            getCurrentLeaderboards(site.id, unit)
                         }
                         ?.let { WooResult(it) }
-                        ?: getCurrentLeaderboards(site, unit)
+                        ?: getCurrentLeaderboards(site.id, unit)
                                 .takeIf { it.isNotEmpty() }
                                 ?.let { WooResult(it) }
                         ?: WooResult(WooError(GENERIC_ERROR, UNKNOWN))
@@ -51,7 +51,7 @@ class WCLeaderboardsStore @Inject constructor(
     fun fetchCachedProductLeaderboards(
         site: SiteModel,
         unit: StatsGranularity
-    ) = WooResult(getCurrentLeaderboards(site, unit))
+    ) = WooResult(getCurrentLeaderboards(site.id, unit))
 
     private suspend fun fetchAllLeaderboards(
         site: SiteModel,
