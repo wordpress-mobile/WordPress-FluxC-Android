@@ -76,8 +76,13 @@
     },
     "download_expiry": -1,
     "download_limit": -1,
-    "downloadable": false,
+    "downloadable": true,
     "downloads": [
+      {
+        "id": 0,
+        "name": "Woo Single",
+        "file": "http://demo.woothemes.com/woocommerce/wp-content/uploads/sites/56/2013/06/cd_4_angle.jpg"
+      }
     ],
     "external_url": "",
     "featured": false,
