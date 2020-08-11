@@ -1037,6 +1037,10 @@ class ProductRestClient(
                     add(file.toJson())
                 }
             }
+
+            if (updatedFiles.isNotEmpty()) {
+                body["downloadable"] = true
+            }
         }
         return body
     }
