@@ -234,7 +234,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         } catch (e: JsonParseException) {
             AppLog.e(T.API, e)
         } catch (e: NullPointerException) {
-            //Happens if the url attribute is null
+            // Happens if the url attribute is null
             AppLog.e(T.API, e)
         }
         return fileList

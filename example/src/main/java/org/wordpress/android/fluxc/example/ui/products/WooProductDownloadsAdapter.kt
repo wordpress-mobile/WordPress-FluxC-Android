@@ -13,7 +13,6 @@ import org.wordpress.android.fluxc.example.ui.products.WooProductDownloadsFragme
 import org.wordpress.android.fluxc.example.utils.onTextChanged
 
 class WooProductDownloadsAdapter : RecyclerView.Adapter<ProductFileViewHolder>() {
-
     private val _filesList = mutableListOf<ProductFile>()
     var filesList: List<ProductFile>
         get() = _filesList
@@ -70,6 +69,5 @@ class WooProductDownloadsAdapter : RecyclerView.Adapter<ProductFileViewHolder>()
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
                 areItemsTheSame(oldItemPosition, newItemPosition)
     }
-
 }
 
