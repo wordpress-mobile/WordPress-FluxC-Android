@@ -357,4 +357,14 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         }
         return true
     }
+
+    /**
+     * Compares this product's downloadable files with the passed product's files, returns true only if both
+     * lists contain the same set of files in the same order
+     */
+    fun hasSameDownloadableFiles(updatedProduct: WCProductModel): Boolean {
+        val updatedFiles = updatedProduct.getDownloadableFiles()
+        val storedFiles = getDownloadableFiles()
+        return storedFiles == updatedFiles
+    }
 }

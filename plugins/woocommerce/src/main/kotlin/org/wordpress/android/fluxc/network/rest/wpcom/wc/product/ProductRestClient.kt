@@ -335,7 +335,8 @@ class ProductRestClient(
                 "orderby" to orderBy,
                 "order" to sortOrder,
                 "offset" to offset.toString(),
-                "search" to (searchQuery ?: ""))
+                "search" to (searchQuery ?: "")
+        )
         remoteProductIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
         }
@@ -456,7 +457,8 @@ class ProductRestClient(
     fun updateProductPassword(site: SiteModel, remoteProductId: Long, password: String) {
         val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_2
         val body = listOfNotNull(
-                "password" to password).toMap()
+                "password" to password
+        ).toMap()
 
         val request = WPComGsonRequest.buildPostRequest(url,
                 body,
@@ -502,7 +504,8 @@ class ProductRestClient(
         val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
                 "offset" to offset.toString(),
-                "order" to "asc")
+                "order" to "asc"
+        )
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductVariationApiResponse>? ->
@@ -786,7 +789,8 @@ class ProductRestClient(
         val params = mutableMapOf(
                 "per_page" to WCProductStore.NUM_REVIEWS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
-                "status" to statusFilter)
+                "status" to statusFilter
+        )
         reviewIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
         }
@@ -802,7 +806,8 @@ class ProductRestClient(
                         val canLoadMore = reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
                         val loadedMore = offset > 0
                         val payload = FetchProductReviewsResponsePayload(
-                                site, reviews, productIds, filterByStatus, loadedMore, canLoadMore)
+                                site, reviews, productIds, filterByStatus, loadedMore, canLoadMore
+                        )
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductReviewsAction(payload))
                     }
                 },
@@ -1024,6 +1029,14 @@ class ProductRestClient(
         }
         if (storedWCProductModel.groupedProductIds != updatedProductModel.groupedProductIds) {
             body["grouped_products"] = updatedProductModel.getGroupedProductIds()
+        }
+        if (!storedWCProductModel.hasSameDownloadableFiles(updatedProductModel)) {
+            val updatedFiles = updatedProductModel.getDownloadableFiles()
+            body["downloads"] = JsonArray().apply {
+                updatedFiles.forEach { file ->
+                    add(file.toJson())
+                }
+            }
         }
         return body
     }
