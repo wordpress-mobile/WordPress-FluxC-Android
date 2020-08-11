@@ -13,7 +13,10 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
+import org.wordpress.android.fluxc.utils.DateUtils
 import javax.inject.Singleton
 
 @Singleton
@@ -27,20 +30,45 @@ constructor(
     private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     suspend fun fetchLeaderboards(
-        site: SiteModel
+        site: SiteModel,
+        unit: StatsGranularity?,
+        queryTimeRange: LongRange?,
+        quantity: Int?
     ) = WOOCOMMERCE.leaderboards.pathV4Analytics
-            .requestTo(site)
+            .requestTo(site, unit, queryTimeRange, quantity)
             .handleResult()
 
     private suspend fun String.requestTo(
-        site: SiteModel
+        site: SiteModel,
+        unit: StatsGranularity?,
+        queryTimeRange: LongRange?,
+        quantity: Int?
     ) = jetpackTunnelGsonRequestBuilder.syncGetRequest(
             this@LeaderboardsRestClient,
             site,
             this,
-            emptyMap(),
+            createParameters(site, unit, queryTimeRange, quantity),
             Array<LeaderboardsApiResponse>::class.java
     )
+
+    private fun createParameters(
+        site: SiteModel,
+        unit: StatsGranularity?,
+        queryTimeRange: LongRange?,
+        quantity: Int?
+    ) = mapOf(
+            "before" to (
+                    queryTimeRange?.endInclusive
+                            ?: DateUtils.getEndDateForSite(site))
+                    .toString(),
+            "after" to (
+                    queryTimeRange?.start
+                            ?: unit?.startDateTime(site)
+                            ?: "")
+                    .toString(),
+            "per_page" to quantity?.toString().orEmpty(),
+            "interval" to (unit?.let { OrderStatsApiUnit.fromStatsGranularity(it).toString() } ?: "")
+    ).filter { it.value.isNotEmpty() }
 
     private fun <T> JetpackResponse<T>.handleResult() =
             when (this) {

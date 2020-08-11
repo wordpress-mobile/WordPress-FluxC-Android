@@ -50,8 +50,9 @@ class ReleaseWCNetworkModule {
         dispatcher: Dispatcher,
         @Named("regular") requestQueue: RequestQueue,
         token: AccessToken,
-        userAgent: UserAgent
-    ) = ProductRestClient(appContext, dispatcher, requestQueue, token, userAgent)
+        userAgent: UserAgent,
+        requestBuilder: JetpackTunnelGsonRequestBuilder
+    ) = ProductRestClient(appContext, dispatcher, requestQueue, token, userAgent, requestBuilder)
 
     @Singleton
     @Provides

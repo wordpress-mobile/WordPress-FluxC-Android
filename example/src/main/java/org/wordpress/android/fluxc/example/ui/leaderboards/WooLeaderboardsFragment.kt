@@ -18,8 +18,13 @@ import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsApiResponse
+import org.wordpress.android.fluxc.model.leaderboards.WCTopPerformerProductModel
 import org.wordpress.android.fluxc.store.WCLeaderboardsStore
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.DAYS
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.MONTHS
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.WEEKS
+import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity.YEARS
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
 
@@ -45,8 +50,38 @@ class WooLeaderboardsFragment : Fragment(), StoreSelectorDialog.Listener {
         super.onViewCreated(view, savedInstanceState)
 
         leaderboards_select_site.setOnClickListener(::onLeaderboardsSelectSiteButtonClicked)
-        fetch_leaderboards.setOnClickListener(::onFetchAllLeaderboardsClicked)
-        fetch_product_leaderboards.setOnClickListener(::onFetchProductsLeaderboardsClicked)
+        setupFetchButtons()
+        bindCacheRetrievalButtons()
+    }
+
+    private fun setupFetchButtons() {
+        fetch_product_leaderboards_of_day.setOnClickListener {
+            launchProductLeaderboardsRequest(DAYS)
+        }
+        fetch_product_leaderboards_of_week.setOnClickListener {
+            launchProductLeaderboardsRequest(WEEKS)
+        }
+        fetch_product_leaderboards_of_month.setOnClickListener {
+            launchProductLeaderboardsRequest(MONTHS)
+        }
+        fetch_product_leaderboards_of_year.setOnClickListener {
+            launchProductLeaderboardsRequest(YEARS)
+        }
+    }
+
+    private fun bindCacheRetrievalButtons() {
+        retrieve_cached_leaderboards_of_day.setOnClickListener {
+            launchProductLeaderboardsCacheRetrieval(DAYS)
+        }
+        retrieve_cached_leaderboards_of_week.setOnClickListener {
+            launchProductLeaderboardsCacheRetrieval(WEEKS)
+        }
+        retrieve_cached_leaderboards_of_month.setOnClickListener {
+            launchProductLeaderboardsCacheRetrieval(MONTHS)
+        }
+        retrieve_cached_leaderboards_of_year.setOnClickListener {
+            launchProductLeaderboardsCacheRetrieval(YEARS)
+        }
     }
 
     private fun onLeaderboardsSelectSiteButtonClicked(view: View) {
@@ -56,25 +91,25 @@ class WooLeaderboardsFragment : Fragment(), StoreSelectorDialog.Listener {
         }
     }
 
-    private fun onFetchAllLeaderboardsClicked(view: View) {
+    private fun launchProductLeaderboardsRequest(unit: StatsGranularity) {
         coroutineScope.launch {
             try {
-                takeAsyncRequestWithValidSite { wcLeaderboardsStore.fetchAllLeaderboards(it) }
+                takeAsyncRequestWithValidSite { wcLeaderboardsStore.fetchProductLeaderboards(it, unit) }
                         ?.model
-                        ?.forEach { logLeaderboardResponse(it) }
-                        ?: prependToLog("Couldn't fetch Leaderboards.")
+                        ?.let { logLeaderboardResponse(it, unit) }
+                        ?: prependToLog("Couldn't fetch Products Leaderboards.")
             } catch (ex: Exception) {
-                prependToLog("Couldn't fetch Leaderboards. Error: ${ex.message}")
+                prependToLog("Couldn't fetch Products Leaderboards. Error: ${ex.message}")
             }
         }
     }
 
-    private fun onFetchProductsLeaderboardsClicked(view: View) {
+    private fun launchProductLeaderboardsCacheRetrieval(unit: StatsGranularity) {
         coroutineScope.launch {
             try {
-                takeAsyncRequestWithValidSite { wcLeaderboardsStore.fetchProductLeaderboards(it) }
+                takeAsyncRequestWithValidSite { wcLeaderboardsStore.fetchCachedProductLeaderboards(it, unit) }
                         ?.model
-                        ?.let { logLeaderboardResponse(it) }
+                        ?.let { logLeaderboardResponse(it, unit) }
                         ?: prependToLog("Couldn't fetch Products Leaderboards.")
             } catch (ex: Exception) {
                 prependToLog("Couldn't fetch Products Leaderboards. Error: ${ex.message}")
@@ -89,12 +124,17 @@ class WooLeaderboardsFragment : Fragment(), StoreSelectorDialog.Listener {
         leaderboards_selected_site.text = site.name ?: site.displayName
     }
 
-    private fun logLeaderboardResponse(response: LeaderboardsApiResponse) {
-        prependToLog("===================")
-        prependToLog("Leaderboard Type: ${response.type}")
-        response.items?.forEach {
-            prependToLog("link: ${it.display}")
+    private fun logLeaderboardResponse(model: List<WCTopPerformerProductModel>, unit: StatsGranularity) {
+        model.forEach {
+            prependToLog("  Top Performer Product id: ${it.product.remoteProductId ?: "Product id not available"}")
+            prependToLog("  Top Performer Product name: ${it.product.name ?: "Product name not available"}")
+            prependToLog("  Top Performer currency: ${it.currency ?: "Currency not available"}")
+            prependToLog("  Top Performer quantity: ${it.quantity ?: "Quantity not available"}")
+            prependToLog("  Top Performer total: ${it.total ?: "total not available"}")
+            prependToLog("  Top Performer id: ${it.id ?: "ID not available"}")
+            prependToLog("  --------- Product ---------")
         }
+        prependToLog("========== Top Performers of the $unit =========")
     }
 
     private suspend inline fun <T> takeAsyncRequestWithValidSite(crossinline action: suspend (SiteModel) -> T) =
