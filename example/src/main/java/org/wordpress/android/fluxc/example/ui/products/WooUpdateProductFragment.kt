@@ -321,9 +321,11 @@ class WooUpdateProductFragment : Fragment() {
                     WooProductDownloadsFragment.newInstance(
                             fragment = this,
                             productDownloads = selectedProductDownloads
-                                    ?: selectedProductModel?.getDownloadableFiles()?.map { ProductFile(it.id, it.name, it.url) }
+                                    ?: selectedProductModel?.getDownloadableFiles()?.map {
+                                        ProductFile(it.id, it.name, it.url)
+                                    }
                                     ?: emptyList()
-            )
+                    )
             )
         }
 
@@ -465,7 +467,9 @@ class WooUpdateProductFragment : Fragment() {
                         selectedTags?.joinToString(", ") { it.name }
                                 ?: it.getCommaSeparatedTagNames()
                 )
-                product_downloads.setText("Files count: ${selectedProductDownloads?.size ?: it.getDownloadableFiles().size}")
+                product_downloads.setText(
+                        "Files count: ${selectedProductDownloads?.size ?: it.getDownloadableFiles().size}"
+                )
             } ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
     }

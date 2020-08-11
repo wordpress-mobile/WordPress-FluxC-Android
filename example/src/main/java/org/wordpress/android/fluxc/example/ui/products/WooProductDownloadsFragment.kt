@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.fragment_woo_product_categories.*
 import kotlinx.android.synthetic.main.fragment_woo_product_categories.btn_done
 import kotlinx.android.synthetic.main.fragment_woo_product_downloads.*
 import org.wordpress.android.fluxc.example.R.layout
@@ -46,7 +45,10 @@ class WooProductDownloadsFragment : Fragment() {
             adapter = productDownloadsAdapter
         }
 
-        btn_add.setOnClickListener { productDownloadsAdapter.filesList = productDownloadsAdapter.filesList + ProductFile(null, "", "") }
+        btn_add.setOnClickListener {
+            productDownloadsAdapter.filesList = productDownloadsAdapter.filesList +
+                    ProductFile(null, "", "")
+        }
 
         btn_done.setOnClickListener {
             val intent = activity?.intent

@@ -70,4 +70,3 @@ class WooProductDownloadsAdapter : RecyclerView.Adapter<ProductFileViewHolder>()
                 areItemsTheSame(oldItemPosition, newItemPosition)
     }
 }
-
