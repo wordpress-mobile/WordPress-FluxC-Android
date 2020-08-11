@@ -98,10 +98,10 @@
             android:id="@+id/product_type_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:text="Product type"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/product_sku"
-            android:text="Product type" />
+            app:layout_constraintTop_toBottomOf="@+id/product_sku" />
 
         <Button
             android:id="@+id/product_type"
@@ -109,10 +109,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:enabled="false"
+            android:text="Product type"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/product_type_title"
-            android:text="Product type" />
+            app:layout_constraintTop_toBottomOf="@+id/product_type_title" />
 
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_slug"
@@ -141,9 +141,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:inputType="text"
             android:focusable="false"
             android:focusableInTouchMode="false"
+            android:inputType="text"
             app:layout_constraintEnd_toStartOf="@+id/select_product_categories"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -520,9 +520,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:inputType="text"
             android:focusable="false"
             android:focusableInTouchMode="false"
+            android:inputType="text"
             app:layout_constraintEnd_toStartOf="@+id/select_grouped_product_ids"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
@@ -540,6 +540,28 @@
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/grouped_product_ids"
             app:layout_constraintTop_toBottomOf="@+id/product_password" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/product_downloads"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:enabled="false"
+            app:layout_constraintEnd_toStartOf="@id/product_update_files_button"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/grouped_product_ids"
+            app:textHint="Downloadable Files" />
+
+        <Button
+            android:id="@+id/product_update_files_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:enabled="false"
+            android:text="Update Files"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/product_downloads"
+            app:layout_constraintTop_toBottomOf="@id/grouped_product_ids" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
