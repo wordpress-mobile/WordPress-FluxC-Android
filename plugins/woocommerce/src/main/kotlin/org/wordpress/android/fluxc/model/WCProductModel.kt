@@ -216,15 +216,25 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return attrList
     }
 
-    fun getDownloadableFiles(): List<String> {
-        val fileList = ArrayList<String>()
+    fun getDownloadableFiles(): List<WCProductFileModel> {
+        if (downloads.isEmpty()) return emptyList()
+        val fileList = ArrayList<WCProductFileModel>()
         try {
             Gson().fromJson(downloads, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                jsonElement.asJsonObject.getString("file")?.let {
-                    fileList.add(it)
+                with(jsonElement.asJsonObject) {
+                    fileList.add(
+                            WCProductFileModel(
+                                    id = this.getString("id"),
+                                    name = this.getString("name") ?: "",
+                                    url = this.getString("file")!!
+                            )
+                    )
                 }
             }
         } catch (e: JsonParseException) {
+            AppLog.e(T.API, e)
+        } catch (e: NullPointerException) {
+            //Happens if the url attribute is null
             AppLog.e(T.API, e)
         }
         return fileList
