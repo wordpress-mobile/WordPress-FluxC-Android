@@ -902,6 +902,9 @@ class ProductRestClient(
         if (storedWCProductModel.name != updatedProductModel.name) {
             body["name"] = updatedProductModel.name
         }
+        if (storedWCProductModel.type != updatedProductModel.type) {
+            body["type"] = updatedProductModel.type
+        }
         if (storedWCProductModel.sku != updatedProductModel.sku) {
             body["sku"] = updatedProductModel.sku
         }
