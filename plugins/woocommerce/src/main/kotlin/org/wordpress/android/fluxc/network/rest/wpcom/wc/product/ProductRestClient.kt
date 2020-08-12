@@ -1030,16 +1030,21 @@ class ProductRestClient(
         if (storedWCProductModel.groupedProductIds != updatedProductModel.groupedProductIds) {
             body["grouped_products"] = updatedProductModel.getGroupedProductIds()
         }
+        if (storedWCProductModel.downloadable != updatedProductModel.downloadable) {
+            body["downlodable"] = updatedProductModel.downloadable
+        }
+        if (storedWCProductModel.downloadLimit != updatedProductModel.downloadLimit) {
+            body["download_limit"] = updatedProductModel.downloadLimit
+        }
+        if (storedWCProductModel.downloadExpiry != updatedProductModel.downloadExpiry) {
+            body["download_expiry"] = updatedProductModel.downloadExpiry
+        }
         if (!storedWCProductModel.hasSameDownloadableFiles(updatedProductModel)) {
             val updatedFiles = updatedProductModel.getDownloadableFiles()
             body["downloads"] = JsonArray().apply {
                 updatedFiles.forEach { file ->
                     add(file.toJson())
                 }
-            }
-
-            if (updatedFiles.isNotEmpty()) {
-                body["downloadable"] = true
             }
         }
         return body
