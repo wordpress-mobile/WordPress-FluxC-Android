@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.release
 
+import com.google.gson.JsonArray
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.junit.Assert.assertEquals
@@ -14,10 +15,12 @@ import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.generated.MediaActionBuilder
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.model.WCProductCategoryModel
+import org.wordpress.android.fluxc.model.WCProductFileModel
 import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStatus
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductVisibility
 import org.wordpress.android.fluxc.persistence.MediaSqlUtils
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
@@ -162,11 +165,15 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         nextEvent = TestEvent.FETCHED_SINGLE_VARIATION
         mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(WCProductActionBuilder.newFetchSingleVariationAction(FetchSingleVariationPayload(
-                sSite,
-                variationModel.remoteProductId,
-                variationModel.remoteVariationId
-        )))
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newFetchSingleVariationAction(
+                        FetchSingleVariationPayload(
+                                sSite,
+                                variationModel.remoteProductId,
+                                variationModel.remoteVariationId
+                        )
+                )
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
@@ -240,9 +247,11 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         nextEvent = TestEvent.FETCHED_PRODUCT_SHIPPING_CLASS_LIST
         mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(WCProductActionBuilder.newFetchProductShippingClassListAction(
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newFetchProductShippingClassListAction(
                         FetchProductShippingClassListPayload(sSite)
-                ))
+                )
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
@@ -263,9 +272,11 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
         nextEvent = TestEvent.FETCHED_SINGLE_PRODUCT_SHIPPING_CLASS
         mCountDownLatch = CountDownLatch(1)
-        mDispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductShippingClassAction(
-                FetchSingleProductShippingClassPayload(sSite, remoteShippingClassId)
-        ))
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newFetchSingleProductShippingClassAction(
+                        FetchSingleProductShippingClassPayload(sSite, remoteShippingClassId)
+                )
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
@@ -308,8 +319,10 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             // duplicate category names fail in the API level so added a random number next to the "Test"
             name = "Test" + Random.nextInt(0, 10000)
         }
-        mDispatcher.dispatch(WCProductActionBuilder.newAddProductCategoryAction(
-                AddProductCategoryPayload(sSite, productCategoryModel))
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newAddProductCategoryAction(
+                        AddProductCategoryPayload(sSite, productCategoryModel)
+                )
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
@@ -332,7 +345,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         nextEvent = TestEvent.FETCHED_PRODUCT_REVIEWS
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
-                WCProductActionBuilder.newFetchProductReviewsAction(FetchProductReviewsPayload(sSite, offset = 0)))
+                WCProductActionBuilder.newFetchProductReviewsAction(FetchProductReviewsPayload(sSite, offset = 0))
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
@@ -353,7 +367,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
                 WCProductActionBuilder.newFetchProductReviewsAction(
-                        FetchProductReviewsPayload(sSite, reviewIds = idsToFetch, offset = 0)))
+                        FetchProductReviewsPayload(sSite, reviewIds = idsToFetch, offset = 0)
+                )
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
@@ -378,7 +394,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
                 WCProductActionBuilder.newFetchProductReviewsAction(
-                        FetchProductReviewsPayload(sSite, productIds = productIdsToFetch, offset = 0)))
+                        FetchProductReviewsPayload(sSite, productIds = productIdsToFetch, offset = 0)
+                )
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
@@ -425,7 +443,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
                 WCProductActionBuilder.newFetchSingleProductReviewAction(
-                        FetchSingleProductReviewPayload(sSite, remoteProductReviewId)))
+                        FetchSingleProductReviewPayload(sSite, remoteProductReviewId)
+                )
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
@@ -440,7 +460,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             mCountDownLatch = CountDownLatch(1)
             mDispatcher.dispatch(
                     WCProductActionBuilder.newUpdateProductReviewStatusAction(
-                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)))
+                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)
+                    )
+            )
             assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
             // Verify results - review should be deleted from db
@@ -456,7 +478,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             mCountDownLatch = CountDownLatch(1)
             mDispatcher.dispatch(
                     WCProductActionBuilder.newUpdateProductReviewStatusAction(
-                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)))
+                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)
+                    )
+            )
             assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
             // Verify results
@@ -473,7 +497,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             mCountDownLatch = CountDownLatch(1)
             mDispatcher.dispatch(
                     WCProductActionBuilder.newUpdateProductReviewStatusAction(
-                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)))
+                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)
+                    )
+            )
             assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
             // Verify results - review should be deleted from db
@@ -489,7 +515,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             mCountDownLatch = CountDownLatch(1)
             mDispatcher.dispatch(
                     WCProductActionBuilder.newUpdateProductReviewStatusAction(
-                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)))
+                            UpdateProductReviewStatusPayload(sSite, review.remoteProductReviewId, newStatus)
+                    )
+            )
             assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
             // Verify results
@@ -597,6 +625,51 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
 
     @Throws(InterruptedException::class)
     @Test
+    fun testUpdateDownloadableFiles() {
+        // Prepare the product
+        productModel.status = CoreProductStatus.PUBLISH.value
+        productModel.catalogVisibility = CoreProductVisibility.VISIBLE.value
+        productModel.groupedProductIds = "[]"
+
+        // Update the type
+        val updatedProductType = CoreProductType.SIMPLE.value
+        productModel.type = updatedProductType
+
+        // Update the downloads attributes
+        val updatedProductDownloadableFlag = true
+        productModel.downloadable = updatedProductDownloadableFlag
+
+        val downloadableFile = WCProductFileModel(id = null, name = "file", url = "http://url")
+        productModel.downloads = JsonArray().apply {
+            add(downloadableFile.toJson())
+        }.toString()
+
+        val updatedProductDownloadLimit = 10
+        productModel.downloadLimit = updatedProductDownloadLimit
+
+        val updatedProductDownloadExpiry = 365
+        productModel.downloadExpiry = updatedProductDownloadExpiry
+
+        nextEvent = TestEvent.UPDATED_PRODUCT
+        mCountDownLatch = CountDownLatch(1)
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newUpdateProductAction(UpdateProductPayload(sSite, productModel))
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        val updatedProduct = productStore.getProductByRemoteId(sSite, productModel.remoteProductId)
+
+        assertEquals(updatedProductType, updatedProduct?.type)
+        assertEquals(updatedProductDownloadableFlag, updatedProduct?.downloadable)
+        assertEquals(1, updatedProduct?.getDownloadableFiles()?.size)
+        assertEquals(downloadableFile.name, updatedProduct?.getDownloadableFiles()?.get(0)?.name)
+        assertEquals(downloadableFile.url, updatedProduct?.getDownloadableFiles()?.get(0)?.url)
+        assertEquals(updatedProductDownloadLimit, updatedProduct?.downloadLimit)
+        assertEquals(updatedProductDownloadExpiry, updatedProduct?.downloadExpiry)
+    }
+
+    @Throws(InterruptedException::class)
+    @Test
     fun testUpdateVariation() {
         val updatedVariationStatus = CoreProductStatus.PUBLISH.value
         variationModel.status = updatedVariationStatus
@@ -658,9 +731,11 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
 
         val productTags = listOf("Test" + Date().time, "Test1" + Date().time)
-        mDispatcher.dispatch(WCProductActionBuilder.newAddProductTagsAction(
-                AddProductTagsPayload(sSite, productTags)
-        ))
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newAddProductTagsAction(
+                        AddProductTagsPayload(sSite, productTags)
+                )
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify results
