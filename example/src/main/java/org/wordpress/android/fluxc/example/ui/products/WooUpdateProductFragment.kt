@@ -316,19 +316,6 @@ class WooUpdateProductFragment : Fragment() {
             }
         }
 
-        product_update_files_button.setOnClickListener {
-            replaceFragment(
-                    WooProductDownloadsFragment.newInstance(
-                            fragment = this,
-                            productDownloads = selectedProductDownloads
-                                    ?: selectedProductModel?.getDownloadableFiles()?.map {
-                                        ProductFile(it.id, it.name, it.url)
-                                    }
-                                    ?: emptyList()
-                    )
-            )
-        }
-
         product_is_featured.setOnCheckedChangeListener { _, isChecked ->
             selectedProductModel?.featured = isChecked
         }
@@ -350,6 +337,35 @@ class WooUpdateProductFragment : Fragment() {
         product_button_text.onTextChanged { selectedProductModel?.buttonText = it }
 
         product_menu_order.onTextChanged { selectedProductModel?.menuOrder = StringUtils.stringToInt(it) }
+
+        product_downloadable_checkbox.setOnCheckedChangeListener { _, isChecked ->
+            selectedProductModel?.downloadable = isChecked
+            product_update_downloads_button.isEnabled = isChecked
+            product_download_expiry.isEnabled = isChecked
+            product_download_limit.isEnabled = isChecked
+        }
+
+        product_downloads.isEnabled = false
+        product_update_downloads_button.setOnClickListener {
+            replaceFragment(
+                    WooProductDownloadsFragment.newInstance(
+                            fragment = this,
+                            productDownloads = selectedProductDownloads
+                                    ?: selectedProductModel?.getDownloadableFiles()?.map {
+                                        ProductFile(it.id, it.name, it.url)
+                                    }
+                                    ?: emptyList()
+                    )
+            )
+        }
+
+        product_download_expiry.onTextChanged { text ->
+            text.toIntOrNull()?.let { selectedProductModel?.downloadExpiry = it }
+        }
+
+        product_download_limit.onTextChanged { text ->
+            text.toIntOrNull()?.let { selectedProductModel?.downloadLimit = it }
+        }
 
         savedInstanceState?.let { bundle ->
             selectedRemoteProductId = bundle.getLong(ARG_SELECTED_PRODUCT_ID)
@@ -467,9 +483,15 @@ class WooUpdateProductFragment : Fragment() {
                         selectedTags?.joinToString(", ") { it.name }
                                 ?: it.getCommaSeparatedTagNames()
                 )
+                product_downloadable_checkbox.isChecked = it.downloadable
                 product_downloads.setText(
                         "Files count: ${selectedProductDownloads?.size ?: it.getDownloadableFiles().size}"
                 )
+                product_update_downloads_button.isEnabled = it.downloadable
+                product_download_limit.setText(it.downloadLimit.toString())
+                product_download_limit.isEnabled = it.downloadable
+                product_download_expiry.setText(it.downloadExpiry.toString())
+                product_download_expiry.isEnabled = it.downloadable
             } ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
     }
@@ -514,6 +536,13 @@ class WooUpdateProductFragment : Fragment() {
             return
         }
         prependToLog("Product updated ${event.rowsAffected}")
+
+        selectedRemoteProductId?.let {
+            selectedCategories = null
+            selectedTags = null
+            selectedProductDownloads = null
+            updateSelectedProductId(it)
+        }
     }
 
     @Suppress("unused")

@@ -1031,7 +1031,7 @@ class ProductRestClient(
             body["grouped_products"] = updatedProductModel.getGroupedProductIds()
         }
         if (storedWCProductModel.downloadable != updatedProductModel.downloadable) {
-            body["downlodable"] = updatedProductModel.downloadable
+            body["downloadable"] = updatedProductModel.downloadable
         }
         if (storedWCProductModel.downloadLimit != updatedProductModel.downloadLimit) {
             body["download_limit"] = updatedProductModel.downloadLimit
