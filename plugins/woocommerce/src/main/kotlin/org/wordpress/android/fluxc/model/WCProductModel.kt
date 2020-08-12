@@ -226,15 +226,12 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
                             WCProductFileModel(
                                     id = this.getString("id"),
                                     name = this.getString("name") ?: "",
-                                    url = this.getString("file")!!
+                                    url = this.getString("file") ?: ""
                             )
                     )
                 }
             }
         } catch (e: JsonParseException) {
-            AppLog.e(T.API, e)
-        } catch (e: NullPointerException) {
-            // Happens if the url attribute is null
             AppLog.e(T.API, e)
         }
         return fileList
