@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.example.ui.products
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.DatePickerDialog.OnDateSetListener
 import android.content.Context
@@ -423,7 +424,7 @@ class WooUpdateProductFragment : Fragment() {
             this.selectedCategories = data?.getParcelableArrayListExtra(ARG_SELECTED_PRODUCT_CATEGORIES)
         } else if (requestCode == PRODUCT_TAGS_REQUEST_CODE) {
             this.selectedTags = data?.getParcelableArrayListExtra(ARG_SELECTED_PRODUCT_TAGS)
-        } else if (requestCode == PRODUCT_DOWNLOADS_REQUEST_CODE) {
+        } else if (requestCode == PRODUCT_DOWNLOADS_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             this.selectedProductDownloads = data!!.getParcelableArrayListExtra(ARG_PRODUCT_DOWNLOADS)
         }
     }
