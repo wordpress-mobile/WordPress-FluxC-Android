@@ -96,6 +96,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getAttributes().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
             assertEquals(product.getNumVariations(), 2)
             assertEquals(product.getDownloadableFiles().size, 1)
+            assertEquals(product.downloadExpiry, 10)
+            assertEquals(product.downloadLimit, 2)
         }
 
         // save the product to the db
@@ -629,6 +631,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             type = "simple"
             downloadable = true
             downloads = generateTestFileListAsJsonString()
+            downloadExpiry = 10
+            downloadLimit = 2
         }
         productRestClient.updateProduct(siteModel, testProduct, updatedProduct)
 
@@ -648,6 +652,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(updatedProduct.getGroupedProductIds().size, 2)
             assertEquals(updatedProduct.type, product.type)
             assertEquals(updatedProduct.getDownloadableFiles().size, 1)
+            assertEquals(updatedProduct.downloadExpiry, 10)
+            assertEquals(updatedProduct.downloadLimit, 2)
         }
     }
 

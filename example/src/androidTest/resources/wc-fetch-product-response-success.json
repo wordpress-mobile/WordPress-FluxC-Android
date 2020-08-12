@@ -74,8 +74,8 @@
       "length": "2",
       "width": "3"
     },
-    "download_expiry": -1,
-    "download_limit": -1,
+    "download_expiry": 10,
+    "download_limit": 2,
     "downloadable": true,
     "downloads": [
       {
