@@ -80,6 +80,7 @@ class ProductApiResponse : Response {
     var related_ids: JsonElement? = null
     var cross_sell_ids: JsonElement? = null
     var upsell_ids: JsonElement? = null
+    var grouped_products: JsonElement? = null
 
     fun asProductModel(): WCProductModel {
         val response = this
@@ -158,6 +159,7 @@ class ProductApiResponse : Response {
             relatedIds = response.related_ids?.toString() ?: ""
             crossSellIds = response.cross_sell_ids?.toString() ?: ""
             upsellIds = response.upsell_ids?.toString() ?: ""
+            groupedProductIds = response.grouped_products?.toString() ?: ""
 
             response.dimensions?.asJsonObject?.let { json ->
                 length = json.getString("length") ?: ""

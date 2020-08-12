@@ -987,6 +987,9 @@ class ProductRestClient(
         if (storedWCProductModel.name != updatedProductModel.name) {
             body["name"] = updatedProductModel.name
         }
+        if (storedWCProductModel.type != updatedProductModel.type) {
+            body["type"] = updatedProductModel.type
+        }
         if (storedWCProductModel.sku != updatedProductModel.sku) {
             body["sku"] = updatedProductModel.sku
         }
@@ -1103,6 +1106,9 @@ class ProductRestClient(
                     it.add(tag.toJson())
                 }
             }
+        }
+        if (storedWCProductModel.groupedProductIds != updatedProductModel.groupedProductIds) {
+            body["grouped_products"] = updatedProductModel.getGroupedProductIds()
         }
         return body
     }

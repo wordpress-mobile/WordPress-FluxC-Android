@@ -38,6 +38,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductBack
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductTaxStatus
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductVisibility
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload
@@ -75,6 +76,7 @@ class WooUpdateProductFragment : Fragment() {
         const val LIST_RESULT_CODE_STATUS = 105
         const val LIST_RESULT_CODE_CATEGORIES = 106
         const val LIST_RESULT_CODE_TAGS = 107
+        const val LIST_RESULT_CODE_PRODUCT_TYPE = 108
 
         fun newInstance(selectedSitePosition: Int): WooUpdateProductFragment {
             val fragment = WooUpdateProductFragment()
@@ -131,6 +133,24 @@ class WooUpdateProductFragment : Fragment() {
             }
         }
 
+        grouped_product_ids.isEnabled = false
+        select_grouped_product_ids.setOnClickListener {
+            showSingleLineDialog(activity, "Enter a remoteProductId:") { editText ->
+                editText.text.toString().toIntOrNull()?.let { id ->
+
+                    val storedGroupedProductIds =
+                            selectedProductModel?.getGroupedProductIds()?.toMutableList() ?: mutableListOf()
+                    storedGroupedProductIds.add(id)
+                    selectedProductModel?.groupedProductIds = storedGroupedProductIds.joinToString(
+                            separator = ",",
+                            prefix = "[",
+                            postfix = "]"
+                    )
+                    selectedProductModel?.groupedProductIds?.let { updateGroupedProductIds(it) }
+                } ?: prependToLog("No valid remoteProductId defined...doing nothing")
+            }
+        }
+
         product_name.onTextChanged { selectedProductModel?.name = it }
         product_description.onTextChanged { selectedProductModel?.description = it }
         product_sku.onTextChanged { selectedProductModel?.sku = it }
@@ -157,6 +177,13 @@ class WooUpdateProductFragment : Fragment() {
                     child.isEnabled = isChecked
                 }
             }
+        }
+
+        product_type.setOnClickListener {
+            showListSelectorDialog(
+                    CoreProductType.values().map { it.value }.toList(),
+                    LIST_RESULT_CODE_PRODUCT_TYPE, selectedProductModel?.type
+            )
         }
 
         product_tax_status.setOnClickListener {
@@ -329,6 +356,12 @@ class WooUpdateProductFragment : Fragment() {
                         selectedProductModel?.status = it
                     }
                 }
+                LIST_RESULT_CODE_PRODUCT_TYPE -> {
+                    selectedItem?.let {
+                        product_type.text = it
+                        selectedProductModel?.type = it
+                    }
+                }
                 LIST_RESULT_CODE_VISIBILITY -> {
                     selectedItem?.let {
                         product_catalog_visibility.text = it
@@ -341,6 +374,10 @@ class WooUpdateProductFragment : Fragment() {
         } else if (requestCode == PRODUCT_TAGS_REQUEST_CODE) {
             this.selectedTags = data?.getParcelableArrayListExtra(ARG_SELECTED_PRODUCT_TAGS)
         }
+    }
+
+    private fun updateGroupedProductIds(storedGroupedProductIds: String) {
+        grouped_product_ids.setText(storedGroupedProductIds)
     }
 
     private fun updateSelectedProductId(remoteProductId: Long) {
@@ -365,6 +402,7 @@ class WooUpdateProductFragment : Fragment() {
                 product_length.setText(it.length)
                 product_weight.setText(it.weight)
                 product_tax_status.text = it.taxStatus
+                product_type.text = it.type
                 product_sold_individually.isChecked = it.soldIndividually
                 product_from_date.text = it.dateOnSaleFromGmt.split('T')[0]
                 product_to_date.text = it.dateOnSaleToGmt.split('T')[0]
@@ -383,6 +421,7 @@ class WooUpdateProductFragment : Fragment() {
                 product_menu_order.setText(it.menuOrder.toString())
                 product_external_url.setText(it.externalUrl)
                 product_button_text.setText(it.buttonText)
+                updateGroupedProductIds(it.groupedProductIds)
                 product_categories.setText(
                         selectedCategories?.joinToString(", ") { it.name }
                                 ?: it.getCommaSeparatedCategoryNames()
