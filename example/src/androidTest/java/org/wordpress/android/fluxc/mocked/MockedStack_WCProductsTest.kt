@@ -117,6 +117,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(product.getAttributes().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
             assertEquals(product.getNumVariations(), 2)
             assertEquals(product.getDownloadableFiles().size, 1)
+            assertEquals(product.downloadExpiry, 10)
+            assertEquals(product.downloadLimit, 2)
         }
     }
 
