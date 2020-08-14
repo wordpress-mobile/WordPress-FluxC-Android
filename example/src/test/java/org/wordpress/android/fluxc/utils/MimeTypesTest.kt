@@ -24,6 +24,8 @@ class MimeTypesTest {
                         "video/quicktime",
                         "video/x-ms-wmv",
                         "video/avi",
+                        "video/x-msvideo",
+                        "video/msvideo",
                         "video/mpeg",
                         "video/mp2p",
                         "video/ogg",
