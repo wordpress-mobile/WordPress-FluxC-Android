@@ -22,6 +22,7 @@ data class MimeType(val type: Type, val subtypes: List<Subtype>, val extensions:
         QUICKTIME("quicktime"),
         X_MS_WMV("x-ms-wmv"),
         AVI("avi"),
+        X_MSVIDEO("x-msvideo"),
         MP2P("mp2p"),
         THREE_GPP("3gpp"),
         THREE_GPP_2("3gpp2"),

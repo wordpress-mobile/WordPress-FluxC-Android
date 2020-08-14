@@ -42,6 +42,7 @@ class MimeTypes {
             MimeType(VIDEO, Subtype.QUICKTIME, listOf("mov")),
             MimeType(VIDEO, Subtype.X_MS_WMV, listOf("wmv")),
             MimeType(VIDEO, Subtype.AVI, listOf("avi")),
+            MimeType(VIDEO, Subtype.X_MSVIDEO, listOf("avi")),
             MimeType(VIDEO, Subtype.MPEG, listOf("mpg")),
             MimeType(VIDEO, Subtype.MP2P, listOf("mpg")),
             MimeType(VIDEO, Subtype.OGG, listOf("ogv")),
