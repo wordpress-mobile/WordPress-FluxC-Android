@@ -31,7 +31,7 @@ class MimeTypes {
      * .mp4, .m4v (MPEG-4) - "video/mp4"
      * .mov - missing - using "video/quicktime"
      * .wmv - "video/x-ms-wmv"
-     * .avi - "video/avi"
+     * .avi - "video/avi", "video/x-msvideo"
      * .mpg - "video/mpeg", "video/mp2p"
      * .ogv (Ogg) - missing - using "video/ogg"
      * .3gp (3GPP) - "video/3gpp"
