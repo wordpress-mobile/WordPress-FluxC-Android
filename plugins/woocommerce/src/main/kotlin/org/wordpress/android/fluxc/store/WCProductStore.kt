@@ -906,7 +906,7 @@ class WCProductStore @Inject constructor(
         } else {
             // remove the existing products for this site if this is the first page of results, otherwise
             // products deleted outside of the app will persist
-            if (payload.offset == 0 || payload.remoteProductIds == null) {
+            if (payload.offset == 0 && payload.remoteProductIds == null) {
                 ProductSqlUtils.deleteProductsForSite(payload.site)
             }
             val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)
