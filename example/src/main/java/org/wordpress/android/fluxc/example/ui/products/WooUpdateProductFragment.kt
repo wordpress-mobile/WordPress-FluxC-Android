@@ -136,7 +136,7 @@ class WooUpdateProductFragment : Fragment() {
         grouped_product_ids.isEnabled = false
         select_grouped_product_ids.setOnClickListener {
             showSingleLineDialog(activity, "Enter a remoteProductId:") { editText ->
-                editText.text.toString().toIntOrNull()?.let { id ->
+                editText.text.toString().toLongOrNull()?.let { id ->
 
                     val storedGroupedProductIds =
                             selectedProductModel?.getGroupedProductIds()?.toMutableList() ?: mutableListOf()
