@@ -23,6 +23,7 @@ file and create the gradle.properties file. The easiest way is to copy
 our example:
 
     $ echo "sdk.dir=YOUR_SDK_DIR" > local.properties
+    $ cp gradle.properties-example gradle.properties
     $ ./gradlew fluxc:build
 
 ## Building and running tests and the example app

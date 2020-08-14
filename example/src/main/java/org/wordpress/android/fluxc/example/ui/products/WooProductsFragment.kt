@@ -13,13 +13,16 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction.ADDED_PRODUCT_CATEGORY
+import org.wordpress.android.fluxc.action.WCProductAction.ADDED_PRODUCT_TAGS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCTS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_CATEGORIES
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_REVIEWS
+import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_TAGS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_VARIATIONS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_REVIEW
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT_SHIPPING_CLASS
+import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_VARIATION
 import org.wordpress.android.fluxc.action.WCProductAction.UPDATE_PRODUCT_REVIEW_STATUS
 import org.wordpress.android.fluxc.example.R.layout
 import org.wordpress.android.fluxc.example.prependToLog
@@ -33,6 +36,7 @@ import org.wordpress.android.fluxc.model.WCProductImageModel
 import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload
+import org.wordpress.android.fluxc.store.WCProductStore.AddProductTagsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
@@ -43,6 +47,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload
+import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductCategoryChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
@@ -50,6 +55,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.OnProductShippingClasses
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductSkuAvailabilityChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductTagChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductsSearched
+import org.wordpress.android.fluxc.store.WCProductStore.OnVariationChanged
 import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WooCommerceStore
@@ -64,9 +70,10 @@ class WooProductsFragment : Fragment() {
     private var selectedPos: Int = -1
     private var selectedSite: SiteModel? = null
     private var pendingFetchSingleProductRemoteId: Long? = null
+    private var pendingFetchSingleVariationRemoteId: Long? = null
     private var pendingFetchSingleProductShippingClassRemoteId: Long? = null
 
-    private var pendingFetchSingleProductVariationRemoteId: Long? = null
+    private var pendingFetchProductVariationsProductRemoteId: Long? = null
     private var pendingFetchSingleProductVariationOffset: Int = 0
 
     private var pendingFetchProductShippingClassListOffset: Int = 0
@@ -74,6 +81,7 @@ class WooProductsFragment : Fragment() {
     private var pendingFetchProductTagsOffset: Int = 0
 
     private var enteredCategoryName: String? = null
+    private val enteredTagNames: MutableList<String> = mutableListOf()
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -106,6 +114,32 @@ class WooProductsFragment : Fragment() {
                         val payload = FetchSingleProductPayload(site, id)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchSingleProductAction(payload))
                     } ?: prependToLog("No valid remoteOrderId defined...doing nothing")
+                }
+            }
+        }
+
+        fetch_single_variation.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter the remoteProductId of variation to fetch:"
+                ) { productIdText ->
+                    pendingFetchSingleProductRemoteId = productIdText.text.toString().toLongOrNull()
+                    pendingFetchSingleProductRemoteId?.let { productId ->
+                        showSingleLineDialog(
+                                activity,
+                                "Enter the remoteVariationId of variation to fetch:"
+                        ) { variationIdText ->
+                            pendingFetchSingleVariationRemoteId = variationIdText.text.toString().toLongOrNull()
+                            pendingFetchSingleVariationRemoteId?.let { variationId ->
+                                prependToLog("Submitting request to fetch product by " +
+                                        "remoteProductId $pendingFetchSingleProductRemoteId, " +
+                                        "remoteVariationProductID $variationId")
+                                val payload = FetchSingleVariationPayload(site, productId, variationId)
+                                dispatcher.dispatch(WCProductActionBuilder.newFetchSingleVariationAction(payload))
+                            } ?: prependToLog("No valid remoteVariationId defined...doing nothing")
+                        }
+                    } ?: prependToLog("No valid remoteProductId defined...doing nothing")
                 }
             }
         }
@@ -151,8 +185,8 @@ class WooProductsFragment : Fragment() {
                         activity,
                         "Enter the remoteProductId of product to fetch variations:"
                 ) { editText ->
-                    pendingFetchSingleProductVariationRemoteId = editText.text.toString().toLongOrNull()
-                    pendingFetchSingleProductVariationRemoteId?.let { id ->
+                    pendingFetchProductVariationsProductRemoteId = editText.text.toString().toLongOrNull()
+                    pendingFetchProductVariationsProductRemoteId?.let { id ->
                         prependToLog("Submitting request to fetch product variations by remoteProductID $id")
                         val payload = FetchProductVariationsPayload(site, id)
                         dispatcher.dispatch(WCProductActionBuilder.newFetchProductVariationsAction(payload))
@@ -163,7 +197,7 @@ class WooProductsFragment : Fragment() {
 
         load_more_product_variations.setOnClickListener {
             selectedSite?.let { site ->
-                pendingFetchSingleProductVariationRemoteId?.let { id ->
+                pendingFetchProductVariationsProductRemoteId?.let { id ->
                     prependToLog("Submitting offset request to fetch product variations by remoteProductID $id")
                     val payload = FetchProductVariationsPayload(
                             site, id, offset = pendingFetchSingleProductVariationOffset
@@ -302,6 +336,32 @@ class WooProductsFragment : Fragment() {
             }
         }
 
+        add_product_tags.setOnClickListener {
+            selectedSite?.let { site ->
+                showSingleLineDialog(
+                        activity,
+                        "Enter tag name:"
+                ) { editTextTagName1 ->
+                    showSingleLineDialog(
+                            activity,
+                            "Enter another tag name:"
+                    ) { editTextTagName2 ->
+                        val tagName1 = editTextTagName1.text.toString()
+                        val tagName2 = editTextTagName2.text.toString()
+                        if (tagName1.isNotEmpty() && tagName2.isNotEmpty()) {
+                            enteredTagNames.add(tagName1)
+                            enteredTagNames.add(tagName2)
+                            prependToLog("Submitting request to add product tags for site ${site.id}")
+                            val payload = AddProductTagsPayload(site, enteredTagNames)
+                            dispatcher.dispatch(WCProductActionBuilder.newAddProductTagsAction(payload))
+                        } else {
+                            prependToLog("Tag name is empty. Doing nothing..")
+                        }
+                    }
+                }
+            }
+        }
+
         update_product_images.setOnClickListener {
             showSingleLineDialog(
                     activity,
@@ -322,6 +382,10 @@ class WooProductsFragment : Fragment() {
 
         update_product.setOnClickListener {
             replaceFragment(WooUpdateProductFragment.newInstance(selectedPos))
+        }
+
+        update_variation.setOnClickListener {
+            replaceFragment(WooUpdateVariationFragment.newInstance(selectedPos))
         }
     }
 
@@ -400,6 +464,33 @@ class WooProductsFragment : Fragment() {
                 }
                 UPDATE_PRODUCT_REVIEW_STATUS -> {
                     prependToLog("${event.rowsAffected} product reviews updated")
+                }
+                else -> prependToLog("Product store was updated from a " + event.causeOfChange)
+            }
+        }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onVariationChanged(event: OnVariationChanged) {
+        if (event.isError) {
+            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
+            return
+        }
+
+        selectedSite?.let { site ->
+            when (event.causeOfChange) {
+                FETCH_SINGLE_VARIATION -> {
+                    pendingFetchSingleVariationRemoteId = null
+                    pendingFetchSingleProductRemoteId = null
+                    val variation = wcProductStore.getVariationByRemoteId(
+                            site,
+                            event.remoteProductId,
+                            event.remoteVariationId
+                    )
+                    variation?.let {
+                        prependToLog("Single variation fetched! ${it.remoteVariationId}")
+                    } ?: prependToLog("WARNING: Fetched product not found in the local database!")
                 }
                 else -> prependToLog("Product store was updated from a " + event.causeOfChange)
             }
@@ -513,14 +604,30 @@ class WooProductsFragment : Fragment() {
             return
         }
 
-        prependToLog("Fetched ${event.rowsAffected} product tags. More tags available ${event.canLoadMore}")
-        if (event.canLoadMore) {
-            pendingFetchProductTagsOffset += event.rowsAffected
-            load_more_product_tags.visibility = View.VISIBLE
-            load_more_product_tags.isEnabled = true
-        } else {
-            pendingFetchProductTagsOffset = 0
-            load_more_product_tags.isEnabled = false
+        selectedSite?.let { site ->
+            when (event.causeOfChange) {
+                FETCH_PRODUCT_TAGS -> {
+                    prependToLog("Fetched ${event.rowsAffected} product tags. More tags available ${event.canLoadMore}")
+                    if (event.canLoadMore) {
+                        pendingFetchProductTagsOffset += event.rowsAffected
+                        load_more_product_tags.visibility = View.VISIBLE
+                        load_more_product_tags.isEnabled = true
+                    } else {
+                        pendingFetchProductTagsOffset = 0
+                        load_more_product_tags.isEnabled = false
+                    }
+                }
+
+                ADDED_PRODUCT_TAGS -> {
+                    val tags = wcProductStore.getProductTagsByNames(site, enteredTagNames)
+                    val tagNames = tags.map { it.name }.joinToString(",")
+                    prependToLog("${event.rowsAffected} product tags added for $tagNames")
+                    if (enteredTagNames.size > event.rowsAffected) {
+                        prependToLog("Error occurred when trying to add some product tags")
+                    }
+                }
+                else -> { }
+            }
         }
     }
 

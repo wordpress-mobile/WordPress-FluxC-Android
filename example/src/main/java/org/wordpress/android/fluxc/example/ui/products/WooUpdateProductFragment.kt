@@ -131,6 +131,24 @@ class WooUpdateProductFragment : Fragment() {
             }
         }
 
+        grouped_product_ids.isEnabled = false
+        select_grouped_product_ids.setOnClickListener {
+            showSingleLineDialog(activity, "Enter a remoteProductId:") { editText ->
+                editText.text.toString().toIntOrNull()?.let { id ->
+
+                    val storedGroupedProductIds =
+                            selectedProductModel?.getGroupedProductIds()?.toMutableList() ?: mutableListOf()
+                    storedGroupedProductIds.add(id)
+                    selectedProductModel?.groupedProductIds = storedGroupedProductIds.joinToString(
+                            separator = ",",
+                            prefix = "[",
+                            postfix = "]"
+                    )
+                    selectedProductModel?.groupedProductIds?.let { updateGroupedProductIds(it) }
+                } ?: prependToLog("No valid remoteProductId defined...doing nothing")
+            }
+        }
+
         product_name.onTextChanged { selectedProductModel?.name = it }
         product_description.onTextChanged { selectedProductModel?.description = it }
         product_sku.onTextChanged { selectedProductModel?.sku = it }
@@ -277,6 +295,10 @@ class WooUpdateProductFragment : Fragment() {
             selectedProductModel?.reviewsAllowed = isChecked
         }
 
+        product_is_virtual.setOnCheckedChangeListener { _, isChecked ->
+            selectedProductModel?.virtual = isChecked
+        }
+
         product_purchase_note.onTextChanged { selectedProductModel?.purchaseNote = it }
 
         product_slug.onTextChanged { selectedProductModel?.slug = it }
@@ -339,6 +361,10 @@ class WooUpdateProductFragment : Fragment() {
         }
     }
 
+    private fun updateGroupedProductIds(storedGroupedProductIds: String) {
+        grouped_product_ids.setText(storedGroupedProductIds)
+    }
+
     private fun updateSelectedProductId(remoteProductId: Long) {
         getWCSite()?.let { siteModel ->
             enableProductDependentButtons()
@@ -374,10 +400,12 @@ class WooUpdateProductFragment : Fragment() {
                 product_slug.setText(it.slug)
                 product_is_featured.isChecked = it.featured
                 product_reviews_allowed.isChecked = it.reviewsAllowed
+                product_is_virtual.isChecked = it.virtual
                 product_purchase_note.setText(it.purchaseNote)
                 product_menu_order.setText(it.menuOrder.toString())
                 product_external_url.setText(it.externalUrl)
                 product_button_text.setText(it.buttonText)
+                updateGroupedProductIds(it.groupedProductIds)
                 product_categories.setText(
                         selectedCategories?.joinToString(", ") { it.name }
                                 ?: it.getCommaSeparatedCategoryNames()

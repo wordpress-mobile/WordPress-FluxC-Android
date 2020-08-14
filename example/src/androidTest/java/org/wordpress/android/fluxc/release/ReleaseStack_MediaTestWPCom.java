@@ -24,7 +24,7 @@ import org.wordpress.android.fluxc.store.MediaStore.OnMediaUploaded;
 import org.wordpress.android.fluxc.store.MediaStore.OnStockMediaUploaded;
 import org.wordpress.android.fluxc.store.MediaStore.UploadMediaPayload;
 import org.wordpress.android.fluxc.store.MediaStore.UploadStockMediaPayload;
-import org.wordpress.android.fluxc.utils.MediaUtils;
+import org.wordpress.android.fluxc.utils.MimeType.Type;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +76,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Test
     public void testDeleteMedia() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -94,7 +94,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Test
     public void testFetchMediaList() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -133,7 +133,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Test
     public void testFetchMedia() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -160,7 +160,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Test
     public void testEditMedia() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -187,7 +187,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Test
     public void testEditNonexistentMedia() throws InterruptedException {
         // create media with invalid ID
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
         testMedia.setMediaId(-1);
 
         // push media and verify
@@ -199,7 +199,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Test
     public void testUploadImage() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -216,7 +216,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Test
     public void testUploadImageAttachedToPost() throws InterruptedException {
         // Upload media attached to remotely saved post
-        MediaModel testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        MediaModel testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
         testMedia.setLocalPostId(5);
         testMedia.setPostId(1);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
@@ -232,7 +232,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         deleteMedia(testMedia);
 
         // Upload media attached to a local draft
-        testMedia = newMediaModel(getSampleImagePath(), MediaUtils.MIME_TYPE_IMAGE);
+        testMedia = newMediaModel(getSampleImagePath(), "image/jpeg");
         testMedia.setLocalPostId(5);
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
@@ -250,7 +250,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
     @Test
     public void testUploadVideo() throws InterruptedException {
         // upload media to guarantee media exists
-        MediaModel testMedia = newMediaModel(getSampleVideoPath(), MediaUtils.MIME_TYPE_VIDEO);
+        MediaModel testMedia = newMediaModel(getSampleVideoPath(), "video/mp4");
         mNextEvent = TestEvents.UPLOADED_MEDIA;
         uploadMedia(testMedia);
 
@@ -391,7 +391,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
         MediaModel testMedia = mMediaStore.instantiateMediaModel();
         testMedia.setFilePath(mediaPath);
         testMedia.setFileExtension(mediaPath.substring(mediaPath.lastIndexOf(".") + 1));
-        testMedia.setMimeType(mimeType + testMedia.getFileExtension());
+        testMedia.setMimeType(mimeType);
         testMedia.setFileName(mediaPath.substring(mediaPath.lastIndexOf("/")));
         testMedia.setTitle(testTitle);
         testMedia.setDescription(testDescription);
@@ -419,7 +419,7 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
 
     private void fetchMediaImageList() throws InterruptedException {
         FetchMediaListPayload fetchPayload = new FetchMediaListPayload(
-                sSite, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false, MediaUtils.MIME_TYPE_IMAGE);
+                sSite, MediaStore.DEFAULT_NUM_MEDIA_PER_FETCH, false, Type.IMAGE);
         mCountDownLatch = new CountDownLatch(1);
         mDispatcher.dispatch(MediaActionBuilder.newFetchMediaListAction(fetchPayload));
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));

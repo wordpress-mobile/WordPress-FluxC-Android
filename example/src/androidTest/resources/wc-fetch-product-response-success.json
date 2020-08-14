@@ -82,6 +82,8 @@
     "external_url": "",
     "featured": false,
     "grouped_products": [
+      10,
+      11
     ],
     "id": 1537,
     "images": [
@@ -219,7 +221,7 @@
     "upsell_ids": [
     ],
     "variations": [192, 193],
-    "virtual": false,
+    "virtual": true,
     "weight": ""
   }
 }

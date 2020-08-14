@@ -1,7 +1,6 @@
 package org.wordpress.android.fluxc.release
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -22,7 +21,6 @@ import org.wordpress.android.fluxc.release.AuthorTestFilter.EVERYONE
 import org.wordpress.android.fluxc.release.AuthorTestFilter.SPECIFIC_AUTHOR
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestHelper
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode
-import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.MultiplePages
 import org.wordpress.android.fluxc.release.utils.ListStoreConnectedTestMode.SinglePage
 import org.wordpress.android.fluxc.release.utils.TEST_LIST_CONFIG
 import org.wordpress.android.fluxc.release.utils.TestPostListDataSource
@@ -45,7 +43,6 @@ internal class RestPostListTestCase(
     val testMode: ListStoreConnectedTestMode = SinglePage(false)
 )
 
-@Ignore("Temporarily disabled: These tests keep failing due to a race condition.")
 @RunWith(Parameterized::class)
 internal class ReleaseStack_PostListTestWpCom(
     private val testCase: RestPostListTestCase
@@ -65,12 +62,12 @@ internal class ReleaseStack_PostListTestWpCom(
                  They are very easy to extend on, so if we start running them on an account with pre-setup, they can
                  made to be a lot more demanding by ensuring that each post list type returns some data.
                  */
-                RestPostListTestCase(testMode = MultiplePages),
+                RestPostListTestCase(),
                 RestPostListTestCase(statusList = listOf(DRAFT)),
                 RestPostListTestCase(statusList = listOf(SCHEDULED)),
                 RestPostListTestCase(statusList = listOf(TRASHED)),
-                RestPostListTestCase(order = ListOrder.ASC, testMode = MultiplePages),
-                RestPostListTestCase(orderBy = PostListOrderBy.ID, testMode = MultiplePages),
+                RestPostListTestCase(order = ListOrder.ASC),
+                RestPostListTestCase(orderBy = PostListOrderBy.ID),
                 RestPostListTestCase(searchQuery = TEST_POST_LIST_SEARCH_QUERY),
                 RestPostListTestCase(
                         author = SPECIFIC_AUTHOR,

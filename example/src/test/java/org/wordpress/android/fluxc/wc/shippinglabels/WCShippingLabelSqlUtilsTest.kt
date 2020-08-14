@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.persistence.WCShippingLabelSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @Config(manifest = Config.NONE)
@@ -108,6 +109,31 @@ class WCShippingLabelSqlUtilsTest {
         val nonExistentOrderShippingLabelList =
                 WCShippingLabelSqlUtils.getShippingClassesForOrder(site.id, nonExistingOrderId)
         assertEquals(0, nonExistentOrderShippingLabelList.size)
+    }
+
+    @Test
+    fun testGetShippingLabelsById() {
+        val shippingLabelId = 1L
+        val shippingLabels = WCShippingLabelTestUtils.generateShippingLabelList(
+                site.id, orderId, shippingLabelId
+        )
+        assertTrue(shippingLabels.isNotEmpty())
+
+        // Insert shipping label list
+        val rowsAffected = WCShippingLabelSqlUtils.insertOrUpdateShippingLabels(shippingLabels)
+        assertEquals(shippingLabels.size, rowsAffected)
+
+        // Get shipping label list by id and verify
+        val savedShippingLabelExists = WCShippingLabelSqlUtils.getShippingLabelById(
+                site.id, orderId, shippingLabelId + 1
+        )
+        assertEquals(shippingLabels[0].localOrderId, savedShippingLabelExists?.localOrderId)
+        assertEquals(shippingLabels[0].remoteShippingLabelId, savedShippingLabelExists?.remoteShippingLabelId)
+        assertEquals(shippingLabels[0].localSiteId, savedShippingLabelExists?.localSiteId)
+
+        // Get shipping label for am id that does not exist
+        val savedShippingLabel = WCShippingLabelSqlUtils.getShippingLabelById(site.id, orderId, 100)
+        assertNull(savedShippingLabel)
     }
 
     @Test

@@ -8,6 +8,7 @@ import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductReviewModel
 import org.wordpress.android.fluxc.model.WCProductShippingClassModel
 import org.wordpress.android.fluxc.model.WCProductTagModel
+import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductStockStatus
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductCategoryApiResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductReviewApiResponse
@@ -29,6 +30,20 @@ object ProductTestUtils {
             this.name = name
             this.virtual = virtual
             this.stockStatus = stockStatus
+            this.status = status
+        }
+    }
+
+    fun generateSampleVariation(
+        remoteId: Long,
+        variationId: Long,
+        siteId: Int = 6,
+        status: String = "publish"
+    ): WCProductVariationModel {
+        return WCProductVariationModel().apply {
+            remoteProductId = remoteId
+            remoteVariationId = variationId
+            localSiteId = siteId
             this.status = status
         }
     }

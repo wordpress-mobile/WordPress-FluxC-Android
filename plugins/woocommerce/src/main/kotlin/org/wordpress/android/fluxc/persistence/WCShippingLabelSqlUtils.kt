@@ -17,6 +17,20 @@ object WCShippingLabelSqlUtils {
                 .asModel
     }
 
+    fun getShippingLabelById(
+        localSiteId: Int,
+        orderId: Long,
+        remoteShippingLabelId: Long
+    ): WCShippingLabelModel? {
+        return WellSql.select(WCShippingLabelModel::class.java)
+                .where()
+                .equals(WCShippingLabelModelTable.LOCAL_SITE_ID, localSiteId)
+                .equals(WCShippingLabelModelTable.LOCAL_ORDER_ID, orderId)
+                .equals(WCShippingLabelModelTable.REMOTE_SHIPPING_LABEL_ID, remoteShippingLabelId)
+                .endWhere()
+                .asModel.firstOrNull()
+    }
+
     fun insertOrUpdateShippingLabels(shippingLabels: List<WCShippingLabelModel>): Int {
         var totalChanged = 0
         shippingLabels.forEach { totalChanged += insertOrUpdateShippingLabel(it) }
