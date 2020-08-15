@@ -572,6 +572,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         val updatedGroupedProductIds = "[770,771]"
         productModel.groupedProductIds = updatedGroupedProductIds
 
+        val updatedProductType = "grouped"
+        productModel.type = updatedProductType
+
         nextEvent = TestEvent.UPDATED_PRODUCT
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
