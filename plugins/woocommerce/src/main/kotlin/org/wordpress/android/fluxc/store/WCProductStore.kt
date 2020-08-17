@@ -279,7 +279,8 @@ class WCProductStore @Inject constructor(
         var offset: Int = 0,
         var loadedMore: Boolean = false,
         var canLoadMore: Boolean = false,
-        val remoteProductIds: List<Long>? = null
+        val remoteProductIds: List<Long>? = null,
+        val excludedProductIds: List<Long>? = null
     ) : Payload<ProductError>() {
         constructor(
             error: ProductError,
@@ -910,9 +911,10 @@ class WCProductStore @Inject constructor(
         if (payload.isError) {
             onProductChanged = OnProductChanged(0).also { it.error = payload.error }
         } else {
-            // remove the existing products for this site if this is the first page of results, otherwise
+            // remove the existing products for this site if this is the first page of results
+            // or if the remoteProductIds or excludedProductIds are null, otherwise
             // products deleted outside of the app will persist
-            if (payload.offset == 0 && payload.remoteProductIds == null) {
+            if (payload.offset == 0 && payload.remoteProductIds == null && payload.excludedProductIds == null) {
                 ProductSqlUtils.deleteProductsForSite(payload.site)
             }
             val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)
