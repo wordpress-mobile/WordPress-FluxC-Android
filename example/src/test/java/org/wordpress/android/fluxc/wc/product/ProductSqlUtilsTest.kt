@@ -346,6 +346,53 @@ class ProductSqlUtilsTest {
     }
 
     @Test
+    fun testGetProductsForSiteWithExcludedProductIds() {
+        val excludedProductIds = listOf(40L)
+
+        val product1 = ProductTestUtils.generateSampleProduct(40)
+        val product2 = ProductTestUtils.generateSampleProduct(41)
+        val product3 = ProductTestUtils.generateSampleProduct(42)
+
+        ProductSqlUtils.insertOrUpdateProduct(product1)
+        ProductSqlUtils.insertOrUpdateProduct(product2)
+        ProductSqlUtils.insertOrUpdateProduct(product3)
+
+        val site = SiteModel().apply { id = product1.localSiteId }
+        val products = ProductSqlUtils.getProductsByFilterOptions(
+                site, filterOptions = emptyMap(), excludedProductIds = excludedProductIds
+        )
+        assertEquals(2, products.size)
+        assertEquals(41, products.first().remoteProductId)
+        assertEquals(42, products.last().remoteProductId)
+
+        // insert products with the same productId but for a different site
+        val differentSiteProduct1 = ProductTestUtils.generateSampleProduct(40, siteId = 10)
+        val differentSiteProduct2 = ProductTestUtils.generateSampleProduct(
+                41, siteId = 10
+        )
+        val differentSiteProduct3 = ProductTestUtils.generateSampleProduct(
+                42, siteId = 10
+        )
+
+        ProductSqlUtils.insertOrUpdateProduct(differentSiteProduct1)
+        ProductSqlUtils.insertOrUpdateProduct(differentSiteProduct2)
+        ProductSqlUtils.insertOrUpdateProduct(differentSiteProduct3)
+
+        // verify that the products for the first site is still 2
+        assertEquals(2, ProductSqlUtils.getProductsByFilterOptions(
+                site, emptyMap(), excludedProductIds = excludedProductIds
+        ).size)
+
+        // verify that the products for the second site is also 2
+        val site2 = SiteModel().apply { id = differentSiteProduct1.localSiteId }
+        val differentSiteProducts = ProductSqlUtils.getProductsByFilterOptions(
+                site2, emptyMap(), excludedProductIds = listOf(40, 41)
+        )
+        assertEquals(1, differentSiteProducts.size)
+        assertEquals(42, differentSiteProducts.first().remoteProductId)
+    }
+
+    @Test
     fun testInsertOrUpdateProductReview() {
         val review = getProductReviews(site.id)[0]
         assertNotNull(review)
