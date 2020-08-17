@@ -74,7 +74,8 @@ class WCProductStore @Inject constructor(
         var offset: Int = 0,
         var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
         var remoteProductIds: List<Long>? = null,
-        var filterOptions: Map<ProductFilterOption, String>? = null
+        var filterOptions: Map<ProductFilterOption, String>? = null,
+        var excludedProductIds: List<Long>? = null
     ) : Payload<BaseNetworkError>()
 
     class SearchProductsPayload(
@@ -82,7 +83,8 @@ class WCProductStore @Inject constructor(
         var searchQuery: String,
         var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         var offset: Int = 0,
-        var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING
+        var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        var excludedProductIds: List<Long>? = null
     ) : Payload<BaseNetworkError>()
 
     class FetchProductVariationsPayload(
@@ -768,7 +770,8 @@ class WCProductStore @Inject constructor(
             wcProductRestClient.fetchProducts(
                     site, pageSize, offset, sorting,
                     remoteProductIds = remoteProductIds,
-                    filterOptions = filterOptions
+                    filterOptions = filterOptions,
+                    excludedProductIds = excludedProductIds
                     )
         }
     }
@@ -779,7 +782,9 @@ class WCProductStore @Inject constructor(
             }
 
     private fun searchProducts(payload: SearchProductsPayload) {
-        with(payload) { wcProductRestClient.searchProducts(site, searchQuery, pageSize, offset, sorting) }
+        with(payload) { wcProductRestClient.searchProducts(
+                site, searchQuery, pageSize, offset, sorting, excludedProductIds
+        ) }
     }
 
     private fun fetchProductVariations(payload: FetchProductVariationsPayload) {

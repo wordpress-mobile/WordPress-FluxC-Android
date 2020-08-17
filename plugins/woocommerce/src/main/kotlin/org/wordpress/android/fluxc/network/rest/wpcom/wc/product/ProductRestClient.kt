@@ -323,7 +323,8 @@ class ProductRestClient(
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
         remoteProductIds: List<Long>? = null,
-        filterOptions: Map<ProductFilterOption, String>? = null
+        filterOptions: Map<ProductFilterOption, String>? = null,
+        excludedProductIds: List<Long>? = null
     ) {
         // orderby (string) Options: date, id, include, title and slug. Default is date.
         val orderBy = when (sortType) {
@@ -350,6 +351,10 @@ class ProductRestClient(
 
         filterOptions?.let { filters ->
             filters.map { params.put(it.key.toString(), it.value) }
+        }
+
+        excludedProductIds?.let { excludedIds ->
+            params.put("exclude", excludedIds.map { it }.joinToString())
         }
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
@@ -401,9 +406,10 @@ class ProductRestClient(
         searchQuery: String,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
-        sorting: ProductSorting = DEFAULT_PRODUCT_SORTING
+        sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        excludedProductIds: List<Long>? = null
     ) {
-        fetchProducts(site, pageSize, offset, sorting, searchQuery)
+        fetchProducts(site, pageSize, offset, sorting, searchQuery, excludedProductIds = excludedProductIds)
     }
 
     /**
