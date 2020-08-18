@@ -20,6 +20,7 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.ProductCategorySorting.NAME_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
+import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.AppLog.T
 import java.util.Locale
@@ -27,8 +28,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcProductRestClient: ProductRestClient) :
-        Store(dispatcher) {
+class WCProductStore @Inject constructor(
+    dispatcher: Dispatcher,
+    private val wcProductRestClient: ProductRestClient,
+    private val coroutineEngine: CoroutineEngine? = null
+) : Store(dispatcher) {
     companion object {
         const val NUM_REVIEWS_PER_FETCH = 25
         const val DEFAULT_PRODUCT_PAGE_SIZE = 25
@@ -272,7 +276,8 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         val products: List<WCProductModel> = emptyList(),
         var offset: Int = 0,
         var loadedMore: Boolean = false,
-        var canLoadMore: Boolean = false
+        var canLoadMore: Boolean = false,
+        val remoteProductIds: List<Long>? = null
     ) : Payload<ProductError>() {
         constructor(
             error: ProductError,
@@ -768,6 +773,11 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         }
     }
 
+    suspend fun fetchProductListSynced(site: SiteModel, productIds: List<Long>) =
+            coroutineEngine?.withDefaultContext(AppLog.T.API, this, "fetchProductList") {
+                wcProductRestClient.fetchProductsWithSyncRequest(site = site, remoteProductIds = productIds)?.result
+            }
+
     private fun searchProducts(payload: SearchProductsPayload) {
         with(payload) { wcProductRestClient.searchProducts(site, searchQuery, pageSize, offset, sorting) }
     }
@@ -896,7 +906,7 @@ class WCProductStore @Inject constructor(dispatcher: Dispatcher, private val wcP
         } else {
             // remove the existing products for this site if this is the first page of results, otherwise
             // products deleted outside of the app will persist
-            if (payload.offset == 0) {
+            if (payload.offset == 0 && payload.remoteProductIds == null) {
                 ProductSqlUtils.deleteProductsForSite(payload.site)
             }
             val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)

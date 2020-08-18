@@ -246,11 +246,13 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         }
     }
 
-    fun getGroupedProductIds(): List<Int> {
-        val groupedIds = ArrayList<Int>()
+    fun getGroupedProductIds(): List<Long> {
+        val groupedIds = ArrayList<Long>()
         try {
-            Gson().fromJson(groupedProductIds, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
-                jsonElement.asInt.let { groupedIds.add(it) }
+            if (groupedProductIds.isNotEmpty()) {
+                Gson().fromJson(groupedProductIds, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+                    jsonElement.asLong.let { groupedIds.add(it) }
+                }
             }
         } catch (e: JsonParseException) {
             AppLog.e(T.API, e)

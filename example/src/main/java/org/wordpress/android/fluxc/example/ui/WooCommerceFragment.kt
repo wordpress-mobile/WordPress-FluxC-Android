@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.gateways.WooGatewaysFragment
+import org.wordpress.android.fluxc.example.ui.leaderboards.WooLeaderboardsFragment
 import org.wordpress.android.fluxc.example.ui.orders.WooOrdersFragment
 import org.wordpress.android.fluxc.example.ui.products.WooProductsFragment
 import org.wordpress.android.fluxc.example.ui.refunds.WooRefundsFragment
@@ -118,6 +119,12 @@ class WooCommerceFragment : Fragment() {
         shipping_labels.setOnClickListener {
             getFirstWCSite()?.let {
                 replaceFragment(WooShippingLabelFragment())
+            } ?: showNoWCSitesToast()
+        }
+
+        leaderboards.setOnClickListener {
+            getFirstWCSite()?.let {
+                replaceFragment(WooLeaderboardsFragment())
             } ?: showNoWCSitesToast()
         }
     }

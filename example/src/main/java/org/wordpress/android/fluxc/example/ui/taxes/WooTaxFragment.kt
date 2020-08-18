@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.fragment_woo_taxes.*
@@ -18,6 +17,7 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
+import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.WCTaxStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
@@ -47,7 +47,7 @@ class WooTaxFragment : Fragment() {
                 override fun onSiteSelected(site: SiteModel, pos: Int) {
                     selectedSite = site
                     selectedPos = pos
-                    toggleSiteDependentButtons(true)
+                    buttonContainer.toggleSiteDependentButtons(true)
                     taxes_selected_site.text = site.name ?: site.displayName
                 }
             })
@@ -81,15 +81,6 @@ class WooTaxFragment : Fragment() {
         fragmentManager?.let { fm ->
             val dialog = StoreSelectorDialog.newInstance(listener, selectedPos)
             dialog.show(fm, "StoreSelectorDialog")
-        }
-    }
-
-    private fun toggleSiteDependentButtons(enabled: Boolean) {
-        for (i in 0 until buttonContainer.childCount) {
-            val child = buttonContainer.getChildAt(i)
-            if (child is Button) {
-                child.isEnabled = enabled
-            }
         }
     }
 }
