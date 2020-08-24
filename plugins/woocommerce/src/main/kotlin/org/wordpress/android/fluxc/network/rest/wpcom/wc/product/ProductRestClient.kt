@@ -372,7 +372,8 @@ class ProductRestClient(
                                 offset,
                                 loadedMore,
                                 canLoadMore,
-                                remoteProductIds
+                                remoteProductIds,
+                                excludedProductIds
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
                     } else {
