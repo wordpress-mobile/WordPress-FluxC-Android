@@ -179,6 +179,9 @@ class MockedStack_WCBaseStoreTest : MockedStack_Base() {
 
             val formattedCurrencyDifferentCurrency = formatCurrencyForDisplay(1234.12, siteModel, "EUR", true)
             assertEquals("€1,234.12", formattedCurrencyDifferentCurrency)
+
+            val formattedCurrencyEmptyCodeUseSite = formatCurrencyForDisplay(1234.12, siteModel, "", true)
+            assertEquals("CA$1,234.12", formattedCurrencyUseSiteCurrency)
         }
 
         // -- Site using EUR
