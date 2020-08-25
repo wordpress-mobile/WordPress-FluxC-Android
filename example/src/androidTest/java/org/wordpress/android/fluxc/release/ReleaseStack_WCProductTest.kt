@@ -39,6 +39,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippi
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleVariationPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductCategoryChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductCreated
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductImagesChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductPasswordChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductReviewChanged
@@ -47,6 +48,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.OnProductTagChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
 import org.wordpress.android.fluxc.store.WCProductStore.OnVariationChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnVariationUpdated
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddNewProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload
@@ -78,7 +80,9 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         FETCHED_PRODUCT_TAGS,
         ADDED_PRODUCT_TAGS,
         FETCHED_SINGLE_VARIATION,
-        UPDATED_VARIATION
+        UPDATED_VARIATION,
+        ADD_NEW_PRODUCT,
+        ADDED_NEW_PRODUCT
     }
 
     @Inject internal lateinit var productStore: WCProductStore
@@ -117,6 +121,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
     private var lastShippingClassEvent: OnProductShippingClassesChanged? = null
     private var lastReviewEvent: OnProductReviewChanged? = null
     private var lastProductTagEvent: OnProductTagChanged? = null
+    private var lastAddNewProductEvent: OnProductCreated? = null
 
     @Throws(Exception::class)
     override fun setUp() {
@@ -672,6 +677,39 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertTrue(fetchAllTags.size == 2)
     }
 
+    @Throws(InterruptedException::class)
+    @Test
+    fun testAddNewProduct() {
+        val newProductName = "New product name"
+        productModel.name = newProductName
+
+        val newProductType = "simple"
+        productModel.type = newProductType
+
+        val newProductRegularPrice = "simple"
+        productModel.regularPrice = newProductRegularPrice
+
+        val newProductDesc = "New product description"
+        productModel.description = newProductDesc
+
+        val newProductShortDesc = "New short desc"
+        productModel.shortDescription = newProductShortDesc
+
+        val newProductCategories = "[1,2]"
+        productModel.categories = newProductCategories
+
+        val newProductImages = "[image1,image2]"
+        productModel.images = newProductImages
+
+        nextEvent = TestEvent.ADDED_NEW_PRODUCT
+        mCountDownLatch = CountDownLatch(1)
+
+        mDispatcher.dispatch(
+                WCProductActionBuilder.newAddedNewProductAction(RemoteAddNewProductPayload(sSite, productModel))
+        )
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+    }
+
     /**
      * Used by the update images test to fetch a single media model for this site
      */
@@ -886,6 +924,26 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
             }
             WCProductAction.ADDED_PRODUCT_TAGS -> {
                 assertEquals(TestEvent.ADDED_PRODUCT_TAGS, nextEvent)
+                mCountDownLatch.countDown()
+            }
+            else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)
+        }
+    }
+
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductCreated(event: OnProductCreated) {
+        event.error?.let {
+            throw AssertionError("OnProductCreated has unexpected error: " + it.type)
+        }
+
+        lastAddNewProductEvent = event
+
+        when (event.causeOfChange) {
+            WCProductAction.ADD_NEW_PRODUCT -> {
+                assertEquals(TestEvent.ADDED_NEW_PRODUCT, nextEvent)
+                assertEquals(event.remoteProductId, productModel.remoteProductId)
                 mCountDownLatch.countDown()
             }
             else -> throw AssertionError("Unexpected cause of change: " + event.causeOfChange)

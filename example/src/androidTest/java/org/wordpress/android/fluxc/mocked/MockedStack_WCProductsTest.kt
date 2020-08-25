@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddNewProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
@@ -818,6 +819,40 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(WCProductAction.ADDED_PRODUCT_TAGS, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteAddProductTagsResponsePayload
         assertNotNull(payload.error)
+    }
+
+    @Test
+    fun testAddNewProductSuccess() {
+        interceptor.respondWith("wc-fetch-product-response-success.json")
+
+        val testProduct = generateTestProduct()
+        productRestClient.createNewProduct(siteModel, testProduct)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.ADDED_NEW_PRODUCT, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteAddNewProductPayload
+        with(payload) {
+            assertNull(error)
+            assertEquals(remoteProductId, product.remoteProductId)
+            assertEquals("simple", product.type)
+            assertEquals("Testing product description update", product.description)
+        }
+    }
+
+    @Test
+    fun testAddNewProductFailed() {
+        interceptor.respondWithError("wc-response-failure-invalid-param.json")
+        val testProduct = generateTestProduct()
+        productRestClient.createNewProduct(siteModel, testProduct)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.ADDED_NEW_PRODUCT, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteAddNewProductPayload
+        assertTrue(payload.isError)
     }
 
     @Suppress("unused")

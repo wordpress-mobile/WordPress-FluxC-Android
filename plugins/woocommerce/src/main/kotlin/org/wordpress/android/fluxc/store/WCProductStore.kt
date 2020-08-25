@@ -172,6 +172,11 @@ class WCProductStore @Inject constructor(
         val tags: List<String>
     ) : Payload<BaseNetworkError>()
 
+    class AddNewProductPayload(
+        var site: SiteModel,
+        val product: WCProductModel
+    ) : Payload<BaseNetworkError>()
+
     enum class ProductErrorType {
         INVALID_PARAM,
         INVALID_REVIEW_ID,
@@ -459,6 +464,19 @@ class WCProductStore @Inject constructor(
         ) : this(site, addedTags) { this.error = error }
     }
 
+    class RemoteAddNewProductPayload(
+        var site: SiteModel,
+        val product: WCProductModel
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            site: SiteModel,
+            product: WCProductModel
+        ) : this(site, product) {
+            this.error = error
+        }
+    }
+
     // OnChanged events
     class OnProductChanged(
         var rowsAffected: Int,
@@ -543,6 +561,13 @@ class WCProductStore @Inject constructor(
     class OnProductTagChanged(
         var rowsAffected: Int,
         var canLoadMore: Boolean = false
+    ) : OnChanged<ProductError>() {
+        var causeOfChange: WCProductAction? = null
+    }
+
+    class OnProductCreated(
+        var rowsAffected: Int,
+        var remoteProductId: Long = 0L
     ) : OnChanged<ProductError>() {
         var causeOfChange: WCProductAction? = null
     }
@@ -704,6 +729,8 @@ class WCProductStore @Inject constructor(
                 fetchProductTags(action.payload as FetchProductTagsPayload)
             WCProductAction.ADD_PRODUCT_TAGS ->
                 addProductTags(action.payload as AddProductTagsPayload)
+            WCProductAction.ADD_NEW_PRODUCT ->
+                createNewProduct(action.payload as AddNewProductPayload)
 
             // remote responses
             WCProductAction.FETCHED_SINGLE_PRODUCT ->
@@ -746,6 +773,8 @@ class WCProductStore @Inject constructor(
                 handleFetchProductTagsCompleted(action.payload as RemoteProductTagsPayload)
             WCProductAction.ADDED_PRODUCT_TAGS ->
                 handleAddProductTags(action.payload as RemoteAddProductTagsResponsePayload)
+            WCProductAction.ADDED_NEW_PRODUCT ->
+                handleAddNewProduct(action.payload as RemoteAddNewProductPayload)
         }
     }
 
@@ -846,6 +875,12 @@ class WCProductStore @Inject constructor(
         with(payload) {
             val storedVariation = getVariationByRemoteId(site, variation.remoteProductId, variation.remoteVariationId)
             wcProductRestClient.updateVariation(site, storedVariation, variation)
+        }
+    }
+
+    private fun createNewProduct(payload: AddNewProductPayload) {
+        with(payload) {
+            wcProductRestClient.createNewProduct(site, product)
         }
     }
 
@@ -1168,5 +1203,19 @@ class WCProductStore @Inject constructor(
 
         onProductTagsChanged.causeOfChange = WCProductAction.ADDED_PRODUCT_TAGS
         emitChange(onProductTagsChanged)
+    }
+
+    private fun handleAddNewProduct(payload: RemoteAddNewProductPayload) {
+        val onProductCreated: OnProductCreated
+
+        if (payload.isError) {
+            onProductCreated = OnProductCreated(0, payload.product.remoteProductId).also { it.error = payload.error }
+        } else {
+            val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
+            onProductCreated = OnProductCreated(rowsAffected, payload.product.remoteProductId)
+        }
+
+        onProductCreated.causeOfChange = WCProductAction.ADDED_NEW_PRODUCT
+        emitChange(onProductCreated)
     }
 }

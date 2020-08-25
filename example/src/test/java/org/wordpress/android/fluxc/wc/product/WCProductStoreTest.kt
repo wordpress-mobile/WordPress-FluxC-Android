@@ -17,11 +17,14 @@ import org.wordpress.android.fluxc.model.WCProductVariationModel
 import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.AddNewProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddNewProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @Config(manifest = Config.NONE)
@@ -208,5 +211,27 @@ class WCProductStoreTest {
         val differentProductFilters = productStore.getProductsByFilterOptions(site2, filterOptions3)
         assertEquals(1, differentProductFilters.size)
         assertEquals(differentSiteProduct3.stockStatus, differentProductFilters[0].stockStatus)
+    }
+
+    @Test
+    fun `test AddNewProductAction triggered correctly`() {
+        // given
+        val productModel = ProductTestUtils.generateSampleProduct(remoteId = 0).apply {
+            name = "test new product"
+            description = "test new description"
+        }
+        val site = SiteModel().apply { id = productModel.localSiteId }
+
+        // when
+        ProductSqlUtils.insertOrUpdateProduct(productModel)
+        val payload = RemoteAddNewProductPayload(site, productModel)
+        productStore.onAction(WCProductActionBuilder.newAddedNewProductAction(payload))
+
+        // then
+        with(productStore.getProductByRemoteId(site, productModel.remoteProductId)) {
+            assertNotNull(this)
+            assertEquals(productModel.description, this?.description)
+            assertEquals(productModel.name, this?.name)
+        }
     }
 }
