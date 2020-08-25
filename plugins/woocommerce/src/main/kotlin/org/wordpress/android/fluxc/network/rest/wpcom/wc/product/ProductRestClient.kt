@@ -992,6 +992,7 @@ class ProductRestClient(
                     // success
                     response?.let { product ->
                         val newModel = product.asProductModel().apply {
+                            id = product.id?.toInt() ?: 0
                             localSiteId = site.id
                         }
                         val payload = RemoteAddNewProductPayload(site, newModel)
