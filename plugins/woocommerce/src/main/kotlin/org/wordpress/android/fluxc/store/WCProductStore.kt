@@ -74,7 +74,8 @@ class WCProductStore @Inject constructor(
         var offset: Int = 0,
         var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
         var remoteProductIds: List<Long>? = null,
-        var filterOptions: Map<ProductFilterOption, String>? = null
+        var filterOptions: Map<ProductFilterOption, String>? = null,
+        var excludedProductIds: List<Long>? = null
     ) : Payload<BaseNetworkError>()
 
     class SearchProductsPayload(
@@ -82,7 +83,8 @@ class WCProductStore @Inject constructor(
         var searchQuery: String,
         var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         var offset: Int = 0,
-        var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING
+        var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        var excludedProductIds: List<Long>? = null
     ) : Payload<BaseNetworkError>()
 
     class FetchProductVariationsPayload(
@@ -277,7 +279,8 @@ class WCProductStore @Inject constructor(
         var offset: Int = 0,
         var loadedMore: Boolean = false,
         var canLoadMore: Boolean = false,
-        val remoteProductIds: List<Long>? = null
+        val remoteProductIds: List<Long>? = null,
+        val excludedProductIds: List<Long>? = null
     ) : Payload<ProductError>() {
         constructor(
             error: ProductError,
@@ -607,9 +610,10 @@ class WCProductStore @Inject constructor(
     fun getProductsByFilterOptions(
         site: SiteModel,
         filterOptions: Map<ProductFilterOption, String>,
-        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        excludedProductIds: List<Long>? = null
     ): List<WCProductModel> =
-            ProductSqlUtils.getProductsByFilterOptions(site, filterOptions, sortType)
+            ProductSqlUtils.getProductsByFilterOptions(site, filterOptions, sortType, excludedProductIds)
 
     fun getProductsForSite(site: SiteModel, sortType: ProductSorting = DEFAULT_PRODUCT_SORTING) =
             ProductSqlUtils.getProductsForSite(site, sortType)
@@ -768,7 +772,8 @@ class WCProductStore @Inject constructor(
             wcProductRestClient.fetchProducts(
                     site, pageSize, offset, sorting,
                     remoteProductIds = remoteProductIds,
-                    filterOptions = filterOptions
+                    filterOptions = filterOptions,
+                    excludedProductIds = excludedProductIds
                     )
         }
     }
@@ -779,7 +784,9 @@ class WCProductStore @Inject constructor(
             }
 
     private fun searchProducts(payload: SearchProductsPayload) {
-        with(payload) { wcProductRestClient.searchProducts(site, searchQuery, pageSize, offset, sorting) }
+        with(payload) { wcProductRestClient.searchProducts(
+                site, searchQuery, pageSize, offset, sorting, excludedProductIds
+        ) }
     }
 
     private fun fetchProductVariations(payload: FetchProductVariationsPayload) {
@@ -904,9 +911,10 @@ class WCProductStore @Inject constructor(
         if (payload.isError) {
             onProductChanged = OnProductChanged(0).also { it.error = payload.error }
         } else {
-            // remove the existing products for this site if this is the first page of results, otherwise
+            // remove the existing products for this site if this is the first page of results
+            // or if the remoteProductIds or excludedProductIds are null, otherwise
             // products deleted outside of the app will persist
-            if (payload.offset == 0 && payload.remoteProductIds == null) {
+            if (payload.offset == 0 && payload.remoteProductIds == null && payload.excludedProductIds == null) {
                 ProductSqlUtils.deleteProductsForSite(payload.site)
             }
             val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)
