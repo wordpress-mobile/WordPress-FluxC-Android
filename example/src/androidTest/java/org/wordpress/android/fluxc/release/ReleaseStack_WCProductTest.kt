@@ -930,7 +930,6 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         }
     }
 
-
     @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProductCreated(event: OnProductCreated) {

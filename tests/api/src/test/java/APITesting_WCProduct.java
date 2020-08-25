@@ -392,7 +392,8 @@ public class APITesting_WCProduct {
         // for images
         JSONArray jsonImagesArray = new JSONArray();
         JSONObject jsonImage = new JSONObject();
-        jsonImage.put("src", "https://woomobileapitesting.mystagingwebsite.com/wp-content" + "/uploads/2020/02/hoodie-2.jpg");
+        jsonImage.put("src", "https://woomobileapitesting.mystagingwebsite.com/wp-content"
+                             + "/uploads/2020/02/hoodie-2.jpg");
         jsonImagesArray.put(0, jsonImage);
         jsonBody.put("images", jsonCategories);
 

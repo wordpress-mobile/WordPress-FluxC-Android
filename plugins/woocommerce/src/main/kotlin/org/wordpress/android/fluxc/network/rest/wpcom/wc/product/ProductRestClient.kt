@@ -6,7 +6,6 @@ import com.google.gson.JsonArray
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction
-import org.wordpress.android.fluxc.generated.WCOrderActionBuilder
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.generated.endpoint.WPCOMREST
@@ -970,10 +969,10 @@ class ProductRestClient(
     /**
      * Makes a POST request to `/wp-json/wc/v3/products` to create a product
      *
-     * Dispatches a WCProductAction.ADD_NEW_PRODUCT action with the result
+     * Dispatches a [WCProductAction.ADDED_NEW_PRODUCT] action with the result
      *
      * @param [site] The site to fetch product reviews for
-     * @param [newProductModel] the new product model
+     * @param [newModel] the new product model
      */
     fun createNewProduct(
         site: SiteModel,
