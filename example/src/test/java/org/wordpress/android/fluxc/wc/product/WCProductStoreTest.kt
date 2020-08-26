@@ -18,7 +18,7 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.ProductFilterOption
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddNewProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload
 import kotlin.test.assertEquals
@@ -213,7 +213,7 @@ class WCProductStoreTest {
     }
 
     @Test
-    fun `test AddNewProductAction triggered correctly`() {
+    fun `test AddProduct Action triggered correctly`() {
         // given
         val productModel = ProductTestUtils.generateSampleProduct(remoteId = 0).apply {
             name = "test new product"
@@ -223,8 +223,8 @@ class WCProductStoreTest {
 
         // when
         ProductSqlUtils.insertOrUpdateProduct(productModel)
-        val payload = RemoteAddNewProductPayload(site, productModel)
-        productStore.onAction(WCProductActionBuilder.newAddedNewProductAction(payload))
+        val payload = RemoteAddProductPayload(site, productModel)
+        productStore.onAction(WCProductActionBuilder.newAddedProductAction(payload))
 
         // then
         with(productStore.getProductByRemoteId(site, productModel.remoteProductId)) {

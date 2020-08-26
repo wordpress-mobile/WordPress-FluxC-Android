@@ -48,7 +48,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.OnProductTagChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
 import org.wordpress.android.fluxc.store.WCProductStore.OnVariationChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnVariationUpdated
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddNewProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload
@@ -81,8 +81,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         ADDED_PRODUCT_TAGS,
         FETCHED_SINGLE_VARIATION,
         UPDATED_VARIATION,
-        ADD_NEW_PRODUCT,
-        ADDED_NEW_PRODUCT
+        ADD_PRODUCT,
+        ADDED_PRODUCT
     }
 
     @Inject internal lateinit var productStore: WCProductStore
@@ -701,11 +701,11 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         val newProductImages = "[image1,image2]"
         productModel.images = newProductImages
 
-        nextEvent = TestEvent.ADDED_NEW_PRODUCT
+        nextEvent = TestEvent.ADDED_PRODUCT
         mCountDownLatch = CountDownLatch(1)
 
         mDispatcher.dispatch(
-                WCProductActionBuilder.newAddedNewProductAction(RemoteAddNewProductPayload(sSite, productModel))
+                WCProductActionBuilder.newAddedProductAction(RemoteAddProductPayload(sSite, productModel))
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
     }
@@ -940,8 +940,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         lastAddNewProductEvent = event
 
         when (event.causeOfChange) {
-            WCProductAction.ADD_NEW_PRODUCT -> {
-                assertEquals(TestEvent.ADDED_NEW_PRODUCT, nextEvent)
+            WCProductAction.ADD_PRODUCT -> {
+                assertEquals(TestEvent.ADDED_PRODUCT, nextEvent)
                 assertEquals(event.remoteProductId, productModel.remoteProductId)
                 mCountDownLatch.countDown()
             }

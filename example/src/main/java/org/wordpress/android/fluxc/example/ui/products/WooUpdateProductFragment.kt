@@ -41,7 +41,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductTaxS
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductVisibility
 import org.wordpress.android.fluxc.store.WCProductStore
-import org.wordpress.android.fluxc.store.WCProductStore.AddNewProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.AddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductCreated
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductPasswordChanged
@@ -248,8 +248,8 @@ class WooUpdateProductFragment : Fragment() {
                                 it.map { it.toProductTriplet().toJson() }.toString()
                     }
 
-                    val payload = AddNewProductPayload(site, selectedProductModel!!)
-                    dispatcher.dispatch(WCProductActionBuilder.newAddNewProductAction(payload))
+                    val payload = AddProductPayload(site, selectedProductModel!!)
+                    dispatcher.dispatch(WCProductActionBuilder.newAddProductAction(payload))
                 } else if (selectedProductModel?.remoteProductId != null) {
                     // update categories only if new categories has been selected
                     selectedCategories?.let {

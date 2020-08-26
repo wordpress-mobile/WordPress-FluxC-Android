@@ -51,7 +51,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddNewProductPayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
@@ -967,14 +967,14 @@ class ProductRestClient(
     }
 
     /**
-     * Makes a POST request to `/wp-json/wc/v3/products` to create a product
+     * Makes a POST request to `/wp-json/wc/v3/products` to add a product
      *
-     * Dispatches a [WCProductAction.ADDED_NEW_PRODUCT] action with the result
+     * Dispatches a [WCProductAction.ADDED_PRODUCT] action with the result
      *
      * @param [site] The site to fetch product reviews for
      * @param [newModel] the new product model
      */
-    fun createNewProduct(
+    fun addProduct(
         site: SiteModel,
         productModel: WCProductModel
     ) {
@@ -994,19 +994,19 @@ class ProductRestClient(
                             id = product.id?.toInt() ?: 0
                             localSiteId = site.id
                         }
-                        val payload = RemoteAddNewProductPayload(site, newModel)
-                        dispatcher.dispatch(WCProductActionBuilder.newAddedNewProductAction(payload))
+                        val payload = RemoteAddProductPayload(site, newModel)
+                        dispatcher.dispatch(WCProductActionBuilder.newAddedProductAction(payload))
                     }
                 },
                 errorListener = WPComErrorListener { networkError ->
                     // error
                     val productError = networkErrorToProductError(networkError)
-                    val payload = RemoteAddNewProductPayload(
+                    val payload = RemoteAddProductPayload(
                             productError,
                             site,
                             WCProductModel()
                     )
-                    dispatcher.dispatch(WCProductActionBuilder.newAddedNewProductAction(payload))
+                    dispatcher.dispatch(WCProductActionBuilder.newAddedProductAction(payload))
                 }
         )
         add(request)

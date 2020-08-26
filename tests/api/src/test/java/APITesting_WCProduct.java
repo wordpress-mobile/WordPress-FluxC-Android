@@ -367,7 +367,7 @@ public class APITesting_WCProduct {
     }
 
     @Test
-    public void canAddNewProduct() {
+    public void canAddProduct() {
         String path = "/wc/v3/products";
         String method = "post";
 
