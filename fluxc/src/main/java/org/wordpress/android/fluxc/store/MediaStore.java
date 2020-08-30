@@ -270,7 +270,7 @@ public class MediaStore extends Store {
                     // the "." separator seems to be always present in this error category messages
                     String[] splitUserMsg = userMessage.split("\\.");
 
-                    if (null != splitUserMsg && splitUserMsg.length > 1) {
+                    if (null != splitUserMsg && splitUserMsg.length > 2) {
                         userMessage = userMessage.substring(
                                 0,
                                 userMessage.length() - splitUserMsg[splitUserMsg.length - 1].length()
