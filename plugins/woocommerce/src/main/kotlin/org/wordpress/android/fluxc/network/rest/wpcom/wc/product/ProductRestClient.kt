@@ -24,7 +24,13 @@ import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComErro
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequest
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackError
+import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.post.PostWPComRestResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
 import org.wordpress.android.fluxc.network.utils.getString
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.Companion.DEFAULT_CATEGORY_SORTING
@@ -72,7 +78,8 @@ class ProductRestClient(
     private val dispatcher: Dispatcher,
     requestQueue: RequestQueue,
     accessToken: AccessToken,
-    userAgent: UserAgent
+    userAgent: UserAgent,
+    private val jetpackTunnelGsonRequestBuilder: JetpackTunnelGsonRequestBuilder? = null
 ) : BaseWPComRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent) {
     /**
      * Makes a GET request to `/wp-json/wc/v3/products/shipping_classes/[remoteShippingClassId]`
@@ -243,7 +250,7 @@ class ProductRestClient(
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: ProductApiResponse? ->
                     response?.let {
-                        val newModel = productResponseToProductModel(it).apply {
+                        val newModel = it.asProductModel().apply {
                             localSiteId = site.id
                         }
                         val payload = RemoteProductPayload(newModel, site)
@@ -316,7 +323,8 @@ class ProductRestClient(
         sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
         searchQuery: String? = null,
         remoteProductIds: List<Long>? = null,
-        filterOptions: Map<ProductFilterOption, String>? = null
+        filterOptions: Map<ProductFilterOption, String>? = null,
+        excludedProductIds: List<Long>? = null
     ) {
         // orderby (string) Options: date, id, include, title and slug. Default is date.
         val orderBy = when (sortType) {
@@ -335,7 +343,8 @@ class ProductRestClient(
                 "orderby" to orderBy,
                 "order" to sortOrder,
                 "offset" to offset.toString(),
-                "search" to (searchQuery ?: ""))
+                "search" to (searchQuery ?: "")
+        )
         remoteProductIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
         }
@@ -344,10 +353,14 @@ class ProductRestClient(
             filters.map { params.put(it.key.toString(), it.value) }
         }
 
+        excludedProductIds?.let { excludedIds ->
+            params.put("exclude", excludedIds.map { it }.joinToString())
+        }
+
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductApiResponse>? ->
                     val productModels = response?.map {
-                        productResponseToProductModel(it).apply { localSiteId = site.id }
+                        it.asProductModel().apply { localSiteId = site.id }
                     }.orEmpty()
 
                     val loadedMore = offset > 0
@@ -358,7 +371,9 @@ class ProductRestClient(
                                 productModels,
                                 offset,
                                 loadedMore,
-                                canLoadMore
+                                canLoadMore,
+                                remoteProductIds,
+                                excludedProductIds
                         )
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductsAction(payload))
                     } else {
@@ -392,9 +407,83 @@ class ProductRestClient(
         searchQuery: String,
         pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         offset: Int = 0,
-        sorting: ProductSorting = DEFAULT_PRODUCT_SORTING
+        sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        excludedProductIds: List<Long>? = null
     ) {
-        fetchProducts(site, pageSize, offset, sorting, searchQuery)
+        fetchProducts(site, pageSize, offset, sorting, searchQuery, excludedProductIds = excludedProductIds)
+    }
+
+    /**
+     * Makes a GET call to `/wc/v3/products` via the Jetpack tunnel (see [JetpackTunnelGsonRequest]),
+     * retrieving a list of products for the given WooCommerce [SiteModel].
+     *
+     * but requiring this call to be suspended so the return call be synced within the coroutine job
+     */
+    suspend fun fetchProductsWithSyncRequest(
+        site: SiteModel,
+        remoteProductIds: List<Long>,
+        pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        offset: Int = 0,
+        searchQuery: String? = null
+    ) = buildParametersMap(pageSize, sortType, offset, searchQuery, remoteProductIds)
+            .let {
+                WOOCOMMERCE.products.pathV3
+                        .requestTo(site, it)
+            }?.handleResultFrom(site)
+
+    private suspend fun String.requestTo(
+        site: SiteModel,
+        params: Map<String, String>
+    ) = jetpackTunnelGsonRequestBuilder?.syncGetRequest(
+            this@ProductRestClient,
+            site,
+            this,
+            params,
+            Array<ProductApiResponse>::class.java
+    )
+
+    private fun JetpackResponse<Array<ProductApiResponse>>.handleResultFrom(site: SiteModel) =
+            when (this) {
+                is JetpackSuccess -> {
+                    data
+                            ?.map {
+                                it.asProductModel()
+                                        .apply { localSiteId = site.id }
+                            }
+                            .orEmpty()
+                            .let { WooPayload(it.toList()) }
+                }
+                is JetpackError -> {
+                    WooPayload(error.toWooError())
+                }
+            }
+
+    private fun buildParametersMap(
+        pageSize: Int,
+        sortType: ProductSorting,
+        offset: Int,
+        searchQuery: String?,
+        productIds: List<Long>
+    ): MutableMap<String, String> {
+        return mutableMapOf(
+                "per_page" to pageSize.toString(),
+                "orderby" to sortType.asOrderByParameter(),
+                "order" to sortType.asSortOrderParameter(),
+                "offset" to offset.toString(),
+                "search" to (searchQuery ?: ""),
+                "include" to productIds.map { it }.joinToString()
+        )
+    }
+
+    private fun ProductSorting.asOrderByParameter() = when (this) {
+        TITLE_ASC, TITLE_DESC -> "title"
+        DATE_ASC, DATE_DESC -> "date"
+    }
+
+    private fun ProductSorting.asSortOrderParameter() = when (this) {
+        TITLE_ASC, DATE_ASC -> "asc"
+        TITLE_DESC, DATE_DESC -> "desc"
     }
 
     /**
@@ -456,7 +545,8 @@ class ProductRestClient(
     fun updateProductPassword(site: SiteModel, remoteProductId: Long, password: String) {
         val url = WPCOMREST.sites.site(site.siteId).posts.post(remoteProductId).urlV1_2
         val body = listOfNotNull(
-                "password" to password).toMap()
+                "password" to password
+        ).toMap()
 
         val request = WPComGsonRequest.buildPostRequest(url,
                 body,
@@ -502,7 +592,8 @@ class ProductRestClient(
         val params = mutableMapOf(
                 "per_page" to pageSize.toString(),
                 "offset" to offset.toString(),
-                "order" to "asc")
+                "order" to "asc"
+        )
 
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
                 { response: List<ProductVariationApiResponse>? ->
@@ -555,7 +646,7 @@ class ProductRestClient(
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
                 { response: ProductApiResponse? ->
                     response?.let {
-                        val newModel = productResponseToProductModel(it).apply {
+                        val newModel = it.asProductModel().apply {
                             localSiteId = site.id
                         }
                         val payload = RemoteUpdateProductPayload(site, newModel)
@@ -646,7 +737,7 @@ class ProductRestClient(
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, body, responseType,
                 { response: ProductApiResponse? ->
                     response?.let {
-                        val newModel = productResponseToProductModel(it).apply {
+                        val newModel = it.asProductModel().apply {
                             localSiteId = site.id
                         }
                         val payload = RemoteUpdateProductImagesPayload(site, newModel)
@@ -786,7 +877,8 @@ class ProductRestClient(
         val params = mutableMapOf(
                 "per_page" to WCProductStore.NUM_REVIEWS_PER_FETCH.toString(),
                 "offset" to offset.toString(),
-                "status" to statusFilter)
+                "status" to statusFilter
+        )
         reviewIds?.let { ids ->
             params.put("include", ids.map { it }.joinToString())
         }
@@ -802,7 +894,8 @@ class ProductRestClient(
                         val canLoadMore = reviews.size == WCProductStore.NUM_REVIEWS_PER_FETCH
                         val loadedMore = offset > 0
                         val payload = FetchProductReviewsResponsePayload(
-                                site, reviews, productIds, filterByStatus, loadedMore, canLoadMore)
+                                site, reviews, productIds, filterByStatus, loadedMore, canLoadMore
+                        )
                         dispatcher.dispatch(WCProductActionBuilder.newFetchedProductReviewsAction(payload))
                     }
                 },
@@ -901,6 +994,9 @@ class ProductRestClient(
         }
         if (storedWCProductModel.name != updatedProductModel.name) {
             body["name"] = updatedProductModel.name
+        }
+        if (storedWCProductModel.type != updatedProductModel.type) {
+            body["type"] = updatedProductModel.type
         }
         if (storedWCProductModel.sku != updatedProductModel.sku) {
             body["sku"] = updatedProductModel.sku
@@ -1140,92 +1236,6 @@ class ProductRestClient(
             name = response.name ?: ""
             slug = response.slug ?: ""
             description = response.description ?: ""
-        }
-    }
-
-    private fun productResponseToProductModel(response: ProductApiResponse): WCProductModel {
-        return WCProductModel().apply {
-            remoteProductId = response.id ?: 0
-            name = response.name ?: ""
-            slug = response.slug ?: ""
-            permalink = response.permalink ?: ""
-
-            dateCreated = response.date_created ?: ""
-            dateModified = response.date_modified ?: ""
-
-            dateOnSaleFrom = response.date_on_sale_from ?: ""
-            dateOnSaleTo = response.date_on_sale_to ?: ""
-            dateOnSaleFromGmt = response.date_on_sale_from_gmt ?: ""
-            dateOnSaleToGmt = response.date_on_sale_to_gmt ?: ""
-
-            type = response.type ?: ""
-            status = response.status ?: ""
-            featured = response.featured
-            catalogVisibility = response.catalog_visibility ?: ""
-            description = response.description ?: ""
-            shortDescription = response.short_description ?: ""
-            sku = response.sku ?: ""
-
-            price = response.price ?: ""
-            regularPrice = response.regular_price ?: ""
-            salePrice = response.sale_price ?: ""
-            onSale = response.on_sale
-            totalSales = response.total_sales
-
-            virtual = response.virtual
-            downloadable = response.downloadable
-            downloadLimit = response.download_limit
-            downloadExpiry = response.download_expiry
-
-            externalUrl = response.external_url ?: ""
-            buttonText = response.button_text ?: ""
-
-            taxStatus = response.tax_status ?: ""
-            taxClass = response.tax_class ?: ""
-
-            // variations may have "parent" here if inventory is enabled for the parent but not the variation
-            manageStock = response.manage_stock?.let {
-                it == "true" || it == "parent"
-            } ?: false
-
-            stockQuantity = response.stock_quantity
-            stockStatus = response.stock_status ?: ""
-
-            backorders = response.backorders ?: ""
-            backordersAllowed = response.backorders_allowed
-            backordered = response.backordered
-            soldIndividually = response.sold_individually
-            weight = response.weight ?: ""
-
-            shippingRequired = response.shipping_required
-            shippingTaxable = response.shipping_taxable
-            shippingClass = response.shipping_class ?: ""
-            shippingClassId = response.shipping_class_id
-
-            reviewsAllowed = response.reviews_allowed
-            averageRating = response.average_rating ?: ""
-            ratingCount = response.rating_count
-
-            parentId = response.parent_id
-            menuOrder = response.menu_order
-            purchaseNote = response.purchase_note ?: ""
-
-            categories = response.categories?.toString() ?: ""
-            tags = response.tags?.toString() ?: ""
-            images = response.images?.toString() ?: ""
-            attributes = response.attributes?.toString() ?: ""
-            variations = response.variations?.toString() ?: ""
-            downloads = response.downloads?.toString() ?: ""
-            relatedIds = response.related_ids?.toString() ?: ""
-            crossSellIds = response.cross_sell_ids?.toString() ?: ""
-            upsellIds = response.upsell_ids?.toString() ?: ""
-            groupedProductIds = response.grouped_products?.toString() ?: ""
-
-            response.dimensions?.asJsonObject?.let { json ->
-                length = json.getString("length") ?: ""
-                width = json.getString("width") ?: ""
-                height = json.getString("height") ?: ""
-            }
         }
     }
 

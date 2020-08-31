@@ -10,7 +10,6 @@ import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
@@ -25,6 +24,7 @@ import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
+import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
@@ -62,7 +62,7 @@ class WooShippingLabelFragment : Fragment() {
                 override fun onSiteSelected(site: SiteModel, pos: Int) {
                     selectedSite = site
                     selectedPos = pos
-                    toggleSiteDependentButtons(true)
+                    buttonContainer.toggleSiteDependentButtons(true)
                     shipping_labels_selected_site.text = site.name ?: site.displayName
                 }
             })
@@ -184,15 +184,6 @@ class WooShippingLabelFragment : Fragment() {
         fragmentManager?.let { fm ->
             val dialog = StoreSelectorDialog.newInstance(listener, selectedPos)
             dialog.show(fm, "StoreSelectorDialog")
-        }
-    }
-
-    private fun toggleSiteDependentButtons(enabled: Boolean) {
-        for (i in 0 until buttonContainer.childCount) {
-            val child = buttonContainer.getChildAt(i)
-            if (child is Button) {
-                child.isEnabled = enabled
-            }
         }
     }
 
