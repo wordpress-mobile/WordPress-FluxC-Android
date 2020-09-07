@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooCommerceRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.gateways.GatewayRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.leaderboards.LeaderboardsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.order.OrderRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.ProductRestClient
@@ -49,8 +50,9 @@ class ReleaseWCNetworkModule {
         dispatcher: Dispatcher,
         @Named("regular") requestQueue: RequestQueue,
         token: AccessToken,
-        userAgent: UserAgent
-    ) = ProductRestClient(appContext, dispatcher, requestQueue, token, userAgent)
+        userAgent: UserAgent,
+        requestBuilder: JetpackTunnelGsonRequestBuilder
+    ) = ProductRestClient(appContext, dispatcher, requestQueue, token, userAgent, requestBuilder)
 
     @Singleton
     @Provides
@@ -105,6 +107,17 @@ class ReleaseWCNetworkModule {
         token: AccessToken,
         userAgent: UserAgent
     ) = ShippingLabelRestClient(dispatcher, requestBuilder, appContext, requestQueue, token, userAgent)
+
+    @Singleton
+    @Provides
+    fun provideLeaderboardsRestClient(
+        appContext: Context,
+        dispatcher: Dispatcher,
+        @Named("regular") requestQueue: RequestQueue,
+        accessToken: AccessToken,
+        userAgent: UserAgent,
+        requestBuilder: JetpackTunnelGsonRequestBuilder
+    ) = LeaderboardsRestClient(appContext, dispatcher, requestQueue, accessToken, userAgent, requestBuilder)
 
     @Singleton
     @Provides

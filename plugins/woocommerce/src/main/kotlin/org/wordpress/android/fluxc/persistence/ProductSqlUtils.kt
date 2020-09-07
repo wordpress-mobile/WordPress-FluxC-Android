@@ -99,7 +99,8 @@ object ProductSqlUtils {
     fun getProductsByFilterOptions(
         site: SiteModel,
         filterOptions: Map<ProductFilterOption, String>,
-        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        excludedProductIds: List<Long>? = null
     ): List<WCProductModel> {
         val queryBuilder = WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
@@ -113,6 +114,10 @@ object ProductSqlUtils {
         }
         if (filterOptions.containsKey(ProductFilterOption.TYPE)) {
             queryBuilder.equals(WCProductModelTable.TYPE, filterOptions[ProductFilterOption.TYPE])
+        }
+
+        excludedProductIds?.let {
+            queryBuilder.isNotIn(WCProductModelTable.REMOTE_PRODUCT_ID, excludedProductIds)
         }
 
         val sortOrder = when (sortType) {
