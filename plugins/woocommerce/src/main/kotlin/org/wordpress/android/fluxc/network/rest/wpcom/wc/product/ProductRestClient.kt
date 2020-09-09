@@ -51,6 +51,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.DATE_DESC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_ASC
 import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DESC
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
@@ -969,6 +970,52 @@ class ProductRestClient(
                     val payload = RemoteProductReviewPayload(productReviewError, site)
                     dispatcher.dispatch(WCProductActionBuilder.newUpdatedProductReviewStatusAction(payload))
                 })
+        add(request)
+    }
+
+    /**
+     * Makes a POST request to `/wp-json/wc/v3/products` to add a product
+     *
+     * Dispatches a [WCProductAction.ADDED_PRODUCT] action with the result
+     *
+     * @param [site] The site to fetch product reviews for
+     * @param [newModel] the new product model
+     */
+    fun addProduct(
+        site: SiteModel,
+        productModel: WCProductModel
+    ) {
+        val url = WOOCOMMERCE.products.pathV3
+        val responseType = object : TypeToken<ProductApiResponse>() {}.type
+        val params = productModelToProductJsonBody(null, productModel)
+
+        val request = JetpackTunnelGsonRequest.buildPostRequest(
+                wpApiEndpoint = url,
+                siteId = site.siteId,
+                body = params,
+                type = responseType,
+                listener = { response: ProductApiResponse? ->
+                    // success
+                    response?.let { product ->
+                        val newModel = product.asProductModel().apply {
+                            id = product.id?.toInt() ?: 0
+                            localSiteId = site.id
+                        }
+                        val payload = RemoteAddProductPayload(site, newModel)
+                        dispatcher.dispatch(WCProductActionBuilder.newAddedProductAction(payload))
+                    }
+                },
+                errorListener = WPComErrorListener { networkError ->
+                    // error
+                    val productError = networkErrorToProductError(networkError)
+                    val payload = RemoteAddProductPayload(
+                            productError,
+                            site,
+                            WCProductModel()
+                    )
+                    dispatcher.dispatch(WCProductActionBuilder.newAddedProductAction(payload))
+                }
+        )
         add(request)
     }
 
