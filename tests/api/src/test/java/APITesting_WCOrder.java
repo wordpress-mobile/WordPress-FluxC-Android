@@ -41,7 +41,7 @@ public class APITesting_WCOrder {
     public void canGetAllOrders() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/orders&per_page=50&offset=0&_fields=" + mOrderFields).
+            queryParam("path", "/wc/v3/orders&per_page=50&offset=0&_fields=" + mOrderFields).
         when().
             get().
         then().
@@ -53,7 +53,7 @@ public class APITesting_WCOrder {
     public void canGetOrderListSummary() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/orders&per_page=50&offset=0&status=failed&_fields=id,"
+            queryParam("path", "/wc/v3/orders&per_page=50&offset=0&status=failed&_fields=id,"
                 + "date_created_gmt,date_modified_gmt").
         when().
             get().
@@ -66,7 +66,7 @@ public class APITesting_WCOrder {
     public void canGetOrdersByID() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/orders&per_page=50&include=625,628,618").
+            queryParam("path", "/wc/v3/orders&per_page=50&include=625,628,618").
         when().
             get().
         then().
@@ -93,7 +93,7 @@ public class APITesting_WCOrder {
     public void canSearchOrders() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/orders&per_page=50&offset=0&status=failed&search=belt&_fields=" + mOrderFields).
+            queryParam("path", "/wc/v3/orders&per_page=50&offset=0&status=failed&search=belt&_fields=" + mOrderFields).
         when().
             get().
         then().
@@ -107,7 +107,7 @@ public class APITesting_WCOrder {
     public void canGetSingleOrder() {
         given().
             spec(this.mRequestSpec).
-                queryParam("path", "/wc/v4/orders/609&_fields=" + mOrderFields).
+                queryParam("path", "/wc/v3/orders/609&_fields=" + mOrderFields).
         when().
             get().
         then().
@@ -133,7 +133,7 @@ public class APITesting_WCOrder {
     public void canGetHasOrders() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/orders&per_page=1&offset=0&status=processing").
+            queryParam("path", "/wc/v3/orders&per_page=1&offset=0&status=processing").
         when().
             get().
         then().
@@ -145,7 +145,7 @@ public class APITesting_WCOrder {
 
     @Test
     public void canUpdateOrderStatus() {
-        String path = "/wc/v4/orders/607/";
+        String path = "/wc/v3/orders/607/";
         String method = "put";
 
         JSONObject jsonBody = new JSONObject();
@@ -200,7 +200,7 @@ public class APITesting_WCOrder {
     public void canGetOrderNotes() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/orders/591/notes").
+            queryParam("path", "/wc/v3/orders/591/notes").
         when().
             get().
         then().
@@ -212,7 +212,7 @@ public class APITesting_WCOrder {
 
     @Test
     public void canAddOrderNote() {
-        String path = "/wc/v4/orders/565/notes";
+        String path = "/wc/v3/orders/565/notes";
         String method = "post";
 
         JSONObject jsonBody = new JSONObject();
