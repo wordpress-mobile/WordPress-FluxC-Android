@@ -156,16 +156,20 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     class FetchOrderNotesPayload(
-        var order: WCOrderModel,
+        var localOrderId: Int,
+        var remoteOrderId: Long,
         var site: SiteModel
     ) : Payload<BaseNetworkError>()
 
     class FetchOrderNotesResponsePayload(
-        var order: WCOrderModel,
+        var localOrderId: Int,
+        var remoteOrderId: Long,
         var site: SiteModel,
         var notes: List<WCOrderNoteModel> = emptyList()
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(order, site) { this.error = error }
+        constructor(error: OrderError, site: SiteModel, localOrderId: Int, remoteOrderId: Long) : this(
+                localOrderId, remoteOrderId, site
+        ) { this.error = error }
     }
 
     class PostOrderNotePayload(
@@ -336,8 +340,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     /**
      * Returns the notes belonging to supplied [WCOrderModel] as a list of [WCOrderNoteModel].
      */
-    fun getOrderNotesForOrder(order: WCOrderModel): List<WCOrderNoteModel> =
-            OrderSqlUtils.getOrderNotesForOrder(order.id)
+    fun getOrderNotesForOrder(orderId: Int): List<WCOrderNoteModel> =
+            OrderSqlUtils.getOrderNotesForOrder(orderId)
 
     /**
      * Returns the order status options available for the provided site [SiteModel] as a list of [WCOrderStatusModel].
@@ -464,7 +468,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun fetchOrderNotes(payload: FetchOrderNotesPayload) {
-        wcOrderRestClient.fetchOrderNotes(payload.order, payload.site)
+        with(payload) { wcOrderRestClient.fetchOrderNotes(localOrderId, remoteOrderId, site) }
     }
 
     private fun postOrderNote(payload: PostOrderNotePayload) {

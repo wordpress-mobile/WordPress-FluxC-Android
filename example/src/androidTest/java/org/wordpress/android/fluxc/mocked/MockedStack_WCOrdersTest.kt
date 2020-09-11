@@ -268,11 +268,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     fun testOrderNotesFetchSuccess() {
         interceptor.respondWith("wc-order-notes-response-success.json")
         orderRestClient.fetchOrderNotes(
-                WCOrderModel().apply {
-                    localSiteId = 5
-                    id = 8
-                    remoteOrderId = 88
-                }, siteModel
+                localOrderId = 8,
+                remoteOrderId = 88,
+                site = siteModel
         )
 
         countDownLatch = CountDownLatch(1)
@@ -316,11 +314,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     fun testOrderNotesFetchError() {
         interceptor.respondWithError("wc-order-notes-response-failure-invalid-id.json", 404)
         orderRestClient.fetchOrderNotes(
-                WCOrderModel().apply {
-                    localSiteId = 5
-                    id = 8
-                    remoteOrderId = 88
-                }, siteModel
+                localOrderId = 8,
+                remoteOrderId = 88,
+                site = siteModel
         )
 
         countDownLatch = CountDownLatch(1)

@@ -198,7 +198,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
             getFirstWCSite()?.let { site ->
                 getFirstWCOrder()?.let { order ->
                     pendingNotesOrderModel = order
-                    val payload = FetchOrderNotesPayload(order, site)
+                    val payload = FetchOrderNotesPayload(order.id, order.remoteOrderId, site)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderNotesAction(payload))
                 }
             }
@@ -407,7 +407,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                         prependToLog("Store has orders: $hasOrders")
                     }
                     FETCH_ORDER_NOTES -> {
-                        val notes = wcOrderStore.getOrderNotesForOrder(pendingNotesOrderModel!!)
+                        val notes = wcOrderStore.getOrderNotesForOrder(pendingNotesOrderModel?.id!!)
                         prependToLog(
                                 "Fetched ${notes.size} order notes for order " +
                                         "${pendingNotesOrderModel!!.remoteOrderId}. ${event.rowsAffected} " +

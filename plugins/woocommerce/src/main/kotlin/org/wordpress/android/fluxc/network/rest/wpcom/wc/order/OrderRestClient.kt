@@ -406,8 +406,12 @@ class OrderRestClient(
      *
      * Dispatches a [WCOrderAction.FETCHED_ORDER_NOTES] action with the resulting list of order notes.
      */
-    fun fetchOrderNotes(order: WCOrderModel, site: SiteModel) {
-        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).notes.pathV3
+    fun fetchOrderNotes(
+        localOrderId: Int,
+        remoteOrderId: Long,
+        site: SiteModel
+    ) {
+        val url = WOOCOMMERCE.orders.id(remoteOrderId).notes.pathV3
         val responseType = object : TypeToken<List<OrderNoteApiResponse>>() {}.type
         val params = emptyMap<String, String>()
         val request = JetpackTunnelGsonRequest.buildGetRequest(url, site.siteId, params, responseType,
@@ -415,15 +419,15 @@ class OrderRestClient(
                     val noteModels = response?.map {
                         orderNoteResponseToOrderNoteModel(it).apply {
                             localSiteId = site.id
-                            localOrderId = order.id
+                            this.localOrderId = localOrderId
                         }
                     }.orEmpty()
-                    val payload = FetchOrderNotesResponsePayload(order, site, noteModels)
+                    val payload = FetchOrderNotesResponsePayload(localOrderId, remoteOrderId, site, noteModels)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderNotesAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
-                    val payload = FetchOrderNotesResponsePayload(orderError, site, order)
+                    val payload = FetchOrderNotesResponsePayload(orderError, site, localOrderId, remoteOrderId)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderNotesAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })
