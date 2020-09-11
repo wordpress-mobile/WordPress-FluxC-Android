@@ -224,7 +224,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                 wcOrderStore.getOrdersForSite(site).firstOrNull()?.let { order ->
                     showSingleLineDialog(activity, "Enter new order status") { editText ->
                         val status = editText.text.toString()
-                        val payload = UpdateOrderStatusPayload(order, site, status)
+                        val payload = UpdateOrderStatusPayload(order.id, order.remoteOrderId, site, status)
                         dispatcher.dispatch(WCOrderActionBuilder.newUpdateOrderStatusAction(payload))
                     }
                 } ?: showNoOrdersToast(site)

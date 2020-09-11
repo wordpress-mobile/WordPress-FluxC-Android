@@ -378,14 +378,19 @@ class OrderRestClient(
      * [OrderErrorType.INVALID_PARAM] if the [status] is not a valid order status on the server
      * [OrderErrorType.INVALID_ID] if an order by this id was not found on the server
      */
-    fun updateOrderStatus(order: WCOrderModel, site: SiteModel, status: String) {
-        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).pathV3
+    fun updateOrderStatus(
+        localOrderId: Int,
+        remoteOrderId: Long,
+        site: SiteModel,
+        status: String
+    ) {
+        val url = WOOCOMMERCE.orders.id(remoteOrderId).pathV3
         val params = mapOf("status" to status)
         val request = JetpackTunnelGsonRequest.buildPutRequest(url, site.siteId, params, OrderApiResponse::class.java,
                 { response: OrderApiResponse? ->
                     response?.let {
                         val newModel = orderResponseToOrderModel(it).apply {
-                            id = order.id
+                            id = localOrderId
                             localSiteId = site.id
                         }
                         val payload = RemoteOrderPayload(newModel, site)
@@ -394,7 +399,14 @@ class OrderRestClient(
                 },
                 WPComErrorListener { networkError ->
                     val orderError = networkErrorToOrderError(networkError)
-                    val payload = RemoteOrderPayload(orderError, order, site)
+                    val payload = RemoteOrderPayload(
+                            orderError,
+                            WCOrderModel().apply {
+                                this.id = localOrderId
+                                this.remoteOrderId = remoteOrderId
+                            },
+                            site
+                    )
                     dispatcher.dispatch(WCOrderActionBuilder.newUpdatedOrderStatusAction(payload))
                 })
         add(request)
