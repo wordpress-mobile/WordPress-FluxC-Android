@@ -237,31 +237,21 @@ class WooUpdateProductFragment : Fragment() {
 
         product_update.setOnClickListener {
             getWCSite()?.let { site ->
+                // update categories only if new categories has been selected
+                selectedCategories?.let {
+                    selectedProductModel?.categories =
+                            it.map { it.toProductTriplet().toJson() }.toString()
+                }
+
+                selectedTags?.let {
+                    selectedProductModel?.tags =
+                            it.map { it.toProductTriplet().toJson() }.toString()
+                }
+
                 if (isAddNewProduct) {
-                    selectedCategories?.let {
-                        selectedProductModel?.categories =
-                                it.map { it.toProductTriplet().toJson() }.toString()
-                    }
-
-                    selectedTags?.let {
-                        selectedProductModel?.tags =
-                                it.map { it.toProductTriplet().toJson() }.toString()
-                    }
-
                     val payload = AddProductPayload(site, selectedProductModel!!)
                     dispatcher.dispatch(WCProductActionBuilder.newAddProductAction(payload))
                 } else if (selectedProductModel?.remoteProductId != null) {
-                    // update categories only if new categories has been selected
-                    selectedCategories?.let {
-                        selectedProductModel?.categories =
-                                it.map { it.toProductTriplet().toJson() }.toString()
-                    }
-
-                    selectedTags?.let {
-                        selectedProductModel?.tags =
-                                it.map { it.toProductTriplet().toJson() }.toString()
-                    }
-
                     val payload = UpdateProductPayload(site, selectedProductModel!!)
                     dispatcher.dispatch(WCProductActionBuilder.newUpdateProductAction(payload))
                     val updatedPassword = product_password.getText()
