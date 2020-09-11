@@ -76,10 +76,12 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
             localSiteId = sSite.id
         }
         mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentTrackingsAction(
-                FetchOrderShipmentTrackingsPayload(sSite, orderModel)))
+                FetchOrderShipmentTrackingsPayload(orderModel.id, orderModel.remoteOrderId, sSite)))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        val trackings = orderStore.getShipmentTrackingsForOrder(orderModel)
+        val trackings = orderStore.getShipmentTrackingsForOrder(
+                sSite, orderModel.id
+        )
         assertTrue(trackings.isNotEmpty())
     }
 
@@ -100,10 +102,12 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
             localSiteId = sSite.id
         }
         mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentTrackingsAction(
-                FetchOrderShipmentTrackingsPayload(sSite, orderModel)))
+                FetchOrderShipmentTrackingsPayload(orderModel.id, orderModel.remoteOrderId, sSite)))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        val trackings = orderStore.getShipmentTrackingsForOrder(orderModel)
+        val trackings = orderStore.getShipmentTrackingsForOrder(
+                sSite, orderModel.id
+        )
         assertTrue(trackings.isEmpty())
     }
 
@@ -140,7 +144,9 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
                 AddOrderShipmentTrackingPayload(sSite, orderModel, trackingModel, isCustomProvider = false)))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        var trackings = orderStore.getShipmentTrackingsForOrder(orderModel)
+        var trackings = orderStore.getShipmentTrackingsForOrder(
+                sSite, orderModel.id
+        )
         assertTrue(trackings.isNotEmpty())
 
         var trackingResult: WCOrderShipmentTrackingModel? = null
@@ -169,7 +175,7 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
 
         // Verify the tracking record is no longer in the database
         var currentCount = trackings.size
-        trackings = orderStore.getShipmentTrackingsForOrder(orderModel)
+        trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.id)
         assertTrue(trackings.size == --currentCount)
     }
 
@@ -208,7 +214,9 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
                 AddOrderShipmentTrackingPayload(sSite, orderModel, trackingModel, isCustomProvider = true)))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        var trackings = orderStore.getShipmentTrackingsForOrder(orderModel)
+        var trackings = orderStore.getShipmentTrackingsForOrder(
+                sSite, orderModel.id
+        )
         assertTrue(trackings.isNotEmpty())
 
         var trackingResult: WCOrderShipmentTrackingModel? = null
@@ -238,7 +246,7 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
 
         // Verify the tracking record is no longer in the database
         var currentCount = trackings.size
-        trackings = orderStore.getShipmentTrackingsForOrder(orderModel)
+        trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.id)
         assertTrue(trackings.size == --currentCount)
     }
 

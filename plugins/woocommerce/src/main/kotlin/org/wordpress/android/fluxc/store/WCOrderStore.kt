@@ -197,16 +197,18 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     class FetchOrderShipmentTrackingsPayload(
-        val site: SiteModel,
-        val order: WCOrderModel
+        var localOrderId: Int,
+        var remoteOrderId: Long,
+        val site: SiteModel
     ) : Payload<BaseNetworkError>()
 
     class FetchOrderShipmentTrackingsResponsePayload(
         var site: SiteModel,
-        var order: WCOrderModel,
+        var localOrderId: Int,
         var trackings: List<WCOrderShipmentTrackingModel> = emptyList()
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, site: SiteModel, order: WCOrderModel) : this(site, order) { this.error = error }
+        constructor(error: OrderError, site: SiteModel, localOrderId: Int) :
+                this(site, localOrderId) { this.error = error }
     }
 
     class AddOrderShipmentTrackingPayload(
@@ -358,8 +360,8 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     /**
      * Returns shipment trackings as list of [WCOrderShipmentTrackingModel] for a single [WCOrderModel]
      */
-    fun getShipmentTrackingsForOrder(order: WCOrderModel): List<WCOrderShipmentTrackingModel> =
-            OrderSqlUtils.getShipmentTrackingsForOrder(order)
+    fun getShipmentTrackingsForOrder(site: SiteModel, localOrderId: Int): List<WCOrderShipmentTrackingModel> =
+            OrderSqlUtils.getShipmentTrackingsForOrder(site, localOrderId)
 
     /**
      * Returns the shipment providers as a list of [WCOrderShipmentProviderModel]
@@ -480,7 +482,9 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun fetchOrderShipmentTrackings(payload: FetchOrderShipmentTrackingsPayload) {
-        wcOrderRestClient.fetchOrderShipmentTrackings(payload.site, payload.order)
+        with(payload) {
+            wcOrderRestClient.fetchOrderShipmentTrackings(site, localOrderId, remoteOrderId)
+        }
     }
 
     private fun addOrderShipmentTracking(payload: AddOrderShipmentTrackingPayload) {
@@ -719,7 +723,10 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
             onOrderChanged = OnOrderChanged(0).also { it.error = payload.error }
         } else {
             // Calculate which existing records should be deleted because they no longer exist in the payload
-            val existingTrackings = OrderSqlUtils.getShipmentTrackingsForOrder(payload.order)
+            val existingTrackings = OrderSqlUtils.getShipmentTrackingsForOrder(
+                    payload.site,
+                    payload.localOrderId
+            )
             val deleteTrackings = mutableListOf<WCOrderShipmentTrackingModel>()
             existingTrackings.iterator().forEach { existing ->
                 var exists = false

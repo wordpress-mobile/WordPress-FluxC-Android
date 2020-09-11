@@ -476,8 +476,12 @@ class OrderRestClient(
      *
      * Dispatches a [WCOrderAction.FETCHED_ORDER_SHIPMENT_TRACKINGS] action with the results
      */
-    fun fetchOrderShipmentTrackings(site: SiteModel, order: WCOrderModel) {
-        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).shipment_trackings.pathV2
+    fun fetchOrderShipmentTrackings(
+        site: SiteModel,
+        localOrderId: Int,
+        remoteOrderId: Long
+    ) {
+        val url = WOOCOMMERCE.orders.id(remoteOrderId).shipment_trackings.pathV2
 
         val responseType = object : TypeToken<List<OrderShipmentTrackingApiResponse>>() {}.type
         val params = mapOf(
@@ -487,16 +491,16 @@ class OrderRestClient(
                     val trackings = response?.map {
                         orderShipmentTrackingResponseToModel(it).apply {
                             localSiteId = site.id
-                            localOrderId = order.id
+                            this.localOrderId = localOrderId
                         }
                     }.orEmpty()
 
-                    val payload = FetchOrderShipmentTrackingsResponsePayload(site, order, trackings)
+                    val payload = FetchOrderShipmentTrackingsResponsePayload(site, localOrderId, trackings)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentTrackingsAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val trackingsError = networkErrorToOrderError(networkError)
-                    val payload = FetchOrderShipmentTrackingsResponsePayload(trackingsError, site, order)
+                    val payload = FetchOrderShipmentTrackingsResponsePayload(trackingsError, site, localOrderId)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchedOrderShipmentTrackingsAction(payload))
                 },
                 { request: WPComGsonRequest<*> -> add(request) })

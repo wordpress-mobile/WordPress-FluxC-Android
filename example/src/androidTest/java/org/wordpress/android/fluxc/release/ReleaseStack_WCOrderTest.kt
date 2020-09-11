@@ -254,10 +254,10 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
 
         mDispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentTrackingsAction(
-                FetchOrderShipmentTrackingsPayload(sSite, orderModel)))
+                FetchOrderShipmentTrackingsPayload(orderModel.id, orderModel.remoteOrderId, sSite)))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
-        val trackings = orderStore.getShipmentTrackingsForOrder(orderModel)
+        val trackings = orderStore.getShipmentTrackingsForOrder(sSite, orderModel.id)
         assertTrue(trackings.isEmpty())
     }
 

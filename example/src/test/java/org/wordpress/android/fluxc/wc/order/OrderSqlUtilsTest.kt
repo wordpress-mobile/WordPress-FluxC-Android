@@ -299,7 +299,7 @@ class OrderSqlUtilsTest {
         assertEquals(1, rowsAffected)
 
         // Get all shipment trackings for a single order
-        val trackingsForOrder = OrderSqlUtils.getShipmentTrackingsForOrder(orderModel)
+        val trackingsForOrder = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderModel.id)
         assertEquals(3, trackingsForOrder.size)
     }
 
@@ -322,7 +322,7 @@ class OrderSqlUtilsTest {
         assertEquals(2, rowsAffected)
 
         // Verify no shipment trackings in db
-        val trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(orderModel)
+        val trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderModel.id)
         assertEquals(0, trackingsInDb.size)
     }
 
@@ -341,12 +341,12 @@ class OrderSqlUtilsTest {
         assertEquals(2, rowsAffected)
 
         // Delete the first shipment tracking
-        var trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(orderModel)
-        rowsAffected = OrderSqlUtils.deleteOrderShipmentTrackingById(trackingsInDb.get(0))
+        var trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderModel.id)
+        rowsAffected = OrderSqlUtils.deleteOrderShipmentTrackingById(trackingsInDb[0])
         assertEquals(1, rowsAffected)
 
         // Verify only a single shipment tracking row in db
-        trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(orderModel)
+        trackingsInDb = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderModel.id)
         assertEquals(1, trackingsInDb.size)
     }
 

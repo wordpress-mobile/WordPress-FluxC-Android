@@ -427,7 +427,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     fun testOrderShipmentTrackingsFetchSuccess() {
         val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
         interceptor.respondWith("wc-order-shipment-trackings-success.json")
-        orderRestClient.fetchOrderShipmentTrackings(siteModel, orderModel)
+        orderRestClient.fetchOrderShipmentTrackings(siteModel, orderModel.id, orderModel.remoteOrderId)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
