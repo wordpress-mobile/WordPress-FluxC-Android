@@ -37,7 +37,7 @@ public class APITesting_WCRefund {
     public void canGetAllRefunds() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/orders/161/refunds").
+            queryParam("path", "/wc/v3/orders/161/refunds").
         when().
             get().
         then().
@@ -51,7 +51,7 @@ public class APITesting_WCRefund {
     public void canGetSingleRefund() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/orders/161/refunds/638").
+            queryParam("path", "/wc/v3/orders/161/refunds/638").
         when().
             get().
         then().

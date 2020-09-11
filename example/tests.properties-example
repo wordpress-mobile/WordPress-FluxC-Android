@@ -14,9 +14,6 @@ TEST_WPCOM_PASSWORD_2FA = FIXME
 # WP.com - passwordless user
 TEST_WPCOM_EMAIL_PASSWORDLESS = FIXME
 
-# WP.com - unverified user
-TEST_WPCOM_EMAIL_UNVERIFIED = FIXME
-
 ## Self-hosted
 
 # Simple Self hosted (no Jetpack)

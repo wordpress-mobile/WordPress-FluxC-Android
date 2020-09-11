@@ -1,6 +1,8 @@
 package org.wordpress.android.fluxc.mocked
 
 import android.os.Bundle
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.junit.Assert
@@ -80,6 +82,58 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
         assertEmpty(themeBundle)
     }
 
+    @Test
+    fun testFetchEditorThemeInvalidFormat() {
+        interceptor.respondWith(JsonObject())
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Validate Callback
+        assertEmpty(editorTheme)
+
+        // Validate Cache
+        val cachedTheme = editorThemeStore.getEditorThemeForSite(site)
+        assertEmpty(cachedTheme)
+    }
+
+    @Test
+    fun testFetchEditorThemeEmptyResultFormat() {
+        interceptor.respondWith(JsonArray())
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Validate Callback
+        assertEmpty(editorTheme)
+
+        // Validate Cache
+        val cachedTheme = editorThemeStore.getEditorThemeForSite(site)
+        assertEmpty(cachedTheme)
+    }
+
+    @Test
+    fun testInvalidFetchEditorThemeSuccess() {
+        interceptor.respondWith("editor-theme-invalid-response.json")
+        dispatcher.dispatch(EditorThemeActionBuilder.newFetchEditorThemeAction(payload))
+
+        // See onEditorThemeChanged for the latch's countdown to fire.
+        Assert.assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
+
+        // Validate Callback
+        assertEmpty(editorTheme)
+
+        // Validate Cache
+        val cachedTheme = editorThemeStore.getEditorThemeForSite(site)
+        assertEmpty(cachedTheme)
+
+        // Validate Bundle
+        val themeBundle = editorTheme!!.themeSupport.toBundle()
+        assertEmpty(themeBundle)
+    }
+
     private fun assertNotEmpty(theme: EditorTheme?) {
         Assert.assertFalse(theme?.themeSupport?.colors.isNullOrEmpty())
         Assert.assertFalse(theme?.themeSupport?.gradients.isNullOrEmpty())
@@ -108,7 +162,7 @@ class MockedStack_EditorThemeStoreTest : MockedStack_Base() {
     @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
     fun onEditorThemeChanged(event: OnEditorThemeChanged) {
         if (event.isError) {
-            throw AssertionError("Unexpected error occurred with type: " + event.error.message)
+            countDownLatch.countDown()
         }
 
         editorTheme = event.editorTheme

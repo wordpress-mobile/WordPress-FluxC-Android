@@ -10,7 +10,7 @@ commands:
     steps:
       - run:
           name: Setup gradle.properties
-          command: cp example/gradle.properties-example example/gradle.properties
+          command: cp example/gradle.properties-example example/gradle.properties && cp gradle.properties-example gradle.properties
   decrypt-file:
     parameters:
       input:
@@ -43,9 +43,8 @@ commands:
 
 jobs:
   Lint:
-    executor: 
-      name: android/default
-      api-version: "27"
+    docker:
+      - image: circleci/android@sha256:061e2535826cc3fe4c4a440e716bf06c36c80401ee635c339c6803b3e427ebb3
     steps:
       - checkout
       - android/restore-gradle-cache
@@ -61,9 +60,8 @@ jobs:
       - android/save-gradle-cache
       - android/save-lint-results
   Unit Tests:
-    executor: 
-      name: android/default
-      api-version: "27"
+    docker:
+      - image: circleci/android@sha256:061e2535826cc3fe4c4a440e716bf06c36c80401ee635c339c6803b3e427ebb3
     steps:
       - checkout
       - android/restore-gradle-cache
@@ -87,13 +85,13 @@ jobs:
         type: boolean
       device:
         type: string
-    executor: 
-      name: android/default
-      api-version: "27"
+    docker:
+      - image: circleci/android@sha256:061e2535826cc3fe4c4a440e716bf06c36c80401ee635c339c6803b3e427ebb3
     steps:
       - checkout
       - android/restore-gradle-cache:
           cache-prefix: connected-tests
+      - copy-gradle-properties
       - decrypt-properties-files
       - run:
           name: Build
@@ -137,9 +135,8 @@ jobs:
                 success_message: '${SLACK_SUCCESS_MESSAGE}'
                 webhook: '${SLACK_STATUS_WEBHOOK}'
   WooCommerce API Tests:
-    executor: 
-      name: android/default
-      api-version: "27"
+    docker:
+      - image: circleci/android@sha256:061e2535826cc3fe4c4a440e716bf06c36c80401ee635c339c6803b3e427ebb3
     steps:
       - checkout
       - android/restore-gradle-cache

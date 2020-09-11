@@ -64,7 +64,6 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
         FETCH_DOMAIN_CONTACT,
         FETCH_AUTH_OPTIONS_USER_WITH_PASSWORD,
         FETCH_AUTH_OPTIONS_PASSWORDLESS_USER,
-        FETCH_AUTH_OPTIONS_UNVERIFIED_EMAIL,
         FETCH_AUTH_OPTIONS_ERROR_UNKNOWN_USER,
     }
 
@@ -424,15 +423,6 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
     }
 
     @Test
-    public void testFetchAuthOptionsForUserWithUnverifiedEmail() throws InterruptedException {
-        mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_UNVERIFIED_EMAIL;
-        mCountDownLatch = new CountDownLatch(1);
-        FetchAuthOptionsPayload payload = new FetchAuthOptionsPayload(BuildConfig.TEST_WPCOM_EMAIL_UNVERIFIED);
-        mDispatcher.dispatch(AccountActionBuilder.newFetchAuthOptionsAction(payload));
-        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
-    }
-
-    @Test
     public void testFetchAuthOptionsForUnknownUser() throws InterruptedException {
         String unknownEmail = "marty" + RandomStringUtils.randomAlphanumeric(8).toLowerCase() + "@themacflys.com";
         mNextEvent = TestEvents.FETCH_AUTH_OPTIONS_ERROR_UNKNOWN_USER;
@@ -593,6 +583,8 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
                     assertEquals(mNextEvent, TestEvents.FETCH_AUTH_OPTIONS_ERROR_UNKNOWN_USER);
                     mCountDownLatch.countDown();
                     break;
+                case EMAIL_LOGIN_NOT_ALLOWED:
+                    // We handle this error in the mocked stack.
                 default:
                     throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
             }
@@ -605,8 +597,10 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
                     assertEquals(mNextEvent, TestEvents.FETCH_AUTH_OPTIONS_USER_WITH_PASSWORD);
                     mCountDownLatch.countDown();
                 } else {
-                    assertEquals(mNextEvent, TestEvents.FETCH_AUTH_OPTIONS_UNVERIFIED_EMAIL);
-                    mCountDownLatch.countDown();
+                    // We test for unverified emails in the mocked stack, otherwise we might run into a security issue
+                    // where the API returns an EMAIL_LOGIN_NOT_ALLOWED error asking for an username to be provided
+                    // instead of an email.
+                    throw new AssertionError("Unexpected unverified email in the release stack");
                 }
             }
         }
@@ -624,6 +618,7 @@ public class ReleaseStack_AccountTest extends ReleaseStack_Base {
             authenticate(BuildConfig.TEST_WPCOM_USERNAME_TEST1, BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
         }
     }
+
     private void authenticate(String username, String password) throws InterruptedException {
         AuthenticatePayload payload = new AuthenticatePayload(username, password);
         mCountDownLatch = new CountDownLatch(1);

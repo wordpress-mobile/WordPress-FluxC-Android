@@ -346,6 +346,53 @@ class ProductSqlUtilsTest {
     }
 
     @Test
+    fun testGetProductsForSiteWithExcludedProductIds() {
+        val excludedProductIds = listOf(40L)
+
+        val product1 = ProductTestUtils.generateSampleProduct(40)
+        val product2 = ProductTestUtils.generateSampleProduct(41)
+        val product3 = ProductTestUtils.generateSampleProduct(42)
+
+        ProductSqlUtils.insertOrUpdateProduct(product1)
+        ProductSqlUtils.insertOrUpdateProduct(product2)
+        ProductSqlUtils.insertOrUpdateProduct(product3)
+
+        val site = SiteModel().apply { id = product1.localSiteId }
+        val products = ProductSqlUtils.getProductsByFilterOptions(
+                site, filterOptions = emptyMap(), excludedProductIds = excludedProductIds
+        )
+        assertEquals(2, products.size)
+        assertEquals(41, products.first().remoteProductId)
+        assertEquals(42, products.last().remoteProductId)
+
+        // insert products with the same productId but for a different site
+        val differentSiteProduct1 = ProductTestUtils.generateSampleProduct(40, siteId = 10)
+        val differentSiteProduct2 = ProductTestUtils.generateSampleProduct(
+                41, siteId = 10
+        )
+        val differentSiteProduct3 = ProductTestUtils.generateSampleProduct(
+                42, siteId = 10
+        )
+
+        ProductSqlUtils.insertOrUpdateProduct(differentSiteProduct1)
+        ProductSqlUtils.insertOrUpdateProduct(differentSiteProduct2)
+        ProductSqlUtils.insertOrUpdateProduct(differentSiteProduct3)
+
+        // verify that the products for the first site is still 2
+        assertEquals(2, ProductSqlUtils.getProductsByFilterOptions(
+                site, emptyMap(), excludedProductIds = excludedProductIds
+        ).size)
+
+        // verify that the products for the second site is also 2
+        val site2 = SiteModel().apply { id = differentSiteProduct1.localSiteId }
+        val differentSiteProducts = ProductSqlUtils.getProductsByFilterOptions(
+                site2, emptyMap(), excludedProductIds = listOf(40, 41)
+        )
+        assertEquals(1, differentSiteProducts.size)
+        assertEquals(42, differentSiteProducts.first().remoteProductId)
+    }
+
+    @Test
     fun testInsertOrUpdateProductReview() {
         val review = getProductReviews(site.id)[0]
         assertNotNull(review)
@@ -634,6 +681,57 @@ class ProductSqlUtilsTest {
         val nonExistingSite = SiteModel().apply { id = 400 }
         val savedTagList = ProductSqlUtils.getProductTagsForSite(nonExistingSite.id)
         assertEquals(0, savedTagList.size)
+    }
+
+    @Test
+    fun testGetProductTagByName() {
+        val tagList = ProductTestUtils.generateProductTags(site.id)
+        assertTrue(tagList.isNotEmpty())
+
+        // Insert product tag list
+        val rowsAffected = ProductSqlUtils.insertOrUpdateProductTags(tagList)
+        assertEquals(tagList.size, rowsAffected)
+
+        // Get tag by name and verify
+        val savedTagExists = ProductSqlUtils.getProductTagByName(site.id, tagList[0].name)
+        assertEquals(tagList[0].name, savedTagExists?.name)
+        assertEquals(tagList[0].remoteTagId, savedTagExists?.remoteTagId)
+        assertEquals(tagList[0].slug, savedTagExists?.slug)
+        assertEquals(tagList[0].description, savedTagExists?.description)
+
+        // Get tag for a name that does not exist
+        val nonExistingTagName = "test"
+        val savedTag = ProductSqlUtils.getProductTagByName(site.id, nonExistingTagName)
+        assertNull(savedTag)
+    }
+
+    @Test
+    fun testGetProductTagsByNames() {
+        val tagList = ProductTestUtils.generateProductTags(site.id)
+        assertTrue(tagList.isNotEmpty())
+
+        // Insert product tag list
+        val rowsAffected = ProductSqlUtils.insertOrUpdateProductTags(tagList)
+        assertEquals(tagList.size, rowsAffected)
+
+        // Get tags by list of name and verify
+        val tagNames = tagList.map { it.name }.toList()
+        val savedTagListExists = ProductSqlUtils.getProductTagsByNames(site.id, tagNames)
+        assertEquals(tagList.size, savedTagListExists.size)
+        assertEquals(tagList[0].name, savedTagListExists[0].name)
+        assertEquals(tagList[1].name, savedTagListExists[1].name)
+        assertEquals(tagList[2].name, savedTagListExists[2].name)
+
+        // Get tags for a name that does not exist
+        val monExistingTagList = ProductSqlUtils.getProductTagsByNames(
+                site.id, listOf("test", "test1", "test2")
+        )
+        assertEquals(0, monExistingTagList.size)
+
+        val savedTagList = ProductSqlUtils.getProductTagsByNames(
+                site.id, listOf(tagNames[0], tagNames[1], "test")
+        )
+        assertEquals(2, savedTagList.size)
     }
 
     @Test

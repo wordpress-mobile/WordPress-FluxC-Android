@@ -1,6 +1,12 @@
 package org.wordpress.android.fluxc.instaflux;
 
-import com.facebook.stetho.Stetho;
+import com.facebook.flipper.android.AndroidFlipperClient;
+import com.facebook.flipper.android.utils.FlipperUtils;
+import com.facebook.flipper.core.FlipperClient;
+import com.facebook.flipper.plugins.inspector.DescriptorMapping;
+import com.facebook.flipper.plugins.inspector.InspectorFlipperPlugin;
+import com.facebook.flipper.plugins.network.NetworkFlipperPlugin;
+import com.facebook.soloader.SoLoader;
 
 import org.wordpress.android.fluxc.module.AppContextModule;
 
@@ -9,7 +15,15 @@ public class InstafluxDebugApp extends InstafluxApp {
     public void onCreate() {
         super.onCreate();
         initDaggerComponent();
-        Stetho.initializeWithDefaults(this);
+
+        // Init Flipper
+        if (FlipperUtils.shouldEnableFlipper(this)) {
+            SoLoader.init(this, false);
+            FlipperClient client = AndroidFlipperClient.getInstance(this);
+            client.addPlugin(new InspectorFlipperPlugin(this, DescriptorMapping.withDefaults()));
+            client.addPlugin(new NetworkFlipperPlugin());
+            client.start();
+        }
     }
 
     protected void initDaggerComponent() {

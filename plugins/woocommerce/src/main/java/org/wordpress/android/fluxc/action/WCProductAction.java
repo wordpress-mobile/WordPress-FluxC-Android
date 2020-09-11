@@ -4,6 +4,7 @@ import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.AddProductTagsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload;
@@ -16,7 +17,9 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleVariationPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagsResponsePayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPasswordPayload;
@@ -30,18 +33,23 @@ import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductVariationsP
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteSearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductImagesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateProductPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdateVariationPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteUpdatedProductPasswordPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteVariationPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.SearchProductsPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductImagesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductReviewStatusPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.UpdateVariationPayload;
 
 @ActionEnum
 public enum WCProductAction implements IAction {
     // Remote actions
     @Action(payloadType = FetchSingleProductPayload.class)
     FETCH_SINGLE_PRODUCT,
+    @Action(payloadType = FetchSingleVariationPayload.class)
+    FETCH_SINGLE_VARIATION,
     @Action(payloadType = FetchProductsPayload.class)
     FETCH_PRODUCTS,
     @Action(payloadType = SearchProductsPayload.class)
@@ -62,6 +70,8 @@ public enum WCProductAction implements IAction {
     UPDATE_PRODUCT_IMAGES,
     @Action(payloadType = UpdateProductPayload.class)
     UPDATE_PRODUCT,
+    @Action(payloadType = UpdateVariationPayload.class)
+    UPDATE_VARIATION,
     @Action(payloadType = FetchProductSkuAvailabilityPayload.class)
     FETCH_PRODUCT_SKU_AVAILABILITY,
     @Action(payloadType = FetchProductPasswordPayload.class)
@@ -74,11 +84,15 @@ public enum WCProductAction implements IAction {
     ADD_PRODUCT_CATEGORY,
     @Action(payloadType = FetchProductTagsPayload.class)
     FETCH_PRODUCT_TAGS,
+    @Action(payloadType = AddProductTagsPayload.class)
+    ADD_PRODUCT_TAGS,
 
 
     // Remote responses
     @Action(payloadType = RemoteProductPayload.class)
     FETCHED_SINGLE_PRODUCT,
+    @Action(payloadType = RemoteVariationPayload.class)
+    FETCHED_SINGLE_VARIATION,
     @Action(payloadType = RemoteProductListPayload.class)
     FETCHED_PRODUCTS,
     @Action(payloadType = RemoteSearchProductsPayload.class)
@@ -99,6 +113,8 @@ public enum WCProductAction implements IAction {
     UPDATED_PRODUCT_IMAGES,
     @Action(payloadType = RemoteUpdateProductPayload.class)
     UPDATED_PRODUCT,
+    @Action(payloadType = RemoteUpdateVariationPayload.class)
+    UPDATED_VARIATION,
     @Action(payloadType = RemoteProductSkuAvailabilityPayload.class)
     FETCHED_PRODUCT_SKU_AVAILABILITY,
     @Action(payloadType = RemoteProductPasswordPayload.class)
@@ -110,5 +126,7 @@ public enum WCProductAction implements IAction {
     @Action(payloadType = RemoteAddProductCategoryResponsePayload.class)
     ADDED_PRODUCT_CATEGORY,
     @Action(payloadType = RemoteProductTagsPayload.class)
-    FETCHED_PRODUCT_TAGS
+    FETCHED_PRODUCT_TAGS,
+    @Action(payloadType = RemoteAddProductTagsResponsePayload.class)
+    ADDED_PRODUCT_TAGS
 }

@@ -82,6 +82,13 @@
             android:text="Fetch Product Variations"/>
 
         <Button
+            android:id="@+id/fetch_single_variation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Fetch Single Variation"/>
+
+        <Button
             android:id="@+id/load_more_product_variations"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -173,10 +180,24 @@
             android:text="Load More Product Tags" />
 
         <Button
+            android:id="@+id/add_product_tags"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Add Product Tags" />
+
+        <Button
             android:id="@+id/update_product"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:enabled="false"
             android:text="Update Product"/>
+
+        <Button
+            android:id="@+id/update_variation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="Update Variation"/>
     </LinearLayout>
 </ScrollView>

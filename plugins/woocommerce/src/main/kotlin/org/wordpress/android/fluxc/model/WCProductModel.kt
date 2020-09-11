@@ -92,6 +92,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     @Column var relatedIds = "" // array of related product IDs
     @Column var crossSellIds = "" // array of cross-sell product IDs
     @Column var upsellIds = "" // array of up-sell product IDs
+    @Column var groupedProductIds = "" // array of grouped product IDs
 
     @Column var weight = ""
     @Column var length = ""
@@ -197,7 +198,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
 
         val attrList = ArrayList<ProductAttribute>()
         try {
-            Gson().fromJson<JsonElement>(attributes, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+            Gson().fromJson(attributes, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
                 with(jsonElement.asJsonObject) {
                     attrList.add(
                             ProductAttribute(
@@ -218,7 +219,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     fun getDownloadableFiles(): List<String> {
         val fileList = ArrayList<String>()
         try {
-            Gson().fromJson<JsonElement>(downloads, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+            Gson().fromJson(downloads, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
                 jsonElement.asJsonObject.getString("file")?.let {
                     fileList.add(it)
                 }
@@ -230,12 +231,26 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     }
 
     fun getNumVariations(): Int {
-        try {
-            return Gson().fromJson<JsonElement>(variations, JsonElement::class.java).asJsonArray.size()
+        return try {
+            Gson().fromJson(variations, JsonElement::class.java).asJsonArray.size()
         } catch (e: JsonParseException) {
             AppLog.e(T.API, e)
-            return 0
+            0
         }
+    }
+
+    fun getGroupedProductIds(): List<Long> {
+        val groupedIds = ArrayList<Long>()
+        try {
+            if (groupedProductIds.isNotEmpty()) {
+                Gson().fromJson(groupedProductIds, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+                    jsonElement.asLong.let { groupedIds.add(it) }
+                }
+            }
+        } catch (e: JsonParseException) {
+            AppLog.e(T.API, e)
+        }
+        return groupedIds
     }
 
     fun getCategories() = getTriplets(categories)

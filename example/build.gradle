@@ -14,11 +14,15 @@ apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 28
-    buildToolsVersion '28.0.3'
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 
     defaultConfig {
         applicationId "org.wordpress.android.fluxc.example"
-        minSdkVersion 15
+        minSdkVersion 16
         // Keep the targetSdkVersion 22 so we don't need to grant runtime permissions to the tests and the example app
         // An alternative would be granting the permissions via adb before running the test, like here:
         // https://afterecho.uk/blog/granting-marshmallow-permissions-for-testing-flavoured-builds.html
@@ -135,8 +139,14 @@ dependencies {
     androidTestUtil 'androidx.test:orchestrator:1.2.0'
 
     // Debug dependencies
-    debugImplementation 'com.facebook.stetho:stetho:1.5.0'
-    debugImplementation 'com.facebook.stetho:stetho-okhttp3:1.5.0'
+    debugImplementation 'com.facebook.flipper:flipper:0.51.0'
+    debugImplementation 'com.facebook.soloader:soloader:0.9.0'
+    debugImplementation ('com.facebook.flipper:flipper-network-plugin:0.51.0') {
+        // Force Flipper to use the okhttp version defined in the fluxc module
+        // okhttp versions higher than 3.9.0 break handling for self-signed SSL sites
+        // See https://github.com/wordpress-mobile/WordPress-FluxC-Android/issues/919
+        exclude group: 'com.squareup.okhttp3'
+    }
 
     // Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"

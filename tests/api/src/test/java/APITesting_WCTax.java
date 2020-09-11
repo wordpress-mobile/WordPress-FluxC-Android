@@ -36,7 +36,7 @@ public class APITesting_WCTax {
     public void canGetTaxClasses() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/taxes/classes").
+            queryParam("path", "/wc/v3/taxes/classes").
         when().
             get().
         then().

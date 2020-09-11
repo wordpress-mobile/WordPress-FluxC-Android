@@ -35,7 +35,7 @@ public class APITesting_WCGateway {
     public void canGetAllPaymentGateways() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/payment_gateways").
+            queryParam("path", "/wc/v3/payment_gateways").
         when().
             get().
         then().
@@ -49,7 +49,7 @@ public class APITesting_WCGateway {
     public void canGetSinglePaymentGateway() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/payment_gateways/stripe").
+            queryParam("path", "/wc/v3/payment_gateways/stripe").
         when().
             get().
         then().

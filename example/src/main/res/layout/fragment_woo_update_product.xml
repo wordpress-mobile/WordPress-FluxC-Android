@@ -94,6 +94,26 @@
             app:layout_constraintTop_toBottomOf="@+id/product_description"
             app:textHint="Product SKU" />
 
+        <TextView
+            android:id="@+id/product_type_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_sku"
+            android:text="Product type" />
+
+        <Button
+            android:id="@+id/product_type"
+            style="?android:attr/spinnerStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_type_title"
+            android:text="Product type" />
+
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_slug"
             android:layout_width="0dp"
@@ -102,7 +122,7 @@
             android:inputType="text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/product_sku"
+            app:layout_constraintTop_toBottomOf="@+id/product_type"
             app:textHint="Product slug" />
 
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
@@ -424,6 +444,17 @@
             app:layout_constraintStart_toEndOf="@+id/product_is_featured"
             app:layout_constraintTop_toBottomOf="@+id/manageStockContainer" />
 
+        <CheckBox
+            android:id="@+id/product_is_virtual"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:enabled="false"
+            android:text="Virtual"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_is_featured" />
+
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_purchase_note"
             android:layout_width="0dp"
@@ -433,7 +464,7 @@
             android:inputType="text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/product_reviews_allowed"
+            app:layout_constraintTop_toBottomOf="@+id/product_is_virtual"
             app:textHint="Purchase note" />
 
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
@@ -483,6 +514,32 @@
             app:layout_constraintStart_toEndOf="@+id/product_menu_order"
             app:layout_constraintTop_toBottomOf="@+id/product_button_text"
             app:textHint="Password" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/grouped_product_ids"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:inputType="text"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            app:layout_constraintEnd_toStartOf="@+id/select_grouped_product_ids"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/product_password"
+            app:textHint="Grouped Product IDs" />
+
+        <Button
+            android:id="@+id/select_grouped_product_ids"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:enabled="false"
+            android:text="Add product IDs"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/grouped_product_ids"
+            app:layout_constraintTop_toBottomOf="@+id/product_password" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
