@@ -212,7 +212,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                         val newNote = WCOrderNoteModel().apply {
                             note = editText.text.toString()
                         }
-                        val payload = PostOrderNotePayload(order, site, newNote)
+                        val payload = PostOrderNotePayload(order.id, order.remoteOrderId, site, newNote)
                         dispatcher.dispatch(WCOrderActionBuilder.newPostOrderNoteAction(payload))
                     }
                 }

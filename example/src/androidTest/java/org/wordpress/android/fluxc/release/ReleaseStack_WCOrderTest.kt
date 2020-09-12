@@ -210,7 +210,7 @@ class ReleaseStack_WCOrderTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
         mDispatcher.dispatch(
                 WCOrderActionBuilder.newPostOrderNoteAction(
-                        PostOrderNotePayload(orderModel, sSite, originalNote)
+                        PostOrderNotePayload(orderModel.id, orderModel.remoteOrderId, sSite, originalNote)
                 )
         )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))

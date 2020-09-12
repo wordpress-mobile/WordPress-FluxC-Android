@@ -452,8 +452,13 @@ class OrderRestClient(
      *
      * Dispatches a [WCOrderAction.POSTED_ORDER_NOTE] action with the resulting saved version of the order note.
      */
-    fun postOrderNote(order: WCOrderModel, site: SiteModel, note: WCOrderNoteModel) {
-        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).notes.pathV3
+    fun postOrderNote(
+        localOrderId: Int,
+        remoteOrderId: Long,
+        site: SiteModel,
+        note: WCOrderNoteModel
+    ) {
+        val url = WOOCOMMERCE.orders.id(remoteOrderId).notes.pathV3
 
         val params = mutableMapOf(
                 "note" to note.note,
@@ -466,15 +471,15 @@ class OrderRestClient(
                     response?.let {
                         val newNote = orderNoteResponseToOrderNoteModel(it).apply {
                             localSiteId = site.id
-                            localOrderId = order.id
+                            this.localOrderId = localOrderId
                         }
-                        val payload = RemoteOrderNotePayload(order, site, newNote)
+                        val payload = RemoteOrderNotePayload(localOrderId, remoteOrderId, site, note)
                         dispatcher.dispatch(WCOrderActionBuilder.newPostedOrderNoteAction(payload))
                     }
                 },
                 WPComErrorListener { networkError ->
                     val noteError = networkErrorToOrderError(networkError)
-                    val payload = RemoteOrderNotePayload(noteError, order, site, note)
+                    val payload = RemoteOrderNotePayload(noteError, localOrderId, remoteOrderId, site, note)
                     dispatcher.dispatch(WCOrderActionBuilder.newPostedOrderNoteAction(payload))
                 })
         add(request)

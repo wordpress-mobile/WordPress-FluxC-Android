@@ -174,18 +174,25 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     class PostOrderNotePayload(
-        val order: WCOrderModel,
+        var localOrderId: Int,
+        var remoteOrderId: Long,
         val site: SiteModel,
         val note: WCOrderNoteModel
     ) : Payload<BaseNetworkError>()
 
     class RemoteOrderNotePayload(
-        val order: WCOrderModel,
+        var localOrderId: Int,
+        var remoteOrderId: Long,
         val site: SiteModel,
         val note: WCOrderNoteModel
     ) : Payload<OrderError>() {
-        constructor(error: OrderError, order: WCOrderModel, site: SiteModel, note: WCOrderNoteModel) :
-                this(order, site, note) { this.error = error }
+        constructor(
+            error: OrderError,
+            localOrderId: Int,
+            remoteOrderId: Long,
+            site: SiteModel,
+            note: WCOrderNoteModel
+        ) : this(localOrderId, remoteOrderId, site, note) { this.error = error }
     }
 
     class FetchOrderStatusOptionsPayload(val site: SiteModel) : Payload<BaseNetworkError>()
@@ -475,7 +482,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun postOrderNote(payload: PostOrderNotePayload) {
-        wcOrderRestClient.postOrderNote(payload.order, payload.site, payload.note)
+        with(payload) { wcOrderRestClient.postOrderNote(localOrderId, remoteOrderId, site, note) }
     }
 
     private fun fetchOrderStatusOptions(payload: FetchOrderStatusOptionsPayload) {

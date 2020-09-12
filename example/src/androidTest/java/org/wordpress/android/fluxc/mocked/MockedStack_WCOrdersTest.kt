@@ -346,7 +346,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
 
         interceptor.respondWith("wc-order-note-post-response-success.json")
-        orderRestClient.postOrderNote(orderModel, siteModel, originalNote)
+        orderRestClient.postOrderNote(orderModel.id, orderModel.remoteOrderId, siteModel, originalNote)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -379,7 +379,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
 
         interceptor.respondWithError(errorJson, 400)
-        orderRestClient.postOrderNote(orderModel, siteModel, originalNote)
+        orderRestClient.postOrderNote(orderModel.id, orderModel.remoteOrderId, siteModel, originalNote)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
