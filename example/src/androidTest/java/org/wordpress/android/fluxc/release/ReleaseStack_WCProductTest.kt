@@ -940,7 +940,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         lastAddNewProductEvent = event
 
         when (event.causeOfChange) {
-            WCProductAction.ADD_PRODUCT -> {
+            WCProductAction.ADDED_PRODUCT -> {
                 assertEquals(TestEvent.ADDED_PRODUCT, nextEvent)
                 assertEquals(event.remoteProductId, productModel.remoteProductId)
                 mCountDownLatch.countDown()
