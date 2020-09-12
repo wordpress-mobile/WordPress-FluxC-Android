@@ -140,7 +140,18 @@ class WooUpdateProductFragment : Fragment() {
                 }
             }
         } else {
-            selectedProductModel = WCProductModel()
+            val product = WCProductModel().apply {
+                stockStatus = CoreProductStockStatus.IN_STOCK.value
+                status = "publish"
+                virtual = false
+                type = "simple"
+                taxStatus = "taxable"
+                catalogVisibility = "visible"
+            }
+            enableProductDependentButtons()
+            updateProductProperties(product)
+            selectedProductModel = product
+
             product_enter_product_id.visibility = View.GONE
             product_entered_product_id.visibility = View.GONE
         }
@@ -416,47 +427,51 @@ class WooUpdateProductFragment : Fragment() {
             dispatcher.dispatch(action)
 
             selectedProductModel = wcProductStore.getProductByRemoteId(siteModel, remoteProductId)?.also {
-                product_name.setText(it.name)
-                product_description.setText(it.description)
-                product_sku.setText(it.sku)
-                product_short_desc.setText(it.shortDescription)
-                product_regular_price.setText(it.regularPrice)
-                product_sale_price.setText(it.salePrice)
-                product_width.setText(it.width)
-                product_height.setText(it.height)
-                product_length.setText(it.length)
-                product_weight.setText(it.weight)
-                product_tax_status.text = it.taxStatus
-                product_type.text = it.type
-                product_sold_individually.isChecked = it.soldIndividually
-                product_from_date.text = it.dateOnSaleFromGmt.split('T')[0]
-                product_to_date.text = it.dateOnSaleToGmt.split('T')[0]
-                product_manage_stock.isChecked = it.manageStock
-                product_stock_status.text = it.stockStatus
-                product_back_orders.text = it.backorders
-                product_stock_quantity.setText(it.stockQuantity.toString())
-                product_stock_quantity.isEnabled = product_manage_stock.isChecked
-                product_catalog_visibility.text = it.catalogVisibility
-                product_status.text = it.status
-                product_slug.setText(it.slug)
-                product_is_featured.isChecked = it.featured
-                product_reviews_allowed.isChecked = it.reviewsAllowed
-                product_is_virtual.isChecked = it.virtual
-                product_purchase_note.setText(it.purchaseNote)
-                product_menu_order.setText(it.menuOrder.toString())
-                product_external_url.setText(it.externalUrl)
-                product_button_text.setText(it.buttonText)
-                updateGroupedProductIds(it.groupedProductIds)
-                product_categories.setText(
-                        selectedCategories?.joinToString(", ") { it.name }
-                                ?: it.getCommaSeparatedCategoryNames()
-                )
-                product_tags.setText(
-                        selectedTags?.joinToString(", ") { it.name }
-                                ?: it.getCommaSeparatedTagNames()
-                )
+                updateProductProperties(it)
             } ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
+    }
+
+    private fun updateProductProperties(it: WCProductModel) {
+        product_name.setText(it.name)
+        product_description.setText(it.description)
+        product_sku.setText(it.sku)
+        product_short_desc.setText(it.shortDescription)
+        product_regular_price.setText(it.regularPrice)
+        product_sale_price.setText(it.salePrice)
+        product_width.setText(it.width)
+        product_height.setText(it.height)
+        product_length.setText(it.length)
+        product_weight.setText(it.weight)
+        product_tax_status.text = it.taxStatus
+        product_type.text = it.type
+        product_sold_individually.isChecked = it.soldIndividually
+        product_from_date.text = it.dateOnSaleFromGmt.split('T')[0]
+        product_to_date.text = it.dateOnSaleToGmt.split('T')[0]
+        product_manage_stock.isChecked = it.manageStock
+        product_stock_status.text = it.stockStatus
+        product_back_orders.text = it.backorders
+        product_stock_quantity.setText(it.stockQuantity.toString())
+        product_stock_quantity.isEnabled = product_manage_stock.isChecked
+        product_catalog_visibility.text = it.catalogVisibility
+        product_status.text = it.status
+        product_slug.setText(it.slug)
+        product_is_featured.isChecked = it.featured
+        product_reviews_allowed.isChecked = it.reviewsAllowed
+        product_is_virtual.isChecked = it.virtual
+        product_purchase_note.setText(it.purchaseNote)
+        product_menu_order.setText(it.menuOrder.toString())
+        product_external_url.setText(it.externalUrl)
+        product_button_text.setText(it.buttonText)
+        updateGroupedProductIds(it.groupedProductIds)
+        product_categories.setText(
+                selectedCategories?.joinToString(", ") { it.name }
+                        ?: it.getCommaSeparatedCategoryNames()
+        )
+        product_tags.setText(
+                selectedTags?.joinToString(", ") { it.name }
+                        ?: it.getCommaSeparatedTagNames()
+        )
     }
 
     private fun showListSelectorDialog(listItems: List<String>, resultCode: Int, selectedItem: String?) {
