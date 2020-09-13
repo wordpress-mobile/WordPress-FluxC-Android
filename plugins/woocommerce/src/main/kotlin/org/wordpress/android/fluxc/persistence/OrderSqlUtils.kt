@@ -245,6 +245,21 @@ object OrderSqlUtils {
                 .orderBy(WCOrderShipmentTrackingModelTable.DATE_SHIPPED, SelectQuery.ORDER_DESCENDING).asModel
     }
 
+    fun getShipmentTrackingByTrackingNumber(
+        site: SiteModel,
+        localOrderId: Int,
+        trackingNumber: String
+    ): WCOrderShipmentTrackingModel? {
+        return WellSql.select(WCOrderShipmentTrackingModel::class.java)
+                .where()
+                .beginGroup()
+                .equals(WCOrderShipmentTrackingModelTable.LOCAL_SITE_ID, site.id)
+                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, localOrderId)
+                .equals(WCOrderShipmentTrackingModelTable.TRACKING_NUMBER, trackingNumber)
+                .endGroup().endWhere()
+                .asModel.firstOrNull()
+    }
+
     fun deleteOrderShipmentTrackingById(tracking: WCOrderShipmentTrackingModel): Int =
             WellSql.delete(WCOrderShipmentTrackingModel::class.java).whereId(tracking.id)
 

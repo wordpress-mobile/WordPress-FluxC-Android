@@ -301,6 +301,13 @@ class OrderSqlUtilsTest {
         // Get all shipment trackings for a single order
         val trackingsForOrder = OrderSqlUtils.getShipmentTrackingsForOrder(siteModel, orderModel.id)
         assertEquals(3, trackingsForOrder.size)
+
+        // get a single shipment tracking by tracking number
+        val shipmentTracking = OrderSqlUtils.getShipmentTrackingByTrackingNumber(
+                siteModel, orderModel.id, trackingsForOrder[0].trackingNumber
+        )
+        assertNotNull(shipmentTracking)
+        assertEquals(trackingsForOrder[0].trackingNumber, shipmentTracking.trackingNumber)
     }
 
     @Test

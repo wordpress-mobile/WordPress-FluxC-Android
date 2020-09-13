@@ -377,6 +377,9 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     fun getShipmentTrackingsForOrder(site: SiteModel, localOrderId: Int): List<WCOrderShipmentTrackingModel> =
             OrderSqlUtils.getShipmentTrackingsForOrder(site, localOrderId)
 
+    fun getShipmentTrackingByTrackingNumber(site: SiteModel, localOrderId: Int, trackingNumber: String) =
+            OrderSqlUtils.getShipmentTrackingByTrackingNumber(site, localOrderId, trackingNumber)
+
     /**
      * Returns the shipment providers as a list of [WCOrderShipmentProviderModel]
      */
