@@ -141,7 +141,9 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
             dateShipped = testDateShipped
         }
         mDispatcher.dispatch(WCOrderActionBuilder.newAddOrderShipmentTrackingAction(
-                AddOrderShipmentTrackingPayload(sSite, orderModel, trackingModel, isCustomProvider = false)))
+                AddOrderShipmentTrackingPayload(
+                        sSite, orderModel.id, orderModel.remoteOrderId, trackingModel, isCustomProvider = false))
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         var trackings = orderStore.getShipmentTrackingsForOrder(
@@ -211,7 +213,9 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
             trackingLink = testTrackingLink
         }
         mDispatcher.dispatch(WCOrderActionBuilder.newAddOrderShipmentTrackingAction(
-                AddOrderShipmentTrackingPayload(sSite, orderModel, trackingModel, isCustomProvider = true)))
+                AddOrderShipmentTrackingPayload(
+                        sSite, orderModel.id, orderModel.remoteOrderId, trackingModel, isCustomProvider = true))
+        )
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         var trackings = orderStore.getShipmentTrackingsForOrder(

@@ -511,7 +511,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
     ) {
         pendingAddShipmentTracking = tracking
         pendingAddShipmentTrackingRemoteOrderID = order.remoteOrderId
-        val payload = AddOrderShipmentTrackingPayload(site, order, tracking, isCustomProvider)
+        val payload = AddOrderShipmentTrackingPayload(site, order.id, order.remoteOrderId, tracking, isCustomProvider)
         dispatcher.dispatch(WCOrderActionBuilder.newAddOrderShipmentTrackingAction(payload))
     }
 }

@@ -537,11 +537,12 @@ class OrderRestClient(
      */
     fun addOrderShipmentTrackingForOrder(
         site: SiteModel,
-        order: WCOrderModel,
+        localOrderId: Int,
+        remoteOrderId: Long,
         tracking: WCOrderShipmentTrackingModel,
         isCustomProvider: Boolean
     ) {
-        val url = WOOCOMMERCE.orders.id(order.remoteOrderId).shipment_trackings.pathV2
+        val url = WOOCOMMERCE.orders.id(remoteOrderId).shipment_trackings.pathV2
 
         val responseType = object : TypeToken<OrderShipmentTrackingApiResponse>() {}.type
         val params = if (isCustomProvider) {
@@ -557,17 +558,20 @@ class OrderRestClient(
                 { response: OrderShipmentTrackingApiResponse? ->
                     val trackingResponse = response?.let {
                         orderShipmentTrackingResponseToModel(it).apply {
-                            localOrderId = order.id
+                            this.localOrderId = localOrderId
                             localSiteId = site.id
                         }
                     }
                     val payload = AddOrderShipmentTrackingResponsePayload(
-                            site, order, trackingResponse)
+                            site, localOrderId, remoteOrderId, trackingResponse
+                    )
                     dispatcher.dispatch(WCOrderActionBuilder.newAddedOrderShipmentTrackingAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val trackingsError = networkErrorToOrderError(networkError)
-                    val payload = AddOrderShipmentTrackingResponsePayload(trackingsError, site, order, tracking)
+                    val payload = AddOrderShipmentTrackingResponsePayload(
+                            trackingsError, site, localOrderId, remoteOrderId, tracking
+                    )
                     dispatcher.dispatch(WCOrderActionBuilder.newAddedOrderShipmentTrackingAction(payload))
                 })
         add(request)

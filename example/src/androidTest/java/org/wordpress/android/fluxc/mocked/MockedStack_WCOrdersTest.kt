@@ -461,7 +461,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             dateShipped = "2019-04-18"
         }
         interceptor.respondWith("wc-post-order-shipment-tracking-success.json")
-        orderRestClient.addOrderShipmentTrackingForOrder(siteModel, orderModel, trackingModel, isCustomProvider = false)
+        orderRestClient.addOrderShipmentTrackingForOrder(
+                siteModel, orderModel.id, orderModel.remoteOrderId, trackingModel, isCustomProvider = false
+        )
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -492,7 +494,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             dateShipped = "2019-04-19"
         }
         interceptor.respondWith("wc-post-order-shipment-tracking-custom-success.json")
-        orderRestClient.addOrderShipmentTrackingForOrder(siteModel, orderModel, trackingModel, isCustomProvider = true)
+        orderRestClient.addOrderShipmentTrackingForOrder(
+                siteModel, orderModel.id, orderModel.remoteOrderId, trackingModel, isCustomProvider = true
+        )
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
