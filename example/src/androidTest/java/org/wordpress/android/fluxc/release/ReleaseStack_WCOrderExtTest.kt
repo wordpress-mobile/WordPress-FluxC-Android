@@ -172,7 +172,7 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
 
         mDispatcher.dispatch(WCOrderActionBuilder.newDeleteOrderShipmentTrackingAction(
-                DeleteOrderShipmentTrackingPayload(sSite, orderModel, trackingResult!!)))
+                DeleteOrderShipmentTrackingPayload(sSite, orderModel.id, orderModel.remoteOrderId, trackingResult!!)))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify the tracking record is no longer in the database
@@ -245,7 +245,7 @@ class ReleaseStack_WCOrderExtTest : ReleaseStack_WCBase() {
         mCountDownLatch = CountDownLatch(1)
 
         mDispatcher.dispatch(WCOrderActionBuilder.newDeleteOrderShipmentTrackingAction(
-                DeleteOrderShipmentTrackingPayload(sSite, orderModel, trackingResult!!)))
+                DeleteOrderShipmentTrackingPayload(sSite, orderModel.id, orderModel.remoteOrderId, trackingResult!!)))
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
 
         // Verify the tracking record is no longer in the database

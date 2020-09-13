@@ -587,8 +587,13 @@ class OrderRestClient(
      *
      * Dispatches a [WCOrderAction.DELETED_ORDER_SHIPMENT_TRACKING] action with the results
      */
-    fun deleteShipmentTrackingForOrder(site: SiteModel, order: WCOrderModel, tracking: WCOrderShipmentTrackingModel) {
-        val url = WOOCOMMERCE.orders.id(order.remoteOrderId)
+    fun deleteShipmentTrackingForOrder(
+        site: SiteModel,
+        localOrderId: Int,
+        remoteOrderId: Long,
+        tracking: WCOrderShipmentTrackingModel
+    ) {
+        val url = WOOCOMMERCE.orders.id(remoteOrderId)
                 .shipment_trackings.tracking(tracking.remoteTrackingId).pathV2
 
         val responseType = object : TypeToken<OrderShipmentTrackingApiResponse>() {}.type
@@ -598,17 +603,21 @@ class OrderRestClient(
                     val trackingResponse = response?.let {
                         orderShipmentTrackingResponseToModel(it).apply {
                             localSiteId = site.id
-                            localOrderId = order.id
+                            this.localOrderId = localOrderId
                             id = tracking.id
                         }
                     }
 
-                    val payload = DeleteOrderShipmentTrackingResponsePayload(site, order, trackingResponse)
+                    val payload = DeleteOrderShipmentTrackingResponsePayload(
+                            site, localOrderId, remoteOrderId, trackingResponse
+                    )
                     dispatcher.dispatch(WCOrderActionBuilder.newDeletedOrderShipmentTrackingAction(payload))
                 },
                 WPComErrorListener { networkError ->
                     val trackingsError = networkErrorToOrderError(networkError)
-                    val payload = DeleteOrderShipmentTrackingResponsePayload(trackingsError, site, order, tracking)
+                    val payload = DeleteOrderShipmentTrackingResponsePayload(
+                            trackingsError, site, localOrderId, remoteOrderId, tracking
+                    )
                     dispatcher.dispatch(WCOrderActionBuilder.newDeletedOrderShipmentTrackingAction(payload))
                 })
         add(request)

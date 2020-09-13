@@ -523,7 +523,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
 
         interceptor.respondWith("wc-delete-order-shipment-tracking-success.json")
-        orderRestClient.deleteShipmentTrackingForOrder(siteModel, orderModel, trackingModel)
+        orderRestClient.deleteShipmentTrackingForOrder(
+                siteModel, orderModel.id, orderModel.remoteOrderId, trackingModel
+        )
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))

@@ -244,21 +244,24 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
 
     class DeleteOrderShipmentTrackingPayload(
         val site: SiteModel,
-        val order: WCOrderModel,
+        var localOrderId: Int,
+        var remoteOrderId: Long,
         val tracking: WCOrderShipmentTrackingModel
     ) : Payload<BaseNetworkError>()
 
     class DeleteOrderShipmentTrackingResponsePayload(
         val site: SiteModel,
-        val order: WCOrderModel,
+        var localOrderId: Int,
+        var remoteOrderId: Long,
         val tracking: WCOrderShipmentTrackingModel?
     ) : Payload<OrderError>() {
         constructor(
             error: OrderError,
             site: SiteModel,
-            order: WCOrderModel,
+            localOrderId: Int,
+            remoteOrderId: Long,
             tracking: WCOrderShipmentTrackingModel?
-        ) : this(site, order, tracking) { this.error = error }
+        ) : this(site, localOrderId, remoteOrderId, tracking) { this.error = error }
     }
 
     class FetchOrderShipmentProvidersPayload(
@@ -507,7 +510,7 @@ class WCOrderStore @Inject constructor(dispatcher: Dispatcher, private val wcOrd
     }
 
     private fun deleteOrderShipmentTracking(payload: DeleteOrderShipmentTrackingPayload) {
-        with(payload) { wcOrderRestClient.deleteShipmentTrackingForOrder(site, order, tracking) }
+        with(payload) { wcOrderRestClient.deleteShipmentTrackingForOrder(site, localOrderId, remoteOrderId, tracking) }
     }
 
     private fun fetchOrderShipmentProviders(payload: FetchOrderShipmentProvidersPayload) {

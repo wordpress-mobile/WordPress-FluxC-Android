@@ -282,7 +282,9 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
 
                             wcOrderStore.getShipmentTrackingsForOrder(site, order.id).firstOrNull()?.let { tracking ->
                                 pendingDeleteShipmentTracking = tracking
-                                val payload = DeleteOrderShipmentTrackingPayload(site, order, tracking)
+                                val payload = DeleteOrderShipmentTrackingPayload(
+                                        site, order.id, order.remoteOrderId, tracking
+                                )
                                 dispatcher.dispatch(WCOrderActionBuilder.newDeleteOrderShipmentTrackingAction(payload))
                             } ?: prependToLog("No shipment trackings in the db for remoteOrderId: $remoteOrderId, " +
                                     "please fetch records first for this order")
