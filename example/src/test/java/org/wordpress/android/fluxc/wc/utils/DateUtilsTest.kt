@@ -180,8 +180,12 @@ class DateUtilsTest {
             assertEquals(start.get(Calendar.YEAR), testCalendar.get(Calendar.YEAR))
             assertEquals(start.get(Calendar.MONTH), testCalendar.get(Calendar.MONTH))
             assertEquals(start.get(Calendar.DATE), testCalendar.get(Calendar.DATE))
-            assertEquals(testDateString, DateUtils.getFormattedDateString(testCalendar.get(Calendar.YEAR),
-                    testCalendar.get(Calendar.MONTH), testCalendar.get(Calendar.DATE)))
+            assertEquals(
+                    testDateString, DateUtils.getFormattedDateString(
+                    testCalendar.get(Calendar.YEAR),
+                    testCalendar.get(Calendar.MONTH), testCalendar.get(Calendar.DATE)
+            )
+            )
             start.add(Calendar.DATE, 1)
             date = start.time
         }
@@ -223,9 +227,10 @@ class DateUtilsTest {
         val site = SiteModel().apply { id = 1 }
 
         val fieldISO = WeekFields.of(Locale.ROOT).dayOfWeek()
+        val timezone = SiteUtils.getNormalizedTimezone(site.timezone)
         val expectedDate = LocalDate.now()
                 .with(fieldISO, 1)
-                .atStartOfDay(ZoneId.systemDefault())
+                .atStartOfDay(timezone.toZoneId())
                 .toInstant()
         val expectedDateString = DateUtils.formatDate(DATE_TIME_FORMAT_START, Date.from(expectedDate))
 
