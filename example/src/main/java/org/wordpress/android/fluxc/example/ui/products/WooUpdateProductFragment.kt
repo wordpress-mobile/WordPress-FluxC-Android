@@ -130,30 +130,34 @@ class WooUpdateProductFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (!isAddNewProduct) {
-            product_enter_product_id.setOnClickListener {
-                showSingleLineDialog(activity, "Enter the remoteProductId of product to fetch:") { editText ->
-                    selectedRemoteProductId = editText.text.toString().toLongOrNull()
-                    selectedRemoteProductId?.let { id ->
-                        updateSelectedProductId(id)
-                    } ?: prependToLog("No valid remoteProductId defined...doing nothing")
+        if (selectedProductModel == null) {
+            if (!isAddNewProduct) {
+                product_enter_product_id.setOnClickListener {
+                    showSingleLineDialog(activity, "Enter the remoteProductId of product to fetch:") { editText ->
+                        selectedRemoteProductId = editText.text.toString().toLongOrNull()
+                        selectedRemoteProductId?.let { id ->
+                            updateSelectedProductId(id)
+                        } ?: prependToLog("No valid remoteProductId defined...doing nothing")
+                    }
                 }
+            } else {
+                val product = WCProductModel().apply {
+                    stockStatus = CoreProductStockStatus.IN_STOCK.value
+                    status = "publish"
+                    virtual = false
+                    type = "simple"
+                    taxStatus = "taxable"
+                    catalogVisibility = "visible"
+                }
+                enableProductDependentButtons()
+                updateProductProperties(product)
+                selectedProductModel = product
+
+                product_enter_product_id.visibility = View.GONE
+                product_entered_product_id.visibility = View.GONE
             }
         } else {
-            val product = WCProductModel().apply {
-                stockStatus = CoreProductStockStatus.IN_STOCK.value
-                status = "publish"
-                virtual = false
-                type = "simple"
-                taxStatus = "taxable"
-                catalogVisibility = "visible"
-            }
-            enableProductDependentButtons()
-            updateProductProperties(product)
-            selectedProductModel = product
-
-            product_enter_product_id.visibility = View.GONE
-            product_entered_product_id.visibility = View.GONE
+            updateProductProperties(selectedProductModel!!)
         }
 
         grouped_product_ids.isEnabled = false
@@ -233,10 +237,12 @@ class WooUpdateProductFragment : Fragment() {
         }
 
         product_from_date.setOnClickListener {
-            showDatePickerDialog(product_from_date.text.toString(), OnDateSetListener { _, year, month, dayOfMonth ->
-                product_from_date.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
-                selectedProductModel?.dateOnSaleFromGmt = product_from_date.text.toString()
-            })
+            showDatePickerDialog(
+                    product_from_date.text.toString(),
+                    OnDateSetListener { _, year, month, dayOfMonth ->
+                        product_from_date.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
+                        selectedProductModel?.dateOnSaleFromGmt = product_from_date.text.toString()
+                    })
         }
 
         product_to_date.setOnClickListener {
