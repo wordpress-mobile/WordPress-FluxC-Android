@@ -166,7 +166,7 @@ class WooUpdateProductFragment : Fragment() {
                 editText.text.toString().toLongOrNull()?.let { id ->
 
                     val storedGroupedProductIds =
-                            selectedProductModel?.getGroupedProductIds()?.toMutableList() ?: mutableListOf()
+                            selectedProductModel?.getGroupedProductIdsList()?.toMutableList() ?: mutableListOf()
                     storedGroupedProductIds.add(id)
                     selectedProductModel?.groupedProductIds = storedGroupedProductIds.joinToString(
                             separator = ",",
@@ -305,7 +305,7 @@ class WooUpdateProductFragment : Fragment() {
                 val categories = wcProductStore.getProductCategoriesForSite(it)
                         .map { ProductCategory(it.remoteCategoryId, it.name, it.slug) }
 
-                val selectedProductCategories = selectedCategories ?: selectedProductModel?.getCategories()
+                val selectedProductCategories = selectedCategories ?: selectedProductModel?.getCategoriesList()
                         ?.map { it.toProductCategory() }
 
                 replaceFragment(
@@ -324,7 +324,7 @@ class WooUpdateProductFragment : Fragment() {
                 val tags = wcProductStore.getTagsForSite(it)
                         .map { ProductTag(it.remoteTagId, it.name, it.slug) }
 
-                val selectedProductTags = selectedTags ?: selectedProductModel?.getTags()
+                val selectedProductTags = selectedTags ?: selectedProductModel?.getTagsList()
                         ?.map { it.toProductTag() }
 
                 replaceFragment(

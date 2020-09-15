@@ -66,7 +66,7 @@ data class WCRevenueStatsModel(@PrimaryKey @Column private var id: Int = 0) : Id
      * To address this issue, we check if the [total] param is a JsonArray
      * and return a null response, if that's the case.
      */
-    fun getTotal(): Total? {
+    fun parseTotal(): Total? {
         val jsonElement = JsonParser().parse(total)
         return if (jsonElement.isJsonArray) {
             if (jsonElement.asJsonArray.size() > 0) {
