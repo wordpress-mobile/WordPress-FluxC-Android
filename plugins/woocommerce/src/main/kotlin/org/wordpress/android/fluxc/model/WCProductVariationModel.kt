@@ -92,7 +92,7 @@ data class WCProductVariationModel(@PrimaryKey @Column private var id: Int = 0) 
     /**
      * Parses the images json array into a list of product images
      */
-    fun getImage(): WCProductImageModel? {
+    fun getImageModel(): WCProductImageModel? {
         if (image.isNotBlank()) {
             try {
                 with(Gson().fromJson(image, JsonElement::class.java).asJsonObject) {

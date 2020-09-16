@@ -1127,7 +1127,7 @@ class ProductRestClient(
             body["short_description"] = updatedProductModel.shortDescription
         }
         if (!storedWCProductModel.hasSameImages(updatedProductModel)) {
-            val updatedImages = updatedProductModel.getImages()
+            val updatedImages = updatedProductModel.getImageList()
             body["images"] = JsonArray().also {
                 for (image in updatedImages) {
                     it.add(image.toJson())
@@ -1147,7 +1147,7 @@ class ProductRestClient(
             body["menu_order"] = updatedProductModel.menuOrder
         }
         if (!storedWCProductModel.hasSameCategories(updatedProductModel)) {
-            val updatedCategories = updatedProductModel.getCategories()
+            val updatedCategories = updatedProductModel.getCategoryList()
             body["categories"] = JsonArray().also {
                 for (category in updatedCategories) {
                     it.add(category.toJson())
@@ -1155,7 +1155,7 @@ class ProductRestClient(
             }
         }
         if (!storedWCProductModel.hasSameTags(updatedProductModel)) {
-            val updatedTags = updatedProductModel.getTags()
+            val updatedTags = updatedProductModel.getTagList()
             body["tags"] = JsonArray().also {
                 for (tag in updatedTags) {
                     it.add(tag.toJson())
@@ -1163,7 +1163,7 @@ class ProductRestClient(
             }
         }
         if (storedWCProductModel.groupedProductIds != updatedProductModel.groupedProductIds) {
-            body["grouped_products"] = updatedProductModel.getGroupedProductIds()
+            body["grouped_products"] = updatedProductModel.getGroupedProductIdList()
         }
         return body
     }
@@ -1251,7 +1251,7 @@ class ProductRestClient(
         }
         // TODO: Once removal is supported, we can remove the extra isNotBlank() condition
         if (storedVariationModel.image != updatedVariationModel.image && updatedVariationModel.image.isNotBlank()) {
-            body["image"] = updatedVariationModel.getImage()?.toJson() ?: ""
+            body["image"] = updatedVariationModel.getImageModel()?.toJson() ?: ""
         }
         if (storedVariationModel.menuOrder != updatedVariationModel.menuOrder) {
             body["menu_order"] = updatedVariationModel.menuOrder
