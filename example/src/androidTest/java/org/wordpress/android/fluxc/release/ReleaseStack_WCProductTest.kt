@@ -533,7 +533,7 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         val updatedProduct = productStore.getProductByRemoteId(sSite, productModel.remoteProductId)
         assertNotNull(updatedProduct)
 
-        val updatedImageList = updatedProduct!!.getImagesList()
+        val updatedImageList = updatedProduct!!.getImageList()
         assertNotNull(updatedImageList)
         assertEquals(updatedImageList.size, 1)
 

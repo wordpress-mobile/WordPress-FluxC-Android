@@ -133,7 +133,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
     /**
      * Parses the images json array into a list of product images
      */
-    fun getImagesList(): ArrayList<WCProductImageModel> {
+    fun getImageList(): ArrayList<WCProductImageModel> {
         val imageList = ArrayList<WCProductImageModel>()
         if (images.isNotEmpty()) {
             try {
@@ -175,13 +175,13 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      */
     fun getImageUrls(): List<String> {
         val imageUrls = ArrayList<String>()
-        getImagesList().forEach {
+        getImageList().forEach {
             imageUrls.add(it.src)
         }
         return imageUrls
     }
 
-    fun getAttributesList(): List<ProductAttribute> {
+    fun getAttributeList(): List<ProductAttribute> {
         fun getAttributeOptions(jsonArray: JsonArray?): List<String> {
             val options = ArrayList<String>()
             try {
@@ -239,7 +239,7 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         }
     }
 
-    fun getGroupedProductIdsList(): List<Long> {
+    fun getGroupedProductIdList(): List<Long> {
         val groupedIds = ArrayList<Long>()
         try {
             if (groupedProductIds.isNotEmpty()) {
@@ -253,13 +253,13 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return groupedIds
     }
 
-    fun getCategoriesList() = getTriplets(categories)
+    fun getCategoryList() = getTriplets(categories)
 
-    fun getCommaSeparatedCategoryNames() = getCommaSeparatedTripletNames(getCategoriesList())
+    fun getCommaSeparatedCategoryNames() = getCommaSeparatedTripletNames(getCategoryList())
 
-    fun getTagsList() = getTriplets(tags)
+    fun getTagList() = getTriplets(tags)
 
-    fun getCommaSeparatedTagNames() = getCommaSeparatedTripletNames(getTagsList())
+    fun getCommaSeparatedTagNames() = getCommaSeparatedTripletNames(getTagList())
 
     private fun getCommaSeparatedTripletNames(triplets: List<ProductTriplet>): String {
         if (triplets.isEmpty()) return ""
@@ -301,8 +301,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      * lists contain the same images in the same order
      */
     fun hasSameImages(updatedProduct: WCProductModel): Boolean {
-        val updatedImages = updatedProduct.getImagesList()
-        val thisImages = getImagesList()
+        val updatedImages = updatedProduct.getImageList()
+        val thisImages = getImageList()
         if (thisImages.size != updatedImages.size) {
             return false
         }
@@ -319,8 +319,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      * lists contain the same categories in the same order
      */
     fun hasSameCategories(updatedProduct: WCProductModel): Boolean {
-        val updatedCategories = updatedProduct.getCategoriesList()
-        val storedCategories = getCategoriesList()
+        val updatedCategories = updatedProduct.getCategoryList()
+        val storedCategories = getCategoryList()
         if (storedCategories.size != updatedCategories.size) {
             return false
         }
@@ -337,8 +337,8 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
      * lists contain the same tags in the same order
      */
     fun hasSameTags(updatedProduct: WCProductModel): Boolean {
-        val updatedTags = updatedProduct.getTagsList()
-        val storedTags = getTagsList()
+        val updatedTags = updatedProduct.getTagList()
+        val storedTags = getTagList()
         if (storedTags.size != updatedTags.size) {
             return false
         }

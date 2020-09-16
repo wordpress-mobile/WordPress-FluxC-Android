@@ -87,13 +87,13 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         with(payload) {
             assertNull(error)
             assertEquals(remoteProductId, product.remoteProductId)
-            assertEquals(product.getCategoriesList().size, 2)
-            assertEquals(product.getTagsList().size, 2)
-            assertEquals(product.getImagesList().size, 2)
+            assertEquals(product.getCategoryList().size, 2)
+            assertEquals(product.getTagList().size, 2)
+            assertEquals(product.getImageList().size, 2)
             assertNotNull(product.getFirstImageUrl())
-            assertEquals(product.getAttributesList().size, 2)
-            assertEquals(product.getAttributesList().get(0).options.size, 3)
-            assertEquals(product.getAttributesList().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
+            assertEquals(product.getAttributeList().size, 2)
+            assertEquals(product.getAttributeList().get(0).options.size, 3)
+            assertEquals(product.getAttributeList().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
             assertEquals(product.getNumVariations(), 2)
         }
 
@@ -105,13 +105,13 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertNotNull(productFromDb)
         productFromDb?.let { product ->
             assertEquals(product.remoteProductId, remoteProductId)
-            assertEquals(product.getCategoriesList().size, 2)
-            assertEquals(product.getTagsList().size, 2)
-            assertEquals(product.getImagesList().size, 2)
+            assertEquals(product.getCategoryList().size, 2)
+            assertEquals(product.getTagList().size, 2)
+            assertEquals(product.getImageList().size, 2)
             assertNotNull(product.getFirstImageUrl())
-            assertEquals(product.getAttributesList().size, 2)
-            assertEquals(product.getAttributesList().get(0).options.size, 3)
-            assertEquals(product.getAttributesList().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
+            assertEquals(product.getAttributeList().size, 2)
+            assertEquals(product.getAttributeList().get(0).options.size, 3)
+            assertEquals(product.getAttributeList().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
             assertEquals(product.getNumVariations(), 2)
         }
     }
@@ -582,7 +582,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         with(payload) {
             assertNull(error)
             assertEquals(remoteProductId, product.remoteProductId)
-            assertEquals(product.getImagesList().size, 2)
+            assertEquals(product.getImageList().size, 2)
         }
     }
 
@@ -627,8 +627,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(updatedProduct.name, product.name)
             assertEquals(updatedProduct.sku, product.sku)
             assertEquals(updatedProduct.virtual, product.virtual)
-            assertEquals(updatedProduct.getImagesList().size, 2)
-            assertEquals(updatedProduct.getGroupedProductIdsList().size, 2)
+            assertEquals(updatedProduct.getImageList().size, 2)
+            assertEquals(updatedProduct.getGroupedProductIdList().size, 2)
             assertEquals(updatedProduct.type, product.type)
         }
     }
@@ -664,7 +664,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         // make sure two images are attached to the product
         val productBefore = ProductSqlUtils.getProductByRemoteId(siteModel, remoteProductId)
         assertNotNull(productBefore)
-        assertEquals(productBefore!!.getImagesList().size, 2)
+        assertEquals(productBefore!!.getImageList().size, 2)
 
         // remove one of the images
         val didDelete = ProductSqlUtils.deleteProductImage(siteModel, remoteProductId, 1)
@@ -673,7 +673,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         // now make sure only one image is attached to the product
         val productAfter = ProductSqlUtils.getProductByRemoteId(siteModel, remoteProductId)
         assertNotNull(productAfter)
-        assertEquals(productAfter!!.getImagesList().size, 1)
+        assertEquals(productAfter!!.getImageList().size, 1)
     }
 
     @Test
