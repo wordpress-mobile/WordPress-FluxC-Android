@@ -80,7 +80,7 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
      * For instance: "[Belt, Cap, Herman Miller Chair Embody]" would be split into a list
      * ["Belt", "Cap", "Herman Miller Chair Embody"]
      */
-    fun getProductNamesList(): List<String> {
+    fun getProductNameList(): List<String> {
         return productNames
                 .trim() // remove extra spaces between commas
                 .removePrefix("[") // remove the String prefix
