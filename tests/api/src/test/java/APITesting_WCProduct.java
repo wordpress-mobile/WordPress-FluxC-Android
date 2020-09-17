@@ -379,23 +379,13 @@ public class APITesting_WCProduct {
         jsonBody.put("description", "New product description that is long");
         jsonBody.put("short_description", "New product short desc");
 
-        // for categories
-        JSONArray jsonCategories = new JSONArray();
-        JSONObject jsonCategory1 = new JSONObject();
-        jsonCategory1.put("id", 1);
-        JSONObject jsonCategory2 = new JSONObject();
-        jsonCategory2.put("id", 2);
-        jsonCategories.put(0, jsonCategory1);
-        jsonCategories.put(1, jsonCategory2);
-        jsonBody.put("categories", jsonCategories);
-
         // for images
         JSONArray jsonImagesArray = new JSONArray();
         JSONObject jsonImage = new JSONObject();
         jsonImage.put("src", "https://woomobileapitesting.mystagingwebsite.com/wp-content"
                              + "/uploads/2020/02/hoodie-2.jpg");
         jsonImagesArray.put(0, jsonImage);
-        jsonBody.put("images", jsonCategories);
+        jsonBody.put("images", jsonImagesArray);
 
 
         JSONObject jsonObj = new JSONObject();
@@ -419,7 +409,6 @@ public class APITesting_WCProduct {
                        "data.regular_price", equalTo("90"),
                        "data.description", equalTo("New product description that is long"),
                        "data.short_description", equalTo("New product short desc"),
-                       "data.categories", hasSize(2),
                        "data.images", hasSize(1)
                     );
     }
