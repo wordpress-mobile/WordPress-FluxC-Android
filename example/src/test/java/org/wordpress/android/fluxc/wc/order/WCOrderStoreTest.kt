@@ -173,7 +173,7 @@ class WCOrderStoreTest {
         assertEquals(6, noteModels.size)
         OrderSqlUtils.insertOrIgnoreOrderNote(noteModels[0])
 
-        val retrievedNotes = orderStore.getOrderNotesForOrder(orderModel)
+        val retrievedNotes = orderStore.getOrderNotesForOrder(orderModel.id)
         assertEquals(1, retrievedNotes.size)
         assertEquals(noteModels[0], retrievedNotes[0])
     }

@@ -218,7 +218,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
 
         interceptor.respondWith("wc-order-update-response-success.json")
-        orderRestClient.updateOrderStatus(originalOrder, siteModel, CoreOrderStatus.REFUNDED.value)
+        orderRestClient.updateOrderStatus(
+                originalOrder.id, originalOrder.remoteOrderId, siteModel, CoreOrderStatus.REFUNDED.value
+        )
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -250,7 +252,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
 
         interceptor.respondWithError(errorJson, 400)
-        orderRestClient.updateOrderStatus(originalOrder, siteModel, CoreOrderStatus.REFUNDED.value)
+        orderRestClient.updateOrderStatus(
+                originalOrder.id, originalOrder.remoteOrderId, siteModel, CoreOrderStatus.REFUNDED.value
+        )
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
@@ -268,11 +272,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     fun testOrderNotesFetchSuccess() {
         interceptor.respondWith("wc-order-notes-response-success.json")
         orderRestClient.fetchOrderNotes(
-                WCOrderModel().apply {
-                    localSiteId = 5
-                    id = 8
-                    remoteOrderId = 88
-                }, siteModel
+                localOrderId = 8,
+                remoteOrderId = 88,
+                site = siteModel
         )
 
         countDownLatch = CountDownLatch(1)
@@ -316,11 +318,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     fun testOrderNotesFetchError() {
         interceptor.respondWithError("wc-order-notes-response-failure-invalid-id.json", 404)
         orderRestClient.fetchOrderNotes(
-                WCOrderModel().apply {
-                    localSiteId = 5
-                    id = 8
-                    remoteOrderId = 88
-                }, siteModel
+                localOrderId = 8,
+                remoteOrderId = 88,
+                site = siteModel
         )
 
         countDownLatch = CountDownLatch(1)
@@ -346,7 +346,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
 
         interceptor.respondWith("wc-order-note-post-response-success.json")
-        orderRestClient.postOrderNote(orderModel, siteModel, originalNote)
+        orderRestClient.postOrderNote(orderModel.id, orderModel.remoteOrderId, siteModel, originalNote)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -379,7 +379,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
 
         interceptor.respondWithError(errorJson, 400)
-        orderRestClient.postOrderNote(orderModel, siteModel, originalNote)
+        orderRestClient.postOrderNote(orderModel.id, orderModel.remoteOrderId, siteModel, originalNote)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -431,7 +431,7 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
     fun testOrderShipmentTrackingsFetchSuccess() {
         val orderModel = WCOrderModel(5).apply { localSiteId = siteModel.id }
         interceptor.respondWith("wc-order-shipment-trackings-success.json")
-        orderRestClient.fetchOrderShipmentTrackings(siteModel, orderModel)
+        orderRestClient.fetchOrderShipmentTrackings(siteModel, orderModel.id, orderModel.remoteOrderId)
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -461,7 +461,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             dateShipped = "2019-04-18"
         }
         interceptor.respondWith("wc-post-order-shipment-tracking-success.json")
-        orderRestClient.addOrderShipmentTrackingForOrder(siteModel, orderModel, trackingModel, isCustomProvider = false)
+        orderRestClient.addOrderShipmentTrackingForOrder(
+                siteModel, orderModel.id, orderModel.remoteOrderId, trackingModel, isCustomProvider = false
+        )
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -492,7 +494,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
             dateShipped = "2019-04-19"
         }
         interceptor.respondWith("wc-post-order-shipment-tracking-custom-success.json")
-        orderRestClient.addOrderShipmentTrackingForOrder(siteModel, orderModel, trackingModel, isCustomProvider = true)
+        orderRestClient.addOrderShipmentTrackingForOrder(
+                siteModel, orderModel.id, orderModel.remoteOrderId, trackingModel, isCustomProvider = true
+        )
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))
@@ -519,7 +523,9 @@ class MockedStack_WCOrdersTest : MockedStack_Base() {
         }
 
         interceptor.respondWith("wc-delete-order-shipment-tracking-success.json")
-        orderRestClient.deleteShipmentTrackingForOrder(siteModel, orderModel, trackingModel)
+        orderRestClient.deleteShipmentTrackingForOrder(
+                siteModel, orderModel.id, orderModel.remoteOrderId, trackingModel
+        )
 
         countDownLatch = CountDownLatch(1)
         assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), MILLISECONDS))

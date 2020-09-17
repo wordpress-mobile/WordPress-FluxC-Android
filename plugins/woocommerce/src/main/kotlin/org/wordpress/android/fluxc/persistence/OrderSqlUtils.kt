@@ -232,14 +232,32 @@ object OrderSqlUtils {
         }
     }
 
-    fun getShipmentTrackingsForOrder(order: WCOrderModel): List<WCOrderShipmentTrackingModel> {
+    fun getShipmentTrackingsForOrder(
+        site: SiteModel,
+        localOrderId: Int
+    ): List<WCOrderShipmentTrackingModel> {
         return WellSql.select(WCOrderShipmentTrackingModel::class.java)
                 .where()
                 .beginGroup()
-                .equals(WCOrderShipmentTrackingModelTable.LOCAL_SITE_ID, order.localSiteId)
-                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, order.id)
+                .equals(WCOrderShipmentTrackingModelTable.LOCAL_SITE_ID, site.id)
+                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, localOrderId)
                 .endGroup().endWhere()
                 .orderBy(WCOrderShipmentTrackingModelTable.DATE_SHIPPED, SelectQuery.ORDER_DESCENDING).asModel
+    }
+
+    fun getShipmentTrackingByTrackingNumber(
+        site: SiteModel,
+        localOrderId: Int,
+        trackingNumber: String
+    ): WCOrderShipmentTrackingModel? {
+        return WellSql.select(WCOrderShipmentTrackingModel::class.java)
+                .where()
+                .beginGroup()
+                .equals(WCOrderShipmentTrackingModelTable.LOCAL_SITE_ID, site.id)
+                .equals(WCOrderShipmentTrackingModelTable.LOCAL_ORDER_ID, localOrderId)
+                .equals(WCOrderShipmentTrackingModelTable.TRACKING_NUMBER, trackingNumber)
+                .endGroup().endWhere()
+                .asModel.firstOrNull()
     }
 
     fun deleteOrderShipmentTrackingById(tracking: WCOrderShipmentTrackingModel): Int =

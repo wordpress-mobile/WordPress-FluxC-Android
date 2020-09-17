@@ -198,7 +198,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
             getFirstWCSite()?.let { site ->
                 getFirstWCOrder()?.let { order ->
                     pendingNotesOrderModel = order
-                    val payload = FetchOrderNotesPayload(order, site)
+                    val payload = FetchOrderNotesPayload(order.id, order.remoteOrderId, site)
                     dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderNotesAction(payload))
                 }
             }
@@ -212,7 +212,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                         val newNote = WCOrderNoteModel().apply {
                             note = editText.text.toString()
                         }
-                        val payload = PostOrderNotePayload(order, site, newNote)
+                        val payload = PostOrderNotePayload(order.id, order.remoteOrderId, site, newNote)
                         dispatcher.dispatch(WCOrderActionBuilder.newPostOrderNoteAction(payload))
                     }
                 }
@@ -224,7 +224,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                 wcOrderStore.getOrdersForSite(site).firstOrNull()?.let { order ->
                     showSingleLineDialog(activity, "Enter new order status") { editText ->
                         val status = editText.text.toString()
-                        val payload = UpdateOrderStatusPayload(order, site, status)
+                        val payload = UpdateOrderStatusPayload(order.id, order.remoteOrderId, site, status)
                         dispatcher.dispatch(WCOrderActionBuilder.newUpdateOrderStatusAction(payload))
                     }
                 } ?: showNoOrdersToast(site)
@@ -242,7 +242,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                             prependToLog("Submitting request to fetch shipment trackings for " +
                                     "remoteOrderId: ${order.remoteOrderId}")
                             pendingShipmentTrackingOrder = order
-                            val payload = FetchOrderShipmentTrackingsPayload(site, order)
+                            val payload = FetchOrderShipmentTrackingsPayload(order.id, order.remoteOrderId, site)
                             dispatcher.dispatch(WCOrderActionBuilder.newFetchOrderShipmentTrackingsAction(payload))
                         } ?: prependToLog("No order found in the db for remoteOrderId: $remoteOrderId, " +
                                 "please fetch orders first.")
@@ -280,9 +280,11 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                             prependToLog("Submitting request to fetch shipment trackings for " +
                                     "remoteOrderId: ${order.remoteOrderId}")
 
-                            wcOrderStore.getShipmentTrackingsForOrder(order).firstOrNull()?.let { tracking ->
+                            wcOrderStore.getShipmentTrackingsForOrder(site, order.id).firstOrNull()?.let { tracking ->
                                 pendingDeleteShipmentTracking = tracking
-                                val payload = DeleteOrderShipmentTrackingPayload(site, order, tracking)
+                                val payload = DeleteOrderShipmentTrackingPayload(
+                                        site, order.id, order.remoteOrderId, tracking
+                                )
                                 dispatcher.dispatch(WCOrderActionBuilder.newDeleteOrderShipmentTrackingAction(payload))
                             } ?: prependToLog("No shipment trackings in the db for remoteOrderId: $remoteOrderId, " +
                                     "please fetch records first for this order")
@@ -407,7 +409,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                         prependToLog("Store has orders: $hasOrders")
                     }
                     FETCH_ORDER_NOTES -> {
-                        val notes = wcOrderStore.getOrderNotesForOrder(pendingNotesOrderModel!!)
+                        val notes = wcOrderStore.getOrderNotesForOrder(pendingNotesOrderModel?.id!!)
                         prependToLog(
                                 "Fetched ${notes.size} order notes for order " +
                                         "${pendingNotesOrderModel!!.remoteOrderId}. ${event.rowsAffected} " +
@@ -422,7 +424,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                         with(orderList[0]) { prependToLog("Updated order status for $number to $status") }
                     FETCH_ORDER_SHIPMENT_TRACKINGS -> {
                         pendingShipmentTrackingOrder?.let {
-                            val trackings = wcOrderStore.getShipmentTrackingsForOrder(it)
+                            val trackings = wcOrderStore.getShipmentTrackingsForOrder(site, it.id)
                             trackings.forEach { tracking ->
                                 prependToLog("- shipped:${tracking.dateShipped}: ${tracking.trackingNumber}")
                             }
@@ -435,7 +437,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
                     ADD_ORDER_SHIPMENT_TRACKING -> {
                         pendingAddShipmentTracking?.let {
                             getFirstWCOrder()?.let { order ->
-                                val trackingCount = wcOrderStore.getShipmentTrackingsForOrder(order).size
+                                val trackingCount = wcOrderStore.getShipmentTrackingsForOrder(site, order.id).size
                                 prependToLog("Shipment tracking added successfully to " +
                                         "remoteOrderId [$pendingAddShipmentTrackingRemoteOrderID]! " +
                                         "[$trackingCount] tracking records now exist for this order in the db.")
@@ -511,7 +513,7 @@ class WooOrdersFragment : Fragment(), WCAddOrderShipmentTrackingDialog.Listener 
     ) {
         pendingAddShipmentTracking = tracking
         pendingAddShipmentTrackingRemoteOrderID = order.remoteOrderId
-        val payload = AddOrderShipmentTrackingPayload(site, order, tracking, isCustomProvider)
+        val payload = AddOrderShipmentTrackingPayload(site, order.id, order.remoteOrderId, tracking, isCustomProvider)
         dispatcher.dispatch(WCOrderActionBuilder.newAddOrderShipmentTrackingAction(payload))
     }
 }
