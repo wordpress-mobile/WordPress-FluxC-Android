@@ -121,12 +121,12 @@ dependencies {
     implementation "com.google.dagger:dagger-android-support:$daggerVersion"
     kapt "com.google.dagger:dagger-android-processor:$daggerVersion"
 
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion"
     testImplementation 'org.robolectric:robolectric:4.3.1'
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
-    testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0'
-    testImplementation 'org.assertj:assertj-core:3.11.1'
+    testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0'
+    testImplementation 'org.assertj:assertj-core:3.15.0'
     testImplementation "androidx.arch.core:core-testing:$arch_core_version"
 
     androidTestImplementation "org.mockito:mockito-android:$mockitoVersion"
