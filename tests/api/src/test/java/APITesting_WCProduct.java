@@ -6,9 +6,9 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
-import io.restassured.builder.RequestSpecBuilder;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.oauth2;
@@ -364,5 +364,52 @@ public class APITesting_WCProduct {
                 "data.slug", equalTo("hot-sunglasses"),
                 "data.short_description", equalTo("Really hot sunglasses")
             );
+    }
+
+    @Test
+    public void canAddProduct() {
+        String path = "/wc/v3/products";
+        String method = "post";
+
+        // New Product
+        JSONObject jsonBody = new JSONObject();
+        jsonBody.put("name", "New product");
+        jsonBody.put("type", "simple");
+        jsonBody.put("regular_price", "90");
+        jsonBody.put("description", "New product description that is long");
+        jsonBody.put("short_description", "New product short desc");
+
+        // for images
+        JSONArray jsonImagesArray = new JSONArray();
+        JSONObject jsonImage = new JSONObject();
+        jsonImage.put("src", "https://woomobileapitesting.mystagingwebsite.com/wp-content"
+                             + "/uploads/2020/02/hoodie-2.jpg");
+        jsonImagesArray.put(0, jsonImage);
+        jsonBody.put("images", jsonImagesArray);
+
+
+        JSONObject jsonObj = new JSONObject();
+        jsonObj.put("body", jsonBody.toString());
+        jsonObj.put("path", path);
+        jsonObj.put("method", method);
+        jsonObj.put("json", "true");
+
+        given()
+                .spec(this.mRequestSpec)
+               .header("Content-Type", ContentType.JSON)
+               .queryParam("path", path)
+               .queryParam("_method", method)
+               .body(jsonObj.toString())
+       .when()
+               .post()
+       .then()
+               .statusCode(200)
+               .body("data.name", equalTo("New product"),
+                       "data.type", equalTo("simple"),
+                       "data.regular_price", equalTo("90"),
+                       "data.description", equalTo("New product description that is long"),
+                       "data.short_description", equalTo("New product short desc"),
+                       "data.images", hasSize(1)
+                    );
     }
 }
