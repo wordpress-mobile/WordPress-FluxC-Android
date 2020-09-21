@@ -54,8 +54,7 @@ class ReleaseStack_StockMediaTest : ReleaseStack_WPComBase() {
         for (modelFromFirstPage in mFirstPageMedia!!) {
             if (modelFromFirstPage == media) {
                 AppLog.w(
-                        MEDIA, "Found dup stock media with ID " + media.id
-                        + " (" + modelFromFirstPage.id + ")"
+                        MEDIA, "Found dup stock media with ID ${media.id} (${modelFromFirstPage.id})"
                 )
                 return true
             }
@@ -67,8 +66,7 @@ class ReleaseStack_StockMediaTest : ReleaseStack_WPComBase() {
     fun onStockMediaListFetched(event: OnStockMediaListFetched) {
         if (event.isError) {
             throw AssertionError(
-                    "Unexpected error occurred with type: "
-                            + event.error!!.type
+                    "Unexpected error occurred with type: ${event.error!!.type}"
             )
         }
         val isPageOne = event.nextPage == 2
@@ -78,7 +76,7 @@ class ReleaseStack_StockMediaTest : ReleaseStack_WPComBase() {
         } else if (isPageTwo) {
             assertEquals(mNextEvent, FETCHED_STOCK_MEDIA_LIST_PAGE_TWO)
         } else {
-            throw AssertionError("Wrong next page received: " + event.nextPage)
+            throw AssertionError("Wrong next page received: ${event.nextPage}")
         }
         assertEquals(
                 event.mediaList.size,
