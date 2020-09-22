@@ -594,13 +594,6 @@ class WCProductStore @Inject constructor(
         var causeOfChange: WCProductAction? = null
     }
 
-    class OnProductDeleted(
-        var rowsAffected: Int,
-        var remoteProductId: Long = 0L
-    ) : OnChanged<ProductError>() {
-        var causeOfChange: WCProductAction? = null
-    }
-
     /**
      * returns the corresponding product from the database as a [WCProductModel].
      */
@@ -1264,16 +1257,16 @@ class WCProductStore @Inject constructor(
     }
 
     private fun handleDeleteProduct(payload: RemoteDeleteProductPayload) {
-        val onProductDeleted: OnProductDeleted
+        val onProductChanged: OnProductChanged
 
         if (payload.isError) {
-            onProductDeleted = OnProductDeleted(0, payload.remoteProductId).also { it.error = payload.error }
+            onProductChanged = OnProductChanged(0).also { it.error = payload.error }
         } else {
             val rowsAffected = ProductSqlUtils.deleteProduct(payload.site, payload.remoteProductId)
-            onProductDeleted = OnProductDeleted(rowsAffected, payload.remoteProductId)
+            onProductChanged = OnProductChanged(rowsAffected, payload.remoteProductId)
         }
 
-        onProductDeleted.causeOfChange = WCProductAction.DELETED_PRODUCT
-        emitChange(onProductDeleted)
+        onProductChanged.causeOfChange = WCProductAction.DELETED_PRODUCT
+        emitChange(onProductChanged)
     }
 }

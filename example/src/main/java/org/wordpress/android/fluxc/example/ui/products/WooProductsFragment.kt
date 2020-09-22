@@ -13,7 +13,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction.ADDED_PRODUCT_CATEGORY
 import org.wordpress.android.fluxc.action.WCProductAction.ADDED_PRODUCT_TAGS
-import org.wordpress.android.fluxc.action.WCProductAction.DELETE_PRODUCT
+import org.wordpress.android.fluxc.action.WCProductAction.DELETED_PRODUCT
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCTS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_CATEGORIES
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_REVIEWS
@@ -485,7 +485,7 @@ class WooProductsFragment : Fragment() {
                 UPDATE_PRODUCT_REVIEW_STATUS -> {
                     prependToLog("${event.rowsAffected} product reviews updated")
                 }
-                DELETE_PRODUCT -> {
+                DELETED_PRODUCT -> {
                     prependToLog("${event.rowsAffected} product deleted")
                 }
                 else -> prependToLog("Product store was updated from a " + event.causeOfChange)
