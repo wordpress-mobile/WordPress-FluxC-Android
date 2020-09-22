@@ -80,7 +80,7 @@ class ReleaseStack_StockMediaTest : ReleaseStack_WPComBase() {
         }
         assertEquals(
                 event.mediaList.size,
-                StockMediaRestClient.DEFAULT_NUM_STOCK_MEDIA_PER_FETCH
+                StockMediaStore.PAGE_SIZE
         )
 
         // remember the results if this is the first page, otherwise make sure the second page
