@@ -838,7 +838,7 @@ class WCProductStore @Inject constructor(
     }
 
     suspend fun fetchProductListSynced(site: SiteModel, productIds: List<Long>) =
-            coroutineEngine?.withDefaultContext(AppLog.T.API, this, "fetchProductList") {
+            coroutineEngine?.withDefaultContext(T.API, this, "fetchProductList") {
                 wcProductRestClient.fetchProductsWithSyncRequest(site = site, remoteProductIds = productIds)?.result
             }
 

@@ -1036,7 +1036,7 @@ class ProductRestClient(
     ) {
         val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
         val responseType = object : TypeToken<ProductApiResponse>() {}.type
-        val params= mapOf("force" to forceDelete.toString())
+        val params = mapOf("force" to forceDelete.toString())
         val request = JetpackTunnelGsonRequest.buildDeleteRequest(url, site.siteId, params, responseType,
                 { response: ProductApiResponse? ->
                     response?.let {
