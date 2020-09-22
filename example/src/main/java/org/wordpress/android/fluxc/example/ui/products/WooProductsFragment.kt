@@ -13,6 +13,7 @@ import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction.ADDED_PRODUCT_CATEGORY
 import org.wordpress.android.fluxc.action.WCProductAction.ADDED_PRODUCT_TAGS
+import org.wordpress.android.fluxc.action.WCProductAction.DELETE_PRODUCT
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCTS
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_CATEGORIES
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_PRODUCT_REVIEWS
@@ -37,6 +38,7 @@ import org.wordpress.android.fluxc.store.MediaStore
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductTagsPayload
+import org.wordpress.android.fluxc.store.WCProductStore.DeleteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductShippingClassListPayload
@@ -391,6 +393,20 @@ class WooProductsFragment : Fragment() {
         add_new_product.setOnClickListener {
             replaceFragment(WooUpdateProductFragment.newInstance(selectedPos, isAddNewProduct = true))
         }
+
+        delete_product.setOnClickListener {
+            showSingleLineDialog(
+                    activity,
+                    "Enter the remoteProductId of the product to delete:"
+            ) { editTextProduct ->
+                editTextProduct.text.toString().toLongOrNull()?.let { productId ->
+                    selectedSite?.let { site ->
+                        val payload = DeleteProductPayload(site, productId)
+                        dispatcher.dispatch(WCProductActionBuilder.newDeleteProductAction(payload))
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -468,6 +484,9 @@ class WooProductsFragment : Fragment() {
                 }
                 UPDATE_PRODUCT_REVIEW_STATUS -> {
                     prependToLog("${event.rowsAffected} product reviews updated")
+                }
+                DELETE_PRODUCT -> {
+                    prependToLog("${event.rowsAffected} product deleted")
                 }
                 else -> prependToLog("Product store was updated from a " + event.causeOfChange)
             }
