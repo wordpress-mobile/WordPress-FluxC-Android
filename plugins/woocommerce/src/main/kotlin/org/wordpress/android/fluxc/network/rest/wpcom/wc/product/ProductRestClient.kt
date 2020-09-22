@@ -54,6 +54,7 @@ import org.wordpress.android.fluxc.store.WCProductStore.ProductSorting.TITLE_DES
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagsResponsePayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteDeleteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPasswordPayload
@@ -1014,6 +1015,43 @@ class ProductRestClient(
                             WCProductModel()
                     )
                     dispatcher.dispatch(WCProductActionBuilder.newAddedProductAction(payload))
+                }
+        )
+        add(request)
+    }
+
+    /**
+     * Makes a DELETE request to `/wp-json/wc/v3/products/<id>` to delete a product
+     *
+     * Dispatches a [WCProductAction.DELETED_PRODUCT] action with the result
+     *
+     * @param [site] The site containing the product
+     * @param [remoteProductId] the ID of the product model to delete
+     * @param [forceDelete] whether to permanently delete the product (will be sent to trash if false)
+     */
+    fun deleteProduct(
+        site: SiteModel,
+        remoteProductId: Long,
+        forceDelete: Boolean = false
+    ) {
+        val url = WOOCOMMERCE.products.id(remoteProductId).pathV3
+        val responseType = object : TypeToken<ProductApiResponse>() {}.type
+        val params= mapOf("force" to forceDelete.toString())
+        val request = JetpackTunnelGsonRequest.buildDeleteRequest(url, site.siteId, params, responseType,
+                { response: ProductApiResponse? ->
+                    response?.let {
+                        val payload = RemoteDeleteProductPayload(site, remoteProductId)
+                        dispatcher.dispatch(WCProductActionBuilder.newDeletedProductAction(payload))
+                    }
+                },
+                WPComErrorListener { networkError ->
+                    val productError = networkErrorToProductError(networkError)
+                    val payload = RemoteDeleteProductPayload(
+                            productError,
+                            site,
+                            remoteProductId
+                    )
+                    dispatcher.dispatch(WCProductActionBuilder.newDeletedProductAction(payload))
                 }
         )
         add(request)

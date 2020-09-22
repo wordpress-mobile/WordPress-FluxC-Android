@@ -179,6 +179,12 @@ class WCProductStore @Inject constructor(
         val product: WCProductModel
     ) : Payload<BaseNetworkError>()
 
+    class DeleteProductPayload(
+        var site: SiteModel,
+        val product: WCProductModel,
+        val forceDelete: Boolean = false
+    ) : Payload<BaseNetworkError>()
+
     enum class ProductErrorType {
         INVALID_PARAM,
         INVALID_REVIEW_ID,
@@ -480,10 +486,23 @@ class WCProductStore @Inject constructor(
         }
     }
 
+    class RemoteDeleteProductPayload(
+        var site: SiteModel,
+        val remoteProductId: Long
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            site: SiteModel,
+            remoteProductId: Long
+        ) : this(site, remoteProductId) {
+            this.error = error
+        }
+    }
+
     // OnChanged events
     class OnProductChanged(
         var rowsAffected: Int,
-        var remoteProductId: Long = 0L, // only set for fetching a single product
+        var remoteProductId: Long = 0L, // only set for fetching or deleting a single product
         var canLoadMore: Boolean = false
     ) : OnChanged<ProductError>() {
         var causeOfChange: WCProductAction? = null
