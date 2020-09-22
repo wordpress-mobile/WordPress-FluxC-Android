@@ -365,13 +365,12 @@ public class ReleaseStack_MediaTestWPCom extends ReleaseStack_WPComBase {
             throw new AssertionError("Wrong event after upload");
         }
 
-        mUploadedMediaModelsFromStockMedia = new ArrayList<>();
-        mUploadedMediaModelsFromStockMedia.addAll(event.mediaList);
+        mUploadedMediaModelsFromStockMedia = event.mediaList;
         mCountDownLatch.countDown();
     }
 
     private boolean eventHasKnownImages(OnMediaChanged event) {
-        if (event == null || event.mediaList.isEmpty()) return false;
+        if (event == null || event.mediaList == null || event.mediaList.isEmpty()) return false;
         String[] splitIds = BuildConfig.TEST_WPCOM_IMAGE_IDS_TEST1.split(",");
         if (splitIds.length != event.mediaList.size()) return false;
         for (MediaModel mediaItem : event.mediaList) {
