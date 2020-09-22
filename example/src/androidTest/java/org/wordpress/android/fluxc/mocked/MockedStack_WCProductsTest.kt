@@ -22,9 +22,10 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagsResponsePayload
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteDeleteProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPayload
@@ -648,6 +649,36 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(WCProductAction.UPDATED_PRODUCT, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteUpdateProductPayload
         assertTrue(payload.isError)
+    }
+
+    @Test
+    fun testDeleteProductSuccess() {
+        interceptor.respondWith("wc-fetch-product-response-success.json")
+        productRestClient.deleteProduct(siteModel, remoteProductId)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.DELETED_PRODUCT, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteDeleteProductPayload
+        assertNull(payload.error)
+        assertEquals(remoteProductId, payload.remoteProductId)
+
+        // now verify the db no longer contains the product
+        val productFromDb = ProductSqlUtils.getProductByRemoteId(siteModel, remoteProductId)
+        assertNull(productFromDb)
+    }
+
+    @Test
+    fun testDeleteProductFromDb() {
+        // add our test product to the db
+        val productTest = generateTestProduct()
+        var rowsAffected = ProductSqlUtils.insertOrUpdateProduct(productTest)
+        assertEquals(rowsAffected, 1)
+
+        // then delete it
+        rowsAffected = ProductSqlUtils.deleteProduct(siteModel, remoteProductId)
+        assertEquals(rowsAffected, 1)
     }
 
     @Test
