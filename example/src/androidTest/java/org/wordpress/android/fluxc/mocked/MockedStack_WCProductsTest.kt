@@ -54,6 +54,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     private var countDownLatch: CountDownLatch by notNull()
 
     private val remoteProductId = 1537L
+    private val bogusProductId = -1L
     private val remoteShippingClassId = 34L
     private val searchQuery = "test"
 
@@ -667,6 +668,19 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         // now verify the db no longer contains the product
         val productFromDb = ProductSqlUtils.getProductByRemoteId(siteModel, remoteProductId)
         assertNull(productFromDb)
+    }
+
+    @Test
+    fun testDeleteProductFailed() {
+        interceptor.respondWithError("jetpack-tunnel-root-response-failure.json")
+        productRestClient.deleteProduct(siteModel, remoteProductId)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.DELETED_PRODUCT, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteDeleteProductPayload
+        assertNotNull(payload.error)
     }
 
     @Test
