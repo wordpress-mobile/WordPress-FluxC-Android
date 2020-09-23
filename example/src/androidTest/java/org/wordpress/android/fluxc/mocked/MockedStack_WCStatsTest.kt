@@ -433,7 +433,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
             assertEquals("2019-07-01", startInterval)
             assertEquals("2019-07-07", endInterval)
 
-            val total = getTotal()
+            val total = parseTotal()
             assertNotNull(total)
             assertEquals(11, total?.ordersCount)
             assertEquals(301.99, total?.totalSales)
@@ -464,7 +464,7 @@ class MockedStack_WCStatsTest : MockedStack_Base() {
             assertEquals(StatsGranularity.DAYS.toString(), interval)
 
             val intervals = getIntervalList()
-            val total = getTotal()
+            val total = parseTotal()
             assertEquals(0, intervals.size)
             assertNull(total)
         }

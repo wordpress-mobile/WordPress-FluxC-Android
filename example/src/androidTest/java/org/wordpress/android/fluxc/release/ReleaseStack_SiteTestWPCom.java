@@ -21,6 +21,7 @@ import org.wordpress.android.fluxc.store.SiteStore.AutomatedTransferErrorType;
 import org.wordpress.android.fluxc.store.SiteStore.DomainAvailabilityStatus;
 import org.wordpress.android.fluxc.store.SiteStore.DomainMappabilityStatus;
 import org.wordpress.android.fluxc.store.SiteStore.FetchPrivateAtomicCookiePayload;
+import org.wordpress.android.fluxc.store.SiteStore.OnBlockLayoutsFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPrivateAtomicCookieFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferEligibilityChecked;
 import org.wordpress.android.fluxc.store.SiteStore.OnAutomatedTransferInitiated;
@@ -71,6 +72,7 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         SITE_EDITORS_CHANGED,
         PLANS_FETCHED,
         PLANS_UNKNOWN_BLOG_ERROR,
+        BLOCK_LAYOUTS_FETCHED,
         SITE_REMOVED,
         FETCHED_CONNECT_SITE_INFO,
         FETCHED_WPCOM_SITE_BY_URL,
@@ -203,6 +205,17 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
         // Try to fetch plans for that invalid site.
         mDispatcher.dispatch(SiteActionBuilder.newFetchPlansAction(siteModel));
         mNextEvent = TestEvents.PLANS_UNKNOWN_BLOG_ERROR;
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    public void testFetchBlockLayouts() throws InterruptedException {
+        authenticateAndFetchSites(BuildConfig.TEST_WPCOM_USERNAME_TEST1,
+                BuildConfig.TEST_WPCOM_PASSWORD_TEST1);
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+        mNextEvent = TestEvents.BLOCK_LAYOUTS_FETCHED;
+        mDispatcher.dispatch(SiteActionBuilder.newFetchBlockLayoutsAction(firstSite));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
@@ -521,6 +534,19 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.FETCHED_WPCOM_SITE_BY_URL, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onBlockLayoutsFetched(OnBlockLayoutsFetched event) {
+        assertEquals(mNextEvent, TestEvents.BLOCK_LAYOUTS_FETCHED);
+        assertFalse(event.isError());
+        assertEquals(TestEvents.BLOCK_LAYOUTS_FETCHED, mNextEvent);
+        assertNotNull(event.categories);
+        assertNotNull(event.layouts);
+        assertFalse(event.categories.isEmpty());
+        assertFalse(event.layouts.isEmpty());
         mCountDownLatch.countDown();
     }
 

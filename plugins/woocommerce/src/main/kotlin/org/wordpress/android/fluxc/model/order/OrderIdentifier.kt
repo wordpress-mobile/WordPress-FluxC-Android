@@ -16,6 +16,11 @@ fun OrderIdentifier(localSiteId: Int, remoteOrderId: Long): OrderIdentifier {
     return "0-$remoteOrderId-$localSiteId"
 }
 
+@Suppress("FunctionName")
+fun OrderIdentifier(localOrderId: Int, localSiteId: Int, remoteOrderId: Long): OrderIdentifier {
+    return "$localOrderId-$remoteOrderId-$localSiteId"
+}
+
 fun OrderIdentifier.toIdSet(): OrderIdSet {
     val (id, remoteOrderId, localSiteId) = split("-")
     return OrderIdSet(id.toInt(), remoteOrderId.toLong(), localSiteId.toInt())

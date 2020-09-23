@@ -22,6 +22,7 @@ import org.wordpress.android.fluxc.persistence.ProductSqlUtils
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagsResponsePayload
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload
@@ -86,13 +87,13 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         with(payload) {
             assertNull(error)
             assertEquals(remoteProductId, product.remoteProductId)
-            assertEquals(product.getCategories().size, 2)
-            assertEquals(product.getTags().size, 2)
-            assertEquals(product.getImages().size, 2)
+            assertEquals(product.getCategoryList().size, 2)
+            assertEquals(product.getTagList().size, 2)
+            assertEquals(product.getImageList().size, 2)
             assertNotNull(product.getFirstImageUrl())
-            assertEquals(product.getAttributes().size, 2)
-            assertEquals(product.getAttributes().get(0).options.size, 3)
-            assertEquals(product.getAttributes().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
+            assertEquals(product.getAttributeList().size, 2)
+            assertEquals(product.getAttributeList().get(0).options.size, 3)
+            assertEquals(product.getAttributeList().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
             assertEquals(product.getNumVariations(), 2)
         }
 
@@ -104,13 +105,13 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertNotNull(productFromDb)
         productFromDb?.let { product ->
             assertEquals(product.remoteProductId, remoteProductId)
-            assertEquals(product.getCategories().size, 2)
-            assertEquals(product.getTags().size, 2)
-            assertEquals(product.getImages().size, 2)
+            assertEquals(product.getCategoryList().size, 2)
+            assertEquals(product.getTagList().size, 2)
+            assertEquals(product.getImageList().size, 2)
             assertNotNull(product.getFirstImageUrl())
-            assertEquals(product.getAttributes().size, 2)
-            assertEquals(product.getAttributes().get(0).options.size, 3)
-            assertEquals(product.getAttributes().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
+            assertEquals(product.getAttributeList().size, 2)
+            assertEquals(product.getAttributeList().get(0).options.size, 3)
+            assertEquals(product.getAttributeList().get(0).getCommaSeparatedOptions(), "Small, Medium, Large")
             assertEquals(product.getNumVariations(), 2)
         }
     }
@@ -581,7 +582,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         with(payload) {
             assertNull(error)
             assertEquals(remoteProductId, product.remoteProductId)
-            assertEquals(product.getImages().size, 2)
+            assertEquals(product.getImageList().size, 2)
         }
     }
 
@@ -626,8 +627,8 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
             assertEquals(updatedProduct.name, product.name)
             assertEquals(updatedProduct.sku, product.sku)
             assertEquals(updatedProduct.virtual, product.virtual)
-            assertEquals(updatedProduct.getImages().size, 2)
-            assertEquals(updatedProduct.getGroupedProductIds().size, 2)
+            assertEquals(updatedProduct.getImageList().size, 2)
+            assertEquals(updatedProduct.getGroupedProductIdList().size, 2)
             assertEquals(updatedProduct.type, product.type)
         }
     }
@@ -663,7 +664,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         // make sure two images are attached to the product
         val productBefore = ProductSqlUtils.getProductByRemoteId(siteModel, remoteProductId)
         assertNotNull(productBefore)
-        assertEquals(productBefore!!.getImages().size, 2)
+        assertEquals(productBefore!!.getImageList().size, 2)
 
         // remove one of the images
         val didDelete = ProductSqlUtils.deleteProductImage(siteModel, remoteProductId, 1)
@@ -672,7 +673,7 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         // now make sure only one image is attached to the product
         val productAfter = ProductSqlUtils.getProductByRemoteId(siteModel, remoteProductId)
         assertNotNull(productAfter)
-        assertEquals(productAfter!!.getImages().size, 1)
+        assertEquals(productAfter!!.getImageList().size, 1)
     }
 
     @Test
@@ -818,6 +819,40 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
         assertEquals(WCProductAction.ADDED_PRODUCT_TAGS, lastAction!!.type)
         val payload = lastAction!!.payload as RemoteAddProductTagsResponsePayload
         assertNotNull(payload.error)
+    }
+
+    @Test
+    fun testAddProductSuccess() {
+        interceptor.respondWith("wc-fetch-product-response-success.json")
+
+        val testProduct = generateTestProduct()
+        productRestClient.addProduct(siteModel, testProduct)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.ADDED_PRODUCT, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteAddProductPayload
+        with(payload) {
+            assertNull(error)
+            assertEquals(remoteProductId, product.remoteProductId)
+            assertEquals("simple", product.type)
+            assertEquals("Testing product description update", product.description)
+        }
+    }
+
+    @Test
+    fun testAddProductFailed() {
+        interceptor.respondWithError("wc-response-failure-invalid-param.json")
+        val testProduct = generateTestProduct()
+        productRestClient.addProduct(siteModel, testProduct)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.ADDED_PRODUCT, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteAddProductPayload
+        assertTrue(payload.isError)
     }
 
     @Suppress("unused")

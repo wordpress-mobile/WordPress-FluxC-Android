@@ -60,7 +60,7 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
     /**
      * Returns the store details such as currency, country and dimensions wrapped in [StoreOptions]
      */
-    fun getStoreOptions(): StoreOptions? {
+    fun getStoreOptionsModel(): StoreOptions? {
         val responseType = object : TypeToken<StoreOptions>() {}.type
         return gson.fromJson(storeOptions, responseType) as? StoreOptions
     }
@@ -80,7 +80,7 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
      * For instance: "[Belt, Cap, Herman Miller Chair Embody]" would be split into a list
      * ["Belt", "Cap", "Herman Miller Chair Embody"]
      */
-    fun getProductNames(): List<String> {
+    fun getProductNameList(): List<String> {
         return productNames
                 .trim() // remove extra spaces between commas
                 .removePrefix("[") // remove the String prefix
@@ -92,7 +92,7 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
      * Returns data related to the refund of a shipping label.
      * Will only be available in the API if a refund has been initiated
      */
-    fun getRefund(): WCShippingLabelRefundModel? {
+    fun getRefundModel(): WCShippingLabelRefundModel? {
         val responseType = object : TypeToken<WCShippingLabelRefundModel>() {}.type
         return gson.fromJson(refund, responseType) as? WCShippingLabelRefundModel
     }
