@@ -138,6 +138,23 @@ class ProductSqlUtilsTest {
     }
 
     @Test
+    fun testDeleteProduct() {
+        val remoteProductId = 40L
+        val productModel = ProductTestUtils.generateSampleProduct(remoteProductId)
+        val site = SiteModel().apply { id = productModel.localSiteId }
+
+        // Test inserting product
+        ProductSqlUtils.insertOrUpdateProduct(productModel)
+        val storedProductsCount = ProductSqlUtils.getProductCountForSite(site)
+        assertEquals(1, storedProductsCount)
+
+        // Test deleting product
+        val rowsAffected = ProductSqlUtils.deleteProduct(site, remoteProductId)
+        assertEquals(1, rowsAffected)
+        assertNull(ProductSqlUtils.getProductByRemoteId(site, remoteProductId))
+    }
+
+    @Test
     fun testInsertOrUpdateProductShippingClass() {
         val shippingClass = ProductTestUtils.generateProductList(site.id)[0]
         assertNotNull(shippingClass)
