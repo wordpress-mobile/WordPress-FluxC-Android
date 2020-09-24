@@ -43,7 +43,7 @@ public class APITesting_WCProduct {
             get().
         then().
             statusCode(200).
-            body("data", hasSize(18));
+            body("data", hasSize(25));
     }
 
     @Test
