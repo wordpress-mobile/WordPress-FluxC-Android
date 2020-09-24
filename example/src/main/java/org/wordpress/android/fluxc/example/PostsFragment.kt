@@ -11,7 +11,6 @@ import kotlinx.android.synthetic.main.fragment_posts.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.wordpress.android.fluxc.Dispatcher
-import org.wordpress.android.fluxc.action.PostAction
 import org.wordpress.android.fluxc.generated.PostActionBuilder
 import org.wordpress.android.fluxc.model.CauseOfOnPostChanged
 import org.wordpress.android.fluxc.model.SiteModel
@@ -87,7 +86,7 @@ class PostsFragment : Fragment() {
             if (event.causeOfChange is CauseOfOnPostChanged.FetchPosts ||
                 event.causeOfChange is CauseOfOnPostChanged.FetchPages) {
                 prependToLog("Fetched " + event.rowsAffected + " posts from: " + firstSite.name)
-            } else if (event.causeOfChange == PostAction.DELETE_POST) {
+            } else if (event.causeOfChange is CauseOfOnPostChanged.DeletePost) {
                 prependToLog("Post trashed!")
             }
         }
