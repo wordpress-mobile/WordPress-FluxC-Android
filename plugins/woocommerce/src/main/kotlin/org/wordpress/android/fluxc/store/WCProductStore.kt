@@ -920,6 +920,18 @@ class WCProductStore @Inject constructor(
         }
     }
 
+    /**
+     * Adds a product to the database only
+     */
+    fun addProductToDb(product: WCProductModel) =
+            ProductSqlUtils.insertOrUpdateProduct(product) > 0
+
+    /**
+     * Deletes a product from the database only
+     */
+    fun removeProductFromDb(site: SiteModel, remoteProductId: Long) =
+            ProductSqlUtils.deleteProduct(site, remoteProductId) > 0
+
     private fun handleFetchSingleProductCompleted(payload: RemoteProductPayload) {
         val onProductChanged: OnProductChanged
 
