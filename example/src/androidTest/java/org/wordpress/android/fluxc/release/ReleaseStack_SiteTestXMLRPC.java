@@ -23,6 +23,7 @@ import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -238,10 +239,18 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
                 BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
-
         SiteModel firstSite = mSiteStore.getSites().get(0);
+        List<String> supportedBlocks =
+                Arrays.asList("core/paragraph", "core/heading", "core/more", "core/image", "core/video",
+                        "core/nextpage", "core/separator", "core/list", "core/quote", "core/media-text",
+                        "core/preformatted", "core/gallery", "core/columns", "core/column", "core/group",
+                        "core/freeform", "core/button", "core/spacer", "core/shortcode", "core/buttons",
+                        "core/latest-posts", "core/verse", "core/cover", "core/social-link", "core/social-links",
+                        "jetpack/contact-info", "jetpack/email", "jetpack/phone", "jetpack/address", "core/pullquote",
+                        "core/code");
         mNextEvent = TestEvents.BLOCK_LAYOUTS_FETCHED;
-        mDispatcher.dispatch(SiteActionBuilder.newFetchBlockLayoutsAction(firstSite));
+        mDispatcher.dispatch(SiteActionBuilder
+                .newFetchBlockLayoutsAction(new SiteStore.FetchBlockLayoutsPayload(firstSite, supportedBlocks)));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
