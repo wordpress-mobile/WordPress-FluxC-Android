@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.OnBlockLayoutsFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnProfileFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
@@ -30,6 +31,7 @@ import javax.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -49,6 +51,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         SITE_CHANGED,
         POST_FORMATS_CHANGED,
         SITE_REMOVED,
+        BLOCK_LAYOUTS_FETCHED,
         FETCHED_PROFILE
     }
 
@@ -230,6 +233,19 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         assertEquals(10, postFormats.size());
     }
 
+    @Test
+    public void testFetchBlockLayouts() throws InterruptedException {
+        fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
+
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+        mNextEvent = TestEvents.BLOCK_LAYOUTS_FETCHED;
+        mDispatcher.dispatch(SiteActionBuilder.newFetchBlockLayoutsAction(firstSite));
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onSiteChanged(OnSiteChanged event) {
@@ -303,6 +319,19 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.POST_FORMATS_CHANGED, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onBlockLayoutsFetched(OnBlockLayoutsFetched event) {
+        assertEquals(mNextEvent, TestEvents.BLOCK_LAYOUTS_FETCHED);
+        assertFalse(event.isError());
+        assertEquals(TestEvents.BLOCK_LAYOUTS_FETCHED, mNextEvent);
+        assertNotNull(event.categories);
+        assertNotNull(event.layouts);
+        assertFalse(event.categories.isEmpty());
+        assertFalse(event.layouts.isEmpty());
         mCountDownLatch.countDown();
     }
 
