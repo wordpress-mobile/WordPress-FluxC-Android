@@ -25,6 +25,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
+import org.wordpress.android.fluxc.store.StatsStore.StatsErrorType
 import org.wordpress.android.fluxc.store.stats.time.AuthorsStore
 import org.wordpress.android.fluxc.store.stats.time.ClicksStore
 import org.wordpress.android.fluxc.store.stats.time.CountryViewsStore
@@ -175,6 +176,7 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
 
             assertNotNull(secondReponse)
             assertNull(secondReponse.model)
+            assertEquals(StatsErrorType.ALREADY_SPAMMED, secondReponse.error.type)
             assertEquals("Already spammed.", secondReponse.error.message)
         }
     }
