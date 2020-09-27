@@ -12,7 +12,6 @@ import java.time.temporal.WeekFields
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.TimeZone
 import kotlin.test.assertEquals
 
 class DateUtilsTest {
@@ -237,11 +236,10 @@ class DateUtilsTest {
             // Setting a zone id where the start of the week is always Sunday
             val zoneId = ZoneId.of("America/New_York")
 
-            val expectedDate = LocalDateTime.now()
-                    // Adds the offset that are being tested minus the local offset
+            val expectedDate = LocalDateTime.now(ZoneId.of("UTC"))
+                    // Adds the offset that are being tested
                     // This is a way to add the offset using LocalDateTime without changing the zone
                     .plusHours(offset.toLong())
-                    .plusSeconds(TimeZone.getDefault().rawOffset.toLong() / 1000*-1)
                     .atZone(zoneId)
                     .with(fieldISO, 1)
                     .toLocalDate()
