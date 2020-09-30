@@ -99,7 +99,8 @@ object ProductSqlUtils {
     fun getProductsByFilterOptions(
         site: SiteModel,
         filterOptions: Map<ProductFilterOption, String>,
-        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        excludedProductIds: List<Long>? = null
     ): List<WCProductModel> {
         val queryBuilder = WellSql.select(WCProductModel::class.java)
                 .where().beginGroup()
@@ -113,6 +114,10 @@ object ProductSqlUtils {
         }
         if (filterOptions.containsKey(ProductFilterOption.TYPE)) {
             queryBuilder.equals(WCProductModelTable.TYPE, filterOptions[ProductFilterOption.TYPE])
+        }
+
+        excludedProductIds?.let {
+            queryBuilder.isNotIn(WCProductModelTable.REMOTE_PRODUCT_ID, excludedProductIds)
         }
 
         val sortOrder = when (sortType) {
@@ -368,16 +373,24 @@ object ProductSqlUtils {
 
         // build a new image list containing all the product images except the passed one
         val imageList = ArrayList<WCProductImageModel>()
-        product.getImages().forEach { image ->
+        product.getImageList().forEach { image ->
             if (image.id != remoteMediaId) {
                 imageList.add(image)
             }
         }
-        if (imageList.size == product.getImages().size) {
+        if (imageList.size == product.getImageList().size) {
             return false
         }
 
         return updateProductImages(product, imageList) > 0
+    }
+
+    fun deleteProduct(site: SiteModel, remoteProductId: Long): Int {
+        return WellSql.delete(WCProductModel::class.java)
+                .where()
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .equals(WCProductModelTable.REMOTE_PRODUCT_ID, remoteProductId)
+                .endWhere().execute()
     }
 
     fun getProductShippingClassListForSite(

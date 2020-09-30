@@ -23,7 +23,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-private const val NUMBER_OF_LOGS_TO_UPLOAD = 3
+private const val NUMBER_OF_LOGS_TO_UPLOAD = 2
 private const val TEST_UUID_PREFIX = "TEST-UUID-"
 private const val INVALID_UUID = "INVALID_UUID" // Underscore is not allowed
 

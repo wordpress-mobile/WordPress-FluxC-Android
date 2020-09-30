@@ -46,7 +46,9 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductTaxS
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductType
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.product.CoreProductVisibility
 import org.wordpress.android.fluxc.store.WCProductStore
+import org.wordpress.android.fluxc.store.WCProductStore.AddProductPayload
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload
+import org.wordpress.android.fluxc.store.WCProductStore.OnProductCreated
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductPasswordChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
 import org.wordpress.android.fluxc.store.WCProductStore.UpdateProductPasswordPayload
@@ -68,6 +70,7 @@ class WooUpdateProductFragment : Fragment() {
     private var password: String? = null
     private var selectedCategories: List<ProductCategory>? = null
     private var selectedTags: List<ProductTag>? = null
+    private var isAddNewProduct: Boolean = false
     private var selectedProductDownloads: List<ProductFile>? = null
 
     companion object {
@@ -84,11 +87,13 @@ class WooUpdateProductFragment : Fragment() {
         const val LIST_RESULT_CODE_CATEGORIES = 106
         const val LIST_RESULT_CODE_TAGS = 107
         const val LIST_RESULT_CODE_PRODUCT_TYPE = 108
+        const val IS_ADD_NEW_PRODUCT = "IS_ADD_NEW_PRODUCT"
 
-        fun newInstance(selectedSitePosition: Int): WooUpdateProductFragment {
+        fun newInstance(selectedSitePosition: Int, isAddNewProduct: Boolean = false): WooUpdateProductFragment {
             val fragment = WooUpdateProductFragment()
             val args = Bundle()
             args.putInt(ARG_SELECTED_SITE_POS, selectedSitePosition)
+            args.putBoolean(IS_ADD_NEW_PRODUCT, isAddNewProduct)
             fragment.arguments = args
             return fragment
         }
@@ -99,6 +104,7 @@ class WooUpdateProductFragment : Fragment() {
 
         arguments?.let {
             selectedSitePosition = it.getInt(ARG_SELECTED_SITE_POS, 0)
+            isAddNewProduct = it.getBoolean(IS_ADD_NEW_PRODUCT, false)
         }
     }
 
@@ -132,13 +138,34 @@ class WooUpdateProductFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        product_enter_product_id.setOnClickListener {
-            showSingleLineDialog(activity, "Enter the remoteProductId of product to fetch:") { editText ->
-                selectedRemoteProductId = editText.text.toString().toLongOrNull()
-                selectedRemoteProductId?.let { id ->
-                    updateSelectedProductId(id)
-                } ?: prependToLog("No valid remoteProductId defined...doing nothing")
+        if (selectedProductModel == null) {
+            if (!isAddNewProduct) {
+                product_enter_product_id.setOnClickListener {
+                    showSingleLineDialog(activity, "Enter the remoteProductId of product to fetch:") { editText ->
+                        selectedRemoteProductId = editText.text.toString().toLongOrNull()
+                        selectedRemoteProductId?.let { id ->
+                            updateSelectedProductId(id)
+                        } ?: prependToLog("No valid remoteProductId defined...doing nothing")
+                    }
+                }
+            } else {
+                val product = WCProductModel().apply {
+                    stockStatus = CoreProductStockStatus.IN_STOCK.value
+                    status = "publish"
+                    virtual = false
+                    type = "simple"
+                    taxStatus = "taxable"
+                    catalogVisibility = "visible"
+                }
+                enableProductDependentButtons()
+                updateProductProperties(product)
+                selectedProductModel = product
+
+                product_enter_product_id.visibility = View.GONE
+                product_entered_product_id.visibility = View.GONE
             }
+        } else {
+            updateProductProperties(selectedProductModel!!)
         }
 
         grouped_product_ids.isEnabled = false
@@ -147,7 +174,7 @@ class WooUpdateProductFragment : Fragment() {
                 editText.text.toString().toLongOrNull()?.let { id ->
 
                     val storedGroupedProductIds =
-                            selectedProductModel?.getGroupedProductIds()?.toMutableList() ?: mutableListOf()
+                            selectedProductModel?.getGroupedProductIdList()?.toMutableList() ?: mutableListOf()
                     storedGroupedProductIds.add(id)
                     selectedProductModel?.groupedProductIds = storedGroupedProductIds.joinToString(
                             separator = ",",
@@ -216,10 +243,12 @@ class WooUpdateProductFragment : Fragment() {
         }
 
         product_from_date.setOnClickListener {
-            showDatePickerDialog(product_from_date.text.toString(), OnDateSetListener { _, year, month, dayOfMonth ->
-                product_from_date.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
-                selectedProductModel?.dateOnSaleFromGmt = product_from_date.text.toString()
-            })
+            showDatePickerDialog(
+                    product_from_date.text.toString(),
+                    OnDateSetListener { _, year, month, dayOfMonth ->
+                        product_from_date.text = DateUtils.getFormattedDateString(year, month, dayOfMonth)
+                        selectedProductModel?.dateOnSaleFromGmt = product_from_date.text.toString()
+                    })
         }
 
         product_to_date.setOnClickListener {
@@ -231,23 +260,26 @@ class WooUpdateProductFragment : Fragment() {
 
         product_update.setOnClickListener {
             getWCSite()?.let { site ->
-                if (selectedProductModel?.remoteProductId != null) {
-                    // update categories only if new categories has been selected
-                    selectedCategories?.let {
-                        selectedProductModel?.categories =
-                                it.map { it.toProductTriplet().toJson() }.toString()
-                    }
+                // update categories only if new categories has been selected
+                selectedCategories?.let {
+                    selectedProductModel?.categories =
+                            it.map { it.toProductTriplet().toJson() }.toString()
+                }
 
-                    selectedTags?.let {
-                        selectedProductModel?.tags =
-                                it.map { it.toProductTriplet().toJson() }.toString()
-                    }
+                selectedTags?.let {
+                    selectedProductModel?.tags =
+                            it.map { it.toProductTriplet().toJson() }.toString()
+                }
 
-                    selectedProductDownloads?.let {
-                        selectedProductModel?.downloads =
-                                it.map { it.toWCProductFileModel().toJson() }.toString()
-                    }
+                selectedProductDownloads?.let {
+                    selectedProductModel?.downloads =
+                            it.map { it.toWCProductFileModel().toJson() }.toString()
+                }
 
+                if (isAddNewProduct) {
+                    val payload = AddProductPayload(site, selectedProductModel!!)
+                    dispatcher.dispatch(WCProductActionBuilder.newAddProductAction(payload))
+                } else if (selectedProductModel?.remoteProductId != null) {
                     val payload = UpdateProductPayload(site, selectedProductModel!!)
                     dispatcher.dispatch(WCProductActionBuilder.newUpdateProductAction(payload))
                     val updatedPassword = product_password.getText()
@@ -284,7 +316,7 @@ class WooUpdateProductFragment : Fragment() {
                 val categories = wcProductStore.getProductCategoriesForSite(it)
                         .map { ProductCategory(it.remoteCategoryId, it.name, it.slug) }
 
-                val selectedProductCategories = selectedCategories ?: selectedProductModel?.getCategories()
+                val selectedProductCategories = selectedCategories ?: selectedProductModel?.getCategoryList()
                         ?.map { it.toProductCategory() }
 
                 replaceFragment(
@@ -303,7 +335,7 @@ class WooUpdateProductFragment : Fragment() {
                 val tags = wcProductStore.getTagsForSite(it)
                         .map { ProductTag(it.remoteTagId, it.name, it.slug) }
 
-                val selectedProductTags = selectedTags ?: selectedProductModel?.getTags()
+                val selectedProductTags = selectedTags ?: selectedProductModel?.getTagList()
                         ?.map { it.toProductTag() }
 
                 replaceFragment(
@@ -445,56 +477,60 @@ class WooUpdateProductFragment : Fragment() {
             dispatcher.dispatch(action)
 
             selectedProductModel = wcProductStore.getProductByRemoteId(siteModel, remoteProductId)?.also {
-                product_name.setText(it.name)
-                product_description.setText(it.description)
-                product_sku.setText(it.sku)
-                product_short_desc.setText(it.shortDescription)
-                product_regular_price.setText(it.regularPrice)
-                product_sale_price.setText(it.salePrice)
-                product_width.setText(it.width)
-                product_height.setText(it.height)
-                product_length.setText(it.length)
-                product_weight.setText(it.weight)
-                product_tax_status.text = it.taxStatus
-                product_type.text = it.type
-                product_sold_individually.isChecked = it.soldIndividually
-                product_from_date.text = it.dateOnSaleFromGmt.split('T')[0]
-                product_to_date.text = it.dateOnSaleToGmt.split('T')[0]
-                product_manage_stock.isChecked = it.manageStock
-                product_stock_status.text = it.stockStatus
-                product_back_orders.text = it.backorders
-                product_stock_quantity.setText(it.stockQuantity.toString())
-                product_stock_quantity.isEnabled = product_manage_stock.isChecked
-                product_catalog_visibility.text = it.catalogVisibility
-                product_status.text = it.status
-                product_slug.setText(it.slug)
-                product_is_featured.isChecked = it.featured
-                product_reviews_allowed.isChecked = it.reviewsAllowed
-                product_is_virtual.isChecked = it.virtual
-                product_purchase_note.setText(it.purchaseNote)
-                product_menu_order.setText(it.menuOrder.toString())
-                product_external_url.setText(it.externalUrl)
-                product_button_text.setText(it.buttonText)
-                updateGroupedProductIds(it.groupedProductIds)
-                product_categories.setText(
-                        selectedCategories?.joinToString(", ") { it.name }
-                                ?: it.getCommaSeparatedCategoryNames()
-                )
-                product_tags.setText(
-                        selectedTags?.joinToString(", ") { it.name }
-                                ?: it.getCommaSeparatedTagNames()
-                )
-                product_downloadable_checkbox.isChecked = it.downloadable
-                product_downloads.setText(
-                        "Files count: ${selectedProductDownloads?.size ?: it.getDownloadableFiles().size}"
-                )
-                product_update_downloads_button.isEnabled = it.downloadable
-                product_download_limit.setText(it.downloadLimit.toString())
-                product_download_limit.isEnabled = it.downloadable
-                product_download_expiry.setText(it.downloadExpiry.toString())
-                product_download_expiry.isEnabled = it.downloadable
+                updateProductProperties(it)
             } ?: WCProductModel().apply { this.remoteProductId = remoteProductId }
         } ?: prependToLog("No valid site found...doing nothing")
+    }
+
+    private fun updateProductProperties(it: WCProductModel) {
+        product_name.setText(it.name)
+        product_description.setText(it.description)
+        product_sku.setText(it.sku)
+        product_short_desc.setText(it.shortDescription)
+        product_regular_price.setText(it.regularPrice)
+        product_sale_price.setText(it.salePrice)
+        product_width.setText(it.width)
+        product_height.setText(it.height)
+        product_length.setText(it.length)
+        product_weight.setText(it.weight)
+        product_tax_status.text = it.taxStatus
+        product_type.text = it.type
+        product_sold_individually.isChecked = it.soldIndividually
+        product_from_date.text = it.dateOnSaleFromGmt.split('T')[0]
+        product_to_date.text = it.dateOnSaleToGmt.split('T')[0]
+        product_manage_stock.isChecked = it.manageStock
+        product_stock_status.text = it.stockStatus
+        product_back_orders.text = it.backorders
+        product_stock_quantity.setText(it.stockQuantity.toString())
+        product_stock_quantity.isEnabled = product_manage_stock.isChecked
+        product_catalog_visibility.text = it.catalogVisibility
+        product_status.text = it.status
+        product_slug.setText(it.slug)
+        product_is_featured.isChecked = it.featured
+        product_reviews_allowed.isChecked = it.reviewsAllowed
+        product_is_virtual.isChecked = it.virtual
+        product_purchase_note.setText(it.purchaseNote)
+        product_menu_order.setText(it.menuOrder.toString())
+        product_external_url.setText(it.externalUrl)
+        product_button_text.setText(it.buttonText)
+        updateGroupedProductIds(it.groupedProductIds)
+        product_categories.setText(
+                selectedCategories?.joinToString(", ") { it.name }
+                        ?: it.getCommaSeparatedCategoryNames()
+        )
+        product_tags.setText(
+                selectedTags?.joinToString(", ") { it.name }
+                        ?: it.getCommaSeparatedTagNames()
+        )
+        product_downloadable_checkbox.isChecked = it.downloadable
+        product_downloads.setText(
+                "Files count: ${selectedProductDownloads?.size ?: it.getDownloadableFiles().size}"
+        )
+        product_update_downloads_button.isEnabled = it.downloadable
+        product_download_limit.setText(it.downloadLimit.toString())
+        product_download_limit.isEnabled = it.downloadable
+        product_download_expiry.setText(it.downloadExpiry.toString())
+        product_download_expiry.isEnabled = it.downloadable
     }
 
     private fun showListSelectorDialog(listItems: List<String>, resultCode: Int, selectedItem: String?) {
@@ -566,6 +602,16 @@ class WooUpdateProductFragment : Fragment() {
                 password = event.password
             }
         }
+    }
+
+    @Suppress("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProductCreated(event: OnProductCreated) {
+        if (event.isError) {
+            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
+            return
+        }
+        prependToLog("Product created! ${event.rowsAffected} - new product id is: ${event.remoteProductId}")
     }
 
     @Parcelize

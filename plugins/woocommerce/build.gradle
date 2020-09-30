@@ -23,7 +23,7 @@ android {
     defaultConfig {
         versionCode 1
         versionName "0.1"
-        minSdkVersion 16
+        minSdkVersion 18
         targetSdkVersion 29
     }
     buildTypes {
@@ -69,3 +69,5 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
 }
+
+group 'org.wordpress'

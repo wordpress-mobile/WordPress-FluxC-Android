@@ -287,7 +287,7 @@
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/product_width"
-            app:textHint="Product Width" />
+            app:textHint="Product Length" />
 
         <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
             android:id="@+id/product_weight"
@@ -302,7 +302,7 @@
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/product_length"
             app:layout_constraintTop_toBottomOf="@+id/product_width"
-            app:textHint="Product Height" />
+            app:textHint="Product Weight" />
 
         <Button
             android:id="@+id/product_tax_status"

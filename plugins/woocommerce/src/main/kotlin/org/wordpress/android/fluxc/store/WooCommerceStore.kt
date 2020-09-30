@@ -165,7 +165,7 @@ open class WooCommerceStore @Inject constructor(
         val siteSettings = getSiteSettings(site)
 
         // Resolve the currency code to a localized symbol
-        val resolvedCurrencyCode = currencyCode ?: siteSettings?.currencyCode
+        val resolvedCurrencyCode = currencyCode?.takeIf { it.isNotEmpty() } ?: siteSettings?.currencyCode
         val currencySymbol = resolvedCurrencyCode?.let {
             WCCurrencyUtils.getLocalizedCurrencySymbolForCode(it, LanguageUtils.getCurrentDeviceLanguage(appContext))
         } ?: ""

@@ -35,7 +35,7 @@ public class APITesting_WCSettings {
     public void canGetGeneralSettings() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/settings/general").
+            queryParam("path", "/wc/v3/settings/general").
         when().
             get().
         then().
@@ -50,7 +50,7 @@ public class APITesting_WCSettings {
     public void canGetProductSettings() {
         given().
             spec(this.mRequestSpec).
-            queryParam("path", "/wc/v4/settings/products").
+            queryParam("path", "/wc/v3/settings/products").
         when().
             get().
         then().

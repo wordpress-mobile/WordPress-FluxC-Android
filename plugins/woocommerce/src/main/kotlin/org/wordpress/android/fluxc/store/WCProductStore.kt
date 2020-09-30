@@ -74,7 +74,8 @@ class WCProductStore @Inject constructor(
         var offset: Int = 0,
         var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
         var remoteProductIds: List<Long>? = null,
-        var filterOptions: Map<ProductFilterOption, String>? = null
+        var filterOptions: Map<ProductFilterOption, String>? = null,
+        var excludedProductIds: List<Long>? = null
     ) : Payload<BaseNetworkError>()
 
     class SearchProductsPayload(
@@ -82,7 +83,8 @@ class WCProductStore @Inject constructor(
         var searchQuery: String,
         var pageSize: Int = DEFAULT_PRODUCT_PAGE_SIZE,
         var offset: Int = 0,
-        var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING
+        var sorting: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        var excludedProductIds: List<Long>? = null
     ) : Payload<BaseNetworkError>()
 
     class FetchProductVariationsPayload(
@@ -170,6 +172,17 @@ class WCProductStore @Inject constructor(
     class AddProductTagsPayload(
         val site: SiteModel,
         val tags: List<String>
+    ) : Payload<BaseNetworkError>()
+
+    class AddProductPayload(
+        var site: SiteModel,
+        val product: WCProductModel
+    ) : Payload<BaseNetworkError>()
+
+    class DeleteProductPayload(
+        var site: SiteModel,
+        val remoteProductId: Long,
+        val forceDelete: Boolean = false
     ) : Payload<BaseNetworkError>()
 
     enum class ProductErrorType {
@@ -277,7 +290,8 @@ class WCProductStore @Inject constructor(
         var offset: Int = 0,
         var loadedMore: Boolean = false,
         var canLoadMore: Boolean = false,
-        val remoteProductIds: List<Long>? = null
+        val remoteProductIds: List<Long>? = null,
+        val excludedProductIds: List<Long>? = null
     ) : Payload<ProductError>() {
         constructor(
             error: ProductError,
@@ -459,10 +473,36 @@ class WCProductStore @Inject constructor(
         ) : this(site, addedTags) { this.error = error }
     }
 
+    class RemoteAddProductPayload(
+        var site: SiteModel,
+        val product: WCProductModel
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            site: SiteModel,
+            product: WCProductModel
+        ) : this(site, product) {
+            this.error = error
+        }
+    }
+
+    class RemoteDeleteProductPayload(
+        var site: SiteModel,
+        val remoteProductId: Long
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            site: SiteModel,
+            remoteProductId: Long
+        ) : this(site, remoteProductId) {
+            this.error = error
+        }
+    }
+
     // OnChanged events
     class OnProductChanged(
         var rowsAffected: Int,
-        var remoteProductId: Long = 0L, // only set for fetching a single product
+        var remoteProductId: Long = 0L, // only set for fetching or deleting a single product
         var canLoadMore: Boolean = false
     ) : OnChanged<ProductError>() {
         var causeOfChange: WCProductAction? = null
@@ -547,6 +587,13 @@ class WCProductStore @Inject constructor(
         var causeOfChange: WCProductAction? = null
     }
 
+    class OnProductCreated(
+        var rowsAffected: Int,
+        var remoteProductId: Long = 0L
+    ) : OnChanged<ProductError>() {
+        var causeOfChange: WCProductAction? = null
+    }
+
     /**
      * returns the corresponding product from the database as a [WCProductModel].
      */
@@ -607,9 +654,10 @@ class WCProductStore @Inject constructor(
     fun getProductsByFilterOptions(
         site: SiteModel,
         filterOptions: Map<ProductFilterOption, String>,
-        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING
+        sortType: ProductSorting = DEFAULT_PRODUCT_SORTING,
+        excludedProductIds: List<Long>? = null
     ): List<WCProductModel> =
-            ProductSqlUtils.getProductsByFilterOptions(site, filterOptions, sortType)
+            ProductSqlUtils.getProductsByFilterOptions(site, filterOptions, sortType, excludedProductIds)
 
     fun getProductsForSite(site: SiteModel, sortType: ProductSorting = DEFAULT_PRODUCT_SORTING) =
             ProductSqlUtils.getProductsForSite(site, sortType)
@@ -704,6 +752,10 @@ class WCProductStore @Inject constructor(
                 fetchProductTags(action.payload as FetchProductTagsPayload)
             WCProductAction.ADD_PRODUCT_TAGS ->
                 addProductTags(action.payload as AddProductTagsPayload)
+            WCProductAction.ADD_PRODUCT ->
+                addProduct(action.payload as AddProductPayload)
+            WCProductAction.DELETE_PRODUCT ->
+                deleteProduct(action.payload as DeleteProductPayload)
 
             // remote responses
             WCProductAction.FETCHED_SINGLE_PRODUCT ->
@@ -746,6 +798,10 @@ class WCProductStore @Inject constructor(
                 handleFetchProductTagsCompleted(action.payload as RemoteProductTagsPayload)
             WCProductAction.ADDED_PRODUCT_TAGS ->
                 handleAddProductTags(action.payload as RemoteAddProductTagsResponsePayload)
+            WCProductAction.ADDED_PRODUCT ->
+                handleAddNewProduct(action.payload as RemoteAddProductPayload)
+            WCProductAction.DELETED_PRODUCT ->
+                handleDeleteProduct(action.payload as RemoteDeleteProductPayload)
         }
     }
 
@@ -768,18 +824,21 @@ class WCProductStore @Inject constructor(
             wcProductRestClient.fetchProducts(
                     site, pageSize, offset, sorting,
                     remoteProductIds = remoteProductIds,
-                    filterOptions = filterOptions
+                    filterOptions = filterOptions,
+                    excludedProductIds = excludedProductIds
                     )
         }
     }
 
     suspend fun fetchProductListSynced(site: SiteModel, productIds: List<Long>) =
-            coroutineEngine?.withDefaultContext(AppLog.T.API, this, "fetchProductList") {
+            coroutineEngine?.withDefaultContext(T.API, this, "fetchProductList") {
                 wcProductRestClient.fetchProductsWithSyncRequest(site = site, remoteProductIds = productIds)?.result
             }
 
     private fun searchProducts(payload: SearchProductsPayload) {
-        with(payload) { wcProductRestClient.searchProducts(site, searchQuery, pageSize, offset, sorting) }
+        with(payload) { wcProductRestClient.searchProducts(
+                site, searchQuery, pageSize, offset, sorting, excludedProductIds
+        ) }
     }
 
     private fun fetchProductVariations(payload: FetchProductVariationsPayload) {
@@ -849,6 +908,18 @@ class WCProductStore @Inject constructor(
         }
     }
 
+    private fun addProduct(payload: AddProductPayload) {
+        with(payload) {
+            wcProductRestClient.addProduct(site, product)
+        }
+    }
+
+    private fun deleteProduct(payload: DeleteProductPayload) {
+        with(payload) {
+            wcProductRestClient.deleteProduct(site, remoteProductId, forceDelete)
+        }
+    }
+
     private fun handleFetchSingleProductCompleted(payload: RemoteProductPayload) {
         val onProductChanged: OnProductChanged
 
@@ -904,9 +975,10 @@ class WCProductStore @Inject constructor(
         if (payload.isError) {
             onProductChanged = OnProductChanged(0).also { it.error = payload.error }
         } else {
-            // remove the existing products for this site if this is the first page of results, otherwise
+            // remove the existing products for this site if this is the first page of results
+            // or if the remoteProductIds or excludedProductIds are null, otherwise
             // products deleted outside of the app will persist
-            if (payload.offset == 0 && payload.remoteProductIds == null) {
+            if (payload.offset == 0 && payload.remoteProductIds == null && payload.excludedProductIds == null) {
                 ProductSqlUtils.deleteProductsForSite(payload.site)
             }
             val rowsAffected = ProductSqlUtils.insertOrUpdateProducts(payload.products)
@@ -1168,5 +1240,33 @@ class WCProductStore @Inject constructor(
 
         onProductTagsChanged.causeOfChange = WCProductAction.ADDED_PRODUCT_TAGS
         emitChange(onProductTagsChanged)
+    }
+
+    private fun handleAddNewProduct(payload: RemoteAddProductPayload) {
+        val onProductCreated: OnProductCreated
+
+        if (payload.isError) {
+            onProductCreated = OnProductCreated(0, payload.product.remoteProductId).also { it.error = payload.error }
+        } else {
+            val rowsAffected = ProductSqlUtils.insertOrUpdateProduct(payload.product)
+            onProductCreated = OnProductCreated(rowsAffected, payload.product.remoteProductId)
+        }
+
+        onProductCreated.causeOfChange = WCProductAction.ADDED_PRODUCT
+        emitChange(onProductCreated)
+    }
+
+    private fun handleDeleteProduct(payload: RemoteDeleteProductPayload) {
+        val onProductChanged: OnProductChanged
+
+        if (payload.isError) {
+            onProductChanged = OnProductChanged(0).also { it.error = payload.error }
+        } else {
+            val rowsAffected = ProductSqlUtils.deleteProduct(payload.site, payload.remoteProductId)
+            onProductChanged = OnProductChanged(rowsAffected, payload.remoteProductId)
+        }
+
+        onProductChanged.causeOfChange = WCProductAction.DELETED_PRODUCT
+        emitChange(onProductChanged)
     }
 }
