@@ -162,7 +162,10 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             // System Under Test
             val firstResponse = referrersStore.reportReferrerAsSpam(
                     site,
-                    domain
+                    domain,
+                    YEARS,
+                    LIMIT_MODE,
+                    Date()
             )
 
             assertNotNull(firstResponse)
@@ -171,7 +174,10 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             // Asserting the second report twice now causes an already-spammed error
             val secondReponse = referrersStore.reportReferrerAsSpam(
                     site,
-                    domain
+                    domain,
+                    YEARS,
+                    LIMIT_MODE,
+                    Date()
             )
 
             assertNotNull(secondReponse)
