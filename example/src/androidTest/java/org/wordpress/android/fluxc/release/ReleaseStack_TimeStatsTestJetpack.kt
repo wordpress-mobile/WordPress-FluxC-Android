@@ -156,7 +156,10 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
             // Always unreport first so report doesn't cause an already-spammed error
             referrersStore.unreportReferrerAsSpam(
                     site,
-                    domain
+                    domain,
+                    YEARS,
+                    LIMIT_MODE,
+                    Date()
             )
 
             // System Under Test
