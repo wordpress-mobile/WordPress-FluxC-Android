@@ -3,9 +3,10 @@ package org.wordpress.android.fluxc.action;
 import org.wordpress.android.fluxc.annotations.Action;
 import org.wordpress.android.fluxc.annotations.ActionEnum;
 import org.wordpress.android.fluxc.annotations.action.IAction;
-import org.wordpress.android.fluxc.store.WCProductStore.AddProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductCategoryPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.AddProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.AddProductTagsPayload;
+import org.wordpress.android.fluxc.store.WCProductStore.DeleteProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductCategoriesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductPasswordPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchProductReviewsPayload;
@@ -19,9 +20,10 @@ import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductPayloa
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductReviewPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleProductShippingClassPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.FetchSingleVariationPayload;
-import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductCategoryResponsePayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteAddProductTagsResponsePayload;
+import org.wordpress.android.fluxc.store.WCProductStore.RemoteDeleteProductPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductCategoriesPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductListPayload;
 import org.wordpress.android.fluxc.store.WCProductStore.RemoteProductPasswordPayload;
@@ -90,7 +92,8 @@ public enum WCProductAction implements IAction {
     ADD_PRODUCT_TAGS,
     @Action(payloadType = AddProductPayload.class)
     ADD_PRODUCT,
-
+    @Action(payloadType = DeleteProductPayload.class)
+    DELETE_PRODUCT,
 
     // Remote responses
     @Action(payloadType = RemoteProductPayload.class)
@@ -134,5 +137,7 @@ public enum WCProductAction implements IAction {
     @Action(payloadType = RemoteAddProductTagsResponsePayload.class)
     ADDED_PRODUCT_TAGS,
     @Action(payloadType = RemoteAddProductPayload.class)
-    ADDED_PRODUCT
+    ADDED_PRODUCT,
+    @Action(payloadType = RemoteDeleteProductPayload.class)
+    DELETED_PRODUCT
 }

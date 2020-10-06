@@ -179,6 +179,12 @@ class WCProductStore @Inject constructor(
         val product: WCProductModel
     ) : Payload<BaseNetworkError>()
 
+    class DeleteProductPayload(
+        var site: SiteModel,
+        val remoteProductId: Long,
+        val forceDelete: Boolean = false
+    ) : Payload<BaseNetworkError>()
+
     enum class ProductErrorType {
         INVALID_PARAM,
         INVALID_REVIEW_ID,
@@ -480,10 +486,23 @@ class WCProductStore @Inject constructor(
         }
     }
 
+    class RemoteDeleteProductPayload(
+        var site: SiteModel,
+        val remoteProductId: Long
+    ) : Payload<ProductError>() {
+        constructor(
+            error: ProductError,
+            site: SiteModel,
+            remoteProductId: Long
+        ) : this(site, remoteProductId) {
+            this.error = error
+        }
+    }
+
     // OnChanged events
     class OnProductChanged(
         var rowsAffected: Int,
-        var remoteProductId: Long = 0L, // only set for fetching a single product
+        var remoteProductId: Long = 0L, // only set for fetching or deleting a single product
         var canLoadMore: Boolean = false
     ) : OnChanged<ProductError>() {
         var causeOfChange: WCProductAction? = null
@@ -735,6 +754,8 @@ class WCProductStore @Inject constructor(
                 addProductTags(action.payload as AddProductTagsPayload)
             WCProductAction.ADD_PRODUCT ->
                 addProduct(action.payload as AddProductPayload)
+            WCProductAction.DELETE_PRODUCT ->
+                deleteProduct(action.payload as DeleteProductPayload)
 
             // remote responses
             WCProductAction.FETCHED_SINGLE_PRODUCT ->
@@ -779,6 +800,8 @@ class WCProductStore @Inject constructor(
                 handleAddProductTags(action.payload as RemoteAddProductTagsResponsePayload)
             WCProductAction.ADDED_PRODUCT ->
                 handleAddNewProduct(action.payload as RemoteAddProductPayload)
+            WCProductAction.DELETED_PRODUCT ->
+                handleDeleteProduct(action.payload as RemoteDeleteProductPayload)
         }
     }
 
@@ -808,7 +831,7 @@ class WCProductStore @Inject constructor(
     }
 
     suspend fun fetchProductListSynced(site: SiteModel, productIds: List<Long>) =
-            coroutineEngine?.withDefaultContext(AppLog.T.API, this, "fetchProductList") {
+            coroutineEngine?.withDefaultContext(T.API, this, "fetchProductList") {
                 wcProductRestClient.fetchProductsWithSyncRequest(site = site, remoteProductIds = productIds)?.result
             }
 
@@ -888,6 +911,12 @@ class WCProductStore @Inject constructor(
     private fun addProduct(payload: AddProductPayload) {
         with(payload) {
             wcProductRestClient.addProduct(site, product)
+        }
+    }
+
+    private fun deleteProduct(payload: DeleteProductPayload) {
+        with(payload) {
+            wcProductRestClient.deleteProduct(site, remoteProductId, forceDelete)
         }
     }
 
@@ -1225,5 +1254,19 @@ class WCProductStore @Inject constructor(
 
         onProductCreated.causeOfChange = WCProductAction.ADDED_PRODUCT
         emitChange(onProductCreated)
+    }
+
+    private fun handleDeleteProduct(payload: RemoteDeleteProductPayload) {
+        val onProductChanged: OnProductChanged
+
+        if (payload.isError) {
+            onProductChanged = OnProductChanged(0).also { it.error = payload.error }
+        } else {
+            val rowsAffected = ProductSqlUtils.deleteProduct(payload.site, payload.remoteProductId)
+            onProductChanged = OnProductChanged(rowsAffected, payload.remoteProductId)
+        }
+
+        onProductChanged.causeOfChange = WCProductAction.DELETED_PRODUCT
+        emitChange(onProductChanged)
     }
 }

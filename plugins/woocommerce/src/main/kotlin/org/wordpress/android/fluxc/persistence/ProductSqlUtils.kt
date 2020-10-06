@@ -385,6 +385,14 @@ object ProductSqlUtils {
         return updateProductImages(product, imageList) > 0
     }
 
+    fun deleteProduct(site: SiteModel, remoteProductId: Long): Int {
+        return WellSql.delete(WCProductModel::class.java)
+                .where()
+                .equals(WCProductModelTable.LOCAL_SITE_ID, site.id)
+                .equals(WCProductModelTable.REMOTE_PRODUCT_ID, remoteProductId)
+                .endWhere().execute()
+    }
+
     fun getProductShippingClassListForSite(
         localSiteId: Int
     ): List<WCProductShippingClassModel> {

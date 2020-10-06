@@ -43,7 +43,7 @@ public class APITesting_WCProduct {
             get().
         then().
             statusCode(200).
-            body("data", hasSize(18));
+            body("data", hasSize(25));
     }
 
     @Test
@@ -369,9 +369,40 @@ public class APITesting_WCProduct {
     @Test
     public void canAddProduct() {
         String path = "/wc/v3/products";
-        String method = "post";
+
+        // Get previous product
+        Integer id = given().
+            spec(this.mRequestSpec).
+            queryParam("path", path).
+            when().
+                get().
+            then().
+                statusCode(200).
+            extract().
+            path("data[0].id");
+
+        // Delete previous product
+        String deleteMethod = "delete";
+        JSONObject deleteJsonObj = new JSONObject();
+        deleteJsonObj.put("json", "true");
+        deleteJsonObj.put("force", "true");
+
+        if (id != null) {
+            String deletePath = path + "/" + id + "&_method=" + deleteMethod;
+            deleteJsonObj.put("path", deletePath);
+            given().
+               spec(this.mRequestSpec).
+               header("Content-Type", ContentType.JSON).
+               queryParam("path", deletePath).
+               body(deleteJsonObj.toString()).
+           when().
+               post().
+           then().
+               statusCode(200);
+        }
 
         // New Product
+        String method = "post";
         JSONObject jsonBody = new JSONObject();
         jsonBody.put("name", "New product");
         jsonBody.put("type", "simple");
