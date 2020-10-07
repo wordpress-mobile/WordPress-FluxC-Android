@@ -24,10 +24,8 @@ import org.wordpress.android.fluxc.generated.WCStatsActionBuilder
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.orderstats.OrderStatsRestClient.OrderStatsApiUnit
 import org.wordpress.android.fluxc.store.WCStatsStore
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsPayload
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsPayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OnWCStatsChanged
-import org.wordpress.android.fluxc.store.WCStatsStore.OnWCTopEarnersChanged
 import org.wordpress.android.fluxc.store.WCStatsStore.StatsGranularity
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
@@ -133,20 +131,6 @@ class WooStatsFragment : Fragment(), CustomStatsDialog.Listener {
                 dialog.show(fm, "CustomStatsFragment")
             }
         }
-
-        fetch_top_earners_stats.setOnClickListener {
-            getFirstWCSite()?.let {
-                val payload = FetchTopEarnersStatsPayload(it, StatsGranularity.DAYS, 10, false)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchTopEarnersStatsAction(payload))
-            }
-        }
-
-        fetch_top_earners_stats_forced.setOnClickListener {
-            getFirstWCSite()?.let {
-                val payload = FetchTopEarnersStatsPayload(it, StatsGranularity.DAYS, 10, true)
-                dispatcher.dispatch(WCStatsActionBuilder.newFetchTopEarnersStatsAction(payload))
-            }
-        }
     }
 
     override fun onStart() {
@@ -215,20 +199,6 @@ class WooStatsFragment : Fragment(), CustomStatsDialog.Listener {
                 }
             }
         }
-    }
-
-    @Suppress("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onWCTopEarnersChanged(event: OnWCTopEarnersChanged) {
-        if (event.isError) {
-            prependToLog("Error from " + event.causeOfChange + " - error: " + event.error.type)
-            return
-        }
-
-        prependToLog(
-                "Fetched ${event.topEarners.size} top earner stats for ${event.granularity.toString()
-                        .toLowerCase()} from ${getFirstWCSite()?.name}"
-        )
     }
 
     override fun onSubmitted(

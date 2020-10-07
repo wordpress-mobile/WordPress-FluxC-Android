@@ -57,17 +57,5 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Fetch Custom Visitor Stats (forced)"/>
-
-        <Button
-            android:id="@+id/fetch_top_earners_stats"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch 30-day Top Earners Stats"/>
-
-        <Button
-            android:id="@+id/fetch_top_earners_stats_forced"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fetch 30-day Top Earners Stats (forced)"/>
     </LinearLayout>
 </ScrollView>
