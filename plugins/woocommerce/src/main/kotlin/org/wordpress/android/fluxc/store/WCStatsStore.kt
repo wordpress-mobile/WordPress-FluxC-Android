@@ -12,7 +12,6 @@ import org.wordpress.android.fluxc.model.WCNewVisitorStatsModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel.OrderStatsField
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
-import org.wordpress.android.fluxc.model.WCTopEarnerModel
 import org.wordpress.android.fluxc.model.WCVisitorStatsModel
 import org.wordpress.android.fluxc.model.WCVisitorStatsModel.VisitorStatsField
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
@@ -205,23 +204,6 @@ class WCStatsStore @Inject constructor(
         }
     }
 
-    class FetchTopEarnersStatsPayload(
-        val site: SiteModel,
-        val granularity: StatsGranularity,
-        val limit: Int = 10,
-        val forced: Boolean = false
-    ) : Payload<BaseNetworkError>()
-
-    class FetchTopEarnersStatsResponsePayload(
-        val site: SiteModel,
-        val apiUnit: OrderStatsApiUnit,
-        val topEarners: List<WCTopEarnerModel> = emptyList()
-    ) : Payload<OrderStatsError>() {
-        constructor(error: OrderStatsError, site: SiteModel, apiUnit: OrderStatsApiUnit) : this(site, apiUnit) {
-            this.error = error
-        }
-    }
-
     class OrderStatsError(val type: OrderStatsErrorType = GENERIC_ERROR, val message: String = "") : OnChangedError
 
     enum class OrderStatsErrorType {
@@ -247,11 +229,6 @@ class WCStatsStore @Inject constructor(
         var causeOfChange: WCStatsAction? = null
     }
 
-    class OnWCTopEarnersChanged(val topEarners: List<WCTopEarnerModel>, val granularity: StatsGranularity) :
-            OnChanged<OrderStatsError>() {
-        var causeOfChange: WCStatsAction? = null
-    }
-
     override fun onRegister() = AppLog.d(T.API, "WCStatsStore onRegister")
 
     @Subscribe(threadMode = ThreadMode.ASYNC)
@@ -264,7 +241,6 @@ class WCStatsStore @Inject constructor(
                 fetchRevenueStatsAvailability(action.payload as FetchRevenueStatsAvailabilityPayload)
             WCStatsAction.FETCH_VISITOR_STATS -> fetchVisitorStats(action.payload as FetchVisitorStatsPayload)
             WCStatsAction.FETCH_NEW_VISITOR_STATS -> fetchNewVisitorStats(action.payload as FetchNewVisitorStatsPayload)
-            WCStatsAction.FETCH_TOP_EARNERS_STATS -> fetchTopEarnersStats(action.payload as FetchTopEarnersStatsPayload)
             WCStatsAction.FETCHED_ORDER_STATS ->
                 handleFetchOrderStatsCompleted(action.payload as FetchOrderStatsResponsePayload)
             WCStatsAction.FETCHED_REVENUE_STATS ->
@@ -276,8 +252,6 @@ class WCStatsStore @Inject constructor(
                 handleFetchVisitorStatsCompleted(action.payload as FetchVisitorStatsResponsePayload)
             WCStatsAction.FETCHED_NEW_VISITOR_STATS ->
                 handleFetchNewVisitorStatsCompleted(action.payload as FetchNewVisitorStatsResponsePayload)
-            WCStatsAction.FETCHED_TOP_EARNERS_STATS ->
-                handleFetchTopEarnersStatsCompleted(action.payload as FetchTopEarnersStatsResponsePayload)
         }
     }
 
@@ -505,16 +479,6 @@ class WCStatsStore @Inject constructor(
         )
     }
 
-    private fun fetchTopEarnersStats(payload: FetchTopEarnersStatsPayload) {
-        wcOrderStatsClient.fetchTopEarnersStats(
-                payload.site,
-                OrderStatsApiUnit.fromStatsGranularity(payload.granularity),
-                getFormattedDate(payload.site, payload.granularity),
-                payload.limit,
-                payload.forced
-        )
-    }
-
     private fun handleFetchOrderStatsCompleted(payload: FetchOrderStatsResponsePayload) {
         val onStatsChanged = with(payload) {
             val granularity = StatsGranularity.fromOrderStatsApiUnit(apiUnit)
@@ -557,25 +521,6 @@ class WCStatsStore @Inject constructor(
 
         onStatsChanged.causeOfChange = WCStatsAction.FETCH_NEW_VISITOR_STATS
         emitChange(onStatsChanged)
-    }
-
-    private fun handleFetchTopEarnersStatsCompleted(payload: FetchTopEarnersStatsResponsePayload) {
-        val granularity = StatsGranularity.fromOrderStatsApiUnit(payload.apiUnit)
-        val onTopEarnersChanged = OnWCTopEarnersChanged(payload.topEarners, granularity)
-        if (payload.isError) {
-            onTopEarnersChanged.error = payload.error
-        }
-        onTopEarnersChanged.causeOfChange = WCStatsAction.FETCH_TOP_EARNERS_STATS
-        emitChange(onTopEarnersChanged)
-    }
-
-    private fun getFormattedDate(site: SiteModel, granularity: StatsGranularity): String {
-        return when (granularity) {
-            StatsGranularity.DAYS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_DAY)
-            StatsGranularity.WEEKS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_WEEK)
-            StatsGranularity.MONTHS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_MONTH)
-            StatsGranularity.YEARS -> SiteUtils.getCurrentDateTimeForSite(site, DATE_FORMAT_YEAR)
-        }
     }
 
     /**

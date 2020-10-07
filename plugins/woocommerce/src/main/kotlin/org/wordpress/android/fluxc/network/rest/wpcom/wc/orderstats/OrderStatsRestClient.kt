@@ -12,7 +12,6 @@ import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.WCNewVisitorStatsModel
 import org.wordpress.android.fluxc.model.WCOrderStatsModel
 import org.wordpress.android.fluxc.model.WCRevenueStatsModel
-import org.wordpress.android.fluxc.model.WCTopEarnerModel
 import org.wordpress.android.fluxc.model.WCVisitorStatsModel
 import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.UserAgent
@@ -26,7 +25,6 @@ import org.wordpress.android.fluxc.store.WCStatsStore.FetchNewVisitorStatsRespon
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchOrderStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsAvailabilityResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchRevenueStatsResponsePayload
-import org.wordpress.android.fluxc.store.WCStatsStore.FetchTopEarnersStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.FetchVisitorStatsResponsePayload
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsError
 import org.wordpress.android.fluxc.store.WCStatsStore.OrderStatsErrorType
@@ -344,48 +342,6 @@ class OrderStatsRestClient(
                             val payload = FetchNewVisitorStatsResponsePayload(orderError, site, granularity)
                             mDispatcher.dispatch(WCStatsActionBuilder.newFetchedNewVisitorStatsAction(payload))
                         })
-
-        request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
-        if (force) request.setShouldForceUpdate()
-
-        add(request)
-    }
-
-    fun fetchTopEarnersStats(
-        site: SiteModel,
-        unit: OrderStatsApiUnit,
-        date: String,
-        limit: Int,
-        force: Boolean = false
-    ) {
-        val url = WPCOMV2.sites.site(site.siteId).stats.top_earners.url
-        val params = mapOf(
-                "unit" to unit.toString(),
-                "date" to date,
-                "limit" to limit.toString())
-
-        val request = WPComGsonRequest.buildGetRequest(url, params, TopEarnersStatsApiResponse::class.java,
-                { response: TopEarnersStatsApiResponse ->
-                    val wcTopEarners = response.data?.map {
-                        WCTopEarnerModel().apply {
-                            id = it.id ?: 0
-                            currency = it.currency ?: ""
-                            image = it.image ?: ""
-                            name = it.name ?: ""
-                            price = it.price ?: 0.0
-                            quantity = it.quantity ?: 0
-                            total = it.total ?: 0.0
-                        }
-                    } ?: emptyList()
-
-                    val payload = FetchTopEarnersStatsResponsePayload(site, unit, wcTopEarners)
-                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedTopEarnersStatsAction(payload))
-                },
-                { networkError ->
-                    val orderError = networkErrorToOrderError(networkError)
-                    val payload = FetchTopEarnersStatsResponsePayload(orderError, site, unit)
-                    mDispatcher.dispatch(WCStatsActionBuilder.newFetchedTopEarnersStatsAction(payload))
-                })
 
         request.enableCaching(BaseRequest.DEFAULT_CACHE_LIFETIME)
         if (force) request.setShouldForceUpdate()
