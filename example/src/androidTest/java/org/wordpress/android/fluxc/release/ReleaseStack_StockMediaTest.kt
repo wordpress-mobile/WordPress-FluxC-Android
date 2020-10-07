@@ -7,7 +7,6 @@ import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
 import org.wordpress.android.fluxc.generated.StockMediaActionBuilder
 import org.wordpress.android.fluxc.model.StockMediaModel
-import org.wordpress.android.fluxc.network.rest.wpcom.stockmedia.StockMediaRestClient
 import org.wordpress.android.fluxc.release.ReleaseStack_StockMediaTest.TestEvents.FETCHED_STOCK_MEDIA_LIST_PAGE_ONE
 import org.wordpress.android.fluxc.release.ReleaseStack_StockMediaTest.TestEvents.FETCHED_STOCK_MEDIA_LIST_PAGE_TWO
 import org.wordpress.android.fluxc.release.ReleaseStack_StockMediaTest.TestEvents.NONE
@@ -80,7 +79,7 @@ class ReleaseStack_StockMediaTest : ReleaseStack_WPComBase() {
         }
         assertEquals(
                 event.mediaList.size,
-                StockMediaRestClient.DEFAULT_NUM_STOCK_MEDIA_PER_FETCH
+                StockMediaStore.PAGE_SIZE
         )
 
         // remember the results if this is the first page, otherwise make sure the second page
