@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import org.greenrobot.eventbus.Subscribe
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.wordpress.android.fluxc.TestUtils
@@ -16,6 +17,7 @@ import org.wordpress.android.fluxc.generated.SiteActionBuilder
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.LimitMode
 import org.wordpress.android.fluxc.network.utils.StatsGranularity
+import org.wordpress.android.fluxc.network.utils.StatsGranularity.YEARS
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticatePayload
 import org.wordpress.android.fluxc.store.AccountStore.OnAccountChanged
@@ -23,6 +25,7 @@ import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged
 import org.wordpress.android.fluxc.store.SiteStore
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged
 import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType
+import org.wordpress.android.fluxc.store.StatsStore.StatsErrorType
 import org.wordpress.android.fluxc.store.stats.time.AuthorsStore
 import org.wordpress.android.fluxc.store.stats.time.ClicksStore
 import org.wordpress.android.fluxc.store.stats.time.CountryViewsStore
@@ -129,6 +132,61 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
 
             val insightsFromDb = referrersStore.getReferrers(site, granularity, LIMIT_MODE, SELECTED_DATE)
             assertEquals(fetchedInsights.model, insightsFromDb)
+        }
+    }
+
+    @Test
+    fun testReportReferrerAsSpam() {
+        val site = authenticate()
+
+        val fetchedInsights = runBlocking {
+            referrersStore.fetchReferrers(
+                    site,
+                    YEARS,
+                    LIMIT_MODE,
+                    Date(),
+                    true
+            )
+        }
+
+        runBlocking {
+            // Retrieving the first domain in the referrer list
+            val domain = fetchedInsights.model?.groups?.first()?.referrers?.first()?.url!!
+
+            // Always unreport first so report doesn't cause an already-spammed error
+            referrersStore.unreportReferrerAsSpam(
+                    site,
+                    domain,
+                    YEARS,
+                    LIMIT_MODE,
+                    Date()
+            )
+
+            // System Under Test
+            val firstResponse = referrersStore.reportReferrerAsSpam(
+                    site,
+                    domain,
+                    YEARS,
+                    LIMIT_MODE,
+                    Date()
+            )
+
+            assertNotNull(firstResponse)
+            assertNotNull(firstResponse.model)
+
+            // Asserting the second report twice now causes an already-spammed error
+            val secondReponse = referrersStore.reportReferrerAsSpam(
+                    site,
+                    domain,
+                    YEARS,
+                    LIMIT_MODE,
+                    Date()
+            )
+
+            assertNotNull(secondReponse)
+            assertNull(secondReponse.model)
+            assertEquals(StatsErrorType.ALREADY_SPAMMED, secondReponse.error.type)
+            assertEquals("Already spammed.", secondReponse.error.message)
         }
     }
 
