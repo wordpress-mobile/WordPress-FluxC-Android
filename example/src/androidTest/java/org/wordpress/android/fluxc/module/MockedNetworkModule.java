@@ -16,6 +16,7 @@ import org.wordpress.android.fluxc.network.rest.wpcom.account.AccountRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AppSecrets;
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.Authenticator;
+import org.wordpress.android.fluxc.network.rest.wpcom.media.MediaResponseUtils;
 import org.wordpress.android.fluxc.network.rest.wpcom.media.MediaRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.notifications.NotificationRestClient;
 import org.wordpress.android.fluxc.network.rest.wpcom.plugin.PluginRestClient;
@@ -105,8 +106,10 @@ public class MockedNetworkModule {
     public MediaRestClient provideMediaRestClient(Dispatcher dispatcher, Context appContext,
                                                   RequestQueue requestQueue,
                                                   OkHttpClient okHttpClient,
-                                                  AccessToken token, UserAgent userAgent) {
-        return new MediaRestClient(appContext, dispatcher, requestQueue, okHttpClient, token, userAgent);
+                                                  AccessToken token, UserAgent userAgent,
+                                                  MediaResponseUtils mediaResponseUtils) {
+        return new MediaRestClient(appContext, dispatcher, requestQueue, okHttpClient, token, userAgent,
+                mediaResponseUtils);
     }
 
     @Singleton

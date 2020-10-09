@@ -6,6 +6,7 @@ import org.wordpress.android.fluxc.utils.DateUtils
 import org.wordpress.android.fluxc.utils.SiteUtils
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.temporal.WeekFields
 import java.util.Calendar
@@ -226,17 +227,27 @@ class DateUtilsTest {
     fun testGetStartDayOfCurrentWeekForSite() {
         val site = SiteModel().apply { id = 1 }
 
-        val fieldISO = WeekFields.of(Locale.ROOT).dayOfWeek()
-        val timezone = SiteUtils.getNormalizedTimezone(site.timezone)
-        val expectedDate = LocalDate.now()
-                .with(fieldISO, 1)
-                .atStartOfDay(timezone.toZoneId())
-                .toInstant()
-        val expectedDateString = DateUtils.formatDate(DATE_TIME_FORMAT_START, Date.from(expectedDate))
-
         // test get start date for current day
-        for (i in -20..20) {
-            site.timezone = i.toString()
+        for (offset in -20..20) {
+            site.timezone = offset.toString()
+
+            val fieldISO = WeekFields.of(Locale.ROOT).dayOfWeek()
+
+            // Setting a zone id where the start of the week is always Sunday
+            val zoneId = ZoneId.of("America/New_York")
+
+            val expectedDate = LocalDateTime.now(ZoneId.of("UTC"))
+                    // Adds the offset that are being tested
+                    // This is a way to add the offset using LocalDateTime without changing the zone
+                    .plusHours(offset.toLong())
+                    .atZone(zoneId)
+                    .with(fieldISO, 1)
+                    .toLocalDate()
+                    .atStartOfDay()
+                    .atZone(zoneId)
+                    .toInstant()
+
+            val expectedDateString = DateUtils.formatDate(DATE_TIME_FORMAT_START, Date.from(expectedDate))
             // format the current date to string
             // get the formatted date string for the site in the format yyyy-MM-ddThh:mm:ss
             // get the expected start date string for the site in the format yyyy-MM-ddThh:mm:ss
