@@ -139,19 +139,9 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
     fun testReportReferrerAsSpam() {
         val site = authenticate()
 
-        val fetchedInsights = runBlocking {
-            referrersStore.fetchReferrers(
-                    site,
-                    YEARS,
-                    LIMIT_MODE,
-                    Date(),
-                    true
-            )
-        }
-
         runBlocking {
             // Retrieving the first domain in the referrer list
-            val domain = fetchedInsights.model?.groups?.first()?.referrers?.first()?.url!!
+            val domain = "https://wordpress.com/read/"
 
             // Always unreport first so report doesn't cause an already-spammed error
             referrersStore.unreportReferrerAsSpam(
@@ -176,6 +166,15 @@ class ReleaseStack_TimeStatsTestJetpack : ReleaseStack_Base() {
 
             // Asserting the second report twice now causes an already-spammed error
             val secondReponse = referrersStore.reportReferrerAsSpam(
+                    site,
+                    domain,
+                    YEARS,
+                    LIMIT_MODE,
+                    Date()
+            )
+
+            // Always unreport last to revert the change
+            referrersStore.unreportReferrerAsSpam(
                     site,
                     domain,
                     YEARS,
