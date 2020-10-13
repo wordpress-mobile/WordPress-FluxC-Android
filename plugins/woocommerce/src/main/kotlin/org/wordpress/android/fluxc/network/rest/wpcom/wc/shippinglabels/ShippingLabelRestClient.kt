@@ -2,9 +2,12 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -102,9 +105,47 @@ constructor(
         }
     }
 
+    suspend fun verifyAddress(
+        site: SiteModel,
+        address: ShippingLabelAddress,
+        type: ShippingLabelAddress.Type
+    ): WooPayload<VerifyAddressResponse> {
+        val url = WOOCOMMERCE.connect.normalize_address.pathV1
+        val params = mapOf(
+                "address" to Gson().toJson(address).toString(),
+                "type" to type.name
+        )
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                params,
+                VerifyAddressResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
     data class PrintShippingLabelApiResponse(
         val mimeType: String,
         val b64Content: String,
         val success: Boolean
     )
+
+    data class VerifyAddressResponse(
+        @SerializedName("success") val isSuccess: Boolean,
+        @SerializedName("normalized") val suggestedAddress : ShippingLabelAddress?,
+        @SerializedName("field_errors") val error: Error?
+    ) {
+        data class Error(
+            @SerializedName("general") val message: String
+        )
+    }
 }
