@@ -224,8 +224,9 @@ public class ReleaseStack_SiteTestWPCom extends ReleaseStack_Base {
                         "jetpack/contact-info", "jetpack/email", "jetpack/phone", "jetpack/address", "core/pullquote",
                         "core/code");
         mNextEvent = TestEvents.BLOCK_LAYOUTS_FETCHED;
-        mDispatcher.dispatch(SiteActionBuilder
-                .newFetchBlockLayoutsAction(new SiteStore.FetchBlockLayoutsPayload(firstSite, supportedBlocks)));
+        mDispatcher.dispatch(SiteActionBuilder.newFetchBlockLayoutsAction(
+                new SiteStore.FetchBlockLayoutsPayload(firstSite, supportedBlocks,
+                        828.0f, 2.0f)));
         mCountDownLatch = new CountDownLatch(1);
         assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
