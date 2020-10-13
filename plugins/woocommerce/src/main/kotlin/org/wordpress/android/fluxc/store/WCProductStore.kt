@@ -186,6 +186,7 @@ class WCProductStore @Inject constructor(
     ) : Payload<BaseNetworkError>()
 
     enum class ProductErrorType {
+        INVALID_PRODUCT_ID,
         INVALID_PARAM,
         INVALID_REVIEW_ID,
         INVALID_IMAGE_ID,
