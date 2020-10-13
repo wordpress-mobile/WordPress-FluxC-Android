@@ -116,16 +116,21 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
         @SerializedName("selected_packages") val selectedPackage: SelectedPackage? = null
     }
 
-    class ShippingLabelAddress {
-        val company: String? = null
-        val name: String? = null
-        val phone: String? = null
-        val country: String? = null
-        val state: String? = null
-        val address: String? = null
-        val address2: String? = null
-        val city: String? = null
+    data class ShippingLabelAddress(
+        val company: String? = null,
+        val name: String? = null,
+        val phone: String? = null,
+        val country: String? = null,
+        val state: String? = null,
+        val address: String? = null,
+        val address2: String? = null,
+        val city: String? = null,
         val postcode: String? = null
+    ) {
+        enum class Type {
+            ORIGIN,
+            DESTINATION
+        }
     }
 
     class SelectedPackage {
