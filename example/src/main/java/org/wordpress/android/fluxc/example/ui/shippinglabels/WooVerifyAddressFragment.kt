@@ -1,0 +1,102 @@
+package org.wordpress.android.fluxc.example.ui.shippinglabels
+
+import android.content.Context
+import android.content.Intent
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
+import android.os.Bundle
+import android.os.Environment
+import android.util.Base64
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.annotation.RequiresApi
+import androidx.core.content.FileProvider
+import androidx.fragment.app.Fragment
+import dagger.android.support.AndroidSupportInjection
+import kotlinx.android.synthetic.main.fragment_woo_shippinglabels.*
+import kotlinx.android.synthetic.main.fragment_woo_shippinglabels.verify_address
+import kotlinx.android.synthetic.main.fragment_woo_verify_address.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.wordpress.android.fluxc.Dispatcher
+import org.wordpress.android.fluxc.example.R
+import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
+import org.wordpress.android.fluxc.example.ui.products.WooProductTagsFragment
+import org.wordpress.android.fluxc.example.ui.products.WooUpdateProductFragment.ProductTag
+import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
+import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
+import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress.Type.ORIGIN
+import org.wordpress.android.fluxc.store.WCShippingLabelStore
+import org.wordpress.android.fluxc.store.WooCommerceStore
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import javax.inject.Inject
+
+class WooVerifyAddressFragment : Fragment() {
+    @Inject internal lateinit var dispatcher: Dispatcher
+    @Inject internal lateinit var wooCommerceStore: WooCommerceStore
+    @Inject internal lateinit var wcShippingLabelStore: WCShippingLabelStore
+
+    private lateinit var selectedSite: SiteModel
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+
+    companion object {
+        const val SHIPPING_LABEL_REQUEST_CODE = 1000
+        const val ARG_RESULT_CODE = "ARG_RESULT_CODE"
+        const val ARG_ADDRESS = "ARG_ADDRESS"
+        const val ARG_SELECTED_PRODUCT_TAGS = "ARG_SELECTED_PRODUCT_TAGS"
+
+        fun newInstance(
+            fragment: Fragment,
+            site: SiteModel
+        ) = WooVerifyAddressFragment().apply {
+            this.setTargetFragment(fragment, SHIPPING_LABEL_REQUEST_CODE)
+            this.selectedSite = site
+        }
+    }
+
+    override fun onAttach(context: Context) {
+        AndroidSupportInjection.inject(this)
+        super.onAttach(context)
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+            inflater.inflate(R.layout.fragment_woo_verify_address, container, false)
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        verify_address.setOnClickListener {
+            coroutineScope.launch {
+                val result = wcShippingLabelStore.verifyAddress(
+                        selectedSite,
+                        ShippingLabelAddress(
+                                address_company.getText(),
+                                address_name.getText(),
+                                address_phone.getText(),
+                                address_country.getText(),
+                                address_state.getText(),
+                                address_address1.getText(),
+                                address_address2.getText(),
+                                address_city.getText(),
+                                address_zip.getText()
+                        ),
+                        ORIGIN
+                )
+                Log.d("ONKO", result.toString())
+            }
+        }
+    }
+}
