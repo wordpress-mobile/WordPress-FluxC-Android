@@ -123,7 +123,7 @@ class WCShippingLabelModel(@PrimaryKey @Column private var id: Int = 0) : Identi
         val country: String? = null,
         val state: String? = null,
         val address: String? = null,
-        val address2: String? = null,
+        @SerializedName("address_2") val address2: String? = null,
         val city: String? = null,
         val postcode: String? = null
     ) {
