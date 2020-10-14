@@ -66,7 +66,7 @@ class WooVerifyAddressFragment : Fragment() {
                                 address_city.getText(),
                                 address_zip.getText()
                         ),
-                        ORIGIN
+                        if (destination.isChecked) DESTINATION else ORIGIN
                 )
                 Log.d("ONKO", result.toString())
             }
