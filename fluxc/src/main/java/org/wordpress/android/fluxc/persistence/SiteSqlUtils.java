@@ -300,7 +300,7 @@ public class SiteSqlUtils {
     }
 
     public static List<GutenbergLayout> getBlockLayouts(@NonNull SiteModel site) {
-        ArrayList<GutenbergLayout> blockLayouts = new ArrayList();
+        ArrayList<GutenbergLayout> blockLayouts = new ArrayList<>();
         List<GutenbergLayoutModel> layouts =
                 WellSql.select(GutenbergLayoutModel.class)
                        .where()
@@ -312,13 +312,14 @@ public class SiteSqlUtils {
                    .equals(GutenbergLayoutCategoriesModelTable.SITE_ID, site.getId())
                    .equals(GutenbergLayoutCategoriesModelTable.LAYOUT_ID, layout.getId())
                    .endWhere().getAsModel();
+            ArrayList<GutenbergLayoutCategoryModel> categories = new ArrayList<>();
             for (GutenbergLayoutCategoriesModel connection : connections) {
-                List<GutenbergLayoutCategoryModel> categories = WellSql.select(GutenbergLayoutCategoryModel.class)
+                categories.addAll(WellSql.select(GutenbergLayoutCategoryModel.class)
                        .where()
                        .equals(GutenbergLayoutCategoriesModelTable.ID, connection.getCategoryId())
-                       .endWhere().getAsModel();
-                blockLayouts.add(GutenbergLayoutModelKt.transform(layout, categories));
+                       .endWhere().getAsModel());
             }
+            blockLayouts.add(GutenbergLayoutModelKt.transform(layout, categories));
         }
         return blockLayouts;
     }
