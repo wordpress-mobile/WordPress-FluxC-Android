@@ -4,6 +4,7 @@ import android.content.Context
 import com.android.volley.RequestQueue
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
@@ -16,6 +17,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.network.utils.toMap
+import java.util.Locale
 import javax.inject.Singleton
 
 @Singleton
@@ -112,8 +115,8 @@ constructor(
     ): WooPayload<VerifyAddressResponse> {
         val url = WOOCOMMERCE.connect.normalize_address.pathV1
         val params = mapOf(
-                "address" to Gson().toJson(address).toString(),
-                "type" to type.name
+                "address" to address.toMap(),
+                "type" to type.name.toLowerCase(Locale.ROOT)
         )
 
         val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
