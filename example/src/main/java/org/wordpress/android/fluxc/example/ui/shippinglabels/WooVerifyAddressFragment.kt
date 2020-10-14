@@ -15,10 +15,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.R
+import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Invalid
+import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Valid
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress.Type.DESTINATION
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress.Type.ORIGIN
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import javax.inject.Inject
@@ -68,7 +72,17 @@ class WooVerifyAddressFragment : Fragment() {
                         ),
                         if (destination.isChecked) DESTINATION else ORIGIN
                 )
-                Log.d("ONKO", result.toString())
+                when {
+                    result.isError -> {
+                        prependToLog("${result.error.message}")
+                    }
+                    result.model is Valid -> {
+                        prependToLog("${(result.model as Valid).suggestedAddress}")
+                    }
+                    result.model is Invalid -> {
+                        prependToLog((result.model as Invalid).message)
+                    }
+                }
             }
         }
     }
