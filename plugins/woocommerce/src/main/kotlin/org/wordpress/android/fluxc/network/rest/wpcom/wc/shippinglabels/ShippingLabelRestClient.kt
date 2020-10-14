@@ -143,7 +143,7 @@ constructor(
     data class VerifyAddressResponse(
         @SerializedName("success") val isSuccess: Boolean,
         @SerializedName("is_trivial_normalization") val isTrivialNormalization: Boolean,
-        @SerializedName("normalized") val suggestedAddress : ShippingLabelAddress?,
+        @SerializedName("normalized") val suggestedAddress: ShippingLabelAddress?,
         @SerializedName("field_errors") val error: Error?
     ) {
         data class Error(
