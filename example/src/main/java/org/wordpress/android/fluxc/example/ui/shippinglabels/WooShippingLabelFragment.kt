@@ -24,9 +24,6 @@ import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
-import org.wordpress.android.fluxc.example.ui.products.WooProductTagsFragment
-import org.wordpress.android.fluxc.example.ui.products.WooUpdateProductFragment
-import org.wordpress.android.fluxc.example.ui.products.WooUpdateProductFragment.Companion
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
 import org.wordpress.android.fluxc.model.SiteModel
@@ -185,12 +182,7 @@ class WooShippingLabelFragment : Fragment() {
 
         verify_address.setOnClickListener {
             selectedSite?.let { site ->
-                replaceFragment(
-                        WooVerifyAddressFragment.newInstance(
-                                fragment = this,
-                                site
-                        )
-                )
+                replaceFragment(WooVerifyAddressFragment.newInstance(site))
             }
         }
     }
