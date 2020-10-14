@@ -149,8 +149,8 @@ constructor(
         @SerializedName("field_errors") val error: Error?
     ) {
         data class Error(
-            @SerializedName("general") val message: String,
-            @SerializedName("address") val address: String
+            @SerializedName("general") val message: String?,
+            @SerializedName("address") val address: String?
         )
     }
 }

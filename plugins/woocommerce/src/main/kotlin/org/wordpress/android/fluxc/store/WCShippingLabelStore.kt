@@ -1,6 +1,10 @@
 package org.wordpress.android.fluxc.store
 
+import android.text.TextUtils
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult
+import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Invalid
+import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Valid
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelMapper
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
@@ -102,17 +106,17 @@ class WCShippingLabelStore @Inject constructor(
         site: SiteModel,
         address: ShippingLabelAddress,
         type: ShippingLabelAddress.Type
-    ): WooResult<ShippingLabelAddress> {
+    ): WooResult<WCAddressVerificationResult> {
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "verifyAddress") {
             val response = restClient.verifyAddress(site, address, type)
-            return@withDefaultContext when {
-                response.isError -> {
-                    WooResult(response.error)
-                }
-                response.result?.isSuccess == true -> {
-                    WooResult(response.result.suggestedAddress)
-                }
-                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            return@withDefaultContext if (response.isError) {
+                WooResult(response.error)
+            } else if (response.result?.error != null) {
+                WooResult(Invalid(response.result.error.address + response.error.message))
+            } else if (response.result?.suggestedAddress != null && response.result.isSuccess) {
+                WooResult(Valid(response.result.suggestedAddress))
+            } else {
+                WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
     }
