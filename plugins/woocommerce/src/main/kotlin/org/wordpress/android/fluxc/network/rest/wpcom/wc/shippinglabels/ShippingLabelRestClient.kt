@@ -116,7 +116,7 @@ constructor(
                 "type" to type.name
         )
 
-        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
                 this,
                 site,
                 url,
