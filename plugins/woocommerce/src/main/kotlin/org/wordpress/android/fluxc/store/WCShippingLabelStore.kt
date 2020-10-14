@@ -1,6 +1,5 @@
 package org.wordpress.android.fluxc.store
 
-import android.text.TextUtils
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Invalid
