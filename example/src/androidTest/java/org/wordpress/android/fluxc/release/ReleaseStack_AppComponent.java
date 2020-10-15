@@ -70,5 +70,6 @@ public interface ReleaseStack_AppComponent {
     void inject(ReleaseStack_ReactNativeWPAPIRequestTest test);
     void inject(ReleaseStack_ReactNativeWPComRequestTest test);
     void inject(ReleaseStack_EncryptedLogTest test);
+    void inject(ReleaseStack_XPostsTest test);
     void inject(ReleaseStack_NoRedirectsTest test);
 }

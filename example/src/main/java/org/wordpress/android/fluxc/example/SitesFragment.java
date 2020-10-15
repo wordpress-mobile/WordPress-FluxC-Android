@@ -15,6 +15,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.wordpress.android.fluxc.Dispatcher;
 import org.wordpress.android.fluxc.example.ThreeEditTextDialog.Listener;
+import org.wordpress.android.fluxc.example.utils.JavaCoroutineHelper;
 import org.wordpress.android.fluxc.generated.SiteActionBuilder;
 import org.wordpress.android.fluxc.model.SiteModel;
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils;
@@ -27,6 +28,7 @@ import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteDeleted;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteExported;
 import org.wordpress.android.fluxc.store.SiteStore.SiteVisibility;
+import org.wordpress.android.fluxc.store.XPostsStore;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
@@ -37,6 +39,7 @@ import dagger.android.support.AndroidSupportInjection;
 public class SitesFragment extends Fragment {
     @Inject SiteStore mSiteStore;
     @Inject Dispatcher mDispatcher;
+    @Inject XPostsStore mXPostsStore;
 
     @Override
     public void onAttach(Context context) {
@@ -140,6 +143,11 @@ public class SitesFragment extends Fragment {
                 // Fetch site editors
                 mDispatcher.dispatch(SiteActionBuilder.newFetchSiteEditorsAction(site));
             }
+        });
+
+        view.findViewById(R.id.fetch_xposts).setOnClickListener(v -> {
+            SiteModel site = mSiteStore.getSites().get(0);
+            JavaCoroutineHelper.INSTANCE.fetchXposts(mXPostsStore, site, this::prependToLog);
         });
 
         return view;

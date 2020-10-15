@@ -28,7 +28,7 @@ open class WellSqlConfig : DefaultWellConfig {
     annotation class AddOn
 
     override fun getDbVersion(): Int {
-        return 124
+        return 125
     }
 
     override fun getDbName(): String {
@@ -1351,6 +1351,24 @@ open class WellSqlConfig : DefaultWellConfig {
                             "INITIAL BOOLEAN," +
                             "REASON TEXT)"
                     )
+                }
+                124 -> migrate(version) {
+                    db.execSQL("CREATE TABLE XPostSites (" +
+                            "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                            "BLOG_ID INTEGER," +
+                            "TITLE TEXT," +
+                            "SITE_URL TEXT," +
+                            "SUBDOMAIN TEXT," +
+                            "BLAVATAR TEXT," +
+                            "UNIQUE (BLOG_ID) ON CONFLICT REPLACE)"
+                    )
+                    db.execSQL("CREATE TABLE XPosts (" +
+                            "_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                            "SOURCE_SITE_ID INTEGER," +
+                            "TARGET_SITE_ID INTEGER," +
+                            "FOREIGN KEY(SOURCE_SITE_ID) REFERENCES SiteModel(_id) ON DELETE CASCADE," +
+                            "FOREIGN KEY(TARGET_SITE_ID) REFERENCES XPostSites(BLOG_ID) ON DELETE CASCADE," +
+                            "UNIQUE (SOURCE_SITE_ID, TARGET_SITE_ID) ON CONFLICT IGNORE)")
                 }
             }
         }
