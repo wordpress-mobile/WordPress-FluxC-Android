@@ -2,66 +2,88 @@
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:orientation="vertical"
+              android:orientation="horizontal"
               tools:context="org.wordpress.android.fluxc.example.SitesFragment">
 
-    <Button
-        android:id="@+id/fetch_profile"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Fetch Profile" />
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_weight="1">
 
-    <Button
-        android:id="@+id/new_site"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Create New Site" />
+        <Button
+            android:id="@+id/fetch_profile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch Profile" />
 
-    <Button
-        android:id="@+id/update_first_site"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Fetch first site" />
+        <Button
+            android:id="@+id/new_site"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create New Site" />
 
-    <Button
-        android:id="@+id/update_all_sites"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Fetch all sites" />
+        <Button
+            android:id="@+id/update_first_site"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch first site" />
 
-    <Button
-        android:id="@+id/log_sites"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Log Sites" />
+        <Button
+            android:id="@+id/update_all_sites"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch all sites" />
 
-    <Button
-        android:id="@+id/export_first_site"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Export First Site" />
+        <Button
+            android:id="@+id/log_sites"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Log Sites" />
 
-    <Button
-        android:id="@+id/delete_first_site"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="⚠️️ Delete First Site ⚠️️" />
+        <Button
+            android:id="@+id/export_first_site"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Export First Site" />
 
-    <Button
-        android:id="@+id/delete_first_site_db"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Delete First Site (DB Only)"/>
+        <Button
+            android:id="@+id/delete_first_site"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚠️️ Delete First Site ⚠️️" />
 
-    <Button
-        android:id="@+id/fetch_plans"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Fetch First Site Plans" />
+        <Button
+            android:id="@+id/delete_first_site_db"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delete First Site (DB Only)"/>
 
-    <Button
-        android:id="@+id/fetch_editors"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Fetch First Site Editors" />
+        <Button
+            android:id="@+id/fetch_plans"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch First Site Plans" />
+
+        <Button
+            android:id="@+id/fetch_editors"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch First Site Editors" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="right">
+
+        <Button
+            android:id="@+id/fetch_xposts"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fetch XPosts" />
+
+    </LinearLayout>
 </LinearLayout>
