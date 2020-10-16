@@ -110,7 +110,7 @@ class WCShippingLabelStore @Inject constructor(
         return coroutineEngine.withDefaultContext(AppLog.T.API, this, "verifyAddress") {
             val response = restClient.verifyAddress(site, address, type)
             return@withDefaultContext if (response.isError) {
-                WooResult(response.error)
+                WooResult(response.error.apply { message = message?: "" })
             } else if (response.result?.error != null) {
                 if (!response.result.error.address.isNullOrBlank()) {
                     WooResult(InvalidAddress(response.result.error.address))
@@ -120,7 +120,7 @@ class WCShippingLabelStore @Inject constructor(
             } else if (response.result?.suggestedAddress != null && response.result.isSuccess) {
                 WooResult(Valid(response.result.suggestedAddress))
             } else {
-                WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+                WooResult(WooError(GENERIC_ERROR, UNKNOWN, "Unknown error"))
             }
         }
     }
