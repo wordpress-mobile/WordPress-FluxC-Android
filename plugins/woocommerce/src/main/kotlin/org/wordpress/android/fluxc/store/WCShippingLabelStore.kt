@@ -2,7 +2,8 @@ package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult
-import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Invalid
+import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidAddress
+import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidRequest
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Valid
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelMapper
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
@@ -111,7 +112,11 @@ class WCShippingLabelStore @Inject constructor(
             return@withDefaultContext if (response.isError) {
                 WooResult(response.error)
             } else if (response.result?.error != null) {
-                WooResult(Invalid(response.result.error.address + response.error.message))
+                if (!response.result.error.address.isNullOrBlank()) {
+                    WooResult(InvalidAddress(response.result.error.address))
+                } else {
+                    WooResult(InvalidRequest(response.result.error.message ?: ""))
+                }
             } else if (response.result?.suggestedAddress != null && response.result.isSuccess) {
                 WooResult(Valid(response.result.suggestedAddress))
             } else {

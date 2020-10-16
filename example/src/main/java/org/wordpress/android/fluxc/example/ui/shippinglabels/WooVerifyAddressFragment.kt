@@ -16,7 +16,8 @@ import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
 import org.wordpress.android.fluxc.model.SiteModel
-import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Invalid
+import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidRequest
+import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Valid
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress.Type.DESTINATION
@@ -77,8 +78,11 @@ class WooVerifyAddressFragment : Fragment() {
                     result.model is Valid -> {
                         prependToLog("${(result.model as Valid).suggestedAddress}")
                     }
-                    result.model is Invalid -> {
-                        prependToLog((result.model as Invalid).message)
+                    result.model is InvalidAddress -> {
+                        prependToLog("Address error: ${(result.model as InvalidAddress).message}")
+                    }
+                    result.model is InvalidRequest -> {
+                        prependToLog("Request error: ${(result.model as InvalidRequest).message}")
                     }
                 }
             }

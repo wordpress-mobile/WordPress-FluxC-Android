@@ -4,5 +4,6 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.Shi
 
 sealed class WCAddressVerificationResult {
     class Valid(val suggestedAddress: ShippingLabelAddress) : WCAddressVerificationResult()
-    class Invalid(val message: String) : WCAddressVerificationResult()
+    class InvalidAddress(val message: String) : WCAddressVerificationResult()
+    class InvalidRequest(val message: String) : WCAddressVerificationResult()
 }
