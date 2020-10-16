@@ -1432,6 +1432,7 @@ class ProductRestClient(
 
     private fun networkErrorToProductError(wpComError: WPComGsonNetworkError): ProductError {
         val productErrorType = when (wpComError.apiError) {
+            "woocommerce_rest_product_invalid_id" -> ProductErrorType.INVALID_PRODUCT_ID
             "rest_invalid_param" -> ProductErrorType.INVALID_PARAM
             "woocommerce_rest_review_invalid_id" -> ProductErrorType.INVALID_REVIEW_ID
             "woocommerce_product_invalid_image_id" -> ProductErrorType.INVALID_IMAGE_ID

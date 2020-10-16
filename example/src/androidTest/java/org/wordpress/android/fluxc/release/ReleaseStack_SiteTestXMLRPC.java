@@ -13,6 +13,7 @@ import org.wordpress.android.fluxc.store.AccountStore;
 import org.wordpress.android.fluxc.store.AccountStore.AuthenticationErrorType;
 import org.wordpress.android.fluxc.store.AccountStore.OnAuthenticationChanged;
 import org.wordpress.android.fluxc.store.SiteStore;
+import org.wordpress.android.fluxc.store.SiteStore.OnBlockLayoutsFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnPostFormatsChanged;
 import org.wordpress.android.fluxc.store.SiteStore.OnProfileFetched;
 import org.wordpress.android.fluxc.store.SiteStore.OnSiteChanged;
@@ -22,6 +23,7 @@ import org.wordpress.android.fluxc.store.SiteStore.SiteErrorType;
 import org.wordpress.android.util.AppLog;
 import org.wordpress.android.util.AppLog.T;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +32,7 @@ import javax.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -49,6 +52,7 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         SITE_CHANGED,
         POST_FORMATS_CHANGED,
         SITE_REMOVED,
+        BLOCK_LAYOUTS_FETCHED,
         FETCHED_PROFILE
     }
 
@@ -230,6 +234,28 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
         assertEquals(10, postFormats.size());
     }
 
+    @Test
+    public void testFetchBlockLayouts() throws InterruptedException {
+        fetchSites(BuildConfig.TEST_WPORG_USERNAME_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_PASSWORD_SH_SIMPLE,
+                BuildConfig.TEST_WPORG_URL_SH_SIMPLE_ENDPOINT);
+        SiteModel firstSite = mSiteStore.getSites().get(0);
+        List<String> supportedBlocks =
+                Arrays.asList("core/paragraph", "core/heading", "core/more", "core/image", "core/video",
+                        "core/nextpage", "core/separator", "core/list", "core/quote", "core/media-text",
+                        "core/preformatted", "core/gallery", "core/columns", "core/column", "core/group",
+                        "core/freeform", "core/button", "core/spacer", "core/shortcode", "core/buttons",
+                        "core/latest-posts", "core/verse", "core/cover", "core/social-link", "core/social-links",
+                        "jetpack/contact-info", "jetpack/email", "jetpack/phone", "jetpack/address", "core/pullquote",
+                        "core/code");
+        mNextEvent = TestEvents.BLOCK_LAYOUTS_FETCHED;
+        mDispatcher.dispatch(SiteActionBuilder.newFetchBlockLayoutsAction(
+                new SiteStore.FetchBlockLayoutsPayload(firstSite, supportedBlocks,
+                        828.0f, 2.0f)));
+        mCountDownLatch = new CountDownLatch(1);
+        assertTrue(mCountDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onSiteChanged(OnSiteChanged event) {
@@ -303,6 +329,19 @@ public class ReleaseStack_SiteTestXMLRPC extends ReleaseStack_Base {
             throw new AssertionError("Unexpected error occurred with type: " + event.error.type);
         }
         assertEquals(TestEvents.POST_FORMATS_CHANGED, mNextEvent);
+        mCountDownLatch.countDown();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void onBlockLayoutsFetched(OnBlockLayoutsFetched event) {
+        assertEquals(mNextEvent, TestEvents.BLOCK_LAYOUTS_FETCHED);
+        assertFalse(event.isError());
+        assertEquals(TestEvents.BLOCK_LAYOUTS_FETCHED, mNextEvent);
+        assertNotNull(event.categories);
+        assertNotNull(event.layouts);
+        assertFalse(event.categories.isEmpty());
+        assertFalse(event.layouts.isEmpty());
         mCountDownLatch.countDown();
     }
 

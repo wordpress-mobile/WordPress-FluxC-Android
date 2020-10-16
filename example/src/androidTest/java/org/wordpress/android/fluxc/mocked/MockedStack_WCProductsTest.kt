@@ -139,6 +139,20 @@ class MockedStack_WCProductsTest : MockedStack_Base() {
     }
 
     @Test
+    fun testFetchInvalidProductIdError() {
+        interceptor.respondWithError("wc-fetch-invalid-product-id.json")
+        productRestClient.fetchSingleProduct(siteModel, remoteProductId)
+
+        countDownLatch = CountDownLatch(1)
+        assertTrue(countDownLatch.await(TestUtils.DEFAULT_TIMEOUT_MS.toLong(), TimeUnit.MILLISECONDS))
+
+        assertEquals(WCProductAction.FETCHED_SINGLE_PRODUCT, lastAction!!.type)
+        val payload = lastAction!!.payload as RemoteProductPayload
+        assertNotNull(payload.error)
+        assertEquals(payload.error.type, ProductErrorType.INVALID_PRODUCT_ID)
+    }
+
+    @Test
     fun testFetchSingleProductManageStock() {
         // check that a product's manage stock field is correctly set to true
         interceptor.respondWith("wc-fetch-product-response-manage-stock-true.json")
