@@ -55,34 +55,38 @@ class WooVerifyAddressFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         verify_address.setOnClickListener {
-            coroutineScope.launch {
-                val result = wcShippingLabelStore.verifyAddress(
-                        selectedSite,
-                        ShippingLabelAddress(
-                                address_company.getText(),
-                                address_name.getText(),
-                                address_phone.getText(),
-                                address_country.getText(),
-                                address_state.getText(),
-                                address_address1.getText(),
-                                address_address2.getText(),
-                                address_city.getText(),
-                                address_zip.getText()
-                        ),
-                        if (destination.isChecked) DESTINATION else ORIGIN
-                )
-                when {
-                    result.isError -> {
-                        prependToLog("${result.error.message}")
-                    }
-                    result.model is Valid -> {
-                        prependToLog("${(result.model as Valid).suggestedAddress}")
-                    }
-                    result.model is InvalidAddress -> {
-                        prependToLog("Address error: ${(result.model as InvalidAddress).message}")
-                    }
-                    result.model is InvalidRequest -> {
-                        prependToLog("Request error: ${(result.model as InvalidRequest).message}")
+            if (address_country.getText().isBlank()) {
+                prependToLog("Validation error: Country is required (2-letter acronym) ")
+            } else {
+                coroutineScope.launch {
+                    val result = wcShippingLabelStore.verifyAddress(
+                            selectedSite,
+                            ShippingLabelAddress(
+                                    address_company.getText(),
+                                    address_name.getText(),
+                                    address_phone.getText(),
+                                    address_country.getText(),
+                                    address_state.getText(),
+                                    address_address1.getText(),
+                                    address_address2.getText(),
+                                    address_city.getText(),
+                                    address_zip.getText()
+                            ),
+                            if (destination.isChecked) DESTINATION else ORIGIN
+                    )
+                    when {
+                        result.isError -> {
+                            prependToLog("${result.error.message}")
+                        }
+                        result.model is Valid -> {
+                            prependToLog("${(result.model as Valid).suggestedAddress}")
+                        }
+                        result.model is InvalidAddress -> {
+                            prependToLog("Address error: ${(result.model as InvalidAddress).message}")
+                        }
+                        result.model is InvalidRequest -> {
+                            prependToLog("Request error: ${(result.model as InvalidRequest).message}")
+                        }
                     }
                 }
             }
