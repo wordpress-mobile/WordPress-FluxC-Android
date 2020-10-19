@@ -1207,7 +1207,7 @@ class ProductRestClient(
             body["cross_sell_ids"] = updatedProductModel.getCrossSellProductIdList()
         }
         if (storedWCProductModel.upsellIds != updatedProductModel.upsellIds) {
-            body["up_sell_ids"] = updatedProductModel.getUpsellProductIdList()
+            body["upsell_ids"] = updatedProductModel.getUpsellProductIdList()
         }
         return body
     }
