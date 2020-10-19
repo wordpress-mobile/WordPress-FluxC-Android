@@ -253,6 +253,34 @@ data class WCProductModel(@PrimaryKey @Column private var id: Int = 0) : Identif
         return groupedIds
     }
 
+    fun getUpsellProductIdList(): List<Long> {
+        val productIds = ArrayList<Long>()
+        try {
+            if (upsellIds.isNotEmpty()) {
+                Gson().fromJson(upsellIds, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+                    jsonElement.asLong.let { productIds.add(it) }
+                }
+            }
+        } catch (e: JsonParseException) {
+            AppLog.e(T.API, e)
+        }
+        return productIds
+    }
+
+    fun getCrossSellProductIdList(): List<Long> {
+        val productIds = ArrayList<Long>()
+        try {
+            if (crossSellIds.isNotEmpty()) {
+                Gson().fromJson(crossSellIds, JsonElement::class.java).asJsonArray.forEach { jsonElement ->
+                    jsonElement.asLong.let { productIds.add(it) }
+                }
+            }
+        } catch (e: JsonParseException) {
+            AppLog.e(T.API, e)
+        }
+        return productIds
+    }
+
     fun getCategoryList() = getTriplets(categories)
 
     fun getCommaSeparatedCategoryNames() = getCommaSeparatedTripletNames(getCategoryList())
