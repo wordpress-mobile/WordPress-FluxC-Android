@@ -1,8 +1,13 @@
 package org.wordpress.android.fluxc.store
 
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult
+import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidAddress
+import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidRequest
+import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Valid
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelMapper
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
@@ -93,6 +98,29 @@ class WCShippingLabelStore @Inject constructor(
                     WooResult(response.result.b64Content)
                 }
                 else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    suspend fun verifyAddress(
+        site: SiteModel,
+        address: ShippingLabelAddress,
+        type: ShippingLabelAddress.Type
+    ): WooResult<WCAddressVerificationResult> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "verifyAddress") {
+            val response = restClient.verifyAddress(site, address, type)
+            return@withDefaultContext if (response.isError) {
+                WooResult(response.error.apply { message = message ?: "" })
+            } else if (response.result?.error != null) {
+                if (!response.result.error.address.isNullOrBlank()) {
+                    WooResult(InvalidAddress(response.result.error.address))
+                } else {
+                    WooResult(InvalidRequest(response.result.error.message ?: ""))
+                }
+            } else if (response.result?.suggestedAddress != null && response.result.isSuccess) {
+                WooResult(Valid(response.result.suggestedAddress))
+            } else {
+                WooResult(WooError(GENERIC_ERROR, UNKNOWN, "Unknown error"))
             }
         }
     }

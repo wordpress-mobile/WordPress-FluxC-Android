@@ -2,9 +2,11 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.annotations.SerializedName
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
 import org.wordpress.android.fluxc.network.UserAgent
 import org.wordpress.android.fluxc.network.rest.wpcom.BaseWPComRestClient
 import org.wordpress.android.fluxc.network.rest.wpcom.auth.AccessToken
@@ -13,6 +15,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.toWooError
+import org.wordpress.android.fluxc.network.utils.toMap
+import java.util.Locale
 import javax.inject.Singleton
 
 @Singleton
@@ -102,9 +106,49 @@ constructor(
         }
     }
 
+    suspend fun verifyAddress(
+        site: SiteModel,
+        address: ShippingLabelAddress,
+        type: ShippingLabelAddress.Type
+    ): WooPayload<VerifyAddressResponse> {
+        val url = WOOCOMMERCE.connect.normalize_address.pathV1
+        val params = mapOf(
+                "address" to address.toMap(),
+                "type" to type.name.toLowerCase(Locale.ROOT)
+        )
+
+        val response = jetpackTunnelGsonRequestBuilder.syncPostRequest(
+                this,
+                site,
+                url,
+                params,
+                VerifyAddressResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
     data class PrintShippingLabelApiResponse(
         val mimeType: String,
         val b64Content: String,
         val success: Boolean
     )
+
+    data class VerifyAddressResponse(
+        @SerializedName("success") val isSuccess: Boolean,
+        @SerializedName("is_trivial_normalization") val isTrivialNormalization: Boolean,
+        @SerializedName("normalized") val suggestedAddress: ShippingLabelAddress?,
+        @SerializedName("field_errors") val error: Error?
+    ) {
+        data class Error(
+            @SerializedName("general") val message: String?,
+            @SerializedName("address") val address: String?
+        )
+    }
 }

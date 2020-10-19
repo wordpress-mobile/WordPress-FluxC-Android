@@ -1,0 +1,95 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="org.wordpress.android.fluxc.example.ui.shippinglabels.WooShippingLabelFragment">
+
+    <LinearLayout
+        android:id="@+id/buttonContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/address_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:textHint="Name" />
+
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/address_company"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:textHint="Company" />
+
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/address_phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:textHint="Phone" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/address_address1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:textHint="Address" />
+
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/address_address2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:textHint="Address 2" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/address_city"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:textHint="City" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/address_state"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:textHint="State" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/address_zip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:textHint="ZIP Code" />
+
+        <org.wordpress.android.fluxc.example.ui.FloatingLabelEditText
+            android:id="@+id/address_country"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:textHint="Country" />
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+
+            <RadioButton
+                android:id="@+id/origin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Origin" />
+
+            <RadioButton
+                android:id="@+id/destination"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Destination" />
+        </RadioGroup>
+
+        <Button
+            android:id="@+id/verify_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Verify address"/>
+    </LinearLayout>
+</ScrollView>
