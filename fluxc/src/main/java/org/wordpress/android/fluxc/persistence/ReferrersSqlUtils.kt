@@ -3,7 +3,6 @@ package org.wordpress.android.fluxc.persistence
 import com.wellsql.generated.ReferrerGroupTable
 import com.wellsql.generated.ReferrerTable
 import com.wellsql.generated.ReferrersModelTable
-import com.wellsql.generated.StatsBlockTable
 import com.yarolegovich.wellsql.SelectQuery
 import com.yarolegovich.wellsql.WellSql
 import com.yarolegovich.wellsql.core.Identifiable
@@ -12,6 +11,7 @@ import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.model.stats.time.ReferrersModel
+import org.wordpress.android.fluxc.model.stats.time.ReferrersModel.Group
 import org.wordpress.android.fluxc.model.stats.time.ReferrersModel.Referrer
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.StatsUtils
 import org.wordpress.android.fluxc.network.utils.StatsGranularity
@@ -31,15 +31,7 @@ class ReferrersSqlUtils
     ) {
         val formattedDate = statsUtils.getFormattedDate(date)
         val statsType = statsGranularity.toStatsType()
-        val modelIds = createSelectStatement(site, statsType, formattedDate).asModel.map { it.id }
-        val groupIds = selectGroups(modelIds).map { it.id }
-        deleteReferrers(groupIds)
-        deleteGroups(modelIds)
-        if (modelIds.isNotEmpty()) {
-            WellSql.delete(ReferrersModelBuilder::class.java)
-                    .where()
-                    .isIn(ReferrersModelTable.ID, modelIds).endWhere().execute()
-        }
+        deleteAll(site, statsType, formattedDate)
         val insertedModel = ReferrersModelBuilder(
                 localSiteId = site.id,
                 statsType = statsType.name,
@@ -79,25 +71,6 @@ class ReferrersSqlUtils
         }
     }
 
-    fun selectAll(
-        site: SiteModel,
-        statsGranularity: StatsGranularity,
-        date: Date? = null
-    ): List<ReferrersModel> {
-        val statsType = statsGranularity.toStatsType()
-        val formattedDate = statsUtils.getFormattedDate(date)
-        val model = createSelectStatement(site, statsType, formattedDate).asModel
-        return model.map {
-            val groups = selectGroups(it.id)
-            ReferrersModel(
-                    otherViews = it.otherViews,
-                    totalViews = it.totalViews,
-                    groups = groups,
-                    hasMore = it.hasMore
-            )
-        }
-    }
-
     fun select(
         site: SiteModel,
         statsGranularity: StatsGranularity,
@@ -117,11 +90,14 @@ class ReferrersSqlUtils
         }
     }
 
-    private fun selectGroups(modelId: Int): List<ReferrersModel.Group> {
+    private fun selectGroups(modelId: Int): List<Group> {
         val groups = WellSql.select(ReferrerGroupBuilder::class.java)
                 .where()
                 .equals(ReferrerGroupTable.MODEL_ID, modelId).endWhere().asModel
-        return groups.toDomainModel()
+        return groups.map { dbModel ->
+            val referrers = selectReferrers(dbModel.id)
+            Group(dbModel.groupId, dbModel.name, dbModel.icon, dbModel.url, dbModel.total, referrers)
+        }
     }
 
     private fun selectGroups(modelIds: List<Int>): List<ReferrerGroupBuilder> {
@@ -133,19 +109,12 @@ class ReferrersSqlUtils
                 .isIn(ReferrerGroupTable.MODEL_ID, modelIds).endWhere().asModel
     }
 
-    private fun List<ReferrerGroupBuilder>.toDomainModel(): List<ReferrersModel.Group> {
-        return this.map { dbModel ->
-            val referrers = selectReferrers(dbModel.modelId)
-            ReferrersModel.Group(dbModel.groupId, dbModel.name, dbModel.icon, dbModel.url, dbModel.total, referrers)
-        }
-    }
-
     private fun selectReferrers(groupId: Int): List<Referrer> {
         val groups = WellSql.select(ReferrerBuilder::class.java)
                 .where()
                 .equals(ReferrerTable.GROUP_ID, groupId).endWhere().asModel
         return groups.map { dbModel ->
-            ReferrersModel.Referrer(
+            Referrer(
                     dbModel.name,
                     dbModel.views,
                     dbModel.icon,
@@ -160,6 +129,24 @@ class ReferrersSqlUtils
         val deleteGroups = WellSql.delete(ReferrerGroupBuilder::class.java).execute()
         val deleteReferrers = WellSql.delete(ReferrerBuilder::class.java).execute()
         return deleteModel + deleteGroups + deleteReferrers
+    }
+
+    fun deleteSiteStats(site: SiteModel) = deleteAll(site)
+
+    private fun deleteAll(
+        site: SiteModel,
+        statsType: StatsType? = null,
+        formattedDate: String? = null
+    ) {
+        val modelIds = createSelectStatement(site, statsType, formattedDate).asModel.map { it.id }
+        val groupIds = selectGroups(modelIds).map { it.id }
+        deleteReferrers(groupIds)
+        deleteGroups(modelIds)
+        if (modelIds.isNotEmpty()) {
+            WellSql.delete(ReferrersModelBuilder::class.java)
+                    .where()
+                    .isIn(ReferrersModelTable.ID, modelIds).endWhere().execute()
+        }
     }
 
     private fun deleteGroups(modelIds: List<Int>): Int {
@@ -182,15 +169,18 @@ class ReferrersSqlUtils
 
     private fun createSelectStatement(
         site: SiteModel,
-        statsType: StatsType,
-        date: String?
+        statsType: StatsType? = null,
+        date: String? = null
     ): SelectQuery<ReferrersModelBuilder> {
         var select = WellSql.select(ReferrersModelBuilder::class.java)
                 .where()
-                .equals(StatsBlockTable.LOCAL_SITE_ID, site.id)
-                .equals(StatsBlockTable.STATS_TYPE, statsType.name)
+                .equals(ReferrersModelTable.LOCAL_SITE_ID, site.id)
+
+        if (statsType != null) {
+            select = select.equals(ReferrersModelTable.STATS_TYPE, statsType.name)
+        }
         if (date != null) {
-            select = select.equals(StatsBlockTable.DATE, date)
+            select = select.equals(ReferrersModelTable.DATE, date)
         }
         return select.endWhere()
     }

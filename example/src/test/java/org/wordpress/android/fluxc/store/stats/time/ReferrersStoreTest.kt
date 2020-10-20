@@ -31,7 +31,6 @@ import java.util.Date
 
 private const val ITEMS_TO_LOAD = 8
 private val DATE = Date(0)
-private val LIMIT_MODE = LimitMode.Top(ITEMS_TO_LOAD)
 
 @RunWith(MockitoJUnitRunner::class)
 class ReferrersStoreTest {

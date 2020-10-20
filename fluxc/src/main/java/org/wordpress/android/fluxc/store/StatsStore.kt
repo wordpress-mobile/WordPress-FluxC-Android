@@ -17,6 +17,7 @@ import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.TIMEOUT
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.UNKNOWN
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.persistence.InsightTypeSqlUtils
+import org.wordpress.android.fluxc.persistence.ReferrersSqlUtils
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils
 import org.wordpress.android.fluxc.store.StatsStore.InsightType.ALL_TIME_STATS
 import org.wordpress.android.fluxc.store.StatsStore.InsightType.FOLLOWER_TOTALS
@@ -44,14 +45,17 @@ class StatsStore
     private val coroutineEngine: CoroutineEngine,
     private val insightTypeSqlUtils: InsightTypeSqlUtils,
     private val preferenceUtils: PreferenceUtilsWrapper,
-    private val statsSqlUtils: StatsSqlUtils
+    private val statsSqlUtils: StatsSqlUtils,
+    private val referrersSqlUtils: ReferrersSqlUtils
 ) {
     fun deleteAllData() {
         statsSqlUtils.deleteAllStats()
+        referrersSqlUtils.deleteAllStats()
     }
 
     fun deleteSiteData(site: SiteModel) {
         statsSqlUtils.deleteSiteStats(site)
+        referrersSqlUtils.deleteSiteStats(site)
     }
 
     suspend fun getInsightTypes(site: SiteModel): List<StatsType> =

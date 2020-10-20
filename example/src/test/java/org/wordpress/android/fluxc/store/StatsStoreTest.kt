@@ -15,6 +15,7 @@ import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnitRunner
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.persistence.InsightTypeSqlUtils
+import org.wordpress.android.fluxc.persistence.ReferrersSqlUtils
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils
 import org.wordpress.android.fluxc.store.StatsStore.InsightType.COMMENTS
 import org.wordpress.android.fluxc.store.StatsStore.InsightType.FOLLOWERS
@@ -34,6 +35,7 @@ class StatsStoreTest {
     @Mock lateinit var sharedPreferences: SharedPreferences
     @Mock lateinit var sharedPreferencesEditor: SharedPreferences.Editor
     @Mock lateinit var statsSqlUtils: StatsSqlUtils
+    @Mock lateinit var referrersSqlUtils: ReferrersSqlUtils
     private lateinit var store: StatsStore
 
     @Before
@@ -42,7 +44,8 @@ class StatsStoreTest {
                 initCoroutineEngine(),
                 insightTypesSqlUtils,
                 preferenceUtilsWrapper,
-                statsSqlUtils
+                statsSqlUtils,
+                referrersSqlUtils
         )
         whenever(preferenceUtilsWrapper.getFluxCPreferences()).thenReturn(sharedPreferences)
         whenever(sharedPreferences.edit()).thenReturn(sharedPreferencesEditor)
@@ -216,6 +219,7 @@ class StatsStoreTest {
         store.deleteAllData()
 
         verify(statsSqlUtils).deleteAllStats()
+        verify(referrersSqlUtils).deleteAllStats()
     }
 
     @Test
@@ -225,6 +229,7 @@ class StatsStoreTest {
         store.deleteSiteData(site)
 
         verify(statsSqlUtils).deleteSiteStats(site)
+        verify(referrersSqlUtils).deleteSiteStats(site)
     }
 
     @Test

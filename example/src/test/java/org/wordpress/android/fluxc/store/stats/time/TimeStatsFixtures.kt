@@ -68,8 +68,7 @@ val REFERRER = Referrer(
         "john.jpg",
         "john.com",
         30,
-        listOf(Child("Child", 20, "child.jpg", "child.com", false)),
-        false
+        listOf(Child("Child", 20, "child.jpg", "child.com"))
 )
 val GROUP_WITH_REFERRALS = Group(
         GROUP_ID_1,
@@ -78,8 +77,7 @@ val GROUP_WITH_REFERRALS = Group(
         "url_group_1.com",
         50,
         null,
-        referrers = listOf(REFERRER),
-        markedAsSpam = false
+        referrers = listOf(REFERRER)
 )
 val GROUP_WITH_EMPTY_REFERRALS = Group(
         GROUP_ID_2,
@@ -88,8 +86,7 @@ val GROUP_WITH_EMPTY_REFERRALS = Group(
         "url_group_2.com",
         50,
         null,
-        referrers = null,
-        markedAsSpam = false
+        referrers = null
 )
 val REFERRERS_RESPONSE = ReferrersResponse(
         null,
