@@ -5,6 +5,8 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationRes
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidRequest
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Valid
+import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult
+import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.Default
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelMapper
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
@@ -121,6 +123,23 @@ class WCShippingLabelStore @Inject constructor(
                 WooResult(Valid(response.result.suggestedAddress))
             } else {
                 WooResult(WooError(GENERIC_ERROR, UNKNOWN, "Unknown error"))
+            }
+        }
+    }
+
+    suspend fun getPackageTypes(
+        site: SiteModel
+    ): WooResult<WCPackagesResult> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getPackageTypes") {
+            val response = restClient.getPackageTypes(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result?.isSuccess == true -> {
+                    WooResult(Default(response.result.storeOptions?.currency ?: ""))
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
             }
         }
     }
