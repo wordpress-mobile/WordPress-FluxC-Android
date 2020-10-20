@@ -138,7 +138,7 @@ constructor(
     suspend fun getPackageTypes(
         site: SiteModel
     ): WooPayload<GetPackageTypesResponse> {
-        val url = WOOCOMMERCE.connect.normalize_address.pathV1
+        val url = WOOCOMMERCE.connect.packages.pathV1
 
         val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
                 this,
