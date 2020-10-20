@@ -577,6 +577,12 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         val updatedGroupedProductIds = "[770,771]"
         productModel.groupedProductIds = updatedGroupedProductIds
 
+        val updatedCrossSellProductIds = "[1,2,3]"
+        productModel.crossSellIds = updatedCrossSellProductIds
+
+        val updatedUpsellProductIds = "[1,2,3,4]"
+        productModel.upsellIds = updatedUpsellProductIds
+
         val updatedProductType = "grouped"
         productModel.type = updatedProductType
 
@@ -601,6 +607,8 @@ class ReleaseStack_WCProductTest : ReleaseStack_WCBase() {
         assertEquals(updateProductPurchaseNote, updatedProduct?.purchaseNote)
         assertEquals(updatedProductMenuOrder, updatedProduct?.menuOrder)
         assertEquals(updatedGroupedProductIds, updatedProduct?.groupedProductIds)
+        assertEquals(updatedCrossSellProductIds, updatedProduct?.crossSellIds)
+        assertEquals(updatedUpsellProductIds, updatedProduct?.upsellIds)
     }
 
     @Throws(InterruptedException::class)

@@ -178,6 +178,40 @@ class WooUpdateProductFragment : Fragment() {
             }
         }
 
+        cross_sell_product_ids.isEnabled = false
+        select_cross_sell_product_ids.setOnClickListener {
+            showSingleLineDialog(activity, "Enter a remoteProductId:") { editText ->
+                editText.text.toString().toLongOrNull()?.let { id ->
+                    val storedCrossSellIds =
+                            selectedProductModel?.getCrossSellProductIdList()?.toMutableList() ?: mutableListOf()
+                    storedCrossSellIds.add(id)
+                    selectedProductModel?.crossSellIds = storedCrossSellIds.joinToString(
+                            separator = ",",
+                            prefix = "[",
+                            postfix = "]"
+                    )
+                    selectedProductModel?.crossSellIds?.let { updateCrossSellProductIds(it) }
+                } ?: prependToLog("No valid remoteProductId defined...doing nothing")
+            }
+        }
+
+        upsell_product_ids.isEnabled = false
+        select_upsell_product_ids.setOnClickListener {
+            showSingleLineDialog(activity, "Enter a remoteProductId:") { editText ->
+                editText.text.toString().toLongOrNull()?.let { id ->
+                    val storedUpsellIds =
+                            selectedProductModel?.getUpsellProductIdList()?.toMutableList() ?: mutableListOf()
+                    storedUpsellIds.add(id)
+                    selectedProductModel?.upsellIds = storedUpsellIds.joinToString(
+                            separator = ",",
+                            prefix = "[",
+                            postfix = "]"
+                    )
+                    selectedProductModel?.upsellIds?.let { updateUpsellProductIds(it) }
+                } ?: prependToLog("No valid remoteProductId defined...doing nothing")
+            }
+        }
+
         product_name.onTextChanged { selectedProductModel?.name = it }
         product_description.onTextChanged { selectedProductModel?.description = it }
         product_sku.onTextChanged { selectedProductModel?.sku = it }
@@ -422,6 +456,14 @@ class WooUpdateProductFragment : Fragment() {
         grouped_product_ids.setText(storedGroupedProductIds)
     }
 
+    private fun updateCrossSellProductIds(storedCrossSellProductIds: String) {
+        cross_sell_product_ids.setText(storedCrossSellProductIds)
+    }
+
+    private fun updateUpsellProductIds(storedUpsellProductIds: String) {
+        upsell_product_ids.setText(storedUpsellProductIds)
+    }
+
     private fun updateSelectedProductId(remoteProductId: Long) {
         getWCSite()?.let { siteModel ->
             enableProductDependentButtons()
@@ -470,6 +512,8 @@ class WooUpdateProductFragment : Fragment() {
         product_external_url.setText(it.externalUrl)
         product_button_text.setText(it.buttonText)
         updateGroupedProductIds(it.groupedProductIds)
+        updateCrossSellProductIds(it.crossSellIds)
+        updateUpsellProductIds(it.upsellIds)
         product_categories.setText(
                 selectedCategories?.joinToString(", ") { it.name }
                         ?: it.getCommaSeparatedCategoryNames()
