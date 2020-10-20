@@ -9,14 +9,17 @@ import com.yarolegovich.wellsql.core.annotation.Column
 import com.yarolegovich.wellsql.core.annotation.PrimaryKey
 import com.yarolegovich.wellsql.core.annotation.Table
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.StatsUtils
+import org.wordpress.android.fluxc.network.utils.StatsGranularity
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.StatsType
+import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class StatsRequestSqlUtils
-@Inject constructor() {
+@Inject constructor(private val statsUtils: StatsUtils) {
     fun insert(
         site: SiteModel,
         blockType: BlockType,
@@ -46,6 +49,36 @@ class StatsRequestSqlUtils
                         requestedItems = requestedItems
                 )
         ).execute()
+    }
+
+    fun hasFreshRequest(
+        site: SiteModel,
+        blockType: BlockType,
+        granularity: StatsGranularity,
+        date: Date,
+        requestedItems: Int? = null
+    ): Boolean {
+        return hasFreshRequest(site,
+                blockType,
+                granularity,
+                statsUtils.getFormattedDate(date),
+                requestedItems
+        )
+    }
+    fun hasFreshRequest(
+        site: SiteModel,
+        blockType: BlockType,
+        granularity: StatsGranularity,
+        date: String,
+        requestedItems: Int? = null
+    ): Boolean {
+        return hasFreshRequest(
+                site,
+                blockType,
+                granularity.toStatsType(),
+                requestedItems,
+                date = date
+        )
     }
 
     fun hasFreshRequest(

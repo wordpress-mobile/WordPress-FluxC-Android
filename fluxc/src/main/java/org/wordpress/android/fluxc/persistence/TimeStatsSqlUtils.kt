@@ -6,7 +6,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.ClicksRestClien
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.CountryViewsRestClient.CountryViewsResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.FileDownloadsRestClient.FileDownloadsResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.PostAndPageViewsRestClient.PostAndPageViewsResponse
-import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.ReferrersRestClient.ReferrersResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.SearchTermsRestClient.SearchTermsResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.StatsUtils
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.VideoPlaysRestClient.VideoPlaysResponse
@@ -22,7 +21,6 @@ import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType.CLICKS
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType.COUNTRY_VIEWS
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType.FILE_DOWNLOADS
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType.POSTS_AND_PAGES_VIEWS
-import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType.REFERRERS
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType.SEARCH_TERMS
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType.VIDEO_PLAYS
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType.VISITS_AND_VIEWS
@@ -84,7 +82,9 @@ open class TimeStatsSqlUtils<RESPONSE_TYPE>(
         date: Date,
         requestedItems: Int? = null
     ): Boolean {
-        return hasFreshRequest(site,
+        return statsRequestSqlUtils.hasFreshRequest(
+                site,
+                blockType,
                 granularity,
                 statsUtils.getFormattedDate(date),
                 requestedItems
@@ -117,19 +117,6 @@ open class TimeStatsSqlUtils<RESPONSE_TYPE>(
             statsRequestSqlUtils,
             POSTS_AND_PAGES_VIEWS,
             PostAndPageViewsResponse::class.java
-    )
-
-    class ReferrersSqlUtils
-    @Inject constructor(
-        statsSqlUtils: StatsSqlUtils,
-        statsUtils: StatsUtils,
-        statsRequestSqlUtils: StatsRequestSqlUtils
-    ) : TimeStatsSqlUtils<ReferrersResponse>(
-            statsSqlUtils,
-            statsUtils,
-            statsRequestSqlUtils,
-            REFERRERS,
-            ReferrersResponse::class.java
     )
 
     class ClicksSqlUtils
@@ -222,13 +209,13 @@ open class TimeStatsSqlUtils<RESPONSE_TYPE>(
             FILE_DOWNLOADS,
             FileDownloadsResponse::class.java
     )
+}
 
-    private fun StatsGranularity.toStatsType(): StatsType {
-        return when (this) {
-            DAYS -> StatsType.DAY
-            WEEKS -> StatsType.WEEK
-            MONTHS -> StatsType.MONTH
-            YEARS -> StatsType.YEAR
-        }
+fun StatsGranularity.toStatsType(): StatsType {
+    return when (this) {
+        DAYS -> StatsType.DAY
+        WEEKS -> StatsType.WEEK
+        MONTHS -> StatsType.MONTH
+        YEARS -> StatsType.YEAR
     }
 }

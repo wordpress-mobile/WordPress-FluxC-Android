@@ -123,7 +123,6 @@ class ReferrersStoreTest {
                 site,
                 domain,
                 YEARS,
-                LIMIT_MODE,
                 date
         )
 
@@ -141,7 +140,6 @@ class ReferrersStoreTest {
                 site,
                 domain,
                 YEARS,
-                LIMIT_MODE,
                 date
         )
 
@@ -159,7 +157,6 @@ class ReferrersStoreTest {
                 site,
                 domain,
                 YEARS,
-                LIMIT_MODE,
                 Date()
         )
 
@@ -178,11 +175,10 @@ class ReferrersStoreTest {
                 site,
                 domain,
                 YEARS,
-                LIMIT_MODE,
                 Date()
         )
 
-        assertThat(result.model?.success).isTrue
+        assertThat(result.model?.success).isTrue()
     }
 
     @Test
@@ -196,7 +192,6 @@ class ReferrersStoreTest {
                 site,
                 domain,
                 YEARS,
-                LIMIT_MODE,
                 Date()
         )
 
