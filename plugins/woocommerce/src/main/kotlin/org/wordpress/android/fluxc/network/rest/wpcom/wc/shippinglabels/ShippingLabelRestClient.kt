@@ -3,6 +3,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels
 import android.content.Context
 import com.android.volley.RequestQueue
 import com.google.gson.annotations.SerializedName
+import com.sun.jna.StringArray
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
@@ -134,6 +135,28 @@ constructor(
         }
     }
 
+    suspend fun getPackageTypes(
+        site: SiteModel
+    ): WooPayload<GetPackageTypesResponse> {
+        val url = WOOCOMMERCE.connect.normalize_address.pathV1
+
+        val response = jetpackTunnelGsonRequestBuilder.syncGetRequest(
+                this,
+                site,
+                url,
+                emptyMap(),
+                GetPackageTypesResponse::class.java
+        )
+        return when (response) {
+            is JetpackSuccess -> {
+                WooPayload(response.data)
+            }
+            is JetpackError -> {
+                WooPayload(response.error.toWooError())
+            }
+        }
+    }
+
     data class PrintShippingLabelApiResponse(
         val mimeType: String,
         val b64Content: String,
@@ -150,5 +173,41 @@ constructor(
             @SerializedName("general") val message: String?,
             @SerializedName("address") val address: String?
         )
+    }
+
+    data class GetPackageTypesResponse(
+        @SerializedName("success") val isSuccess: Boolean,
+        val storeOptions: StoreOptions?,
+        val formSchema: FormSchema?
+    ) {
+        data class StoreOptions(
+            @SerializedName("currency_symbol") val currency: String?,
+            @SerializedName("dimension_unit") val dimensionUnit: String?,
+            @SerializedName("weight_unit") val weightUnit: String?,
+            @SerializedName("origin_country") val originCountry: String?
+        )
+
+        data class FormSchema(
+            val custom: Custom?,
+            val predefined: Predefined?
+        ) {
+            data class Custom(
+                val type: String?,
+                val title: String?,
+                val default: StringArray?,
+            )
+
+            data class Predefined(
+                val usps: Usps
+            ) {
+                data class Usps(
+                    val priorityFlatBoxes: FlatBoxes
+                ) {
+                    data class FlatBoxes(
+                        val title: String?
+                    )
+                }
+            }
+        }
     }
 }
