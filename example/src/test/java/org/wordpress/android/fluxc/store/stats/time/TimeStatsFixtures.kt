@@ -1,5 +1,6 @@
 package org.wordpress.android.fluxc.store.stats.time
 
+import org.wordpress.android.fluxc.model.stats.time.ReferrersModel
 import org.wordpress.android.fluxc.model.stats.time.VisitsAndViewsModel
 import org.wordpress.android.fluxc.model.stats.time.VisitsAndViewsModel.PeriodData
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.AuthorsRestClient.AuthorsResponse
@@ -99,6 +100,37 @@ val REFERRERS_RESPONSE = ReferrersResponse(
                         listOf(GROUP_WITH_REFERRALS, GROUP_WITH_EMPTY_REFERRALS)
                 )
         )
+)
+val REFERRER_MODEL = ReferrersModel.Referrer(
+        "John Smith",
+        30,
+        "john.jpg",
+        url = "john.com",
+        markedAsSpam = false
+)
+val GROUP_WITH_REFERRERS_MODEL = ReferrersModel.Group(
+        GROUP_ID_1,
+        "Group 1",
+        "icon_group_1.jpg",
+        "url_group_1.com",
+        50,
+        referrers = listOf(REFERRER_MODEL),
+        markedAsSpam = false
+)
+val GROUP_WITH_EMPTY_REFERRERS_MODEL = ReferrersModel.Group(
+        GROUP_ID_2,
+        "Group 2",
+        "icon_group_2.jpg",
+        "url_group_2.com",
+        50,
+        referrers = listOf(),
+        markedAsSpam = false
+)
+val REFERRERS_MODEL = ReferrersModel(
+        10,
+        20,
+        listOf(GROUP_WITH_REFERRERS_MODEL, GROUP_WITH_EMPTY_REFERRERS_MODEL),
+        false
 )
 val CLICK_GROUP = ClickGroup(GROUP_ID_1, "Click name", "click.jpg", "click.com", 20, null)
 val CLICKS_RESPONSE = ClicksResponse(null, mapOf("2018-10-10" to ClicksResponse.Groups(10, 15, listOf(CLICK_GROUP))))

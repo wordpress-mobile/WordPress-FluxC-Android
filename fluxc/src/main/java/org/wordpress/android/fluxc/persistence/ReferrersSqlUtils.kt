@@ -35,9 +35,11 @@ class ReferrersSqlUtils
         val groupIds = selectGroups(modelIds).map { it.id }
         deleteReferrers(groupIds)
         deleteGroups(modelIds)
-        WellSql.delete(ReferrersModelBuilder::class.java)
-                .where()
-                .isIn(ReferrersModelTable.ID, modelIds).endWhere().execute()
+        if (modelIds.isNotEmpty()) {
+            WellSql.delete(ReferrersModelBuilder::class.java)
+                    .where()
+                    .isIn(ReferrersModelTable.ID, modelIds).endWhere().execute()
+        }
         val insertedModel = ReferrersModelBuilder(
                 localSiteId = site.id,
                 statsType = statsType.name,
@@ -123,6 +125,9 @@ class ReferrersSqlUtils
     }
 
     private fun selectGroups(modelIds: List<Int>): List<ReferrerGroupBuilder> {
+        if (modelIds.isEmpty()) {
+            return listOf()
+        }
         return WellSql.select(ReferrerGroupBuilder::class.java)
                 .where()
                 .isIn(ReferrerGroupTable.MODEL_ID, modelIds).endWhere().asModel
@@ -158,12 +163,18 @@ class ReferrersSqlUtils
     }
 
     private fun deleteGroups(modelIds: List<Int>): Int {
+        if (modelIds.isEmpty()) {
+            return 0
+        }
         return WellSql.delete(ReferrerGroupBuilder::class.java).where()
                 .isIn(ReferrerGroupTable.MODEL_ID, modelIds)
                 .endWhere().execute()
     }
 
     private fun deleteReferrers(groupIds: List<Int>): Int {
+        if (groupIds.isEmpty()) {
+            return 0
+        }
         return WellSql.delete(ReferrerBuilder::class.java).where()
                 .isIn(ReferrerTable.GROUP_ID, groupIds)
                 .endWhere().execute()

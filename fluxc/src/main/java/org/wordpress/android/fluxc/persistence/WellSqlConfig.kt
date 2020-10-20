@@ -28,7 +28,7 @@ open class WellSqlConfig : DefaultWellConfig {
     annotation class AddOn
 
     override fun getDbVersion(): Int {
-        return 119
+        return 120
     }
 
     override fun getDbName(): String {
@@ -1315,6 +1315,19 @@ open class WellSqlConfig : DefaultWellConfig {
                             "LAYOUT_ID INTEGER," +
                             "CATEGORY_ID INTEGER," +
                             "SITE_ID INTEGER)")
+                }
+                119 -> migrate(version) {
+                    db.execSQL("DROP TABLE IF EXISTS ReferrersModel")
+                    db.execSQL("CREATE TABLE ReferrersModel (_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                            "LOCAL_SITE_ID INTEGER,STATS_TYPE TEXT NOT NULL,DATE TEXT,OTHER_VIEWS INTEGER," +
+                            "TOTAL_VIEWS INTEGER,HAS_MORE INTEGER)")
+                    db.execSQL("DROP TABLE IF EXISTS ReferrerGroup")
+                    db.execSQL("CREATE TABLE ReferrerGroup (_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                            "MODEL_ID INTEGER,GROUP_ID TEXT,NAME TEXT,ICON TEXT,URL TEXT,TOTAL INTEGER," +
+                            "MARKED_AS_SPAM INTEGER)")
+                    db.execSQL("DROP TABLE IF EXISTS Referrer")
+                    db.execSQL("CREATE TABLE Referrer (_id INTEGER PRIMARY KEY AUTOINCREMENT,GROUP_ID INTEGER," +
+                            "NAME TEXT NOT NULL,ICON TEXT,URL TEXT,VIEWS INTEGER,MARKED_AS_SPAM INTEGER)")
                 }
             }
         }

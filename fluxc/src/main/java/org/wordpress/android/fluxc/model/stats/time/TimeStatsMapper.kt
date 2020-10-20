@@ -69,8 +69,7 @@ class TimeStatsMapper
                                 result.name,
                                 result.views,
                                 result.icon,
-                                firstChildUrl ?: result.url,
-                                result.markedAsSpam
+                                firstChildUrl ?: result.url
                         )
                     } else {
                         AppLog.e(STATS, "ReferrersResponse: Missing fields on a referrer")
@@ -83,8 +82,7 @@ class TimeStatsMapper
                         group.icon,
                         group.url,
                         group.total,
-                        children ?: listOf(),
-                        group.markedAsSpam
+                        children ?: listOf()
                 )
             }
         }
