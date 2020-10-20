@@ -1319,8 +1319,8 @@ open class WellSqlConfig : DefaultWellConfig {
                 119 -> migrate(version) {
                     db.execSQL("DROP TABLE IF EXISTS ReferrersModel")
                     db.execSQL("CREATE TABLE ReferrersModel (_id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                            "LOCAL_SITE_ID INTEGER,STATS_TYPE TEXT NOT NULL,DATE TEXT,OTHER_VIEWS INTEGER," +
-                            "TOTAL_VIEWS INTEGER,HAS_MORE INTEGER)")
+                            "LOCAL_SITE_ID INTEGER,STATS_TYPE TEXT NOT NULL,DATE TEXT NOT NULL," +
+                            "REQUESTED_ITEMS INTEGER,OTHER_VIEWS INTEGER,TOTAL_VIEWS INTEGER,HAS_MORE INTEGER)")
                     db.execSQL("DROP TABLE IF EXISTS ReferrerGroup")
                     db.execSQL("CREATE TABLE ReferrerGroup (_id INTEGER PRIMARY KEY AUTOINCREMENT," +
                             "MODEL_ID INTEGER,GROUP_ID TEXT,NAME TEXT,ICON TEXT,URL TEXT,TOTAL INTEGER," +

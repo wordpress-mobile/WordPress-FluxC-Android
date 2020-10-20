@@ -15,6 +15,7 @@ import org.wordpress.android.fluxc.model.stats.time.ReferrersModel.Group
 import org.wordpress.android.fluxc.model.stats.time.ReferrersModel.Referrer
 import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.StatsUtils
 import org.wordpress.android.fluxc.network.utils.StatsGranularity
+import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType.REFERRERS
 import org.wordpress.android.fluxc.persistence.StatsSqlUtils.StatsType
 import java.util.Date
 import javax.inject.Inject
@@ -22,20 +23,29 @@ import javax.inject.Singleton
 
 @Singleton
 class ReferrersSqlUtils
-@Inject constructor(private val statsUtils: StatsUtils) {
+@Inject constructor(private val statsUtils: StatsUtils, private val statsRequestSqlUtils: StatsRequestSqlUtils) {
     fun insert(
         site: SiteModel,
         statsGranularity: StatsGranularity,
-        item: ReferrersModel,
-        date: Date? = null
+        requestedItems: Int,
+        date: Date,
+        item: ReferrersModel
     ) {
         val formattedDate = statsUtils.getFormattedDate(date)
         val statsType = statsGranularity.toStatsType()
-        deleteAll(site, statsType, formattedDate)
+        statsRequestSqlUtils.insert(
+                site,
+                REFERRERS,
+                statsType,
+                requestedItems,
+                formattedDate
+        )
+        deleteAll(site, statsType, requestedItems, formattedDate)
         val insertedModel = ReferrersModelBuilder(
                 localSiteId = site.id,
                 statsType = statsType.name,
                 date = formattedDate,
+                requestedItems = requestedItems,
                 otherViews = item.otherViews,
                 totalViews = item.totalViews,
                 hasMore = item.hasMore
@@ -74,11 +84,12 @@ class ReferrersSqlUtils
     fun select(
         site: SiteModel,
         statsGranularity: StatsGranularity,
+        requestedItems: Int,
         date: Date? = null
     ): ReferrersModel? {
         val statsType = statsGranularity.toStatsType()
         val formattedDate = statsUtils.getFormattedDate(date)
-        val model = createSelectStatement(site, statsType, formattedDate).asModel.firstOrNull()
+        val model = createSelectStatement(site, statsType, requestedItems, formattedDate).asModel.firstOrNull()
         return model?.let {
             val groups = selectGroups(it.id)
             ReferrersModel(
@@ -136,9 +147,10 @@ class ReferrersSqlUtils
     private fun deleteAll(
         site: SiteModel,
         statsType: StatsType? = null,
+        requestedItems: Int? = null,
         formattedDate: String? = null
     ) {
-        val modelIds = createSelectStatement(site, statsType, formattedDate).asModel.map { it.id }
+        val modelIds = createSelectStatement(site, statsType, requestedItems, formattedDate).asModel.map { it.id }
         val groupIds = selectGroups(modelIds).map { it.id }
         deleteReferrers(groupIds)
         deleteGroups(modelIds)
@@ -170,6 +182,7 @@ class ReferrersSqlUtils
     private fun createSelectStatement(
         site: SiteModel,
         statsType: StatsType? = null,
+        requestedItems: Int? = null,
         date: String? = null
     ): SelectQuery<ReferrersModelBuilder> {
         var select = WellSql.select(ReferrersModelBuilder::class.java)
@@ -179,10 +192,22 @@ class ReferrersSqlUtils
         if (statsType != null) {
             select = select.equals(ReferrersModelTable.STATS_TYPE, statsType.name)
         }
+        if (requestedItems != null) {
+            select = select.equals(ReferrersModelTable.REQUESTED_ITEMS, requestedItems)
+        }
         if (date != null) {
             select = select.equals(ReferrersModelTable.DATE, date)
         }
         return select.endWhere()
+    }
+
+    fun hasFreshRequest(
+        site: SiteModel,
+        granularity: StatsGranularity,
+        date: Date,
+        limit: Int
+    ): Boolean {
+        return statsRequestSqlUtils.hasFreshRequest(site, REFERRERS, granularity, date, limit)
     }
 
     @Table(name = "ReferrersModel")
@@ -190,12 +215,13 @@ class ReferrersSqlUtils
         @PrimaryKey @Column private var mId: Int = -1,
         @Column var localSiteId: Int,
         @Column var statsType: String,
-        @Column var date: String?,
+        @Column var date: String,
+        @Column var requestedItems: Int,
         @Column var otherViews: Int,
         @Column var totalViews: Int,
         @Column var hasMore: Boolean
     ) : Identifiable {
-        constructor() : this(-1, -1, "", null, 0, 0, false)
+        constructor() : this(-1, -1, "", "", -1, 0, 0, false)
 
         override fun setId(id: Int) {
             this.mId = id

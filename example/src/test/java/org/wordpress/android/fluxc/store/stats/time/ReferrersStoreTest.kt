@@ -19,8 +19,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.stats.time.ReferrersRestCl
 import org.wordpress.android.fluxc.network.utils.StatsGranularity.DAYS
 import org.wordpress.android.fluxc.network.utils.StatsGranularity.YEARS
 import org.wordpress.android.fluxc.persistence.ReferrersSqlUtils
-import org.wordpress.android.fluxc.persistence.StatsRequestSqlUtils
-import org.wordpress.android.fluxc.persistence.StatsSqlUtils.BlockType.REFERRERS
 import org.wordpress.android.fluxc.store.StatsStore.FetchStatsPayload
 import org.wordpress.android.fluxc.store.StatsStore.ReportReferrerAsSpamPayload
 import org.wordpress.android.fluxc.store.StatsStore.StatsError
@@ -31,13 +29,13 @@ import java.util.Date
 
 private const val ITEMS_TO_LOAD = 8
 private val DATE = Date(0)
+private val LIMIT_MODE = LimitMode.Top(ITEMS_TO_LOAD)
 
 @RunWith(MockitoJUnitRunner::class)
 class ReferrersStoreTest {
     @Mock lateinit var site: SiteModel
     @Mock lateinit var restClient: ReferrersRestClient
     @Mock lateinit var sqlUtils: ReferrersSqlUtils
-    @Mock lateinit var statsRequestSqlUtils: StatsRequestSqlUtils
     @Mock lateinit var mapper: TimeStatsMapper
     private lateinit var store: ReferrersStore
     private val domain: String = "example.referral.com"
@@ -47,7 +45,6 @@ class ReferrersStoreTest {
         store = ReferrersStore(
                 restClient,
                 sqlUtils,
-                statsRequestSqlUtils,
                 mapper,
                 initCoroutineEngine()
         )
@@ -67,12 +64,12 @@ class ReferrersStoreTest {
         val responseModel = store.fetchReferrers(site, DAYS, LimitMode.Top(ITEMS_TO_LOAD), DATE, forced)
 
         assertThat(responseModel.model).isEqualTo(REFERRERS_MODEL)
-        verify(sqlUtils).insert(site, DAYS, REFERRERS_MODEL, DATE)
+        verify(sqlUtils).insert(site, DAYS, ITEMS_TO_LOAD, DATE, REFERRERS_MODEL)
     }
 
     @Test
     fun `returns cached data per site`() = test {
-        whenever(statsRequestSqlUtils.hasFreshRequest(site, REFERRERS, DAYS, DATE, ITEMS_TO_LOAD)).thenReturn(true)
+        whenever(sqlUtils.hasFreshRequest(site, DAYS, DATE, ITEMS_TO_LOAD)).thenReturn(true)
         whenever(sqlUtils.select(site, DAYS, DATE)).thenReturn(REFERRERS_MODEL)
 
         val forced = false
@@ -80,7 +77,7 @@ class ReferrersStoreTest {
 
         assertThat(responseModel.model).isEqualTo(REFERRERS_MODEL)
         assertThat(responseModel.cached).isTrue()
-        verify(sqlUtils, never()).insert(any(), any(), any(), any())
+        verify(sqlUtils, never()).insert(any(), any(), any(), any(), any())
     }
 
     @Test
@@ -119,6 +116,7 @@ class ReferrersStoreTest {
                 site,
                 domain,
                 YEARS,
+                LIMIT_MODE,
                 date
         )
 
@@ -136,6 +134,7 @@ class ReferrersStoreTest {
                 site,
                 domain,
                 YEARS,
+                LIMIT_MODE,
                 date
         )
 
@@ -153,6 +152,7 @@ class ReferrersStoreTest {
                 site,
                 domain,
                 YEARS,
+                LIMIT_MODE,
                 Date()
         )
 
@@ -171,6 +171,7 @@ class ReferrersStoreTest {
                 site,
                 domain,
                 YEARS,
+                LIMIT_MODE,
                 Date()
         )
 
@@ -188,6 +189,7 @@ class ReferrersStoreTest {
                 site,
                 domain,
                 YEARS,
+                LIMIT_MODE,
                 Date()
         )
 
