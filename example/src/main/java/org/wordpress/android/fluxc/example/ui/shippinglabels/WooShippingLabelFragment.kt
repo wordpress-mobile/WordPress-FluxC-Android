@@ -186,11 +186,18 @@ class WooShippingLabelFragment : Fragment() {
             }
         }
 
-        verify_address.setOnClickListener {
+        get_packages.setOnClickListener {
             selectedSite?.let { site ->
                 coroutineScope.launch {
-                    val result = wcShippingLabelStore.getPackageTypes(site)
-                    prependToLog("$result")
+                    val result = withContext(Dispatchers.Default) {
+                        wcShippingLabelStore.getPackageTypes(site)
+                    }
+                    result.error?.let {
+                        prependToLog("${it.type}: ${it.message}")
+                    }
+                    result.model?.let {
+                        prependToLog("$it")
+                    }
                 }
             }
         }
