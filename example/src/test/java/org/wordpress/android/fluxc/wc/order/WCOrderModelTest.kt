@@ -76,6 +76,9 @@ class WCOrderModelTest {
 
             assertEquals("size", attributes[1].key)
             assertEquals("Medium", attributes[1].value)
+
+            val asList = getAttributesAsString()
+            assertEquals("Red, Medium", asList)
         }
 
         with(renderedLineItems[1]) {

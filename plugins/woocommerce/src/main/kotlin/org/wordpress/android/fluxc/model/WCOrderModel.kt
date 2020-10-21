@@ -102,6 +102,13 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
             val responseType = object : TypeToken<List<Attribute>>() {}.type
             return gson.fromJson(attributes, responseType) as? List<Attribute> ?: emptyList()
         }
+
+        /**
+         * @return a comma-separated list of attribute values for display
+         */
+        fun getAttributesAsString(): String {
+            return getAttributeList().joinToString { it.value ?: "" }
+        }
     }
 
     override fun getId() = id
