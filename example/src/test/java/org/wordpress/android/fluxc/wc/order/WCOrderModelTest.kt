@@ -60,6 +60,34 @@ class WCOrderModelTest {
     }
 
     @Test
+    fun testGetLineItemAttributes() {
+        val model = OrderTestUtils.generateSampleOrder(61).apply {
+            lineItems = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/lineitems.json")
+        }
+        val renderedLineItems = model.getLineItemList()
+        assertEquals(2, renderedLineItems.size)
+
+        with(renderedLineItems[0]) {
+            val attributes = getAttributeList()
+            assertEquals(2, attributes.size)
+
+            assertEquals("color", attributes[0].key)
+            assertEquals("Red", attributes[0].value)
+
+            assertEquals("size", attributes[1].key)
+            assertEquals("Medium", attributes[1].value)
+        }
+
+        with(renderedLineItems[1]) {
+            val attributes = getAttributeList()
+            assertEquals(1, attributes.size)
+
+            assertEquals("size", attributes[0].key)
+            assertEquals("Medium", attributes[0].value)
+        }
+    }
+
+    @Test
     fun testGetSubtotal() {
         val model = OrderTestUtils.generateSampleOrder(61).apply {
             lineItems = "[{\"subtotal\": \"12.26\"},{\"subtotal\": \"15.39\"}]"
