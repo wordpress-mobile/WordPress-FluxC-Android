@@ -157,5 +157,5 @@ data class WCOrderModel(@PrimaryKey @Column private var id: Int = 0) : Identifia
         return gson.fromJson(shippingLines, responseType) as? List<ShippingLine> ?: emptyList()
     }
 
-    fun isMultiShippingLinesAvailable() = getShippingLineList()?.size > 1
+    fun isMultiShippingLinesAvailable() = getShippingLineList().size > 1
 }
