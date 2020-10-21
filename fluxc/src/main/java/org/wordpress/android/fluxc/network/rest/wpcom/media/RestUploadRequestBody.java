@@ -79,7 +79,7 @@ public class RestUploadRequestBody extends BaseUploadRequestBody {
         RequestBody body = RequestBody.create(MediaType.parse(media.getMimeType()), mediaFile);
         String fileName = media.getFileName();
         try {
-            fileName = URLEncoder.encode(media.getFileName(), "utf-8");
+            fileName = URLEncoder.encode(media.getFileName(), "UTF-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
