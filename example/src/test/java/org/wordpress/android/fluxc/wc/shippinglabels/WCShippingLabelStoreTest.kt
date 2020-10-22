@@ -12,14 +12,20 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.wordpress.android.fluxc.SingleStoreWellSqlConfigForTests
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult
+import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Valid
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelMapper
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress.Type.DESTINATION
+import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress.Type.ORIGIN
 import org.wordpress.android.fluxc.network.BaseRequest.GenericErrorType.NETWORK_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.INVALID_RESPONSE
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooPayload
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.VerifyAddressResponse
 import org.wordpress.android.fluxc.persistence.SiteSqlUtils
 import org.wordpress.android.fluxc.persistence.WellSqlConfig
 import org.wordpress.android.fluxc.store.WCShippingLabelStore
@@ -45,6 +51,14 @@ class WCShippingLabelStoreTest {
     private val printPaperSize = "label"
     private val samplePrintShippingLabelApiResponse =
             WCShippingLabelTestUtils.generateSamplePrintShippingLabelApiResponse()
+
+    private val address = ShippingLabelAddress(country = "CA", address = "1370 Lewisham Dr.")
+    private val successfulVerifyAddressApiResponse = VerifyAddressResponse(
+            isSuccess = true,
+            isTrivialNormalization = false,
+            suggestedAddress = address,
+            error = null
+    )
 
     @Before
     fun setUp() {
@@ -132,6 +146,16 @@ class WCShippingLabelStoreTest {
         assertThat(invalidRequestResult.error).isEqualTo(error)
     }
 
+    @Test
+    fun `verify shipping address`() = test {
+        val result = verifyAddress(ORIGIN)
+        assertThat(result.model).isEqualTo(Valid(address))
+
+        val invalidRequestResult = verifyAddress(DESTINATION)
+        assertThat(invalidRequestResult.model).isNull()
+        assertThat(invalidRequestResult.error).isEqualTo(error)
+    }
+
     private suspend fun fetchShippingLabelsForOrder(): WooResult<List<WCShippingLabelModel>> {
         val fetchShippingLabelsPayload = WooPayload(sampleShippingLabelApiResponse)
         whenever(restClient.fetchShippingLabelsForOrder(orderId, site)).thenReturn(fetchShippingLabelsPayload)
@@ -163,5 +187,22 @@ class WCShippingLabelStoreTest {
         )).thenReturn(WooPayload(error))
 
         return store.printShippingLabel(site, printPaperSize, refundShippingLabelId)
+    }
+
+    private suspend fun verifyAddress(type: ShippingLabelAddress.Type): WooResult<WCAddressVerificationResult> {
+        val verifyAddressPayload = WooPayload(successfulVerifyAddressApiResponse)
+        whenever(restClient.verifyAddress(
+                site,
+                address,
+                ORIGIN
+        )).thenReturn(verifyAddressPayload)
+
+        whenever(restClient.verifyAddress(
+                site,
+                address,
+                DESTINATION
+        )).thenReturn(WooPayload(error))
+
+        return store.verifyAddress(site, address, type)
     }
 }

@@ -22,6 +22,7 @@ import kotlinx.coroutines.withContext
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.example.R
 import org.wordpress.android.fluxc.example.prependToLog
+import org.wordpress.android.fluxc.example.replaceFragment
 import org.wordpress.android.fluxc.example.ui.StoreSelectorDialog
 import org.wordpress.android.fluxc.example.utils.showSingleLineDialog
 import org.wordpress.android.fluxc.example.utils.toggleSiteDependentButtons
@@ -176,6 +177,12 @@ class WooShippingLabelFragment : Fragment() {
                         }
                     }
                 }
+            }
+        }
+
+        verify_address.setOnClickListener {
+            selectedSite?.let { site ->
+                replaceFragment(WooVerifyAddressFragment.newInstance(site))
             }
         }
     }
