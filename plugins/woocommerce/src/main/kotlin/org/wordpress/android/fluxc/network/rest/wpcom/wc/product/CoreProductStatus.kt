@@ -4,7 +4,8 @@ enum class CoreProductStatus(val value: String) {
     DRAFT("draft"),
     PENDING("pending"),
     PRIVATE("private"),
-    PUBLISH("publish");
+    PUBLISH("publish"),
+    TRASH("trash");
 
     companion object {
         private val valueMap = values().associateBy(CoreProductStatus::value)
