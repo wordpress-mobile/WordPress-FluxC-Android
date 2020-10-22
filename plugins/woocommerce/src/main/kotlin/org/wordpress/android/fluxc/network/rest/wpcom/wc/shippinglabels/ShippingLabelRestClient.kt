@@ -2,8 +2,10 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels
 
 import android.content.Context
 import com.android.volley.RequestQueue
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
-import com.sun.jna.StringArray
+import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.generated.endpoint.WOOCOMMERCE
 import org.wordpress.android.fluxc.model.SiteModel
@@ -177,36 +179,82 @@ constructor(
 
     data class GetPackageTypesResponse(
         @SerializedName("success") val isSuccess: Boolean,
-        val storeOptions: StoreOptions?,
-        val formSchema: FormSchema?
+        val storeOptions: StoreOptions,
+        val formSchema: FormSchema,
+        val formData: FormData
     ) {
+        companion object {
+            private val gson by lazy { Gson() }
+        }
+
         data class StoreOptions(
-            @SerializedName("currency_symbol") val currency: String?,
-            @SerializedName("dimension_unit") val dimensionUnit: String?,
-            @SerializedName("weight_unit") val weightUnit: String?,
-            @SerializedName("origin_country") val originCountry: String?
+            @SerializedName("currency_symbol") val currency: String,
+            @SerializedName("dimension_unit") val dimensionUnit: String,
+            @SerializedName("weight_unit") val weightUnit: String,
+            @SerializedName("origin_country") val originCountry: String
         )
 
-        data class FormSchema(
-            val custom: Custom?,
-            val predefined: Predefined?
+        data class FormData(
+            @SerializedName("custom") val customData: List<CustomData>,
+            @SerializedName("predefined") val predefinedJson: JsonObject
         ) {
-            data class Custom(
-                val type: String?,
-                val title: String?,
-                val default: StringArray?,
+            data class CustomData(
+                val name: String,
+                @SerializedName("inner_dimensions") val innerDimensions: String?,
+                @SerializedName("outer_dimensions") val outerDimensions: String?,
+                @SerializedName("box_weight") val boxWeight: Float?,
+                @SerializedName("max_weight") val maxWeight: Float?,
+                @SerializedName("is_user_defined") val isUserDefined: Boolean?,
+                @SerializedName("is_letter") val isLetter: Boolean?
             )
 
-            data class Predefined(
-                val usps: Usps
+            val predefinedData: Map<String, List<String>> by lazy {
+                val responseType = object : TypeToken<Map<String, List<String>>>() {}.type
+                gson.fromJson(predefinedJson, responseType) as? Map<String, List<String>> ?: emptyMap()
+            }
+        }
+
+        data class FormSchema(
+            @SerializedName("custom") val customSchema: CustomSchema?,
+            @SerializedName("predefined") val predefinedJson: JsonObject?
+        ) {
+            data class CustomSchema(
+                val title: String,
+                val description: String
+            )
+
+            data class PredefinedSchema(
+                @SerializedName("types") val typesJson: JsonObject
             ) {
-                data class Usps(
-                    val priorityFlatBoxes: FlatBoxes
+                data class PackageType(
+                    val title: String,
+                    val definitions: List<PackageDefinition>
                 ) {
-                    data class FlatBoxes(
-                        val title: String?
+                    data class PackageDefinition(
+                        val id: String,
+                        val name: String,
+                        @SerializedName("outer_dimensions") val outerDimensions: String?,
+                        @SerializedName("inner_dimensions") val innerDimensions: String?,
+                        val dimensions: String?,
+                        @SerializedName("box_weight") val boxWeight: Float?,
+                        @SerializedName("max_weight") val maxWeight: Float?,
+                        @SerializedName("is_letter") val isLetter: Boolean?,
+                        @SerializedName("is_flat_rate") val isFlatRate: Boolean?,
+                        @SerializedName("can_ship_international") val canShipInternational: Boolean?,
+                        @SerializedName("group_id") val groupId: String?,
+                        @SerializedName("service_group_ids") val serviceGroupIds: List<String>?
                     )
                 }
+
+                val packageTypes: Map<String, PackageType> by lazy {
+                    val responseType = object : TypeToken<Map<String, PackageType>>() {}.type
+                    gson.fromJson(typesJson, responseType) as? Map<String, PackageType> ?: emptyMap()
+                }
+            }
+
+            val predefinedSchema: Map<String, PredefinedSchema> by lazy {
+                val responseType = object : TypeToken<Map<String, PredefinedSchema>>() {}.type
+                gson.fromJson(predefinedJson, responseType) as? Map<String, PredefinedSchema> ?: emptyMap()
             }
         }
     }
