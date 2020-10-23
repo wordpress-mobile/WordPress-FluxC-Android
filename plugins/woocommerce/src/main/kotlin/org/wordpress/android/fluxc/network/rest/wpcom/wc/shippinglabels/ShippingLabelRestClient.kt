@@ -208,10 +208,11 @@ constructor(
                 @SerializedName("is_letter") val isLetter: Boolean?
             )
 
-            val predefinedData: Map<String, List<String>> by lazy {
-                val responseType = object : TypeToken<Map<String, List<String>>>() {}.type
-                gson.fromJson(predefinedJson, responseType) as? Map<String, List<String>> ?: emptyMap()
-            }
+            val predefinedData: Map<String, List<String?>>
+                get() {
+                    val responseType = object : TypeToken<Map<String, List<String?>>>() {}.type
+                    return gson.fromJson(predefinedJson, responseType) as? Map<String, List<String?>> ?: emptyMap()
+                }
         }
 
         data class FormSchema(
@@ -223,39 +224,32 @@ constructor(
                 val description: String
             )
 
-            data class PredefinedSchema(
-                @SerializedName("types") val typesJson: JsonObject
+            data class PackageType(
+                val title: String,
+                val definitions: List<PackageDefinition>
             ) {
-                data class PackageType(
-                    val title: String,
-                    val definitions: List<PackageDefinition>
-                ) {
-                    data class PackageDefinition(
-                        val id: String,
-                        val name: String,
-                        @SerializedName("outer_dimensions") val outerDimensions: String?,
-                        @SerializedName("inner_dimensions") val innerDimensions: String?,
-                        val dimensions: String?,
-                        @SerializedName("box_weight") val boxWeight: Float?,
-                        @SerializedName("max_weight") val maxWeight: Float?,
-                        @SerializedName("is_letter") val isLetter: Boolean?,
-                        @SerializedName("is_flat_rate") val isFlatRate: Boolean?,
-                        @SerializedName("can_ship_international") val canShipInternational: Boolean?,
-                        @SerializedName("group_id") val groupId: String?,
-                        @SerializedName("service_group_ids") val serviceGroupIds: List<String>?
-                    )
-                }
-
-                val packageTypes: Map<String, PackageType> by lazy {
-                    val responseType = object : TypeToken<Map<String, PackageType>>() {}.type
-                    gson.fromJson(typesJson, responseType) as? Map<String, PackageType> ?: emptyMap()
-                }
+                data class PackageDefinition(
+                    val id: String,
+                    val name: String,
+                    val dimensions: Any?,
+                    @SerializedName("outer_dimensions") val outerDimensions: String?,
+                    @SerializedName("inner_dimensions") val innerDimensions: String?,
+                    @SerializedName("box_weight") val boxWeight: Float?,
+                    @SerializedName("max_weight") val maxWeight: Float?,
+                    @SerializedName("is_letter") val isLetter: Boolean?,
+                    @SerializedName("is_flat_rate") val isFlatRate: Boolean?,
+                    @SerializedName("can_ship_international") val canShipInternational: Boolean?,
+                    @SerializedName("group_id") val groupId: String?,
+                    @SerializedName("service_group_ids") val serviceGroupIds: List<String>?
+                )
             }
 
-            val predefinedSchema: Map<String, PredefinedSchema> by lazy {
-                val responseType = object : TypeToken<Map<String, PredefinedSchema>>() {}.type
-                gson.fromJson(predefinedJson, responseType) as? Map<String, PredefinedSchema> ?: emptyMap()
-            }
+            val predefinedSchema: Map<String, Map<String, PackageType>>
+                get() {
+                    val responseType = object : TypeToken<Map<String, Map<String, PackageType>>>() {}.type
+                    return gson.fromJson(predefinedJson, responseType) as?
+                            Map<String, Map<String, PackageType>> ?: emptyMap()
+                }
         }
     }
 }
