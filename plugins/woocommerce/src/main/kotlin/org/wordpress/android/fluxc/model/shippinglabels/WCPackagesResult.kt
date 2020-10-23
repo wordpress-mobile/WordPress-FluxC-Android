@@ -1,8 +1,21 @@
 package org.wordpress.android.fluxc.model.shippinglabels
 
-import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
+data class WCPackagesResult(
+    val customPackages: List<CustomPackage>,
+    val predefinedOptions: List<PredefinedOption>
+) {
+    data class CustomPackage(
+        val title: String
+    )
 
-sealed class WCPackagesResult {
-    data class Default(val title: String) : WCPackagesResult()
-    data class Custom(val title: String) : WCPackagesResult()
+    data class PredefinedOption(
+        val title: String,
+        val predefinedPackages: List<PredefinedPackage>
+    ) {
+        data class PredefinedPackage(
+            val title: String,
+            val isLetter: Boolean,
+            val dimensions: String
+        )
+    }
 }
