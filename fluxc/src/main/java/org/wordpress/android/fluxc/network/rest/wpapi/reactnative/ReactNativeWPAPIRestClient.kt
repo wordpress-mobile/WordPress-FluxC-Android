@@ -63,7 +63,7 @@ class ReactNativeWPAPIRestClient @VisibleForTesting constructor(
                         enableCaching,
                         nonce = nonce)
         return when (response) {
-            is Success -> successHandler(response.data)
+            is Success -> successHandler(response)
             is Error -> errorHandler(response.error)
         }
     }
