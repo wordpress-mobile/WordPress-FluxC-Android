@@ -5,6 +5,10 @@ import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationRes
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidAddress
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.InvalidRequest
 import org.wordpress.android.fluxc.model.shippinglabels.WCAddressVerificationResult.Valid
+import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult
+import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.CustomPackage
+import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption
+import org.wordpress.android.fluxc.model.shippinglabels.WCPackagesResult.PredefinedOption.PredefinedPackage
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelMapper
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel.ShippingLabelAddress
@@ -13,6 +17,8 @@ import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooError
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooErrorType.GENERIC_ERROR
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.WooResult
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.GetPackageTypesResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.GetPackageTypesResponse.FormSchema.PackageOption.PackageDefinition
 import org.wordpress.android.fluxc.persistence.WCShippingLabelSqlUtils
 import org.wordpress.android.fluxc.tools.CoroutineEngine
 import org.wordpress.android.util.AppLog
@@ -122,6 +128,61 @@ class WCShippingLabelStore @Inject constructor(
             } else {
                 WooResult(WooError(GENERIC_ERROR, UNKNOWN, "Unknown error"))
             }
+        }
+    }
+
+    suspend fun getPackageTypes(
+        site: SiteModel
+    ): WooResult<WCPackagesResult> {
+        return coroutineEngine.withDefaultContext(AppLog.T.API, this, "getPackageTypes") {
+            val response = restClient.getPackageTypes(site)
+            return@withDefaultContext when {
+                response.isError -> {
+                    WooResult(response.error)
+                }
+                response.result?.isSuccess == true -> {
+                    val customPackages = getCustomPackages(response.result)
+                    val predefinedOptions = getPredefinedOptions(response.result)
+                    WooResult(WCPackagesResult(customPackages, predefinedOptions))
+                }
+                else -> WooResult(WooError(GENERIC_ERROR, UNKNOWN))
+            }
+        }
+    }
+
+    private fun getPredefinedOptions(result: GetPackageTypesResponse): List<PredefinedOption> {
+        val predefinedOptions = mutableListOf<PredefinedOption>()
+        result.formSchema.predefinedSchema.entries.forEach { provider ->
+            provider.value.forEach { option ->
+                result.formData.predefinedData[provider.key]?.let { packageIds ->
+                    val predefinedPackages = getPredefinedPackages(packageIds, option.value.definitions)
+                    if (predefinedPackages.isNotEmpty()) {
+                        predefinedOptions.add(PredefinedOption(option.value.title, predefinedPackages))
+                    }
+                }
+            }
+        }
+        return predefinedOptions
+    }
+
+    private fun getPredefinedPackages(
+        packageIds: List<String?>,
+        packageDefinitions: List<PackageDefinition>
+    ): List<PredefinedPackage> {
+        val predefinedPackages = mutableListOf<PredefinedPackage>()
+        packageIds.forEach { packageId ->
+            packageDefinitions.firstOrNull { it.id == packageId }?.let { definition ->
+                predefinedPackages.add(
+                    PredefinedPackage(definition.name, definition.isLetter, definition.outerDimensions)
+                )
+            }
+        }
+        return predefinedPackages
+    }
+
+    private fun getCustomPackages(result: GetPackageTypesResponse): List<CustomPackage> {
+        return result.formData.customData.map {
+            CustomPackage(it.name, it.isLetter, it.outerDimensions ?: it.innerDimensions ?: "")
         }
     }
 }

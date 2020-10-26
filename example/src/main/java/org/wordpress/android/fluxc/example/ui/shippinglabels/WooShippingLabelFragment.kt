@@ -185,6 +185,22 @@ class WooShippingLabelFragment : Fragment() {
                 replaceFragment(WooVerifyAddressFragment.newInstance(site))
             }
         }
+
+        get_packages.setOnClickListener {
+            selectedSite?.let { site ->
+                coroutineScope.launch {
+                    val result = withContext(Dispatchers.Default) {
+                        wcShippingLabelStore.getPackageTypes(site)
+                    }
+                    result.error?.let {
+                        prependToLog("${it.type}: ${it.message}")
+                    }
+                    result.model?.let {
+                        prependToLog("$it")
+                    }
+                }
+            }
+        }
     }
 
     private fun showSiteSelectorDialog(selectedPos: Int, listener: StoreSelectorDialog.Listener) {
