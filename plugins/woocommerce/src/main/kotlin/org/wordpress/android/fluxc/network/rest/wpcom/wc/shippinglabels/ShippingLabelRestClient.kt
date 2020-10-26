@@ -3,7 +3,7 @@ package org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels
 import android.content.Context
 import com.android.volley.RequestQueue
 import com.google.gson.Gson
-import com.google.gson.JsonObject
+import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.Dispatcher
@@ -196,7 +196,7 @@ constructor(
 
         data class FormData(
             @SerializedName("custom") val customData: List<CustomData>,
-            @SerializedName("predefined") val predefinedJson: JsonObject
+            @SerializedName("predefined") val predefinedJson: JsonElement
         ) {
             data class CustomData(
                 val name: String,
@@ -217,14 +217,14 @@ constructor(
 
         data class FormSchema(
             @SerializedName("custom") val customSchema: CustomSchema?,
-            @SerializedName("predefined") val predefinedJson: JsonObject?
+            @SerializedName("predefined") val predefinedJson: JsonElement?
         ) {
             data class CustomSchema(
                 val title: String,
                 val description: String
             )
 
-            data class PackageType(
+            data class PackageOption(
                 val title: String,
                 val definitions: List<PackageDefinition>
             ) {
