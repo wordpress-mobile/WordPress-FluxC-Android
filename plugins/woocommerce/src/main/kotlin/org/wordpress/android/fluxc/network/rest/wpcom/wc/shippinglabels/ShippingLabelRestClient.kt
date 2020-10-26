@@ -244,11 +244,11 @@ constructor(
                 )
             }
 
-            val predefinedSchema: Map<String, Map<String, PackageType>>
+            val predefinedSchema: Map<String, Map<String, PackageOption>>
                 get() {
-                    val responseType = object : TypeToken<Map<String, Map<String, PackageType>>>() {}.type
+                    val responseType = object : TypeToken<Map<String, Map<String, PackageOption>>>() {}.type
                     return gson.fromJson(predefinedJson, responseType) as?
-                            Map<String, Map<String, PackageType>> ?: emptyMap()
+                            Map<String, Map<String, PackageOption>> ?: emptyMap()
                 }
         }
     }
