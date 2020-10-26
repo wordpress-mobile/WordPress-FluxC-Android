@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken
 import org.wordpress.android.fluxc.UnitTestUtils
 import org.wordpress.android.fluxc.model.shippinglabels.WCShippingLabelModel
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelApiResponse
+import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.GetPackageTypesResponse
 import org.wordpress.android.fluxc.network.rest.wpcom.wc.shippinglabels.ShippingLabelRestClient.PrintShippingLabelApiResponse
 
 object WCShippingLabelTestUtils {
@@ -70,5 +71,14 @@ object WCShippingLabelTestUtils {
         val json = UnitTestUtils.getStringFromResourceFile(this.javaClass, "wc/print-shipping-labels.json")
         val responseType = object : TypeToken<PrintShippingLabelApiResponse>() {}.type
         return Gson().fromJson(json, responseType) as? PrintShippingLabelApiResponse
+    }
+
+    fun generateSampleGetPackagesApiResponse(): GetPackageTypesResponse? {
+        val json = UnitTestUtils.getStringFromResourceFile(
+                this.javaClass,
+                "wc/shipping-labels-packages.json"
+        )
+        val responseType = object : TypeToken<GetPackageTypesResponse>() {}.type
+        return Gson().fromJson(json, responseType) as? GetPackageTypesResponse
     }
 }
