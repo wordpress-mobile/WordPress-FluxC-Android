@@ -182,9 +182,7 @@ class WCShippingLabelStore @Inject constructor(
 
     private fun getCustomPackages(result: GetPackageTypesResponse): List<CustomPackage> {
         return result.formData.customData.map {
-            CustomPackage(
-                    it.name
-            )
+            CustomPackage(it.name, it.isLetter, it.outerDimensions ?: it.innerDimensions ?: "")
         }
     }
 }

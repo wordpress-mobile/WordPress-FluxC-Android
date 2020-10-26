@@ -5,7 +5,9 @@ data class WCPackagesResult(
     val predefinedOptions: List<PredefinedOption>
 ) {
     data class CustomPackage(
-        val title: String
+        val title: String,
+        val isLetter: Boolean,
+        val dimensions: String
     )
 
     data class PredefinedOption(

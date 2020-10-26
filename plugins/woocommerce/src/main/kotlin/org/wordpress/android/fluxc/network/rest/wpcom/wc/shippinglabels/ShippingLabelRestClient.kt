@@ -205,7 +205,7 @@ constructor(
                 @SerializedName("box_weight") val boxWeight: Float?,
                 @SerializedName("max_weight") val maxWeight: Float?,
                 @SerializedName("is_user_defined") val isUserDefined: Boolean?,
-                @SerializedName("is_letter") val isLetter: Boolean?
+                @SerializedName("is_letter") val isLetter: Boolean
             )
 
             val predefinedData: Map<String, List<String?>>
