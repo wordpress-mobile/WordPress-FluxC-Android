@@ -174,7 +174,7 @@ class ProductRestClient(
         site: SiteModel,
         pageSize: Int = DEFAULT_PRODUCT_TAGS_PAGE_SIZE,
         offset: Int = 0,
-        searchQuery: String?
+        searchQuery: String? = null
     ) {
         val url = WOOCOMMERCE.products.tags.pathV3
         val responseType = object : TypeToken<List<ProductTagApiResponse>>() {}.type
