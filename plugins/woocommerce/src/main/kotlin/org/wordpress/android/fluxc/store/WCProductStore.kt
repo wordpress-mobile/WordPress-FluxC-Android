@@ -1221,7 +1221,7 @@ class WCProductStore @Inject constructor(
         } else {
             // delete product tags for site if this is the first page of results, otherwise
             // tags deleted outside of the app will persist
-            if (payload.offset == 0) {
+            if (payload.offset == 0 && payload.searchQuery.isNullOrEmpty()) {
                 ProductSqlUtils.deleteProductTagsForSite(payload.site)
             }
 
