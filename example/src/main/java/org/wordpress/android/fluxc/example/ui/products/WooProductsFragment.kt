@@ -323,10 +323,16 @@ class WooProductsFragment : Fragment() {
         }
 
         fetch_product_tags.setOnClickListener {
-            selectedSite?.let { site ->
-                prependToLog("Submitting request to fetch product tags for site ${site.id}")
-                val payload = FetchProductTagsPayload(site)
-                dispatcher.dispatch(WCProductActionBuilder.newFetchProductTagsAction(payload))
+            showSingleLineDialog(
+                    activity,
+                    "Enter a search query, leave blank for none:"
+            ) { editText ->
+                val searchQuery = editText.text.toString()
+                selectedSite?.let { site ->
+                    prependToLog("Submitting request to fetch product tags for site ${site.id}")
+                    val payload = FetchProductTagsPayload(site, searchQuery = searchQuery)
+                    dispatcher.dispatch(WCProductActionBuilder.newFetchProductTagsAction(payload))
+                }
             }
         }
 
