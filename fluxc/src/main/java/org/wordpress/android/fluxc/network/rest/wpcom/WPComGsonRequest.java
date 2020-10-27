@@ -53,7 +53,7 @@ public class WPComGsonRequest<T> extends GsonRequest<T> {
         }
     }
 
-    private WPComGsonRequest(int method, String url, Map<String, String> params, Map<String, Object> body,
+    protected WPComGsonRequest(int method, String url, Map<String, String> params, Map<String, Object> body,
                              Class<T> clazz, Type type, Listener<T> listener, BaseErrorListener errorListener) {
         super(method, params, body, url, clazz, type, listener, errorListener);
         // Add the parameters to the URL regardless what the request method is
@@ -122,7 +122,7 @@ public class WPComGsonRequest<T> extends GsonRequest<T> {
                 wrapInBaseListener(errorListener));
     }
 
-    private static BaseErrorListener wrapInBaseListener(final WPComErrorListener wpComErrorListener) {
+    public static BaseErrorListener wrapInBaseListener(final WPComErrorListener wpComErrorListener) {
         return new BaseErrorListener() {
             @Override
             public void onErrorResponse(@NonNull BaseNetworkError error) {

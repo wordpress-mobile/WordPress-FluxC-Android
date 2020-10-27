@@ -1,10 +1,13 @@
 package org.wordpress.android.fluxc.network.rest.wpcom
 
+import com.android.volley.Request.Method
+import com.google.gson.JsonElement
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.wordpress.android.fluxc.network.BaseRequest
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequest.WPComGsonNetworkError
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Error
 import org.wordpress.android.fluxc.network.rest.wpcom.WPComGsonRequestBuilder.Response.Success
+import org.wordpress.android.fluxc.network.rest.wpcom.reactnative.ReactNativeWPComGsonRequest
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
@@ -45,12 +48,57 @@ class WPComGsonRequestBuilder
         enableCaching: Boolean = false,
         cacheTimeToLive: Int = BaseRequest.DEFAULT_CACHE_LIFETIME,
         forced: Boolean = false
+    ): Response<T> {
+        val requestBuilder: (
+            listener: (T) -> Unit,
+            errorListener: (WPComGsonNetworkError) -> Unit
+        ) -> WPComGsonRequest<T> = { listener, errorListener ->
+            WPComGsonRequest.buildGetRequest(url, params, clazz, listener, errorListener)
+        }
+        return syncGetRequest(restClient, enableCaching, cacheTimeToLive, forced, requestBuilder)
+    }
+
+    /**
+     * Creates a new React Native specific GET request.
+     * @param restClient rest client that handles the request
+     * @param url the request URL
+     * @param params the parameters to append to the request URL
+     */
+    suspend fun syncReactNativeGetRequest(
+        restClient: BaseWPComRestClient,
+        url: String,
+        params: Map<String, String>,
+        enableCaching: Boolean = false,
+        cacheTimeToLive: Int = BaseRequest.DEFAULT_CACHE_LIFETIME,
+        forced: Boolean = false
+    ): Response<JsonElement> {
+        val requestBuilder: (
+            listener: (JsonElement) -> Unit,
+            errorListener: (WPComGsonNetworkError) -> Unit
+        ) -> WPComGsonRequest<JsonElement> = { listener, errorListener ->
+            ReactNativeWPComGsonRequest(Method.GET, url, params, emptyMap(), listener, errorListener)
+        }
+        return syncGetRequest(restClient, enableCaching, cacheTimeToLive, forced, requestBuilder)
+    }
+
+    /**
+     * Creates a new GET request.
+     * @param restClient rest client that handles the request
+     * @param requestBuilder function that accepts two listeners and returns the relevant [WPComGsonRequest] object
+     */
+    private suspend fun <T> syncGetRequest(
+        restClient: BaseWPComRestClient,
+        enableCaching: Boolean = false,
+        cacheTimeToLive: Int = BaseRequest.DEFAULT_CACHE_LIFETIME,
+        forced: Boolean = false,
+        requestBuilder: (
+            listener: (T) -> Unit,
+            errorListener: (WPComGsonNetworkError) -> Unit
+        ) -> WPComGsonRequest<T>
     ) = suspendCancellableCoroutine<Response<T>> { cont ->
-        val request = WPComGsonRequest.buildGetRequest(url, params, clazz, {
-            cont.resume(Success(it))
-        }, {
-            cont.resume(Error(it))
-        })
+        val request = requestBuilder(
+                { cont.resume(Success(it)) },
+                { cont.resume(Error(it)) })
         cont.invokeOnCancellation { request.cancel() }
         if (enableCaching) {
             request.enableCaching(cacheTimeToLive)

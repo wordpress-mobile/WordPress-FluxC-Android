@@ -1,6 +1,7 @@
 package org.wordpress.android.fluxc.release
 
 import junit.framework.Assert.assertNotNull
+import junit.framework.Assert.fail
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -8,6 +9,7 @@ import org.junit.Test
 import org.wordpress.android.fluxc.example.BuildConfig
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.MemorizingTrustManager
+import org.wordpress.android.fluxc.network.rest.ReactNativeRequest.ResponseKey
 import org.wordpress.android.fluxc.store.AccountStore
 import org.wordpress.android.fluxc.store.ReactNativeFetchResponse.Error
 import org.wordpress.android.fluxc.store.ReactNativeFetchResponse.Success
@@ -25,6 +27,33 @@ class ReleaseStack_ReactNativeWPAPIRequestTest : ReleaseStack_Base() {
     override fun setUp() {
         super.setUp()
         mReleaseStackAppComponent.inject(this)
+    }
+
+    @Test
+    fun testResponseObjectHasProperContent() {
+        val response = runBlocking {
+            val site = SiteModel().apply {
+                url = BuildConfig.TEST_WPORG_URL_SH_WPAPI_SIMPLE
+            }
+
+            // media queries with a context of 'view' do not require authentication
+            reactNativeStore.executeRequest(site, "wp/v2/media?context=view")
+        }
+
+        when (response) {
+            is Error -> {
+                fail("Call unexpectedly failed with error: ${(response as? Error)?.error?.message}")
+            }
+            is Success -> {
+                assertNotNull(response.result)
+                assertTrue(response.result!!.isJsonObject)
+                assertTrue(response.result!!.asJsonObject.has(ResponseKey.body))
+                assertTrue(response.result!!.asJsonObject.has(ResponseKey.headers))
+                assertTrue(response.result!!.asJsonObject.has(ResponseKey.networkTimeMs))
+                assertTrue(response.result!!.asJsonObject.has(ResponseKey.notModified))
+                assertTrue(response.result!!.asJsonObject.has(ResponseKey.statusCode))
+            }
+        }
     }
 
     @Test

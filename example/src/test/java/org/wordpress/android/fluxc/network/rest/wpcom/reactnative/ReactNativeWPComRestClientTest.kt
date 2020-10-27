@@ -85,11 +85,10 @@ class ReactNativeWPComRestClientTest {
         expectedRestCallResponse: WPComGsonRequestBuilder.Response<JsonElement>,
         expected: ReactNativeFetchResponse
     ) {
-        whenever(wpComGsonRequestBuilder.syncGetRequest(
+        whenever(wpComGsonRequestBuilder.syncReactNativeGetRequest(
                 subject,
                 url,
                 params,
-                JsonElement::class.java,
                 true)
         ).thenReturn(expectedRestCallResponse)
 

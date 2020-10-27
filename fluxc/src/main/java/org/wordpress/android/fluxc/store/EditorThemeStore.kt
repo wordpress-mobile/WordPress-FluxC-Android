@@ -11,6 +11,7 @@ import org.wordpress.android.fluxc.annotations.action.Action
 import org.wordpress.android.fluxc.model.EditorTheme
 import org.wordpress.android.fluxc.model.SiteModel
 import org.wordpress.android.fluxc.network.BaseRequest.BaseNetworkError
+import org.wordpress.android.fluxc.network.rest.ReactNativeRequest.ResponseKey
 import org.wordpress.android.fluxc.persistence.EditorThemeSqlUtils
 import org.wordpress.android.fluxc.store.ReactNativeFetchResponse.Error
 import org.wordpress.android.fluxc.store.ReactNativeFetchResponse.Success
@@ -80,12 +81,22 @@ class EditorThemeStore
         when (response) {
             is Success -> {
                 val noThemeError = OnEditorThemeChanged(EditorThemeError("Response does not contain a theme"), action)
-                if (response.result == null || !response.result.isJsonArray) {
+                if (response.result == null ||
+                        !response.result.isJsonObject ||
+                        !response.result.asJsonObject.has(ResponseKey.body) ||
+                        !response.result.asJsonObject.get(ResponseKey.body).isJsonArray
+                ) {
                     emitChange(noThemeError)
                     return
                 }
 
-                val responseTheme = response.result.asJsonArray.firstOrNull()
+                val responseTheme = response
+                        .result
+                        .asJsonObject
+                        .get(ResponseKey.body)
+                        .asJsonArray
+                        .firstOrNull()
+
                 if (responseTheme == null) {
                     emitChange(noThemeError)
                     return

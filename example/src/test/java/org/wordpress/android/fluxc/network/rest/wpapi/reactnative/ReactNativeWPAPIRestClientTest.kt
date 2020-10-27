@@ -185,12 +185,11 @@ class ReactNativeWPAPIRestClientTest {
         expectedRestCallResponse: WPAPIResponse<JsonElement>,
         expected: ReactNativeFetchResponse
     ) {
-        whenever(wpApiGsonRequestBuilder.syncGetRequest(
+        whenever(wpApiGsonRequestBuilder.syncReactNativeGetRequest(
                 subject,
                 url,
                 params,
                 emptyMap(),
-                JsonElement::class.java,
                 true)
         ).thenReturn(expectedRestCallResponse)
 

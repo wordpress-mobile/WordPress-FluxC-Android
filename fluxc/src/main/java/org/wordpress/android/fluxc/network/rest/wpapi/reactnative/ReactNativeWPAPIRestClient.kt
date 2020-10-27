@@ -54,12 +54,11 @@ class ReactNativeWPAPIRestClient @VisibleForTesting constructor(
         enableCaching: Boolean = true
     ): ReactNativeFetchResponse {
         val response =
-                wpApiGsonRequestBuilder.syncGetRequest(
+                wpApiGsonRequestBuilder.syncReactNativeGetRequest(
                         this,
                         url,
                         params,
                         emptyMap(),
-                        JsonElement::class.java,
                         enableCaching,
                         nonce = nonce)
         return when (response) {
