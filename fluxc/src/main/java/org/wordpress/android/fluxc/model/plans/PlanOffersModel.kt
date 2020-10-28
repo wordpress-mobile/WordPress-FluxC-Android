@@ -13,7 +13,10 @@ data class PlanOffersModel(
     var shortName: String?,
     var tagline: String?,
     var description: String?,
-    var iconUrl: String?
+    var iconUrl: String?,
+    var supportPriority: Int?,
+    var supportName: String?,
+    var nonLocalizedShortName: String?
 ) : Parcelable {
     @Parcelize
     @SuppressLint("ParcelCreator")
@@ -54,7 +57,9 @@ data class PlanOffersModel(
 
         return name == other.name && shortName == other.shortName &&
                 tagline == other.tagline && description == other.description &&
-                iconUrl == other.iconUrl && planIds == other.planIds && features == other.features
+                iconUrl == other.iconUrl && planIds == other.planIds && features == other.features &&
+                supportPriority == other.supportPriority && supportName == other.supportName &&
+                nonLocalizedShortName == other.nonLocalizedShortName
     }
 
     override fun hashCode(): Int {
@@ -65,6 +70,9 @@ data class PlanOffersModel(
         result = 31 * result + (tagline?.hashCode() ?: 0)
         result = 31 * result + (description?.hashCode() ?: 0)
         result = 31 * result + (iconUrl?.hashCode() ?: 0)
+        result = 31 * result + (supportPriority?.hashCode() ?: 0)
+        result = 31 * result + (supportName?.hashCode() ?: 0)
+        result = 31 * result + (nonLocalizedShortName?.hashCode() ?: 0)
         return result
     }
 }

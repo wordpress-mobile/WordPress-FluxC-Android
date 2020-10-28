@@ -69,7 +69,10 @@ constructor(
                     plan.short_name,
                     plan.tagline,
                     plan.description,
-                    plan.icon
+                    plan.icon,
+                    plan.support_priority,
+                    plan.support_name,
+                    plan.nonlocalized_short_name
             )
         })
     }
@@ -100,7 +103,10 @@ constructor(
             val short_name: String?,
             val tagline: String?,
             val description: String?,
-            val icon: String?
+            val icon: String?,
+            val support_priority: Int?,
+            val support_name: String?,
+            val nonlocalized_short_name: String?
         )
     }
 }

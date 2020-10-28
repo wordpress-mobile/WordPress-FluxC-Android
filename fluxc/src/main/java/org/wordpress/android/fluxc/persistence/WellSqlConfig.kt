@@ -28,7 +28,7 @@ open class WellSqlConfig : DefaultWellConfig {
     annotation class AddOn
 
     override fun getDbVersion(): Int {
-        return 121
+        return 122
     }
 
     override fun getDbName(): String {
@@ -1324,6 +1324,11 @@ open class WellSqlConfig : DefaultWellConfig {
                     db.execSQL("CREATE TABLE StatsBlock (_id INTEGER PRIMARY KEY AUTOINCREMENT," +
                             "LOCAL_SITE_ID INTEGER,BLOCK_TYPE TEXT NOT NULL,STATS_TYPE TEXT NOT NULL,DATE TEXT," +
                             "POST_ID INTEGER,JSON TEXT NOT NULL)")
+                }
+                121 -> migrate(version) {
+                    db.execSQL("ALTER TABLE PlanOffers ADD SUPPORT_PRIORITY INTEGER")
+                    db.execSQL("ALTER TABLE PlanOffers ADD SUPPORT_NAME TEXT")
+                    db.execSQL("ALTER TABLE PlanOffers ADD NONLOCALISED_SHORT_NAME TEXT")
                 }
             }
         }

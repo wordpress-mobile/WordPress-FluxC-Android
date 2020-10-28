@@ -113,10 +113,17 @@ class PlanOffersSqlUtils @Inject constructor() {
         @Column var shortName: String? = null,
         @Column var tagline: String? = null,
         @Column var description: String? = null,
-        @Column var icon: String? = null
+        @Column var icon: String? = null,
+        @Column var supportPriority: Int? = null,
+        @Column var supportName: String? = null,
+        @Column var nonLocalizedShortName: String? = null
+
     ) : Identifiable {
         fun build(planIds: List<Int>, planFeatures: List<Feature>): PlanOffersModel {
-            return PlanOffersModel(planIds, planFeatures, name, shortName, tagline, description, icon)
+            return PlanOffersModel(
+                    planIds, planFeatures, name, shortName, tagline, description, icon,
+                    supportPriority, supportName, nonLocalizedShortName
+            )
         }
 
         override fun getId(): Int {
